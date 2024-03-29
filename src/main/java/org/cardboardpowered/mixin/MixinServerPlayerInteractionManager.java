@@ -221,14 +221,14 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
     public void interactBlock(ServerPlayerEntity entityplayer, World world, ItemStack itemstack, Hand enumhand, BlockHitResult movingobjectpositionblock, CallbackInfoReturnable<ActionResult> ci) {
         ActionResult result = UseBlockCallback.EVENT.invoker().interact(entityplayer, world, enumhand, movingobjectpositionblock);
 
-        if(result != null) {
-            ci.setReturnValue(result);
+        if (result == ActionResult.FAIL) {
+        	ci.setReturnValue(result);
             return;
         }
 
         BlockPos blockposition = movingobjectpositionblock.getBlockPos();
         BlockState iblockdata = world.getBlockState(blockposition);
-        ActionResult enuminteractionresult = ActionResult.PASS;
+        ActionResult enuminteractionresult = result;// ActionResult.PASS;
         boolean cancelledBlock = false;
 
         if (this.gameMode == GameMode.SPECTATOR) {
