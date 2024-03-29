@@ -26,7 +26,8 @@ public class Unsafe {
             lookup = (MethodHandles.Lookup) unsafe.getObject(base, offset);
             MethodHandle mh;
             try {
-                Method sunMisc = unsafe.getClass().getMethod("defineClass", String.class, byte[].class, int.class, int.class, ClassLoader.class, ProtectionDomain.class);
+                Method sunMisc = unsafe.getClass()
+                        .getMethod("defineClass", String.class, byte[].class, int.class, int.class, ClassLoader.class, ProtectionDomain.class);
                 mh = lookup.unreflect(sunMisc).bindTo(unsafe);
             } catch (Exception e) {
                 Class<?> jdkInternalUnsafe = Class.forName("jdk.internal.misc.Unsafe");
@@ -81,8 +82,8 @@ public class Unsafe {
         return unsafe.staticFieldBase(field);
     }
 
-    public static void ensureClassInitialized(Class<?> aClass) {
-        unsafe.ensureClassInitialized(aClass);
+    public static void ensureClassInitialized(Class<?> aClass) throws Exception {
+        lookup.ensureInitialized(aClass);
     }
 
     private static Class<?> getCallerClass() {

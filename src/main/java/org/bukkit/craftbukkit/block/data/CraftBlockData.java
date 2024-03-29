@@ -1,29 +1,5 @@
 package org.bukkit.craftbukkit.block.data;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
-import org.cardboardpowered.BlockImplUtil;
-import org.cardboardpowered.impl.world.WorldImpl;
-import org.jetbrains.annotations.NotNull;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.SoundGroup;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockSupport;
-import org.bukkit.block.PistonMoveReaction;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.block.structure.Mirror;
-import org.bukkit.block.structure.StructureRotation;
-import org.bukkit.craftbukkit.block.CraftBlock;
-import org.bukkit.craftbukkit.block.CraftBlockType;
-import org.bukkit.craftbukkit.util.CraftLocation;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
-import org.bukkit.inventory.ItemStack;
-
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
@@ -31,13 +7,12 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
-import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.AbstractBlock.AbstractBlockState;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.IntProperty;
@@ -48,7 +23,33 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.registry.Registries;
+import net.minecraft.world.EmptyBlockView;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.SoundGroup;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockSupport;
+import org.bukkit.block.PistonMoveReaction;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.structure.Mirror;
+import org.bukkit.block.structure.StructureRotation;
+import org.bukkit.craftbukkit.CraftSoundGroup;
+import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.craftbukkit.block.CraftBlockSupport;
+import org.bukkit.craftbukkit.block.CraftBlockType;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.util.CraftLocation;
+import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.inventory.ItemStack;
+import org.cardboardpowered.BlockImplUtil;
+import org.cardboardpowered.impl.world.WorldImpl;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class CraftBlockData implements BlockData {
 
@@ -500,12 +501,12 @@ public class CraftBlockData implements BlockData {
         register(net.minecraft.block.WitherSkullBlock.class, org.bukkit.craftbukkit.block.impl.CraftWitherSkull::new);
         register(net.minecraft.block.WallWitherSkullBlock.class, org.bukkit.craftbukkit.block.impl.CraftWitherSkullWall::new);
         // TODO: 1.19.4: register(net.minecraft.block.WoodenButtonBlock.class, org.bukkit.craftbukkit.block.impl.CraftWoodButton::new);
-          
+
         stringDataCache = new ConcurrentHashMap<String, CraftBlockData>();
         CraftBlockData.reloadCache();
         // TOODO 1.19: net.minecraft.block.Block.STATE_IDS.iterator().forEachRemaining(AbstractBlock.AbstractBlockState::createCraftBlockData);
     }
-    
+
     public static void reloadCache() {
         stringDataCache.clear();
         // TODO: 1.19 net.minecraft.block.Block.STATE_IDS.forEach(blockData -> stringDataCache.put(blockData.toString(), blockData.createCraftBlockData()));
@@ -514,25 +515,25 @@ public class CraftBlockData implements BlockData {
     private static void register(Class<? extends Block> nms, Function<BlockState, CraftBlockData> bukkit) {
         Preconditions.checkState(MAP.put(nms, bukkit) == null, "Duplicate mapping %s->%s", nms, bukkit);
     }
-    
-    
-    
+
+
+
     public static CraftBlockData newData(Material material, String data) {
         Preconditions.checkArgument(material == null || material.isBlock(), "Cannot get data for not block %s", material);
 
         BlockState blockData;
         Block block = CraftBlockType.bukkitToMinecraft(material);
-        
+
         if (null == block) {
         	
         	/*if (material == Material.GRASS) {
         		// Old material
         		
         	}*/
-        	
+
         	System.out.println("BLOCK NULL! for " + material + " / " + data);
         }
-        
+
         Map<net.minecraft.state.property.Property<?>, Comparable<?>> parsed = null;
 
         // Data provided, use it
@@ -560,7 +561,7 @@ public class CraftBlockData implements BlockData {
         craft.parsedStates = parsed;
         return craft;
     }
-    
+
     @Deprecated
     public static CraftBlockData newData_old(Material material, String data) {
         net.minecraft.block.Block block;
@@ -572,7 +573,7 @@ public class CraftBlockData implements BlockData {
         CraftBlockData cached = stringDataCache.computeIfAbsent((String)data, s2 -> CraftBlockData.createNewData_old(null, s2));
         return (CraftBlockData)cached.clone();
     }
-    
+
     private static CraftBlockData createNewData_old(Material material, String data) {
         BlockState blockData;
         net.minecraft.block.Block block = CraftMagicNumbers.getBlock(material);
@@ -633,27 +634,35 @@ public class CraftBlockData implements BlockData {
         return MAP.getOrDefault(data.getBlock().getClass(), CraftBlockData::new).apply(data);
     }
 
+    public static CraftBlockData createData(BlockState data) {
+        return fromData(data);
+    }
+
     @Override
     public SoundGroup getSoundGroup() {
-        return null;
+        return CraftSoundGroup.getSoundGroup(state.getSoundGroup());
     }
 
 	@Override
-	public boolean isFaceSturdy(@NotNull BlockFace arg0, @NotNull BlockSupport arg1) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean isFaceSturdy(@NotNull BlockFace face, @NotNull BlockSupport support) {
+		return state.isSideSolid(EmptyBlockView.INSTANCE, BlockPos.ORIGIN,
+                CraftBlock.blockFaceToNotch(face),
+                CraftBlockSupport.toNMS(support));
 	}
 
-	@Override
-	public boolean isPreferredTool(@NotNull ItemStack arg0) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    @Override
+    public boolean isPreferredTool(ItemStack tool) {
+        net.minecraft.item.ItemStack nms = CraftItemStack.asNMSCopy(tool);
+        return isPreferredTool(state, nms);
+    }
+
+    public static boolean isPreferredTool(BlockState state, net.minecraft.item.ItemStack nmsItem) {
+        return !state.isToolRequired() || nmsItem.isSuitableFor(state);
+    }
 
 	@Override
 	public boolean isRandomlyTicked() {
-		// TODO Auto-generated method stub
-		return false;
+		return state.hasRandomTicks();
 	}
 
 	  @Override
@@ -671,8 +680,8 @@ public class CraftBlockData implements BlockData {
 	        WorldImpl world = (WorldImpl) location.getWorld();
 	        Preconditions.checkArgument(world != null, "location must not have a null world");
 
-	        
-	        
+
+
 	        BlockPos position = CraftLocation.toBlockPosition(location);
 	        return state.canPlaceAt(world.getHandle(), position);
 	    }
