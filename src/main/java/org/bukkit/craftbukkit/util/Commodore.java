@@ -70,6 +70,9 @@ public class Commodore {
        //     getAndRemove.put( "net/minecraft/", NMS_REVISION_PACKAGE );
             getAndRemove.put( "org/bukkit/".concat( "craftbukkit/"), NMS_REVISION_PACKAGE );
         }
+        
+        // EssentialsX
+        getAndRemove.put("com/earth2me/essentials/utils/VersionUtil", "org/cardboardpowered/util/VersionUtil");
 
         return getAndRemove;
     }
@@ -97,6 +100,11 @@ public class Commodore {
             	}
                 //rewrite = original.replace( entry.getValue(), "" );
             }
+        }
+        
+        // Util we update our paper-api to 1.20.4
+        if (original.contains("com/earth2me/essentials/utils/VersionUtil")) {
+        	return original.replace("com/earth2me/essentials/utils/VersionUtil", "org/cardboardpowered/util/VersionUtil");
         }
 
         return rewrite != null ? rewrite : original;

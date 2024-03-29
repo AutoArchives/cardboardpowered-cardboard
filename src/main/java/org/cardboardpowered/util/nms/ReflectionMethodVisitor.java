@@ -403,6 +403,10 @@ public class ReflectionMethodVisitor extends MethodVisitor {
             // return;
         }
         
+        if (owner.contains("net/ess3") && owner.contains("com/earth2me/")) {
+        	System.out.println(owner + " / " + name);
+        }
+        
         if (owner.startsWith("org/bukkit/craftbukkit") && owner.contains(ReflectionRemapper.NMS_VERSION)) {
         	System.out.println("Stripping version package (" + ReflectionRemapper.NMS_VERSION + ") from org/bukkit/craftbukkit reference.");
         	owner = owner.replace("org/bukkit/craftbukkit/" + ReflectionRemapper.NMS_VERSION + "/", "org/bukkit/craftbukkit/");
