@@ -19,14 +19,15 @@ public class Unsafe {
             Field theUnsafe = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
             theUnsafe.setAccessible(true);
             unsafe = (sun.misc.Unsafe) theUnsafe.get(null);
-            Unsafe.ensureClassInitialized(MethodHandles.Lookup.class);
+            MethodHandles.lookup(); // initialize class
             Field field = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
             Object base = unsafe.staticFieldBase(field);
             long offset = unsafe.staticFieldOffset(field);
             lookup = (MethodHandles.Lookup) unsafe.getObject(base, offset);
             MethodHandle mh;
             try {
-                Method sunMisc = unsafe.getClass().getMethod("defineClass", String.class, byte[].class, int.class, int.class, ClassLoader.class, ProtectionDomain.class);
+                Method sunMisc = unsafe.getClass()
+                        .getMethod("defineClass", String.class, byte[].class, int.class, int.class, ClassLoader.class, ProtectionDomain.class);
                 mh = lookup.unreflect(sunMisc).bindTo(unsafe);
             } catch (Exception e) {
                 Class<?> jdkInternalUnsafe = Class.forName("jdk.internal.misc.Unsafe");
@@ -43,7 +44,7 @@ public class Unsafe {
 
     public static <T> T getStatic(Class<?> cl, String name) {
         try {
-            Unsafe.ensureClassInitialized(cl);
+            lookup.ensureInitialized(cl);
             Field field = cl.getDeclaredField(name);
             Object materialByNameBase = Unsafe.staticFieldBase(field);
             long materialByNameOffset = Unsafe.staticFieldOffset(field);
@@ -81,8 +82,8 @@ public class Unsafe {
         return unsafe.staticFieldBase(field);
     }
 
-    public static void ensureClassInitialized(Class<?> aClass) {
-        unsafe.ensureClassInitialized(aClass);
+    public static void ensureClassInitialized(Class<?> aClass) throws Exception {
+        lookup.ensureInitialized(aClass);
     }
 
     private static Class<?> getCallerClass() {

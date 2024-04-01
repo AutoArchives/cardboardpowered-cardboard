@@ -24,7 +24,7 @@ public class EnumHelper {
     @SuppressWarnings("unchecked")
     public static <T> T addEnum(Class<T> cl, String name, List<Class<?>> ctorTypes, List<Object> ctorParams) {
         try {
-            Unsafe.ensureClassInitialized(cl);
+            Unsafe.lookup().ensureInitialized(cl);
             Field field = getValuesField(cl);
             Object base = Unsafe.staticFieldBase(field);
             long offset = Unsafe.staticFieldOffset(field);

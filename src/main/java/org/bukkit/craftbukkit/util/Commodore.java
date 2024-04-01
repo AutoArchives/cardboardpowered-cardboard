@@ -20,6 +20,8 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
 
 import org.cardboardpowered.util.nms.ReflectionMethodVisitor;
+import org.cardboardpowered.util.nms.ReflectionRemapper;
+
 import net.fabricmc.loader.api.FabricLoader;
 
 /**
@@ -63,11 +65,14 @@ public class Commodore {
         if ( true )
         {
             // unversion incoming calls for pre-relocate debug work
-            final String NMS_REVISION_PACKAGE = "v1_20_R1/";
+            final String NMS_REVISION_PACKAGE = ReflectionRemapper.NMS_VERSION;// "v1_20_R3/";
 
        //     getAndRemove.put( "net/minecraft/", NMS_REVISION_PACKAGE );
             getAndRemove.put( "org/bukkit/".concat( "craftbukkit/"), NMS_REVISION_PACKAGE );
         }
+        
+        // EssentialsX
+        getAndRemove.put("com/earth2me/essentials/utils/VersionUtil", "org/cardboardpowered/util/VersionUtil");
 
         return getAndRemove;
     }
@@ -95,6 +100,11 @@ public class Commodore {
             	}
                 //rewrite = original.replace( entry.getValue(), "" );
             }
+        }
+        
+        // Util we update our paper-api to 1.20.4
+        if (original.contains("com/earth2me/essentials/utils/VersionUtil")) {
+        	return original.replace("com/earth2me/essentials/utils/VersionUtil", "org/cardboardpowered/util/VersionUtil");
         }
 
         return rewrite != null ? rewrite : original;
