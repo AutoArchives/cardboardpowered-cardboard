@@ -6,7 +6,6 @@ import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SnowballItem;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
@@ -33,19 +32,19 @@ public class MixinSnowballItem extends Item {
         if (!world.isClient) {
             SnowballEntity snowballEntity = new SnowballEntity(world, user);
             snowballEntity.setItem(itemStack);
-            if (world.spawnEntity(snowballEntity)) {
-                if (!user.getAbilities().creativeMode) {
-                    itemStack.decrement(1);
-                }
-                world.playSound((PlayerEntity) null, user.getX(), user.getY(), user.getZ(), SoundEvents.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (world.getRandom().nextFloat() * 0.4F + 0.8F));
-            } else if (user instanceof ServerPlayerEntity) {
-                ((IMixinServerEntityPlayer) user).getBukkit().updateInventory();
-            }
             snowballEntity.setVelocity(user, user.getPitch(), user.getYaw(), 0.0F, 1.5F, 1.0F);
-            world.spawnEntity(snowballEntity);
+            if (!world.spawnEntity(snowballEntity)) {
+                if (user instanceof IMixinServerEntityPlayer) {
+                    ((IMixinServerEntityPlayer) user).getBukkit().updateInventory();
+                }
+                return TypedActionResult.fail(itemStack);
+            }
         }
-
+        world.playSound(null, user.getX(), user.getY(), user.getZ(), SoundEvents.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (world.getRandom().nextFloat() * 0.4F + 0.8F));
         user.incrementStat(Stats.USED.getOrCreateStat(this));
+        if (!user.getAbilities().creativeMode) {
+            itemStack.decrement(1);
+        }
         return TypedActionResult.success(itemStack, world.isClient());
     }
 }
