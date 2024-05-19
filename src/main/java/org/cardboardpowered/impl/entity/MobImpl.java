@@ -23,6 +23,8 @@ import com.destroystokyo.paper.entity.Pathfinder;
 import com.javazilla.bukkitfabric.BukkitFabricMod;
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 
+import me.isaiah.common.cmixin.IMixinMobEntity;
+
 public class MobImpl extends LivingEntityImpl implements Mob {
 
     protected final Random random = new Random();
@@ -65,15 +67,23 @@ public class MobImpl extends LivingEntityImpl implements Mob {
 
     @Override
     public void setLootTable(LootTable table) {
-        getHandle().lootTable = (table == null) ? null : CraftNamespacedKey.toMinecraft(table.getKey());
+    	IMixinMobEntity ic = (IMixinMobEntity) (Object) getHandle();
+    	if (table == null) {
+    		ic.IC$set_loot_table(null);
+    		return;
+    	}
+
+    	ic.IC$set_loot_table( CraftNamespacedKey.toMinecraft(table.getKey()) );
+        // getHandle().lootTable = (table == null) ? null : CraftNamespacedKey.toMinecraft(table.getKey());
     }
 
     @Override
     public LootTable getLootTable() {
-        if (getHandle().lootTable == null)
-            getHandle().lootTable = getHandle().getLootTable();
-
-        NamespacedKey key = CraftNamespacedKey.fromMinecraft(getHandle().lootTable);
+        //if (getHandle().lootTable == null)
+        //    getHandle().lootTable = getHandle().getLootTable();
+        //NamespacedKey key = CraftNamespacedKey.fromMinecraft(getHandle().lootTable);
+        IMixinMobEntity ic = (IMixinMobEntity) (Object) getHandle();
+        NamespacedKey key = CraftNamespacedKey.fromMinecraft(ic.IC$get_loot_table_id());
         return Bukkit.getLootTable(key);
     }
 

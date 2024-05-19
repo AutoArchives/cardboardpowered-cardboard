@@ -57,12 +57,18 @@ implements AbstractHorse {
 
     @Override
     public double getJumpStrength() {
-        return this.getHandle().getJumpStrength();
+        // \return this.getHandle().getJumpStrength();
+    	return this.getHandle().getAttributeValue(EntityAttributes.HORSE_JUMP_STRENGTH);
     }
 
     @Override
     public void setJumpStrength(double strength) {
         Validate.isTrue(strength >= 0.0, "Jump strength cannot be less than zero");
+        
+        // field_23728
+        // <=1.20.4: HORSE_JUMP_STRENGTH
+        // >=1.20.5: GENERIC_JUMP_STRENGTH
+        
         this.getHandle().getAttributeInstance(EntityAttributes.HORSE_JUMP_STRENGTH).setBaseValue(strength);
     }
 

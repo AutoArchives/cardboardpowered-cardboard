@@ -13,6 +13,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.Nullable;
 
+import me.isaiah.common.cmixin.IMixinBeaconBlockEntity;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -45,7 +47,9 @@ public class CardboardBeacon extends CardboardBlockEntityState<BeaconBlockEntity
 
     @Override
     public void setPrimaryEffect(PotionEffectType effect) {
-        this.getSnapshot().primary = (effect != null) ? Registries.STATUS_EFFECT.get(effect.getId()) : null;
+    	IMixinBeaconBlockEntity ic = (IMixinBeaconBlockEntity) (Object) this.getSnapshot();
+    	ic.IC$set_primary_effect(effect.getId());
+        // this.getSnapshot().primary = (effect != null) ? Registries.STATUS_EFFECT.get(effect.getId()) : null;
     }
 
     @Override
@@ -56,7 +60,9 @@ public class CardboardBeacon extends CardboardBlockEntityState<BeaconBlockEntity
 
     @Override
     public void setSecondaryEffect(PotionEffectType effect) {
-        this.getSnapshot().secondary = (effect != null) ? Registries.STATUS_EFFECT.get(effect.getId()) : null;
+    	IMixinBeaconBlockEntity ic = (IMixinBeaconBlockEntity) (Object) this.getSnapshot();
+    	ic.IC$set_secondary_effect(effect.getId());
+        // this.getSnapshot().secondary = (effect != null) ? Registries.STATUS_EFFECT.get(effect.getId()) : null;
     }
 
     @Override

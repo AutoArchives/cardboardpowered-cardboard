@@ -14,6 +14,8 @@ import net.md_5.specialsource.provider.JointProvider;
 
 import org.cardboardpowered.impl.world.WorldImpl;
 import org.cardboardpowered.util.nms.MappingsReader;
+import org.cardboardpowered.util.nms.ReflectionMethodVisitor;
+import org.cardboardpowered.util.nms.ReflectionRemapper;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
@@ -32,6 +34,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -94,19 +97,22 @@ public class RemapUtils {
         
         jarMapping.classes.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/CraftWorld", "org/cardboardpowered/impl/world/WorldImpl");
         
+        HashMap<String, String> cm = new HashMap<>();
+        
         try {
 			for (String c : Files.readAllLines(f.toPath())) {
 				if (!(c.startsWith("# "))) {
 					String[] spl = c.split(" ");
 					if (!jarMapping.classes.containsKey(spl[0])) {
 						jarMapping.registerClassMapping(spl[0], spl[1]);
+						cm.put(spl[0], spl[1]);
 					}
 				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-        
+
         // bukkit-1.20.4-cl-intermed.csrg
         
         
@@ -121,6 +127,9 @@ public class RemapUtils {
         jarMapping.initFastMethodMapping(jarRemapper);
         ReflectMethodRemapper.init();
 
+        // SpigotReader.stuff_test();
+        // System.exit(1);
+        
         try {
             Class.forName("com.mohistmc.banner.bukkit.nms.proxy.ProxyMethodHandlesLookup");
         } catch (ClassNotFoundException e) {
@@ -197,7 +206,26 @@ public class RemapUtils {
     }
 
     public static String mapMethodName(Class<?> type, String name, Class<?>... parameterTypes) {
-        return jarMapping.fastMapMethodName(type, name, parameterTypes);
+    	
+    	// ReflectionMethodVisitor.do_map(type.getName(), name, parameterTypes);
+    	
+    	String mm = "";
+    	for (Class<?> pt : parameterTypes) {
+    		mm += ", " + pt.getName();
+    	}
+    	mm += ")";
+    	
+    	if (mm.length() > 2) {
+    		mm = mm.substring(2);
+    	}
+    	
+    	String res = jarMapping.fastMapMethodName(type, name, parameterTypes);
+    	
+    	//String resv = reverseMap(type);
+    	
+    	//System.out.println("DEBUG: " + type.getName() + "(" + resv + ")" + " / " + name + " (" + mm + " = " + res);
+    	
+        return res;
     }
 
     public static String inverseMapMethodName(Class<?> type, String name, Class<?>... parameterTypes) {
@@ -213,6 +241,11 @@ public class RemapUtils {
                 mapped = mapFieldName(superClass, fieldName);
             }
         }
+        
+        String res = mapped != null ? mapped : fieldName;
+
+        System.out.println("DEBUG: FIELD: " + type.getName() + " / " + fieldName + " = " + (mapped != null ? mapped : fieldName));
+        
         return mapped != null ? mapped : fieldName;
     }
 

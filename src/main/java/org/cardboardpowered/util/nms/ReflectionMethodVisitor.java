@@ -41,18 +41,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-// <<<<<<< HEAD:src/main/java/com/javazilla/bukkitfabric/nms/ReflectionMethodVisitor.java
-// =======
-//import org.bukkit.Material;
-//import org.bukkit.craftbukkit.util.Commodore;
-//import org.bukkit.craftbukkit.util.CraftMagicNumbers;
-//import org.objectweb.asm.MethodVisitor;
-//import org.objectweb.asm.Opcodes;
-
-//import net.fabricmc.loader.api.FabricLoader;
-//mport net.fabricmc.loader.api.MappingResolver;
-
-// >>>>>>> upstream/ver/1.20:src/main/java/org/cardboardpowered/util/nms/ReflectionMethodVisitor.java
 public class ReflectionMethodVisitor extends MethodVisitor {
 
     public static ArrayList<String> SKIP = new ArrayList<>();
@@ -235,7 +223,7 @@ public class ReflectionMethodVisitor extends MethodVisitor {
     public static int lastF = 484;
 
     
-    public String do_map(String owner, String name, String desc) {
+    public static String do_map(String owner, String name, String desc) {
     	MappingResolver mr = FabricLoader.getInstance().getMappingResolver(); 
 
     	String owner_official = mr.unmapClassName("official", owner.replace('/', '.'));
@@ -302,7 +290,7 @@ public class ReflectionMethodVisitor extends MethodVisitor {
     			
     		} catch (ClassNotFoundException e) {
     			BukkitFabricMod.LOGGER.finest("MISSING CLASS MAPPING FOR: " + owner);
-    			System.out.println(e.getMessage());
+    			System.out.println("ClassNotFound: " + e.getMessage());
     		} catch (Exception e) {
     			// Oh no!
     			e.printStackTrace();

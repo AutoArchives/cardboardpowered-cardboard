@@ -5,6 +5,8 @@ package org.cardboardpowered.mixin.item;
 import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
 import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+
+import me.isaiah.common.cmixin.IMixinItemStack;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.pattern.CachedBlockPosition;
@@ -45,6 +47,9 @@ public class MixinItemStack {
 
     @Shadow
     private Item item;
+    
+    @Shadow
+    private int count;
 
     @Inject(at = @At("HEAD"), method = "damage(ILnet/minecraft/util/math/random/Random;Lnet/minecraft/server/network/ServerPlayerEntity;)Z", cancellable = true)
     public void callPlayerItemDamageEvent(int i, Random random, ServerPlayerEntity player, CallbackInfoReturnable<Boolean> ci) {
@@ -122,10 +127,26 @@ public class MixinItemStack {
         return actionResult;
     }
 
-    @Inject(at = @At("HEAD"), method = "damage(ILnet/minecraft/entity/LivingEntity;Ljava/util/function/Consumer;)V", cancellable = true)
+    @Inject(
+    		method = "damage(ILnet/minecraft/entity/LivingEntity;Ljava/util/function/Consumer;)V",
+    		at = @At(
+    				value = "INVOKE",
+    				target = "Lnet/minecraft/item/ItemStack;decrement(I)V"
+    			)
+    	)
+    private <T extends LivingEntity> void cardboard$call_player_item_break_event(int amount, T entityIn, Consumer<T> onBroken, CallbackInfo ci) {
+        if (this.count == 1 && entityIn instanceof PlayerEntity) {
+        	BukkitEventFactory.callPlayerItemBreakEvent((PlayerEntity) entityIn, ((ItemStack)(Object)this));
+        }
+    }
+
+    /*@Inject(at = @At("HEAD"), method = "damage(ILnet/minecraft/entity/LivingEntity;Ljava/util/function/Consumer;)V", cancellable = true)
     public <T extends LivingEntity> void damage(int i, T t0, Consumer<T> consumer, CallbackInfo ci) {
+    	
+
         if (!t0.getWorld().isClient && (!(t0 instanceof PlayerEntity) || !((PlayerEntity) t0).abilities.creativeMode)) {
             if (((ItemStack)(Object)this).isDamageable()) {
+            	
                 if (((ItemStack)(Object)this).damage(i, t0.getRandom(), t0 instanceof ServerPlayerEntity ? (ServerPlayerEntity) t0 : null)) {
                     consumer.accept(t0);
                     Item item = ((ItemStack)(Object)this).getItem();
@@ -142,6 +163,6 @@ public class MixinItemStack {
         }
         ci.cancel();
         return;
-    }
+    }*/
 
 }

@@ -28,6 +28,7 @@ import com.javazilla.bukkitfabric.interfaces.IMixinServerLoginNetworkHandler;
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
 import com.mojang.authlib.GameProfile;
 import me.isaiah.common.ICommonMod;
+import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
@@ -511,7 +512,8 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         this.sendPlayerStatus(playerIn); // Update health, etc...
         playerIn.sendAbilitiesUpdate();
         for (StatusEffectInstance mobEffect : playerIn.getStatusEffects()) {
-            playerIn.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(playerIn.getId(), mobEffect));
+        	EntityStatusEffectS2CPacket pk = ((IMixinMinecraftServer)ICommonMod.getIServer().getMinecraft()).new_status_effect_packet(playerIn.getId(), mobEffect, false);
+            playerIn.networkHandler.sendPacket(pk);
         }
 
         // Fire advancement trigger

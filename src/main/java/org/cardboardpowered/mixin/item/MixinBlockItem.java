@@ -23,6 +23,7 @@ import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.event.block.BlockCanBuildEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.cardboardpowered.interfaces.IBlockItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -41,12 +42,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.PlaceableOnWaterItem ;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.state.property.Property;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 @Mixin(value = BlockItem.class, priority = 999) // Priority 999 to allow Carpet Mod
-public class MixinBlockItem {
+public class MixinBlockItem implements IBlockItem {
 
     @Shadow public BlockState getPlacementState(ItemPlacementContext blockactioncontext) {return null;}
     // @Shadow public BlockState placeFromTag(BlockPos blockposition, World world, ItemStack itemstack, BlockState iblockdata) {return null;}
@@ -57,6 +59,13 @@ public class MixinBlockItem {
 
     private org.bukkit.block.BlockState bukkit_state;
 
+    
+    @Shadow
+    public static BlockState with( BlockState state, Property property, String name) {
+    	return null; // Shadow method
+    }
+   //  Lnet/minecraft/item/BlockItem;with(Lnet/minecraft/block/BlockState;Lnet/minecraft/state/property/Property;Ljava/lang/String;)Lnet/minecraft/block/BlockState;
+    
     /**
      * @author Cardboard
      * @reason Fix LilyPad BlockState

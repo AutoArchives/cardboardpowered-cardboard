@@ -23,6 +23,8 @@ import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
 
+import me.isaiah.common.cmixin.IMixinSkullBlockEntity;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.SkullBlockEntity;
 import net.minecraft.util.Identifier;
 
@@ -44,7 +46,8 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
     public void load(SkullBlockEntity skull) {
         super.load(skull);
 
-        profile = skull.getOwner();
+        IMixinSkullBlockEntity ic = ((IMixinSkullBlockEntity)(Object)this);
+        profile = ic.IC$get_game_profile();
     }
 
     static int getSkullType(SkullType type) {
@@ -150,8 +153,12 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
     @Override
     public void applyTo(SkullBlockEntity skull) {
         super.applyTo(skull);
-        if (getSkullType() == SkullType.PLAYER)
-            skull.setOwner(profile);
+        if (getSkullType() == SkullType.PLAYER) {
+        	
+        	IMixinSkullBlockEntity ic = ((IMixinSkullBlockEntity)(Object)this);
+        	ic.IC$set_game_profile(profile);
+            // skull.setOwner(profile);
+        }
     }
 
     @Override
@@ -165,7 +172,7 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
         this.profile = new GameProfile(arg0.getId(), arg0.getName());
     }
 
-    @Override
+    @Override 
     public PlayerProfile getOwnerProfile() {
         if (!hasOwner()) {
             return null;

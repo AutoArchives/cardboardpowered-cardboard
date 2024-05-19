@@ -237,7 +237,7 @@ public class FakeWorldAccess implements WorldAccess {
         return false;
     }
 
-    @Override
+    // @Override
     public void emitGameEvent(Entity arg0, GameEvent arg1, BlockPos arg2) {
         // TODO Auto-generated method stub
         
@@ -255,7 +255,7 @@ public class FakeWorldAccess implements WorldAccess {
         return 0;
     }
 
-	@Override
+	// @Override
 	public void emitGameEvent(GameEvent event, Vec3d emitterPos, Emitter emitter) {
 		// TODO Auto-generated method stub
 		
@@ -271,6 +271,12 @@ public class FakeWorldAccess implements WorldAccess {
 	public FeatureSet getEnabledFeatures() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	// @Override
+	public void emitGameEvent(RegistryEntry<GameEvent> event, Vec3d emitterPos, Emitter emitter) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

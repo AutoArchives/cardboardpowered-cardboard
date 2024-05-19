@@ -14,6 +14,9 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonParseException;
 import com.javazilla.bukkitfabric.Utils;
+
+import me.isaiah.common.ICommonMod;
+import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.block.Block;
@@ -330,16 +333,18 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     CraftMetaItem(NbtCompound tag) {
         if (tag.contains(DISPLAY.NBT)) {
             NbtCompound display = tag.getCompound(DISPLAY.NBT);
-
+            
+            IMixinMinecraftServer mc = (IMixinMinecraftServer) ICommonMod.getIServer().getMinecraft();
+            
             if (display.contains(NAME.NBT)) {
                 try {
-                    displayName = Text.Serialization.fromJson( limit( display.getString(NAME.NBT), 1024 ) ); // Spigot
+                    displayName = mc.IC$from_json( limit( display.getString(NAME.NBT), 1024 ) ); // Spigot
                 } catch (JsonParseException ignore) {}
             }
 
             if (display.contains(LOCNAME.NBT)) {
                 try {
-                    locName = Text.Serialization.fromJson( limit( display.getString(LOCNAME.NBT), 1024 ) ); // Spigot
+                    locName = mc.IC$from_json( limit( display.getString(LOCNAME.NBT), 1024 ) ); // Spigot
                 } catch (JsonParseException ignore) {}
             }
 
@@ -350,7 +355,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                 for (int index = 0; index < list.size(); index++) {
                     String line = limit( list.getString(index), 8192 ); // Spigot
                     try {
-                        lore.add(Text.Serialization.fromJson(line));
+                        lore.add(mc.IC$from_json(line));
                     } catch (JsonParseException ignore) {}
                 }
             }

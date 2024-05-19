@@ -72,6 +72,9 @@ import com.javazilla.bukkitfabric.Utils;
 import com.javazilla.bukkitfabric.interfaces.IMixinArrowEntity;
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 import com.javazilla.bukkitfabric.interfaces.IMixinLivingEntity;
+
+import me.isaiah.common.ICommonMod;
+import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.util.TriState;
 import net.minecraft.entity.boss.WitherEntity;
@@ -98,8 +101,10 @@ import net.minecraft.entity.projectile.thrown.ExperienceBottleEntity;
 import net.minecraft.entity.projectile.thrown.PotionEntity;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import net.minecraft.entity.projectile.thrown.ThrownEntity;
+import net.minecraft.item.Items;
 //<<<<<<< HEAD
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Hand;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Chunk;
@@ -127,6 +132,7 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
+import org.cardboardpowered.impl.CardboardPotionEffectType;
 import org.cardboardpowered.impl.CardboardPotionUtil;
 import org.cardboardpowered.impl.inventory.CardboardEntityEquipment;
 import org.cardboardpowered.impl.world.WorldImpl;
@@ -255,14 +261,16 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
             ((ThrownEntity) launch).setVelocity(getHandle(), getHandle().pitch, getHandle().yaw, 0.0F, 1.5F, 1.0F); // ItemEnderPearl
         } else if (AbstractArrow.class.isAssignableFrom(projectile)) {
             if (TippedArrow.class.isAssignableFrom(projectile)) {
-                launch = new ArrowEntity(world, getHandle(), ArrowEntity.DEFAULT_STACK);
+            	
+            	
+                launch = new ArrowEntity(world, getHandle(), new net.minecraft.item.ItemStack(Items.ARROW));
                 ((IMixinArrowEntity)(ArrowEntity) launch).setType(CardboardPotionUtil.fromBukkit(new PotionData(PotionType.WATER, false, false)));
             } else if (SpectralArrow.class.isAssignableFrom(projectile)) {
-                launch = new SpectralArrowEntity(world, getHandle(), ArrowEntity.DEFAULT_STACK);
+                launch = new SpectralArrowEntity(world, getHandle(), new net.minecraft.item.ItemStack(Items.ARROW));
             } else if (Trident.class.isAssignableFrom(projectile)) {
                 launch = new TridentEntity(world, getHandle(), new net.minecraft.item.ItemStack(net.minecraft.item.Items.TRIDENT));
             } else {
-                launch = new ArrowEntity(world, getHandle(), ArrowEntity.DEFAULT_STACK);
+                launch = new ArrowEntity(world, getHandle(), new net.minecraft.item.ItemStack(Items.ARROW));
             }
             ((PersistentProjectileEntity) launch).setVelocity(getHandle(), getHandle().pitch, getHandle().yaw, 0.0F, 3.0F, 1.0F); // ItemBow
         } else if (ThrownPotion.class.isAssignableFrom(projectile)) {
@@ -336,7 +344,12 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
     @Override
     public boolean addPotionEffect(PotionEffect effect, boolean force) {
         StatusEffect type = Registries.STATUS_EFFECT.get(effect.getType().getId());
-        nms.addStatusEffect(new StatusEffectInstance(type, effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles())/*, EntityPotionEffectEvent.Cause.PLUGIN*/);
+
+        me.isaiah.common.cmixin.IMixinEntity ic = ((me.isaiah.common.cmixin.IMixinEntity)(Object)nms);
+        ic.IC$add_status_effect(type, effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles());
+        
+        // nms.addStatusEffect(new StatusEffectInstance(type, effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles())/*, EntityPotionEffectEvent.Cause.PLUGIN*/);
+
         return true;
     }
 
@@ -356,8 +369,11 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
     @Override
     public Collection<PotionEffect> getActivePotionEffects() {
         List<PotionEffect> effects = new ArrayList<>();
-        for (StatusEffectInstance handle : nms.activeStatusEffects.values())
-                effects.add(new PotionEffect(PotionEffectType.getById(Registries.STATUS_EFFECT.getRawId(handle.getEffectType())), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.shouldShowParticles()));
+        for (StatusEffectInstance handle : nms.activeStatusEffects.values()) {
+                // effects.add(new PotionEffect(PotionEffectType.getById(Registries.STATUS_EFFECT.getRawId(handle.getEffectType())), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.shouldShowParticles()));
+                effects.add(CardboardPotionUtil.toBukkit(handle));
+        
+        }
         return effects;
     }
 
@@ -459,8 +475,13 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public PotionEffect getPotionEffect(PotionEffectType arg0) {
-        StatusEffectInstance handle = nms.getStatusEffect(Registries.STATUS_EFFECT.get(arg0.getId()));
-        return (handle == null) ? null : new PotionEffect(PotionEffectType.getById(Registries.STATUS_EFFECT.getRawId(handle.getEffectType())), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.shouldShowParticles());
+    	
+    	me.isaiah.common.cmixin.IMixinEntity ic = ((me.isaiah.common.cmixin.IMixinEntity)(Object)nms);
+
+    	StatusEffectInstance handle = ic.IC$get_status_effect(arg0.getId());
+    	
+    	int typeId = ic.IC$get_status_effect_id(handle);
+        return (handle == null) ? null : new PotionEffect(PotionEffectType.getById(typeId), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.shouldShowParticles());
     }
 
     @Override
@@ -503,7 +524,9 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public boolean hasPotionEffect(PotionEffectType arg0) {
-        return nms.hasStatusEffect(Registries.STATUS_EFFECT.get(arg0.getId()));
+    	me.isaiah.common.cmixin.IMixinEntity ic = ((me.isaiah.common.cmixin.IMixinEntity)(Object)nms);
+    	return ic.IC$has_status_effect(Registries.STATUS_EFFECT.get(arg0.getId()));
+        // return nms.hasStatusEffect(Registries.STATUS_EFFECT.get(arg0.getId()));
     }
 
     @Override
@@ -554,7 +577,11 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public void removePotionEffect(PotionEffectType type) {
-        nms.removeStatusEffect(Registries.STATUS_EFFECT.get(type.getId())/*, EntityPotionEffectEvent.Cause.PLUGIN*/);
+    	me.isaiah.common.cmixin.IMixinEntity ic = ((me.isaiah.common.cmixin.IMixinEntity)(Object)nms);
+    	
+    	ic.IC$remove_status_effect( Registries.STATUS_EFFECT.get(type.getId()) );
+    	
+        //nms.removeStatusEffect(Registries.STATUS_EFFECT.get(type.getId())/*, EntityPotionEffectEvent.Cause.PLUGIN*/);
     }
 
     @Override

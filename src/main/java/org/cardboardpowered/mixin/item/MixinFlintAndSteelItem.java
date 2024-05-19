@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
 
+import me.isaiah.common.cmixin.IMixinItemStack;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.FlintAndSteelItem;
 import net.minecraft.item.ItemUsageContext;
@@ -26,7 +27,11 @@ public class MixinFlintAndSteelItem {
         BlockPos blockposition = context.getBlockPos().offset(context.getSide());
 
         if (BukkitEventFactory.callBlockIgniteEvent(world, blockposition, org.bukkit.event.block.BlockIgniteEvent.IgniteCause.FLINT_AND_STEEL, plr).isCancelled()) {
-            context.getStack().damage(1, plr, (plr1) -> plr1.sendToolBreakStatus(context.getHand()));
+            ((IMixinItemStack)context.getStack()).IC$damage(1, plr, context.getHand());
+            
+            // context.getStack().damage(1, plr, (plr1) -> plr1.sendToolBreakStatus(context.getHand()));
+            // context.getStack().damage(1, plr, LivingEntity.getSlotForHand(context.getHand()));
+            
             ci.setReturnValue(ActionResult.PASS);
             return;
         }

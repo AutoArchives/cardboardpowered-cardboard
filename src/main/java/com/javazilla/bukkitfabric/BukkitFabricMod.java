@@ -48,6 +48,7 @@ import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
 
+import me.isaiah.common.ICommonMod;
 import me.isaiah.common.event.EventHandler;
 import me.isaiah.common.event.EventRegistery;
 import me.isaiah.common.event.block.BlockEntityWriteNbtEvent;
@@ -60,6 +61,7 @@ import me.isaiah.common.event.server.ServerWorldInitEvent;
 import me.isaiah.common.fabric.FabricWorld;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.LeavesBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.effect.StatusEffect;

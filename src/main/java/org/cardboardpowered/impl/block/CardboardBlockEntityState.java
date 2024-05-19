@@ -4,7 +4,9 @@ import org.cardboardpowered.impl.world.WorldImpl;
 
 import com.google.common.base.Preconditions;
 
+import me.isaiah.common.ICommonMod;
 import me.isaiah.common.cmixin.IMixinBlockEntity;
+import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
@@ -46,7 +48,10 @@ public class CardboardBlockEntityState<T extends BlockEntity> extends CraftBlock
 
         IMixinBlockEntity ic = (IMixinBlockEntity)tileEntity;
         NbtCompound nbtTagCompound = ic.I_createNbtWithIdentifyingData();
-        T snapshot = (T) BlockEntity.createFromNbt(getPosition(), data, nbtTagCompound);
+
+        IMixinMinecraftServer mc = ((IMixinMinecraftServer)ICommonMod.getIServer().getMinecraft());
+        T snapshot = (T) mc.IC$create_blockentity_from_nbt(getPosition(), data, nbtTagCompound);
+        // T snapshot = (T) BlockEntity.createFromNbt(getPosition(), data, nbtTagCompound);
         return snapshot;
     }
 
@@ -55,7 +60,10 @@ public class CardboardBlockEntityState<T extends BlockEntity> extends CraftBlock
         IMixinBlockEntity ic = (IMixinBlockEntity)tileEntity;
         NbtCompound nbtTagCompound = ic.I_createNbtWithIdentifyingData();
         to.setCachedState(data);
-        to.readNbt(nbtTagCompound);
+        
+        IMixinBlockEntity ic2 = (IMixinBlockEntity)to;
+        ic2.IC$read_nbt(nbtTagCompound);
+        // to.readNbt(nbtTagCompound);
         to.pos = (pos);
     }
 

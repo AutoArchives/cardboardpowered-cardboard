@@ -2,6 +2,7 @@ package org.cardboardpowered.adventure;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.netty.util.AttributeKey;
+import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.key.Key;
@@ -28,6 +29,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Language;
 import org.bukkit.ChatColor;
+import org.bukkit.craftbukkit.CraftServer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -126,7 +128,8 @@ public class CardboardAdventure {
     // Component
 
     public static Component asAdventure(final Text component) {
-        return component == null ? Component.empty() : GSON.serializer().fromJson(Text.Serialization.toJsonTree(component), Component.class);
+        return component == null ? Component.empty() : WRAPPER_AWARE_SERIALIZER.deserialize(component);
+    	// return component == null ? Component.empty() : GSON.serializer().fromJson(Text.Serialization.toJsonTree(component), Component.class);
     }
 
     public static ArrayList<Component> asAdventure(final List<Text> vanillas) {
@@ -155,7 +158,7 @@ public class CardboardAdventure {
 
     public static Text asVanilla(final Component component) {
         if (true) return new CardboardAdventureComponent(component);
-        return Text.Serialization.fromJson(String.valueOf(GSON.serializer().toJsonTree(component)));
+        return ((IMixinMinecraftServer)CraftServer.server).IC$from_json(String.valueOf(GSON.serializer().toJsonTree(component)));
     }
 
     public static List<Text> asVanilla(final List<Component> adventures) {
@@ -182,7 +185,8 @@ public class CardboardAdventure {
         if ((Object)component instanceof CardboardAdventureComponent) {
             return asJsonString(((CardboardAdventureComponent)(Object) component).adventure, locale);
         }
-        return Text.Serialization.toJsonString(component);
+        return ((IMixinMinecraftServer)CraftServer.server).IC$to_json(component);
+        //return Text.Serialization.toJsonString(component);
     }
 
     // thank you for being worse than wet socks, Bukkit

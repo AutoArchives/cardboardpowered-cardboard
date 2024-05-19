@@ -14,11 +14,13 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.base.Preconditions;
 import com.mojang.datafixers.util.Pair;
 
+import me.isaiah.common.cmixin.IMixinBlockEntity;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.minecraft.block.AbstractBannerBlock;
 import net.minecraft.block.entity.BannerBlockEntity;
 import net.minecraft.block.entity.BannerPattern;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -113,7 +115,10 @@ public class CardboardBanner extends CardboardBlockEntityState<BannerBlockEntity
             newPatterns.add(compound);
         }
         bannerNbt.put("Patterns", newPatterns);
-        banner.readNbt(bannerNbt);
+
+        IMixinBlockEntity ic = (IMixinBlockEntity) (Object) banner;
+        ic.IC$read_nbt(bannerNbt);
+        // banner.readNbt(bannerNbt);
     }
 
 	

@@ -54,6 +54,7 @@ import com.mojang.serialization.Dynamic;
 import io.izzel.arclight.api.EnumHelper;
 import io.izzel.arclight.api.Unsafe;
 import io.papermc.paper.inventory.ItemRarity;
+import me.isaiah.common.cmixin.IMixinItemStack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.minecraft.SharedConstants;
@@ -464,11 +465,12 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     public ItemStack modifyItemStack(ItemStack stack, String arguments) {
         net.minecraft.item.ItemStack nmsStack = CraftItemStack.asNMSCopy(stack);
 
-        try {
+        /*try {
             nmsStack.setNbt((NbtCompound) StringNbtReader.parse(arguments));
         } catch (CommandSyntaxException ex) {
             BukkitLogger.getLogger(CraftMagicNumbers.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
+        ((IMixinItemStack)(Object)nmsStack).IC$modify_arguments(arguments); 
 
         stack.setItemMeta(CraftItemStack.getItemMeta(nmsStack));
         return stack;

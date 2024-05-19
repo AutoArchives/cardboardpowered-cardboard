@@ -41,13 +41,14 @@ public abstract class CraftContainer<T extends LockableContainerBlockEntity> ext
 
     @Override
     public void setCustomName(String name) {
-        this.getSnapshot().setCustomName(CraftChatMessage.fromStringOrNull(name));
+        // this.getSnapshot().setCustomName(CraftChatMessage.fromStringOrNull(name));
+    	this.getSnapshot().customName = (CraftChatMessage.fromStringOrNull(name));
     }
 
     @Override
     public void applyTo(T container) {
         super.applyTo(container);
-        if (this.getSnapshot().customName == null) container.setCustomName(null);
+        if (this.getSnapshot().customName == null) container.customName = null;// container.setCustomName(null);
     }
 
 }

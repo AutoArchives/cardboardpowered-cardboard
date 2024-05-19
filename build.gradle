@@ -1,7 +1,7 @@
 import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
 
 plugins {
-    id 'fabric-loom' version '1.1-SNAPSHOT'
+    id 'fabric-loom' version '1.6-SNAPSHOT'
     id 'maven-publish'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'java-library'
@@ -63,11 +63,14 @@ dependencies {
     	"fabric-screen-handler-api-v1"
     ]
 
-    DefaultExternalModuleDependency ic = new DefaultExternalModuleDependency("com.javazilla.mods", "icommon-fabric-1.20", "1.20", null)
+    DefaultExternalModuleDependency ic = new DefaultExternalModuleDependency("com.javazilla.mods", "icommon-fabric-1.20.2", "1.20.2", null)
     ic.setChanging(true) // Make sure we get the latest version of iCommon
 
     //include(modImplementation(ic))
     modImplementation(ic)
+    
+    //modImplementation( project(':iCommon-API') )
+    //include( project(':iCommon-API') )
 
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
@@ -119,6 +122,9 @@ dependencies {
     configurations.api.extendsFrom( (configurations.extraLibs) )
 
    //  annotationProcessor 'com.github.bsideup.jabel:jabel-javac-plugin:0.4.1'
+   
+   	annotationProcessor("com.pkware.jabel:jabel-javac-plugin:1.0.1-1")
+    compileOnly("com.pkware.jabel:jabel-javac-plugin:1.0.1-1")
 }
 
 configurations.implementation {
@@ -126,11 +132,11 @@ configurations.implementation {
 }
 
 configure([tasks.compileJava]) {
-    sourceCompatibility = 16 // for the IDE support
-    options.release = 16
+    sourceCompatibility = 21//16 // for the IDE support
+    options.release = 17//16
 
     javaCompiler = javaToolchains.compilerFor {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 

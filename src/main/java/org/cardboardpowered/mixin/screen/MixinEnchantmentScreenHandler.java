@@ -50,6 +50,9 @@ import net.minecraft.registry.Registries;
 @Mixin(EnchantmentScreenHandler.class)
 public class MixinEnchantmentScreenHandler extends MixinScreenHandler {
 
+	// TODO: Update!
+	// TODO: 1.20.5
+	
     @Shadow public Inventory inventory;
     @Shadow public ScreenHandlerContext context;
     //@Shadow public Random random;
@@ -165,7 +168,7 @@ public class MixinEnchantmentScreenHandler extends MixinScreenHandler {
      * @reason .
      * @author .
      */
-   @Overwrite
+   /*@Overwrite
     public boolean onButtonClick(PlayerEntity entityhuman, int i) {
         ItemStack itemstack = this.inventory.getStack(0);
         ItemStack itemstack1 = this.inventory.getStack(1);
@@ -230,7 +233,7 @@ public class MixinEnchantmentScreenHandler extends MixinScreenHandler {
             });
             return true;
         } else return false;
-    }
+    }*/
 
     @Shadow
     public List<EnchantmentLevelEntry> generateEnchantments(ItemStack itemstack, int i, int j) {return null;}

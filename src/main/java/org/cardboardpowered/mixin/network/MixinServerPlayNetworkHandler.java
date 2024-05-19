@@ -153,7 +153,9 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
         IMixinPlayNetworkHandler im = (IMixinPlayNetworkHandler) get();
         im.cb_get_connection().send(new DisconnectS2CPacket(reason), PacketCallbacks.always(() -> im.cb_get_connection().disconnect(reason_final)));
         get().onDisconnected(reason);
-        im.cb_get_connection().disableAutoRead();
+        //im.cb_get_connection().disableAutoRead();
+        im.cb_get_connection().tryDisableAutoRead();
+        
         CraftServer.server.submitAndJoin(im.cb_get_connection()::handleDisconnection);
     }
 

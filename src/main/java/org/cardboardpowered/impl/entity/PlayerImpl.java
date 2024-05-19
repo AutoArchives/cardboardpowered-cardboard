@@ -413,7 +413,7 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 	}
 
 	private void sendPayload(Identifier id, byte[] message) {
-		CustomPayloadS2CPacket packet = new CustomPayloadS2CPacket(new CustomPayload() {
+		/*CustomPayloadS2CPacket packet = new CustomPayloadS2CPacket(new CustomPayload() {
 			@Override
 			public void write(PacketByteBuf packetByteBuf) {
 				packetByteBuf.writeBytes(message);
@@ -423,7 +423,8 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 				return id;
 			}
 		});
-		getHandle().networkHandler.sendPacket(packet);
+		getHandle().networkHandler.sendPacket(packet);*/
+		// TODO: 1.20.5
 	}
 
 
@@ -1045,7 +1046,10 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 
 	private void sendPack(String url, String hash, boolean required, String text) {
 		UUID id = UUID.nameUUIDFromBytes(url.getBytes(StandardCharsets.UTF_8));
-		nms.networkHandler.sendPacket(new ResourcePackSendS2CPacket(id, url, hash, required, text == null ? null : Text.literal(text)));
+		Text txt = text == null ? null : Text.literal(text);
+
+		// TODO: 1.20.5
+		// nms.networkHandler.sendPacket(new ResourcePackSendS2CPacket(id, url, hash, required, txt));
 	}
 
     @Override

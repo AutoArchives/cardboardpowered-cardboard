@@ -3,6 +3,8 @@ package org.bukkit.craftbukkit.inventory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+
+import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import net.minecraft.nbt.NbtCompound;
@@ -12,6 +14,7 @@ import net.minecraft.text.Text;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
+import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -414,7 +417,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
 
         @Override
         public BaseComponent[] getPage(final int page) {
-			return ComponentSerializer.parse(Text.Serialization.toJsonString(CraftChatMessage.fromStringOrNull(pages.get(page - 1))));
+			return ComponentSerializer.parse(((IMixinMinecraftServer)CraftServer.server).IC$to_json(CraftChatMessage.fromStringOrNull(pages.get(page - 1))));
         }
 
         @Override
@@ -423,7 +426,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
                 throw new IllegalArgumentException("Invalid page number " + page + "/" + pages.size());
 
             BaseComponent[] newText = text == null ? new BaseComponent[0] : text;
-            CraftMetaBook.this.pages.set(page - 1, Text.Serialization.fromJson(ComponentSerializer.toString(newText)).getString());
+            CraftMetaBook.this.pages.set(page - 1, ((IMixinMinecraftServer)CraftServer.server).IC$from_json(ComponentSerializer.toString(newText)).getString());
         }
 
         @Override
@@ -441,7 +444,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
                 if (page == null)
                     page = new BaseComponent[0];
 
-                CraftMetaBook.this.pages.add(Text.Serialization.fromJson(ComponentSerializer.toString(page)).getString());
+                CraftMetaBook.this.pages.add(((IMixinMinecraftServer)CraftServer.server).IC$from_json(ComponentSerializer.toString(page)).getString());
             }
         }
 
@@ -451,7 +454,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
             return new AbstractList<BaseComponent[]>() {
                 @Override
                 public BaseComponent[] get(int index) {
-                    return ComponentSerializer.parse(Text.Serialization.toJsonString(CraftChatMessage.fromStringOrNull(copy.get(index))));
+                    return ComponentSerializer.parse(((IMixinMinecraftServer)CraftServer.server).IC$to_json(CraftChatMessage.fromStringOrNull(copy.get(index))));
                 }
 
                 @Override

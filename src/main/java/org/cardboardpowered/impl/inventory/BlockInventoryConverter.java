@@ -35,7 +35,7 @@ public abstract class BlockInventoryConverter implements InventoryCreator.Invent
     public CraftInventory createInventory(InventoryHolder holder, InventoryType type, String title) {
         Inventory inventory = getTileEntity();
         if (inventory instanceof LootableContainerBlockEntity)
-            ((LootableContainerBlockEntity) inventory).setCustomName(CraftChatMessage.fromStringOrNull(title));
+            ((LootableContainerBlockEntity) inventory).customName = (CraftChatMessage.fromStringOrNull(title));
         return getInventory(inventory);
     }
 
@@ -55,7 +55,7 @@ public abstract class BlockInventoryConverter implements InventoryCreator.Invent
         @Override
         public CraftInventory createInventory(InventoryHolder owner, InventoryType type, String title) {
             Inventory tileEntity = getTileEntity();
-            ((AbstractFurnaceBlockEntity) tileEntity).setCustomName(CraftChatMessage.fromStringOrNull(title));
+            ((AbstractFurnaceBlockEntity) tileEntity).customName = (CraftChatMessage.fromStringOrNull(title));
             return getInventory(tileEntity);
         }
 
@@ -76,7 +76,7 @@ public abstract class BlockInventoryConverter implements InventoryCreator.Invent
         public CraftInventory createInventory(InventoryHolder holder, InventoryType type, String title) {
             Inventory tileEntity = getTileEntity();
             if (tileEntity instanceof BrewingStandBlockEntity)
-                ((BrewingStandBlockEntity) tileEntity).setCustomName(CraftChatMessage.fromStringOrNull(title));
+                ((BrewingStandBlockEntity) tileEntity).customName = (CraftChatMessage.fromStringOrNull(title));
             return getInventory(tileEntity);
         }
 

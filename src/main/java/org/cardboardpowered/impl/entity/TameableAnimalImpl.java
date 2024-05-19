@@ -7,6 +7,8 @@ import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Tameable;
 
+import me.isaiah.common.cmixin.IMixinTameableEntity;
+
 public class TameableAnimalImpl extends AnimalsImpl implements Tameable, Creature {
 
     public TameableAnimalImpl(CraftServer server, TameableEntity entity) {
@@ -62,7 +64,8 @@ public class TameableAnimalImpl extends AnimalsImpl implements Tameable, Creatur
 
     @Override
     public void setTamed(boolean tame) {
-        getHandle().setTamed(tame);
+    	((IMixinTameableEntity)getHandle()).IC$set_tamed(tame, true);    	
+        // getHandle().setTamed(tame);
         if (!tame) setOwnerUUID(null);
     }
 

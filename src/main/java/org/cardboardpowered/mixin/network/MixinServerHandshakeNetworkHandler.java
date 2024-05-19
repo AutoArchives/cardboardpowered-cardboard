@@ -2,9 +2,12 @@ package org.cardboardpowered.mixin.network;
 
 import com.javazilla.bukkitfabric.interfaces.IMixinClientConnection;
 import com.javazilla.bukkitfabric.interfaces.IMixinServerLoginNetworkHandler;
+
+import me.isaiah.common.ConnectionState;
 import me.isaiah.common.GameVersion;
+import me.isaiah.common.ICommonMod;
+import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.minecraft.network.ClientConnection;
-import net.minecraft.network.NetworkState;
 import net.minecraft.network.packet.c2s.handshake.HandshakeC2SPacket;
 import net.minecraft.server.network.ServerHandshakeNetworkHandler;
 import net.minecraft.server.network.ServerLoginNetworkHandler;
@@ -25,15 +28,18 @@ public class MixinServerHandshakeNetworkHandler {
     public ClientConnection connection;
 
     @Inject(at = @At("TAIL"), method = "onHandshake")
-    public void onHandshake_Bungee(HandshakeC2SPacket packethandshakinginsetprotocol, CallbackInfo ci) {
-        if (packethandshakinginsetprotocol.getNewNetworkState() == NetworkState.LOGIN) {
+    public void onHandshake_Bungee(HandshakeC2SPacket packet, CallbackInfo ci) {
+    	
+    	IMixinMinecraftServer mc = (IMixinMinecraftServer) ICommonMod.getIServer().getMinecraft();
+    	
+    	if (mc.IC$get_connection_state(packet) == ConnectionState.LOGIN) {
             GameVersion ver = GameVersion.INSTANCE;
 
-            if (packethandshakinginsetprotocol.protocolVersion() > ver.getProtocolVersion()) {
-            } else if (packethandshakinginsetprotocol.protocolVersion() < ver.getProtocolVersion()) {
+            if (packet.protocolVersion() > ver.getProtocolVersion()) {
+            } else if (packet.protocolVersion() < ver.getProtocolVersion()) {
             } else {
                 if (org.spigotmc.SpigotConfig.bungee) {
-                    String[] split = packethandshakinginsetprotocol.address.split("\00");
+                    String[] split = packet.address.split("\00");
                     if ( split.length == 3 || split.length == 4 ) {
                        // TODO 1.17ify packethandshakinginsetprotocol.address = split[0];
                         connection.address = new java.net.InetSocketAddress(split[1], ((java.net.InetSocketAddress) connection.getAddress()).getPort());
@@ -43,7 +49,7 @@ public class MixinServerHandshakeNetworkHandler {
                     }
                     if ( split.length == 4 ) ((IMixinClientConnection)connection).setSpoofedProfile(gson.fromJson(split[3], com.mojang.authlib.properties.Property[].class));
                 }
-                ((IMixinServerLoginNetworkHandler)((ServerLoginNetworkHandler) this.connection.getPacketListener())).setHostname(packethandshakinginsetprotocol.address + ":" + packethandshakinginsetprotocol.port()); // Bukkit - set hostname
+                ((IMixinServerLoginNetworkHandler)((ServerLoginNetworkHandler) this.connection.getPacketListener())).setHostname(packet.address + ":" + packet.port()); // Bukkit - set hostname
             }
         }
     }

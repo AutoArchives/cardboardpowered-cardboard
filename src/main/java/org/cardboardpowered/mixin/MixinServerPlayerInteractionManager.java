@@ -267,8 +267,10 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
             ItemStack itemstack1 = itemstack.copy();
 
             if (!flag1) {
-                enuminteractionresult = iblockdata.onUse(world, entityplayer, enumhand, movingobjectpositionblock);
-
+                // enuminteractionresult = iblockdata.onUse(player.getStackInHand(enumhand), world, entityplayer, enumhand, movingobjectpositionblock);
+            	enuminteractionresult = iblockdata.onUse(world, entityplayer, enumhand, movingobjectpositionblock);
+                
+                
                 if (enuminteractionresult.isAccepted()) {
                     Criteria.ITEM_USED_ON_BLOCK.trigger(entityplayer, blockposition, itemstack1);
                     ci.setReturnValue(enuminteractionresult);

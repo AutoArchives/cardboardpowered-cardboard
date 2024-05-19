@@ -42,7 +42,13 @@ public class MixinIngredient implements IIngredient {
         for (ItemStack banner$stack : this.getMatchingStacks()) {
             // CraftBukkit start
             if (exact_BF) {
-                if (ItemStack.canCombine(banner$stack, stack)) {
+            	
+            	// Yarn Note:
+            	// >=1.20.5: areItemsAndComponentsEqual
+            	// <=1.20.4: canCombine
+            	
+            	if (ItemStack.canCombine(banner$stack, stack)) {
+                // if (ItemStack.areItemsAndComponentsEqual(banner$stack, stack)) {
                     cir.setReturnValue(true);
                 }
                 continue;

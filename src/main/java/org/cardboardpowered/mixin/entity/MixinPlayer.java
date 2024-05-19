@@ -199,7 +199,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         if (factory instanceof ExtendedScreenHandlerFactory) {
             ScreenHandler handler = fabric_openedScreenHandler.get();
 
-            if (handler.getType() instanceof ExtendedScreenHandlerType<?>) {
+            if (handler.getType() instanceof ExtendedScreenHandlerType) { // TODO: 1.20.5: check ExtendedScreenHandlerType<?>
                 Networking.sendOpenPacket((ServerPlayerEntity) (Object) this, (ExtendedScreenHandlerFactory) factory, handler, screenHandlerSyncId);
             } else {
                 Identifier id = Registries.SCREEN_HANDLER.getId(handler.getType());
@@ -250,7 +250,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
                 /*From FabricAPI*/
                 if (factory instanceof ExtendedScreenHandlerFactory) {
                     fabric_openedScreenHandler.set(container);
-                } else if (container.getType() instanceof ExtendedScreenHandlerType<?>) {
+                } else if (container.getType() instanceof ExtendedScreenHandlerType) { // TODO: 1.20.5: check ExtendedScreenHandlerType<?>
                     Identifier id = Registries.SCREEN_HANDLER.getId(container.getType());
                     throw new IllegalArgumentException("[Fabric] Extended screen handler " + id + " must be opened with an ExtendedScreenHandlerFactory!");
                 }
@@ -260,13 +260,13 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
                         factory);
                 /*End*/
 
-                if ( CraftServer.INSTANCE.getMinecraftVersion().contains("1.16") ) {
+                //if ( CraftServer.INSTANCE.getMinecraftVersion().contains("1.16") ) {
                     // 1.16.5
-                    container.addListener((ScreenHandlerListener) this);
-                } else {
+                //    container.addListener((ScreenHandlerListener) this);
+                //} else {
                     // 1.17
                     ((ServerPlayerEntity)(Object)this).onScreenHandlerOpened(container);
-                }
+                //}
 
                 fabric_openedScreenHandler.remove();
                 ci.setReturnValue(OptionalInt.of(this.screenHandlerSyncId));

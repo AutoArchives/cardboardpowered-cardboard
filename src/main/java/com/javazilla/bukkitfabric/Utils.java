@@ -36,10 +36,13 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.cardboardpowered.impl.world.WorldImpl;
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
 
+import me.isaiah.common.cmixin.IMixinGlobalPos;
 import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.util.math.GlobalPos;
+import net.minecraft.world.World;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
 
 public class Utils {
 
@@ -102,8 +105,12 @@ public class Utils {
         throw new UnsupportedOperationException("Do not know how to map " + object);
     }
 
-    public static Location fromNmsGlobalPos(GlobalPos globalPos) {
-        return new org.bukkit.Location(((IMixinWorld) Objects.requireNonNull(CraftServer.INSTANCE.getServer().getWorld(globalPos.getDimension()))).getWorldImpl(), globalPos.getPos().getX(), globalPos.getPos().getY(), globalPos.getPos().getZ());
+    @SuppressWarnings("unchecked")
+	public static Location fromNmsGlobalPos(GlobalPos globalPos) {
+    	
+    	IMixinGlobalPos ipos = (IMixinGlobalPos) (Object) globalPos;
+    	
+        return new org.bukkit.Location(((IMixinWorld) Objects.requireNonNull(CraftServer.INSTANCE.getServer().getWorld((RegistryKey<World>) ipos.IC$get_dimension()))).getWorldImpl(), ipos.IC$get_pos().getX(), ipos.IC$get_pos().getY(), ipos.IC$get_pos().getZ());
     }
 
     public static GlobalPos toNmsGlobalPos(Location location) {

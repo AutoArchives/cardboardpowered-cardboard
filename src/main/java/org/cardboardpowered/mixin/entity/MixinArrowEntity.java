@@ -13,7 +13,7 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
+// import net.minecraft.potion.PotionUtil;
 import net.minecraft.util.Identifier;
 import net.minecraft.registry.Registries;
 
@@ -31,8 +31,9 @@ public class MixinArrowEntity implements IMixinArrowEntity {
 
     @Override
     public void setType(String string) {
-        this.potion = Registries.POTION.get(new Identifier(string));
-        (((Entity)(Object)this).getDataTracker()).set(COLOR, PotionUtil.getColor((Collection<StatusEffectInstance>) PotionUtil.getPotionEffects(this.potion, (Collection<StatusEffectInstance>) this.effects)));
+        // TODO: 1.20.5
+    	// this.potion = Registries.POTION.get(new Identifier(string));
+        // (((Entity)(Object)this).getDataTracker()).set(COLOR, PotionUtil.getColor((Collection<StatusEffectInstance>) PotionUtil.getPotionEffects(this.potion, (Collection<StatusEffectInstance>) this.effects)));
     }
 
 }

@@ -14,19 +14,24 @@ import net.minecraft.loot.context.LootContextParameter;
 import net.minecraft.loot.context.LootContextParameterSet;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.loot.context.LootContextType;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.loot.LootContext;
 import org.cardboardpowered.impl.world.WorldImpl;
+import org.jetbrains.annotations.Nullable;
 
 public class LootTableImpl implements org.bukkit.loot.LootTable {
 
@@ -34,6 +39,19 @@ public class LootTableImpl implements org.bukkit.loot.LootTable {
 	
     private final LootTable handle;
     private final NamespacedKey key;
+    
+    public static org.bukkit.loot.@Nullable LootTable minecraftToBukkit(Identifier minecraft) {
+        return minecraft == null ? null : Bukkit.getLootTable((NamespacedKey)CraftNamespacedKey.fromMinecraft(minecraft));
+    }
+
+    public static org.bukkit.loot.@Nullable LootTable minecraftToBukkit(RegistryKey<net.minecraft.loot.LootTable> minecraft) {
+        return minecraft == null ? null : Bukkit.getLootTable((NamespacedKey)LootTableImpl.minecraftToBukkitKey(minecraft));
+    }
+    
+    public static NamespacedKey minecraftToBukkitKey(RegistryKey<net.minecraft.loot.LootTable> minecraft) {
+        return minecraft == null ? null : CraftNamespacedKey.fromMinecraft(minecraft.getValue());
+    }
+
 
     public LootTableImpl(NamespacedKey key, LootTable handle) {
         this.handle = handle;

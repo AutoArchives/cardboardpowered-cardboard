@@ -1,6 +1,11 @@
 package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.base.Preconditions;
+
+import me.isaiah.common.ICommonMod;
+import me.isaiah.common.cmixin.IMixinTradeOffer;
+import net.minecraft.village.TradeOffer;
+
 import java.util.List;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantRecipe;
@@ -12,14 +17,27 @@ public class CraftMerchantRecipe extends MerchantRecipe {
     public CraftMerchantRecipe(net.minecraft.village.TradeOffer merchantRecipe) {
         super(CraftItemStack.asBukkitCopy(merchantRecipe.sellItem), 0);
         this.handle = merchantRecipe;
-        addIngredient(CraftItemStack.asBukkitCopy(merchantRecipe.firstBuyItem));
-        addIngredient(CraftItemStack.asBukkitCopy(merchantRecipe.secondBuyItem));
+        
+        IMixinTradeOffer ic = (IMixinTradeOffer) (Object) merchantRecipe;
+        
+        addIngredient(CraftItemStack.asBukkitCopy(ic.IC$get_first_buy_itemstack()));
+        
+        if (null != ic.IC$get_second_buy_itemstack()) {
+        	addIngredient(CraftItemStack.asBukkitCopy(ic.IC$get_second_buy_itemstack()));
+        }
     }
 
     public CraftMerchantRecipe(ItemStack result, int uses, int maxUses, boolean experienceReward, int experience, float priceMultiplier) {
         super(result, uses, maxUses, experienceReward, experience, priceMultiplier);
-        this.handle = new net.minecraft.village.TradeOffer(net.minecraft.item.ItemStack.EMPTY, net.minecraft.item.ItemStack.EMPTY,
-                CraftItemStack.asNMSCopy(result), uses, maxUses, experience, priceMultiplier);
+   
+        this.handle = ICommonMod.getIServer().create_trade_offer(
+                CraftItemStack.asNMSCopy(result),
+                uses,
+                maxUses,
+                experienceReward,
+                experience,
+                priceMultiplier, 0, 0);
+
         this.setExperienceReward(experienceReward);
     }
 
@@ -76,9 +94,18 @@ public class CraftMerchantRecipe extends MerchantRecipe {
     public net.minecraft.village.TradeOffer toMinecraft() {
         List<ItemStack> ingredients = getIngredients();
         Preconditions.checkState(!ingredients.isEmpty(), "No offered ingredients");
-        handle.firstBuyItem = CraftItemStack.asNMSCopy(ingredients.get(0));
+        
+        IMixinTradeOffer ic = (IMixinTradeOffer) (Object) handle;
+        
+        ic.IC$set_first_buy_itemstack( CraftItemStack.asNMSCopy(ingredients.get(0)) );
+        
+        if (ingredients.size() > 1) {
+        	ic.IC$set_second_buy_itemstack( CraftItemStack.asNMSCopy(ingredients.get(1)));
+        }
+
+        /*handle.firstBuyItem = CraftItemStack.asNMSCopy(ingredients.get(0));
         if (ingredients.size() > 1)
-            handle.secondBuyItem = CraftItemStack.asNMSCopy(ingredients.get(1));
+            handle.secondBuyItem = CraftItemStack.asNMSCopy(ingredients.get(1));*/
         return handle;
     }
 

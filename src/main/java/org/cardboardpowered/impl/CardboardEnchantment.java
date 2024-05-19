@@ -18,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import io.papermc.paper.enchantments.EnchantmentRarity;
+import me.isaiah.common.ICommonMod;
 
 public class CardboardEnchantment extends Enchantment {
 
@@ -40,7 +41,7 @@ public class CardboardEnchantment extends Enchantment {
 
     @Override
     public EnchantmentTarget getItemTarget() {
-        switch (target.target) {
+        /*switch (target.target) {
             case ARMOR:
                 return EnchantmentTarget.ARMOR;
             case ARMOR_FEET:
@@ -69,7 +70,15 @@ public class CardboardEnchantment extends Enchantment {
                 return EnchantmentTarget.CROSSBOW;
             default:
                 return null;
-        }
+        }*/
+    	
+    	String mc_ver = ICommonMod.getIServer().getMinecraftVersion();
+    	if (mc_ver.contains("1.20.4") || mc_ver.contains("1.20.1")) {
+    		// TODO
+    		return EnchantmentTarget.ALL;
+    	}
+    	
+    	throw new UnsupportedOperationException("Method no longer applicable. Use Tags instead.");
     }
 
     @Override

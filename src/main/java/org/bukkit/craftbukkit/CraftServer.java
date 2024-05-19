@@ -935,12 +935,15 @@ public class CraftServer implements Server {
         return null;
     }
 
-    public static DataPackSettings method_29735(ResourcePackManager resourcePackManager) {
-        Collection<String> collection = resourcePackManager.getEnabledNames();
+    /*public static DataPackSettings method_29735_(ResourcePackManager resourcePackManager) {
+        // 1.20.4:  getNames
+    	// 1.20.5+: getIds
+    	
+    	Collection<String> collection = resourcePackManager.getEnabledNames();
         ImmutableList<String> list = ImmutableList.copyOf(collection);
         List<String> list2 = resourcePackManager.getNames().stream().filter(string -> !collection.contains(string)).collect(ImmutableList.toImmutableList());
         return new DataPackSettings(list, list2);
-    }
+    }*/
 
     public ChunkGenerator getGenerator(String world) {
         ConfigurationSection section = configuration.getConfigurationSection("worlds");
@@ -1166,7 +1169,11 @@ public class CraftServer implements Server {
 
     @Override
     public MapViewImpl getMap(int arg0) {
-        MapState worldmap = server.getWorld(net.minecraft.world.World.OVERWORLD).getMapState("map_" + arg0);
+    	ServerWorld overworld = server.getWorld(net.minecraft.world.World.OVERWORLD);
+    	me.isaiah.common.cmixin.IMixinWorld ic = (me.isaiah.common.cmixin.IMixinWorld) (Object) overworld;
+    	
+    	MapState worldmap = ic.IC$get_map_state(arg0);
+        // MapState worldmap = server.getWorld(net.minecraft.world.World.OVERWORLD).getMapState("map_" + arg0);
         if (worldmap == null)
             return null;
         return ((IMixinMapState)worldmap).getMapViewBF();

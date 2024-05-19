@@ -41,6 +41,8 @@ import org.cardboardpowered.impl.block.CardboardStructureBlock;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 
+import me.isaiah.common.ICommonMod;
+import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BannerBlockEntity;
 import net.minecraft.block.entity.BarrelBlockEntity;
@@ -282,7 +284,11 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
                     break;
             }
         }
-        BlockEntity te = (blockEntityTag == null) ? null : BlockEntity.createFromNbt(null, null, blockEntityTag);
+        
+        IMixinMinecraftServer mc = (IMixinMinecraftServer) (Object) ICommonMod.getIServer().getMinecraft();
+        
+        BlockEntity te = (blockEntityTag == null) ? null : mc.IC$create_blockentity_from_nbt(null, null, blockEntityTag);
+        //BlockEntity te = (blockEntityTag == null) ? null : BlockEntity.createFromNbt(null, null, blockEntityTag);
 
         switch (material) {
         case ACACIA_SIGN:

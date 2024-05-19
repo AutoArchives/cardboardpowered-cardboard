@@ -3,8 +3,6 @@ package org.cardboardpowered.impl.block;
 
 import net.minecraft.block.entity.BeehiveBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.passive.BeeEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
@@ -14,6 +12,8 @@ import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+
+import me.isaiah.common.cmixin.IMixinBlockEntity;
 
 public final class CapturedBlockState extends CraftBlockState {
 
@@ -29,17 +29,17 @@ public final class CapturedBlockState extends CraftBlockState {
         boolean result = super.update(force, applyPhysics);
 
         if (this.treeBlock && getType() == Material.BEE_NEST) {
-            StructureWorldAccess generatoraccessseed = this.world.getHandle();
+            StructureWorldAccess world = this.world.getHandle();
             BlockPos blockposition1 = this.getPosition();
-            Random random = generatoraccessseed.getRandom();
-            BlockEntity tileentity = generatoraccessseed.getBlockEntity(blockposition1);
+            Random random = world.getRandom();
+            BlockEntity block = world.getBlockEntity(blockposition1);
 
-            if (tileentity instanceof BeehiveBlockEntity) {
-                BeehiveBlockEntity tileentitybeehive = (BeehiveBlockEntity) tileentity;
+            if (block instanceof BeehiveBlockEntity) {
+                BeehiveBlockEntity beehive = (BeehiveBlockEntity) block;
                 int j = 2 + random.nextInt(2);
                 for (int k = 0; k < j; ++k) {
-                    BeeEntity entitybee = new BeeEntity(EntityType.BEE, generatoraccessseed.toServerWorld());
-                    tileentitybeehive.tryEnterHive(entitybee, false, random.nextInt(599));
+                	IMixinBlockEntity ie = (IMixinBlockEntity) beehive;
+                	ie.IC$add_bee_to_beehive(world.toServerWorld(), random.nextInt(599));
                 }
             }
         }

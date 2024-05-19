@@ -8,6 +8,8 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.inventory.EquipmentSlot;
 import org.jetbrains.annotations.NotNull;
 
+import me.isaiah.common.cmixin.IMixinEntityAttributeModifier;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -69,7 +71,8 @@ public class CardboardAttributeInstance implements AttributeInstance {
     }
 
     public static AttributeModifier convert(EntityAttributeModifier nms) {
-        return new AttributeModifier(nms.getId(), nms.name, nms.getValue(), AttributeModifier.Operation.values()[nms.getOperation().ordinal()]);
+    	IMixinEntityAttributeModifier ic = (IMixinEntityAttributeModifier) (Object) nms;
+        return new AttributeModifier(ic.IC$get_uuid(), nms.name, ic.IC$get_value(), AttributeModifier.Operation.values()[ic.IC$get_operation().ordinal()]);
     }
 
 	// @Override
@@ -78,7 +81,9 @@ public class CardboardAttributeInstance implements AttributeInstance {
     }
 	
     public static AttributeModifier convert(EntityAttributeModifier nms, EquipmentSlot slot) {
-        return new AttributeModifier(nms.getId(), nms.name, nms.getValue(), AttributeModifier.Operation.values()[nms.getOperation().ordinal()], slot);
+    	IMixinEntityAttributeModifier ic = (IMixinEntityAttributeModifier) (Object) nms;
+    	
+        return new AttributeModifier(ic.IC$get_uuid(), nms.name, ic.IC$get_value(), AttributeModifier.Operation.values()[ic.IC$get_operation().ordinal()], slot);
     }
 
 }

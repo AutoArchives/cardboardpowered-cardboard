@@ -11,6 +11,8 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.loot.LootTable;
 import org.bukkit.loot.Lootable;
 
+import me.isaiah.common.cmixin.IMixinLootableContainerBlockEntity;
+
 public abstract class CardboardLootableBlock<T extends LootableContainerBlockEntity> extends CraftContainer<T> implements Nameable, Lootable {
 
     public CardboardLootableBlock(Block block, Class<T> tileEntityClass) {
@@ -21,15 +23,26 @@ public abstract class CardboardLootableBlock<T extends LootableContainerBlockEnt
         super(material, tileEntity);
     }
 
+    public Identifier get_table_id() {
+    	IMixinLootableContainerBlockEntity be = (IMixinLootableContainerBlockEntity) (LootableContainerBlockEntity) this.getSnapshot();
+    	if (null == be.IC$get_loot_table_id()) {
+    		return null;
+    	}
+    	return be.IC$get_loot_table_id();
+    }
+    
     @Override
     public void applyTo(T lootable) {
         super.applyTo(lootable);
-        if (this.getSnapshot().lootTableId == null) lootable.setLootTable((Identifier) null, 0L);
+        
+        IMixinLootableContainerBlockEntity be = (IMixinLootableContainerBlockEntity) (LootableContainerBlockEntity) this.getSnapshot();
+        
+        if (null == be.IC$get_loot_table_id()) lootable.setLootTable((Identifier) null, 0L);
     }
 
     @Override
     public LootTable getLootTable() {
-        return (getSnapshot().lootTableId == null) ? null : Bukkit.getLootTable(CraftNamespacedKey.fromMinecraft(getSnapshot().lootTableId));
+        return (get_table_id() == null) ? null : Bukkit.getLootTable(CraftNamespacedKey.fromMinecraft(get_table_id()));
     }
 
     @Override

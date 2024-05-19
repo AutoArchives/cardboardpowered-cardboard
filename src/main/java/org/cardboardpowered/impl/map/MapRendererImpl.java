@@ -1,6 +1,6 @@
 package org.cardboardpowered.impl.map;
 
-import net.minecraft.item.map.MapIcon;
+// import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.util.CraftChatMessage;

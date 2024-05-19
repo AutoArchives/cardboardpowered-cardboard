@@ -17,6 +17,7 @@ import org.cardboardpowered.library.Library;
 import org.cardboardpowered.library.LibraryManager;
 import org.cardboardpowered.util.GameVersion;
 import org.cardboardpowered.util.JarReader;
+import org.cardboardpowered.util.MappTest;
 import org.cardboardpowered.util.TestCl;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
@@ -33,6 +34,15 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public void onLoad(String mixinPackage) {
+    	
+    	// testing
+        /*if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+        	System.out.println("HELLO");
+        	MappTest.do_test(null);
+        	System.exit(0);
+        	return;
+        }*/
+    	
         try {
             CardboardConfig.setup();
         } catch (Exception e) {

@@ -1,6 +1,8 @@
 package org.bukkit.craftbukkit.entity.memory;
 
 import java.util.UUID;
+
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.GlobalPos;
 import org.bukkit.Bukkit;
@@ -10,6 +12,8 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.impl.world.WorldImpl;
 
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+
+import me.isaiah.common.cmixin.IMixinGlobalPos;
 
 public final class CraftMemoryMapper {
     private CraftMemoryMapper() {
@@ -56,8 +60,10 @@ public final class CraftMemoryMapper {
         throw new UnsupportedOperationException("Do not know how to map " + object);
     }
 
-    public static Location fromNms(GlobalPos globalPos) {
-        return new Location((World) ((IMixinWorld)((CraftServer)Bukkit.getServer()).getServer().getWorld(globalPos.getDimension())).getWorldImpl(), (double)globalPos.getPos().getX(), (double)globalPos.getPos().getY(), (double)globalPos.getPos().getZ());
+    @SuppressWarnings("unchecked")
+	public static Location fromNms(GlobalPos globalPos) {
+    	IMixinGlobalPos ipos = (IMixinGlobalPos) (Object) globalPos;
+        return new Location((World) ((IMixinWorld)((CraftServer)Bukkit.getServer()).getServer().getWorld((RegistryKey<net.minecraft.world.World>) ipos.IC$get_dimension())).getWorldImpl(), (double)ipos.IC$get_pos().getX(), (double)ipos.IC$get_pos().getY(), (double)ipos.IC$get_pos().getZ());
     }
 
    // public static GlobalPos toNms(Location location) {

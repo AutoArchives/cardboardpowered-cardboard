@@ -29,6 +29,7 @@ public abstract class CardboardMinecartSH extends CardboardMinecart implements L
     @Override
     public LootTable getLootTable() {
         Identifier nmsTable = getHandle().lootTableId;
+
         return (nmsTable == null) ? null : Bukkit.getLootTable(CraftNamespacedKey.fromMinecraft(nmsTable));
     }
 

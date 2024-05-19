@@ -3,6 +3,8 @@ package org.bukkit.craftbukkit.util;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.gson.JsonParseException;
+
+import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.ClickEvent.Action;
 import net.minecraft.text.MutableText;
@@ -13,6 +15,7 @@ import net.minecraft.text.TextColor;
 import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Formatting;
 import org.bukkit.ChatColor;
+import org.bukkit.craftbukkit.CraftServer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -218,7 +221,10 @@ public final class CraftChatMessage {
     }
 
     public static String toJSON(Text component) {
-        return Text.Serialization.toJsonString(component);
+    	return ((IMixinMinecraftServer)CraftServer.server).IC$to_json(component);
+    	
+    	
+        // return Text.Serialization.toJsonString(component);
     }
     
     public static ArrayList<Text> list(Text txt) {
@@ -363,7 +369,7 @@ public final class CraftChatMessage {
     }
 
     public static Text fromJSON(String jsonMessage) throws JsonParseException {
-        return Text.Serialization.fromJson(jsonMessage);
+        return ((IMixinMinecraftServer)CraftServer.server).IC$from_json(jsonMessage);
     }
 
     public static String fromJSONOrStringToJSON(String message, boolean nullable, boolean keepNewlines, int maxLength, boolean checkJsonContentLength) {
