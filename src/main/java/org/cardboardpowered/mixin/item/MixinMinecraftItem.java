@@ -78,8 +78,6 @@ public class MixinMinecraftItem {
                 if (!world.spawnEntity(abstractMinecartEntity)) {
                     return ActionResult.PASS;
                 }
-
-                world.spawnEntity(abstractMinecartEntity);
                 world.emitGameEvent(context.getPlayer(), GameEvent.ENTITY_PLACE, blockPos);
             }
 
