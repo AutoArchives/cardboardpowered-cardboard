@@ -41,8 +41,7 @@ public class MixinSPNH_SignUpdateEvent {
             String[] lines = new String[4];
     
             for (int i = 0; i < astring.length; ++i)
-                lines[i] = Formatting.strip(new Literal(Formatting.strip(astring[i])).toString());
-    
+                lines[i] = Formatting.strip(Formatting.strip(astring[i]));
             ((IMixinMinecraftServer)CraftServer.server).cardboard_runOnMainThread(() -> {
                 try {
                     SignChangeEvent event = new SignChangeEvent((org.bukkit.craftbukkit.block.CraftBlock) player.getWorld().getBlockAt(x, y, z), player, lines);
