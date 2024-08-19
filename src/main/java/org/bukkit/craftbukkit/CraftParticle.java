@@ -6,7 +6,7 @@ import com.google.common.collect.HashBiMap;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.particle.BlockStateParticleEffect;
-import net.minecraft.particle.DefaultParticleType;
+import net.minecraft.particle.SimpleParticleType;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ItemStackParticleEffect;
 import net.minecraft.particle.ParticleEffect;
@@ -139,8 +139,13 @@ public enum CraftParticle {
         net.minecraft.particle.ParticleType nms = Registries.PARTICLE_TYPE.get(particles.get(canonical));
         Preconditions.checkArgument(nms != null, "No NMS particle %s", particle);
 
-        if (particle.getDataType().equals(Void.class))
-            return (DefaultParticleType) nms;
+        if (particle.getDataType().equals(Void.class)) {
+        	
+        	// <= 1.20.4 = DefaultParticleType
+        	// >= 1.20.5 = SimpleParticleType
+        	
+            return (SimpleParticleType) nms;
+        }
 
         Preconditions.checkArgument(obj != null, "Particle %s requires data, null provided", particle);
         if (particle.getDataType().equals(ItemStack.class)) {

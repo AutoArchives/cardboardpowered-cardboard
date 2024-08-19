@@ -154,7 +154,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 //>>>>>>> upstream/ver/1.20
 
-@SuppressWarnings("deprecation")
+@SuppressWarnings({"deprecation", "removal"})
 public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     public net.minecraft.entity.LivingEntity nms;
@@ -990,11 +990,13 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
     }
 	
     private void damageItemStack0(net.minecraft.item.ItemStack nmsStack, int amount, net.minecraft.entity.EquipmentSlot slot) {
-        nmsStack.damage(amount, this.getHandle(), livingEntity -> {
+        /*nmsStack.damage(amount, this.getHandle(), livingEntity -> {
             if (slot != null) {
                 livingEntity.sendEquipmentBreakStatus(slot);
             }
-        });
+        });*/
+        
+        nmsStack.damage(amount, this.getHandle(), slot);
     }
 
 	

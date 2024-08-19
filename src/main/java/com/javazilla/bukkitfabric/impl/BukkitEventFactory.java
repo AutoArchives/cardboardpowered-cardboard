@@ -44,6 +44,9 @@ import net.minecraft.item.Items;
 import net.minecraft.loot.LootTable;
 import net.minecraft.loot.context.LootContext;
 import net.minecraft.loot.context.LootContextParameters;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -136,6 +139,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("deprecation")
@@ -546,8 +550,19 @@ public class BukkitEventFactory {
     public static LootGenerateEvent callLootGenerateEvent(Inventory inventory, LootTable lootTable, LootContext lootInfo, List<ItemStack> loot, boolean plugin) {
         WorldImpl world = ((IMixinWorld)lootInfo.getWorld()).getWorldImpl();
         Entity entity = lootInfo.get(LootContextParameters.THIS_ENTITY);
-        NamespacedKey key = CraftNamespacedKey.fromMinecraft(((IMixinLootManager)world.getHandle().getServer().getLootManager()).getLootTableToKeyMapBF().get(lootTable));
+
+        NamespacedKey key = null; // CraftNamespacedKey.fromMinecraft(((IMixinLootManager)world.getHandle().getServer().getLootManager()).getLootTableToKeyMapBF().get(lootTable));
+
+        Registry<LootTable> reg = CraftServer.server.getRegistryManager().get(RegistryKeys.LOOT_TABLE);
+        Optional<RegistryKey<LootTable>> opt = reg.getKey(lootTable);
+        if (opt.isPresent()) {
+        	key = LootTableImpl.minecraftToBukkitKey(opt.get());
+        }
+        
         LootTableImpl craftLootTable = new LootTableImpl(key, lootTable);
+
+
+        
         List<org.bukkit.inventory.ItemStack> bukkitLoot = loot.stream().map(CraftItemStack::asCraftMirror).collect(Collectors.toCollection(ArrayList::new));
 
         LootGenerateEvent event = new LootGenerateEvent(world, (entity != null ? ((IMixinEntity)entity).getBukkitEntity() : null), ((IMixinInventory)inventory).getOwner(), craftLootTable, LootTableImpl.convertContext(lootInfo), bukkitLoot, plugin);

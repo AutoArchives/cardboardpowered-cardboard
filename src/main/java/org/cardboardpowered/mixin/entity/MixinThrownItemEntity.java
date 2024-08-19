@@ -20,14 +20,10 @@ public abstract class MixinThrownItemEntity implements IMixinThrownItemEntity {
         return getDefaultItem();
     }
 
-    @Shadow
-    public ItemStack getItem() {
-        return null;
-    }
-
     @Override
+    @Deprecated
     public ItemStack getItemBF() {
-        return getItem();
+        return ((ThrownItemEntity) (Object) this).getStack();
     }
 
 }

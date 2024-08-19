@@ -31,6 +31,10 @@ import java.util.logging.Logger;
 @Mixin(value = PaperPluginLogger.class, remap = false)
 public class MixinPluginLogger {
 
+	/**
+	 * @author cardboard
+	 * @reason plugin logger
+	 */
     @Overwrite
     @NotNull
     public static Logger getLogger(PluginDescriptionFile des) {

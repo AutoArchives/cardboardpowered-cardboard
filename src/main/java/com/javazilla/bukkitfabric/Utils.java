@@ -32,11 +32,11 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.memory.MemoryKey;
 import org.bukkit.inventory.EquipmentSlot;
-
 import org.cardboardpowered.impl.world.WorldImpl;
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
 
 import me.isaiah.common.cmixin.IMixinGlobalPos;
+import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.World;
@@ -141,5 +141,35 @@ public class Utils {
     public static net.minecraft.entity.EquipmentSlot getNMS(EquipmentSlot slot) {
         return slots[slot.ordinal()];
     }
+
+	public static EquipmentSlot getSlot(AttributeModifierSlot slotName) {
+		// TODO Auto-generated method stub
+		switch (slotName) {
+			case ANY:
+				return EquipmentSlot.CHEST;
+			case ARMOR:
+				return EquipmentSlot.CHEST;
+			case BODY:
+				return EquipmentSlot.CHEST;
+			case CHEST:
+				return EquipmentSlot.CHEST;
+			case FEET:
+				return EquipmentSlot.FEET;
+			case HAND:
+				return EquipmentSlot.HAND;
+			case HEAD:
+				return EquipmentSlot.HEAD;
+			case LEGS:
+				return EquipmentSlot.LEGS;
+			case MAINHAND:
+				return EquipmentSlot.HAND;
+			case OFFHAND:
+				return EquipmentSlot.OFF_HAND;
+			default:
+				break;
+		
+		}
+		return EquipmentSlot.HAND;
+	}
 
 }

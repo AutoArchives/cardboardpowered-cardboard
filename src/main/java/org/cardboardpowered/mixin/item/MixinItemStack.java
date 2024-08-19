@@ -10,9 +10,12 @@ import me.isaiah.common.cmixin.IMixinItemStack;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.pattern.CachedBlockPosition;
+import net.minecraft.component.ComponentChanges;
+import net.minecraft.component.ComponentMapImpl;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.enchantment.UnbreakingEnchantment;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -31,6 +34,7 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
+import org.cardboardpowered.interfaces.IItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -43,18 +47,47 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @Mixin(value = ItemStack.class, priority = 999)
-public class MixinItemStack {
+public class MixinItemStack implements IItemStack {
 
     @Shadow
     private Item item;
     
     @Shadow
     private int count;
+    
+    @Shadow
+    private ComponentMapImpl components;
 
-    @Inject(at = @At("HEAD"), method = "damage(ILnet/minecraft/util/math/random/Random;Lnet/minecraft/server/network/ServerPlayerEntity;)Z", cancellable = true)
-    public void callPlayerItemDamageEvent(int i, Random random, ServerPlayerEntity player, CallbackInfoReturnable<Boolean> ci) {
+    @Override
+    public void cardboard$restore_patch(ComponentChanges changes) {
+        this.components.setChanges(changes);
+    }
+    
+    private CraftItemStack bukkitStack;
+    
+    @Override
+    public org.bukkit.inventory.ItemStack getBukkitStack() {
+        if (this.bukkitStack == null || this.bukkitStack.handle != ((ItemStack)(Object)this)) {
+            this.bukkitStack = CraftItemStack.asCraftMirror( ((ItemStack)(Object)this) );
+        }
+        return this.bukkitStack;
+    }
+    
+    @Override
+    public void cb$setItem(Item item) {
+        this.bukkitStack = null;
+        this.item = item;
+        ComponentChanges patch = ((ItemStack)(Object)this).getComponentChanges();
+        this.components = new ComponentMapImpl(this.item.getComponents());
+        ((ItemStack)(Object)this).applyUnvalidatedChanges(patch);
+    }
+
+    
+    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/item/ItemStack;damage(ILnet/minecraft/util/math/random/Random;Lnet/minecraft/server/network/ServerPlayerEntity;Ljava/lang/Runnable;)V", cancellable = true)
+    public void callPlayerItemDamageEvent(int i, Random random, ServerPlayerEntity player, Runnable cb, CallbackInfo ci) {
         if (!((ItemStack)(Object)this).isDamageable()) {
-            ci.setReturnValue(false);
+            //ci.setReturnValue(false);
+            ci.cancel();
             return;
         }
         int j;
@@ -69,22 +102,38 @@ public class MixinItemStack {
 
                 if (i != event.getDamage() || event.isCancelled()) event.getPlayer().updateInventory();
                 if (event.isCancelled()) {
-                    ci.setReturnValue(false);
-                    return;
+                    //ci.setReturnValue(false);
+                	ci.cancel();
+                	return;
                 }
                 i = event.getDamage();
             }
             if (i <= 0) {
-                ci.setReturnValue(false);
-                return;
+                //ci.setReturnValue(false);
+            	ci.cancel();
+            	return;
             }
         }
-        if (player != null && i != 0) Criteria.ITEM_DURABILITY_CHANGED.trigger(player, ((ItemStack)(Object)this), ((ItemStack)(Object)this).getDamage() + i);
+        if (player != null && i != 0) {
+        	Criteria.ITEM_DURABILITY_CHANGED.trigger(player, ((ItemStack)(Object)this), ((ItemStack)(Object)this).getDamage() + i);
+        }
 
-        ((ItemStack)(Object)this).setDamage((j = ((ItemStack)(Object)this).getDamage() + i));
-        ci.setReturnValue(j >= ((ItemStack)(Object)this).getMaxDamage());
+        j = ((ItemStack)(Object)this).getDamage() + i;
+        ((ItemStack)(Object)this).setDamage(j);
+        //ci.setReturnValue(j >= ((ItemStack)(Object)this).getMaxDamage());
+        
+        if (j >= ((ItemStack)(Object)this).getMaxDamage()) {
+        	cb.run();
+        }
+        
+        ci.cancel();
+        
     }
 
+    /**
+     * @author cardboard
+     * @reason BlockPlaceEvent
+     */
     @Overwrite
     public ActionResult useOnBlock(ItemUsageContext context) {
         PlayerEntity playerEntity = context.getPlayer();
@@ -128,13 +177,13 @@ public class MixinItemStack {
     }
 
     @Inject(
-    		method = "damage(ILnet/minecraft/entity/LivingEntity;Ljava/util/function/Consumer;)V",
+    		method = "method_56097",
     		at = @At(
     				value = "INVOKE",
     				target = "Lnet/minecraft/item/ItemStack;decrement(I)V"
     			)
     	)
-    private <T extends LivingEntity> void cardboard$call_player_item_break_event(int amount, T entityIn, Consumer<T> onBroken, CallbackInfo ci) {
+    private <T extends LivingEntity> void cardboard$call_player_item_break_event(LivingEntity entityIn, EquipmentSlot equipmentSlot, CallbackInfo ci) {
         if (this.count == 1 && entityIn instanceof PlayerEntity) {
         	BukkitEventFactory.callPlayerItemBreakEvent((PlayerEntity) entityIn, ((ItemStack)(Object)this));
         }

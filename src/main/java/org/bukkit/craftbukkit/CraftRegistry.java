@@ -8,7 +8,12 @@ import org.bukkit.Registry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.block.entity.BannerPattern;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryWrapper.WrapperLookup;
+import net.minecraft.registry.entry.RegistryEntry;
 
 // TODO
 public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
@@ -29,6 +34,41 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+
+    public static <B extends Keyed, M> RegistryEntry<M> bukkitToMinecraftHolder(B bukkit, RegistryKey<net.minecraft.registry.Registry<M>> registryKey) {
+        // Preconditions.checkArgument(bukkit != null);
+
+        //net.minecraft.registry.Registry<M> registry = CraftRegistry.getMinecraftRegistry(registryKey);
+
+        //if (registry.wrapAsHolder(CraftRegistry.bukkitToMinecraft(bukkit)) instanceof RegistryEntry.Reference<M> holder) {
+        //    return holder;
+        //}
+
+        throw new IllegalArgumentException("No Reference holder found for " + bukkit
+                + ", this can happen if a plugin creates its own registry entry with out properly registering it.");
+    }
+
+	public static DynamicRegistryManager getMinecraftRegistry() {
+		// TODO Auto-generated method stub
+		return CraftServer.server.getRegistryManager();
+	}
+
+    public static <E> net.minecraft.registry.Registry<E> getMinecraftRegistry(RegistryKey<net.minecraft.registry.Registry<E>> key) {
+        return CraftServer.server.getRegistryManager().get(key);
+    }
+
+    /**
+     * Usage note: Only use this method to delegate the conversion methods from the individual Craft classes to here.
+     * Do not use it in other parts of CraftBukkit, use the methods in the respective Craft classes instead.
+     *
+     * @param bukkit the bukkit representation
+     * @return the minecraft representation of the bukkit value
+     */
+    /*public static <B extends Keyed, M> M bukkitToMinecraft(B bukkit) {
+        // Preconditions.checkArgument(bukkit != null);
+        return ((Handleable<M>) bukkit).getHandle();
+    }*/
 
     /*private static DynamicRegistryManager registry;
 

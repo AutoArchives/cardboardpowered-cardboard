@@ -72,6 +72,10 @@ public abstract class MixinBoatItem extends Item {
         return getter instanceof WorldAccess level && isValid(level);
     }
 
+    /**
+     * @author cardboard
+     * @reason PlayerInteractEvent
+     */
     @Overwrite
     public TypedActionResult<ItemStack> use(World worldIn, PlayerEntity playerIn, Hand handIn) {
         ItemStack itemstack = playerIn.getStackInHand(handIn);

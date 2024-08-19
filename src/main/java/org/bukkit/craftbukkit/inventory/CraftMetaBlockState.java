@@ -1,164 +1,164 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
-
-import org.apache.commons.lang.Validate;
+import java.util.Set;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.component.Component;
+import net.minecraft.component.ComponentChanges;
+import net.minecraft.component.ComponentMap;
+import net.minecraft.component.ComponentMapImpl;
+import net.minecraft.component.DataComponentType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.util.math.BlockPos;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.block.CraftBlockState;
+import org.bukkit.craftbukkit.block.CraftBlockStates;
+import org.bukkit.craftbukkit.inventory.CraftMetaItem;
+import org.bukkit.craftbukkit.inventory.SerializableMeta;
 import org.bukkit.inventory.meta.BlockStateMeta;
-import org.cardboardpowered.impl.block.CardboardBanner;
-import org.cardboardpowered.impl.block.CardboardBarrel;
-import org.cardboardpowered.impl.block.CardboardBeacon;
-import org.cardboardpowered.impl.block.CardboardBeehive;
-import org.cardboardpowered.impl.block.CardboardBell;
-import org.cardboardpowered.impl.block.CardboardBlastFurnace;
 import org.cardboardpowered.impl.block.CardboardBlockEntityState;
-import org.cardboardpowered.impl.block.CardboardBrewingStand;
-import org.cardboardpowered.impl.block.CardboardCampfire;
-import org.cardboardpowered.impl.block.CardboardChest;
-import org.cardboardpowered.impl.block.CardboardCommandBlock;
-import org.cardboardpowered.impl.block.CardboardComparator;
-import org.cardboardpowered.impl.block.CardboardDaylightDetector;
-import org.cardboardpowered.impl.block.CardboardDispenser;
-import org.cardboardpowered.impl.block.CardboardDropper;
-import org.cardboardpowered.impl.block.CardboardEnchantingTable;
-import org.cardboardpowered.impl.block.CardboardEndGateway;
-import org.cardboardpowered.impl.block.CardboardEnderchest;
-import org.cardboardpowered.impl.block.CardboardFurnace;
-import org.cardboardpowered.impl.block.CardboardHopper;
-import org.cardboardpowered.impl.block.CardboardJigsaw;
-import org.cardboardpowered.impl.block.CardboardJukebox;
-import org.cardboardpowered.impl.block.CardboardLectern;
-import org.cardboardpowered.impl.block.CardboardMobspawner;
-import org.cardboardpowered.impl.block.CardboardShulkerBox;
-import org.cardboardpowered.impl.block.CardboardSign;
-import org.cardboardpowered.impl.block.CardboardSkull;
-import org.cardboardpowered.impl.block.CardboardSmoker;
-import org.cardboardpowered.impl.block.CardboardStructureBlock;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableMap;
-
-import me.isaiah.common.ICommonMod;
-import me.isaiah.common.cmixin.IMixinMinecraftServer;
-import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
-import net.minecraft.block.entity.BannerBlockEntity;
-import net.minecraft.block.entity.BarrelBlockEntity;
-import net.minecraft.block.entity.BeaconBlockEntity;
-import net.minecraft.block.entity.BeehiveBlockEntity;
-import net.minecraft.block.entity.BellBlockEntity;
-import net.minecraft.block.entity.BlastFurnaceBlockEntity;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BrewingStandBlockEntity;
-import net.minecraft.block.entity.CampfireBlockEntity;
-import net.minecraft.block.entity.ChestBlockEntity;
-import net.minecraft.block.entity.CommandBlockBlockEntity;
-import net.minecraft.block.entity.ComparatorBlockEntity;
-import net.minecraft.block.entity.DaylightDetectorBlockEntity;
-import net.minecraft.block.entity.DispenserBlockEntity;
-import net.minecraft.block.entity.DropperBlockEntity;
-import net.minecraft.block.entity.EnchantingTableBlockEntity;
-import net.minecraft.block.entity.EndGatewayBlockEntity;
-import net.minecraft.block.entity.EnderChestBlockEntity;
-import net.minecraft.block.entity.FurnaceBlockEntity;
-import net.minecraft.block.entity.HopperBlockEntity;
-import net.minecraft.block.entity.JigsawBlockEntity;
-import net.minecraft.block.entity.JukeboxBlockEntity;
-import net.minecraft.block.entity.LecternBlockEntity;
-import net.minecraft.block.entity.MobSpawnerBlockEntity;
-import net.minecraft.block.entity.ShulkerBoxBlockEntity;
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.block.entity.SkullBlockEntity;
-import net.minecraft.block.entity.SmokerBlockEntity;
-import net.minecraft.block.entity.StructureBlockBlockEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.util.DyeColor;
-
-@DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
-public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta {
-
-    @ItemMetaKey.Specific(ItemMetaKey.Specific.To.NBT)
-    static final ItemMetaKey BLOCK_ENTITY_TAG = new ItemMetaKey("BlockEntityTag");
-
+@DelegateDeserialization(value=SerializableMeta.class)
+public class CraftMetaBlockState
+extends CraftMetaItem
+implements BlockStateMeta {
+    private static final Set<Material> SHULKER_BOX_MATERIALS = Sets.newHashSet(new Material[]{Material.SHULKER_BOX, Material.WHITE_SHULKER_BOX, Material.ORANGE_SHULKER_BOX, Material.MAGENTA_SHULKER_BOX, Material.LIGHT_BLUE_SHULKER_BOX, Material.YELLOW_SHULKER_BOX, Material.LIME_SHULKER_BOX, Material.PINK_SHULKER_BOX, Material.GRAY_SHULKER_BOX, Material.LIGHT_GRAY_SHULKER_BOX, Material.CYAN_SHULKER_BOX, Material.PURPLE_SHULKER_BOX, Material.BLUE_SHULKER_BOX, Material.BROWN_SHULKER_BOX, Material.GREEN_SHULKER_BOX, Material.RED_SHULKER_BOX, Material.BLACK_SHULKER_BOX});
+    private static final Set<Material> BLOCK_STATE_MATERIALS = Sets.newHashSet(
+    		new Material[]{Material.FURNACE, Material.CHEST, Material.TRAPPED_CHEST, Material.JUKEBOX, Material.DISPENSER, Material.DROPPER,
+    				Material.ACACIA_HANGING_SIGN, Material.ACACIA_SIGN, Material.ACACIA_WALL_HANGING_SIGN, Material.ACACIA_WALL_SIGN,
+    				Material.BAMBOO_HANGING_SIGN, Material.BAMBOO_SIGN, Material.BAMBOO_WALL_HANGING_SIGN, Material.BAMBOO_WALL_SIGN,
+    				Material.BIRCH_HANGING_SIGN, Material.BIRCH_SIGN, Material.BIRCH_WALL_HANGING_SIGN, Material.BIRCH_WALL_SIGN,
+    				Material.CHERRY_HANGING_SIGN, Material.CHERRY_SIGN, Material.CHERRY_WALL_HANGING_SIGN, Material.CHERRY_WALL_SIGN,
+    				Material.CRIMSON_HANGING_SIGN, Material.CRIMSON_SIGN, Material.CRIMSON_WALL_HANGING_SIGN, Material.CRIMSON_WALL_SIGN,
+    				Material.DARK_OAK_HANGING_SIGN, Material.DARK_OAK_SIGN, Material.DARK_OAK_WALL_HANGING_SIGN, Material.DARK_OAK_WALL_SIGN,
+    				Material.JUNGLE_HANGING_SIGN, Material.JUNGLE_SIGN, Material.JUNGLE_WALL_HANGING_SIGN, Material.JUNGLE_WALL_SIGN,
+    				Material.MANGROVE_HANGING_SIGN, Material.MANGROVE_SIGN, Material.MANGROVE_WALL_HANGING_SIGN, Material.MANGROVE_WALL_SIGN,
+    				Material.OAK_HANGING_SIGN, Material.OAK_SIGN, Material.OAK_WALL_HANGING_SIGN, Material.OAK_WALL_SIGN, Material.SPRUCE_HANGING_SIGN,
+    				Material.SPRUCE_SIGN, Material.SPRUCE_WALL_HANGING_SIGN, Material.SPRUCE_WALL_SIGN, Material.WARPED_HANGING_SIGN,
+    				Material.WARPED_SIGN, Material.WARPED_WALL_HANGING_SIGN, Material.WARPED_WALL_SIGN, Material.SPAWNER, Material.BREWING_STAND,
+    				Material.ENCHANTING_TABLE, Material.COMMAND_BLOCK, Material.REPEATING_COMMAND_BLOCK, Material.CHAIN_COMMAND_BLOCK, Material.BEACON,
+    				Material.DAYLIGHT_DETECTOR, Material.HOPPER, Material.COMPARATOR, Material.SHIELD, Material.STRUCTURE_BLOCK, Material.ENDER_CHEST,
+    				Material.BARREL, Material.BELL, Material.BLAST_FURNACE, Material.CAMPFIRE, Material.SOUL_CAMPFIRE, Material.JIGSAW, Material.LECTERN,
+    				Material.SMOKER, Material.BEEHIVE, Material.BEE_NEST, Material.SCULK_CATALYST, Material.SCULK_SHRIEKER,
+    				// Material.CALIBRATED_SCULK_SENSOR,
+    				Material.SCULK_SENSOR, Material.CHISELED_BOOKSHELF, Material.DECORATED_POT,
+    				Material.SUSPICIOUS_SAND,
+    				
+    				//Material.SUSPICIOUS_GRAVEL, Material.TRIAL_SPAWNER, Material.CRAFTER, Material.VAULT
+    				
+    		});
+    static final CraftMetaItem.ItemMetaKeyType<NbtComponent> BLOCK_ENTITY_TAG;
     final Material material;
-    NbtCompound blockEntityTag;
+    private CardboardBlockEntityState<?> blockEntityTag;
+    private NbtCompound internalTag;
 
     CraftMetaBlockState(CraftMetaItem meta, Material material) {
         super(meta);
         this.material = material;
-
-        if (!(meta instanceof CraftMetaBlockState)  || ((CraftMetaBlockState) meta).material != material) {
-            blockEntityTag = null;
+        if (!(meta instanceof CraftMetaBlockState) || ((CraftMetaBlockState)meta).material != material) {
+            this.blockEntityTag = null;
             return;
         }
-
-        CraftMetaBlockState te = (CraftMetaBlockState) meta;
+        CraftMetaBlockState te = (CraftMetaBlockState)meta;
         this.blockEntityTag = te.blockEntityTag;
     }
 
-    CraftMetaBlockState(NbtCompound tag, Material material) {
-        super(tag);
+    CraftMetaBlockState(ComponentChanges tag, Material material, Set<DataComponentType<?>> extraHandledDcts) {
+        super(tag, extraHandledDcts);
         this.material = material;
-
-        if (tag.contains(BLOCK_ENTITY_TAG.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND)) {
-            blockEntityTag = tag.getCompound(BLOCK_ENTITY_TAG.NBT);
-        } else {
-            blockEntityTag = null;
+        CraftMetaBlockState.getOrEmpty(tag, BLOCK_ENTITY_TAG).ifPresent(nbt -> {
+            this.blockEntityTag = CraftMetaBlockState.getBlockState(material, nbt.copyNbt());
+        });
+        if (!tag.isEmpty()) {
+            if (this.blockEntityTag == null) {
+                this.blockEntityTag = CraftMetaBlockState.getBlockState(material, null);
+            }
+            ComponentMapImpl map = new ComponentMapImpl(ComponentMap.EMPTY);
+            map.applyChanges(tag);
+            TrackedDataComponentMap track = new TrackedDataComponentMap(map);
+            this.blockEntityTag.applyComponents(track, tag);
+            for (DataComponentType<?> seen : track.seen) {
+                // TODO: 1.20.6
+            	// this.unhandledTags.clear(seen);
+            }
         }
     }
 
     CraftMetaBlockState(Map<String, Object> map) {
         super(map);
         String matName = SerializableMeta.getString(map, "blockMaterial", true);
-        Material m = Material.getMaterial(matName);
-        material = (m != null) ? m : Material.AIR;
+        Material m = Material.getMaterial((String)matName);
+        this.material = m != null ? m : Material.AIR;
+        this.blockEntityTag = CraftMetaBlockState.getBlockState(this.material, this.internalTag);
+        this.internalTag = null;
     }
 
     @Override
-    void applyToItem(NbtCompound tag) {
+    void applyToItem(CraftMetaItem.Applicator tag) {
         super.applyToItem(tag);
-        if (blockEntityTag != null)
-            tag.put(BLOCK_ENTITY_TAG.NBT, blockEntityTag);
+        if (this.blockEntityTag != null) {
+            NbtCompound nbt = this.blockEntityTag.getSnapshotCustomNbtOnly();
+            nbt.remove("id");
+            if (!nbt.isEmpty()) {
+                BlockEntity.writeIdToNbt(nbt, ((BlockEntity)this.blockEntityTag.getTileEntity()).getType());
+                tag.put(BLOCK_ENTITY_TAG, NbtComponent.of(nbt));
+            }
+            for (Component<?> component : this.blockEntityTag.collectComponents()) {
+                tag.builder.add(component);
+            }
+        }
     }
 
     @Override
     void deserializeInternal(NbtCompound tag, Object context) {
         super.deserializeInternal(tag, context);
-        if (tag.contains(BLOCK_ENTITY_TAG.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND))
-            blockEntityTag = tag.getCompound(BLOCK_ENTITY_TAG.NBT);
+        if (tag.contains(CraftMetaBlockState.BLOCK_ENTITY_TAG.NBT, 10)) {
+            this.internalTag = tag.getCompound(CraftMetaBlockState.BLOCK_ENTITY_TAG.NBT);
+        }
     }
 
     @Override
-    void serializeInternal(final Map<String, NbtElement> internalTags) {
-        if (blockEntityTag != null)
-            internalTags.put(BLOCK_ENTITY_TAG.NBT, blockEntityTag);
+    void serializeInternal(Map<String, NbtElement> internalTags) {
+        if (this.blockEntityTag != null) {
+            internalTags.put(CraftMetaBlockState.BLOCK_ENTITY_TAG.NBT, this.blockEntityTag.getSnapshotNBT());
+        }
     }
 
     @Override
     ImmutableMap.Builder<String, Object> serialize(ImmutableMap.Builder<String, Object> builder) {
         super.serialize(builder);
-        builder.put("blockMaterial", material.name());
+        builder.put("blockMaterial", this.material.name());
         return builder;
     }
 
     @Override
     int applyHash() {
-        final int original;
+        int original;
         int hash = original = super.applyHash();
-        if (blockEntityTag != null)
+        if (this.blockEntityTag != null) {
             hash = 61 * hash + this.blockEntityTag.hashCode();
+        }
         return original != hash ? CraftMetaBlockState.class.hashCode() ^ hash : hash;
     }
 
     @Override
     public boolean equalsCommon(CraftMetaItem meta) {
-        if (!super.equalsCommon(meta)) return false;
-
+        if (!super.equalsCommon(meta)) {
+            return false;
+        }
         if (meta instanceof CraftMetaBlockState) {
-            CraftMetaBlockState that = (CraftMetaBlockState) meta;
+            CraftMetaBlockState that = (CraftMetaBlockState)meta;
             return Objects.equal(this.blockEntityTag, that.blockEntityTag);
         }
         return true;
@@ -166,533 +166,100 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
 
     @Override
     boolean notUncommon(CraftMetaItem meta) {
-        return super.notUncommon(meta) && (meta instanceof CraftMetaBlockState || blockEntityTag == null);
+        return super.notUncommon(meta) && (meta instanceof CraftMetaBlockState || this.blockEntityTag == null);
     }
 
     @Override
     boolean isEmpty() {
-        return super.isEmpty() && blockEntityTag == null;
+        return super.isEmpty() && this.blockEntityTag == null;
     }
 
     @Override
     boolean applicableTo(Material type) {
-        switch (type) {
-            case FURNACE:
-            case CHEST:
-            case TRAPPED_CHEST:
-            case JUKEBOX:
-            case DISPENSER:
-            case DROPPER:
-            case ACACIA_SIGN:
-            case ACACIA_WALL_SIGN:
-            case BIRCH_SIGN:
-            case BIRCH_WALL_SIGN:
-            case DARK_OAK_SIGN:
-            case DARK_OAK_WALL_SIGN:
-            case JUNGLE_SIGN:
-            case JUNGLE_WALL_SIGN:
-            case OAK_SIGN:
-            case OAK_WALL_SIGN:
-            case SPRUCE_SIGN:
-            case SPRUCE_WALL_SIGN:
-            case SPAWNER:
-            case BREWING_STAND:
-            case ENCHANTING_TABLE:
-            case COMMAND_BLOCK:
-            case REPEATING_COMMAND_BLOCK:
-            case CHAIN_COMMAND_BLOCK:
-            case BEACON:
-            case DAYLIGHT_DETECTOR:
-            case HOPPER:
-            case COMPARATOR:
-            case SHIELD:
-            case STRUCTURE_BLOCK:
-            case SHULKER_BOX:
-            case WHITE_SHULKER_BOX:
-            case ORANGE_SHULKER_BOX:
-            case MAGENTA_SHULKER_BOX:
-            case LIGHT_BLUE_SHULKER_BOX:
-            case YELLOW_SHULKER_BOX:
-            case LIME_SHULKER_BOX:
-            case PINK_SHULKER_BOX:
-            case GRAY_SHULKER_BOX:
-            case LIGHT_GRAY_SHULKER_BOX:
-            case CYAN_SHULKER_BOX:
-            case PURPLE_SHULKER_BOX:
-            case BLUE_SHULKER_BOX:
-            case BROWN_SHULKER_BOX:
-            case GREEN_SHULKER_BOX:
-            case RED_SHULKER_BOX:
-            case BLACK_SHULKER_BOX:
-            case ENDER_CHEST:
-            case BARREL:
-            case BELL:
-            case BLAST_FURNACE:
-            case CAMPFIRE:
-            case JIGSAW:
-            case LECTERN:
-            case SMOKER:
-            case BEEHIVE:
-            case BEE_NEST:
-                return true;
-        }
-        return false;
+        return BLOCK_STATE_MATERIALS.contains(type);
     }
 
     @Override
     public CraftMetaBlockState clone() {
-        CraftMetaBlockState meta = (CraftMetaBlockState) super.clone();
-        if (blockEntityTag != null)
-            meta.blockEntityTag = blockEntityTag.copy();
+        CraftMetaBlockState meta = (CraftMetaBlockState)super.clone();
+        if (this.blockEntityTag != null) {
+            meta.blockEntityTag = this.blockEntityTag.copy();
+        }
         return meta;
     }
 
-    @Override
     public boolean hasBlockState() {
-        return blockEntityTag != null;
+        return this.blockEntityTag != null;
     }
 
-    @Override
+    public void clearBlockState() {
+        this.blockEntityTag = null;
+    }
+
     public BlockState getBlockState() {
+        return this.blockEntityTag != null ? this.blockEntityTag.copy() : CraftMetaBlockState.getBlockState(this.material, null);
+    }
+
+    private static CardboardBlockEntityState<?> getBlockState(Material material, NbtCompound blockEntityTag) {
+        Material stateMaterial;
+        BlockPos pos = BlockPos.ORIGIN;
+        Material material2 = stateMaterial = material != Material.SHIELD ? material : CraftMetaBlockState.shieldToBannerHack();
         if (blockEntityTag != null) {
-            switch (material) {
-                case SHIELD:
-                    blockEntityTag.putString("id", "banner");
-                    break;
-                case SHULKER_BOX:
-                case WHITE_SHULKER_BOX:
-                case ORANGE_SHULKER_BOX:
-                case MAGENTA_SHULKER_BOX:
-                case LIGHT_BLUE_SHULKER_BOX:
-                case YELLOW_SHULKER_BOX:
-                case LIME_SHULKER_BOX:
-                case PINK_SHULKER_BOX:
-                case GRAY_SHULKER_BOX:
-                case LIGHT_GRAY_SHULKER_BOX:
-                case CYAN_SHULKER_BOX:
-                case PURPLE_SHULKER_BOX:
-                case BLUE_SHULKER_BOX:
-                case BROWN_SHULKER_BOX:
-                case GREEN_SHULKER_BOX:
-                case RED_SHULKER_BOX:
-                case BLACK_SHULKER_BOX:
-                    blockEntityTag.putString("id", "shulker_box");
-                    break;
-                case BEE_NEST:
-                case BEEHIVE:
-                    blockEntityTag.putString("id", "beehive");
-                    break;
+            if (material == Material.SHIELD) {
+                blockEntityTag.putString("id", "minecraft:banner");
+            } else if (material == Material.BEE_NEST || material == Material.BEEHIVE) {
+                blockEntityTag.putString("id", "minecraft:beehive");
+            } else if (SHULKER_BOX_MATERIALS.contains(material)) {
+                blockEntityTag.putString("id", "minecraft:shulker_box");
             }
+            pos = BlockEntity.posFromNbt(blockEntityTag);
         }
         
-        IMixinMinecraftServer mc = (IMixinMinecraftServer) (Object) ICommonMod.getIServer().getMinecraft();
         
-        BlockEntity te = (blockEntityTag == null) ? null : mc.IC$create_blockentity_from_nbt(null, null, blockEntityTag);
-        //BlockEntity te = (blockEntityTag == null) ? null : BlockEntity.createFromNbt(null, null, blockEntityTag);
-
-        switch (material) {
-        case ACACIA_SIGN:
-        case ACACIA_WALL_SIGN:
-        case BIRCH_SIGN:
-        case BIRCH_WALL_SIGN:
-        case DARK_OAK_SIGN:
-        case DARK_OAK_WALL_SIGN:
-        case JUNGLE_SIGN:
-        case JUNGLE_WALL_SIGN:
-        case OAK_SIGN:
-        case OAK_WALL_SIGN:
-        case SPRUCE_SIGN:
-        case SPRUCE_WALL_SIGN:
-            if (te == null) te = new SignBlockEntity(null,null);
-            return new CardboardSign(material, (SignBlockEntity) te);
-        case CHEST:
-        case TRAPPED_CHEST:
-            if (te == null) te = new ChestBlockEntity(null,null);
-            return new CardboardChest(material, (ChestBlockEntity) te);
-        case FURNACE:
-            if (te == null) te = new FurnaceBlockEntity(null,null);
-            return new CardboardFurnace(material, (AbstractFurnaceBlockEntity) te);
-        case DISPENSER:
-            if (te == null) te = new DispenserBlockEntity(null,null);
-            return new CardboardDispenser(material, (DispenserBlockEntity) te);
-        case DROPPER:
-            if (te == null) te = new DropperBlockEntity(null,null);
-            return new CardboardDropper(material, (DropperBlockEntity) te);
-        case END_GATEWAY:
-            if (te == null) te = new EndGatewayBlockEntity(null,null);
-            return new CardboardEndGateway(material, (EndGatewayBlockEntity) te);
-        case HOPPER:
-            if (te == null) te = new HopperBlockEntity(null,null);
-            return new CardboardHopper(material, (HopperBlockEntity) te);
-        case SPAWNER:
-            if (te == null) te = new MobSpawnerBlockEntity(null,null);
-            return new CardboardMobspawner(material, (MobSpawnerBlockEntity) te);
-        case JUKEBOX:
-            if (te == null) te = new JukeboxBlockEntity(null,null);
-            return new CardboardJukebox(material, (JukeboxBlockEntity) te);
-        case BREWING_STAND:
-            if (te == null) te = new BrewingStandBlockEntity(null,null);
-            return new CardboardBrewingStand(material, (BrewingStandBlockEntity) te);
-        case CREEPER_HEAD:
-        case CREEPER_WALL_HEAD:
-        case DRAGON_HEAD:
-        case DRAGON_WALL_HEAD:
-        case PLAYER_HEAD:
-        case PLAYER_WALL_HEAD:
-        case SKELETON_SKULL:
-        case SKELETON_WALL_SKULL:
-        case WITHER_SKELETON_SKULL:
-        case WITHER_SKELETON_WALL_SKULL:
-        case ZOMBIE_HEAD:
-        case ZOMBIE_WALL_HEAD:
-            if (te == null) te = new SkullBlockEntity(null,null);
-            return new CardboardSkull(material, (SkullBlockEntity) te);
-        case COMMAND_BLOCK:
-        case REPEATING_COMMAND_BLOCK:
-        case CHAIN_COMMAND_BLOCK:
-            if (te == null) {
-                te = new CommandBlockBlockEntity(null,null);
-            }
-            return new CardboardCommandBlock(material, (CommandBlockBlockEntity) te);
-        case BEACON:
-            if (te == null) {
-                te = new BeaconBlockEntity(null,null);
-            }
-            return new CardboardBeacon(material, (BeaconBlockEntity) te);
-        case SHIELD:
-            if (te == null) {
-                te = new BannerBlockEntity(null,null);
-            }
-            ((BannerBlockEntity) te).baseColor = (blockEntityTag == null) ? DyeColor.WHITE : DyeColor.byId(blockEntityTag.getInt(CraftMetaBanner.BASE.NBT));
-        case BLACK_BANNER:
-        case BLACK_WALL_BANNER:
-        case BLUE_BANNER:
-        case BLUE_WALL_BANNER:
-        case BROWN_BANNER:
-        case BROWN_WALL_BANNER:
-        case CYAN_BANNER:
-        case CYAN_WALL_BANNER:
-        case GRAY_BANNER:
-        case GRAY_WALL_BANNER:
-        case GREEN_BANNER:
-        case GREEN_WALL_BANNER:
-        case LIGHT_BLUE_BANNER:
-        case LIGHT_BLUE_WALL_BANNER:
-        case LIGHT_GRAY_BANNER:
-        case LIGHT_GRAY_WALL_BANNER:
-        case LIME_BANNER:
-        case LIME_WALL_BANNER:
-        case MAGENTA_BANNER:
-        case MAGENTA_WALL_BANNER:
-        case ORANGE_BANNER:
-        case ORANGE_WALL_BANNER:
-        case PINK_BANNER:
-        case PINK_WALL_BANNER:
-        case PURPLE_BANNER:
-        case PURPLE_WALL_BANNER:
-        case RED_BANNER:
-        case RED_WALL_BANNER:
-        case WHITE_BANNER:
-        case WHITE_WALL_BANNER:
-        case YELLOW_BANNER:
-        case YELLOW_WALL_BANNER:
-            if (te == null)
-                te = new BannerBlockEntity(null,null);
-
-            return new CardboardBanner(material == Material.SHIELD ? shieldToBannerHack(blockEntityTag) : material, (BannerBlockEntity) te);
-        case STRUCTURE_BLOCK:
-            if (te == null) te = new StructureBlockBlockEntity(null,null);
-            return new CardboardStructureBlock(material, (StructureBlockBlockEntity) te);
-        case SHULKER_BOX:
-        case WHITE_SHULKER_BOX:
-        case ORANGE_SHULKER_BOX:
-        case MAGENTA_SHULKER_BOX:
-        case LIGHT_BLUE_SHULKER_BOX:
-        case YELLOW_SHULKER_BOX:
-        case LIME_SHULKER_BOX:
-        case PINK_SHULKER_BOX:
-        case GRAY_SHULKER_BOX:
-        case LIGHT_GRAY_SHULKER_BOX:
-        case CYAN_SHULKER_BOX:
-        case PURPLE_SHULKER_BOX:
-        case BLUE_SHULKER_BOX:
-        case BROWN_SHULKER_BOX:
-        case GREEN_SHULKER_BOX:
-        case RED_SHULKER_BOX:
-        case BLACK_SHULKER_BOX:
-            if (te == null)
-                te = new ShulkerBoxBlockEntity(null,null);
-            return new CardboardShulkerBox(material, (ShulkerBoxBlockEntity) te);
-        case ENCHANTING_TABLE:
-            if (te == null)
-                te = new EnchantingTableBlockEntity(null,null);
-            return new CardboardEnchantingTable(material, (EnchantingTableBlockEntity) te);
-        case ENDER_CHEST:
-            if (te == null)
-                te = new EnderChestBlockEntity(null,null);
-            return new CardboardEnderchest(material, (EnderChestBlockEntity) te);
-        case DAYLIGHT_DETECTOR:
-            if (te == null)
-                te = new DaylightDetectorBlockEntity(null,null);
-            return new CardboardDaylightDetector(material, (DaylightDetectorBlockEntity) te);
-        case COMPARATOR:
-            if (te == null)
-                te = new ComparatorBlockEntity(null,null);
-            return new CardboardComparator(material, (ComparatorBlockEntity) te);
-        case BARREL:
-            if (te == null)
-                te = new BarrelBlockEntity(null,null);
-            return new CardboardBarrel(material, (BarrelBlockEntity) te);
-        case BELL:
-            if (te == null)
-                te = new BellBlockEntity(null,null);
-            return new CardboardBell(material, (BellBlockEntity) te);
-        case BLAST_FURNACE:
-            if (te == null)
-                te = new BlastFurnaceBlockEntity(null,null);
-            return new CardboardBlastFurnace(material, (BlastFurnaceBlockEntity) te);
-        case CAMPFIRE:
-            if (te == null)
-                te = new CampfireBlockEntity(null,null);
-            return new CardboardCampfire(material, (CampfireBlockEntity) te);
-        case JIGSAW:
-            if (te == null)
-                te = new JigsawBlockEntity(null,null);
-            return new CardboardJigsaw(material, (JigsawBlockEntity) te);
-        case LECTERN:
-            if (te == null)
-                te = new LecternBlockEntity(null,null);
-            return new CardboardLectern(material, (LecternBlockEntity) te);
-        case SMOKER:
-            if (te == null) te = new SmokerBlockEntity(null,null);
-            return new CardboardSmoker(material, (SmokerBlockEntity) te);
-        case BEE_NEST:
-        case BEEHIVE:
-            if (te == null)
-                te = new BeehiveBlockEntity(null,null);
-            return new CardboardBeehive(material, (BeehiveBlockEntity) te);
-        default:
-            throw new IllegalStateException("Missing blockState for " + material);
-        }
+        return (CardboardBlockEntityState)CraftBlockStates.getBlockState(pos, stateMaterial, blockEntityTag);
     }
 
-    @Override
     public void setBlockState(BlockState blockState) {
-        Validate.notNull(blockState, "blockState must not be null");
-
-        boolean valid;
-        switch (material) {
-        case ACACIA_SIGN:
-        case ACACIA_WALL_SIGN:
-        case BIRCH_SIGN:
-        case BIRCH_WALL_SIGN:
-        case DARK_OAK_SIGN:
-        case DARK_OAK_WALL_SIGN:
-        case JUNGLE_SIGN:
-        case JUNGLE_WALL_SIGN:
-        case OAK_SIGN:
-        case OAK_WALL_SIGN:
-        case SPRUCE_SIGN:
-        case SPRUCE_WALL_SIGN:
-            valid = blockState instanceof CardboardSign;
-            break;
-        case CHEST:
-        case TRAPPED_CHEST:
-            valid = blockState instanceof CardboardChest;
-            break;
-        case FURNACE:
-            valid = blockState instanceof CardboardFurnace;
-            break;
-        case DISPENSER:
-            valid = blockState instanceof CardboardDispenser;
-            break;
-        case DROPPER:
-            valid = blockState instanceof CardboardDropper;
-            break;
-        case END_GATEWAY:
-            valid = blockState instanceof CardboardEndGateway;
-            break;
-        case HOPPER:
-            valid = blockState instanceof CardboardHopper;
-            break;
-        case SPAWNER:
-            valid = blockState instanceof CardboardMobspawner;
-            break;
-        case JUKEBOX:
-            valid = blockState instanceof CardboardJukebox;
-            break;
-        case BREWING_STAND:
-            valid = blockState instanceof CardboardBrewingStand;
-            break;
-        case CREEPER_HEAD:
-        case CREEPER_WALL_HEAD:
-        case DRAGON_HEAD:
-        case DRAGON_WALL_HEAD:
-        case PLAYER_HEAD:
-        case PLAYER_WALL_HEAD:
-        case SKELETON_SKULL:
-        case SKELETON_WALL_SKULL:
-        case WITHER_SKELETON_SKULL:
-        case WITHER_SKELETON_WALL_SKULL:
-        case ZOMBIE_HEAD:
-        case ZOMBIE_WALL_HEAD:
-            valid = blockState instanceof CardboardSkull;
-            break;
-        case COMMAND_BLOCK:
-        case REPEATING_COMMAND_BLOCK:
-        case CHAIN_COMMAND_BLOCK:
-            valid = blockState instanceof CardboardCommandBlock;
-            break;
-        case BEACON:
-            valid = blockState instanceof CardboardBeacon;
-            break;
-        case SHIELD:
-        case BLACK_BANNER:
-        case BLACK_WALL_BANNER:
-        case BLUE_BANNER:
-        case BLUE_WALL_BANNER:
-        case BROWN_BANNER:
-        case BROWN_WALL_BANNER:
-        case CYAN_BANNER:
-        case CYAN_WALL_BANNER:
-        case GRAY_BANNER:
-        case GRAY_WALL_BANNER:
-        case GREEN_BANNER:
-        case GREEN_WALL_BANNER:
-        case LIGHT_BLUE_BANNER:
-        case LIGHT_BLUE_WALL_BANNER:
-        case LIGHT_GRAY_BANNER:
-        case LIGHT_GRAY_WALL_BANNER:
-        case LIME_BANNER:
-        case LIME_WALL_BANNER:
-        case MAGENTA_BANNER:
-        case MAGENTA_WALL_BANNER:
-        case ORANGE_BANNER:
-        case ORANGE_WALL_BANNER:
-        case PINK_BANNER:
-        case PINK_WALL_BANNER:
-        case PURPLE_BANNER:
-        case PURPLE_WALL_BANNER:
-        case RED_BANNER:
-        case RED_WALL_BANNER:
-        case WHITE_BANNER:
-        case WHITE_WALL_BANNER:
-        case YELLOW_BANNER:
-        case YELLOW_WALL_BANNER:
-            valid = blockState instanceof CardboardBanner;
-            break;
-        case STRUCTURE_BLOCK:
-            valid = blockState instanceof CardboardStructureBlock;
-            break;
-        case SHULKER_BOX:
-        case WHITE_SHULKER_BOX:
-        case ORANGE_SHULKER_BOX:
-        case MAGENTA_SHULKER_BOX:
-        case LIGHT_BLUE_SHULKER_BOX:
-        case YELLOW_SHULKER_BOX:
-        case LIME_SHULKER_BOX:
-        case PINK_SHULKER_BOX:
-        case GRAY_SHULKER_BOX:
-        case LIGHT_GRAY_SHULKER_BOX:
-        case CYAN_SHULKER_BOX:
-        case PURPLE_SHULKER_BOX:
-        case BLUE_SHULKER_BOX:
-        case BROWN_SHULKER_BOX:
-        case GREEN_SHULKER_BOX:
-        case RED_SHULKER_BOX:
-        case BLACK_SHULKER_BOX:
-            valid = blockState instanceof CardboardShulkerBox;
-            break;
-        case ENCHANTING_TABLE:
-            valid = blockState instanceof CardboardEnchantingTable;
-            break;
-        case ENDER_CHEST:
-            valid = blockState instanceof CardboardEnderchest;
-            break;
-        case DAYLIGHT_DETECTOR:
-            valid = blockState instanceof CardboardDaylightDetector;
-            break;
-        case COMPARATOR:
-            valid = blockState instanceof CardboardComparator;
-            break;
-        case BARREL:
-            valid = blockState instanceof CardboardBarrel;
-            break;
-        case BELL:
-            valid = blockState instanceof CardboardBell;
-            break;
-        case BLAST_FURNACE:
-            valid = blockState instanceof CardboardBlastFurnace;
-            break;
-        case CAMPFIRE:
-            valid = blockState instanceof CardboardCampfire;
-            break;
-        case JIGSAW:
-            valid = blockState instanceof CardboardJigsaw;
-            break;
-        case LECTERN:
-            valid = blockState instanceof CardboardLectern;
-            break;
-        case SMOKER:
-            valid = blockState instanceof CardboardSmoker;
-            break;
-        case BEEHIVE:
-        case BEE_NEST:
-            valid = blockState instanceof CardboardBeehive;
-            break;
-        default:
-            valid = false;
-            break;
-        }
-
-        Validate.isTrue(valid, "Invalid blockState for " + material);
-
-        blockEntityTag = ((CardboardBlockEntityState) blockState).getSnapshotNBT();
-        // Set shield base
-        if (material == Material.SHIELD)
-            blockEntityTag.putInt(CraftMetaBanner.BASE.NBT, ((CardboardBanner) blockState).getBaseColor().getWoolData());
+        Preconditions.checkArgument((blockState != null ? 1 : 0) != 0, (Object)"blockState must not be null");
+        Material stateMaterial = this.material != Material.SHIELD ? this.material : CraftMetaBlockState.shieldToBannerHack();
+        Class<? extends CraftBlockState> blockStateType = CraftBlockStates.getBlockStateType(stateMaterial);
+        Preconditions.checkArgument((blockStateType == blockState.getClass() && blockState instanceof CardboardBlockEntityState ? 1 : 0) != 0, (Object)("Invalid blockState for " + String.valueOf(this.material)));
+        this.blockEntityTag = (CardboardBlockEntityState)blockState;
     }
 
-    private static Material shieldToBannerHack(NbtCompound tag) {
-        if (tag == null || !tag.contains(CraftMetaBanner.BASE.NBT, CraftMagicNumbers.NBT.TAG_INT)) {
-            return Material.WHITE_BANNER;
+    private static Material shieldToBannerHack() {
+        return Material.WHITE_BANNER;
+    }
+
+    static {
+        BLOCK_STATE_MATERIALS.addAll(SHULKER_BOX_MATERIALS);
+        BLOCK_ENTITY_TAG = new CraftMetaItem.ItemMetaKeyType<NbtComponent>(DataComponentTypes.BLOCK_ENTITY_DATA, "BlockEntityTag");
+    }
+
+    private static final class TrackedDataComponentMap
+    implements ComponentMap {
+        private final Set<DataComponentType<?>> seen = new HashSet();
+        private final ComponentMap handle;
+
+        public TrackedDataComponentMap(ComponentMap map) {
+            this.handle = map;
         }
 
-        switch (tag.getInt(CraftMetaBanner.BASE.NBT)) {
-            case 0:
-                return Material.WHITE_BANNER;
-            case 1:
-                return Material.ORANGE_BANNER;
-            case 2:
-                return Material.MAGENTA_BANNER;
-            case 3:
-                return Material.LIGHT_BLUE_BANNER;
-            case 4:
-                return Material.YELLOW_BANNER;
-            case 5:
-                return Material.LIME_BANNER;
-            case 6:
-                return Material.PINK_BANNER;
-            case 7:
-                return Material.GRAY_BANNER;
-            case 8:
-                return Material.LIGHT_GRAY_BANNER;
-            case 9:
-                return Material.CYAN_BANNER;
-            case 10:
-                return Material.PURPLE_BANNER;
-            case 11:
-                return Material.BLUE_BANNER;
-            case 12:
-                return Material.BROWN_BANNER;
-            case 13:
-                return Material.GREEN_BANNER;
-            case 14:
-                return Material.RED_BANNER;
-            case 15:
-                return Material.BLACK_BANNER;
-            default:
-                throw new IllegalArgumentException("Unknown banner colour");
+        @Override
+        public <T> T get(DataComponentType<? extends T> type) {
+            this.seen.add(type);
+            return this.handle.get(type);
+        }
+
+        @Override
+        public Set<DataComponentType<?>> getTypes() {
+            return this.handle.getTypes();
+        }
+
+        @Override
+        public Iterator<Component<?>> iterator() {
+            return this.handle.iterator();
         }
     }
 }
+

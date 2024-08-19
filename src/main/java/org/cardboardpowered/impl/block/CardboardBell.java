@@ -6,7 +6,9 @@ import net.minecraft.block.entity.BellBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.Direction;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Bell;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -17,6 +19,26 @@ import org.jetbrains.annotations.Nullable;
 
 public class CardboardBell extends CardboardBlockEntityState<BellBlockEntity> implements Bell {
 
+    public CardboardBell(World world, BellBlockEntity tileEntity) {
+        super(world, tileEntity);
+    }
+
+    protected CardboardBell(CardboardBell state, Location location) {
+        super(state, location);
+    }
+    
+    @Override
+    public CardboardBell copy() {
+        return new CardboardBell(this, null);
+    }
+
+    @Override
+    public CardboardBell copy(Location location) {
+        return new CardboardBell(this, location);
+    }
+
+
+    /*
     public CardboardBell(Block block) {
         super(block, BellBlockEntity.class);
     }
@@ -24,6 +46,7 @@ public class CardboardBell extends CardboardBlockEntityState<BellBlockEntity> im
     public CardboardBell(Material material, BellBlockEntity te) {
         super(material, te);
     }
+    */
 
 	@Override
 	public int getResonatingTicks() {

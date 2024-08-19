@@ -2,19 +2,41 @@ package org.cardboardpowered.impl.block;
 
 import net.minecraft.block.entity.BedBlockEntity;
 import org.bukkit.DyeColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Bed;
 import org.bukkit.block.Block;
 
 @SuppressWarnings("deprecation")
 public class CardboardBed extends CardboardBlockEntityState<BedBlockEntity> implements Bed {
 
+    public CardboardBed(World world, BedBlockEntity tileEntity) {
+        super(world, tileEntity);
+    }
+
+    protected CardboardBed(CardboardBed state, Location location) {
+        super(state, location);
+    }
+	
+    /*
     public CardboardBed(Block block) {
         super(block, BedBlockEntity.class);
     }
 
     public CardboardBed(Material material, BedBlockEntity te) {
         super(material, te);
+    }
+    */
+    
+    @Override
+    public CardboardBed copy() {
+        return new CardboardBed(this, null);
+    }
+
+    @Override
+    public CardboardBed copy(Location location) {
+        return new CardboardBed(this, location);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.block;
 
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
@@ -36,10 +38,16 @@ import net.minecraft.world.WorldAccess;
 public class CraftBlockState implements BlockState {
 
     protected final WorldImpl world;
-    private final CardboardChunk chunk;
+    
+    @Deprecated
+    private CardboardChunk chunk;
+    
+    
     private final BlockPos position;
     protected net.minecraft.block.BlockState data;
     protected int flag;
+    
+    private WeakReference<WorldAccess> weakWorld;
 
     public CraftBlockState(final Block block) {
         this.world = (WorldImpl) block.getWorld();
@@ -54,20 +62,72 @@ public class CraftBlockState implements BlockState {
         this.flag = flag;
     }
 
+    /*
+    @Deprecated
     public CraftBlockState(Material material) {
         world = null;
         data = CraftMagicNumbers.getBlock(material).getDefaultState();
-        chunk = null;
         position = BlockPos.ORIGIN;
     }
+    */
 
-    public static CraftBlockState getBlockState(WorldAccess world, net.minecraft.util.math.BlockPos pos) {
+    protected CraftBlockState(@Nullable World world, BlockPos blockPosition, net.minecraft.block.BlockState blockData) {
+        this.world = (WorldImpl) world;
+        this.position = blockPosition;
+        this.data = blockData;
+    }
+
+    protected CraftBlockState(CraftBlockState state, @Nullable Location location) {
+        if (location == null) {
+            this.world = null;
+            this.position = state.getPosition().toImmutable();
+        } else {
+            this.world = (WorldImpl)location.getWorld();
+            this.position = CraftLocation.toBlockPosition(location);
+        }
+        this.data = state.data;
+        this.flag = state.flag;
+        this.setWorldHandle(state.getWorldHandle());
+    }
+    
+    public void setWorldHandle(WorldAccess generatorAccess) {
+        this.weakWorld = generatorAccess instanceof net.minecraft.world.World ? null : new WeakReference<WorldAccess>(generatorAccess);
+    }
+
+    public WorldAccess getWorldHandle() {
+        if (this.weakWorld == null) {
+            return this.isPlaced() ? this.world.getHandle() : null;
+        }
+        WorldAccess access = (WorldAccess)this.weakWorld.get();
+        if (access == null) {
+            this.weakWorld = null;
+            return this.isPlaced() ? this.world.getHandle() : null;
+        }
+        return access;
+    }
+    
+    protected final boolean isWorldGeneration() {
+        WorldAccess generatorAccess = this.getWorldHandle();
+        return generatorAccess != null && !(generatorAccess instanceof net.minecraft.world.World);
+    }
+
+	public static CraftBlockState getBlockState(WorldAccess world, net.minecraft.util.math.BlockPos pos) {
         return new CraftBlockState(CraftBlock.at((ServerWorld) world, pos));
     }
 
     public static CraftBlockState getBlockState(net.minecraft.world.World world, net.minecraft.util.math.BlockPos pos, int flag) {
         return new CraftBlockState(((IMixinWorld)(Object)world).getWorldImpl().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), flag);
     }
+    
+    /*
+    public CraftBlockState copy() {
+        return new CraftBlockState(this, null);
+    }
+
+    public BlockState copy(Location location) {
+        return new CraftBlockState(this, location);
+    }
+    */
 
     @Override
     public World getWorld() {
@@ -93,7 +153,10 @@ public class CraftBlockState implements BlockState {
     @Override
     public Chunk getChunk() {
         requirePlaced();
-        return chunk;
+        
+        return this.world.getChunkAt(this.getX() >> 4, this.getZ() >> 4);
+        
+        // return chunk;
     }
 
     public void setData(net.minecraft.block.BlockState data) {
@@ -245,25 +308,25 @@ public class CraftBlockState implements BlockState {
     @Override
     public void setMetadata(String metadataKey, MetadataValue newMetadataValue) {
         requirePlaced();
-        chunk.getWorld().getBlockMetadata().setMetadata(getBlock(), metadataKey, newMetadataValue);
+        this.world.getBlockMetadata().setMetadata(this.getBlock(), metadataKey, newMetadataValue);
     }
 
     @Override
     public List<MetadataValue> getMetadata(String metadataKey) {
         requirePlaced();
-        return chunk.getWorld().getBlockMetadata().getMetadata(getBlock(), metadataKey);
+        return this.world.getBlockMetadata().getMetadata(this.getBlock(), metadataKey);
     }
 
     @Override
     public boolean hasMetadata(String metadataKey) {
         requirePlaced();
-        return chunk.getWorld().getBlockMetadata().hasMetadata(getBlock(), metadataKey);
+        return this.world.getBlockMetadata().hasMetadata(this.getBlock(), metadataKey);
     }
 
     @Override
     public void removeMetadata(String metadataKey, Plugin owningPlugin) {
         requirePlaced();
-        chunk.getWorld().getBlockMetadata().removeMetadata(getBlock(), metadataKey, owningPlugin);
+        this.world.getBlockMetadata().removeMetadata(this.getBlock(), metadataKey, owningPlugin);
     }
 
     @Override

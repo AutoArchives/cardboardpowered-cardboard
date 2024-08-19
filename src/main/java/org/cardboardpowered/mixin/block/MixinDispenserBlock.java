@@ -15,7 +15,13 @@ public class MixinDispenserBlock implements IMixinDispenserBlock {
      * @author Cardboard
      * @reason Set event fired to false
      */
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/block/DispenserBlock;getBehaviorForItem(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/block/dispenser/DispenserBehavior;"), method = "dispense")
+    @Inject(
+    		at = @At(
+    				value = "INVOKE",
+    				target = "Lnet/minecraft/block/DispenserBlock;getBehaviorForItem(Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;)Lnet/minecraft/block/dispenser/DispenserBehavior;"
+    			),
+    		method = "dispense"
+    	)
     public void doBukkit_setEventFired(CallbackInfo ci) {
         DispenserBlockHelper.eventFired = false;
     }

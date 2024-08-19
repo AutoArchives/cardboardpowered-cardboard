@@ -6,8 +6,10 @@ import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 
 import java.util.Map;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Furnace;
 import org.bukkit.craftbukkit.block.CraftContainer;
@@ -17,14 +19,20 @@ import org.cardboardpowered.impl.inventory.CardboardFurnaceInventory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class CardboardFurnace<T extends AbstractFurnaceBlockEntity> extends CraftContainer<T> implements Furnace {
+public abstract class CardboardFurnace<T extends AbstractFurnaceBlockEntity> extends CraftContainer<T> implements Furnace {
 
-    public CardboardFurnace(Block block, Class<T> tileEntityClass) {
-        super(block, tileEntityClass);
+    public CardboardFurnace(World world, T tileEntity) {
+        super(world, tileEntity);
     }
+    
+    @Override
+    public abstract CardboardFurnace<T> copy();
 
-    public CardboardFurnace(final Material material, final T te) {
-        super(material, te);
+    @Override
+    public abstract CardboardFurnace<T> copy(Location var1);
+
+    protected CardboardFurnace(CardboardFurnace<T> state, Location location) {
+        super(state, location);
     }
 
     @Override

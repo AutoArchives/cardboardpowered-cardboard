@@ -4,15 +4,24 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 import io.papermc.paper.potion.PotionMix;
+import me.isaiah.common.ICommonMod;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.potion.Potion;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry.Reference;
+import net.minecraft.util.Identifier;
 
 import org.bukkit.NamespacedKey;
+import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.potion.PotionBrewer;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
@@ -28,8 +37,15 @@ public class CardboardPotionBrewer implements PotionBrewer {
     public Collection<PotionEffect> getEffects(PotionType damage, boolean upgraded, boolean extended) {
         if (cache.containsKey(damage)) return cache.get(damage);
 
-        List<StatusEffectInstance> mcEffects = Potion.byId(CardboardPotionUtil.fromBukkit(new PotionData(damage, extended, upgraded))).getEffects();
+        String ss = CardboardPotionUtil.fromBukkit(new PotionData(damage, extended, upgraded));
+        
+        List<StatusEffectInstance> mcEffects = new ArrayList<>();// Potion.byId(ss).getEffects();
 
+        ICommonMod.getIServer().getMinecraft().getRegistryManager().get(RegistryKeys.STATUS_EFFECT);
+        Optional<Reference<StatusEffect>> opt = Registries.STATUS_EFFECT.getEntry(new Identifier(ss));
+        
+        mcEffects.add(new StatusEffectInstance(opt.get()));
+        
         ImmutableList.Builder<PotionEffect> builder = new ImmutableList.Builder<PotionEffect>();
         for (StatusEffectInstance effect : mcEffects) builder.add(CardboardPotionUtil.toBukkit(effect));
 

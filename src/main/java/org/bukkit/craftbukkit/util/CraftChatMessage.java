@@ -403,6 +403,28 @@ public final class CraftChatMessage {
         return CraftChatMessage.fromComponent(component);
     }
 
+    public static Text fromJSONOrString(String message) {
+        return CraftChatMessage.fromJSONOrString(message, false);
+    }
+
+    public static Text fromJSONOrString(String message, boolean keepNewlines) {
+        return CraftChatMessage.fromJSONOrString(message, false, keepNewlines);
+    }
+
+    public static Text fromJSONOrString(String message, boolean nullable, boolean keepNewlines) {
+        if (message == null) {
+            message = "";
+        }
+        if (nullable && message.isEmpty()) {
+            return null;
+        }
+        Text component = CraftChatMessage.fromJSONOrNull(message);
+        if (component != null) {
+            return component;
+        }
+        return CraftChatMessage.fromString(message, keepNewlines)[0];
+    }
+
 
 
 }

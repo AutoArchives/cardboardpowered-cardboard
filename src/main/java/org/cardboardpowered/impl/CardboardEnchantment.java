@@ -4,9 +4,13 @@ import net.kyori.adventure.text.Component;
 import net.minecraft.enchantment.BindingCurseEnchantment;
 import net.minecraft.enchantment.VanishingCurseEnchantment;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 
 import java.util.Set;
 
+import org.bukkit.Registry;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.enchantments.Enchantment;
@@ -239,5 +243,30 @@ public class CardboardEnchantment extends Enchantment {
         // TODO Auto-generated method stub
         return null;
     }
+
+	public static void bukkitToMinecraft() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+    public static net.minecraft.enchantment.Enchantment bukkitToMinecraft(Enchantment bukkit) {
+    	
+    	return ( (CardboardEnchantment) bukkit ).getHandle();
+    	
+        // return CraftRegistry.bukkitToMinecraft(bukkit);
+    }
+
+	public static Enchantment minecraftHolderToBukkit(RegistryEntry<net.minecraft.enchantment.Enchantment> id) {
+		// TODO Auto-generated method stub
+		
+		return CardboardEnchantment.getByKey( CraftNamespacedKey.fromMinecraft(id.getKey().get().getValue()) );
+		// return minecraftToBukkit(minecraft.value());
+		// return null;
+	}
+	
+    /*public static Enchantment minecraftToBukkit(net.minecraft.enchantment.Enchantment minecraft) {
+        return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.ENCHANTMENT, Registry.ENCHANTMENT);
+    }*/
+
 
 }

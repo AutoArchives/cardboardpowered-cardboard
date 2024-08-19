@@ -3,7 +3,9 @@ package org.cardboardpowered.impl.block;
 import java.util.List;
 
 import org.bukkit.DyeColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.sign.Side;
@@ -18,11 +20,20 @@ import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.text.Text;
 
 @SuppressWarnings("deprecation")
-public class CardboardSign extends CardboardBlockEntityState<SignBlockEntity> implements Sign {
+public class CardboardSign<T extends SignBlockEntity> extends CardboardBlockEntityState<T> implements Sign {
 
     private String[] lines;
     private boolean editable;
+    
+    public CardboardSign(World world, T tileEntity) {
+        super(world, tileEntity);
+    }
 
+    protected CardboardSign(CardboardSign<T> state, Location location) {
+        super(state, location);
+    }
+    
+    /*
     public CardboardSign(final Block block) {
         super(block, SignBlockEntity.class);
     }
@@ -30,9 +41,10 @@ public class CardboardSign extends CardboardBlockEntityState<SignBlockEntity> im
     public CardboardSign(final Material material, final SignBlockEntity te) {
         super(material, te);
     }
+    */
 
     @Override
-    public void load(SignBlockEntity sign) {
+    public void load(T sign) {
         super.load(sign);
         lines = new String[((IMixinSignBlockEntity)sign).getTextBF().length];
         System.arraycopy(revertComponents(((IMixinSignBlockEntity)sign).getTextBF()), 0, lines, 0, lines.length);
@@ -75,7 +87,7 @@ public class CardboardSign extends CardboardBlockEntityState<SignBlockEntity> im
     }
 
     @Override
-    public void applyTo(SignBlockEntity sign) {
+    public void applyTo(T sign) {
         super.applyTo(sign);
 
         Text[] newLines = sanitizeLines(lines);
@@ -141,6 +153,16 @@ public class CardboardSign extends CardboardBlockEntityState<SignBlockEntity> im
         // TODO!
         return null;
         //throw new IllegalArgumentException();
+    }
+
+    @Override
+    public CardboardSign<T> copy() {
+        return new CardboardSign<T>(this, null);
+    }
+
+    @Override
+    public CardboardSign<T> copy(Location location) {
+        return new CardboardSign<T>(this, location);
     }
 
 }

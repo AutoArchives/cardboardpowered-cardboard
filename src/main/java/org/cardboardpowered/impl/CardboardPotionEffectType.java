@@ -2,18 +2,46 @@ package org.cardboardpowered.impl;
 
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.entry.RegistryEntry.Reference;
+
 import org.bukkit.Color;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class CardboardPotionEffectType extends PotionEffectType {
 
+	public static RegistryEntry<StatusEffect> bukkitToMinecraftHolder(PotionEffectType type) {
+		// TODO Auto-generated method stub
+		// return CraftRegistry.bukkitToMinecraftHolder(..);
+
+		Optional<Reference<StatusEffect>> opt = Registries.STATUS_EFFECT.getEntry(type.getId());
+		
+		if (opt.isPresent()) {
+			return opt.get();
+		}
+		return null;
+	}
+	
+    public static PotionEffectType minecraftHolderToBukkit(RegistryEntry<StatusEffect> minecraft) {
+        return CraftPotionEffectType.minecraftToBukkit(minecraft.value());
+    }
+
+	
+	
+	
     private final StatusEffect handle;
+    
+    
+    
 
     public CardboardPotionEffectType(StatusEffect handle) {
         super(Registries.STATUS_EFFECT.getRawId(handle), CraftNamespacedKey.fromMinecraft(Registries.STATUS_EFFECT.getId(handle)));
@@ -135,5 +163,10 @@ public class CardboardPotionEffectType extends PotionEffectType {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+
+
+
+
 
 }

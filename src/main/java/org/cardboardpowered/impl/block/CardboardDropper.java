@@ -5,7 +5,10 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.DropperBlock;
 import net.minecraft.block.entity.DropperBlockEntity;
+
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dropper;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
@@ -17,12 +20,22 @@ import java.util.UUID;
 
 public class CardboardDropper extends CardboardLootableBlock<DropperBlockEntity> implements Dropper {
 
-    public CardboardDropper(final Block block) {
-        super(block, DropperBlockEntity.class);
+    public CardboardDropper(World world, DropperBlockEntity tileEntity) {
+        super(world, tileEntity);
     }
 
-    public CardboardDropper(final Material material, DropperBlockEntity te) {
-        super(material, te);
+    protected CardboardDropper(CardboardDropper state, Location location) {
+        super(state, location);
+    }
+    
+    @Override
+    public CardboardDropper copy() {
+        return new CardboardDropper(this, null);
+    }
+
+    @Override
+    public CardboardDropper copy(Location location) {
+        return new CardboardDropper(this, location);
     }
 
     @Override

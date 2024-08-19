@@ -7,6 +7,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -19,6 +21,10 @@ public class ModsCommand extends Command {
 
         this.description = "Gets the version of this server including any plugins in use";
         this.usageMessage = "/fabricmods";
+        
+        List<String> aka = Arrays.asList("mymods", "mods");
+        
+        this.setAliases(aka);
         this.setPermission("cardboard.command.mods");
     }
 
@@ -26,22 +32,24 @@ public class ModsCommand extends Command {
     public boolean execute(CommandSender sender, String currentAlias, String[] args) {
         if (sender.hasPermission("cardboard.command.mods")) {
             String mods = "";
+            int count = 0;
             for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
                 String name = mod.getMetadata().getName();
 
                 if (name.startsWith("Fabric") && name.endsWith(")")) continue; // Don't list all modules of FAPI
                 if (name.startsWith("Fabric API Base")) name = "Fabric API";
-                if (name.startsWith("OpenJDK")) continue;
-                if (name.startsWith("Fabric Convention Tags")) continue;
-                if (name.startsWith("SpecialSource")) continue;
+                if (name.startsWith("OpenJDK") || name.startsWith("SpecialSource")) continue;
+                if (name.startsWith("Fabric Convention Tags") || name.startsWith("MixinExtras")) continue;
+                if (name.contains("-bundle")) continue;
 
                 if (!mods.contains(name)) {
                 	mods += ", " + ChatColor.GREEN + name + ChatColor.WHITE;
+                	count += 1;
                 }
             }
-            sender.sendMessage("Mods: " + mods.substring(2));
+            sender.sendMessage("Mods (" + count + "): " + mods.substring(2));
         } else {
-            sender.sendMessage("No Permission for command!");
+            sender.sendMessage("No Permission for command! Missing permission: cardboard.command.mods");
         }
         return true;
     }

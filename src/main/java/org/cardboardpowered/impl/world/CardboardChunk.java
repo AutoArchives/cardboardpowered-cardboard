@@ -58,6 +58,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.ChunkSerializer;
+import net.minecraft.world.ChunkSerializer.ChunkLoadingException;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.LightType;
 import net.minecraft.world.biome.Biome;
@@ -352,13 +353,19 @@ public class CardboardChunk implements Chunk {
         ReadableContainer<RegistryEntry<Biome>>[] biome = (includeBiome || includeBiomeTempRain) ? new PalettedContainer[cs.length] : null;
 
         net.minecraft.registry.Registry<Biome> iregistry = worldServer.getRegistryManager().get(RegistryKeys.BIOME);
-        Codec<ReadableContainer<RegistryEntry<Biome>>> biomeCodec = PalettedContainer.createReadableContainerCodec(iregistry.getIndexedEntries(), iregistry.createEntryCodec(), PalettedContainer.PaletteProvider.BIOME, iregistry.entryOf(BiomeKeys.PLAINS));
-
+        // Codec<ReadableContainer<RegistryEntry<Biome>>> biomeCodec = PalettedContainer.createReadableContainerCodec(iregistry.getIndexedEntries(), iregistry.createEntryCodec(), PalettedContainer.PaletteProvider.BIOME, iregistry.entryOf(BiomeKeys.PLAINS));
+        Codec<ReadableContainer<RegistryEntry<Biome>>> biomeCodec = PalettedContainer.createReadableContainerCodec(iregistry.getIndexedEntries(), iregistry.getEntryCodec(), PalettedContainer.PaletteProvider.BIOME, iregistry.entryOf(BiomeKeys.PLAINS));
+        
         for (int i = 0; i < cs.length; i++) {
             NbtCompound data = new NbtCompound();
 
-            data.put("block_states", ChunkSerializer.CODEC.encodeStart(NbtOps.INSTANCE, cs[i].getBlockStateContainer()).get().left().get());
-            sectionBlockIDs[i] = ChunkSerializer.CODEC.parse(NbtOps.INSTANCE, data.getCompound("block_states")).get().left().get();
+            data.put("block_states", ChunkSerializer.CODEC.encodeStart(NbtOps.INSTANCE, cs[i].getBlockStateContainer()).getOrThrow());
+            sectionBlockIDs[i] = ChunkSerializer.CODEC.parse(NbtOps.INSTANCE, data.getCompound("block_states")).getOrThrow(ChunkSerializer.ChunkLoadingException::new);
+
+            
+            
+            // data.put("block_states", ChunkSerializer.CODEC.encodeStart(NbtOps.INSTANCE, cs[i].getBlockStateContainer()).get().left().get());
+            // sectionBlockIDs[i] = ChunkSerializer.CODEC.parse(NbtOps.INSTANCE, data.getCompound("block_states")).get().left().get();
 
             LightingProvider lightengine = worldServer.getLightingProvider();
             ChunkNibbleArray skyLightArray = lightengine.get(LightType.SKY).getLightSection(ChunkSectionPos.from(x, i, z));
@@ -377,8 +384,8 @@ public class CardboardChunk implements Chunk {
             }
 
             if (biome != null) {
-                data.put("biomes", biomeCodec.encodeStart(NbtOps.INSTANCE, cs[i].getBiomeContainer()).get().left().get());
-                biome[i] = biomeCodec.parse(NbtOps.INSTANCE, data.getCompound("biomes")).get().left().get();
+                data.put("biomes", biomeCodec.encodeStart(NbtOps.INSTANCE, cs[i].getBiomeContainer()).getOrThrow());
+                biome[i] = biomeCodec.parse(NbtOps.INSTANCE, data.getCompound("biomes")).getOrThrow(ChunkLoadingException::new);
             }
         }
 
@@ -405,7 +412,7 @@ public class CardboardChunk implements Chunk {
         boolean[] empty = new boolean[hSection];
         net.minecraft.registry.Registry<Biome> iregistry = world.getHandle().getRegistryManager().get(RegistryKeys.BIOME);
         PalettedContainer<RegistryEntry<Biome>>[] biome = (includeBiome || includeBiomeTempRain) ? new PalettedContainer[hSection] : null;
-        Codec<ReadableContainer<RegistryEntry<Biome>>> biomeCodec = PalettedContainer.createReadableContainerCodec(iregistry.getIndexedEntries(), iregistry.createEntryCodec(), PalettedContainer.PaletteProvider.BIOME, iregistry.entryOf(BiomeKeys.PLAINS));
+        Codec<ReadableContainer<RegistryEntry<Biome>>> biomeCodec = PalettedContainer.createReadableContainerCodec(iregistry.getIndexedEntries(), iregistry.getEntryCodec(), PalettedContainer.PaletteProvider.BIOME, iregistry.entryOf(BiomeKeys.PLAINS));
 
         for (int i = 0; i < hSection; i++) {
             blockIDs[i] = emptyBlockIDs;
@@ -414,7 +421,9 @@ public class CardboardChunk implements Chunk {
             empty[i] = true;
 
             if (biome != null) {
-                biome[i] = (PalettedContainer<RegistryEntry<Biome>>) biomeCodec.parse(NbtOps.INSTANCE, biomeCodec.encodeStart(NbtOps.INSTANCE, actual.getSection(i).getBiomeContainer()).get().left().get()).get().left().get();
+                // biome[i] = (PalettedContainer<RegistryEntry<Biome>>) biomeCodec.parse(NbtOps.INSTANCE, biomeCodec.encodeStart(NbtOps.INSTANCE, actual.getSection(i).getBiomeContainer()).get().left().get()).get().left().get();
+                biome[i] = (PalettedContainer<RegistryEntry<Biome>>) biomeCodec.parse(NbtOps.INSTANCE, biomeCodec.encodeStart(NbtOps.INSTANCE, actual.getSection(i).getBiomeContainer()).getOrThrow()).getOrThrow(ChunkSerializer.ChunkLoadingException::new);
+
             }
         }
 

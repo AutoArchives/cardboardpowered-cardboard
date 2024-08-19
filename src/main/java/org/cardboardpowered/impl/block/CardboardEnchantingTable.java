@@ -2,7 +2,10 @@ package org.cardboardpowered.impl.block;
 
 import net.kyori.adventure.text.Component;
 import net.minecraft.block.entity.EnchantingTableBlockEntity;
+
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.EnchantingTable;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
@@ -10,12 +13,22 @@ import org.jetbrains.annotations.Nullable;
 
 public class CardboardEnchantingTable extends CardboardBlockEntityState<EnchantingTableBlockEntity> implements EnchantingTable {
 
-    public CardboardEnchantingTable(final Block block) {
-        super(block, EnchantingTableBlockEntity.class);
+    public CardboardEnchantingTable(World world, EnchantingTableBlockEntity tileEntity) {
+        super(world, tileEntity);
     }
 
-    public CardboardEnchantingTable(final Material material, final EnchantingTableBlockEntity te) {
-        super(material, te);
+    protected CardboardEnchantingTable(CardboardEnchantingTable state, Location location) {
+        super(state, location);
+    }
+    
+    @Override
+    public CardboardEnchantingTable copy() {
+        return new CardboardEnchantingTable(this, null);
+    }
+
+    @Override
+    public CardboardEnchantingTable copy(Location location) {
+        return new CardboardEnchantingTable(this, location);
     }
 
     @Override

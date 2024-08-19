@@ -268,7 +268,16 @@ public class CraftBlock implements Block {
         return Direction.valueOf(face.name());
     }
 
-    @SuppressWarnings("unchecked")
+    public org.bukkit.block.BlockState getState1() {
+        return CraftBlockStates.getBlockState(this);
+    }
+    
+    @Override
+    public org.bukkit.block.BlockState getState() {
+        return CraftBlockStates.getBlockState(this);
+    }
+    
+    /*@SuppressWarnings("unchecked")
     @Override
     public org.bukkit.block.BlockState getState() {
         Material material = getType();
@@ -433,7 +442,7 @@ public class CraftBlock implements Block {
                     return new CardboardBlockEntityState<BlockEntity>(this, (Class<BlockEntity>) tileEntity.getClass()); // block with unhandled BlockEntity:
                 } else return new CraftBlockState(this); // Block without BlockEntity
         }
-    }
+    }*/
 
     @Override
     public Biome getBiome() {
@@ -829,6 +838,11 @@ public class CraftBlock implements Block {
 	        }
 	        return destroyed && result;
 	    }
+
+	public ServerWorld getHandle() {
+		// TODO Auto-generated method stub
+		return this.getCraftWorld().getHandle();
+	}
 
     //
 

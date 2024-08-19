@@ -235,8 +235,8 @@ public class MixinEnchantmentScreenHandler extends MixinScreenHandler {
         } else return false;
     }*/
 
-    @Shadow
-    public List<EnchantmentLevelEntry> generateEnchantments(ItemStack itemstack, int i, int j) {return null;}
+    //@Shadow
+    //public List<EnchantmentLevelEntry> generateEnchantments(ItemStack itemstack, int i, int j) {return null;}
 
     @Override
     public CardboardInventoryView getBukkitView() {

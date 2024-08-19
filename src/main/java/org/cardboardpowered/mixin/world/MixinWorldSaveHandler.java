@@ -9,7 +9,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.NbtTagSizeTracker;
+import net.minecraft.nbt.NbtSizeTracker;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.WorldSaveHandler;
 import org.cardboardpowered.impl.entity.PlayerImpl;
@@ -21,6 +21,7 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Optional;
 
 @Mixin(value = WorldSaveHandler.class, priority = 999)
 public class MixinWorldSaveHandler implements IMixinWorldSaveHandler {
@@ -33,18 +34,50 @@ public class MixinWorldSaveHandler implements IMixinWorldSaveHandler {
     @Final
     protected DataFixer dataFixer;
 
+    
+    /**
+     * @reason offline uuid
+     * @author cardboard mod
+     */
+   /* @Overwrite
+    public Optional<NbtCompound> loadPlayerData(PlayerEntity player) {
+        return this.load(player.getName().getString(), player.getUuidAsString()).map(nbttagcompound -> {
+            if (player instanceof ServerPlayerEntity) {
+                CraftPlayer player1 = (CraftPlayer)player.getBukkitEntity();
+                long modified = new File(this.playerDataDir, player.getUuidAsString() + ".dat").lastModified();
+                if (modified < player1.getFirstPlayed()) {
+                    player1.setFirstPlayed(modified);
+                }
+            }
+            player.readNbt((NbtCompound)nbttagcompound);
+            return nbttagcompound;
+        });
+    }
+    
+    public Optional<NbtCompound> load(String name, String uuid) {
+        Optional<NbtCompound> optional = this.load(name, uuid, ".dat");
+        if (optional.isEmpty()) {
+            this.backup(name, uuid, ".dat");
+        }
+        return optional.or(() -> this.load(name, uuid, ".dat_old")).map(nbttagcompound -> {
+            int i2 = NbtHelper.getDataVersion(nbttagcompound, -1);
+            nbttagcompound = MCDataConverter.convertTag(MCTypeRegistry.PLAYER, nbttagcompound, i2, SharedConstants.getGameVersion().getSaveVersion().getId());
+            return nbttagcompound;
+        });
+    }*/
+    
     /**
      * @reason Spigot Offline UUID
      * @author Cardboard
      */
-    @Overwrite
+    /*@Overwrite
     @Nullable
-    public NbtCompound loadPlayerData(PlayerEntity player) {
+    public Optional<NbtCompound> loadPlayerData_old(PlayerEntity player) {
         NbtCompound lv = null;
         try {
             File file = new File(this.playerDataDir, player.getUuidAsString() + ".dat");
             if (file.exists() && file.isFile()) {
-                lv = NbtIo.readCompressed(file.toPath(), NbtTagSizeTracker.ofUnlimitedBytes());
+                lv = NbtIo.readCompressed(file.toPath(), NbtSizeTracker.ofUnlimitedBytes());
             }
         } catch (Exception exception) {
         	BukkitFabricMod.LOGGER.warning("Failed to load player data for " + player.getName().getString());
@@ -64,7 +97,7 @@ public class MixinWorldSaveHandler implements IMixinWorldSaveHandler {
             player.readNbt(DataFixTypes.PLAYER.update(this.dataFixer, lv, i));
         }
         return lv;
-    }
+    }*/
     
     /**
      * @reason Spigot Offline UUID
@@ -119,8 +152,9 @@ public class MixinWorldSaveHandler implements IMixinWorldSaveHandler {
     public NbtCompound getPlayerData(String s) {
         try {
             File file1 = new File(this.playerDataDir, s + ".dat");
-            if (file1.exists())
-                return NbtIo.readCompressed(new FileInputStream(file1), NbtTagSizeTracker.ofUnlimitedBytes());
+            if (file1.exists()) {
+                return NbtIo.readCompressed(new FileInputStream(file1), NbtSizeTracker.ofUnlimitedBytes());
+            }
         } catch (Exception exception) {
             BukkitFabricMod.LOGGER.warning("Failed to load player data for " + s);
         }

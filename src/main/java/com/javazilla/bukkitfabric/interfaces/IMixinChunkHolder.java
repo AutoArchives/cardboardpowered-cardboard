@@ -2,11 +2,12 @@ package com.javazilla.bukkitfabric.interfaces;
 
 import java.util.concurrent.CompletableFuture;
 
-import com.mojang.datafixers.util.Either;
+// import com.mojang.datafixers.util.Either;
 
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ChunkLevelType;
 import net.minecraft.server.world.ChunkLevels;
+import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
@@ -31,9 +32,14 @@ public interface IMixinChunkHolder {
     }
 
     static WorldChunk getFullChunkNowUnchecked(ChunkHolder holder) {
-    	CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> statusFuture = holder.getFutureFor(ChunkStatus.FULL);
-        Either<Chunk, ChunkHolder.Unloaded> either = statusFuture.getNow(null);
-        return (either == null) ? null : (WorldChunk) either.left().orElse(null);
+    	// CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> statusFuture = holder.getFutureFor(ChunkStatus.FULL);
+        // Either<Chunk, ChunkHolder.Unloaded> either = statusFuture.getNow(null);
+        // return (either == null) ? null : (WorldChunk) either.left().orElse(null);
+        
+    	CompletableFuture<OptionalChunk<Chunk>> statusFuture = holder.getFutureFor(ChunkStatus.FULL);
+    	OptionalChunk<Chunk>  either = statusFuture.getNow(null);
+        return (either == null) ? null : (WorldChunk) either.orElse(null);
+        
     }
 
 }

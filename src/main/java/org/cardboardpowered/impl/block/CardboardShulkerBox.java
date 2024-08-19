@@ -3,7 +3,9 @@ package org.cardboardpowered.impl.block;
 import java.util.UUID;
 
 import org.bukkit.DyeColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
@@ -17,13 +19,32 @@ import net.minecraft.block.entity.ShulkerBoxBlockEntity;
 
 public class CardboardShulkerBox extends CardboardLootableBlock<ShulkerBoxBlockEntity> implements ShulkerBox {
 
+    public CardboardShulkerBox(World world, ShulkerBoxBlockEntity tileEntity) {
+        super(world, tileEntity);
+    }
+
+    protected CardboardShulkerBox(CardboardShulkerBox state, Location location) {
+        super(state, location);
+    }
+    
+    @Override
+    public CardboardShulkerBox copy() {
+        return new CardboardShulkerBox(this, null);
+    }
+
+    @Override
+    public CardboardShulkerBox copy(Location location) {
+        return new CardboardShulkerBox(this, location);
+    }
+	
+    /*
     public CardboardShulkerBox(final Block block) {
         super(block, ShulkerBoxBlockEntity.class);
     }
 
     public CardboardShulkerBox(final Material material, final ShulkerBoxBlockEntity te) {
         super(material, te);
-    }
+    }*/
 
     @Override
     public Inventory getSnapshotInventory() {

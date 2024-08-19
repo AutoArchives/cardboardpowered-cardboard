@@ -5,7 +5,10 @@ import net.minecraft.block.enums.StructureBlockMode;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
+
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Structure;
 import org.bukkit.block.structure.Mirror;
@@ -19,12 +22,22 @@ public class CardboardStructureBlock extends CardboardBlockEntityState<Structure
 
     private static final int MAX_SIZE = 32;
 
-    public CardboardStructureBlock(Block block) {
-        super(block, StructureBlockBlockEntity.class);
+    public CardboardStructureBlock(World world, StructureBlockBlockEntity tileEntity) {
+        super(world, tileEntity);
     }
 
-    public CardboardStructureBlock(Material material, StructureBlockBlockEntity structure) {
-        super(material, structure);
+    protected CardboardStructureBlock(CardboardStructureBlock state, Location location) {
+        super(state, location);
+    }
+
+    @Override
+    public CardboardStructureBlock copy() {
+        return new CardboardStructureBlock(this, null);
+    }
+
+    @Override
+    public CardboardStructureBlock copy(Location location) {
+        return new CardboardStructureBlock(this, location);
     }
 
     @Override

@@ -277,6 +277,7 @@ import net.minecraft.item.Items;
 import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
 import net.minecraft.recipe.CraftingRecipe;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.resource.DataPackSettings;
@@ -333,7 +334,7 @@ import net.minecraft.world.level.storage.LevelStorage;
 public class CraftServer implements Server {
 
     public final String serverName = "Cardboard";
-    public final String bukkitVersion = "1.20.4-R0.1-SNAPSHOT"; // "1.19.4-R0.1-SNAPSHOT"; // "1.19.2-R0.1-SNAPSHOT";
+    public final String bukkitVersion = "1.20.6-R0.1-SNAPSHOT"; // "1.19.4-R0.1-SNAPSHOT"; // "1.19.2-R0.1-SNAPSHOT";
     public final String serverVersion;
     public final String shortVersion;
 
@@ -776,7 +777,8 @@ public class CraftServer implements Server {
         // method_8001
         // 1.19.2: getOrCreateMapState
         // 1.19.4: getMapState
-        FilledMapItem.getMapState(stack, worldServer).addDecorationsNbt(stack, structurePosition, "+", net.minecraft.item.map.MapIcon.Type.byId(structureType.getMapIcon().getValue()));
+        FilledMapItem.getMapState(stack, worldServer);
+        // TODO: .addDecorationsNbt(stack, structurePosition, "+", net.minecraft.item.map.MapIcon.Type.byId(structureType.getMapIcon().getValue()));
 
         return CraftItemStack.asBukkitCopy(stack);
     }
@@ -1225,7 +1227,7 @@ public class CraftServer implements Server {
         if (result == null) {
             result = offlinePlayers.get(id);
             if (result == null) {
-                result = new CraftOfflinePlayer(this, new GameProfile(id, null));
+                result = new CraftOfflinePlayer(this, new GameProfile(id, ""));
                 offlinePlayers.put(id, result);
             }
         } else offlinePlayers.remove(id);
@@ -1772,7 +1774,31 @@ public class CraftServer implements Server {
     public int getTicksPerWaterSpawns() {
         return this.configuration.getInt("ticks-per.water-spawns");
     }
+    
+    @Override
+    public boolean removeRecipe(NamespacedKey recipeKey) {
+        return this.removeRecipe(recipeKey, false);
+    }
 
+    public boolean removeRecipe(NamespacedKey recipeKey, boolean resendRecipes) {
+        Preconditions.checkArgument((recipeKey != null ? 1 : 0) != 0, (Object)"recipeKey == null");
+        Identifier mcKey = CraftNamespacedKey.toMinecraft(recipeKey);
+        boolean removed = ((IMixinRecipeManager)getServer().getRecipeManager()).removeRecipe(mcKey);
+        if (removed && resendRecipes) {
+            this.playerList_reloadRecipeData();
+        }
+        return removed;
+    }
+    
+    public void playerList_reloadRecipeData() {
+        SynchronizeRecipesS2CPacket packetplayoutrecipeupdate = new SynchronizeRecipesS2CPacket(this.server.getRecipeManager().sortedValues());
+        for (ServerPlayerEntity entityplayer : this.server.getPlayerManager().players) {
+            entityplayer.networkHandler.sendPacket(packetplayoutrecipeupdate);
+            entityplayer.getRecipeBook().sendInitRecipesPacket(entityplayer);
+        }
+    }
+
+    /*
     @SuppressWarnings("resource")
     @Override
     public boolean removeRecipe(NamespacedKey recipeKey) {
@@ -1785,6 +1811,7 @@ public class CraftServer implements Server {
 
         return false;
     }
+    */
 
     public List<String> tabComplete(CommandSender sender, String message, ServerWorld world, Vec3d position, boolean forceCommand) {
         if (!(sender instanceof Player))

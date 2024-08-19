@@ -1,31 +1,20 @@
 package org.cardboardpowered.mixin.item;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.CrossbowItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Hand;
-import net.minecraft.world.World;
-import org.bukkit.event.entity.EntityShootBowEvent;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @MixinInfo(events = {"EntityShootBowEvent"})
 @Mixin(value = CrossbowItem.class, priority = 900)
 public class MixinCrossbowItem {
 
-    private static transient boolean bukkitCapturedBoolean;
+    // private static transient boolean bukkitCapturedBoolean;
 
+    // Note: EntityShootBowEvent in CrossbowItem super class now
+    
+    // TODO: io.papermc.paper.event.entity.EntityLoadCrossbowEvent
+    
+    /*
     @Inject(method = "shoot", cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;damage(ILnet/minecraft/entity/LivingEntity;Ljava/util/function/Consumer;)V"))
     private static void bukkitShoot(World world, LivingEntity shooter, Hand hand, ItemStack crossbow, ItemStack projectile, float soundPitch, boolean creative, float speed, float divergence, float simulated, CallbackInfo ci, boolean bl, ProjectileEntity projectileEntity) {
         EntityShootBowEvent event = BukkitEventFactory.callEntityShootBowEvent(shooter, crossbow, projectile, projectileEntity, shooter.getActiveHand(), soundPitch, true);
@@ -57,5 +46,7 @@ public class MixinCrossbowItem {
             ci.cancel();
         }
         bukkitCapturedBoolean = false;
-    }
+    }*/
+    
+    
 }

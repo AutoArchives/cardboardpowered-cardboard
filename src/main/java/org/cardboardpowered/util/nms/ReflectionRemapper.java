@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
  */
 public class ReflectionRemapper {
 
-    public static final String NMS_VERSION = "v1_20_R3";
+    public static final String NMS_VERSION = "v1_20_R4";
     public static JavaPlugin plugin;
 
     public static String mapClassName(String className) {

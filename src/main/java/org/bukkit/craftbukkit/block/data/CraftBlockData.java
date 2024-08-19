@@ -280,12 +280,24 @@ public class CraftBlockData implements BlockData {
     }
 
     @SuppressWarnings("rawtypes")
-    public NbtCompound toStates() {
+    @Deprecated // TODO: 1.20.6
+    public NbtCompound toStates_old() {
         NbtCompound compound = new NbtCompound();
 
         for (Map.Entry<Property<?>, Comparable<?>> entry : state.getEntries().entrySet()) {
             Property Property = (Property) entry.getKey();
             compound.putString(Property.getName(), Property.name(entry.getValue()));
+        }
+        return compound;
+    }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public Map<String, String> toStates() {
+        HashMap<String, String> compound = new HashMap<String, String>();
+        for (Map.Entry<Property<?>, Comparable<?>> entry : this.state.getEntries().entrySet()) {
+            Property iblockstate = (Property) entry.getKey();
+
+            compound.put(iblockstate.getName(), iblockstate.name(entry.getValue()));
         }
         return compound;
     }

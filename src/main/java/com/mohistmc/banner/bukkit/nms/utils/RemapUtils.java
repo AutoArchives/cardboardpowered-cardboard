@@ -48,7 +48,7 @@ public class RemapUtils {
     public static BannerJarRemapper jarRemapper;
     private static final List<Remapper> remappers = new ArrayList<>();
 
-    public static String NMS_VERSION = "v1_20_R3";
+    public static String NMS_VERSION = "v1_20_R4";
     
     public static File exportResource(String res, File folder) {
         try (InputStream stream = MappingsReader.class.getClassLoader().getResourceAsStream("mappings/" + res)) {

@@ -542,8 +542,12 @@ accessible method net/minecraft/entity/passive/CatEntity setCollarColor (Lnet/mi
 accessible method net/minecraft/entity/passive/CatEntity isHeadDown ()Z
 accessible method net/minecraft/entity/passive/CatEntity setHeadDown (Z)V
 accessible method net/minecraft/block/AbstractBlock createScreenHandlerFactory (Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/screen/NamedScreenHandlerFactory;
+accessible method net/minecraft/block/ChestBlock createScreenHandlerFactory (Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/screen/NamedScreenHandlerFactory;
+accessible method net/minecraft/block/CraftingTableBlock createScreenHandlerFactory (Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/screen/NamedScreenHandlerFactory;
+accessible method net/minecraft/block/EnchantingTableBlock createScreenHandlerFactory (Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/screen/NamedScreenHandlerFactory;
 mutable field net/minecraft/village/TradeOffer rewardingPlayerExperience Z
 mutable field net/minecraft/village/TradeOffer priceMultiplier F
 mutable field net/minecraft/village/TradeOffer merchantExperience I
-accessible method net/minecraft/item/BlockItem with (Lnet/minecraft/block/BlockState;Lnet/minecraft/state/property/Property;Ljava/lang/String;)Lnet/minecraft/block/BlockState;
-accessible field net/minecraft/entity/vehicle/StorageMinecartEntity lootTableId Lnet/minecraft/util/Identifier;
+accessible field net/minecraft/component/ComponentChanges$Builder changes Lit/unimi/dsi/fastutil/objects/Reference2ObjectMap;
+accessible field net/minecraft/component/ComponentChanges changedComponents Lit/unimi/dsi/fastutil/objects/Reference2ObjectMap;
+accessible field net/minecraft/item/BlockPredicatesChecker predicates Ljava/util/List;

@@ -25,6 +25,10 @@ public class MixinLeashKnotEntity {
         return (LeashKnotEntity)(Object)this;
     }
 
+    /**
+     * @author Cardboard mod
+     * @reason PlayerLeashEntityEvent
+     */
     @Overwrite
     public ActionResult interact(PlayerEntity entityhuman, Hand enumhand) {
         if (getBF().getWorld().isClient) return ActionResult.SUCCESS;

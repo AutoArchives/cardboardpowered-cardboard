@@ -2,7 +2,10 @@ package org.cardboardpowered.impl.block;
 
 import net.kyori.adventure.text.Component;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
+
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.CommandBlock;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
@@ -13,7 +16,26 @@ public class CardboardCommandBlock extends CardboardBlockEntityState<CommandBloc
 
     private String command;
     private String name;
+    
+    public CardboardCommandBlock(World world, CommandBlockBlockEntity tileEntity) {
+        super(world, tileEntity);
+    }
 
+    protected CardboardCommandBlock(CardboardCommandBlock state, Location location) {
+        super(state, location);
+    }
+    
+    @Override
+    public CardboardCommandBlock copy() {
+        return new CardboardCommandBlock(this, null);
+    }
+
+    @Override
+    public CardboardCommandBlock copy(Location location) {
+        return new CardboardCommandBlock(this, location);
+    }
+
+    /*
     public CardboardCommandBlock(Block block) {
         super(block, CommandBlockBlockEntity.class);
     }
@@ -21,6 +43,7 @@ public class CardboardCommandBlock extends CardboardBlockEntityState<CommandBloc
     public CardboardCommandBlock(final Material material, final CommandBlockBlockEntity cmdblock) {
         super(material, cmdblock);
     }
+    */
 
     @Override
     public void load(CommandBlockBlockEntity cmdblock) {

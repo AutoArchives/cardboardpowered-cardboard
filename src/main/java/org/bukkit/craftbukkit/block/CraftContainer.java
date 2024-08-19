@@ -2,7 +2,10 @@ package org.bukkit.craftbukkit.block;
 
 import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.inventory.ContainerLock;
+
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
@@ -10,6 +13,21 @@ import org.cardboardpowered.impl.block.CardboardBlockEntityState;
 
 public abstract class CraftContainer<T extends LockableContainerBlockEntity> extends CardboardBlockEntityState<T> implements Container {
 
+    public CraftContainer(World world, T tileEntity) {
+        super(world, tileEntity);
+    }
+
+    protected CraftContainer(CraftContainer<T> state, Location location) {
+        super(state, location);
+    }
+    
+    @Override
+    public abstract CraftContainer<T> copy();
+
+    @Override
+    public abstract CraftContainer<T> copy(Location var1);
+	
+    /*
     public CraftContainer(Block block, Class<T> tileEntityClass) {
         super(block, tileEntityClass);
     }
@@ -17,6 +35,7 @@ public abstract class CraftContainer<T extends LockableContainerBlockEntity> ext
     public CraftContainer(final Material material, T tileEntity) {
         super(material, tileEntity);
     }
+    */
 
     @Override
     public boolean isLocked() {

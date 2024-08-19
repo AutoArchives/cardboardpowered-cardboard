@@ -3,210 +3,174 @@ package org.bukkit.craftbukkit.inventory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtInt;
-import net.minecraft.nbt.NbtString;
+import java.util.Set;
+import net.minecraft.component.ComponentChanges;
+import net.minecraft.component.DataComponentType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.MapColorComponent;
+import net.minecraft.component.type.MapIdComponent;
+import net.minecraft.component.type.MapPostProcessingComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.inventory.CraftMetaItem;
+import org.bukkit.craftbukkit.inventory.SerializableMeta;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapView;
 
-@DelegateDeserialization(SerializableMeta.class)
-class CraftMetaMap extends CraftMetaItem implements MapMeta {
-    static final ItemMetaKey MAP_SCALING = new ItemMetaKey("map_is_scaling", "scaling");
-    static final ItemMetaKey MAP_LOC_NAME = new ItemMetaKey("LocName", "display-loc-name");
-    static final ItemMetaKey MAP_COLOR = new ItemMetaKey("MapColor", "display-map-color");
-    static final ItemMetaKey MAP_ID = new ItemMetaKey("map", "map-id");
-    static final byte SCALING_EMPTY = (byte) 0;
-    static final byte SCALING_TRUE = (byte) 1;
-    static final byte SCALING_FALSE = (byte) 2;
-
+@DelegateDeserialization(value=SerializableMeta.class)
+class CraftMetaMap
+extends CraftMetaItem
+implements MapMeta {
+    static final CraftMetaItem.ItemMetaKeyType<MapPostProcessingComponent> MAP_POST_PROCESSING = new CraftMetaItem.ItemMetaKeyType<MapPostProcessingComponent>(DataComponentTypes.MAP_POST_PROCESSING);
+    static final CraftMetaItem.ItemMetaKey MAP_SCALING = new CraftMetaItem.ItemMetaKey("scaling");
+    @Deprecated
+    static final CraftMetaItem.ItemMetaKey MAP_LOC_NAME = new CraftMetaItem.ItemMetaKey("display-loc-name");
+    static final CraftMetaItem.ItemMetaKeyType<MapColorComponent> MAP_COLOR = new CraftMetaItem.ItemMetaKeyType<MapColorComponent>(DataComponentTypes.MAP_COLOR, "display-map-color");
+    static final CraftMetaItem.ItemMetaKeyType<MapIdComponent> MAP_ID = new CraftMetaItem.ItemMetaKeyType<MapIdComponent>(DataComponentTypes.MAP_ID, "map-id");
+    static final byte SCALING_EMPTY = 0;
+    static final byte SCALING_TRUE = 1;
+    static final byte SCALING_FALSE = 2;
     private Integer mapId;
-    private byte scaling = SCALING_EMPTY;
-    private String locName;
+    private byte scaling = 0;
     private Color color;
 
     CraftMetaMap(CraftMetaItem meta) {
         super(meta);
-
         if (!(meta instanceof CraftMetaMap)) {
             return;
         }
-
-        CraftMetaMap map = (CraftMetaMap) meta;
+        CraftMetaMap map = (CraftMetaMap)meta;
         this.mapId = map.mapId;
         this.scaling = map.scaling;
-        this.locName = map.locName;
         this.color = map.color;
     }
 
-    CraftMetaMap(NbtCompound tag) {
-        super(tag);
-
-        if (tag.contains(MAP_ID.NBT, CraftMagicNumbers.NBT.TAG_ANY_NUMBER)) {
-            this.mapId = tag.getInt(MAP_ID.NBT);
-        }
-
-        if (tag.contains(MAP_SCALING.NBT)) {
-            this.scaling = tag.getBoolean(MAP_SCALING.NBT) ? SCALING_TRUE : SCALING_FALSE;
-        }
-
-        if (tag.contains(DISPLAY.NBT)) {
-            NbtCompound display = tag.getCompound(DISPLAY.NBT);
-
-            if (display.contains(MAP_LOC_NAME.NBT)) {
-                locName = display.getString(MAP_LOC_NAME.NBT);
+    CraftMetaMap(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+        super(tag, extraHandledDcts);
+        CraftMetaMap.getOrEmpty(tag, MAP_ID).ifPresent(mapId -> {
+            this.mapId = mapId.id();
+        });
+        CraftMetaMap.getOrEmpty(tag, MAP_POST_PROCESSING).ifPresent(mapPostProcessing -> {
+            this.scaling = (byte)(mapPostProcessing == MapPostProcessingComponent.SCALE ? 1 : 2);
+        });
+        CraftMetaMap.getOrEmpty(tag, MAP_COLOR).ifPresent(mapColor -> {
+            try {
+                this.color = Color.fromRGB((int)mapColor.rgb());
             }
-
-            if (display.contains(MAP_COLOR.NBT)) {
-                try {
-                    color = Color.fromRGB(display.getInt(MAP_COLOR.NBT));
-                } catch (IllegalArgumentException ex) {
-                    // Invalid colour
-                }
+            catch (IllegalArgumentException illegalArgumentException) {
+                // empty catch block
             }
-        }
+        });
     }
 
     CraftMetaMap(Map<String, Object> map) {
         super(map);
-
-        Integer id = SerializableMeta.getObject(Integer.class, map, MAP_ID.BUKKIT, true);
+        Color color;
+        String locName;
+        Boolean scaling;
+        Integer id = SerializableMeta.getObject(Integer.class, map, CraftMetaMap.MAP_ID.BUKKIT, true);
         if (id != null) {
-            setMapId(id);
+            this.setMapId(id);
         }
-
-        Boolean scaling = SerializableMeta.getObject(Boolean.class, map, MAP_SCALING.BUKKIT, true);
-        if (scaling != null) {
-            setScaling(scaling);
+        if ((scaling = SerializableMeta.getObject(Boolean.class, map, CraftMetaMap.MAP_SCALING.BUKKIT, true)) != null) {
+            this.setScaling(scaling);
         }
-
-        String locName = SerializableMeta.getString(map, MAP_LOC_NAME.BUKKIT, true);
-        if (locName != null) {
-            setLocationName(locName);
+        if ((locName = SerializableMeta.getString(map, CraftMetaMap.MAP_LOC_NAME.BUKKIT, true)) != null) {
+            this.setLocationName(locName);
         }
-
-        Color color = SerializableMeta.getObject(Color.class, map, MAP_COLOR.BUKKIT, true);
-        if (color != null) {
-            setColor(color);
+        if ((color = SerializableMeta.getObject(Color.class, map, CraftMetaMap.MAP_COLOR.BUKKIT, true)) != null) {
+            this.setColor(color);
         }
     }
 
     @Override
-    void applyToItem(NbtCompound tag) {
+    void applyToItem(CraftMetaItem.Applicator tag) {
         super.applyToItem(tag);
-
-        if (hasMapId()) {
-            tag.putInt(MAP_ID.NBT, getMapId());
+        if (this.hasMapId()) {
+            tag.put(MAP_ID, new MapIdComponent(this.getMapId()));
         }
-
-        if (hasScaling()) {
-            tag.putBoolean(MAP_SCALING.NBT, isScaling());
+        if (this.hasScaling()) {
+            tag.put(MAP_POST_PROCESSING, this.isScaling() ? MapPostProcessingComponent.SCALE : MapPostProcessingComponent.LOCK);
         }
-
-        if (hasLocationName()) {
-            setDisplayTag(tag, MAP_LOC_NAME.NBT, NbtString.of(getLocationName()));
-        }
-
-        if (hasColor()) {
-            setDisplayTag(tag, MAP_COLOR.NBT, NbtInt.of(color.asRGB()));
+        if (this.hasColor()) {
+            tag.put(MAP_COLOR, new MapColorComponent(this.color.asRGB()));
         }
     }
 
     @Override
     boolean applicableTo(Material type) {
-        switch (type) {
-            case FILLED_MAP:
-                return true;
-            default:
-                return false;
-        }
+        return type == Material.FILLED_MAP;
     }
 
     @Override
     boolean isEmpty() {
-        return super.isEmpty() && isMapEmpty();
+        return super.isEmpty() && this.isMapEmpty();
     }
 
     boolean isMapEmpty() {
-        return !(hasMapId() || hasScaling() | hasLocationName() || hasColor());
+        return !this.hasMapId() && !(this.hasScaling() | this.hasLocationName()) && !this.hasColor();
     }
 
-    @Override
     public boolean hasMapId() {
-        return mapId != null;
+        return this.mapId != null;
     }
 
-    @Override
     public int getMapId() {
-        return mapId;
+        Preconditions.checkState((boolean)this.hasMapView(), "Item does not have map associated - check hasMapView() first!");
+        return this.mapId;
     }
 
-    @Override
     public void setMapId(int id) {
         this.mapId = id;
     }
 
-    @Override
     public boolean hasMapView() {
-        return mapId != null;
+        return this.mapId != null;
     }
 
-    @Override
     public MapView getMapView() {
-        Preconditions.checkState(hasMapView(), "Item does not have map associated - check hasMapView() first!");
-        return Bukkit.getMap(mapId);
+        Preconditions.checkState((boolean)this.hasMapView(), "Item does not have map associated - check hasMapView() first!");
+        return Bukkit.getMap((int)this.mapId);
     }
 
-    @Override
     public void setMapView(MapView map) {
-        this.mapId = (map != null) ? map.getId() : null;
+        this.mapId = map != null ? Integer.valueOf(map.getId()) : null;
     }
 
     boolean hasScaling() {
-        return scaling != SCALING_EMPTY;
+        return this.scaling != 0;
     }
 
-    @Override
     public boolean isScaling() {
-        return scaling == SCALING_TRUE;
+        return this.scaling == 1;
     }
 
-    @Override
     public void setScaling(boolean scaling) {
-        this.scaling = scaling ? SCALING_TRUE : SCALING_FALSE;
+        this.scaling = (byte)(scaling ? 1 : 2);
     }
 
-    @Override
     public boolean hasLocationName() {
-        return this.locName != null;
+        return this.hasLocalizedName();
     }
 
-    @Override
     public String getLocationName() {
-        return this.locName;
+        return this.getLocalizedName();
     }
 
-    @Override
     public void setLocationName(String name) {
-        this.locName = name;
+        this.setLocalizedName(name);
     }
 
-    @Override
     public boolean hasColor() {
         return this.color != null;
     }
 
-    @Override
     public Color getColor() {
         return this.color;
     }
 
-    @Override
     public void setColor(Color color) {
         this.color = color;
     }
@@ -217,68 +181,51 @@ class CraftMetaMap extends CraftMetaItem implements MapMeta {
             return false;
         }
         if (meta instanceof CraftMetaMap) {
-            CraftMetaMap that = (CraftMetaMap) meta;
-
-            return (this.scaling == that.scaling)
-                    && (hasMapId() ? that.hasMapId() && this.mapId.equals(that.mapId) : !that.hasMapId())
-                    && (hasLocationName() ? that.hasLocationName() && this.locName.equals(that.locName) : !that.hasLocationName())
-                    && (hasColor() ? that.hasColor() && this.color.equals(that.color) : !that.hasColor());
+            CraftMetaMap that = (CraftMetaMap)meta;
+            return this.scaling == that.scaling && (this.hasMapId() ? that.hasMapId() && this.mapId.equals(that.mapId) : !that.hasMapId()) && (this.hasColor() ? that.hasColor() && this.color.equals(that.color) : !that.hasColor());
         }
         return true;
     }
 
     @Override
     boolean notUncommon(CraftMetaItem meta) {
-        return super.notUncommon(meta) && (meta instanceof CraftMetaMap || isMapEmpty());
+        return super.notUncommon(meta) && (meta instanceof CraftMetaMap || this.isMapEmpty());
     }
 
     @Override
     int applyHash() {
-        final int original;
+        int original;
         int hash = original = super.applyHash();
-
-        if (hasMapId()) {
-            hash = 61 * hash + mapId.hashCode();
+        if (this.hasMapId()) {
+            hash = 61 * hash + this.mapId.hashCode();
         }
-        if (hasScaling()) {
-            hash ^= 0x22222222 << (isScaling() ? 1 : -1);
+        if (this.hasScaling()) {
+            hash ^= 0x22222222 << (this.isScaling() ? 1 : -1);
         }
-        if (hasLocationName()) {
-            hash = 61 * hash + locName.hashCode();
+        if (this.hasColor()) {
+            hash = 61 * hash + this.color.hashCode();
         }
-        if (hasColor()) {
-            hash = 61 * hash + color.hashCode();
-        }
-
         return original != hash ? CraftMetaMap.class.hashCode() ^ hash : hash;
     }
 
-
     @Override
     public CraftMetaMap clone() {
-        return (CraftMetaMap) super.clone();
+        return (CraftMetaMap)super.clone();
     }
 
     @Override
     ImmutableMap.Builder<String, Object> serialize(ImmutableMap.Builder<String, Object> builder) {
         super.serialize(builder);
-
-        if (hasMapId()) {
-            builder.put(MAP_ID.BUKKIT, getMapId());
+        if (this.hasMapId()) {
+            builder.put(CraftMetaMap.MAP_ID.BUKKIT, this.getMapId());
         }
-
-        if (hasScaling()) {
-            builder.put(MAP_SCALING.BUKKIT, isScaling());
+        if (this.hasScaling()) {
+            builder.put(CraftMetaMap.MAP_SCALING.BUKKIT, this.isScaling());
         }
-
-        if (hasLocationName()) {
-            builder.put(MAP_LOC_NAME.BUKKIT, getLocationName());
+        if (this.hasColor()) {
+            builder.put(CraftMetaMap.MAP_COLOR.BUKKIT, this.getColor());
         }
-
-        if (hasColor()) {
-            builder.put(MAP_COLOR.BUKKIT, getColor());
-        }
-
         return builder;
     }
 }
+

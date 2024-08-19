@@ -1,7 +1,10 @@
 package org.cardboardpowered.impl.block;
 
 import net.minecraft.block.entity.CampfireBlockEntity;
+
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Campfire;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -9,6 +12,25 @@ import org.bukkit.inventory.ItemStack;
 
 public class CardboardCampfire extends CardboardBlockEntityState<CampfireBlockEntity> implements Campfire {
 
+    public CardboardCampfire(World world, CampfireBlockEntity tileEntity) {
+        super(world, tileEntity);
+    }
+
+    protected CardboardCampfire(CardboardCampfire state, Location location) {
+        super(state, location);
+    }
+	
+    @Override
+    public CardboardCampfire copy() {
+        return new CardboardCampfire(this, null);
+    }
+
+    @Override
+    public CardboardCampfire copy(Location location) {
+        return new CardboardCampfire(this, location);
+    }
+    
+    /*
     public CardboardCampfire(Block block) {
         super(block, CampfireBlockEntity.class);
     }
@@ -16,6 +38,7 @@ public class CardboardCampfire extends CardboardBlockEntityState<CampfireBlockEn
     public CardboardCampfire(Material material, CampfireBlockEntity te) {
         super(material, te);
     }
+    */
 
     @Override
     public int getSize() {

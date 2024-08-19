@@ -11,6 +11,7 @@ import net.minecraft.network.message.MessageChain.MessageChainException;
 import net.minecraft.network.message.MessageChainTaskQueue;
 import net.minecraft.network.message.SignedCommandArguments;
 import net.minecraft.network.message.SignedMessage;
+import net.minecraft.network.packet.c2s.play.ChatCommandSignedC2SPacket;
 import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -31,18 +32,21 @@ import java.util.Collections;
 import java.util.Map;
 
 @Mixin(value = ServerPlayNetworkHandler.class, priority = 800)
-public abstract class MixinSPNH_PlayerCommandPreprocessEvent_1_19 implements IMixinPlayNetworkHandler {
+public abstract class MixinSPNH_PlayerCommandPreprocessEvent implements IMixinPlayNetworkHandler {
 
 	@Shadow
 	public ServerPlayerEntity player;
 
+	// Lnet/minecraft/server/network/ServerPlayNetworkHandler;handleCommandExecution(Lnet/minecraft/network/packet/c2s/play/ChatCommandSignedC2SPacket;Lnet/minecraft/network/message/LastSeenMessageList;)V
+	
 	/**
 	 * @reason PlayerCommandPreprocessEvent
-	 * @author Cardboard 1.19.4
+	 * @author Cardboard mod
 	 */
 	@SuppressWarnings("unused")
 	@Overwrite
-	private void handleCommandExecution(CommandExecutionC2SPacket packet, LastSeenMessageList lastseenmessages) {
+	// private void handleCommandExecution(CommandExecutionC2SPacket packet, LastSeenMessageList lastseenmessages) {
+	private void handleCommandExecution(ChatCommandSignedC2SPacket packet, LastSeenMessageList lastSeenMessages) {
 		SignedMessage playerchatmessage;
 		String command = "/" + packet.command();
 		BukkitFabricMod.LOGGER.info(this.player.getGameProfile().getName() + " issued server command: " + command);
@@ -63,7 +67,7 @@ public abstract class MixinSPNH_PlayerCommandPreprocessEvent_1_19 implements IMi
 		ParseResults<ServerCommandSource> parseresults = this.parse(packet.command());
 		Map<String, SignedMessage> map;
 		try {
-			map = (packet.command().equals(command)) ? this.collectArgumentMessages(packet, SignedArgumentList.of(parseresults), lastseenmessages) : Collections.emptyMap(); // CraftBukkit
+			map = (packet.command().equals(command)) ? this.collectArgumentMessages(packet, SignedArgumentList.of(parseresults), lastSeenMessages) : Collections.emptyMap(); // CraftBukkit
 		} catch(MessageChain.MessageChainException e) {
 			this.handleMessageChainException(e);
 			return;
@@ -82,7 +86,7 @@ public abstract class MixinSPNH_PlayerCommandPreprocessEvent_1_19 implements IMi
 
 	//  private Map<String, SignedMessage> collectArgumentMessages(CommandExecutionC2SPacket packet, DecoratableArgumentList<?> arguments) {
 	@Shadow
-	private Map<String, SignedMessage> collectArgumentMessages(CommandExecutionC2SPacket packet, SignedArgumentList<?> a, LastSeenMessageList b) throws MessageChainException {
+	private Map<String, SignedMessage> collectArgumentMessages(ChatCommandSignedC2SPacket packet, SignedArgumentList<?> a, LastSeenMessageList b) throws MessageChainException {
 		return null; // Shadow method
 	}
 

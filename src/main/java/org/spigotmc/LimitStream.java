@@ -3,13 +3,13 @@ package org.spigotmc;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import net.minecraft.nbt.NbtTagSizeTracker;
+import net.minecraft.nbt.NbtSizeTracker;
 
 public class LimitStream extends FilterInputStream {
 
-    private final NbtTagSizeTracker limit;
+    private final NbtSizeTracker limit;
 
-    public LimitStream(InputStream is, NbtTagSizeTracker limit) {
+    public LimitStream(InputStream is, NbtSizeTracker limit) {
         super(is);
         this.limit = limit;
     }

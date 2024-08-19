@@ -15,15 +15,20 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.util.Codec;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.WrittenBookContentComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.text.RawFilteredPair;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -274,7 +279,7 @@ public class CardboardAdventure {
 
     // Book
 
-    public static ItemStack asItemStack(final Book book, final Locale locale) {
+    /*public static ItemStack asItemStack_old(final Book book, final Locale locale) {
         final ItemStack item = new ItemStack(Items.WRITTEN_BOOK, 1);
         final NbtCompound tag = item.getOrCreateNbt();
         tag.putString("title", asJsonString(book.title(), locale));
@@ -285,7 +290,42 @@ public class CardboardAdventure {
         }
         tag.put("pages", pages);
         return item;
+    }*/
+    
+    public static ItemStack asItemStack(final Book book, final Locale locale) {
+    	        final ItemStack item = new ItemStack(Items.WRITTEN_BOOK, 1);
+    	        item.set(DataComponentTypes.WRITTEN_BOOK_CONTENT, new WrittenBookContentComponent(
+    	        		RawFilteredPair.of(validateField(asPlain(book.title(), locale), WrittenBookContentComponent.MAX_TITLE_LENGTH, "title")),
+    	            asPlain(book.author(), locale),
+    	            0,
+    	            book.pages().stream().map(c -> RawFilteredPair.of(CardboardAdventure.asVanilla(c))).toList(), // TODO should we validate legnth?
+    	            false
+    	        ));
+    	        return item;
+    	    }
+    
+    public static String asPlain(final Component component, final Locale locale) {
+           return PlainTextComponentSerializer.plainText().serialize(translated(component, locale));
     }
+    
+    private static Component translated(final Component component, final Locale locale) {
+    	        //noinspection ConstantValue
+    	        return GlobalTranslator.render(
+    	            component,
+    	            // play it safe
+    	            locale != null
+    	                ? locale
+    	                : Locale.US
+    	        );
+    	    }
+    
+    private static String validateField(final String content, final int length, final String name) {
+    	        final int actual = content.length();
+    	        if (actual > length) {
+    	            throw new IllegalArgumentException("Field '" + name + "' has a maximum length of " + length + " but was passed '" + content + "', which was " + actual + " characters long.");
+    	        }
+    	        return content;
+    	    }
 
     // Sounds
 
@@ -345,5 +385,12 @@ public class CardboardAdventure {
 
     public static @Nullable Formatting asVanilla(TextColor color) {
         return Formatting.byColorIndex(color.value());
+    }
+
+    public static Text asVanillaNullToEmpty(Component component) {
+        if (component == null) {
+            return ScreenTexts.EMPTY;
+        }
+        return asVanilla(component);
     }
 }

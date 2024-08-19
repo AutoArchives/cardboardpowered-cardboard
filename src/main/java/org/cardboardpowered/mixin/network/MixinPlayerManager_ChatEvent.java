@@ -58,6 +58,10 @@ public class MixinPlayerManager_ChatEvent {
     //     private void broadcast(SignedMessage message, Predicate<ServerPlayerEntity> shouldSendFiltered, @Nullable ServerPlayerEntity sender, MessageType.Parameters params) {
 
     
+    /**
+     * @author cardboard
+     * @reason Alternative chat events
+     */
     @Overwrite
     public void broadcast(SignedMessage message, Predicate<ServerPlayerEntity> shouldSendFiltered, ServerPlayerEntity sender/*, MessageSourceProfile sourceProfile*/, MessageType.Parameters params) {
         BukkitFabricMod.LOGGER.info("BROADCAST DEBUG: " + message.getContent().getString());

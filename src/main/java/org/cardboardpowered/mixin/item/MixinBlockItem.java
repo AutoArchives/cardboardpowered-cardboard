@@ -60,10 +60,10 @@ public class MixinBlockItem implements IBlockItem {
     private org.bukkit.block.BlockState bukkit_state;
 
     
-    @Shadow
-    public static BlockState with( BlockState state, Property property, String name) {
-    	return null; // Shadow method
-    }
+    //@Shadow
+    //public static BlockState with( BlockState state, Property property, String name) {
+    //	return null; // Shadow method
+    //}
    //  Lnet/minecraft/item/BlockItem;with(Lnet/minecraft/block/BlockState;Lnet/minecraft/state/property/Property;Ljava/lang/String;)Lnet/minecraft/block/BlockState;
     
     /**

@@ -2,7 +2,10 @@ package org.cardboardpowered.impl.block;
 
 import net.kyori.adventure.text.Component;
 import net.minecraft.block.entity.BarrelBlockEntity;
+
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
@@ -11,6 +14,25 @@ import org.jetbrains.annotations.Nullable;
 
 public class CardboardBarrel extends CardboardLootableBlock<BarrelBlockEntity> implements Barrel {
 
+    public CardboardBarrel(World world, BarrelBlockEntity tileEntity) {
+        super(world, tileEntity);
+    }
+
+    protected CardboardBarrel(CardboardBarrel state, Location location) {
+        super(state, location);
+    }
+    
+    @Override
+    public CardboardBarrel copy() {
+        return new CardboardBarrel(this, null);
+    }
+
+    @Override
+    public CardboardBarrel copy(Location location) {
+        return new CardboardBarrel(this, location);
+    }
+	
+    /*
     public CardboardBarrel(Block block) {
         super(block, BarrelBlockEntity.class);
     }
@@ -18,6 +40,7 @@ public class CardboardBarrel extends CardboardLootableBlock<BarrelBlockEntity> i
     public CardboardBarrel(Material material, BarrelBlockEntity te) {
         super(material, te);
     }
+    */
 
     @Override
     public Inventory getSnapshotInventory() {

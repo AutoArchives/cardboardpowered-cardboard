@@ -2,7 +2,9 @@ package org.cardboardpowered.impl.block;
 
 import java.util.UUID;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
@@ -20,6 +22,25 @@ import net.minecraft.screen.NamedScreenHandlerFactory;
 
 public class CardboardChest extends CardboardLootableBlock<ChestBlockEntity> implements Chest {
 
+    public CardboardChest(World world, ChestBlockEntity tileEntity) {
+        super(world, tileEntity);
+    }
+
+    protected CardboardChest(CardboardChest state, Location location) {
+        super(state, location);
+    }
+    
+    @Override
+    public CardboardChest copy() {
+        return new CardboardChest(this, null);
+    }
+
+    @Override
+    public CardboardChest copy(Location location) {
+        return new CardboardChest(this, location);
+    }
+	
+    /*
     public CardboardChest(final Block block) {
         super(block, ChestBlockEntity.class);
     }
@@ -27,6 +48,7 @@ public class CardboardChest extends CardboardLootableBlock<ChestBlockEntity> imp
     public CardboardChest(final Material material, final ChestBlockEntity te) {
         super(material, te);
     }
+    */
 
     @Override
     public Inventory getSnapshotInventory() {

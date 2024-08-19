@@ -18,11 +18,11 @@ public class MixinBannerBlockEntity {
     //@Shadow
     //public NbtList patternListTag;
 
-    @Inject(at = @At("TAIL"), method = "readNbt")
-    public void bukkit_readNbt(NbtCompound nbttagcompound, CallbackInfo ci) {
+    //@Inject(at = @At("TAIL"), method = "readNbt")
+    //public void bukkit_readNbt(NbtCompound nbttagcompound, CallbackInfo ci) {
         // Bukkit - TitleEntityBanner.patch
         //while (this.patternListTag.size() > 20)
         //    this.patternListTag.remove(20);
-    }
+    //}
 
 }

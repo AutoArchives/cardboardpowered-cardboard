@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 
+import com.javazilla.bukkitfabric.BukkitFabricMod;
+
 public class CardboardConfig {
 
     private static final String DEFAULT =
@@ -33,6 +35,8 @@ public class CardboardConfig {
     public static ArrayList<String> disabledMixins = new ArrayList<>();
     public static boolean ALT_CHAT = false;
 	public static boolean REGISTRY_COMMAND_FIX = true;
+	
+    public static boolean DEBUG_EVENT_CALL = false;
 
     public static void setup() throws Exception {
         File fabDir = FabricLoader.getInstance().getConfigDir().toFile();
@@ -58,6 +62,9 @@ public class CardboardConfig {
 
         ArrayList<String> disables = (ArrayList<String>)config.getObject("mixin-force-disable");
         disabledMixins.addAll(disables);
+        
+        boolean debug_0 = config.getOrDefault("debug_print_event_call", false);
+        DEBUG_EVENT_CALL = debug_0;
     }
 
     private static void save_default(File file) throws IOException {

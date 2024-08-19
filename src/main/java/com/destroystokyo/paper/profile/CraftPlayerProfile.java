@@ -3,6 +3,7 @@ package com.destroystokyo.paper.profile;
 // import com.destroystokyo.paper.PaperConfig;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Multimap;
 import com.javazilla.bukkitfabric.interfaces.IUserCache;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
@@ -353,5 +354,22 @@ public class CraftPlayerProfile implements PlayerProfile {
 		// TODO Auto-generated method stub
 		
 	}
+
+    public GameProfile buildGameProfile() {
+        GameProfile profile = new GameProfile(this.profile.getId(), this.profile.getName());
+        profile.getProperties().putAll((Multimap)this.profile.getProperties());
+        return profile;
+    }
+
+    static final String PROPERTY_NAME = "textures";
+    
+    public static GameProfile validateSkullProfile(GameProfile gameProfile) {
+        // The GameProfile needs to contain either both a uuid and textures, or a name.
+        // The GameProfile always has a name or a uuid, so checking if it has a name is sufficient.
+        boolean isValidSkullProfile = (gameProfile.getName() != null)
+                || gameProfile.getProperties().containsKey(PROPERTY_NAME);
+        // Preconditions.checkArgument(isValidSkullProfile, "The skull profile is missing a name or textures!");
+        return gameProfile;
+    }
 
 }

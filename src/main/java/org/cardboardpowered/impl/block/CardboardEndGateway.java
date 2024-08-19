@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.EndGateway;
 
@@ -12,12 +13,22 @@ import net.minecraft.util.math.BlockPos;
 
 public class CardboardEndGateway extends CardboardBlockEntityState<EndGatewayBlockEntity> implements EndGateway {
 
-    public CardboardEndGateway(Block block) {
-        super(block, EndGatewayBlockEntity.class);
+    public CardboardEndGateway(World world, EndGatewayBlockEntity tileEntity) {
+        super(world, tileEntity);
     }
 
-    public CardboardEndGateway(final Material material, EndGatewayBlockEntity te) {
-        super(material, te);
+    protected CardboardEndGateway(CardboardEndGateway state, Location location) {
+        super(state, location);
+    }
+    
+    @Override
+    public CardboardEndGateway copy() {
+        return new CardboardEndGateway(this, null);
+    }
+
+    @Override
+    public CardboardEndGateway copy(Location location) {
+        return new CardboardEndGateway(this, location);
     }
 
     @Override

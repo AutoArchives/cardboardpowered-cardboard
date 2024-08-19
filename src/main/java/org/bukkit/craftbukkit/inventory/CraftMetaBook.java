@@ -1,460 +1,406 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-
-import me.isaiah.common.cmixin.IMixinMinecraftServer;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.text.Text;
-import org.apache.commons.lang.Validate;
-import org.bukkit.Material;
-import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
-import org.bukkit.craftbukkit.util.CraftChatMessage;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
-import org.bukkit.inventory.meta.BookMeta;
-
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
+import net.minecraft.component.ComponentChanges;
+import net.minecraft.component.DataComponentType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.WritableBookContentComponent;
+import net.minecraft.server.filter.FilteredMessage;
+import net.minecraft.text.RawFilteredPair;
+import net.minecraft.text.Text;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.configuration.serialization.DelegateDeserialization;
+import org.bukkit.craftbukkit.inventory.CraftMetaBookSigned;
+import org.bukkit.craftbukkit.inventory.CraftMetaItem;
+import org.bukkit.craftbukkit.inventory.SerializableMeta;
+import org.bukkit.craftbukkit.util.CraftChatMessage;
+import org.bukkit.inventory.meta.BookMeta;
+// import org.bukkit.inventory.meta.WritableBookMeta;
 
-@DelegateDeserialization(SerializableMeta.class)
-public class CraftMetaBook extends CraftMetaItem implements BookMeta {
-
-    protected static final ItemMetaKey BOOK_TITLE = new ItemMetaKey("title");
-    protected static final ItemMetaKey BOOK_AUTHOR = new ItemMetaKey("author");
-    protected static final ItemMetaKey BOOK_PAGES = new ItemMetaKey("pages");
-    protected static final ItemMetaKey RESOLVED = new ItemMetaKey("resolved");
-    protected static final ItemMetaKey GENERATION = new ItemMetaKey("generation");
-    protected static final int MAX_PAGES = 100;
-    protected static final int MAX_PAGE_LENGTH = 320; // 256 limit + 64 characters to allow for psuedo colour codes
-    protected static final int MAX_TITLE_LENGTH = 32;
-
-    protected String title;
-    protected String author;
-    // We store the pages in their raw original text representation. See SPIGOT-5063, SPIGOT-5350, SPIGOT-3206
-    // For writable books (CraftMetaBook) the pages are stored as plain Strings.
-    // For written books (CraftMetaBookSigned) the pages are stored in Minecraft's JSON format.
-    protected List<String> pages; // null and empty are two different states internally
-    protected Boolean resolved = null;
-    protected Integer generation;
+@DelegateDeserialization(value=SerializableMeta.class)
+public class CraftMetaBook
+extends CraftMetaItem
+implements BookMeta // ,
+/*WritableBookMeta*/ {
+    static final CraftMetaItem.ItemMetaKeyType<WritableBookContentComponent> BOOK_CONTENT = new CraftMetaItem.ItemMetaKeyType<WritableBookContentComponent>(DataComponentTypes.WRITABLE_BOOK_CONTENT);
+    static final CraftMetaItem.ItemMetaKey BOOK_PAGES = new CraftMetaItem.ItemMetaKey("pages");
+    static final int MAX_PAGES = Integer.MAX_VALUE;
+    static final int MAX_PAGE_LENGTH = 1024;
+    protected List<String> pages;
+    private BookMeta.Spigot spigot = new SpigotMeta();
 
     CraftMetaBook(CraftMetaItem meta) {
         super(meta);
-
         if (meta instanceof CraftMetaBook) {
-            CraftMetaBook bookMeta = (CraftMetaBook) meta;
-            this.title = bookMeta.title;
-            this.author = bookMeta.author;
-            this.resolved = bookMeta.resolved;
-            this.generation = bookMeta.generation;
-
+            CraftMetaBook bookMeta = (CraftMetaBook)meta;
             if (bookMeta.pages != null) {
                 this.pages = new ArrayList<String>(bookMeta.pages.size());
-                if (meta instanceof CraftMetaBookSigned) {
-                    if (this instanceof CraftMetaBookSigned) {
-                        pages.addAll(bookMeta.pages);
-                    } else {
-                        // Convert from JSON to plain Strings:
-                        pages.addAll(Lists.transform(bookMeta.pages, CraftChatMessage::fromJSONComponent));
-                    }
-                } else {
-                    if (this instanceof CraftMetaBookSigned) {
-                        // Convert from plain Strings to JSON:
-                        // This happens for example during book signing.
-                        for (String page : bookMeta.pages) {
-                            // We don't insert any non-plain text features (such as clickable links) during this conversion.
-                            Text component = CraftChatMessage.fromString(page, true, true)[0];
-                            pages.add(CraftChatMessage.toJSON(component));
-                        }
-                    } else {
-                        pages.addAll(bookMeta.pages);
-                    }
-                }
+                this.pages.addAll(bookMeta.pages);
+            }
+        } else if (meta instanceof CraftMetaBookSigned) {
+            CraftMetaBookSigned bookMeta = (CraftMetaBookSigned)meta;
+            if (bookMeta.pages != null) {
+                this.pages = new ArrayList<String>(bookMeta.pages.size());
+                this.pages.addAll(Lists.transform(bookMeta.pages, CraftChatMessage::fromComponent));
             }
         }
     }
 
-    CraftMetaBook(NbtCompound tag) {
-        super(tag);
-
-        if (tag.contains(BOOK_TITLE.NBT)) {
-            this.title = tag.getString(BOOK_TITLE.NBT);
-        }
-
-        if (tag.contains(BOOK_AUTHOR.NBT)) {
-            this.author = tag.getString(BOOK_AUTHOR.NBT);
-        }
-
-        if (tag.contains(RESOLVED.NBT)) {
-            this.resolved = tag.getBoolean(RESOLVED.NBT);
-        }
-
-        if (tag.contains(GENERATION.NBT)) {
-            generation = tag.getInt(GENERATION.NBT);
-        }
-
-        if (tag.contains(BOOK_PAGES.NBT)) {
-            NbtList pages = tag.getList(BOOK_PAGES.NBT, CraftMagicNumbers.NBT.TAG_STRING);
+    CraftMetaBook(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+        super(tag, extraHandledDcts);
+        CraftMetaBook.getOrEmpty(tag, BOOK_CONTENT).ifPresent(writable -> {
+            List<RawFilteredPair<String>> pages = writable.pages();
             this.pages = new ArrayList<String>(pages.size());
-
-            boolean expectJson = (this instanceof CraftMetaBookSigned);
-            // Note: We explicitly check for and truncate oversized books and pages,
-            // because they can come directly from clients when handling book edits.
-            for (int i = 0; i < Math.min(pages.size(), MAX_PAGES); i++) {
-                String page = pages.getString(i);
-                // There was an issue on previous Spigot versions which would
-                // result in book items with pages in the wrong text
-                // representation. See SPIGOT-182, SPIGOT-164
-                if (expectJson) {
-                    page = CraftChatMessage.fromJSONOrStringToJSON(page, false, true, MAX_PAGE_LENGTH, false);
-                } else {
-                    page = validatePage(page);
-                }
+            for (int i2 = 0; i2 < Math.min(pages.size(), Integer.MAX_VALUE); ++i2) {
+                String page = pages.get(i2).raw();
+                page = this.validatePage(page);
                 this.pages.add(page);
             }
-        }
+        });
     }
 
     CraftMetaBook(Map<String, Object> map) {
         super(map);
-
-        setAuthor(SerializableMeta.getString(map, BOOK_AUTHOR.BUKKIT, true));
-
-        setTitle(SerializableMeta.getString(map, BOOK_TITLE.BUKKIT, true));
-
-        Iterable<?> pages = SerializableMeta.getObject(Iterable.class, map, BOOK_PAGES.BUKKIT, true);
+        Iterable pages = SerializableMeta.getObject(Iterable.class, map, CraftMetaBook.BOOK_PAGES.BUKKIT, true);
         if (pages != null) {
             this.pages = new ArrayList<String>();
             for (Object page : pages) {
-                if (page instanceof String) {
-                    internalAddPage(deserializePage((String) page));
-                }
+                if (!(page instanceof String)) continue;
+                this.internalAddPage(this.validatePage((String)page));
             }
         }
-
-        resolved = SerializableMeta.getObject(Boolean.class, map, RESOLVED.BUKKIT, true);
-        generation = SerializableMeta.getObject(Integer.class, map, GENERATION.BUKKIT, true);
     }
-
-    protected String deserializePage(String pageData) {
-        // We expect the page data to already be a plain String.
-        return validatePage(pageData);
-    }
-
 
     @Override
-    void applyToItem(NbtCompound itemData) {
+    void applyToItem(CraftMetaItem.Applicator itemData) {
         super.applyToItem(itemData);
-
-        if (hasTitle()) {
-            itemData.putString(BOOK_TITLE.NBT, this.title);
-        }
-
-        if (hasAuthor()) {
-            itemData.putString(BOOK_AUTHOR.NBT, this.author);
-        }
-
-        if (pages != null) {
-            NbtList list = new NbtList();
-            for (String page : pages) {
-                list.add(NbtString.of(page));
+        if (this.pages != null) {
+            ArrayList<RawFilteredPair<String>> list = new ArrayList<RawFilteredPair<String>>();
+            for (String page : this.pages) {
+                list.add(RawFilteredPair.of(FilteredMessage.permitted(page)));
             }
-            itemData.put(BOOK_PAGES.NBT, list);
-        }
-
-        if (resolved != null) {
-            itemData.putBoolean(RESOLVED.NBT, resolved);
-        }
-
-        if (generation != null) {
-            itemData.putInt(GENERATION.NBT, generation);
+            itemData.put(BOOK_CONTENT, new WritableBookContentComponent(list));
         }
     }
 
     @Override
     boolean isEmpty() {
-        return super.isEmpty() && isBookEmpty();
+        return super.isEmpty() && this.isBookEmpty();
     }
 
     boolean isBookEmpty() {
-        return !(hasPages() || hasAuthor() || hasTitle());
+        return this.pages == null;
     }
 
     @Override
     boolean applicableTo(Material type) {
-        switch (type) {
-            case WRITTEN_BOOK:
-            case WRITABLE_BOOK:
-                return true;
-            default:
-                return false;
-        }
+        return type == Material.WRITABLE_BOOK;
     }
 
-    @Override
     public boolean hasAuthor() {
-        return this.author != null;
+        return false;
     }
 
-    @Override
     public boolean hasTitle() {
-        return this.title != null;
+        return false;
     }
 
-    @Override
     public boolean hasPages() {
-        return !pages.isEmpty();
+        return this.pages != null && !this.pages.isEmpty();
     }
 
-    @Override
     public boolean hasGeneration() {
-        return generation != null;
+        return false;
     }
 
-    @Override
     public String getTitle() {
-        return this.title;
+        return null;
     }
 
-    @Override
-    public boolean setTitle(final String title) {
-        if (title == null) {
-            this.title = null;
-            return true;
-        } else if (title.length() > MAX_TITLE_LENGTH) return false;
-
-        this.title = title;
-        return true;
+    public boolean setTitle(String title) {
+        return false;
     }
 
-    @Override
     public String getAuthor() {
-        return this.author;
+        return null;
     }
 
-    @Override
-    public void setAuthor(final String author) {
-        this.author = author;
+    public void setAuthor(String author) {
     }
 
-    @Override
-    public Generation getGeneration() {
-        return (generation == null) ? null : Generation.values()[generation];
+    public BookMeta.Generation getGeneration() {
+        return null;
     }
 
-    @Override
-    public void setGeneration(Generation generation) {
-        this.generation = (generation == null) ? null : generation.ordinal();
+    public void setGeneration(BookMeta.Generation generation) {
     }
 
-    @Override
-    public String getPage(final int page) {
-        Validate.isTrue(isValidPage(page), "Invalid page number");
-        return convertDataToPlainPage(pages.get(page - 1));
+    public Component title() {
+        return null;
     }
 
-    protected String convertDataToPlainPage(String pageData) {
-        // pageData is expected to already be a plain String.
-        return pageData;
+    public BookMeta title(Component title) {
+        return this;
     }
 
-
-    @Override
-    public void setPage(final int page, final String text) {
-        if (!isValidPage(page))
-            throw new IllegalArgumentException("Invalid page number " + page + "/" + pages.size());
-
-        String newText = validatePage(text);
-        pages.set(page - 1, convertPlainPageToData(newText));
+    public Component author() {
+        return null;
     }
 
-    @Override
-    public void setPages(final String... pages) {
-        this.pages.clear();
-
-        addPage(pages);
+    public BookMeta author(Component author) {
+        return this;
     }
 
-    @Override
-    public void addPage(final String... pages) {
-        for (String page : pages) {
-            page = validatePage(page);
-            internalAddPage(convertPlainPageToData(page));
+    public Component page(int page) {
+        Preconditions.checkArgument((boolean)this.isValidPage(page), "Invalid page number");
+        return LegacyComponentSerializer.legacySection().deserialize(this.pages.get(page - 1));
+    }
+
+    public void page(int page, Component data) {
+        if (!this.isValidPage(page)) {
+            throw new IllegalArgumentException("Invalid page number " + page + "/" + this.pages.size());
         }
+        if (data == null) {
+            data = Component.empty();
+        }
+        this.pages.set(page - 1, LegacyComponentSerializer.legacySection().serialize(data));
+    }
+
+    public List<Component> pages() {
+        if (this.pages == null) {
+            return ImmutableList.of();
+        }
+        return (List)this.pages.stream().map(arg_0 -> ((LegacyComponentSerializer)LegacyComponentSerializer.legacySection()).deserialize(arg_0)).collect(ImmutableList.toImmutableList());
+    }
+
+    public BookMeta pages(List<Component> pages) {
+        if (this.pages != null) {
+            this.pages.clear();
+        }
+        for (Component page : pages) {
+            this.addPages(page);
+        }
+        return this;
+    }
+
+    public BookMeta pages(Component ... pages) {
+        if (this.pages != null) {
+            this.pages.clear();
+        }
+        this.addPages(pages);
+        return this;
+    }
+
+    public void addPages(Component ... pages) {
+        if (this.pages == null) {
+            this.pages = new ArrayList<String>();
+        }
+        for (Component page : pages) {
+            if (this.pages.size() >= Integer.MAX_VALUE) {
+                return;
+            }
+            if (page == null) {
+                page = Component.empty();
+            }
+            this.pages.add(LegacyComponentSerializer.legacySection().serialize(page));
+        }
+    }
+
+    private CraftMetaBook(List<Component> pages) {
+        super((CraftMetaItem)Bukkit.getItemFactory().getItemMeta(Material.WRITABLE_BOOK));
+        this.pages = pages.subList(0, Math.min(Integer.MAX_VALUE, pages.size())).stream().map(arg_0 -> ((LegacyComponentSerializer)LegacyComponentSerializer.legacySection()).serialize(arg_0)).collect(Collectors.toList());
+    }
+
+    public BookMeta.BookMetaBuilder toBuilder() {
+        return new CraftMetaBookBuilder();
+    }
+
+    public String getPage(int page) {
+        Preconditions.checkArgument((boolean)this.isValidPage(page), (String)"Invalid page number (%s)", (int)page);
+        return this.pages.get(page - 1);
+    }
+
+    public void setPage(int page, String text) {
+        Preconditions.checkArgument((boolean)this.isValidPage(page), (String)"Invalid page number (%s/%s)", (int)page, (int)this.getPageCount());
+        String newText = this.validatePage(text);
+        this.pages.set(page - 1, newText);
+    }
+
+    public void setPages(String ... pages) {
+        this.setPages(Arrays.asList(pages));
+    }
+
+    public void addPage(String ... pages) {
+        for (String page : pages) {
+            page = this.validatePage(page);
+            this.internalAddPage(page);
+        }
+    }
+
+    String validatePage(String page) {
+        if (page == null) {
+            page = "";
+        } else if (page.length() > 1024) {
+            page = page.substring(0, 1024);
+        }
+        return page;
     }
 
     private void internalAddPage(String page) {
-        // asserted: page != null
         if (this.pages == null) {
             this.pages = new ArrayList<String>();
-        } else if (this.pages.size() >= MAX_PAGES) {
+        } else if (this.pages.size() >= Integer.MAX_VALUE) {
             return;
         }
         this.pages.add(page);
     }
 
-
-    protected String convertPlainPageToData(String page) {
-        // Writable books store their data as plain Strings, so we don't need to convert anything.
-        return page;
-    }
-
-
-    String validatePage(String page) {
-        if (page == null) {
-            page = "";
-        } else if (page.length() > MAX_PAGE_LENGTH) {
-            page = page.substring(0, MAX_PAGE_LENGTH);
-        }
-        return page;
-    }
-
-    @Override
     public int getPageCount() {
-        return pages.size();
+        return this.pages == null ? 0 : this.pages.size();
     }
 
-    @Override
     public List<String> getPages() {
-        if (pages == null) return ImmutableList.of();
-        return pages.stream().map(this::convertDataToPlainPage).collect(ImmutableList.toImmutableList());
+        if (this.pages == null) {
+            return ImmutableList.of();
+        }
+        return (List)this.pages.stream().collect(ImmutableList.toImmutableList());
     }
 
-    @Override
     public void setPages(List<String> pages) {
-        this.pages.clear();
-        for (String page : pages)
-            addPage(page);
+        if (pages.isEmpty()) {
+            this.pages = null;
+            return;
+        }
+        if (this.pages != null) {
+            this.pages.clear();
+        }
+        for (String page : pages) {
+            this.addPage(page);
+        }
     }
 
     private boolean isValidPage(int page) {
-        return page > 0 && page <= pages.size();
+        return page > 0 && page <= this.getPageCount();
     }
 
     @Override
     public CraftMetaBook clone() {
-        CraftMetaBook meta = (CraftMetaBook) super.clone();
+        CraftMetaBook meta = (CraftMetaBook)super.clone();
         if (this.pages != null) {
             meta.pages = new ArrayList<String>(this.pages);
         }
+        meta.spigot = meta.new SpigotMeta();
         return meta;
     }
 
-
     @Override
     int applyHash() {
-        final int original;
+        int original;
         int hash = original = super.applyHash();
-        if (hasTitle())
-            hash = 61 * hash + this.title.hashCode();
-        if (hasAuthor())
-            hash = 61 * hash + 13 * this.author.hashCode();
-        if (hasPages())
+        if (this.pages != null) {
             hash = 61 * hash + 17 * this.pages.hashCode();
-        if (hasGeneration())
-            hash = 61 * hash + 19 * this.generation.hashCode();
-
+        }
         return original != hash ? CraftMetaBook.class.hashCode() ^ hash : hash;
     }
 
     @Override
     boolean equalsCommon(CraftMetaItem meta) {
-        if (!super.equalsCommon(meta))
+        if (!super.equalsCommon(meta)) {
             return false;
-
+        }
         if (meta instanceof CraftMetaBook) {
-            CraftMetaBook that = (CraftMetaBook) meta;
-
-            return (hasTitle() ? that.hasTitle() && this.title.equals(that.title) : !that.hasTitle())
-                    && (hasAuthor() ? that.hasAuthor() && this.author.equals(that.author) : !that.hasAuthor())
-                    && (hasPages() ? that.hasPages() && this.pages.equals(that.pages) : !that.hasPages())
-                    && (hasGeneration() ? that.hasGeneration() && this.generation.equals(that.generation) : !that.hasGeneration());
+            CraftMetaBook that = (CraftMetaBook)meta;
+            return Objects.equals(this.pages, that.pages);
         }
         return true;
     }
 
     @Override
     boolean notUncommon(CraftMetaItem meta) {
-        return super.notUncommon(meta) && (meta instanceof CraftMetaBook || isBookEmpty());
+        return super.notUncommon(meta) && (meta instanceof CraftMetaBook || this.isBookEmpty());
     }
 
     @Override
     ImmutableMap.Builder<String, Object> serialize(ImmutableMap.Builder<String, Object> builder) {
         super.serialize(builder);
-
-        if (hasTitle()) {
-            builder.put(BOOK_TITLE.BUKKIT, title);
+        if (this.pages != null) {
+            builder.put(CraftMetaBook.BOOK_PAGES.BUKKIT, ImmutableList.copyOf(this.pages));
         }
-
-        if (hasAuthor()) {
-            builder.put(BOOK_AUTHOR.BUKKIT, author);
-        }
-
-        if (pages != null) {
-            builder.put(BOOK_PAGES.BUKKIT, ImmutableList.copyOf(pages));
-        }
-
-        if (resolved != null) {
-            builder.put(RESOLVED.BUKKIT, resolved);
-        }
-
-        if (generation != null) {
-            builder.put(GENERATION.BUKKIT, generation);
-        }
-
         return builder;
     }
 
-    private final BookMeta.Spigot spigot = new BookMeta.Spigot() {
+    public BookMeta.Spigot spigot() {
+        return this.spigot;
+    }
 
-        @Override
-        public BaseComponent[] getPage(final int page) {
-			return ComponentSerializer.parse(((IMixinMinecraftServer)CraftServer.server).IC$to_json(CraftChatMessage.fromStringOrNull(pages.get(page - 1))));
+    private class SpigotMeta
+    extends BookMeta.Spigot {
+        private SpigotMeta() {
         }
 
-        @Override
-        public void setPage(final int page, final BaseComponent... text) {
-            if (!isValidPage(page))
-                throw new IllegalArgumentException("Invalid page number " + page + "/" + pages.size());
-
-            BaseComponent[] newText = text == null ? new BaseComponent[0] : text;
-            CraftMetaBook.this.pages.set(page - 1, ((IMixinMinecraftServer)CraftServer.server).IC$from_json(ComponentSerializer.toString(newText)).getString());
+        private String pageToJSON(String page) {
+            Text component = CraftChatMessage.fromString(page, true, true)[0];
+            return CraftChatMessage.toJSON(component);
         }
 
-        @Override
-        public void setPages(final BaseComponent[]... pages) {
-            CraftMetaBook.this.pages.clear();
-            addPage(pages);
+        private String componentsToPage(BaseComponent[] components) {
+            return CraftChatMessage.fromJSONComponent(ComponentSerializer.toString((BaseComponent[])components));
         }
 
-        @Override
-        public void addPage(final BaseComponent[]... pages) {
+        public BaseComponent[] getPage(int page) {
+            Preconditions.checkArgument((boolean)CraftMetaBook.this.isValidPage(page), "Invalid page number");
+            return ComponentSerializer.parse((String)this.pageToJSON(CraftMetaBook.this.pages.get(page - 1)));
+        }
+
+        public void setPage(int page, BaseComponent ... text) {
+            if (!CraftMetaBook.this.isValidPage(page)) {
+                throw new IllegalArgumentException("Invalid page number " + page + "/" + CraftMetaBook.this.getPageCount());
+            }
+            BaseComponent[] newText = text == null ? new BaseComponent[]{} : text;
+            CraftMetaBook.this.pages.set(page - 1, this.componentsToPage(newText));
+        }
+
+        public void setPages(BaseComponent[] ... pages) {
+            this.setPages(Arrays.asList(pages));
+        }
+
+        public void addPage(BaseComponent[] ... pages) {
             for (BaseComponent[] page : pages) {
-                if (CraftMetaBook.this.pages.size() >= MAX_PAGES)
-                    return;
-
-                if (page == null)
-                    page = new BaseComponent[0];
-
-                CraftMetaBook.this.pages.add(((IMixinMinecraftServer)CraftServer.server).IC$from_json(ComponentSerializer.toString(page)).getString());
+                if (page == null) {
+                    page = new BaseComponent[]{};
+                }
+                CraftMetaBook.this.internalAddPage(this.componentsToPage(page));
             }
         }
 
-        @Override
         public List<BaseComponent[]> getPages() {
-            final List<String> copy = ImmutableList.copyOf(CraftMetaBook.this.pages);
-            return new AbstractList<BaseComponent[]>() {
+            if (CraftMetaBook.this.pages == null) {
+                return ImmutableList.of();
+            }
+            ImmutableList copy = ImmutableList.copyOf(CraftMetaBook.this.pages);
+            return new AbstractList<BaseComponent[]>(){
+
                 @Override
                 public BaseComponent[] get(int index) {
-                    return ComponentSerializer.parse(((IMixinMinecraftServer)CraftServer.server).IC$to_json(CraftChatMessage.fromStringOrNull(copy.get(index))));
+                    return ComponentSerializer.parse((String)SpigotMeta.this.pageToJSON((String)copy.get(index)));
                 }
 
                 @Override
@@ -464,154 +410,53 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
             };
         }
 
-        @Override
         public void setPages(List<BaseComponent[]> pages) {
-            CraftMetaBook.this.pages.clear();
-            for (BaseComponent[] page : pages)
-                addPage(page);
-        }
-    };
-
-    @Override
-    public BookMeta.Spigot spigot() {
-        return spigot;
-    }
-
-
-    // Paper start
-    @Override
-    public net.kyori.adventure.text.Component title() {
-        return this.title == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(this.title);
-    }
-
-    @Override
-    public org.bukkit.inventory.meta.BookMeta title(net.kyori.adventure.text.Component title) {
-        this.setTitle(title == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(title));
-        return this;
-    }
-
-    @Override
-    public net.kyori.adventure.text.Component author() {
-        return this.author == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(this.author);
-    }
-
-    @Override
-    public org.bukkit.inventory.meta.BookMeta author(net.kyori.adventure.text.Component author) {
-        this.setAuthor(author == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(author));
-        return this;
-    }
-
-    @Override
-    public net.kyori.adventure.text.Component page(final int page) {
-        Validate.isTrue(isValidPage(page), "Invalid page number");
-        return this instanceof CraftMetaBookSigned ? net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().deserialize(pages.get(page - 1)) : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(pages.get(page - 1));
-    }
-
-    @Override
-    public void page(final int page, net.kyori.adventure.text.Component data) {
-        if (!isValidPage(page)) {
-            throw new IllegalArgumentException("Invalid page number " + page + "/" + pages.size());
-        }
-        if (data == null) {
-            data = net.kyori.adventure.text.Component.empty();
-        }
-        pages.set(page - 1, this instanceof CraftMetaBookSigned ? net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().serialize(data) : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(data));
-    }
-
-    @Override
-    public List<net.kyori.adventure.text.Component> pages() {
-        if (this.pages == null) return ImmutableList.of();
-        if (this instanceof CraftMetaBookSigned)
-            return pages.stream().map(net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson()::deserialize).collect(ImmutableList.toImmutableList());
-        else
-            return pages.stream().map(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()::deserialize).collect(ImmutableList.toImmutableList());
-    }
-
-    @Override
-    public BookMeta pages(List<net.kyori.adventure.text.Component> pages) {
-        if (this.pages != null) this.pages.clear();
-        for (net.kyori.adventure.text.Component page : pages) {
-            addPages(page);
-        }
-        return this;
-    }
-
-    @Override
-    public BookMeta pages(net.kyori.adventure.text.Component... pages) {
-        if (this.pages != null) this.pages.clear();
-        addPages(pages);
-        return this;
-    }
-
-    @Override
-    public void addPages(net.kyori.adventure.text.Component... pages) {
-        if (this.pages == null) this.pages = new ArrayList<>();
-        for (net.kyori.adventure.text.Component page : pages) {
-            if (this.pages.size() >= MAX_PAGES) {
+            if (pages.isEmpty()) {
+                CraftMetaBook.this.pages = null;
                 return;
             }
-
-            if (page == null) {
-                page = net.kyori.adventure.text.Component.empty();
+            if (CraftMetaBook.this.pages != null) {
+                CraftMetaBook.this.pages.clear();
             }
-
-            this.pages.add(this instanceof CraftMetaBookSigned ? net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().serialize(page) : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(page));
+            for (BaseComponent[] page : pages) {
+                this.addPage(new BaseComponent[][]{page});
+            }
         }
     }
 
-    private CraftMetaBook(net.kyori.adventure.text.Component title, net.kyori.adventure.text.Component author, List<net.kyori.adventure.text.Component> pages) {
-        super((org.bukkit.craftbukkit.inventory.CraftMetaItem) org.bukkit.Bukkit.getItemFactory().getItemMeta(org.bukkit.Material.WRITABLE_BOOK));
-        this.title = title == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(title);
-        this.author = author == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(author);
-        this.pages = pages.subList(0, Math.min(MAX_PAGES, pages.size())).stream().map(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()::serialize).collect(java.util.stream.Collectors.toList());
-    }
+    static class CraftMetaBookBuilder
+    implements BookMeta.BookMetaBuilder {
+        protected final List<Component> pages = new ArrayList<Component>();
 
-    static final class CraftMetaBookBuilder implements BookMetaBuilder {
-        private net.kyori.adventure.text.Component title = null;
-        private net.kyori.adventure.text.Component author = null;
-        private final List<net.kyori.adventure.text.Component> pages = new java.util.ArrayList<>();
+        CraftMetaBookBuilder() {
+        }
 
-        @Override
-        public BookMetaBuilder title(net.kyori.adventure.text.Component title) {
-            this.title = title;
+        public BookMeta.BookMetaBuilder title(Component title) {
             return this;
         }
 
-        @Override
-        public BookMetaBuilder author(net.kyori.adventure.text.Component author) {
-            this.author = author;
+        public BookMeta.BookMetaBuilder author(Component author) {
             return this;
         }
 
-        @Override
-        public BookMetaBuilder addPage(net.kyori.adventure.text.Component page) {
+        public BookMeta.BookMetaBuilder addPage(Component page) {
             this.pages.add(page);
             return this;
         }
 
-        @Override
-        public BookMetaBuilder pages(net.kyori.adventure.text.Component... pages) {
-            java.util.Collections.addAll(this.pages, pages);
+        public BookMeta.BookMetaBuilder pages(Component ... pages) {
+            Collections.addAll(this.pages, pages);
             return this;
         }
 
-        @Override
-        public BookMetaBuilder pages(java.util.Collection<net.kyori.adventure.text.Component> pages) {
+        public BookMeta.BookMetaBuilder pages(Collection<Component> pages) {
             this.pages.addAll(pages);
             return this;
         }
 
-        @Override
         public BookMeta build() {
-            return new CraftMetaBook(title, author, pages);
+            return new CraftMetaBook(this.pages);
         }
     }
-
-    @Override
-    public BookMetaBuilder toBuilder() {
-        return new CraftMetaBookBuilder();
-    }
-
-    // Paper end
-
 }
+

@@ -63,7 +63,8 @@ public class CardboardAttributeInstance implements AttributeInstance {
 
     @Override
     public double getDefaultValue() {
-       return handle.getAttribute().getDefaultValue();
+       // return handle.getAttribute().getDefaultValue();
+    	return handle.getAttribute().value().getDefaultValue();
     }
 
     public static EntityAttributeModifier convert(AttributeModifier bukkit) {

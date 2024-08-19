@@ -17,9 +17,12 @@ public class ThrowableProjectileImpl extends ProjectileImpl implements Throwable
 
     @Override
     public ItemStack getItem() {
-        if (((IMixinThrownItemEntity)getHandle()).getItemBF().isEmpty()) {
-            return CraftItemStack.asBukkitCopy(new net.minecraft.item.ItemStack(((IMixinThrownItemEntity)getHandle()).getDefaultItemPublic()));
-        } else return CraftItemStack.asBukkitCopy(((IMixinThrownItemEntity)getHandle()).getItemBF());
+        if (this.getHandle().getStack().isEmpty()) {
+        	return CraftItemStack.asBukkitCopy(new net.minecraft.item.ItemStack(((IMixinThrownItemEntity)getHandle()).getDefaultItemPublic()));
+        } else {
+        	return CraftItemStack.asBukkitCopy(this.getHandle().getStack());
+        }
+        
     }
 
     @Override

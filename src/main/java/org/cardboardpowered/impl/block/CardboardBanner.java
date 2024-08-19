@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.DyeColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Banner;
 import org.bukkit.block.Block;
 import org.bukkit.block.banner.Pattern;
@@ -21,6 +23,10 @@ import net.minecraft.block.AbstractBannerBlock;
 import net.minecraft.block.entity.BannerBlockEntity;
 import net.minecraft.block.entity.BannerPattern;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.component.ComponentMap;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.BannerPatternsComponent;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -32,6 +38,25 @@ public class CardboardBanner extends CardboardBlockEntityState<BannerBlockEntity
     private DyeColor base;
     private List<Pattern> patterns;
 
+    public CardboardBanner(World world, BannerBlockEntity tileEntity) {
+        super(world, tileEntity);
+    }
+
+    protected CardboardBanner(CardboardBanner state, Location location) {
+        super(state, location);
+    }
+    
+    @Override
+    public CardboardBanner copy() {
+        return new CardboardBanner(this, null);
+    }
+
+    @Override
+    public CardboardBanner copy(Location location) {
+        return new CardboardBanner(this, location);
+    }
+    
+    /*
     public CardboardBanner(final Block block) {
         super(block, BannerBlockEntity.class);
     }
@@ -39,6 +64,7 @@ public class CardboardBanner extends CardboardBlockEntityState<BannerBlockEntity
     public CardboardBanner(final Material material, final BannerBlockEntity te) {
         super(material, te);
     }
+    */
 
     @Override
     public void load(BannerBlockEntity banner) {
@@ -47,9 +73,17 @@ public class CardboardBanner extends CardboardBlockEntityState<BannerBlockEntity
         base = DyeColor.getByWoolData((byte) ((AbstractBannerBlock) this.data.getBlock()).getColor().getId());
         patterns = new ArrayList<Pattern>();
 
-        for (int i = 0; i < banner.getPatterns().size(); i++) {
+        /*for (int i = 0; i < banner.getPatterns().size(); i++) {
         	Pair<RegistryEntry<BannerPattern>, net.minecraft.util.DyeColor> pair = banner.getPatterns().get(i);
             patterns.add(new Pattern(DyeColor.getByWoolData((byte) pair.getSecond().getId()), PatternType.getByIdentifier(pair.getFirst().value().getId())));
+        }*/
+        
+        if (banner.getPatterns() != null) {
+            for (int i = 0; i < banner.getPatterns().layers().size(); i++) {
+            	BannerPatternsComponent.Layer p = banner.getPatterns().layers().get(i);
+                // TODO this.patterns.add(new Pattern(DyeColor.getByWoolData((byte) p.color().getId()), CraftPatternType.minecraftHolderToBukkit(p.pattern())));
+            	this.patterns.add(new Pattern(DyeColor.getByWoolData((byte) p.color().getId()), PatternType.getByIdentifier(p.pattern().getIdAsString()) ));
+            }
         }
 
     }
@@ -128,8 +162,14 @@ public class CardboardBanner extends CardboardBlockEntityState<BannerBlockEntity
     }
 
     public void customName(Component customName) {
-        ((BannerBlockEntity)this.getSnapshot()).setCustomName(Text.of(customName.toString()));
+        set_name(((BannerBlockEntity)this.getSnapshot()), Text.of(customName.toString()));
+
     }
+    
+	public static void set_name(BannerBlockEntity b, Text name) {
+		
+		b.customName = name;
+	}
 
     public String getCustomName() {
         return (String)LegacyComponentSerializer.legacySection().serializeOrNull(this.customName());

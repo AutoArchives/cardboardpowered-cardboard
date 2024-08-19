@@ -19,6 +19,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = ServerPlayNetworkHandler.class, priority = 800)
+@Deprecated
+/**
+ * @deprecated leftover 1.18.2
+ */
 public abstract class MixinSPNH_PlayerCommandPreprocessEvent_1_18 implements IMixinPlayNetworkHandler {
 
     @Shadow 

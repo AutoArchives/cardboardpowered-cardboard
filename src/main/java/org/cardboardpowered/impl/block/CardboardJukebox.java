@@ -7,7 +7,9 @@ import net.minecraft.block.entity.JukeboxBlockEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import org.bukkit.Effect;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Jukebox;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -19,13 +21,24 @@ import org.jetbrains.annotations.NotNull;
 
 public class CardboardJukebox extends CardboardBlockEntityState<JukeboxBlockEntity> implements Jukebox {
 
-    public CardboardJukebox(final Block block) {
-        super(block, JukeboxBlockEntity.class);
+    public CardboardJukebox(World world, JukeboxBlockEntity tileEntity) {
+        super(world, tileEntity);
     }
 
-    public CardboardJukebox(final Material material, JukeboxBlockEntity blockEntity) {
-        super(material, blockEntity);
+    protected CardboardJukebox(CardboardJukebox state, Location location) {
+        super(state, location);
     }
+    
+    @Override
+    public CardboardJukebox copy() {
+        return new CardboardJukebox(this, null);
+    }
+
+    @Override
+    public CardboardJukebox copy(Location location) {
+        return new CardboardJukebox(this, location);
+    }
+
 
     @Override
     public boolean update(boolean force, boolean applyPhysics) {

@@ -5,7 +5,10 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.DispenserBlock;
 import net.minecraft.block.entity.DispenserBlockEntity;
+
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
@@ -18,13 +21,23 @@ import java.util.UUID;
 
 public class CardboardDispenser extends CardboardLootableBlock<DispenserBlockEntity> implements Dispenser {
 
-	public CardboardDispenser(final Block block) {
-		super(block, DispenserBlockEntity.class);
-	}
+    public CardboardDispenser(World world, DispenserBlockEntity tileEntity) {
+        super(world, tileEntity);
+    }
 
-	public CardboardDispenser(final Material material, final DispenserBlockEntity te) {
-		super(material, te);
-	}
+    protected CardboardDispenser(CardboardDispenser state, Location location) {
+        super(state, location);
+    }
+    
+    @Override
+    public CardboardDispenser copy() {
+        return new CardboardDispenser(this, null);
+    }
+
+    @Override
+    public CardboardDispenser copy(Location location) {
+        return new CardboardDispenser(this, location);
+    }
 
 	@Override
 	public Inventory getSnapshotInventory() {

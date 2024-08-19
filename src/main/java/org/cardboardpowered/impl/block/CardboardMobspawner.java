@@ -1,6 +1,8 @@
 package org.cardboardpowered.impl.block;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.entity.EntityType;
@@ -15,12 +17,22 @@ import net.minecraft.util.math.random.Random;
 @SuppressWarnings("deprecation")
 public class CardboardMobspawner extends CardboardBlockEntityState<MobSpawnerBlockEntity> implements CreatureSpawner {
 
-    public CardboardMobspawner(final Block block) {
-        super(block, MobSpawnerBlockEntity.class);
+    public CardboardMobspawner(World world, MobSpawnerBlockEntity tileEntity) {
+        super(world, tileEntity);
     }
 
-    public CardboardMobspawner(final Material material, MobSpawnerBlockEntity te) {
-        super(material, te);
+    protected CardboardMobspawner(CardboardMobspawner state, Location location) {
+        super(state, location);
+    }
+
+    @Override
+    public CardboardMobspawner copy() {
+        return new CardboardMobspawner(this, null);
+    }
+
+    @Override
+    public CardboardMobspawner copy(Location location) {
+        return new CardboardMobspawner(this, location);
     }
 
     @Override

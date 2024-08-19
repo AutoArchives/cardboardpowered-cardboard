@@ -1,5 +1,6 @@
 package org.cardboardpowered.impl;
 
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.Item;
 
 public class CardboardModdedItem implements CardboardModdedMaterial {
@@ -18,7 +19,10 @@ public class CardboardModdedItem implements CardboardModdedMaterial {
 
     @Override
     public short getDamage() {
-        return (short) item.getMaxDamage();
+    	
+    	return item.getComponents().get(DataComponentTypes.MAX_DAMAGE).shortValue();
+    	
+        // return (short) item.getMaxDamage();
     }
 
     @Override

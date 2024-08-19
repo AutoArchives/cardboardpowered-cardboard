@@ -66,12 +66,20 @@ public class MixinMaterial implements IMixinMaterial {
 		setModdedData(data);
 	}*/
 	
+	/**
+	 * @author Cardboard
+	 * @reason Support Modded Materials
+	 */
 	@Overwrite
     public short getMaxDurability() {
 		if (isModded()) return moddedData.getDamage(); // CARDBOARD
         return this.durability;
     }
 	
+	/**
+	 * @author Cardboard
+	 * @reason Support Modded Materials
+	 */
     @Overwrite
     public int getId() {
     	// CARDBOARD REMOVED: Preconditions.checkArgument(this.legacy, "Cannot get ID of Modern Material");

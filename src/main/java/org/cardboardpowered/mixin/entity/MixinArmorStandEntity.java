@@ -69,12 +69,45 @@ public class MixinArmorStandEntity extends MixinEntity implements IMixinArmorSta
     }
     // Paper end
 
+
+    @Inject(
+    		method = "equip", cancellable = true,
+    		at = @At(
+    				value = "INVOKE",
+    				target = "Lnet/minecraft/entity/player/PlayerEntity;isInCreativeMode()Z"
+    			)
+    	)
+    public void cardboard$armorstand_PlayerArmorStandManipulateEvent(net.minecraft.entity.player.PlayerEntity playerEntity, net.minecraft.entity.EquipmentSlot slotType, ItemStack itemStack, Hand hand, CallbackInfoReturnable<Boolean> cir) {
+    	ItemStack itemStack1 = ((ArmorStandEntity)(Object)this).getEquippedStack(slotType);
+
+        org.bukkit.inventory.ItemStack armorStandItem = CraftItemStack.asCraftMirror(itemStack1);
+        org.bukkit.inventory.ItemStack playerHeldItem = CraftItemStack.asCraftMirror(itemStack);
+
+        Player player = (Player) ((IMixinEntity) playerEntity).getBukkitEntity();
+        ArmorStand self = (ArmorStand) ((IMixinEntity) this).getBukkitEntity();
+
+        EquipmentSlot slot = com.javazilla.bukkitfabric.Utils.getSlot(slotType);
+        
+        EquipmentSlot bukkitHand = EquipmentSlot.HAND;
+        if (hand == Hand.OFF_HAND) {
+        	bukkitHand = EquipmentSlot.OFF_HAND;
+        }
+
+        PlayerArmorStandManipulateEvent event = new PlayerArmorStandManipulateEvent(player, self, playerHeldItem, armorStandItem, slot, bukkitHand);
+        Bukkit.getPluginManager().callEvent(event);
+
+        if (event.isCancelled()) {
+            cir.setReturnValue(true);
+        }
+    }
+    
     /**
      * PlayerArmorStandManipulateEvent
      * 
      * @author Arclight
      * @author Cardboard
      */
+    /*
     @Inject(method = "equip", cancellable = true,at = @At(value = "INVOKE", target =
             "Lnet/minecraft/entity/player/PlayerEntity;getAbilities()Lnet/minecraft/entity/player/PlayerAbilities;"))
     public void doBukkitEvent_PlayerArmorStandManipulateEvent(PlayerEntity playerEntity, net.minecraft.entity.EquipmentSlot slotType, ItemStack itemStack,
@@ -95,6 +128,7 @@ public class MixinArmorStandEntity extends MixinEntity implements IMixinArmorSta
             cir.setReturnValue(true);
         }
     }
+    */
 
 
 }

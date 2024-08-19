@@ -23,10 +23,12 @@ public class MixinBeehiveBlockEntity extends BlockEntity {
     public MixinBeehiveBlockEntity( BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
+    
+    // NOTE: 1.20.6: Removed ZI argument
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;stopRiding()V"), cancellable = true,
-            method = "Lnet/minecraft/block/entity/BeehiveBlockEntity;tryEnterHive(Lnet/minecraft/entity/Entity;ZI)V")
-    public void bukkitize_tryEnterHive(Entity entity, boolean flag, int i, CallbackInfo ci) {
+            method = "Lnet/minecraft/block/entity/BeehiveBlockEntity;tryEnterHive(Lnet/minecraft/entity/Entity;)V")
+    public void bukkitize_tryEnterHive(Entity entity, CallbackInfo ci) {
         if (this.world != null) {
             org.bukkit.event.entity.EntityEnterBlockEvent event = new org.bukkit.event.entity.EntityEnterBlockEvent(((IMixinEntity)entity).getBukkitEntity(), CraftBlock.at((ServerWorld) world, getPos()));
             org.bukkit.Bukkit.getPluginManager().callEvent(event);

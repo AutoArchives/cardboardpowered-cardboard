@@ -20,14 +20,14 @@ import net.minecraft.registry.Registries;
 @Mixin(ArrowEntity.class)
 public class MixinArrowEntity implements IMixinArrowEntity {
 
-    @Shadow
-    public Potion potion;
+    //@Shadow
+    //public Potion potion;
 
-    @Shadow
-    public Set<StatusEffectInstance> effects;
+    //@Shadow
+    //public Set<StatusEffectInstance> effects;
 
-    @Shadow
-    private static TrackedData<Integer> COLOR;
+    //@Shadow
+    //private static TrackedData<Integer> COLOR;
 
     @Override
     public void setType(String string) {

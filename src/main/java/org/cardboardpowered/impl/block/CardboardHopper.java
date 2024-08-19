@@ -2,7 +2,9 @@ package org.cardboardpowered.impl.block;
 
 import java.util.UUID;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Hopper;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
@@ -14,12 +16,22 @@ import net.minecraft.block.entity.HopperBlockEntity;
 
 public class CardboardHopper extends CardboardLootableBlock<HopperBlockEntity> implements Hopper {
 
-    public CardboardHopper(final Block block) {
-        super(block, HopperBlockEntity.class);
+    public CardboardHopper(World world, HopperBlockEntity tileEntity) {
+        super(world, tileEntity);
     }
 
-    public CardboardHopper(final Material material, final HopperBlockEntity te) {
-        super(material, te);
+    protected CardboardHopper(CardboardHopper state, Location location) {
+        super(state, location);
+    }
+	
+    @Override
+    public CardboardHopper copy() {
+        return new CardboardHopper(this, null);
+    }
+
+    @Override
+    public CardboardHopper copy(Location location) {
+        return new CardboardHopper(this, location);
     }
 
     @Override

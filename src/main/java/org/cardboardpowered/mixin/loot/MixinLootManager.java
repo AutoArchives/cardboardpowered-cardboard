@@ -2,9 +2,9 @@ package org.cardboardpowered.mixin.loot;
 
 import com.google.common.collect.ImmutableMap;
 import com.javazilla.bukkitfabric.interfaces.IMixinLootManager;
-import net.minecraft.loot.LootDataKey;
+// import net.minecraft.loot.LootDataKey;
 import net.minecraft.loot.LootDataType;
-import net.minecraft.loot.LootManager;
+// import net.minecraft.loot.LootManager;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -14,32 +14,39 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
 
-@Mixin(LootManager.class)
+// @Mixin(LootManager.class)
+@Deprecated(forRemoval = true)
 public class MixinLootManager implements IMixinLootManager {
+
+	@Override
+	public Map<?, Identifier> getLootTableToKeyMapBF() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
    // @Shadow
    // public Map<Identifier, LootTable> tables;
 
 	// LootManager.keyToValue
 	
-    @Shadow private Map<LootDataKey<?>, ?> keyToValue;
+    // @Shadow private Map<LootDataKey<?>, ?> keyToValue;
 
 	
-    public Map<?, Identifier> lootTableToKey = ImmutableMap.of(); // CraftBukkit
+    //public Map<?, Identifier> lootTableToKey = ImmutableMap.of(); // CraftBukkit
 
-    @Override
-    public Map<?, Identifier> getLootTableToKeyMapBF() {
-        return lootTableToKey;
-    }
+    //@Override
+    //public Map<?, Identifier> getLootTableToKeyMapBF() {
+    //    return lootTableToKey;
+    //}
 
-    @Inject(at = @At("TAIL"), method = "validate(Ljava/util/Map;)V")
-    private void cardboard$buildRev(Map<LootDataType<?>, Map<Identifier, ?>> map, CallbackInfo ci) {
+    //@Inject(at = @At("TAIL"), method = "validate(Ljava/util/Map;)V")
+    //private void cardboard$buildRev(Map<LootDataType<?>, Map<Identifier, ?>> map, CallbackInfo ci) {
   //  public void fillLootTableToKeyMap(Map<Identifier, JsonElement> map, ResourceManager iresourcemanager, Profiler gameprofilerfiller, CallbackInfo ci) {
-        ImmutableMap.Builder<Object, Identifier> lootTableToKeyBuilder = ImmutableMap.builder();
+    //    ImmutableMap.Builder<Object, Identifier> lootTableToKeyBuilder = ImmutableMap.builder();
        // this.keyToValue.forEach((lootTable, key) -> lootTableToKeyBuilder.put(key, lootTable));
-        this.keyToValue.forEach((key, lootTable) -> lootTableToKeyBuilder.put(lootTable, key.id()));
+       // this.keyToValue.forEach((key, lootTable) -> lootTableToKeyBuilder.put(lootTable, key.id()));
 
-        this.lootTableToKey = lootTableToKeyBuilder.build();
-    }
+    //    this.lootTableToKey = lootTableToKeyBuilder.build();
+    //}
 
 }

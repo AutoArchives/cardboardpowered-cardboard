@@ -1,278 +1,212 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.ImmutableMap;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.IntListIterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import org.apache.commons.lang.Validate;
+import java.util.Set;
+import net.minecraft.component.ComponentChanges;
+import net.minecraft.component.DataComponentType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.FireworkExplosionComponent;
+import net.minecraft.component.type.FireworksComponent;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
-import org.bukkit.FireworkEffect.Type;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey.Specific;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey.Specific.To;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.inventory.CraftMetaItem;
+import org.bukkit.craftbukkit.inventory.SerializableMeta;
 import org.bukkit.inventory.meta.FireworkMeta;
 
-@DelegateDeserialization(SerializableMeta.class)
-class CraftMetaFirework extends CraftMetaItem implements FireworkMeta {
-    /*
-       "Fireworks", "Explosion", "Explosions", "Flight", "Type", "Trail", "Flicker", "Colors", "FadeColors";
-
-        Fireworks
-        - Compound: Fireworks
-        -- Byte: Flight
-        -- List: Explosions
-        --- Compound: Explosion
-        ---- IntArray: Colors
-        ---- Byte: Type
-        ---- Boolean: Trail
-        ---- Boolean: Flicker
-        ---- IntArray: FadeColors
-     */
-
-    @Specific(To.NBT)
-    static final ItemMetaKey FIREWORKS = new ItemMetaKey("Fireworks");
-    static final ItemMetaKey FLIGHT = new ItemMetaKey("Flight", "power");
-    static final ItemMetaKey EXPLOSIONS = new ItemMetaKey("Explosions", "firework-effects");
-    @Specific(To.NBT)
-    static final ItemMetaKey EXPLOSION_COLORS = new ItemMetaKey("Colors");
-    @Specific(To.NBT)
-    static final ItemMetaKey EXPLOSION_TYPE = new ItemMetaKey("Type");
-    @Specific(To.NBT)
-    static final ItemMetaKey EXPLOSION_TRAIL = new ItemMetaKey("Trail");
-    @Specific(To.NBT)
-    static final ItemMetaKey EXPLOSION_FLICKER = new ItemMetaKey("Flicker");
-    @Specific(To.NBT)
-    static final ItemMetaKey EXPLOSION_FADE = new ItemMetaKey("FadeColors");
-
-    private List<FireworkEffect> effects;
-    private int power;
+@DelegateDeserialization(value=SerializableMeta.class)
+public class CraftMetaFirework
+extends CraftMetaItem
+implements FireworkMeta {
+    static final CraftMetaItem.ItemMetaKeyType<FireworksComponent> FIREWORKS = new CraftMetaItem.ItemMetaKeyType<FireworksComponent>(DataComponentTypes.FIREWORKS, "Fireworks");
+    static final CraftMetaItem.ItemMetaKey FLIGHT = new CraftMetaItem.ItemMetaKey("power");
+    static final CraftMetaItem.ItemMetaKey EXPLOSIONS = new CraftMetaItem.ItemMetaKey("firework-effects");
+    private ArrayList<FireworkEffect> effects;
+    public int power;
 
     CraftMetaFirework(CraftMetaItem meta) {
         super(meta);
-
         if (!(meta instanceof CraftMetaFirework)) {
             return;
         }
-
-        CraftMetaFirework that = (CraftMetaFirework) meta;
-
+        CraftMetaFirework that = (CraftMetaFirework)meta;
         this.power = that.power;
-
         if (that.hasEffects()) {
             this.effects = new ArrayList<FireworkEffect>(that.effects);
         }
     }
 
-    CraftMetaFirework(NbtCompound tag) {
-        super(tag);
-
-        if (!tag.contains(FIREWORKS.NBT)) {
-            return;
-        }
-
-        NbtCompound fireworks = tag.getCompound(FIREWORKS.NBT);
-
-        power = 0xff & fireworks.getByte(FLIGHT.NBT);
-
-        if (!fireworks.contains(EXPLOSIONS.NBT)) {
-            return;
-        }
-
-        NbtList fireworkEffects = fireworks.getList(EXPLOSIONS.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND);
-        List<FireworkEffect> effects = this.effects = new ArrayList<FireworkEffect>(fireworkEffects.size());
-
-        for (int i = 0; i < fireworkEffects.size(); i++) {
-            try {
-                effects.add(getEffect((NbtCompound) fireworkEffects.get(i)));
-            } catch (IllegalArgumentException ex) {
-                // Ignore invalid effects
+    CraftMetaFirework(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+        super(tag, extraHandledDcts);
+        CraftMetaFirework.getOrEmpty(tag, FIREWORKS).ifPresent(fireworks -> {
+            this.power = fireworks.flightDuration();
+            List<FireworkExplosionComponent> fireworkEffects = fireworks.explosions();
+            this.effects = new ArrayList<FireworkEffect>(fireworkEffects.size());
+            ArrayList<FireworkEffect> effects = this.effects;
+            for (int i2 = 0; i2 < fireworkEffects.size(); ++i2) {
+                try {
+                    effects.add(CraftMetaFirework.getEffect(fireworkEffects.get(i2)));
+                    continue;
+                }
+                catch (IllegalArgumentException illegalArgumentException) {
+                    // empty catch block
+                }
             }
-        }
+        });
     }
 
-    static FireworkEffect getEffect(NbtCompound explosion) {
-        FireworkEffect.Builder effect = FireworkEffect.builder()
-                .flicker(explosion.getBoolean(EXPLOSION_FLICKER.NBT))
-                .trail(explosion.getBoolean(EXPLOSION_TRAIL.NBT))
-                .with(getEffectType(0xff & explosion.getByte(EXPLOSION_TYPE.NBT)));
-
-        int[] colors = explosion.getIntArray(EXPLOSION_COLORS.NBT);
-        // People using buggy command generators specify a list rather than an int here, so recover with dummy data.
-        // Wrong: Colors: [1234]
-        // Right: Colors: [I;1234]
-        if (colors.length == 0) {
+    static FireworkEffect getEffect(FireworkExplosionComponent explosion) {
+        int color;
+        FireworkEffect.Builder effect = FireworkEffect.builder().flicker(explosion.hasTwinkle()).trail(explosion.hasTrail()).with(CraftMetaFirework.getEffectType(explosion.shape()));
+        IntList colors = explosion.colors();
+        if (colors.isEmpty()) {
             effect.withColor(Color.WHITE);
         }
-
-        for (int color : colors) {
-            effect.withColor(Color.fromRGB(color));
+        IntListIterator intListIterator = colors.iterator();
+        while (intListIterator.hasNext()) {
+            color = (Integer)intListIterator.next();
+            effect.withColor(Color.fromRGB((int)color));
         }
-
-        for (int color : explosion.getIntArray(EXPLOSION_FADE.NBT)) {
-            effect.withFade(Color.fromRGB(color));
+        intListIterator = explosion.fadeColors().iterator();
+        while (intListIterator.hasNext()) {
+            color = (Integer)intListIterator.next();
+            effect.withFade(Color.fromRGB((int)color));
         }
-
         return effect.build();
     }
 
-    static NbtCompound getExplosion(FireworkEffect effect) {
-        NbtCompound explosion = new NbtCompound();
-
-        if (effect.hasFlicker()) {
-            explosion.putBoolean(EXPLOSION_FLICKER.NBT, true);
-        }
-
-        if (effect.hasTrail()) {
-            explosion.putBoolean(EXPLOSION_TRAIL.NBT, true);
-        }
-
-        addColors(explosion, EXPLOSION_COLORS, effect.getColors());
-        addColors(explosion, EXPLOSION_FADE, effect.getFadeColors());
-
-        explosion.putByte(EXPLOSION_TYPE.NBT, (byte) getNBT(effect.getType()));
-
-        return explosion;
+    static FireworkExplosionComponent getExplosion(FireworkEffect effect) {
+        IntList colors = CraftMetaFirework.addColors(effect.getColors());
+        IntList fadeColors = CraftMetaFirework.addColors(effect.getFadeColors());
+        return new FireworkExplosionComponent(CraftMetaFirework.getNBT(effect.getType()), colors, fadeColors, effect.hasTrail(), effect.hasFlicker());
     }
 
-    static int getNBT(Type type) {
+    public static FireworkExplosionComponent.Type getNBT(FireworkEffect.Type type) {
         switch (type) {
-            case BALL:
-                return 0;
-            case BALL_LARGE:
-                return 1;
-            case STAR:
-                return 2;
-            case CREEPER:
-                return 3;
-            case BURST:
-                return 4;
-            default:
-                throw new IllegalArgumentException("Unknown effect type " + type);
+            case BALL: {
+                return FireworkExplosionComponent.Type.SMALL_BALL;
+            }
+            case BALL_LARGE: {
+                return FireworkExplosionComponent.Type.LARGE_BALL;
+            }
+            case STAR: {
+                return FireworkExplosionComponent.Type.STAR;
+            }
+            case CREEPER: {
+                return FireworkExplosionComponent.Type.CREEPER;
+            }
+            case BURST: {
+                return FireworkExplosionComponent.Type.BURST;
+            }
         }
+        throw new IllegalArgumentException("Unknown effect type " + String.valueOf(type));
     }
 
-    static Type getEffectType(int nbt) {
+    static FireworkEffect.Type getEffectType(FireworkExplosionComponent.Type nbt) {
         switch (nbt) {
-            case 0:
-                return Type.BALL;
-            case 1:
-                return Type.BALL_LARGE;
-            case 2:
-                return Type.STAR;
-            case 3:
-                return Type.CREEPER;
-            case 4:
-                return Type.BURST;
-            default:
-                throw new IllegalArgumentException("Unknown effect type " + nbt);
+            case SMALL_BALL: {
+                return FireworkEffect.Type.BALL;
+            }
+            case LARGE_BALL: {
+                return FireworkEffect.Type.BALL_LARGE;
+            }
+            case STAR: {
+                return FireworkEffect.Type.STAR;
+            }
+            case CREEPER: {
+                return FireworkEffect.Type.CREEPER;
+            }
+            case BURST: {
+                return FireworkEffect.Type.BURST;
+            }
         }
+        throw new IllegalArgumentException("Unknown effect type " + String.valueOf(nbt));
     }
 
     CraftMetaFirework(Map<String, Object> map) {
         super(map);
-
-        Integer power = SerializableMeta.getObject(Integer.class, map, FLIGHT.BUKKIT, true);
+        Integer power = SerializableMeta.getObject(Integer.class, map, CraftMetaFirework.FLIGHT.BUKKIT, true);
         if (power != null) {
-            setPower(power);
+            this.power = power;
         }
-
-        Iterable<?> effects = SerializableMeta.getObject(Iterable.class, map, EXPLOSIONS.BUKKIT, true);
-        safelyAddEffects(effects);
+        Iterable effects = SerializableMeta.getObject(Iterable.class, map, CraftMetaFirework.EXPLOSIONS.BUKKIT, true);
+        this.safelyAddEffects(effects, false);
     }
 
-    @Override
     public boolean hasEffects() {
-        return !(effects == null || effects.isEmpty());
+        return this.effects != null && !this.effects.isEmpty();
     }
 
-    void safelyAddEffects(Iterable<?> collection) {
-        if (collection == null || (collection instanceof Collection && ((Collection<?>) collection).isEmpty())) {
+    void safelyAddEffects(Iterable<?> collection, boolean throwOnOversize) {
+        if (collection == null || collection instanceof Collection && ((Collection)collection).isEmpty()) {
             return;
         }
-
         List<FireworkEffect> effects = this.effects;
         if (effects == null) {
             effects = this.effects = new ArrayList<FireworkEffect>();
         }
-
         for (Object obj : collection) {
-            if (obj instanceof FireworkEffect) {
-                effects.add((FireworkEffect) obj);
-            } else {
-                throw new IllegalArgumentException(obj + " in " + collection + " is not a FireworkEffect");
+            Preconditions.checkArgument((boolean)(obj instanceof FireworkEffect), (String)"%s in %s is not a FireworkEffect", obj, collection);
+            if (effects.size() + 1 > 256) {
+                if (!throwOnOversize) continue;
+                throw new IllegalArgumentException("Cannot have more than 256 firework effects");
             }
+            effects.add((FireworkEffect)obj);
         }
     }
 
     @Override
-    void applyToItem(NbtCompound itemTag) {
+    void applyToItem(CraftMetaItem.Applicator itemTag) {
         super.applyToItem(itemTag);
-        if (isFireworkEmpty()) {
+        if (this.isFireworkEmpty()) {
             return;
         }
-
-        NbtCompound fireworks = itemTag.getCompound(FIREWORKS.NBT);
-        itemTag.put(FIREWORKS.NBT, fireworks);
-
-        if (hasEffects()) {
-            NbtList effects = new NbtList();
+        ArrayList<FireworkExplosionComponent> effects = new ArrayList<FireworkExplosionComponent>();
+        if (this.effects != null) {
             for (FireworkEffect effect : this.effects) {
-                effects.add(getExplosion(effect));
-            }
-
-            if (effects.size() > 0) {
-                fireworks.put(EXPLOSIONS.NBT, effects);
+                effects.add(CraftMetaFirework.getExplosion(effect));
             }
         }
-
-        if (hasPower()) {
-            fireworks.putByte(FLIGHT.NBT, (byte) power);
-        }
+        itemTag.put(FIREWORKS, new FireworksComponent(this.power, effects));
     }
 
-    static void addColors(NbtCompound compound, ItemMetaKey key, List<Color> colors) {
+    static IntList addColors(List<Color> colors) {
         if (colors.isEmpty()) {
-            return;
+            return IntList.of();
         }
-
-        final int[] colorArray = new int[colors.size()];
-        int i = 0;
+        int[] colorArray = new int[colors.size()];
+        int i2 = 0;
         for (Color color : colors) {
-            colorArray[i++] = color.asRGB();
+            colorArray[i2++] = color.asRGB();
         }
-
-        compound.putIntArray(key.NBT, colorArray);
+        return IntList.of((int[])colorArray);
     }
 
     @Override
     boolean applicableTo(Material type) {
-        switch (type) {
-            case FIREWORK_ROCKET:
-                return true;
-            default:
-                return false;
-        }
+        return type == Material.FIREWORK_ROCKET;
     }
 
     @Override
     boolean isEmpty() {
-        return super.isEmpty() && isFireworkEmpty();
+        return super.isEmpty() && this.isFireworkEmpty();
     }
 
     boolean isFireworkEmpty() {
-        return !(hasEffects() || hasPower());
+        return !this.hasEffects() && !this.hasPower();
     }
 
     boolean hasPower() {
-        return power != 0;
+        return this.power != 0;
     }
 
     @Override
@@ -280,127 +214,110 @@ class CraftMetaFirework extends CraftMetaItem implements FireworkMeta {
         if (!super.equalsCommon(meta)) {
             return false;
         }
-
         if (meta instanceof CraftMetaFirework) {
-            CraftMetaFirework that = (CraftMetaFirework) meta;
-
-            return (hasPower() ? that.hasPower() && this.power == that.power : !that.hasPower())
-                    && (hasEffects() ? that.hasEffects() && this.effects.equals(that.effects) : !that.hasEffects());
+            CraftMetaFirework that = (CraftMetaFirework)meta;
+            return (this.hasPower() ? that.hasPower() && this.power == that.power : !that.hasPower()) && (this.hasEffects() ? that.hasEffects() && this.effects.equals(that.effects) : !that.hasEffects());
         }
-
         return true;
     }
 
     @Override
     boolean notUncommon(CraftMetaItem meta) {
-        return super.notUncommon(meta) && (meta instanceof CraftMetaFirework || isFireworkEmpty());
+        return super.notUncommon(meta) && (meta instanceof CraftMetaFirework || this.isFireworkEmpty());
     }
 
     @Override
     int applyHash() {
-        final int original;
+        int original;
         int hash = original = super.applyHash();
-        if (hasPower()) {
-            hash = 61 * hash + power;
+        if (this.hasPower()) {
+            hash = 61 * hash + this.power;
         }
-        if (hasEffects()) {
-            hash = 61 * hash + 13 * effects.hashCode();
+        if (this.hasEffects()) {
+            hash = 61 * hash + 13 * this.effects.hashCode();
         }
         return hash != original ? CraftMetaFirework.class.hashCode() ^ hash : hash;
     }
 
     @Override
-    Builder<String, Object> serialize(Builder<String, Object> builder) {
+    ImmutableMap.Builder<String, Object> serialize(ImmutableMap.Builder<String, Object> builder) {
         super.serialize(builder);
-
-        if (hasEffects()) {
-            builder.put(EXPLOSIONS.BUKKIT, ImmutableList.copyOf(effects));
+        if (this.hasEffects()) {
+            builder.put(CraftMetaFirework.EXPLOSIONS.BUKKIT, ImmutableList.copyOf(this.effects));
         }
-
-        if (hasPower()) {
-            builder.put(FLIGHT.BUKKIT, power);
+        if (this.hasPower()) {
+            builder.put(CraftMetaFirework.FLIGHT.BUKKIT, this.power);
         }
-
         return builder;
     }
 
     @Override
     public CraftMetaFirework clone() {
-        CraftMetaFirework meta = (CraftMetaFirework) super.clone();
-
+        CraftMetaFirework meta = (CraftMetaFirework)super.clone();
         if (this.effects != null) {
             meta.effects = new ArrayList<FireworkEffect>(this.effects);
         }
-
         return meta;
     }
 
-    @Override
     public void addEffect(FireworkEffect effect) {
-        Validate.notNull(effect, "Effect cannot be null");
+        Preconditions.checkArgument((effect != null ? 1 : 0) != 0, "FireworkEffect cannot be null");
+        Preconditions.checkArgument((this.effects == null || this.effects.size() + 1 <= 256 ? 1 : 0) != 0, (String)"cannot have more than %s firework effects", (int)256);
         if (this.effects == null) {
             this.effects = new ArrayList<FireworkEffect>();
         }
         this.effects.add(effect);
     }
 
-    @Override
-    public void addEffects(FireworkEffect...effects) {
-        Validate.notNull(effects, "Effects cannot be null");
+    public void addEffects(FireworkEffect ... effects) {
+        Preconditions.checkArgument((effects != null ? 1 : 0) != 0, "effects cannot be null");
+        int initialSize = this.effects == null ? 0 : this.effects.size();
+        Preconditions.checkArgument((initialSize + effects.length <= 256 ? 1 : 0) != 0, (String)"Cannot have more than %s firework effects", (int)256);
         if (effects.length == 0) {
             return;
         }
-
         List<FireworkEffect> list = this.effects;
         if (list == null) {
             list = this.effects = new ArrayList<FireworkEffect>();
         }
-
         for (FireworkEffect effect : effects) {
-            Validate.notNull(effect, "Effect cannot be null");
+            Preconditions.checkArgument((effect != null ? 1 : 0) != 0, "effects cannot contain null FireworkEffect");
             list.add(effect);
         }
     }
 
-    @Override
     public void addEffects(Iterable<FireworkEffect> effects) {
-        Validate.notNull(effects, "Effects cannot be null");
-        safelyAddEffects(effects);
+        Preconditions.checkArgument((effects != null ? 1 : 0) != 0, "effects cannot be null");
+        this.safelyAddEffects(effects, true);
     }
 
-    @Override
     public List<FireworkEffect> getEffects() {
-        return this.effects == null ? ImmutableList.<FireworkEffect>of() : ImmutableList.copyOf(this.effects);
+        return this.effects == null ? ImmutableList.of() : ImmutableList.copyOf(this.effects);
     }
 
-    @Override
     public int getEffectsSize() {
         return this.effects == null ? 0 : this.effects.size();
     }
 
-    @Override
     public void removeEffect(int index) {
         if (this.effects == null) {
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: 0");
-        } else {
-            this.effects.remove(index);
         }
+        this.effects.remove(index);
     }
 
-    @Override
     public void clearEffects() {
         this.effects = null;
     }
 
-    @Override
     public int getPower() {
-        return this.power;
+        return this.hasPower() ? this.power : 0;
     }
 
-    @Override
     public void setPower(int power) {
-        Validate.isTrue(power >= 0, "Power cannot be less than zero: ", power);
-        Validate.isTrue(power < 0x80, "Power cannot be more than 127: ", power);
+        Preconditions.checkArgument((power >= 0 ? 1 : 0) != 0, (String)"power cannot be less than zero: %s", (int)power);
+        Preconditions.checkArgument((power < 128 ? 1 : 0) != 0, (String)"power cannot be more than 127: %s", (int)power);
         this.power = power;
     }
 }
+

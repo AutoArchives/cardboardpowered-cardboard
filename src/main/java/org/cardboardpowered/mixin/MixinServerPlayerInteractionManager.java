@@ -35,6 +35,7 @@ import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -267,15 +268,28 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
             ItemStack itemstack1 = itemstack.copy();
 
             if (!flag1) {
-                // enuminteractionresult = iblockdata.onUse(player.getStackInHand(enumhand), world, entityplayer, enumhand, movingobjectpositionblock);
-            	enuminteractionresult = iblockdata.onUse(world, entityplayer, enumhand, movingobjectpositionblock);
-                
-                
+            	ItemActionResult iteminteractionresult = iblockdata.onUseWithItem(player.getStackInHand(enumhand), world, player, enumhand, movingobjectpositionblock);
+            	
+            	if (iteminteractionresult.isAccepted()) {
+                    Criteria.ITEM_USED_ON_BLOCK.trigger(player, blockposition, itemstack1);
+                    ci.setReturnValue(iteminteractionresult.toActionResult());
+                    return;
+                }
+                if (iteminteractionresult == ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION && enumhand == Hand.MAIN_HAND && (enuminteractionresult = iblockdata.onUse(world, player, movingobjectpositionblock)).isAccepted()) {
+                    Criteria.DEFAULT_BLOCK_USE.trigger(player, blockposition);
+                    ci.setReturnValue(enuminteractionresult);
+                    return;
+                }
+            	
+                // old 1.20.4:
+            	/*
+                enuminteractionresult = iblockdata.onUse(world, entityplayer, enumhand, movingobjectpositionblock);
                 if (enuminteractionresult.isAccepted()) {
                     Criteria.ITEM_USED_ON_BLOCK.trigger(entityplayer, blockposition, itemstack1);
                     ci.setReturnValue(enuminteractionresult);
                     return;
                 }
+                */
             }
 
             if (!itemstack.isEmpty() && enuminteractionresult != ActionResult.SUCCESS && !interactResult) { // add !interactResult SPIGOT-764

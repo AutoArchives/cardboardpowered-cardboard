@@ -3,10 +3,12 @@ package org.cardboardpowered.impl.block;
 import java.util.Optional;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.SkullType;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Skull;
@@ -34,13 +36,24 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
     private static final int MAX_OWNER_LENGTH = 16;
     private GameProfile profile;
 
-    public CardboardSkull(Block block) {
-        super(block, SkullBlockEntity.class);
+    public CardboardSkull(World world, SkullBlockEntity tileEntity) {
+        super(world, tileEntity);
     }
 
-    public CardboardSkull(Material material, SkullBlockEntity te) {
-        super(material, te);
+    protected CardboardSkull(CardboardSkull state, Location location) {
+        super(state, location);
     }
+    
+    @Override
+    public CardboardSkull copy() {
+        return new CardboardSkull(this, null);
+    }
+
+    @Override
+    public CardboardSkull copy(Location location) {
+        return new CardboardSkull(this, location);
+    }
+
 
     @Override
     public void load(SkullBlockEntity skull) {

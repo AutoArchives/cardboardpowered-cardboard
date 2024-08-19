@@ -6,6 +6,8 @@ import com.google.common.collect.ImmutableBiMap;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
+
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -87,13 +89,18 @@ public class CardboardPotionUtil {
             return new PotionData(potionType, false, false);
         return new PotionData(PotionType.UNCRAFTABLE, false, false);
     }
+    
+    public static StatusEffectInstance fromBukkit_New(PotionEffect effect) {
+    	RegistryEntry<StatusEffect>  type = CardboardPotionEffectType.bukkitToMinecraftHolder(effect.getType());
+        return new StatusEffectInstance(type, effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles());
+    }
 
     public static StatusEffectInstance fromBukkit(PotionEffect effect) {
-        return new StatusEffectInstance(Registries.STATUS_EFFECT.get(effect.getType().getId()), effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles());
+        return new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(effect.getType().getId()).get(), effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles());
     }
 
     public static PotionEffect toBukkit(StatusEffectInstance effect) {
-        PotionEffectType type = PotionEffectType.getById(Registries.STATUS_EFFECT.getRawId(effect.getEffectType()));
+        PotionEffectType type = PotionEffectType.getById(Registries.STATUS_EFFECT.getRawId(effect.getEffectType().value()));
         return new PotionEffect(type, effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.shouldShowParticles());
     }
 
