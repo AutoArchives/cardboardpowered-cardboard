@@ -3,15 +3,23 @@ package org.bukkit.craftbukkit;
 import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
 import com.javazilla.bukkitfabric.interfaces.IMixinWorldSaveHandler;
 import com.mojang.authlib.GameProfile;
+import com.mojang.serialization.DynamicOps;
+
 import java.io.File;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.WhitelistEntry;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.WorldSaveHandler;
 
+import org.bukkit.BanEntry;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -21,6 +29,7 @@ import org.bukkit.Server;
 import org.bukkit.Statistic;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
+import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.MetadataValue;
@@ -99,9 +108,9 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         }
 
         if (value) {
-            server.getBanList(BanList.Type.NAME).addBan(getName(), null, null, null);
+        	server.getBanList(BanList.Type.PROFILE).addBan(this.getPlayerProfile(), null, (Date)null, null);
         } else {
-            server.getBanList(BanList.Type.NAME).pardon(getName());
+            server.getBanList(BanList.Type.PROFILE).pardon(this.getPlayerProfile());
         }
     }
 
@@ -410,12 +419,47 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
     @Override
     public long getLastLogin() {
-        return 0;
+        Player player = this.getPlayer();
+        if (player != null) {
+            return player.getLastLogin();
+        }
+        NbtCompound data = this.getPaperData();
+        if (data != null) {
+            if (data.contains("LastLogin")) {
+                return data.getLong("LastLogin");
+            }
+            File file = this.getDataFile();
+            return file.lastModified();
+        }
+        return 0L;
     }
 
     @Override
     public long getLastSeen() {
-        return 0;
+        Player player = this.getPlayer();
+        if (player != null) {
+            return player.getLastSeen();
+        }
+        NbtCompound data = this.getPaperData();
+        if (data != null) {
+            if (data.contains("LastSeen")) {
+                return data.getLong("LastSeen");
+            }
+            File file = this.getDataFile();
+            return file.lastModified();
+        }
+        return 0L;
+    }
+    
+    private NbtCompound getPaperData() {
+        NbtCompound result = this.getData();
+        if (result != null) {
+            if (!result.contains("Paper")) {
+                result.put("Paper", new NbtCompound());
+            }
+            result = result.getCompound("Paper");
+        }
+        return result;
     }
 
 	// @Override
@@ -426,6 +470,34 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
 	@Override
 	public @Nullable Location getLastDeathLocation() {
+        if (this.getData().contains("LastDeathLocation", 10)) {
+            return GlobalPos.CODEC.parse(NbtOps.INSTANCE, this.getData().get("LastDeathLocation")).result().map(CraftMemoryMapper::fromNms).orElse(null);
+        }
+        return null;
+	}
+
+	@Override
+	public boolean isConnected() {
+		return false;
+	}
+
+	@Override
+	public <E extends BanEntry<? super com.destroystokyo.paper.profile.PlayerProfile>> @Nullable E ban(
+			@Nullable String reason, @Nullable Date expires, @Nullable String source) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <E extends BanEntry<? super com.destroystokyo.paper.profile.PlayerProfile>> @Nullable E ban(
+			@Nullable String reason, @Nullable Instant expires, @Nullable String source) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <E extends BanEntry<? super com.destroystokyo.paper.profile.PlayerProfile>> @Nullable E ban(
+			@Nullable String reason, @Nullable Duration duration, @Nullable String source) {
 		// TODO Auto-generated method stub
 		return null;
 	}

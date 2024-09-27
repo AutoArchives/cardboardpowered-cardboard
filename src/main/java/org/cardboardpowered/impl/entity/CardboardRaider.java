@@ -5,6 +5,7 @@ import net.minecraft.entity.raid.RaiderEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
+import org.bukkit.Raid;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftServer;
@@ -12,6 +13,7 @@ import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.entity.Raider;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class CardboardRaider extends MonsterImpl implements Raider {
 
@@ -78,6 +80,42 @@ public class CardboardRaider extends MonsterImpl implements Raider {
 	@Override
 	public void setCelebrating(boolean arg0) {
         this.getHandle().setCelebrating(arg0);
+	}
+
+	@Override
+	public void setRaid(@Nullable Raid raid) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public @Nullable Raid getRaid() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getWave() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setWave(int wave) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int getTicksOutsideRaid() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setTicksOutsideRaid(int ticks) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

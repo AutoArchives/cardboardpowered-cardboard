@@ -1,5 +1,6 @@
 package org.cardboardpowered.impl.block;
 
+import net.kyori.adventure.text.Component;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -17,12 +18,19 @@ import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.CraftContainer;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.loot.LootTable;
 import org.bukkit.loot.Lootable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import com.destroystokyo.paper.loottable.PaperLootableBlockInventory;
+import com.destroystokyo.paper.loottable.PaperLootableInventory;
 
 import me.isaiah.common.cmixin.IMixinLootableContainerBlockEntity;
 
-public abstract class CardboardLootableBlock<T extends LootableContainerBlockEntity> extends CraftContainer<T> implements Nameable, Lootable {
+public abstract class CardboardLootableBlock<T extends LootableContainerBlockEntity> extends CraftContainer<T>
+implements Nameable, Lootable, PaperLootableBlockInventory {
 
 	
     public CardboardLootableBlock(World world, T tileEntity) {
@@ -82,9 +90,6 @@ public abstract class CardboardLootableBlock<T extends LootableContainerBlockEnt
     }
 
     public void setLootTable(LootTable table, long seed) {
-
-    	// RegistryKeys.LOOT_TABLE
-    	
     	Registry<net.minecraft.loot.LootTable> reg = CraftServer.server.getRegistryManager().get(RegistryKeys.LOOT_TABLE);
     	Optional<net.minecraft.loot.LootTable> mc_table = reg.getOrEmpty( CraftNamespacedKey.toMinecraft(table.getKey()) );
     	
@@ -103,5 +108,6 @@ public abstract class CardboardLootableBlock<T extends LootableContainerBlockEnt
 
     @Override
     public abstract CardboardLootableBlock<T> copy(Location var1);
+
 
 }

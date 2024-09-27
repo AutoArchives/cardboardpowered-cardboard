@@ -122,4 +122,16 @@ public class FallingBlockImpl extends CraftEntity implements FallingBlock {
         }
 	}
 
+	@Override
+	public boolean getCancelDrop() {
+		// TODO Auto-generated method stub
+		// this.getHandle().destroyedOnLanding
+		return false;
+	}
+
+	@Override
+	public void setCancelDrop(boolean cancelDrop) {
+		// this.getHandle().destroyedOnLanding = cancelDrop;
+	}
+
 }

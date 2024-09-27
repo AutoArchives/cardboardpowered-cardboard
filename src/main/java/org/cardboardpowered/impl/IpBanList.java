@@ -1,7 +1,10 @@
 package org.cardboardpowered.impl;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
@@ -10,8 +13,11 @@ import java.util.logging.Level;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.BanEntry;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.net.InetAddresses;
 
 import net.minecraft.server.BannedIpEntry;
 import net.minecraft.server.BannedIpList;
@@ -137,6 +143,65 @@ public class IpBanList implements org.bukkit.BanList {
             }
         }
 
+	    public InetAddress getBanTarget() {
+	        return InetAddresses.forString((String)this.target);
+	    }
+
+		public void remove() {
+			this.list.remove(this.target);
+		}
+
     }
+
+	@Override
+	public @Nullable BanEntry getBanEntry(@NotNull Object target) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public @Nullable BanEntry addBan(@NotNull Object target, @Nullable String reason, @Nullable Date expires,
+			@Nullable String source) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public @Nullable BanEntry addBan(@NotNull Object target, @Nullable String reason, @Nullable Instant expires,
+			@Nullable String source) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public @Nullable BanEntry addBan(@NotNull Object target, @Nullable String reason, @Nullable Duration duration,
+			@Nullable String source) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Set<BanEntry<InetAddress>> getEntries() {
+        ImmutableSet.Builder<BanEntry<InetAddress>> builder = ImmutableSet.builder();
+        for (String target : this.list.getNames()) {
+            BannedIpEntry ipBanEntry = this.list.get(target);
+            if (ipBanEntry == null) continue;
+            builder.add(new IpBanEntry(target, ipBanEntry, this.list));
+        }
+        return builder.build();
+    }
+
+	@Override
+	public boolean isBanned(@NotNull Object target) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void pardon(@NotNull Object target) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	
 
 }

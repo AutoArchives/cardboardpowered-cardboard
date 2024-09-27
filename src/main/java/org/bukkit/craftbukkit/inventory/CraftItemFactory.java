@@ -387,7 +387,8 @@ public final class CraftItemFactory implements ItemFactory {
     }
 
     @Override
-    public @Nullable ItemStack getSpawnEgg(EntityType arg0) {
+    public @Nullable Material getSpawnEgg(EntityType arg0) {
+    // public @Nullable ItemStack getSpawnEgg(EntityType arg0) {
         // TODO Auto-generated method stub
         return null;
     }

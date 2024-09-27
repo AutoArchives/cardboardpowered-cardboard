@@ -1,6 +1,7 @@
 package org.cardboardpowered.impl.block;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import net.minecraft.block.entity.DecoratedPotBlockEntity;
 import net.minecraft.registry.RegistryKey;
@@ -79,16 +80,34 @@ public class CraftDecoratedPot extends CardboardBlockEntityState<DecoratedPotBlo
         return new CraftDecoratedPot(this, location);
     }
 
-	@Override
+	// @Override
 	public void addShard(@NotNull Material arg0) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
+	// @Override
 	public void setShards(@Nullable List<Material> arg0) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void setSherd(@NotNull Side side, @Nullable Material sherd) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public @NotNull Material getSherd(@NotNull Side side) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public @NotNull Map<Side, Material> getSherds() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

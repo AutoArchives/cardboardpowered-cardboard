@@ -20,11 +20,15 @@ package org.cardboardpowered.impl.entity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -37,6 +41,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.bukkit.BanEntry;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Effect;
@@ -56,6 +61,7 @@ import org.bukkit.WorldBorder;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.block.TileState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.sign.Side;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -107,6 +113,8 @@ import org.cardboardpowered.impl.world.WorldImpl;
 import org.cardboardpowered.util.nms.ReflectionRemapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnmodifiableView;
+
 import com.javazilla.bukkitfabric.interfaces.IMixinClientConnection;
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
@@ -120,6 +128,7 @@ import io.netty.buffer.Unpooled;
 import io.papermc.paper.entity.LookAnchor;
 import io.papermc.paper.math.Position;
 import me.isaiah.common.GameVersion;
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.util.TriState;
@@ -1355,12 +1364,12 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
             }
         }
 
-        @Override
+        // @Override
         public boolean getCollidesWithEntities() {
             return PlayerImpl.this.isCollidable();
         }
 
-        @Override
+        // @Override
         public void setCollidesWithEntities(boolean collides) {
             PlayerImpl.this.setCollidable(collides);
         }
@@ -2244,6 +2253,118 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
         }
         GameStateChangeS2CPacket packet = new GameStateChangeS2CPacket(GameStateChangeS2CPacket.GAME_WON, 1.0f);
         this.getHandle().networkHandler.sendPacket(packet);
+	}
+	
+	// 1.20 API:
+
+	@Override
+	public boolean isConnected() {
+		return !this.getHandle().isDisconnected();
+	}
+
+	@Override
+	public <E extends BanEntry<? super PlayerProfile>> @Nullable E ban(@Nullable String reason, @Nullable Date expires,
+			@Nullable String source) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <E extends BanEntry<? super PlayerProfile>> @Nullable E ban(@Nullable String reason,
+			@Nullable Instant expires, @Nullable String source) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <E extends BanEntry<? super PlayerProfile>> @Nullable E ban(@Nullable String reason,
+			@Nullable Duration duration, @Nullable String source) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public @UnmodifiableView @NotNull Iterable<? extends BossBar> activeBossBars() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <E extends BanEntry<? super PlayerProfile>> @Nullable E ban(@Nullable String reason, @Nullable Date expires,
+			@Nullable String source, boolean kickPlayer) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <E extends BanEntry<? super PlayerProfile>> @Nullable E ban(@Nullable String reason,
+			@Nullable Instant expires, @Nullable String source, boolean kickPlayer) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <E extends BanEntry<? super PlayerProfile>> @Nullable E ban(@Nullable String reason,
+			@Nullable Duration duration, @Nullable String source, boolean kickPlayer) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public @Nullable BanEntry<InetAddress> banIp(@Nullable String reason, @Nullable Date expires,
+			@Nullable String source, boolean kickPlayer) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public @Nullable BanEntry<InetAddress> banIp(@Nullable String reason, @Nullable Instant expires,
+			@Nullable String source, boolean kickPlayer) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public @Nullable BanEntry<InetAddress> banIp(@Nullable String reason, @Nullable Duration duration,
+			@Nullable String source, boolean kickPlayer) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void sendBlockChanges(@NotNull Collection<BlockState> blocks) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void sendMultiBlockChange(@NotNull Map<? extends Position, BlockData> blockChanges) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void sendBlockUpdate(@NotNull Location loc, @NotNull TileState tileState) throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean isListed(@NotNull Player other) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean unlistPlayer(@NotNull Player other) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean listPlayer(@NotNull Player other) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	/*@Override

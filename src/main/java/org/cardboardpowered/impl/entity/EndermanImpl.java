@@ -6,10 +6,13 @@ import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.entity.Enderman;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.material.MaterialData;
+import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("deprecation")
 public class EndermanImpl extends MonsterImpl implements Enderman {
@@ -83,5 +86,17 @@ public class EndermanImpl extends MonsterImpl implements Enderman {
 	public void setScreaming(boolean arg0) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public boolean teleport() {
+		// return this.getHandle().teleportRandomly();
+		return false;
+	}
+
+	@Override
+	public boolean teleportTowards(@NotNull Entity entity) {
+		// return this.getHandle().teleportTo(((CraftEntity)entity).getHandle());;
+		return false;
 	}
 }

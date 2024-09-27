@@ -73,19 +73,45 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         // Paper API
         // libraries.add( new Library("io.papermc", "paper-api", "1.18.2-167", SHA1, "83a5712c916379a405bc0ab330a724e7edfdaca5", "paper") );
         // libraries.add( new Library("io.papermc", "paper-api", "1.19.2-307", SHA1, "b44b4312df3673f9ea85133b61334dfac7f7dc14", "paper") );
-        libraries.add( new Library("io.papermc", "paper-api", "1.19.4-550", SHA1, "3407bd5d6dcc3223dc4ea17eb5eebdafbc1bba92", "paper") );
+        // libraries.add( new Library("io.papermc", "paper-api", "1.19.4-550", SHA1, "3407bd5d6dcc3223dc4ea17eb5eebdafbc1bba92", "paper") );
 
+        libraries.add( new Library("io.papermc", "paper-api", "1.20.1-R0.1-20230921.165944-178", SHA1, "71680be2f2e80f25e20ae4b49ebd84539d306a44", "paper") );
+        
         // Paper API Libraries
         libraries.add( new Library("org.xerial", "sqlite-jdbc", "3.41.0.0", MD5, "0d63ee5b583e9a75ea1717ffce63fed8", null));
-		//libraries.add( new Library("org.xerial", "sqlite-jdbc", "3.21.0.1", SHA1, "81a0bcda2f100dc91dc402554f60ed2f696cded5", null) );
-        //libraries.add( new Library("mysql", "mysql-connector-java", "5.1.46", SHA1, "9a3e63b387e376364211e96827bc27db8d7a92e9", null) );
         libraries.add( new Library("com.mysql", "mysql-connector-j", "8.0.32", MD5, "25bf3b3cd262065283962078dc82e99c", null));
 		libraries.add( new Library("commons-lang", "commons-lang", "2.6", SHA1, "0ce1edb914c94ebc388f086c6827e8bdeec71ac2", null) );
         libraries.add( new Library("org.apache.commons", "commons-collections4", "4.4", SHA1, "62ebe7544cb7164d87e0637a2a6a2bdc981395e8", null) );
         libraries.add( new Library("commons-collections", "commons-collections", "3.2.1", SHA1, "761ea405b9b37ced573d2df0d1e3a4e0f9edc668", null) );
-        //libraries.add( new Library("org.cardboardpowered", "intermediary-adapter", "7.3", SHA1, "", null) );
+
+
+        // net/md-5/bungeecord-chat/1.16-R0.4/
+        
+        libraries.add( new Library("net.md-5", "bungeecord-chat", "1.16-R0.4", SHA1, "e043e8eed8fdb5c157090a84ac8fd64a6a8d0d88", null) );
+        
+        // TODO: Update Adventure
+        //       I don't know what version we used,
+        //       this is taken from the 1.17 paper patch
+        
+        // String adventureVersion = "4.9.3";
+        // String adventureVersion = "4.13.1";
+        String adventureVersion = "4.14.0";
+
+        libraries.add( new Library("net.kyori", "adventure-api", adventureVersion, SHA1, "05a68f15c90e328378f64d227474454779522246", null) );
+        libraries.add( new Library("net.kyori", "adventure-key", adventureVersion, SHA1, "f5deec8aaa84e00794724f694fb0fc43cca02d0c", null) );
+        libraries.add( new Library("net.kyori", "adventure-text-serializer-gson", adventureVersion, SHA1, "6c96295a35605beaf6db6f5dcc2a76abed59fc08", null) );
+        libraries.add( new Library("net.kyori", "adventure-text-serializer-legacy", adventureVersion, SHA1, "aa2bae0c78ac6863b0a137a2133422f588d92a32", null) );
+        libraries.add( new Library("net.kyori", "adventure-text-serializer-plain", adventureVersion, SHA1, "7e4749b301c589ee665fa2844ff71e50e2ea5658", null) );
+        
+        // libraries.add( new Library("net.kyori", "adventure-api", adventureVersion, SHA1, "b0054b3a4d144f09962fe72abc746191e7f931a2", null) );
+        // libraries.add( new Library("net.kyori", "adventure-text-serializer-gson", adventureVersion, SHA1, "141df0329e00b791bcc8b2921cd715ac7d506bbe", null) );
+        // libraries.add( new Library("net.kyori", "adventure-text-serializer-legacy", adventureVersion, SHA1, "9e7811601e508e0af6d53e35eab3588ee607bff6", null) );
+        // libraries.add( new Library("net.kyori", "adventure-text-serializer-plain", adventureVersion, SHA1, "61d39db7e84c11d91be551cb9bc50c1aa7e64983", null) );
 
         if (mcver.contains("1.17")) {
+    		//libraries.add( new Library("org.xerial", "sqlite-jdbc", "3.21.0.1", SHA1, "81a0bcda2f100dc91dc402554f60ed2f696cded5", null) );
+            //libraries.add( new Library("mysql", "mysql-connector-java", "5.1.46", SHA1, "9a3e63b387e376364211e96827bc27db8d7a92e9", null) );
+        	//libraries.add( new Library("org.cardboardpowered", "intermediary-adapter", "7.3", SHA1, "", null) );
             libraries.add( new Library("org.jline", "jline", "3.19.0", SHA1, "27edf6497c4fac20b63ca4cd8788581ca86cb83e", null) );
         }
 

@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 
+import org.cardboardpowered.library.KnotHelper;
+
 import com.javazilla.bukkitfabric.BukkitFabricMod;
 
 public class CardboardConfig {
@@ -65,6 +67,21 @@ public class CardboardConfig {
         
         boolean debug_0 = config.getOrDefault("debug_print_event_call", false);
         DEBUG_EVENT_CALL = debug_0;
+        
+        String extraJar = config.getOrDefault("debug_extra_lib_file", "debug_extra.jar");
+        if (extraJar.length() > 2) {
+        	File file = new File(new File("lib"), extraJar);
+            // Add to KnotClassLoader
+        	if (file.exists()) {
+	            try {
+	                KnotHelper.propose(file);
+	            } catch (Exception e) {
+	                e.printStackTrace();
+	            }
+        	}
+        	
+        }
+        
     }
 
     private static void save_default(File file) throws IOException {

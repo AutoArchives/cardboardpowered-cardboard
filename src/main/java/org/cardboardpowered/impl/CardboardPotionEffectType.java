@@ -2,22 +2,25 @@ package org.cardboardpowered.impl;
 
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryEntry.Reference;
 
 import org.bukkit.Color;
+import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.Optional;
 
-public class CardboardPotionEffectType extends PotionEffectType {
+public class CardboardPotionEffectType extends PotionEffectType implements Handleable<StatusEffect> {
 
 	public static RegistryEntry<StatusEffect> bukkitToMinecraftHolder(PotionEffectType type) {
 		// TODO Auto-generated method stub
@@ -38,15 +41,29 @@ public class CardboardPotionEffectType extends PotionEffectType {
 	
 	
 	
+    private final NamespacedKey key;
     private final StatusEffect handle;
+    private final int id;
     
     
-    
-
-    public CardboardPotionEffectType(StatusEffect handle) {
-        super(Registries.STATUS_EFFECT.getRawId(handle), CraftNamespacedKey.fromMinecraft(Registries.STATUS_EFFECT.getId(handle)));
+    public CardboardPotionEffectType(NamespacedKey key, StatusEffect handle) {
+    	super(Registries.STATUS_EFFECT.getRawId(handle), CraftNamespacedKey.fromMinecraft(Registries.STATUS_EFFECT.getId(handle)));
+    	this.key = key;
         this.handle = handle;
+        
+        // RegistryKeys.STATUS_EFFECT
+        
+        this.id = Registries.STATUS_EFFECT.getRawId(handle) + 1;
+        
+        //this.id = CraftRegistry.getMinecraftRegistry(RegistryKeys.STATUS_EFFECT).getRawId(handle) + 1;
     }
+
+    @Deprecated
+    public CardboardPotionEffectType(StatusEffect handle) {
+        this(CraftNamespacedKey.fromMinecraft(Registries.STATUS_EFFECT.getId(handle)), handle);
+        
+    }
+
 
     @Override
     public double getDurationModifier() {

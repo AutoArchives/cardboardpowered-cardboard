@@ -175,6 +175,7 @@ import org.cardboardpowered.interfaces.IWorldChunk;
 import com.mojang.brigadier.LiteralMessage;
 
 import io.papermc.paper.entity.TeleportFlag;
+import io.papermc.paper.threadedregions.scheduler.EntityScheduler;
 import me.isaiah.common.entity.IEntity;
 import me.isaiah.common.entity.IRemoveReason;
 import net.kyori.adventure.text.Component;
@@ -1323,6 +1324,56 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 	@Override
 	public void setVisibleByDefault(boolean arg0) {
 		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void setPose(@NotNull Pose pose, boolean fixed) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean hasFixedPose() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public double getX() {
+		return nms.getX();
+	}
+
+	@Override
+	public double getY() {
+		return nms.getY();
+	}
+
+	@Override
+	public double getZ() {
+		return nms.getZ();
+	}
+
+	@Override
+	public float getPitch() {
+		return nms.pitch;
+	}
+
+	@Override
+	public float getYaw() {
+		return nms.yaw;
+	}
+
+	@Override
+	public @NotNull EntityScheduler getScheduler() {
+		// Folia API
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public @NotNull String getScoreboardEntryName() {
+		// TODO Auto-generated method stub
+		return this.getHandle().getNameForScoreboard();
 	}
 
 }

@@ -113,7 +113,11 @@ public class BukkitFabricMod implements ModInitializer {
 
         CardboardEventManager.INSTANCE.callCardboardEvents();
 
-        for (Object effect : Registries.STATUS_EFFECT) {
+    }
+    
+    // registerPotionEffectType
+    public static void registerPotionEffectType() {
+    	for (Object effect : Registries.STATUS_EFFECT) {
             try {
                 org.bukkit.potion.PotionEffectType.registerPotionEffectType(new CardboardPotionEffectType((StatusEffect) effect));
             } catch (ArrayIndexOutOfBoundsException e) {

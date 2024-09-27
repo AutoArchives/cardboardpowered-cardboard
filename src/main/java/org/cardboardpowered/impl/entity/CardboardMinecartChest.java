@@ -10,6 +10,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.inventory.Inventory;
+import org.jetbrains.annotations.NotNull;
 
 public class CardboardMinecartChest extends CardboardMinecartSH implements StorageMinecart {
 
@@ -94,5 +95,11 @@ public class CardboardMinecartChest extends CardboardMinecartSH implements Stora
         // TODO Auto-generated method stub
         return 0;
     }
+
+	@Override
+	public boolean canPlayerLoot(@NotNull UUID player) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 }

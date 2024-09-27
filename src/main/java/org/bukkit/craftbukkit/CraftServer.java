@@ -28,6 +28,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
+import com.javazilla.bukkitfabric.BukkitFabricMod;
 import com.javazilla.bukkitfabric.BukkitLogger;
 import com.javazilla.bukkitfabric.Utils;
 import com.javazilla.bukkitfabric.impl.MetaDataStoreBase;
@@ -49,6 +50,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.datapack.DatapackManager;
+import io.papermc.paper.math.Position;
+import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
+import io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler;
+import io.papermc.paper.threadedregions.scheduler.RegionScheduler;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -205,6 +210,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -378,6 +384,8 @@ public class CraftServer implements Server {
     public CraftDataPackManager dataPackManager;
     
     public CraftServer(MinecraftDedicatedServer nms) {
+    	
+    	
         INSTANCE = this;
         serverVersion = "git-Cardboard-" + Utils.getGitHash().substring(0,7); // use short hash
         shortVersion = "git-" + Utils.getGitHash().substring(0,7);
@@ -404,6 +412,9 @@ public class CraftServer implements Server {
         this.dataPackManager = new CraftDataPackManager(this.getServer().getDataPackManager());
 
         loadIcon();
+        
+        // Register PotionEffectType
+        BukkitFabricMod.registerPotionEffectType();
     }
  
     public static IUserCache getUC() {
@@ -2376,5 +2387,95 @@ public class CraftServer implements Server {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+    public void setMotd(String motd) {
+        this.console.setMotd(motd);
+    }
+    
+    public void updateResources() {
+        this.console.playerManager.onDataPacksReloaded();
+    }
+
+    public void updateRecipes() {
+    	// TODO this.console.playerManager.reloadRecipeData();
+    }
+     
+    // TODO: Tick Threads
+    public final boolean isOwnedByCurrentRegion(World world, Position position) {
+        return true;
+    }
+
+    public final boolean isOwnedByCurrentRegion(World world, Position position, int squareRadiusChunks) {
+    	return true;
+    }
+
+    public final boolean isOwnedByCurrentRegion(Location location) {
+    	return true;
+    }
+
+    public final boolean isOwnedByCurrentRegion(Location location, int squareRadiusChunks) {
+    	return true;
+    }
+
+    public final boolean isOwnedByCurrentRegion(World world, int chunkX, int chunkZ) {
+    	return true;
+    }
+
+    public final boolean isOwnedByCurrentRegion(World world, int chunkX, int chunkZ, int squareRadiusChunks) {
+    	return true;
+    }
+
+    public final boolean isOwnedByCurrentRegion(org.bukkit.entity.Entity entity) {
+    	return true;
+    }
+
+    public boolean addRecipe(Recipe recipe, boolean resendRecipes) {
+    	// TODO: resendRecipes
+        return this.addRecipe(recipe);
+    }
+
+	@Override
+	public @Nullable ItemStack createExplorerMap(@NotNull World world, @NotNull Location location,
+			org.bukkit.generator.structure.@NotNull StructureType structureType,
+			org.bukkit.map.MapCursor.@NotNull Type mapIcon, int radius, boolean findUnexplored) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void banIP(@NotNull InetAddress address) {
+		((IpBanList)this.getBanList(BanList.Type.IP)).addBan(address, null, (java.util.Date)null, null);
+	}
+
+	@Override
+	public void unbanIP(@NotNull InetAddress address) {
+		((IpBanList)this.getBanList(BanList.Type.IP)).pardon(address);
+	}
+
+	@Override
+	public void motd(@NotNull Component motd) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public @NotNull RegionScheduler getRegionScheduler() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public @NotNull AsyncScheduler getAsyncScheduler() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public @NotNull GlobalRegionScheduler getGlobalRegionScheduler() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+    
 
 }

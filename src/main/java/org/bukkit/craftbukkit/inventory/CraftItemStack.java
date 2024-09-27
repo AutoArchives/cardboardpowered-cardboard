@@ -21,6 +21,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
 import org.cardboardpowered.impl.CardboardEnchantment;
 import org.cardboardpowered.interfaces.IItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.authlib.GameProfile;
@@ -865,6 +866,14 @@ public final class CraftItemStack extends ItemStack {
     
     static boolean hasItemMeta(net.minecraft.item.ItemStack item) {
         return item != null && !item.getComponentChanges().isEmpty();
+    }
+
+    public static net.minecraft.item.ItemStack unwrap(ItemStack bukkit) {
+        if (bukkit instanceof CraftItemStack) {
+            CraftItemStack craftItemStack = (CraftItemStack)bukkit;
+            return craftItemStack.handle != null ? craftItemStack.handle : net.minecraft.item.ItemStack.EMPTY;
+        }
+        return CraftItemStack.asNMSCopy(bukkit);
     }
 
     /*static boolean hasItemMeta(net.minecraft.item.ItemStack item) {

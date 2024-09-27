@@ -34,10 +34,12 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.block.sign.Side;
 import org.bukkit.craftbukkit.CraftServer;
 
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
+import org.cardboardpowered.impl.block.CardboardSign;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
 import org.cardboardpowered.impl.entity.PlayerImpl;
 import org.cardboardpowered.impl.inventory.CardboardDoubleChestInventory;
@@ -121,6 +123,10 @@ import net.minecraft.util.math.BlockPos;
 
 public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
+    public void openSign(Sign sign, Side side) {
+        CardboardSign.openSign(sign, (PlayerImpl)this, side);
+    }
+	
     private CardboardPlayerInventory inventory;
     protected GameMode gm;
     protected final PermissibleBase perm = new PermissibleBase(this);

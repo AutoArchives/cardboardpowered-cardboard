@@ -11,10 +11,15 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.sign.Side;
 import org.bukkit.block.sign.SignSide;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
+import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerSignOpenEvent;
+import org.cardboardpowered.impl.entity.PlayerImpl;
 import org.jetbrains.annotations.NotNull;
 
+import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
 import com.javazilla.bukkitfabric.interfaces.IMixinSignBlockEntity;
 
+import io.papermc.paper.event.player.PlayerOpenSignEvent;
 import net.kyori.adventure.text.Component;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.text.Text;
@@ -49,6 +54,8 @@ public class CardboardSign<T extends SignBlockEntity> extends CardboardBlockEnti
         lines = new String[((IMixinSignBlockEntity)sign).getTextBF().length];
         System.arraycopy(revertComponents(((IMixinSignBlockEntity)sign).getTextBF()), 0, lines, 0, lines.length);
        // editable = sign.editable;
+        
+        
     }
 
     @Override
@@ -164,5 +171,31 @@ public class CardboardSign<T extends SignBlockEntity> extends CardboardBlockEnti
     public CardboardSign<T> copy(Location location) {
         return new CardboardSign<T>(this, location);
     }
+    
+    public boolean isWaxed() {
+        return ((SignBlockEntity)this.getSnapshot()).isWaxed();
+    }
+
+    public void setWaxed(boolean waxed) {
+        ((SignBlockEntity)this.getSnapshot()).setWaxed(waxed);
+    }
+
+    public Side getInteractableSideFor(double x, double z) {
+        this.requirePlaced();
+        return ( (IMixinSignBlockEntity) ((SignBlockEntity)this.getSnapshot()) ) .cardboard$isFacingFrontText(x, z) ? Side.FRONT : Side.BACK;
+    }
+
+    public static void openSign(Sign sign, Player player, Side side) {
+        PlayerOpenSignEvent event = new PlayerOpenSignEvent(player, sign, side, PlayerOpenSignEvent.Cause.PLUGIN);
+        if (!event.callEvent()) {
+            return;
+        }
+        if (PlayerSignOpenEvent.getHandlerList().getRegisteredListeners().length > 0 && !BukkitEventFactory.callPlayerSignOpenEvent(player, sign, side, PlayerSignOpenEvent.Cause.PLUGIN)) {
+            return;
+        }
+        SignBlockEntity handle = (SignBlockEntity)((CardboardSign)sign).getTileEntity();
+        handle.setEditor(player.getUniqueId());
+        ((PlayerImpl)player).getHandle().openEditSignScreen(handle, Side.FRONT == side);
+	}
 
 }

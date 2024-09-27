@@ -2,11 +2,14 @@ package org.cardboardpowered.library;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Collection;
@@ -51,7 +54,9 @@ public final class LibraryManager {
     // URL to download Paper API
     
     // private static final String PAPER_URL = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.19/paper-api-1.19.2-307.jar";
-    private static final String PAPER_URL = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.19.4/paper-api-1.19.4-550.jar";
+    // private static final String PAPER_URL = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.19.4/paper-api-1.19.4-550.jar";
+    
+    private static final String PAPER_URL = "https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.20.1-R0.1-SNAPSHOT/paper-api-1.20.1-R0.1-20230921.165944-178.jar";
     
     // private static final String PAPER_URL = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.18/paper-api-1.18.2-167.jar";
     
@@ -93,6 +98,26 @@ public final class LibraryManager {
         }
     }
     
+    private String read_central_checksum(String repository, Library library) throws IOException {
+    	
+    	if (library.libraryKey.artifactId.contains("paper-api")) {
+    		return "paper";
+    	}
+    	
+    	URL url = new URL(repository + library.libraryKey.groupId.replace('.', '/') + '/' + library.libraryKey.artifactId + '/' + library.version
+                + '/' + library.libraryKey.artifactId + '-' + library.version + ".jar.sha1");
+    	
+        URLConnection urlc = url.openConnection();
+        BufferedReader in = new BufferedReader(new InputStreamReader(urlc.getInputStream(), "UTF-8"));
+        String inputLine;
+        StringBuilder a = new StringBuilder();
+        while ((inputLine = in.readLine()) != null)
+        a.append(inputLine);
+        in.close();
+
+        return a.toString();
+    }
+    
     public void download(Library library) {
         String repository = library.repository;
         if (repository == null) repository = defaultRepository;
@@ -126,11 +151,24 @@ public final class LibraryManager {
                     }
 
                     if (validateChecksum && library.checksumType != null && library.checksumValue != null && !checksum(file, library)) {
-                        logger.error("The checksum for the library '" + fileName + "' does not match. " + (attempts == maxDownloadAttempts ?
-                                "Restart the server to attempt downloading it again." : "Attempting download again ("+ (attempts+1) +"/"+ maxDownloadAttempts +")"));
-                        file.delete();
-                        if (attempts == maxDownloadAttempts) return;
-                        continue;
+                        
+                    	// logger.error("The checksum of '" + fileName + "' does not match. " + (attempts == maxDownloadAttempts ?
+                        //        "Restart the server to attempt downloading it again." : "Attempting download again ("+ (attempts+1) +"/"+ maxDownloadAttempts +")"));
+                        
+                    	String rc = read_central_checksum(repository, library);
+                    	System.out.println("RC:" + rc);
+                    	
+                    	if (rc.equals(library.checksumValue2)) {
+	                        logger.info("The checksum of '" + fileName + "' (" + rc + ") has matched.");
+                    	} else {
+                        
+	                        logger.error("The checksum of '" + fileName + "' does not match. Found: " + library.checksumValue2 + ", Need: " + library.checksumValue);
+	                        
+	                        file.delete();
+	                        
+	                        if (attempts == maxDownloadAttempts) return;
+	                        continue;
+                    	}
                     }
                     // everything's fine
                     break;
@@ -171,6 +209,12 @@ public final class LibraryManager {
         String digest;
         try {
             digest = Files.hash(file, algorithm.function).toString();
+            library.checksumValue2 = digest;
+            
+            if (checksum.equalsIgnoreCase("giveme")) {
+            	logger.info("Hash for " + file.getName() + " = " + digest);
+            }
+            
         } catch (IOException ex) {
             logger.error("Failed to compute digest for '" + file.getName() + "'", ex);
             return false;

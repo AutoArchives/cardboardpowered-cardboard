@@ -17,6 +17,7 @@ import org.bukkit.Keyed;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.RegionAccessor;
+import org.bukkit.Statistic;
 import org.bukkit.UnsafeValues;
 import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
@@ -26,6 +27,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftFeatureFlag;
+import org.bukkit.craftbukkit.CraftStatistic;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Entity;
@@ -206,6 +208,14 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
             Registries.FLUID.getOrEmpty(key).ifPresent((fluid) -> MATERIAL_FLUID.put(material, fluid));
         }
     }
+    
+    public static boolean has_mixin_interface(Material m) {
+    	// Make sure mixin has applied
+    	if ( (Object) m instanceof IMixinMaterial) {
+    		return true;
+    	}
+    	return false;
+    }
 
     public static void test() {
         // TODO: This needs to be kept updated when Spigot updates
@@ -240,7 +250,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
             Material material = BY_NAME.get(name);
             if (null == material && !names.contains(name)) {
                 material = EnumHelper.makeEnum(Material.class, name, i, MAT_CTOR, ImmutableList.of(i));
-                if (!(material instanceof IMixinMaterial)) {
+                if (!has_mixin_interface(material)) {
                     BukkitFabricMod.LOGGER.warning("Material not instanceof IMixinMaterial");
                     return;
                 }
@@ -281,7 +291,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
             Material material = BY_NAME.get(name);
             if (null == material && !names.contains(name)) {
                 material = EnumHelper.makeEnum(Material.class, name, i, MAT_CTOR, ImmutableList.of(i));
-                if (!(material instanceof IMixinMaterial)) {
+                if (!has_mixin_interface(material)) {
                     BukkitFabricMod.LOGGER.warning("Material not instanceof IMixinMaterial");
                     return;
                 }
@@ -767,6 +777,14 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     public static org.bukkit.entity.EntityType getEntityType(net.minecraft.entity.EntityType<?> entityTypes) {
         return ENTITY_TYPES_ENTITY_TYPE.get(entityTypes);
     }
+
+	// @Override
+	public String getStatisticCriteriaKey(@NotNull Statistic statistic) {
+		if (statistic.getType() != Statistic.Type.UNTYPED) {
+            return "minecraft.custom:minecraft." + statistic.getKey().getKey();
+        }
+        return CraftStatistic.getNMSStatistic(statistic).getName();
+	}
 
 
 }

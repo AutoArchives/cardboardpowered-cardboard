@@ -11,6 +11,8 @@ import net.minecraft.block.AbstractBlock.AbstractBlockState;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.state.property.BooleanProperty;
@@ -35,6 +37,7 @@ import org.bukkit.block.structure.Mirror;
 import org.bukkit.block.structure.StructureRotation;
 import org.bukkit.craftbukkit.CraftSoundGroup;
 import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.craftbukkit.block.CraftBlockStates;
 import org.bukkit.craftbukkit.block.CraftBlockSupport;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -732,5 +735,21 @@ public class CraftBlockData implements BlockData {
 	    public PistonMoveReaction getPistonMoveReaction() {
 	        return PistonMoveReaction.getById((int)this.state.getPistonBehavior().ordinal());
 	    }
+
+		@Override
+		public org.bukkit.block.@NotNull BlockState createBlockState() {
+			return CraftBlockStates.getBlockState(this.state, null);
+		}
+
+		@Override
+		public float getDestroySpeed(@NotNull ItemStack itemStack, boolean considerEnchants) {
+	        int enchantLevel;
+	        net.minecraft.item.ItemStack nmsItemStack = CraftItemStack.unwrap(itemStack);
+	        float speed = nmsItemStack.getMiningSpeedMultiplier(this.state);
+	        if (speed > 1.0f && considerEnchants && (enchantLevel = EnchantmentHelper.getLevel(Enchantments.EFFICIENCY, nmsItemStack)) > 0) {
+	            speed += (float)(enchantLevel * enchantLevel + 1);
+	        }
+	        return speed;
+		}
 
 }

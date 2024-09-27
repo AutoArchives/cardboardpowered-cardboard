@@ -27,6 +27,8 @@ public class Library implements Comparable<Library> {
 
     // The checksum itself, validated against the library to make sure the library is intact.
     public final String checksumValue;
+    
+    public String checksumValue2;
 
     // Excludes the dependency from any dependency checks. Use this if the library is locally hosted.
     public final boolean excludeDependencies;
@@ -54,6 +56,7 @@ public class Library implements Comparable<Library> {
         this.repository = StringUtils.isBlank(repository) ? null : repository;
         this.checksumType = checksumType;
         this.checksumValue = checksumValue;
+        this.checksumValue2 = null;
         this.excludeDependencies = excludeDependencies;
     }
 

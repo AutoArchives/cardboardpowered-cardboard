@@ -29,6 +29,7 @@ import com.javazilla.bukkitfabric.interfaces.IMixinScreenHandler;
 import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
 import io.papermc.paper.event.block.BellRingEvent;
+import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ExperienceOrbEntity;
 import net.minecraft.entity.ItemEntity;
@@ -69,10 +70,14 @@ import org.bukkit.Statistic;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.sign.Side;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftStatistic;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockState;
+import org.bukkit.craftbukkit.block.CraftBlockStates;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
@@ -121,6 +126,8 @@ import org.bukkit.event.player.PlayerItemMendEvent;
 import org.bukkit.event.player.PlayerLevelChangeEvent;
 import org.bukkit.event.player.PlayerRecipeDiscoverEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
+import org.bukkit.event.player.PlayerSignOpenEvent;
+import org.bukkit.event.player.PlayerSignOpenEvent.Cause;
 import org.bukkit.event.player.PlayerStatisticIncrementEvent;
 import org.bukkit.event.player.PlayerUnleashEntityEvent;
 import org.bukkit.event.server.ServerListPingEvent;
@@ -718,11 +725,25 @@ public class BukkitEventFactory {
     
     public static EntityBreakDoorEvent callEntityBreakDoorEvent(Entity entity, BlockPos pos) {
         org.bukkit.entity.Entity entity1 = ((IMixinEntity)entity).getBukkitEntity();
-        Block block = CraftBlock.at((ServerWorld) entity.getEntityWorld(), pos);
+        CraftBlock block = CraftBlock.at((ServerWorld) entity.getEntityWorld(), pos);
 
-        EntityBreakDoorEvent event = new EntityBreakDoorEvent((LivingEntity) entity1, block);
+        
+        CraftBlockData bd = CraftBlockData.createData(block.getNMS());
+        EntityBreakDoorEvent event = new EntityBreakDoorEvent((LivingEntity) entity1, block, bd);
         entity1.getServer().getPluginManager().callEvent(event);
 
+        return event;
+    }
+    
+    // todo: check this
+    public static EntityBreakDoorEvent callEntityBreakDoorEvent(net.minecraft.entity.Entity entity, BlockPos pos, BlockState newState) {
+    	 org.bukkit.entity.Entity entity1 = ((IMixinEntity)entity).getBukkitEntity();
+        CraftBlock block = CraftBlock.at((ServerWorld) entity.getEntityWorld(), pos);
+        
+        CraftBlockData bd = CraftBlockData.createData(block.getNMS());
+        
+        EntityBreakDoorEvent event = new EntityBreakDoorEvent((LivingEntity)entity1, block, bd);
+        entity1.getServer().getPluginManager().callEvent((Event)event);
         return event;
     }
 
@@ -813,6 +834,19 @@ public class BukkitEventFactory {
         EntityBreedEvent event = new EntityBreedEvent((org.bukkit.entity.LivingEntity) ((IMixinEntity)child).getBukkitEntity(), (org.bukkit.entity.LivingEntity) ((IMixinEntity) mother).getBukkitEntity(), (org.bukkit.entity.LivingEntity) ((IMixinEntity) father).getBukkitEntity(), breederEntity, bredWithStack, experience);
         Bukkit.getPluginManager().callEvent(event);
         return event;
+    }
+
+	public static boolean callPlayerSignOpenEvent(PlayerEntity player, SignBlockEntity tileEntitySign, boolean front, PlayerSignOpenEvent.Cause cause) {
+        CraftBlock block = CraftBlock.at((ServerWorld) tileEntitySign.getWorld(), tileEntitySign.getPos());
+        Sign sign = (Sign)CraftBlockStates.getBlockState(block);
+        Side side = front ? Side.FRONT : Side.BACK;
+        return callPlayerSignOpenEvent((Player)((IMixinEntity) player).getBukkitEntity(), sign, side, cause);
+    }
+
+    public static boolean callPlayerSignOpenEvent(Player player, Sign sign, Side side, PlayerSignOpenEvent.Cause cause) {
+        PlayerSignOpenEvent event = new PlayerSignOpenEvent(player, sign, side, cause);
+        Bukkit.getPluginManager().callEvent((Event)event);
+        return !event.isCancelled();
     }
 
 }
