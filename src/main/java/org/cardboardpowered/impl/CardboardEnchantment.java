@@ -35,7 +35,7 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
     private final int id;
     
     public CardboardEnchantment(NamespacedKey key, net.minecraft.enchantment.Enchantment handle) {
-    	super(CraftNamespacedKey.fromMinecraft(Registries.ENCHANTMENT.getId(handle)));
+    	// super(CraftNamespacedKey.fromMinecraft(Registries.ENCHANTMENT.getId(handle)));
         this.key = key;
         this.handle = handle;
         this.id = Registries.ENCHANTMENT.getRawId(handle);
@@ -291,6 +291,13 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 	@Override
 	public int getMaxModifiedCost(int level) {
 		return this.handle.getMaxPower(level);
+	}
+
+	// 1.20.3 API:
+	
+	@Override
+	public @NotNull NamespacedKey getKey() {
+		return this.key;
 	}
 
 

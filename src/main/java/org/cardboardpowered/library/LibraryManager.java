@@ -52,17 +52,17 @@ public final class LibraryManager {
     private final Collection<Library> libraries;
 
     // URL to download Paper API
-    
-    // private static final String PAPER_URL = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.19/paper-api-1.19.2-307.jar";
-    // private static final String PAPER_URL = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.19.4/paper-api-1.19.4-550.jar";
-    
+
     // private static final String PAPER_URL = "https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.20.1-R0.1-SNAPSHOT/paper-api-1.20.1-R0.1-20230921.165944-178.jar";
-    private static final String PAPER_URL = "https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.20.2-R0.1-SNAPSHOT/paper-api-1.20.2-R0.1-20231203.034718-122.jar";
+    // private static final String PAPER_URL = "https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.20.2-R0.1-SNAPSHOT/paper-api-1.20.2-R0.1-20231203.034718-122.jar";
+    private static final String PAPER_URL = "https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.20.3-R0.1-SNAPSHOT/paper-api-1.20.3-R0.1-20231207.043048-3.jar";
+
+    private static final String PAPER_MAVEN = "https://repo.papermc.io/repository/maven-snapshots";
     
     // private static final String PAPER_URL = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.18/paper-api-1.18.2-167.jar";
-    
     // private static final String PAPER_URL_OLD = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.17/paper-api.jar";
-
+    // private static final String PAPER_URL = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.19/paper-api-1.19.2-307.jar";
+    // private static final String PAPER_URL = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.19.4/paper-api-1.19.4-550.jar";
 
     /**
      * Creates the instance.
@@ -141,7 +141,14 @@ public final class LibraryManager {
                         downloadUrl = new URL(repository + library.libraryKey.groupId.replace('.', '/') + '/' + library.libraryKey.artifactId + '/' + library.version
                                 + '/' + library.libraryKey.artifactId + '-' + library.version + ".jar");
                     } else {
-                        downloadUrl = new URL(PAPER_URL);
+                    	
+                    	String ver = library.version.split("-R0.1")[0];
+
+                    	String paper_jar = PAPER_MAVEN + "/io/papermc/paper/paper-api/" + ver + "-R0.1-SNAPSHOT/paper-api-" + ver + ".jar";
+
+                    	downloadUrl = new URL(paper_jar);
+                    	
+                    	// downloadUrl = new URL(PAPER_URL);
                     }
                     HttpsURLConnection connection = (HttpsURLConnection) downloadUrl.openConnection();
                     connection.setRequestProperty("User-Agent", "Mozilla/5.0 Chrome/90.0.4430.212");

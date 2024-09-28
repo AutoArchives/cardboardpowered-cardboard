@@ -374,7 +374,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
 
     public abstract Iterable<Entity> getNMSEntities();
 
-    public <T extends org.bukkit.entity.Entity> T createEntity_CARDBOARD_TWO(Location location, Class<T> clazz) throws IllegalArgumentException {
+    public <T extends org.bukkit.entity.Entity> T createEntity(Location location, Class<T> clazz) throws IllegalArgumentException {
         Entity entity = this.createEntity(location, clazz, true);
         if (!this.isNormalWorld()) {
             // TODO
@@ -441,9 +441,16 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
         return this.createEntity(location, clazz, true);
     }
 
-    public Entity createEntity(Location location, Class<? extends org.bukkit.entity.Entity> clazz, boolean randomizeData) throws IllegalArgumentException {
+    // Note: Use old method till we fill CraftEntityTypes
+	public abstract net.minecraft.entity.Entity createEntity_Old(Location location, Class<? extends org.bukkit.entity.Entity> clazz) throws IllegalArgumentException;
+
+    
+    public Entity createEntity(Location location, Class<? extends org.bukkit.entity.Entity> clazz_org, boolean randomizeData) throws IllegalArgumentException {
         Preconditions.checkArgument((location != null ? 1 : 0) != 0, (Object)"Location cannot be null");
-        Preconditions.checkArgument((clazz != null ? 1 : 0) != 0, (Object)"Entity class cannot be null");
+        Preconditions.checkArgument((clazz_org != null ? 1 : 0) != 0, (Object)"Entity class cannot be null");
+        
+        Class<? extends org.bukkit.entity.Entity> clazz = clazz_org;
+        
         Consumer<Entity> runOld = other -> {};
         if (clazz == AbstractArrow.class) {
             clazz = Arrow.class;
@@ -466,7 +473,19 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
         }
         CraftEntityTypes.EntityTypeData entityTypeData = CraftEntityTypes.getEntityTypeData(clazz);
         if (entityTypeData == null || entityTypeData.spawnFunction() == null) {
-            if (CraftEntity.class.isAssignableFrom(clazz)) {
+
+        	try {
+        		Entity entity = this.createEntity_Old(location, clazz_org);
+        		if (entity != null) {
+        			runOld.accept(entity);
+        			return entity;
+        		}
+        	} catch (IllegalArgumentException e) {
+        		// no
+        	}
+        	
+        	
+        	if (CraftEntity.class.isAssignableFrom(clazz)) {
                 throw new IllegalArgumentException(String.format("Cannot spawn an entity from its CraftBukkit implementation class '%s' use the Bukkit class instead. You can get the Bukkit representation via Entity#getType()#getEntityClass()", clazz.getName()));
             }
             throw new IllegalArgumentException("Cannot spawn an entity for " + clazz.getName());
@@ -475,6 +494,9 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
             throw new IllegalArgumentException("Cannot spawn an entity for " + clazz.getName() + " because it is not an enabled feature");
         }
         Entity entity = (Entity)entityTypeData.spawnFunction().apply(new CraftEntityTypes.SpawnData(this.getHandle(), location, randomizeData, this.isNormalWorld()));
+        
+        
+        
         if (entity != null) {
             runOld.accept(entity);
             return entity;

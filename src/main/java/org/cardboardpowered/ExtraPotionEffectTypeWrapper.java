@@ -6,14 +6,20 @@ import org.bukkit.Color;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
 public class ExtraPotionEffectTypeWrapper extends PotionEffectType {
 
+	private int id;
+	private NamespacedKey key;
+	
 	public ExtraPotionEffectTypeWrapper(int id, @NotNull String name) {
-        super(id, NamespacedKey.minecraft(name));
-    	// super(id);
+        // super(id, NamespacedKey.minecraft(name));
+        
+        this.id = id;
+        this.key =  NamespacedKey.minecraft(name);
     }
 
     @Override
@@ -71,5 +77,20 @@ public class ExtraPotionEffectTypeWrapper extends PotionEffectType {
 	public @NotNull Category getEffectCategory() {
 		// TODO Auto-generated method stub
 		return Category.NEUTRAL;
+	}
+
+	@Override
+	public @NotNull NamespacedKey getKey() {
+		return this.key;
+	}
+
+	@Override
+	public @NotNull PotionEffect createEffect(int duration, int amplifier) {
+        return new PotionEffect(this, this.isInstant() ? 1 : (int) (duration * this.getDurationModifier()), amplifier);
+	}
+
+	@Override
+	public int getId() {
+		return this.id;
 	}
 }

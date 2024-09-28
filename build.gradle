@@ -95,8 +95,8 @@ dependencies {
 	// compileOnly("io.papermc.paper:paper-api:1.19.4-R0.1-20230608.201059-104")
 	// compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-20230921.165944-178")
 	
-	compileOnly("io.papermc.paper:paper-api:1.20.2-R0.1-20231203.034718-122")
-	// compileOnly("io.papermc.paper:paper-api:1.20.3-R0.1-20231207.043048-3")
+	//compileOnly("io.papermc.paper:paper-api:1.20.2-R0.1-20231203.034718-122")
+	compileOnly("io.papermc.paper:paper-api:1.20.3-R0.1-20231207.043048-3")
 	// compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-20240528.102248-175")
 	// compileOnly("io.papermc.paper:paper-api:1.20.5-R0.1-20240429.035133-20")
 	// compileOnly("io.papermc.paper:paper-api:1.20.6-R0.1-20240916.192025-126")

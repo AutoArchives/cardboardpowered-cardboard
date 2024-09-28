@@ -66,7 +66,7 @@ public abstract class MixinEggEntity {
             if (hatching) {
                 for (int i = 0; i < b0; ++i) {
                     WorldImpl cw = ((IMixinWorld)world).getWorldImpl();
-                    Entity entity = cw.createEntity(new org.bukkit.Location(cw, egg.getX(), egg.getY(), egg.getZ(), egg.getYaw(), 0.0F), hatchingType.getEntityClass());
+                    Entity entity = cw.createEntity_Old(new org.bukkit.Location(cw, egg.getX(), egg.getY(), egg.getZ(), egg.getYaw(), 0.0F), hatchingType.getEntityClass());
                     if (((IMixinEntity)entity).getBukkitEntity() instanceof Ageable)
                         ((Ageable) ((IMixinEntity)entity).getBukkitEntity()).setBaby();
                     cw.addEntity(entity, SpawnReason.EGG);

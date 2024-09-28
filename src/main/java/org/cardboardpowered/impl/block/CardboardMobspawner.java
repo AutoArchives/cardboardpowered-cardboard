@@ -1,15 +1,25 @@
 package org.cardboardpowered.impl.block;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.CreatureSpawner;
+import org.bukkit.block.spawner.SpawnRule;
+import org.bukkit.block.spawner.SpawnerEntry;
+import org.bukkit.craftbukkit.entity.CraftEntitySnapshot;
+import org.bukkit.entity.EntitySnapshot;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.cardboardpowered.impl.world.WorldImpl;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.entity.MobSpawnerBlockEntity;
+import net.minecraft.block.spawner.MobSpawnerEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
@@ -150,5 +160,60 @@ public class CardboardMobspawner extends CardboardBlockEntityState<MobSpawnerBlo
     public void setSpawnedItem(ItemStack arg0) {
         // TODO Auto-generated method stub
     }
+    
+    // 1.20.3 API:
+
+	@Override
+	public @Nullable EntitySnapshot getSpawnedEntity() {
+		return null;
+		
+		/*MobSpawnerEntry spawnData = this.getSnapshot().getLogic().spawnEntry;
+        if (spawnData == null) {
+            return null;
+        }
+
+        return CraftEntitySnapshot.create(spawnData.getNbt());*/
+	}
+
+	@Override
+	public void setSpawnedEntity(@NotNull EntitySnapshot snapshot) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addPotentialSpawn(@NotNull EntitySnapshot snapshot, int weight, @Nullable SpawnRule spawnRule) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addPotentialSpawn(@NotNull SpawnerEntry spawnerEntry) {
+        this.addPotentialSpawn(spawnerEntry.getSnapshot(), spawnerEntry.getSpawnWeight(), spawnerEntry.getSpawnRule());
+	}
+
+	@Override
+	public void setPotentialSpawns(@NotNull Collection<SpawnerEntry> entries) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public @NotNull List<SpawnerEntry> getPotentialSpawns() {
+		/*
+		 List<SpawnerEntry> entries = new ArrayList<>();
+
+	        for (Present<MobSpawnerEntry> entry : this.getSnapshot().getLogic().spawnPotentials.getEntries()) { // PAIL rename Wrapper
+	            CraftEntitySnapshot snapshot = CraftEntitySnapshot.create(entry.data().getNbt());
+
+	            if (snapshot != null) {
+	                SpawnRule rule = entry.data().customSpawnRules().map(this::fromMinecraftRule).orElse(null);
+	                entries.add(new SpawnerEntry(snapshot, entry.getWeight().getValue(), rule, CraftCreatureSpawner.getEquipment(entry.data().equipment())));
+	            }
+	        }
+	        return entries;
+	        */
+		return null;
+	}
 
 }

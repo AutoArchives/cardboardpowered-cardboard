@@ -41,6 +41,7 @@ import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntitySnapshot;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Pose;
@@ -1394,5 +1395,37 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         }
         return players.build();
 	}
+	
+	// 1.20.3 API:
+	
+    public EntitySnapshot createSnapshot() {
+        return CraftEntitySnapshot.create(this);
+    }
+	
+    public Entity copy() {
+        net.minecraft.entity.Entity copy = this.copy(this.getHandle().getWorld());
+        Preconditions.checkArgument((copy != null ? 1 : 0) != 0, (Object)"Error creating new entity.");
+        return ((IMixinEntity)copy).getBukkitEntity();
+    }
+
+    public Entity copy(Location location) {
+        Preconditions.checkArgument((location.getWorld() != null ? 1 : 0) != 0, (Object)"Location has no world");
+        net.minecraft.entity.Entity copy = this.copy(((WorldImpl)location.getWorld()).getHandle());
+        Preconditions.checkArgument((copy != null ? 1 : 0) != 0, (Object)"Error creating new entity.");
+        copy.setPosition(location.getX(), location.getY(), location.getZ());
+        return ((WorldImpl)location.getWorld()).addEntity( (Entity)((IMixinEntity)copy).getBukkitEntity() );
+    }
+
+    private net.minecraft.entity.Entity copy(net.minecraft.world.World level) {
+        NbtCompound compoundTag = new NbtCompound();
+        this.getHandle().saveSelfNbt(compoundTag);
+        return net.minecraft.entity.EntityType.loadEntityWithPassengers(compoundTag, level, java.util.function.Function.identity());
+    }
+
+	@Override
+    public boolean isInWorld() {
+        return ((IMixinEntity)this.getHandle()).cb$getInWorld();
+    }
+
 
 }

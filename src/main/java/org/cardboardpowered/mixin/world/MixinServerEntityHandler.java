@@ -43,6 +43,8 @@ public class MixinServerEntityHandler {
     public void validateEntityBF(Entity entity, CallbackInfo ci) {
         IMixinEntity bf = (IMixinEntity) entity;
         bf.setValid(true);
+        bf.cb$setInWorld(true);
+        
         if (null == bf.getOriginBF() && bf.getBukkitEntity() != null)
             bf.setOriginBF(bf.getBukkitEntity().getLocation()); // Paper Entity Origin API
 

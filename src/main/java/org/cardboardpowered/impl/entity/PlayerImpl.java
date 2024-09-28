@@ -109,6 +109,7 @@ import com.destroystokyo.paper.Title;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.io.BaseEncoding;
 import com.javazilla.bukkitfabric.BukkitFabricMod;
 import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
 
@@ -141,6 +142,7 @@ import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
+import net.minecraft.network.packet.s2c.common.ResourcePackRemoveS2CPacket;
 import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
 import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
@@ -2416,6 +2418,40 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 	public @NotNull Duration getIdleDuration() {
 		return Duration.ofMillis(Util.getMeasuringTimeMs() - this.getHandle().getLastActionTime());
 	}
+	
+	// 1.20.3 API:
+
+	@Override
+	public void setResourcePack(@NotNull UUID id, @NotNull String url, @Nullable byte[] hash, @Nullable String prompt,
+			boolean force) {
+		String hashStr = "";
+        if (hash != null) {
+            Preconditions.checkArgument(hash.length == 20, "Resource pack hash should be 20 bytes long but was %s", hash.length);
+            hashStr = BaseEncoding.base16().lowerCase().encode(hash);
+        }
+        
+        if (null == prompt) {
+        	prompt = "hello";
+        }
+        
+        Optional<Text> opt = Optional.of( CraftChatMessage.fromStringOrNull(prompt) );
+
+        this.handlePushResourcePack(new ResourcePackSendS2CPacket(id, url, hashStr, force, opt), true);
+	}
+	
+    public void removeResourcePacks() {
+        if (this.getHandle().networkHandler == null) return;
+        this.getHandle().networkHandler.sendPacket(new ResourcePackRemoveS2CPacket(Optional.empty()));
+    }
+	
+    private void handlePushResourcePack(ResourcePackSendS2CPacket resourcePackPushPacket, boolean resetBeforePush) {
+        if (this.getHandle().networkHandler == null) return;
+
+        if (resetBeforePush) {
+            this.removeResourcePacks();
+        }
+        this.getHandle().networkHandler.sendPacket(resourcePackPushPacket);
+    }
 	
 
 }

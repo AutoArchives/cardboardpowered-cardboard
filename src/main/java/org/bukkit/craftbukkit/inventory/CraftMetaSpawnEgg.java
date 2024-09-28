@@ -20,10 +20,13 @@ import org.bukkit.craftbukkit.inventory.CraftMetaItem;
 import org.bukkit.craftbukkit.inventory.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftLegacy;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.entity.EntitySnapshot;
 // import org.bukkit.entity.EntitySnapshot;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.bukkit.material.MaterialData;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @DelegateDeserialization(value=SerializableMeta.class)
 public class CraftMetaSpawnEgg
@@ -296,5 +299,16 @@ implements SpawnEggMeta {
         }
         return super.updateMaterial(material);
     }
+
+	@Override
+	public @Nullable EntitySnapshot getSpawnedEntity() {
+		return CraftEntitySnapshot.create(this.entityTag);
+	}
+
+	@Override
+	public void setSpawnedEntity(@NotNull EntitySnapshot snapshot) {
+        Preconditions.checkArgument(snapshot.getEntityType().isSpawnable(), "Entity is not spawnable");
+		this.entityTag = ((CraftEntitySnapshot) snapshot).getData();
+	}
 }
 

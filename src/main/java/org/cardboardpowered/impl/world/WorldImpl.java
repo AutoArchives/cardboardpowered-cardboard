@@ -1548,12 +1548,12 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 	}
 
 	public <T extends Entity> T spawn(Location location, Class<T> clazz, Consumer<T> function, SpawnReason reason) throws IllegalArgumentException {
-		net.minecraft.entity.Entity entity = createEntity(location, clazz);
+		net.minecraft.entity.Entity entity = createEntity_Old(location, clazz);
 
 		return addEntity(entity, reason, function);
 	}
 
-	public net.minecraft.entity.Entity createEntity(Location location, Class<? extends Entity> clazz) throws IllegalArgumentException {
+	public net.minecraft.entity.Entity createEntity_Old(Location location, Class<? extends Entity> clazz) throws IllegalArgumentException {
 		if(location == null || clazz == null)
 			throw new IllegalArgumentException("Location or entity class cannot be null");
 
@@ -2794,5 +2794,16 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 	public void addEntityWithPassengers(net.minecraft.entity.Entity entity, SpawnReason reason) {
 		this.getHandle().spawnNewEntityAndPassengers(entity);
 	}
+
+	@Override
+    public <T extends Entity> T createEntity(Location location, Class<T> clazz) throws IllegalArgumentException {
+        net.minecraft.entity.Entity entity = this.createEntity(location, clazz, true);
+
+        if (!this.isNormalWorld()) {
+            // entity.setGeneration(true);
+        }
+
+        return (T) ((IMixinEntity)entity).getBukkitEntity();
+    }
 	
 }

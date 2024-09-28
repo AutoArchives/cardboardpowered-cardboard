@@ -147,6 +147,7 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
     }
 
     public boolean valid = false;
+    public boolean cardboard$inWorld = false;
     public Location origin_bukkit;
 
     @Override
@@ -522,6 +523,16 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
             ((Entity) (Object) this).setOnFireFor(15);
         }
     }
+
+	@Override
+	public void cb$setInWorld(boolean b) {
+		cardboard$inWorld = b;
+	}
+
+	@Override
+	public boolean cb$getInWorld() {
+		return cardboard$inWorld;
+	}
 
     // TODO
     

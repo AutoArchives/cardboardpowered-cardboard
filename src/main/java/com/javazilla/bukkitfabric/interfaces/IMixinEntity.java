@@ -42,4 +42,8 @@ public interface IMixinEntity {
 
 	Box cardboad_getBoundingBoxAt(double x2, double y2, double z2);
 
+	void cb$setInWorld(boolean b);
+	
+	boolean cb$getInWorld();
+
 }

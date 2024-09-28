@@ -116,10 +116,11 @@ public class BukkitFabricMod implements ModInitializer {
     }
     
     // registerPotionEffectType
+    @Deprecated
     public static void registerPotionEffectType() {
     	for (Object effect : Registries.STATUS_EFFECT) {
             try {
-                org.bukkit.potion.PotionEffectType.registerPotionEffectType(new CardboardPotionEffectType((StatusEffect) effect));
+                // org.bukkit.potion.PotionEffectType.registerPotionEffectType(new CardboardPotionEffectType((StatusEffect) effect));
             } catch (ArrayIndexOutOfBoundsException e) {
                 // ignore
             }

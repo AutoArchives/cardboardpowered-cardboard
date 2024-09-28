@@ -672,7 +672,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
     public void onResourcePackStatus(ResourcePackStatusC2SPacket packet) {
         super.onResourcePackStatus(packet);
         int statusOrdinal = packet.status().ordinal();
-        PlayerResourcePackStatusEvent event = new PlayerResourcePackStatusEvent(getPlayer(), PlayerResourcePackStatusEvent.Status.values()[statusOrdinal]);
+        PlayerResourcePackStatusEvent event = new PlayerResourcePackStatusEvent(getPlayer(), packet.id(), PlayerResourcePackStatusEvent.Status.values()[statusOrdinal]);
         Bukkit.getPluginManager().callEvent(event);
     }
 

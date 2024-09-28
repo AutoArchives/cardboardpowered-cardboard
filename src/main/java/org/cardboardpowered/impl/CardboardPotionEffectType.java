@@ -14,6 +14,7 @@ import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.Handleable;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
@@ -47,15 +48,15 @@ public class CardboardPotionEffectType extends PotionEffectType implements Handl
     
     
     public CardboardPotionEffectType(NamespacedKey key, StatusEffect handle) {
-    	super(Registries.STATUS_EFFECT.getRawId(handle), CraftNamespacedKey.fromMinecraft(Registries.STATUS_EFFECT.getId(handle)));
+    	// super(Registries.STATUS_EFFECT.getRawId(handle), CraftNamespacedKey.fromMinecraft(Registries.STATUS_EFFECT.getId(handle)));
     	this.key = key;
         this.handle = handle;
         
         // RegistryKeys.STATUS_EFFECT
         
-        this.id = Registries.STATUS_EFFECT.getRawId(handle) + 1;
+        // this.id = Registries.STATUS_EFFECT.getRawId(handle) + 1;
         
-        //this.id = CraftRegistry.getMinecraftRegistry(RegistryKeys.STATUS_EFFECT).getRawId(handle) + 1;
+        this.id = CraftRegistry.getMinecraftRegistry(RegistryKeys.STATUS_EFFECT).getRawId(handle) + 1;
     }
 
     @Deprecated
@@ -159,8 +160,7 @@ public class CardboardPotionEffectType extends PotionEffectType implements Handl
 
 	@Override
 	public @NotNull String translationKey() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.getHandle().getTranslationKey();
 	}
 
 	@Override
@@ -179,6 +179,24 @@ public class CardboardPotionEffectType extends PotionEffectType implements Handl
 	public @NotNull Category getEffectCategory() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	// 1.20.3 API:
+
+	@Override
+	public NamespacedKey getKey() {
+		return this.key;
+	}
+
+	@Override
+	public @NotNull PotionEffect createEffect(int duration, int amplifier) {
+        return new PotionEffect(this, this.isInstant() ? 1 : (int) (duration * this.getDurationModifier()), amplifier);
+	}
+
+	@Override
+	public int getId() {
+		// TODO Auto-generated method stub
+		return this.id;
 	}
 	
 
