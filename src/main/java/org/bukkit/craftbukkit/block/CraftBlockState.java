@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.block;
 
 import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.bukkit.Chunk;
@@ -13,6 +14,8 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.entity.Entity;
@@ -349,19 +352,30 @@ public class CraftBlockState implements BlockState {
 	@Override
 	public @Unmodifiable @NotNull Collection<ItemStack> getDrops() {
 		// TODO Auto-generated method stub
-		return null;
+		return getDrops(null, null);
 	}
 
 	@Override
 	public @Unmodifiable @NotNull Collection<ItemStack> getDrops(@Nullable ItemStack arg0) {
 		// TODO Auto-generated method stub
-		return null;
+		return getDrops(arg0, null);
 	}
 
 	@Override
-	public @Unmodifiable @NotNull Collection<ItemStack> getDrops(@NotNull ItemStack arg0, @Nullable Entity arg1) {
-		// TODO Auto-generated method stub
-		return null;
+	public @Unmodifiable @NotNull Collection<ItemStack> getDrops(@NotNull ItemStack arg0, @Nullable Entity entity) {
+        this.requirePlaced();
+        net.minecraft.item.ItemStack nms = CraftItemStack.asNMSCopy(arg0);
+        if (arg0 == null || !this.data.isToolRequired() || nms.isSuitableFor(this.data)) {
+            return net.minecraft.block.Block.getDroppedStacks(this.data, this.world.getHandle(), this.position, this.world.getHandle().getBlockEntity(this.position), entity == null ? null : ((CraftEntity)entity).getHandle(), nms).stream().map(CraftItemStack::asBukkitCopy).toList();
+        }
+        return Collections.emptyList();
+	}
+
+	// 1.20.2 API:
+	
+	@Override
+	public @NotNull BlockState copy() {
+		return new CraftBlockState(this, null);
 	}
 
 }

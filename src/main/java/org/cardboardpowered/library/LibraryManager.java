@@ -56,7 +56,8 @@ public final class LibraryManager {
     // private static final String PAPER_URL = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.19/paper-api-1.19.2-307.jar";
     // private static final String PAPER_URL = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.19.4/paper-api-1.19.4-550.jar";
     
-    private static final String PAPER_URL = "https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.20.1-R0.1-SNAPSHOT/paper-api-1.20.1-R0.1-20230921.165944-178.jar";
+    // private static final String PAPER_URL = "https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.20.1-R0.1-SNAPSHOT/paper-api-1.20.1-R0.1-20230921.165944-178.jar";
+    private static final String PAPER_URL = "https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.20.2-R0.1-SNAPSHOT/paper-api-1.20.2-R0.1-20231203.034718-122.jar";
     
     // private static final String PAPER_URL = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.18/paper-api-1.18.2-167.jar";
     

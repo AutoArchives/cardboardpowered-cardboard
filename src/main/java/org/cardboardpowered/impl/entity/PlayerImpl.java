@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -82,6 +83,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.inventory.InventoryCloseEvent.Reason;
 import org.bukkit.event.player.PlayerExpCooldownChangeEvent;
 import org.bukkit.event.player.PlayerKickEvent.Cause;
@@ -97,6 +99,7 @@ import org.bukkit.map.MapView;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.messaging.StandardMessenger;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.util.Vector;
 import org.cardboardpowered.impl.AdvancementImpl;
 import org.cardboardpowered.impl.AdvancementProgressImpl;
 import org.cardboardpowered.impl.block.CardboardSign;
@@ -160,6 +163,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.network.PacketByteBuf;
@@ -2373,5 +2377,45 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 		// TODO Auto-generated method stub
 		return this.teleport(arg0, arg1);
 	}*/
+	
+	// 1.20.2 API:
+	
+    public void resetIdleDuration() {
+        this.getHandle().updateLastActionTime();
+    }
+
+	@Override
+	public void playSound(@NotNull Location location, @NotNull Sound sound, @NotNull SoundCategory category,
+			float volume, float pitch, long seed) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void playSound(@NotNull Location location, @NotNull String sound, @NotNull SoundCategory category,
+			float volume, float pitch, long seed) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void playSound(@NotNull Entity entity, @NotNull Sound sound, @NotNull SoundCategory category, float volume,
+			float pitch, long seed) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void playSound(@NotNull Entity entity, @NotNull String sound, @NotNull SoundCategory category, float volume,
+			float pitch, long seed) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public @NotNull Duration getIdleDuration() {
+		return Duration.ofMillis(Util.getMeasuringTimeMs() - this.getHandle().getLastActionTime());
+	}
+	
 
 }

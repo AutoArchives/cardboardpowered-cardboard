@@ -2,6 +2,8 @@ package org.cardboardpowered.impl.entity;
 
 import net.kyori.adventure.text.Component;
 import net.minecraft.entity.LightningEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
+
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.entity.Entity;
@@ -9,6 +11,8 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
+
+import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 
 public class LightningStrikeImpl extends CraftEntity implements LightningStrike {
 
@@ -95,5 +99,25 @@ public class LightningStrikeImpl extends CraftEntity implements LightningStrike 
         // TODO Auto-generated method stub
         
     }
+    
+    // 1.20.2 API: 
+
+	@Override
+	public int getFlashes() {
+		return 0;
+		// return this.getHandle().remainingActions;
+	}
+
+	@Override
+	public void setFlashes(int flashes) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Player getCausingPlayer() {
+		ServerPlayerEntity player = this.getHandle().getChanneler();
+        return player != null ? (Player) ((IMixinEntity)player).getBukkitEntity() : null;
+	}
 
 }

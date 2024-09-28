@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import net.minecraft.resource.ResourcePackProfile;
 import net.minecraft.resource.ResourcePackSource;
 import net.minecraft.resource.metadata.PackResourceMetadata;
+import net.minecraft.util.dynamic.Range;
 
 import org.bukkit.FeatureFlag;
 import org.bukkit.NamespacedKey;
@@ -115,5 +116,17 @@ public class CraftDataPack implements DataPack {
         String requestedFeatures = this.getRequestedFeatures().stream().map(featureFlag -> featureFlag.getKey().toString()).collect(Collectors.joining(","));
         return "CraftDataPack{rawId=" + this.getRawId() + ",id=" + this.getKey() + ",title=" + this.getTitle() + ",description=" + this.getDescription() + ",packformat=" + this.getPackFormat() + ",compatibility=" + this.getCompatibility() + ",source=" + this.getSource() + ",enabled=" + this.isEnabled() + ",requestedFeatures=[" + requestedFeatures + "]}";
     }
+
+    // 1.20.2 API:
+    
+	@Override
+	public int getMinSupportedPackFormat() {
+		return this.resourcePackInfo.supportedFormats().orElse(new Range<Integer>(this.getPackFormat())).minInclusive();
+	}
+
+	@Override
+	public int getMaxSupportedPackFormat() {
+		return this.resourcePackInfo.supportedFormats().orElse(new Range<Integer>(this.getPackFormat())).maxInclusive();
+	}
 }
 

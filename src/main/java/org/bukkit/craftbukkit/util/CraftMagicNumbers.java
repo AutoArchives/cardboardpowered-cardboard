@@ -27,9 +27,11 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftFeatureFlag;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftStatistic;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.potion.CraftPotionType;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.CreativeCategory;
@@ -38,6 +40,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.potion.PotionType.InternalPotionData;
 import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.CardboardModdedBlock;
 import org.cardboardpowered.impl.CardboardModdedItem;
@@ -71,7 +74,9 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.potion.Potion;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 import org.bukkit.Bukkit;
 import org.bukkit.Fluid;
@@ -778,12 +783,18 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         return ENTITY_TYPES_ENTITY_TYPE.get(entityTypes);
     }
 
-	// @Override
+	@Override
 	public String getStatisticCriteriaKey(@NotNull Statistic statistic) {
 		if (statistic.getType() != Statistic.Type.UNTYPED) {
             return "minecraft.custom:minecraft." + statistic.getKey().getKey();
         }
         return CraftStatistic.getNMSStatistic(statistic).getName();
+	}
+
+	@Override
+	public InternalPotionData getInternalPotionData(NamespacedKey key) {
+		Potion potReg = CraftRegistry.getMinecraftRegistry(RegistryKeys.POTION).getOrEmpty(CraftNamespacedKey.toMinecraft(key)).orElseThrow();
+        return new CraftPotionType(key, potReg);
 	}
 
 

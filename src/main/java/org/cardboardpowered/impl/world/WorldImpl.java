@@ -38,29 +38,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.Validate;
-import org.bukkit.BlockChangeDelegate;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.ChunkSnapshot;
-import org.bukkit.Difficulty;
-import org.bukkit.Effect;
-import org.bukkit.FeatureFlag;
-import org.bukkit.FluidCollisionMode;
-import org.bukkit.GameEvent;
-import org.bukkit.GameRule;
-import org.bukkit.HeightMap;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Particle;
-import org.bukkit.Raid;
-import org.bukkit.Sound;
-import org.bukkit.SoundCategory;
-import org.bukkit.StructureType;
-import org.bukkit.TreeType;
-import org.bukkit.World;
-import org.bukkit.WorldBorder;
-import org.bukkit.WorldType;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -69,13 +46,20 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.boss.DragonBattle;
 import org.bukkit.craftbukkit.CraftFeatureFlag;
 import org.bukkit.craftbukkit.CraftParticle;
+import org.bukkit.craftbukkit.CraftRegionAccessor;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftSound;
+import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.util.BlockStateListPopulator;
+import org.bukkit.craftbukkit.util.CraftBiomeSearchResult;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.craftbukkit.util.RandomSourceWrapper;
 import org.bukkit.entity.*;
 import org.bukkit.entity.minecart.CommandMinecart;
 import org.bukkit.entity.minecart.ExplosiveMinecart;
@@ -99,6 +83,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
+import org.bukkit.util.BiomeSearchResult;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Consumer;
 import org.bukkit.util.RayTraceResult;
@@ -122,6 +107,9 @@ import com.javazilla.bukkitfabric.interfaces.IMixinChunkHolder;
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
 import com.javazilla.bukkitfabric.interfaces.IMixinThreadedAnvilChunkStorage;
+import com.mojang.datafixers.util.Pair;
+
+import io.papermc.paper.math.Position;
 import io.papermc.paper.world.MoonPhase;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import me.isaiah.common.cmixin.IMixinWorld;
@@ -155,6 +143,7 @@ import net.minecraft.entity.vehicle.TntMinecartEntity;
 import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
 import net.minecraft.network.packet.s2c.play.WorldTimeUpdateS2CPacket;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ChunkTicketType;
@@ -170,6 +159,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.Heightmap.Type;
 import net.minecraft.world.RaycastContext;
+import net.minecraft.world.biome.source.util.MultiNoiseUtil;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.WrapperProtoChunk;
@@ -244,7 +234,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 @SuppressWarnings("deprecation")
-public class WorldImpl implements World {
+public class WorldImpl extends CraftRegionAccessor implements World {
 
 	public static final int CUSTOM_DIMENSION_OFFSET = 10;
 	private final MetaDataStoreBase<Block> blockMetadata = MetadataStoreImpl.newBlockMetadataStore(this);
@@ -897,7 +887,7 @@ public class WorldImpl implements World {
 	}
 
 	@Override
-	public Collection<Entity> getNearbyEntities(Location location, double x, double y, double z, Predicate<Entity> filter) {
+	public Collection<Entity> getNearbyEntities(Location location, double x, double y, double z, Predicate<? super Entity> filter) {
 		BoundingBox aabb = BoundingBox.of(location, x, y, z);
 		return this.getNearbyEntities(aabb, filter);
 	}
@@ -908,7 +898,7 @@ public class WorldImpl implements World {
 	}
 
 	@Override
-	public Collection<Entity> getNearbyEntities(BoundingBox boundingBox, Predicate<Entity> filter) {
+	public Collection<Entity> getNearbyEntities(BoundingBox boundingBox, Predicate<? super Entity> filter) {
 		Box bb = new Box(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(), boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
 		List<net.minecraft.entity.Entity> entityList = nms.getOtherEntities((net.minecraft.entity.Entity) null, bb, null);
 		List<Entity> bukkitEntityList = new ArrayList<org.bukkit.entity.Entity>(entityList.size());
@@ -1239,7 +1229,7 @@ public class WorldImpl implements World {
 	}
 
 	@Override
-	public RayTraceResult rayTrace(Location start, Vector direction, double maxDistance, FluidCollisionMode mode, boolean ignorePassableBlocks, double raySize, Predicate<Entity> filter) {
+	public RayTraceResult rayTrace(Location start, Vector direction, double maxDistance, FluidCollisionMode mode, boolean ignorePassableBlocks, double raySize, Predicate<? super Entity> filter) {
 		RayTraceResult blockHit = this.rayTraceBlocks(start, direction, maxDistance, mode, ignorePassableBlocks);
 		Vector startVec = null;
 		double blockHitDistance = maxDistance;
@@ -1301,12 +1291,12 @@ public class WorldImpl implements World {
 	}
 
 	@Override
-	public RayTraceResult rayTraceEntities(Location start, Vector direction, double maxDistance, Predicate<Entity> filter) {
+	public RayTraceResult rayTraceEntities(Location start, Vector direction, double maxDistance, Predicate<? super Entity> filter) {
 		return this.rayTraceEntities(start, direction, maxDistance, 0.0, filter);
 	}
 
 	@Override
-	public RayTraceResult rayTraceEntities(Location start, Vector direction, double maxDistance, double raySize, Predicate<Entity> filter) {
+	public RayTraceResult rayTraceEntities(Location start, Vector direction, double maxDistance, double raySize, Predicate<? super Entity> filter) {
 		Validate.notNull(start, "Start location is null!");
 		Validate.isTrue(this.equals(start.getWorld()), "Start location is from different world!");
 		start.checkFinite();
@@ -1553,7 +1543,7 @@ public class WorldImpl implements World {
 	}
 
 	@Override
-	public <T extends Entity> T spawn(Location location, Class<T> clazz, Consumer<T> function) throws IllegalArgumentException {
+	public <T extends Entity> T spawn(Location location, Class<T> clazz, java.util.function.Consumer<? super T> function) throws IllegalArgumentException {
 		return spawn(location, clazz, function, SpawnReason.CUSTOM);
 	}
 
@@ -2256,14 +2246,14 @@ public class WorldImpl implements World {
 	}
 
 	@Override
-	public @NotNull Item dropItem(@NotNull Location arg0, @NotNull ItemStack arg1, @Nullable Consumer<Item> arg2) {
+	public Item dropItem(Location arg0, ItemStack arg1, java.util.function.Consumer<? super Item> arg2) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public @NotNull Item dropItemNaturally(@NotNull Location arg0, @NotNull ItemStack arg1,
-	                                       @Nullable Consumer<Item> arg2) {
+	                                       @Nullable java.util.function.Consumer<? super Item> arg2) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -2366,7 +2356,7 @@ public class WorldImpl implements World {
 
 	@Override
 	public boolean generateTree(@NotNull Location arg0, @NotNull Random arg1, @NotNull TreeType arg2,
-	                            @Nullable Consumer<BlockState> arg3) {
+	                            @Nullable java.util.function.Consumer<? super BlockState> arg3) {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -2445,7 +2435,7 @@ public class WorldImpl implements World {
 
 	@Override
 	public <T extends Entity> @NotNull T spawn(@NotNull Location arg0, @NotNull Class<T> arg1, boolean arg2,
-	                                           @Nullable Consumer<T> arg3) throws IllegalArgumentException {
+	                                           @Nullable java.util.function.Consumer<? super T> arg3) throws IllegalArgumentException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -2555,7 +2545,7 @@ public class WorldImpl implements World {
 
 	@Override
 	public boolean generateTree(@NotNull Location arg0, @NotNull Random arg1, @NotNull TreeType arg2,
-	                            @Nullable Predicate<BlockState> arg3) {
+	                            @Nullable Predicate<? super BlockState> arg3) {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -2676,5 +2666,133 @@ public class WorldImpl implements World {
 	public @NotNull Set<FeatureFlag> getFeatureFlags() {
         return CraftFeatureFlag.getFromNMS(this.getHandle().getEnabledFeatures()).stream().map(FeatureFlag.class::cast).collect(Collectors.toUnmodifiableSet());
 	}
+	
+	// 1.20.2 API:
 
+	@Override
+	public <T extends Entity> @NotNull T spawn(@NotNull Location location, @NotNull Class<T> clazz,
+			java.util.function.@Nullable Consumer<? super T> function, @NotNull SpawnReason reason)
+			throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+        return (T)((LivingEntity)this.spawn(location, clazz, function, reason));
+	}
+
+	@Override
+	public boolean hasStructureAt(@NotNull Position position, @NotNull Structure structure) {
+		// TODO Auto-generated method stub
+        net.minecraft.world.gen.structure.Structure stru =
+        		this.getHandle().getRegistryManager().get(RegistryKeys.STRUCTURE)
+        		.getEntry(
+        				CraftNamespacedKey.toMinecraft(structure.getStructureType().getKey())
+        		).orElseThrow().value();
+
+        return this.getHandle().getStructureAccessor().getStructureContaining(MCUtil_toBlockPos(position), stru).hasChildren();
+
+	}
+	
+	// TODO: MCUtil.toBlockPos
+    public static BlockPos MCUtil_toBlockPos(Position pos) {
+        return new BlockPos(pos.blockX(), pos.blockY(), pos.blockZ());
+    }
+
+	@Override
+	public @Nullable RayTraceResult rayTraceEntities(@NotNull Position start, @NotNull Vector direction,
+			double maxDistance, double raySize, @Nullable Predicate<? super Entity> filter) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public @Nullable RayTraceResult rayTraceBlocks(@NotNull Position start, @NotNull Vector direction,
+			double maxDistance, @NotNull FluidCollisionMode fluidCollisionMode, boolean ignorePassableBlocks,
+			@Nullable Predicate<? super Block> canCollide) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public @Nullable RayTraceResult rayTrace(@NotNull Position start, @NotNull Vector direction, double maxDistance,
+			@NotNull FluidCollisionMode fluidCollisionMode, boolean ignorePassableBlocks, double raySize,
+			@Nullable Predicate<? super Entity> filter, @Nullable Predicate<? super Block> canCollide) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void playNote(@NotNull Location loc, @NotNull Instrument instrument, @NotNull Note note) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void playSound(@NotNull Location location, @NotNull Sound sound, @NotNull SoundCategory category,
+			float volume, float pitch, long seed) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void playSound(@NotNull Location location, @NotNull String sound, @NotNull SoundCategory category,
+			float volume, float pitch, long seed) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void playSound(@NotNull Entity entity, @NotNull Sound sound, @NotNull SoundCategory category, float volume,
+			float pitch, long seed) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void playSound(@NotNull Entity entity, @NotNull String sound, @NotNull SoundCategory category, float volume,
+			float pitch, long seed) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public BiomeSearchResult locateNearestBiome(Location origin, int radius, org.bukkit.block.Biome ... biomes) {
+        return this.locateNearestBiome(origin, radius, 32, 64, biomes);
+    }
+
+	@Override
+    public BiomeSearchResult locateNearestBiome(Location origin, int radius, int horizontalInterval, int verticalInterval, org.bukkit.block.Biome ... biomes) {
+        BlockPos originPos = BlockPos.ofFloored(origin.getX(), origin.getY(), origin.getZ());
+        HashSet<RegistryEntry<net.minecraft.world.biome.Biome>> holders = new HashSet<RegistryEntry<net.minecraft.world.biome.Biome>>();
+        for (org.bukkit.block.Biome biome : biomes) {
+            holders.add(CraftBiome.bukkitToMinecraftHolder(biome));
+        }
+
+        MultiNoiseUtil.MultiNoiseSampler sampler = this.getHandle().getChunkManager().getNoiseConfig().getMultiNoiseSampler();
+        Pair<BlockPos, RegistryEntry<net.minecraft.world.biome.Biome>> found = this.getHandle().getChunkManager().getChunkGenerator().getBiomeSource().locateBiome(originPos, radius, horizontalInterval, verticalInterval, holders::contains, sampler, this.getHandle());
+        if (found == null) {
+            return null;
+        }
+        return new CraftBiomeSearchResult(CraftBiome.minecraftHolderToBukkit((RegistryEntry)found.getSecond()), new Location((World)this, (double)((BlockPos)found.getFirst()).getX(), (double)((BlockPos)found.getFirst()).getY(), (double)((BlockPos)found.getFirst()).getZ()));
+    }
+
+	@Override
+	public void setBiome(int var1, int var2, int var3, RegistryEntry<net.minecraft.world.biome.Biome> var4) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Iterable<net.minecraft.entity.Entity> getNMSEntities() {
+		
+		return ((com.javazilla.bukkitfabric.interfaces.IMixinWorld)this.getHandle()).cb$get_entity_lookup().iterate();
+	}
+
+	@Override
+	public void addEntityToWorld(net.minecraft.entity.Entity entity, SpawnReason reason) {
+		this.getHandle().spawnEntity(entity);
+	}
+
+	@Override
+	public void addEntityWithPassengers(net.minecraft.entity.Entity entity, SpawnReason reason) {
+		this.getHandle().spawnNewEntityAndPassengers(entity);
+	}
+	
 }

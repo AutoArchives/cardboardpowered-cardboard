@@ -473,7 +473,7 @@ public class CardboardChunk implements Chunk {
     }
 
     @Override
-    public Collection<BlockState> getTileEntities(Predicate<Block> blockPredicate, boolean useSnapshot) {
+    public Collection<BlockState> getTileEntities(Predicate<? super Block> blockPredicate, boolean useSnapshot) {
         Preconditions.checkNotNull(blockPredicate, (Object)"blockPredicate");
         if (!this.isLoaded()) {
             this.getWorld().getChunkAt(this.x, this.z);

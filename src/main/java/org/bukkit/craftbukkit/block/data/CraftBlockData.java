@@ -43,7 +43,9 @@ import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.util.CraftVoxelShape;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.VoxelShape;
 import org.cardboardpowered.BlockImplUtil;
 import org.cardboardpowered.impl.world.WorldImpl;
 import org.jetbrains.annotations.NotNull;
@@ -750,6 +752,17 @@ public class CraftBlockData implements BlockData {
 	            speed += (float)(enchantLevel * enchantLevel + 1);
 	        }
 	        return speed;
+		}
+
+		// 1.20.2 API
+		@Override
+		public org.bukkit.util.VoxelShape getCollisionShape(Location location) {
+			Preconditions.checkArgument((location != null ? 1 : 0) != 0, "location must not be null");
+			WorldImpl world = (WorldImpl)location.getWorld();
+			Preconditions.checkArgument((world != null ? 1 : 0) != 0, "location must not have a null world");
+			BlockPos position = CraftLocation.toBlockPosition(location);
+			net.minecraft.util.shape.VoxelShape shape = this.state.getCollisionShape(world.getHandle(), position);
+			return new CraftVoxelShape(shape);
 		}
 
 }

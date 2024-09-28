@@ -930,10 +930,15 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
     
     // 1.19.2
 
-	@Override
-	public <T extends Projectile> @NotNull T launchProjectile(@NotNull Class<? extends T> arg0, @Nullable Vector arg1,
+	// @Override
+	public <T extends Projectile> @NotNull T launchProjectile_old(@NotNull Class<? extends T> arg0, @Nullable Vector arg1,
 			@Nullable Consumer<T> arg2) {
 		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	// @Override
+	public <T extends Projectile> T launchProjectile(Class<? extends T> projectile, Vector velocity, java.util.function.Consumer<? super T> function) {
 		return null;
 	}
 
@@ -1109,6 +1114,22 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	// 1.20.2 API:
+	@Override
+    public float getSidewaysMovement() {
+        return this.getHandle().sidewaysSpeed;
+    }
+
+	@Override
+    public float getForwardsMovement() {
+        return this.getHandle().forwardSpeed;
+    }
+
+	@Override
+    public float getUpwardsMovement() {
+        return this.getHandle().upwardSpeed;
+    }
    
 
 }

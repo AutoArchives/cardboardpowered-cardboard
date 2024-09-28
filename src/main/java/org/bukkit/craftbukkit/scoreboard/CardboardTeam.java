@@ -1,6 +1,8 @@
 package org.bukkit.craftbukkit.scoreboard;
 
 import com.google.common.collect.ImmutableSet;
+
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -12,11 +14,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.NameTagVisibility;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
@@ -409,5 +413,19 @@ public class CardboardTeam extends CardboardScoreboardComponent implements Team 
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+	// 1.20.2 API:
+	
+	@Override
+    public Iterable<? extends Audience> audiences() {
+        this.checkState();
+        ArrayList<Player> audiences = new ArrayList<Player>();
+        for (String playerName : this.team.getPlayerList()) {
+            Player player = Bukkit.getPlayerExact((String)playerName);
+            if (player == null) continue;
+            audiences.add(player);
+        }
+        return audiences;
+    }
 
 }

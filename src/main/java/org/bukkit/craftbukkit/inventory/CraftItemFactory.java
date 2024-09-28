@@ -7,6 +7,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.event.HoverEvent.ShowItem;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.hover.content.Content;
+import net.minecraft.enchantment.EnchantmentHelper;
 
 import java.util.Collection;
 import java.util.Random;
@@ -15,19 +16,25 @@ import java.util.function.UnaryOperator;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
+import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.util.CraftLegacy;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.cardboardpowered.impl.world.WorldImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
 public final class CraftItemFactory implements ItemFactory {
 
+	private static final net.minecraft.util.math.random.Random randomSource = net.minecraft.util.math.random.Random.create();
+	
     protected static final Color DEFAULT_LEATHER_COLOR = Color.fromRGB(0xA06540);
     protected static final Collection<String> KNOWN_NBT_ATTRIBUTE_NAMES;
     private static final CraftItemFactory instance;
@@ -407,5 +414,32 @@ public final class CraftItemFactory implements ItemFactory {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	// 1.20.2 API:
+
+	@Override
+    public ItemStack enchantItem(Entity entity, ItemStack itemStack, int level, boolean allowTreasures) {
+		
+        return CraftItemFactory.enchantItem(CraftItemFactory.randomSource, itemStack, level, allowTreasures);
+
+		// TODO
+        // return CraftItemFactory.enchantItem(((CraftEntity) entity).getHandle().random, itemStack, level, allowTreasures);
+    }
+
+    @Override
+    public ItemStack enchantItem(final World world, final ItemStack itemStack, final int level, final boolean allowTreasures) {
+        return CraftItemFactory.enchantItem(((WorldImpl) world).getHandle().random, itemStack, level, allowTreasures);
+    }
+
+    @Override
+    public ItemStack enchantItem(final ItemStack itemStack, final int level, final boolean allowTreasures) {
+        return CraftItemFactory.enchantItem(CraftItemFactory.randomSource, itemStack, level, allowTreasures);
+    }
+
+    private static ItemStack enchantItem(net.minecraft.util.math.random.Random source, ItemStack itemStack, int level, boolean allowTreasures) {
+        itemStack = CraftItemStack.asCraftCopy(itemStack);
+        CraftItemStack craft = (CraftItemStack) itemStack;
+        return CraftItemStack.asCraftMirror(EnchantmentHelper.enchant(CraftServer.server.getSaveProperties().getEnabledFeatures(), source, craft.handle, level, allowTreasures));
+    }
 
 }

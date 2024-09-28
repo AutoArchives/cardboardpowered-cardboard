@@ -5,6 +5,7 @@ import net.minecraft.entity.passive.PandaEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Panda;
+import org.jetbrains.annotations.NotNull;
 
 public class CardboardPanda extends AnimalsImpl implements Panda {
 
@@ -153,5 +154,12 @@ public class CardboardPanda extends AnimalsImpl implements Panda {
 	public void setOnBack(boolean arg0) {
 		this.getHandle().setLyingOnBack(arg0);
 	}
+
+	// 1.20.2 API:
+	
+	@Override
+	public Panda.Gene getCombinedGene() {
+        return CardboardPanda.fromNms(this.getHandle().getProductGene());
+    }
 
 }

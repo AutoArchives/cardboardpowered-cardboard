@@ -5,6 +5,7 @@ import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Random;
+import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -17,7 +18,9 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
+import org.bukkit.entity.Projectile;
 import org.bukkit.loot.LootTable;
+import org.bukkit.util.Vector;
 
 import com.destroystokyo.paper.entity.Pathfinder;
 import com.javazilla.bukkitfabric.BukkitFabricMod;
@@ -181,6 +184,16 @@ public class MobImpl extends LivingEntityImpl implements Mob {
 	public int getPossibleExperienceReward() {
         return this.getHandle().getXpToDrop();
 	}
+	// 1.20.2 API:
+	
+	public boolean isAggressive() {
+        return this.getHandle().isAttacking();
+    }
+
+    public void setAggressive(boolean aggressive) {
+        this.getHandle().setAttacking(aggressive);
+    }
+	
 
 
 }

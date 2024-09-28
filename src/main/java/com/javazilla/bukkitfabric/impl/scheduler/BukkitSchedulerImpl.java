@@ -87,7 +87,7 @@ public class BukkitSchedulerImpl implements BukkitScheduler {
     }
 
     @Override
-    public void runTask(Plugin plugin, Consumer<BukkitTask> task) throws IllegalArgumentException {
+    public void runTask(Plugin plugin, Consumer<? super BukkitTask> task) throws IllegalArgumentException {
         runTaskLater(plugin, task, 0L);
     }
 
@@ -103,7 +103,7 @@ public class BukkitSchedulerImpl implements BukkitScheduler {
     }
 
     @Override
-    public void runTaskAsynchronously(Plugin plugin, Consumer<BukkitTask> task) throws IllegalArgumentException {
+    public void runTaskAsynchronously(Plugin plugin, Consumer<? super BukkitTask> task) throws IllegalArgumentException {
         runTaskLaterAsynchronously(plugin, task, 0L);
     }
 
@@ -118,7 +118,7 @@ public class BukkitSchedulerImpl implements BukkitScheduler {
     }
 
     @Override
-    public void runTaskLater(Plugin plugin, Consumer<BukkitTask> task, long delay) throws IllegalArgumentException {
+    public void runTaskLater(Plugin plugin, Consumer<? super BukkitTask> task, long delay) throws IllegalArgumentException {
         runTaskTimer(plugin, task, delay, BukkitTaskImpl.NO_REPEATING);
     }
 
@@ -134,12 +134,12 @@ public class BukkitSchedulerImpl implements BukkitScheduler {
     }
 
     @Override
-    public void runTaskLaterAsynchronously(Plugin plugin, Consumer<BukkitTask> task, long delay) throws IllegalArgumentException {
+    public void runTaskLaterAsynchronously(Plugin plugin, Consumer<? super BukkitTask> task, long delay) throws IllegalArgumentException {
         runTaskTimerAsynchronously(plugin, task, delay, BukkitTaskImpl.NO_REPEATING);
     }
 
     @Override
-    public void runTaskTimerAsynchronously(Plugin plugin, Consumer<BukkitTask> task, long delay, long period) throws IllegalArgumentException {
+    public void runTaskTimerAsynchronously(Plugin plugin, Consumer<? super BukkitTask> task, long delay, long period) throws IllegalArgumentException {
         runTaskTimerAsynchronously(plugin, (Object) task, delay, period);
     }
 
@@ -154,7 +154,7 @@ public class BukkitSchedulerImpl implements BukkitScheduler {
     }
 
     @Override
-    public void runTaskTimer(Plugin plugin, Consumer<BukkitTask> task, long delay, long period) throws IllegalArgumentException {
+    public void runTaskTimer(Plugin plugin, Consumer<? super BukkitTask> task, long delay, long period) throws IllegalArgumentException {
         runTaskTimer(plugin, (Object) task, delay, period);
     }
 

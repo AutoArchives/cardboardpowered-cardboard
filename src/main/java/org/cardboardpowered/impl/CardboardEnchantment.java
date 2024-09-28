@@ -235,9 +235,8 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
     }
 
     @Override
-    public @NotNull EnchantmentRarity getRarity() {
-        // TODO Auto-generated method stub
-        return null;
+    public EnchantmentRarity getRarity() {
+    	throw new UnsupportedOperationException("Not supported for 1.20.5+");
     }
 
     @Override
@@ -265,9 +264,9 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 	
     public static net.minecraft.enchantment.Enchantment bukkitToMinecraft(Enchantment bukkit) {
     	
-    	return ( (CardboardEnchantment) bukkit ).getHandle();
+    	// return ( (CardboardEnchantment) bukkit ).getHandle();
     	
-        // return CraftRegistry.bukkitToMinecraft(bukkit);
+        return CraftRegistry.bukkitToMinecraft(bukkit);
     }
 
 	public static Enchantment minecraftHolderToBukkit(RegistryEntry<net.minecraft.enchantment.Enchantment> id) {
@@ -278,9 +277,21 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 		// return null;
 	}
 	
-    /*public static Enchantment minecraftToBukkit(net.minecraft.enchantment.Enchantment minecraft) {
+    public static Enchantment minecraftToBukkit(net.minecraft.enchantment.Enchantment minecraft) {
         return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.ENCHANTMENT, Registry.ENCHANTMENT);
-    }*/
+    }
+    
+    // 1.20.2 API: 
+    
+	@Override
+	public int getMinModifiedCost(int level) {
+		return this.handle.getMinPower(level);
+	}
+
+	@Override
+	public int getMaxModifiedCost(int level) {
+		return this.handle.getMaxPower(level);
+	}
 
 
 }

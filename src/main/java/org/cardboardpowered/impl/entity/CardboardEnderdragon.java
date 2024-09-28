@@ -227,5 +227,17 @@ public class CardboardEnderdragon extends CardboardComplexEntity implements Ende
     public int getPossibleExperienceReward() {
         return this.getHandle().getXpToDrop();
     }
+
+    // 1.20.2 API
+    
+	@Override
+	public boolean isAggressive() {
+        return this.getHandle().isAttacking();
+	}
+
+	@Override
+	public void setAggressive(boolean aggressive) {
+        this.getHandle().setAttacking(aggressive);
+	}
 	
 }

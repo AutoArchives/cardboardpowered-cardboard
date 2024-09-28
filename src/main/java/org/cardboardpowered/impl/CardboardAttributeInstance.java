@@ -7,12 +7,14 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.inventory.EquipmentSlot;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import me.isaiah.common.cmixin.IMixinEntityAttributeModifier;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 public class CardboardAttributeInstance implements AttributeInstance {
 
@@ -86,5 +88,16 @@ public class CardboardAttributeInstance implements AttributeInstance {
     	
         return new AttributeModifier(ic.IC$get_uuid(), nms.name, ic.IC$get_value(), AttributeModifier.Operation.values()[ic.IC$get_operation().ordinal()], slot);
     }
+
+	@Override
+	public @Nullable AttributeModifier getModifier(@NotNull UUID uuid) {
+		EntityAttributeModifier modifier = this.handle.getModifier(uuid);
+		return modifier == null ? null : CardboardAttributeInstance.convert(modifier);
+	}
+
+	@Override
+	public void removeModifier(@NotNull UUID uuid) {
+		this.handle.removeModifier(uuid);
+	}
 
 }

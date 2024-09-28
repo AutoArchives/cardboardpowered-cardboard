@@ -3,12 +3,16 @@ package org.cardboardpowered.impl.entity;
 import net.kyori.adventure.text.Component;
 import net.minecraft.entity.FallingBlockEntity;
 import org.bukkit.Material;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.block.CraftBlockStates;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
+import org.cardboardpowered.impl.block.CardboardBlockEntityState;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FallingBlockImpl extends CraftEntity implements FallingBlock {
@@ -132,6 +136,33 @@ public class FallingBlockImpl extends CraftEntity implements FallingBlock {
 	@Override
 	public void setCancelDrop(boolean cancelDrop) {
 		// this.getHandle().destroyedOnLanding = cancelDrop;
+	}
+	
+	// 1.20.2 API:
+
+	@Override
+	public void setBlockData(BlockData blockData) {
+		net.minecraft.block.BlockState newState;
+        net.minecraft.block.BlockState oldState = this.getHandle().block;
+        this.getHandle().block = newState = ((CraftBlockData)blockData).getState();
+        this.getHandle().blockEntityData = null;
+        if (oldState != newState) {
+            // this.update();
+        }
+	}
+
+	@Override
+	public BlockState getBlockState() {
+        return CraftBlockStates.getBlockState(this.getHandle().block, this.getHandle().blockEntityData);
+	}
+
+	@Override
+	public void setBlockState(@NotNull BlockState blockState) {
+        this.setBlockData(blockState.getBlockData());
+        if (blockState instanceof CardboardBlockEntityState) {
+        	CardboardBlockEntityState tileEntity = (CardboardBlockEntityState)blockState;
+            this.getHandle().blockEntityData = tileEntity.getSnapshotNBT();
+        }
 	}
 
 }

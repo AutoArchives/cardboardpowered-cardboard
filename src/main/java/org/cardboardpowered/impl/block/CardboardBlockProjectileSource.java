@@ -83,9 +83,17 @@ public class CardboardBlockProjectileSource implements BlockProjectileSource {
         return this.launchProjectile(projectile, velocity, null);
     }
 
+    // @Override
+    @Deprecated
+    public <T extends Projectile> T launchProjectile_old(Class<? extends T> projectile, Vector velocity, Consumer<T> function) {
+		return null;
+    
+    }
+    
     @Override
-    public <T extends Projectile> T launchProjectile(Class<? extends T> projectile, Vector velocity, Consumer<T> function) {
-        Preconditions.checkArgument((this.getBlock().getType() == Material.DISPENSER ? 1 : 0) != 0, (Object)"Block is no longer dispenser");
+    public <T extends Projectile> @NotNull T launchProjectile(@NotNull Class<? extends T> projectile,
+    			@Nullable Vector velocity, java.util.function.@Nullable Consumer<? super T> function) {
+    	Preconditions.checkArgument((this.getBlock().getType() == Material.DISPENSER ? 1 : 0) != 0, (Object)"Block is no longer dispenser");
         BlockPointer isourceblock = new BlockPointer((ServerWorld)this.dispenserBlock.getWorld(), this.dispenserBlock.getPos(), this.dispenserBlock.getCachedState(), this.dispenserBlock);
         
         Position iposition = DispenserBlock.getOutputLocation(isourceblock);
@@ -170,6 +178,8 @@ public class CardboardBlockProjectileSource implements BlockProjectileSource {
         world.spawnEntity(launch);
         return (T)((Projectile)((IMixinEntity)launch).getBukkitEntity());
     }
+
+
 	
 	
 }

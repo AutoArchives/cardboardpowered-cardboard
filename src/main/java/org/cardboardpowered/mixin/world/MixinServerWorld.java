@@ -11,8 +11,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.server.world.ServerEntityManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ProgressListener;
+import net.minecraft.world.entity.EntityLookup;
 import net.minecraft.world.level.ServerWorldProperties;
 
 @Mixin(ServerWorld.class)
@@ -50,6 +53,14 @@ public class MixinServerWorld extends MixinWorld implements IServerWorld {
 	public CraftServer getCraftServer() {
 		// TODO Auto-generated method stub
 		return CraftServer.INSTANCE;
+	}
+	
+	@Shadow
+	private ServerEntityManager<Entity> entityManager;
+
+	@Shadow
+	public EntityLookup<Entity> getEntityLookup() {
+		return this.entityManager.getLookup();
 	}
 
     /**

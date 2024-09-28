@@ -58,6 +58,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.LightType;
+import net.minecraft.world.WorldAccess;
 
 public class CraftBlock implements Block {
 
@@ -198,6 +199,25 @@ public class CraftBlock implements Block {
                 world.toServerWorld().updateListeners(position, old, blockData, 3);
             return success;
         }
+    }
+    
+
+    public static boolean setTypeAndData(WorldAccess world, BlockPos position, net.minecraft.block.BlockState old, net.minecraft.block.BlockState blockData, boolean applyPhysics) {
+        if (old.hasBlockEntity() && blockData.getBlock() != old.getBlock()) {
+            if (world instanceof net.minecraft.world.World) {
+                ((net.minecraft.world.World)world).removeBlockEntity(position);
+            } else {
+                world.setBlockState(position, Blocks.AIR.getDefaultState(), 0);
+            }
+        }
+        if (applyPhysics) {
+            return world.setBlockState(position, blockData, 3);
+        }
+        boolean success = world.setBlockState(position, blockData, 1042);
+        if (success && world instanceof net.minecraft.world.World) {
+            ((ServerWorld) world).updateListeners(position, old, blockData, 3);
+        }
+        return success;
     }
 
     @Override

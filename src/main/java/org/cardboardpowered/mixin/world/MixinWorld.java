@@ -2,9 +2,12 @@ package org.cardboardpowered.mixin.world;
 
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.entity.EntityLookup;
+
 import org.cardboardpowered.impl.block.CapturedBlockState;
 import org.cardboardpowered.impl.world.WorldImpl;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,6 +29,14 @@ public abstract class MixinWorld implements IMixinWorld {
     public boolean captureTreeGeneration = false;
     public Map<BlockPos, CapturedBlockState> capturedBlockStates = new HashMap<>();
 
+    @Shadow
+    public abstract EntityLookup<Entity> getEntityLookup();
+    
+    @Override
+    public EntityLookup<Entity> cb$get_entity_lookup() {
+    	return getEntityLookup();
+    }
+    
     @Override
     public Map<BlockPos, CapturedBlockState> getCapturedBlockStates_BF() {
         return capturedBlockStates;
