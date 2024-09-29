@@ -35,6 +35,15 @@
   },
   "suggests": {
     "flamingo": "*"
+  },
+  "custom": {
+    "loom:injected_interfaces": {
+      "net/minecraft/server/MinecraftServer": ["com/javazilla/bukkitfabric/interfaces/IMixinMinecraftServer"],
+      "net/minecraft/class_1297": ["com/javazilla/bukkitfabric/interfaces/IMixinEntity"],
+      "net/minecraft/class_3222": ["com/javazilla/bukkitfabric/interfaces/IMixinServerEntityPlayer"],
+      "net/minecraft/class_1937": ["com/javazilla/bukkitfabric/interfaces/IMixinWorld"],
+      "net/minecraft/class_3218": ["org/cardboardpowered/interfaces/IServerWorld"]
+    }
   }
 
 }

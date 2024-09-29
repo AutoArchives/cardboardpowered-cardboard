@@ -26,6 +26,8 @@ import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.EmptyBlockView;
+
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.SoundGroup;
@@ -764,5 +766,27 @@ public class CraftBlockData implements BlockData {
 			net.minecraft.util.shape.VoxelShape shape = this.state.getCollisionShape(world.getHandle(), position);
 			return new CraftVoxelShape(shape);
 		}
+		
+		// 1.20.4 API
+
+		@Override
+		public @NotNull Color getMapColor() {
+	        return Color.fromRGB((int)this.state.getMapColor(null, null).color);
+		}
+
+		@Override
+		public void copyTo(@NotNull BlockData blockData) {
+	        CraftBlockData other = (CraftBlockData)blockData;
+	        net.minecraft.block.BlockState nms = other.state;
+	        for (Property<?> property : this.state.getBlock().getStateManager().getProperties()) {
+	            if (!nms.contains(property)) continue;
+	            nms = this.copyProperty(this.state, nms, property);
+	        }
+	        other.state = nms;
+		}
+		
+	    private <T extends Comparable<T>> net.minecraft.block.BlockState copyProperty(net.minecraft.block.BlockState source, net.minecraft.block.BlockState target, Property<T> property) {
+	        return (net.minecraft.block.BlockState)target.with(property, source.get(property));
+	    }
 
 }

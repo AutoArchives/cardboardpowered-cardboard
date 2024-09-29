@@ -13,6 +13,7 @@ import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -237,6 +238,19 @@ public class ArrowImpl extends AbstractProjectile implements AbstractArrow {
 	public void setLifetimeTicks(int arg0) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	// 1.20.4 API:
+
+	@Override
+	public ItemStack getItem() {
+        return CraftItemStack.asBukkitCopy(this.getHandle().getItemStack());
+	}
+
+	@Override
+	public void setItem(@NotNull ItemStack item) {
+        // TODO
+		// this.getHandle().stack = CraftItemStack.asNMSCopy(item);
 	}
 
 }

@@ -1,12 +1,20 @@
 package org.bukkit.craftbukkit.scoreboard;
 
+import net.kyori.adventure.text.Component;
 import net.minecraft.scoreboard.ReadableScoreboardScore;
 import net.minecraft.scoreboard.ScoreHolder;
 import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.text.Text;
+
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
+import org.cardboardpowered.adventure.CardboardAdventure;
+import org.jetbrains.annotations.Nullable;
+
+import io.papermc.paper.scoreboard.numbers.NumberFormat;
 
 public final class CardboardScore implements Score {
 
@@ -68,5 +76,56 @@ public final class CardboardScore implements Score {
     public void resetScore() throws IllegalStateException {
         // TODO Auto-generated method stub
     }
+
+    // 1.20.4 API
+    
+	@Override
+	public boolean isTriggerable() {
+        if (this.objective.getTrackedCriteria() != Criteria.TRIGGER) {
+            return false;
+        }
+        Scoreboard board = this.objective.checkState().board;
+        ReadableScoreboardScore scoreInfo = board.getScore(this.entry, this.objective.getHandle());
+        return scoreInfo != null && !scoreInfo.isLocked();
+	}
+
+	@Override
+	public void setTriggerable(boolean triggerable) {
+        Scoreboard board = this.objective.checkState().board;
+        if (triggerable) {
+            board.getOrCreateScore(this.entry, this.objective.getHandle()).unlock();
+        } else {
+            board.getOrCreateScore(this.entry, this.objective.getHandle()).lock();
+        }
+	}
+
+	@Override
+	public Component customName() {
+        Scoreboard board = this.objective.checkState().board;
+        ReadableScoreboardScore scoreInfo = board.getScore(this.entry, this.objective.getHandle());
+        if (scoreInfo == null) {
+            return null;
+        }
+        Text display = board.getOrCreateScore(this.entry, this.objective.getHandle()).getDisplayText();
+        return display == null ? null : CardboardAdventure.asAdventure(display);
+	}
+
+	@Override
+	public void customName(@Nullable Component customName) {
+		Scoreboard board = this.objective.checkState().board;
+        board.getOrCreateScore(this.entry, this.objective.getHandle()).setDisplayText(CardboardAdventure.asVanilla(customName));
+	}
+
+	@Override
+	public @Nullable NumberFormat numberFormat() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void numberFormat(@Nullable NumberFormat format) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

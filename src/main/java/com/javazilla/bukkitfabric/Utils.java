@@ -40,6 +40,7 @@ import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.World;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
@@ -53,6 +54,10 @@ public class Utils {
         } catch (ClassNotFoundException | NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
             return "-unknown-";
         }
+    }
+    
+    public static EquipmentSlot getHand(Hand enumhand) {
+        return (enumhand == Hand.MAIN_HAND) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
     }
 
     public static UUID getWorldUUID(File baseDir) {

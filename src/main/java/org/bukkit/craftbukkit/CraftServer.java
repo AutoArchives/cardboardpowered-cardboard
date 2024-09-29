@@ -49,6 +49,8 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+
+import io.papermc.paper.ban.BanListType;
 import io.papermc.paper.datapack.DatapackManager;
 import io.papermc.paper.math.Position;
 import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
@@ -91,6 +93,7 @@ import net.minecraft.server.BannedIpEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.dedicated.DedicatedPlayerManager;
 import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 import net.minecraft.server.dedicated.PendingServerCommand;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -131,6 +134,7 @@ import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.inventory.CraftItemFactory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.packs.CraftDataPackManager;
+import org.bukkit.craftbukkit.packs.CraftResourcePack;
 import org.bukkit.craftbukkit.scoreboard.CardboardScoreboardManager;
 import org.bukkit.craftbukkit.scoreboard.CraftCriteria;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
@@ -153,6 +157,7 @@ import org.bukkit.loot.LootTable;
 import org.bukkit.map.MapView;
 import org.bukkit.metadata.MetadataStoreBase;
 import org.bukkit.packs.DataPackManager;
+import org.bukkit.packs.ResourcePack;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.Plugin;
@@ -375,6 +380,8 @@ public class CraftServer implements Server {
 
     public static MinecraftDedicatedServer server;
     public static MinecraftDedicatedServer console;
+    protected final DedicatedPlayerManager playerList;
+    
     public static CraftServer INSTANCE;
     public CardboardScoreboardManager scoreboardManager;
 
@@ -385,6 +392,8 @@ public class CraftServer implements Server {
     private final Map<Class<?>, org.bukkit.Registry<?>> registries = new HashMap<>();
 
     public CraftDataPackManager dataPackManager;
+    
+    private CraftServerTickManager serverTickManager;
     
     public CraftServer(MinecraftDedicatedServer nms) {
     	
@@ -413,8 +422,11 @@ public class CraftServer implements Server {
         }));
         
         this.dataPackManager = new CraftDataPackManager(this.getServer().getDataPackManager());
-
+        this.serverTickManager = new CraftServerTickManager(console.getTickManager());
+        
         loadIcon();
+        
+        this.playerList = server.getPlayerManager();
         
         // Register PotionEffectType
         BukkitFabricMod.registerPotionEffectType();
@@ -2524,6 +2536,34 @@ public class CraftServer implements Server {
         */
         return null;
     }
+	
+	// 1.20.4 API:
+
+	@Override
+	public boolean isLoggingIPs() {
+        return this.getServer().shouldLogIps();
+	}
+
+	@Override
+	public ServerTickManager getServerTickManager() {
+		return this.serverTickManager;
+	}
+
+	@Override
+	public ResourcePack getServerResourcePack() {
+		return this.getServer().getResourcePackProperties().map(CraftResourcePack::new).orElse(null);
+	}
+
+	@Override
+	public <B extends BanList<E>, E> @NotNull B getBanList(BanListType<B> type) {
+        if (type == BanListType.IP) {
+            return (B)new IpBanList(this.playerList.getIpBanList());
+        }
+        if (type == BanListType.PROFILE) {
+            return (B)new ProfileBanList(this.playerList.getUserBanList());
+        }
+        throw new IllegalArgumentException("Unknown BanListType: " + String.valueOf(type));
+	}
 
     
 

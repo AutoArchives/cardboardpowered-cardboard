@@ -99,7 +99,7 @@ public class CardboardDragonBattle implements DragonBattle {
 	@Override
 	public int getGatewayCount() {
 		// TODO Auto-generated method stub
-		//return 20 - this.handle.gateways.size();
+		// return 20 - this.handle.gateways.size();
 		return -1;
 	}
 
@@ -125,5 +125,13 @@ public class CardboardDragonBattle implements DragonBattle {
 	public @NotNull @Unmodifiable List<EnderCrystal> getHealingCrystals() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	// 1.20.4 API
+	
+	@Override
+	public void setPreviouslyKilled(boolean previouslyKilled) {
+        // TODO
+		// this.handle.previouslyKilled = previouslyKilled;
 	}
 }

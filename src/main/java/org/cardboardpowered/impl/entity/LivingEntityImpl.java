@@ -180,7 +180,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
     @Override
     public void damage(double arg0) {
         // nms.damage(DamageSource.MAGIC, (float)arg0);
-    	damage(arg0, null);
+    	damage(arg0, (Entity) null);
     }
 
     @Override
@@ -879,16 +879,6 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
     }
 
     @Override
-    public @Nullable Component customName() {
-        return Component.text( this.getCustomName() );
-    }
-
-    @Override
-    public void customName(@Nullable Component arg0) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
     public @NotNull EquipmentSlot getHandRaised() {
         Hand hand = nms.getActiveHand();
         return hand == Hand.MAIN_HAND ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
@@ -1131,5 +1121,101 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
         return this.getHandle().upwardSpeed;
     }
    
+	// 1.20.4 API:
+	
+	@Override
+    public boolean hasActiveItem() {
+        return this.getHandle().isUsingItem();
+    }
+	
+	@Override
+    public EquipmentSlot getActiveItemHand() {
+        return Utils.getHand(this.getHandle().getActiveHand());
+    }
+	
+    @Override
+    public void setItemInUseTicks(int ticks) {
+        // TODO
+    	// this.getHandle().itemUseTimeLeft = ticks;
+    }
+    
+    @Override
+    public int getItemInUseTicks() {
+        return this.getHandle().getItemUseTimeLeft();
+    }
+    
+    @Override
+    public void startUsingItem(EquipmentSlot hand) {
+        switch (hand) {
+            case HAND: {
+                this.getHandle().setCurrentHand(Hand.MAIN_HAND);
+                break;
+            }
+            case OFF_HAND: {
+                this.getHandle().setCurrentHand(Hand.OFF_HAND);
+                break;
+            }
+            default: {
+                throw new IllegalArgumentException("hand may only be HAND or OFF_HAND");
+            }
+        }
+    }
+
+    @Override
+    public ItemStack getItemInUse() {
+        net.minecraft.item.ItemStack item = this.getHandle().getActiveItem();
+        return item.isEmpty() ? null : CraftItemStack.asCraftMirror(item);
+    }
+    
+    @Override
+    public void completeUsingActiveItem() {
+        // TODO
+    	// this.getHandle().consumeItem();
+    }
+    
+    @Override
+    public int getActiveItemRemainingTime() {
+        return this.getHandle().getItemUseTimeLeft();
+    }
+    
+    @Override
+    public void setActiveItemRemainingTime(int ticks) {
+    	// TODO
+    	// this.getHandle().itemUseTimeLeft = ticks;
+    }
+    
+    @Override
+    public int getNextArrowRemoval() {
+        return this.getHandle().stuckArrowTimer;
+    }
+    
+    @Override
+    public void setNextArrowRemoval(int ticks) {
+        this.getHandle().stuckArrowTimer = ticks;
+    }
+    
+    @Override
+    public int getNextBeeStingerRemoval() {
+        return this.getHandle().stuckStingerTimer;
+    }
+    
+    @Override
+    public void setNextBeeStingerRemoval(int ticks) {
+        this.getHandle().stuckStingerTimer = ticks;
+    }
+
+	@Override
+	public void damage(double amount, org.bukkit.damage.@NotNull DamageSource damageSource) {
+		// TODO Auto-generated method stub
+		
+		
+
+		// TODO this.damage(amount, ((CraftDamageSource)damageSource).getHandle());
+	}
+
+	@Override
+	public int getActiveItemUsedTime() {
+		return this.getHandle().getItemUseTime();
+	}
 
 }

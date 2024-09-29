@@ -154,5 +154,17 @@ public final class CraftPersistentDataContainer implements PersistentDataContain
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	// 1.20.4 API:
+
+	@Override
+	public void copyTo(@NotNull PersistentDataContainer other, boolean replace) {
+        CraftPersistentDataContainer target = (CraftPersistentDataContainer) other;
+        if (replace) {
+            target.customDataTags.putAll(this.customDataTags);
+        } else {
+            this.customDataTags.forEach(target.customDataTags::putIfAbsent);
+        }
+	}
 
 }

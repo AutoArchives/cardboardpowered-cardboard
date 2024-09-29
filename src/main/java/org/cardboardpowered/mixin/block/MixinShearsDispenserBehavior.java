@@ -1,5 +1,6 @@
 package org.cardboardpowered.mixin.block;
 
+import com.google.common.collect.Lists;
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
 import net.minecraft.block.DispenserBlock;
@@ -11,6 +12,10 @@ import net.minecraft.entity.Shearable;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.BlockPointer;
+
+import java.util.Collections;
+import java.util.List;
+
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -57,13 +62,23 @@ public class MixinShearsDispenserBehavior {
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Shearable;sheared(Lnet/minecraft/sound/SoundCategory;)V"),
             method = "tryShearEntity")
     private static void doEvent(Shearable s, SoundCategory cat) {
-        if (!callBlockShearEntityEvent((LivingEntity)s, cardboard_block, cardboard_saved).isCancelled()) {
+        if (!callBlockShearEntityEvent((LivingEntity)s, cardboard_block, cardboard_saved, Shearable_generateDefaultDrops()).isCancelled()) {
             s.sheared(cat);
         }
     }
+    
+    private static List<ItemStack> Shearable_generateDefaultDrops() {
+        return Collections.emptyList();
+    }
 
-    private static BlockShearEntityEvent callBlockShearEntityEvent(Entity animal, org.bukkit.block.Block dispenser, CraftItemStack is) {
-        BlockShearEntityEvent bse = new BlockShearEntityEvent(dispenser, ((IMixinEntity)animal).getBukkitEntity(), is);
+    private static BlockShearEntityEvent callBlockShearEntityEvent(Entity animal, org.bukkit.block.Block dispenser, CraftItemStack is, List<net.minecraft.item.ItemStack> drops) {
+
+    	BlockShearEntityEvent bse = new BlockShearEntityEvent(
+    			dispenser,
+    			((IMixinEntity)animal).getBukkitEntity(),
+    			is,
+    			Lists.transform(drops, CraftItemStack::asCraftMirror)
+    	);
         Bukkit.getPluginManager().callEvent(bse);
         return bse;
     }

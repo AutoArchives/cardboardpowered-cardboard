@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Conduit;
+import org.jetbrains.annotations.Nullable;
 
 public class CardboardConduit extends CardboardBlockEntityState<ConduitBlockEntity> implements Conduit {
 
@@ -50,6 +51,27 @@ public class CardboardConduit extends CardboardBlockEntityState<ConduitBlockEnti
         ConduitBlockEntity conduit = (ConduitBlockEntity)this.getTileEntityFromWorld();
         return conduit != null && conduit.isEyeOpen();
     }
+
+	@Override
+	public int getRange() {
+        // this.ensureNoWorldGeneration();
+        // ConduitBlockEntity conduit = (ConduitBlockEntity)this.getTileEntityFromWorld();
+        //return conduit != null ? ConduitBlockEntity.getRange(conduit.activatingBlocks) : 0;
+		return 0;
+	}
+
+	@Override
+	public org.bukkit.entity.@Nullable LivingEntity getTarget() {
+		ConduitBlockEntity conduit = (ConduitBlockEntity)this.getTileEntityFromWorld();
+        if (conduit == null) {
+            return null;
+        }
+        
+        // TODO
+        return null;
+        // LivingEntity nmsEntity = conduit.targetEntity;
+        //return nmsEntity != null ? (org.bukkit.entity.LivingEntity)nmsEntity.getBukkitEntity() : null;
+	}
 
     /*public Collection<Block> getFrameBlocks() {
         this.ensureNoWorldGeneration();

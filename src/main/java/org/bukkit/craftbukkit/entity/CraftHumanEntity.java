@@ -664,18 +664,6 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
     }
 
     @Override
-    public @Nullable Component customName() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void customName(@Nullable Component arg0) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
     public float getExhaustion() {
         // TODO Auto-generated method stub
         return 0;

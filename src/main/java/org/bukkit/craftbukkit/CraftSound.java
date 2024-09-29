@@ -4,9 +4,12 @@ import com.google.common.base.Preconditions;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
+
 import org.apache.commons.lang.Validate;
 import org.bukkit.Sound;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
 public enum CraftSound {
 
@@ -1004,6 +1007,7 @@ public enum CraftSound {
     WEATHER_RAIN_ABOVE("weather.rain.above");
     private final String minecraftKey;
 
+    @Deprecated
     CraftSound(String minecraftKey) {
         this.minecraftKey = minecraftKey;
     }
@@ -1024,4 +1028,36 @@ public enum CraftSound {
     public static Sound getBukkit(SoundEvent soundEffect) {
         return Sound.ENTITY_GENERIC_EXPLODE;
     }
+
+    public static Sound minecraftToBukkit(SoundEvent minecraft) {
+        Preconditions.checkArgument(minecraft != null);
+
+        net.minecraft.registry.Registry<SoundEvent> registry = CraftRegistry.getMinecraftRegistry(RegistryKeys.SOUND_EVENT);
+        Sound bukkit = org.bukkit.Registry.SOUNDS.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft).orElseThrow().getValue()));
+
+        Preconditions.checkArgument(bukkit != null);
+
+        return bukkit;
+    }
+
+    public static SoundEvent bukkitToMinecraft(Sound bukkit) {
+        Preconditions.checkArgument(bukkit != null);
+
+        return CraftRegistry.getMinecraftRegistry(RegistryKeys.SOUND_EVENT)
+                .getOrEmpty(CraftNamespacedKey.toMinecraft(bukkit.getKey())).orElseThrow();
+    }
+
+    public static RegistryEntry<SoundEvent> bukkitToMinecraftHolder(Sound bukkit) {
+        Preconditions.checkArgument(bukkit != null);
+
+        net.minecraft.registry.Registry<SoundEvent> registry = CraftRegistry.getMinecraftRegistry(RegistryKeys.SOUND_EVENT);
+
+        if (registry.getEntry(CraftSound.bukkitToMinecraft(bukkit)) instanceof RegistryEntry.Reference<SoundEvent> holder) {
+            return holder;
+        }
+
+        throw new IllegalArgumentException("No Reference holder found for " + bukkit
+                + ", this can happen if a plugin creates its own sound effect with out properly registering it.");
+    }
+
 }

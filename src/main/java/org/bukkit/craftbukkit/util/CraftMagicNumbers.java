@@ -8,9 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.FeatureFlag;
 import org.bukkit.Fluid;
 import org.bukkit.Keyed;
@@ -28,22 +30,31 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftFeatureFlag;
 import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftStatistic;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.potion.CraftPotionType;
+import org.bukkit.damage.DamageEffect;
+import org.bukkit.damage.DamageSource.Builder;
+import org.bukkit.damage.DamageType;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.InvalidPluginException;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionType.InternalPotionData;
 import org.cardboardpowered.adventure.CardboardAdventure;
+import org.cardboardpowered.impl.CardboardAttributable;
 import org.cardboardpowered.impl.CardboardModdedBlock;
 import org.cardboardpowered.impl.CardboardModdedItem;
+import org.cardboardpowered.impl.entity.PlayerImpl;
 import org.cardboardpowered.util.GameVersion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -59,6 +70,9 @@ import com.mojang.serialization.Dynamic;
 import io.izzel.arclight.api.EnumHelper;
 import io.izzel.arclight.api.Unsafe;
 import io.papermc.paper.inventory.ItemRarity;
+import io.papermc.paper.inventory.tooltip.TooltipContext;
+import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
+import io.papermc.paper.plugin.lifecycle.event.PaperLifecycleEventManager;
 import me.isaiah.common.cmixin.IMixinItemStack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -66,9 +80,11 @@ import net.minecraft.SharedConstants;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.item.TooltipType;
 import net.minecraft.datafixer.Schemas;
 import net.minecraft.datafixer.TypeReferences;
 import net.minecraft.item.Item;
+import net.minecraft.item.SpawnEggItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
@@ -77,6 +93,8 @@ import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.potion.Potion;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.bukkit.Bukkit;
 import org.bukkit.Fluid;
@@ -92,6 +110,9 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.block.data.IMagicNumbers;
+import org.bukkit.craftbukkit.damage.CraftDamageEffect;
+import org.bukkit.craftbukkit.damage.CraftDamageSourceBuilder;
+import org.bukkit.craftbukkit.entity.CraftEntityType;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -796,6 +817,54 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 		Potion potReg = CraftRegistry.getMinecraftRegistry(RegistryKeys.POTION).getOrEmpty(CraftNamespacedKey.toMinecraft(key)).orElseThrow();
         return new CraftPotionType(key, potReg);
 	}
+	
+	// 1.20.4 API:
+
+	@Override
+	public String getTranslationKey(Attribute attribute) {
+        return CardboardAttributable.bukkitToMinecraft(attribute).getTranslationKey();
+	}
+
+	@Override
+	public @Nullable DamageEffect getDamageEffect(String key) {
+        return CraftDamageEffect.getById(key);
+	}
+
+	@Override
+	public @NotNull Builder createDamageSourceBuilder(DamageType damageType) {
+        return new CraftDamageSourceBuilder(damageType);
+	}
+
+	@Override
+	public @Nullable Color getSpawnEggLayerColor(EntityType entityType, int layer) {
+        net.minecraft.entity.EntityType<?> nmsType = CraftEntityType.bukkitToMinecraft(entityType);
+        SpawnEggItem eggItem = SpawnEggItem.forEntity(nmsType);
+        return eggItem == null ? null : Color.fromRGB((int)eggItem.getColor(layer));
+	}
+
+	@Override
+	public LifecycleEventManager<Plugin> createPluginLifecycleEventManager(JavaPlugin plugin,
+			BooleanSupplier registrationCheck) {
+		return new PaperLifecycleEventManager<JavaPlugin>(plugin, registrationCheck);
+	}
+
+	@Override
+	public List<Component> computeTooltipLines(ItemStack itemStack, TooltipContext tooltipContext, Player player) {
+        TooltipType.Default default_type = tooltipContext.isAdvanced() ? TooltipType.ADVANCED : TooltipType.BASIC;
+        
+        if (tooltipContext.isCreative()) {
+        	default_type = default_type.withCreative();
+        }
+        
+        List<Text> lines = CraftItemStack.asNMSCopy(itemStack).getTooltip(
+        		Item.TooltipContext.create(
+        			player == null ? CraftServer.server.getRegistryManager() :
+        						((PlayerImpl)player).getHandle().getWorld().getRegistryManager()
+        		),
+        		player == null ? null : ((PlayerImpl)player).getHandle(), default_type
+        );
+        return lines.stream().map(CardboardAdventure::asAdventure).toList();
+    }
 
 
 }

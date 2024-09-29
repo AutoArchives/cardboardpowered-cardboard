@@ -93,4 +93,10 @@ public class ExtraPotionEffectTypeWrapper extends PotionEffectType {
 	public int getId() {
 		return this.id;
 	}
+
+	@Override
+	public @NotNull String getTranslationKey() {
+		// TODO Auto-generated method stub
+		return this.key.value();
+	}
 }

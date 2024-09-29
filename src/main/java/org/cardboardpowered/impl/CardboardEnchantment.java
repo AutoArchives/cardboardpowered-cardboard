@@ -296,8 +296,15 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 	// 1.20.3 API:
 	
 	@Override
-	public @NotNull NamespacedKey getKey() {
+	public NamespacedKey getKey() {
 		return this.key;
+	}
+	
+	// 1.20.4 API:
+
+	@Override
+	public String getTranslationKey() {
+		return this.handle.getTranslationKey();
 	}
 
 

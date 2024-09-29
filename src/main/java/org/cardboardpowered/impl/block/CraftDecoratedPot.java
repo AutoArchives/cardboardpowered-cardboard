@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import net.minecraft.block.entity.DecoratedPotBlockEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import org.bukkit.Bukkit;
@@ -12,8 +13,10 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.DecoratedPot;
+import org.bukkit.craftbukkit.inventory.CraftInventoryDecoratedPot;
 import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.inventory.DecoratedPotInventory;
 import org.bukkit.loot.LootTable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -108,6 +111,21 @@ public class CraftDecoratedPot extends CardboardBlockEntityState<DecoratedPotBlo
 	public @NotNull Map<Side, Material> getSherds() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	// 1.20.4 API
+
+	@Override
+	public DecoratedPotInventory getInventory() {
+		if (!this.isPlaced()) {
+			return this.getSnapshotInventory();
+		}
+		return new CraftInventoryDecoratedPot((Inventory)this.getTileEntity());
+	}
+
+	@Override
+	public DecoratedPotInventory getSnapshotInventory() {
+		return new CraftInventoryDecoratedPot((Inventory)this.getSnapshot());
 	}
 
 }

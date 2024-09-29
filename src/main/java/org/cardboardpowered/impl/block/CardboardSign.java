@@ -1,7 +1,9 @@
 package org.cardboardpowered.impl.block;
 
 import java.util.List;
+import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -15,6 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerSignOpenEvent;
 import org.cardboardpowered.impl.entity.PlayerImpl;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
 import com.javazilla.bukkitfabric.interfaces.IMixinSignBlockEntity;
@@ -29,7 +32,7 @@ public class CardboardSign<T extends SignBlockEntity> extends CardboardBlockEnti
 
     private String[] lines;
     private boolean editable;
-    
+
     public CardboardSign(World world, T tileEntity) {
         super(world, tileEntity);
     }
@@ -196,6 +199,26 @@ public class CardboardSign<T extends SignBlockEntity> extends CardboardBlockEnti
         SignBlockEntity handle = (SignBlockEntity)((CardboardSign)sign).getTileEntity();
         handle.setEditor(player.getUniqueId());
         ((PlayerImpl)player).getHandle().openEditSignScreen(handle, Side.FRONT == side);
+	}
+    
+    // 1.20.4 API:
+
+	@Override
+	public @NotNull SignSide getTargetSide(@NotNull Player player) {
+        /*
+		Preconditions.checkArgument((player != null ? 1 : 0) != 0, (Object)"player cannot be null");
+        if (((SignBlockEntity)this.getSnapshot()).isPlayerFacingFront(((PlayerImpl)player).getHandle())) {
+            return this.front;
+        }
+        return this.back;
+        */
+		return null;
+	}
+
+	@Override
+	public @Nullable Player getAllowedEditor() {
+        UUID id = ((SignBlockEntity)this.getTileEntity()).getEditor();
+        return id == null ? null : Bukkit.getPlayer((UUID)id);
 	}
 
 }

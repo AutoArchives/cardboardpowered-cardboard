@@ -49,6 +49,7 @@ import net.minecraft.block.IceBlock;
 import net.minecraft.block.RedstoneWireBlock;
 import net.minecraft.block.TurtleEggBlock;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -862,6 +863,18 @@ public class CraftBlock implements Block {
 	public ServerWorld getHandle() {
 		// TODO Auto-generated method stub
 		return this.getCraftWorld().getHandle();
+	}
+
+    public FluidState getNMSFluid() {
+        return this.world.getFluidState(this.position);
+    }
+	
+	// 1.20.4 API:
+	
+	@Override
+	public void fluidTick() {
+        this.getNMSFluid().onScheduledTick(getHandle(), this.position);
+
 	}
 
     //

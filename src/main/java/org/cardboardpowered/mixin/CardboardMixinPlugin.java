@@ -76,11 +76,10 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         // libraries.add( new Library("io.papermc", "paper-api", "1.19.4-550", SHA1, "3407bd5d6dcc3223dc4ea17eb5eebdafbc1bba92", "paper") );
 
         // libraries.add( new Library("io.papermc", "paper-api", "1.20.1-R0.1-20230921.165944-178", SHA1, "71680be2f2e80f25e20ae4b49ebd84539d306a44", "paper") );
-
         // libraries.add( new Library("io.papermc", "paper-api", "1.20.2-R0.1-20231203.034718-122", SHA1, "faf51e2d9f8eacd902e990a05b2760798acc0b37", "paper") );
-        
-        libraries.add( new Library("io.papermc", "paper-api", "1.20.3-R0.1-20231207.043048-3", SHA1, "c54200af33674c0fdc965317a1c72e3a0e02e236", "paper") );
-        // libraries.add( new Library("io.papermc", "paper-api", "1.20.4-R0.1-20240528.102248-175", SHA1, "1655f2444d10a3eb8f176f97c3431731e7cc7c1a", "paper") );
+        // libraries.add( new Library("io.papermc", "paper-api", "1.20.3-R0.1-20231207.043048-3", SHA1, "c54200af33674c0fdc965317a1c72e3a0e02e236", "paper") );
+
+        libraries.add( new Library("io.papermc", "paper-api", "1.20.4-R0.1-20240528.102248-175", SHA1, "1655f2444d10a3eb8f176f97c3431731e7cc7c1a", "paper") );
         // libraries.add( new Library("io.papermc", "paper-api", "1.20.5-R0.1-20240429.035133-20", SHA1, "5ea381742186b489251fdbf6e7dba7fdcc142b4d", "paper") );
         // libraries.add( new Library("io.papermc", "paper-api", "1.20.6-R0.1-20240916.192025-126", SHA1, "15ac8ae6289dddb563d17a20dd3ed80ad89eb629", "paper"));
 
@@ -104,13 +103,13 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         
         // String adventureVersion = "4.9.3";
         // String adventureVersion = "4.13.1";
-        String adventureVersion = "4.14.0";
+        String adventureVersion = "4.16.0";
 
-        libraries.add( new Library("net.kyori", "adventure-api", adventureVersion, SHA1, "05a68f15c90e328378f64d227474454779522246", null) );
-        libraries.add( new Library("net.kyori", "adventure-key", adventureVersion, SHA1, "f5deec8aaa84e00794724f694fb0fc43cca02d0c", null) );
-        libraries.add( new Library("net.kyori", "adventure-text-serializer-gson", adventureVersion, SHA1, "6c96295a35605beaf6db6f5dcc2a76abed59fc08", null) );
-        libraries.add( new Library("net.kyori", "adventure-text-serializer-legacy", adventureVersion, SHA1, "aa2bae0c78ac6863b0a137a2133422f588d92a32", null) );
-        libraries.add( new Library("net.kyori", "adventure-text-serializer-plain", adventureVersion, SHA1, "7e4749b301c589ee665fa2844ff71e50e2ea5658", null) );
+        libraries.add( new Library("net.kyori", "adventure-api", adventureVersion, SHA1, "cb966704b813d30d4ee9f0b97167b4063a249c34", null) );
+        libraries.add( new Library("net.kyori", "adventure-key", adventureVersion, SHA1, "b695c40a7d2fd658246de78ea428e8f8dc7ffd2d", null) );
+        libraries.add( new Library("net.kyori", "adventure-text-serializer-gson", adventureVersion, SHA1, "5650ed18040e070aa05855ebcb890e6e1e36ee0e", null) );
+        libraries.add( new Library("net.kyori", "adventure-text-serializer-legacy", adventureVersion, SHA1, "21b9450c659146ea4ac6ef3555b5ea1008566b69", null) );
+        libraries.add( new Library("net.kyori", "adventure-text-serializer-plain", adventureVersion, SHA1, "4d5e8b73aac1e5e17dd24a75edd8fd077098e18c", null) );
         
         // libraries.add( new Library("net.kyori", "adventure-api", adventureVersion, SHA1, "b0054b3a4d144f09962fe72abc746191e7f931a2", null) );
         // libraries.add( new Library("net.kyori", "adventure-text-serializer-gson", adventureVersion, SHA1, "141df0329e00b791bcc8b2921cd715ac7d506bbe", null) );

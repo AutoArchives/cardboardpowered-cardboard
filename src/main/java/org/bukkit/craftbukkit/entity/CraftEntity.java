@@ -9,6 +9,8 @@ import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
 import com.mojang.brigadier.LiteralMessage;
+
+import ca.spottedleaf.concurrentutil.executor.standard.PrioritisedExecutor;
 import me.isaiah.common.entity.IRemoveReason;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -69,6 +71,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -78,6 +81,7 @@ import com.javazilla.bukkitfabric.interfaces.IMixinCommandOutput;
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
 
+import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.entity.AbstractVillagerImpl;
 import org.cardboardpowered.impl.entity.AnimalsImpl;
 import org.cardboardpowered.impl.entity.ArmorStandImpl;
@@ -921,16 +925,15 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     }
     // PaperAPI - END
 
-    @Override
-    public @Nullable Component customName() {
-        return Component.text(this.getCustomName());
+	@Override
+	public Component customName() {
+        Text name = this.getHandle().getCustomName();
+        return name != null ? CardboardAdventure.asAdventure(name) : null;
     }
 
-    @Override
-    public void customName(@Nullable Component com) {
-        if (com instanceof TextComponent txt) {
-            this.setCustomName(txt.content());
-        }
+	@Override
+    public void customName(Component customName) {
+        this.getHandle().setCustomName(customName != null ? CardboardAdventure.asVanilla(customName) : null);
     }
 
     @Override
@@ -1426,6 +1429,72 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     public boolean isInWorld() {
         return ((IMixinEntity)this.getHandle()).cb$getInWorld();
     }
+	
+	// 1.20.4 API:
+
+	@Override
+	public @NotNull CompletableFuture<Boolean> teleportAsync(@NotNull Location loc, @NotNull TeleportCause cause,
+			@NotNull TeleportFlag @NotNull... teleportFlags) {
+		loc.checkFinite();
+        Location locationClone = loc.clone();
+        ServerWorld world = ((WorldImpl)locationClone.getWorld()).getHandle();
+        CompletableFuture<Boolean> ret = new CompletableFuture<Boolean>();
+        
+        Box box = this.getHandle().getDimensions(this.getHandle().getPose())
+        		.getBoxAt(locationClone.getX(), locationClone.getY(), locationClone.getZ());
+        
+        CompletableFuture<Boolean> b = CompletableFuture.completedFuture( this.teleport(loc, cause, teleportFlags) );
+        
+        return b;
+        
+        // TODO Async
+        
+        /*
+        
+        world.loadChunksForMoveAsync(box, this instanceof PlayerImpl ? PrioritisedExecutor.Priority.HIGHER : PrioritisedExecutor.Priority.NORMAL, list -> {
+            ServerChunkManager chunkProviderServer = world.getChunkManager();
+            for (Chunk chunk : list) {
+                chunkProviderServer.addTicketAtLevel(ChunkTicketType.POST_TELEPORT, chunk.getPos(), 33, this.getEntityId());
+            }
+            MinecraftServer.getServer().scheduleOnMain(() -> {
+                try {
+                    ret.complete(this.teleport(locationClone, cause, teleportFlags) ? Boolean.TRUE : Boolean.FALSE);
+                }
+                catch (Throwable throwable) {
+                    if (throwable instanceof ThreadDeath) {
+                        throw (ThreadDeath)throwable;
+                    }
+                    MinecraftServer.LOGGER.error("Failed to teleport entity " + String.valueOf(this), throwable);
+                    ret.completeExceptionally(throwable);
+                }
+            });
+        });
+        return ret;
+        */
+	}
+
+	@Override
+	public void setInvisible(boolean invisible) {
+        //this.getHandle().persistentInvisibility = invisible;
+        this.getHandle().setFlag(5, invisible);
+        
+        this.getHandle().setInvisible(invisible);       
+	}
+
+	@Override
+	public boolean isInvisible() {
+		return this.getHandle().isInvisible();
+	}
+
+	@Override
+	public void setNoPhysics(boolean noPhysics) {
+		this.getHandle().noClip = noPhysics;
+	}
+
+	@Override
+	public boolean hasNoPhysics() {
+		return this.getHandle().noClip;
+	}
 
 
 }

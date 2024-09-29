@@ -47,12 +47,15 @@ import org.bukkit.boss.DragonBattle;
 import org.bukkit.craftbukkit.CraftFeatureFlag;
 import org.bukkit.craftbukkit.CraftParticle;
 import org.bukkit.craftbukkit.CraftRegionAccessor;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.craftbukkit.generator.structure.CraftGeneratedStructure;
+import org.bukkit.craftbukkit.generator.structure.CraftStructure;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.BlockStateListPopulator;
 import org.bukkit.craftbukkit.util.CraftBiomeSearchResult;
@@ -74,6 +77,7 @@ import org.bukkit.event.world.TimeSkipEvent;
 import org.bukkit.generator.BiomeProvider;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.generator.structure.GeneratedStructure;
 import org.bukkit.generator.structure.Structure;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
@@ -86,6 +90,7 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.util.BiomeSearchResult;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Consumer;
+import org.bukkit.util.NumberConversions;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.StructureSearchResult;
 import org.bukkit.util.Vector;
@@ -109,6 +114,7 @@ import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
 import com.javazilla.bukkitfabric.interfaces.IMixinThreadedAnvilChunkStorage;
 import com.mojang.datafixers.util.Pair;
 
+import io.papermc.paper.block.fluid.FluidData;
 import io.papermc.paper.math.Position;
 import io.papermc.paper.world.MoonPhase;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
@@ -148,6 +154,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.structure.StructureStart;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.util.hit.HitResult;
@@ -2804,6 +2811,68 @@ public class WorldImpl extends CraftRegionAccessor implements World {
         }
 
         return (T) ((IMixinEntity)entity).getBukkitEntity();
+    }
+	
+	// 1.20.4 API
+
+	@Override
+	public @NotNull FluidData getFluidData(int x, int y, int z) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public @NotNull Collection<Chunk> getIntersectingChunks(@NotNull BoundingBox box) {
+        List<Chunk> chunks = new ArrayList<>();
+
+        int minX = NumberConversions.floor(box.getMinX()) >> 4;
+        int maxX = NumberConversions.floor(box.getMaxX()) >> 4;
+        int minZ = NumberConversions.floor(box.getMinZ()) >> 4;
+        int maxZ = NumberConversions.floor(box.getMaxZ()) >> 4;
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                chunks.add(this.getChunkAt(x, z, false));
+            }
+        }
+
+        return chunks;
+	}
+
+	@Override
+	public <T extends LivingEntity> @NotNull T spawn(@NotNull Location location, @NotNull Class<T> clazz,
+			@NotNull SpawnReason reason, boolean randomizeData,
+			java.util.function.@Nullable Consumer<? super T> function) throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+		return (T)((LivingEntity)this.spawn(location, clazz, function, reason));
+	}
+
+	@Override
+	public @Nullable Raid getRaid(int id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public @NotNull Collection<GeneratedStructure> getStructures(int x, int z) {
+		return this.getStructures(x, z, struct -> true);
+	}
+
+	@Override
+	public @NotNull Collection<GeneratedStructure> getStructures(int x, int z, @NotNull Structure structure) {
+		net.minecraft.registry.Registry<net.minecraft.world.gen.structure.Structure> registry = CraftRegistry.getMinecraftRegistry(RegistryKeys.STRUCTURE);
+        Identifier key = registry.getId(CraftStructure.bukkitToMinecraft(structure));
+
+        return this.getStructures(x, z, struct -> registry.getId(struct).equals(key));
+	}
+	
+    private List<GeneratedStructure> getStructures(int x, int z, Predicate<net.minecraft.world.gen.structure.Structure> predicate) {
+        List<GeneratedStructure> structures = new ArrayList<>();
+        for (StructureStart start : this.getHandle().getStructureAccessor().getStructureStarts(new ChunkPos(x, z), predicate)) {
+            structures.add(new CraftGeneratedStructure(start));
+        }
+
+        return structures;
     }
 	
 }

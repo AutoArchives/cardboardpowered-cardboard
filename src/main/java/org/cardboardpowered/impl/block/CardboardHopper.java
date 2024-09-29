@@ -9,10 +9,13 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Hopper;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.Inventory;
+import org.cardboardpowered.adventure.CardboardAdventure;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
 import net.kyori.adventure.text.Component;
 import net.minecraft.block.entity.HopperBlockEntity;
+import net.minecraft.text.Text;
 
 public class CardboardHopper extends CardboardLootableBlock<HopperBlockEntity> implements Hopper {
 
@@ -101,13 +104,25 @@ public class CardboardHopper extends CardboardLootableBlock<HopperBlockEntity> i
     @Override
     public @Nullable Component customName() {
         // TODO Auto-generated method stub
-        return null;
+        return CardboardAdventure.asAdventure(Text.of(this.getCustomName()));
     }
 
     @Override
     public void customName(@Nullable Component arg0) {
         // TODO Auto-generated method stub
-        
+    	this.setCustomName( CardboardAdventure.asVanilla(arg0).getLiteralString() );
     }
+    
+    // 1.20.4 API:
+
+	@Override
+	public void setTransferCooldown(int cooldown) {
+		// ((HopperBlockEntity)this.getSnapshot()).setTransferCooldown(cooldown);
+	}
+
+	@Override
+	public int getTransferCooldown() {
+		return 0; // ((HopperBlockEntity)this.getSnapshot()).transferCooldown;
+	}
 
 }

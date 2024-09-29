@@ -18,6 +18,7 @@
  */
 package com.javazilla.bukkitfabric.impl;
 
+import com.google.common.collect.Lists;
 import com.javazilla.bukkitfabric.BukkitFabricMod;
 import com.javazilla.bukkitfabric.BukkitLogger;
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
@@ -697,10 +698,17 @@ public class BukkitEventFactory {
         return event;
     }
 
+    // TODO Fix Collections.emptyList()
     public static boolean handlePlayerShearEntityEvent(net.minecraft.entity.LivingEntity player, Entity sheared, ItemStack shears, Hand hand) {
         if (!(player instanceof PlayerEntity)) return true;
 
-        PlayerShearEntityEvent event = new PlayerShearEntityEvent((Player) ((IMixinEntity)player).getBukkitEntity(), ((IMixinEntity)sheared).getBukkitEntity(), CraftItemStack.asCraftMirror(shears), (hand == Hand.OFF_HAND ? EquipmentSlot.OFF_HAND : EquipmentSlot.HAND));
+        PlayerShearEntityEvent event = new PlayerShearEntityEvent(
+        		(Player) ((IMixinEntity)player).getBukkitEntity(),
+        		((IMixinEntity)sheared).getBukkitEntity(),
+        		CraftItemStack.asCraftMirror(shears),
+        		(hand == Hand.OFF_HAND ? EquipmentSlot.OFF_HAND : EquipmentSlot.HAND),
+        		Lists.transform( Collections.emptyList() , CraftItemStack::asCraftMirror)
+        	);
         Bukkit.getPluginManager().callEvent(event);
         return !event.isCancelled();
     }

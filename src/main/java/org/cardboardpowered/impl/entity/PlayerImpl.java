@@ -44,6 +44,7 @@ import java.util.logging.Level;
 import org.apache.commons.lang.NotImplementedException;
 import org.bukkit.BanEntry;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.DyeColor;
 import org.bukkit.Effect;
 import org.bukkit.GameMode;
@@ -73,10 +74,12 @@ import org.bukkit.craftbukkit.CraftParticle;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.CraftStatistic;
+import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.scoreboard.CardboardScoreboard;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -86,6 +89,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.inventory.InventoryCloseEvent.Reason;
 import org.bukkit.event.player.PlayerExpCooldownChangeEvent;
+import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerKickEvent.Cause;
 import org.bukkit.event.player.PlayerRegisterChannelEvent;
 import org.bukkit.event.player.PlayerResourcePackStatusEvent.Status;
@@ -98,15 +102,20 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.map.MapView;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.messaging.StandardMessenger;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.util.Vector;
+import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.AdvancementImpl;
 import org.cardboardpowered.impl.AdvancementProgressImpl;
 import org.cardboardpowered.impl.block.CardboardSign;
 
 import com.destroystokyo.paper.ClientOption;
 import com.destroystokyo.paper.Title;
+import com.destroystokyo.paper.event.player.PlayerSetSpawnEvent;
 import com.destroystokyo.paper.profile.PlayerProfile;
+import com.github.bsideup.jabel.Desugar;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.BaseEncoding;
@@ -114,10 +123,14 @@ import com.javazilla.bukkitfabric.BukkitFabricMod;
 import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
 
 import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.interfaces.IChunkDeltaUpdateS2CPacket;
 import org.cardboardpowered.util.nms.ReflectionRemapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
+import org.jetbrains.annotations.Unmodifiable;
 import org.jetbrains.annotations.UnmodifiableView;
+import org.spigotmc.AsyncCatcher;
 
 import com.javazilla.bukkitfabric.interfaces.IMixinClientConnection;
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
@@ -131,6 +144,10 @@ import com.mojang.authlib.GameProfile;
 import io.netty.buffer.Unpooled;
 import io.papermc.paper.entity.LookAnchor;
 import io.papermc.paper.math.Position;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSets;
+import it.unimi.dsi.fastutil.shorts.ShortArraySet;
+import it.unimi.dsi.fastutil.shorts.ShortSet;
 import me.isaiah.common.GameVersion;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
@@ -147,6 +164,7 @@ import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
 import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.ChatSuggestionsS2CPacket;
+import net.minecraft.network.packet.s2c.play.ChunkDeltaUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.ClearTitleS2CPacket;
 //import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.play.DamageTiltS2CPacket;
@@ -167,6 +185,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket;
@@ -1634,6 +1653,10 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 
     @Override
     public long getLastSeen() {
+    	if (this.isOnline()) {
+    		return System.currentTimeMillis();
+    	}
+    	
         // TODO Auto-generated method stub
         return 0;
     }
@@ -1670,7 +1693,7 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 
     @Override
     public String getClientBrandName() {
-        // TODO Auto-generated method stub
+        // TODO Auto-generated method stub  	
         return "Vanilla";
     }
 
@@ -1790,15 +1813,20 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public void kick(@Nullable Component arg0) {
-        // TODO Auto-generated method stub
-        
+    public void kick(Component message) {
+        this.kick(message, PlayerKickEvent.Cause.PLUGIN);
     }
 
     @Override
-    public void kick(@Nullable Component arg0, @NotNull Cause arg1) {
-        // TODO Auto-generated method stub
-        
+    public void kick(Component message, Cause cause) {
+    	AsyncCatcher.catchOp("player kick");
+        ServerPlayNetworkHandler connection = this.getHandle().networkHandler;
+        if (connection != null) {
+        	if (null != message) {
+        		connection.disconnect( CardboardAdventure.asVanilla(Component.empty()) );
+        	}
+        	connection.disconnect( CardboardAdventure.asVanilla(message) );
+        }
     }
 
     @Override
@@ -1937,13 +1965,13 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 	@Override
 	public boolean canSee(@NotNull Entity arg0) {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
 	public @Nullable GameMode getPreviousGameMode() {
-		// TODO Auto-generated method stub
-		return null;
+		net.minecraft.world.GameMode previousGameMode = this.getHandle().interactionManager.getPreviousGameMode();
+        return previousGameMode == null ? null : GameMode.getByValue((int)previousGameMode.getId());
 	}
 
 	@Override
@@ -1970,10 +1998,11 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 		return false;
 	}
 
+	private static final Component DEFAULT_KICK_COMPONENT = Component.translatable("multiplayer.disconnect.kicked");
+	
 	@Override
 	public void kick() {
-		// TODO Auto-generated method stub
-		
+		this.kick(DEFAULT_KICK_COMPONENT);
 	}
 
 	@Override
@@ -2113,15 +2142,21 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 
 	@Override
 	public void sendBlockChanges(@NotNull Collection<BlockState> arg0, boolean arg1) {
-		// TODO Auto-generated method stub
-		
+		this.sendBlockChanges(arg0);
 	}
 
 	@Override
-	public void sendBlockDamage(@NotNull Location arg0, float arg1, int arg2) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void sendBlockDamage(Location loc, float progress, int sourceId) {
+        if (this.getHandle().networkHandler == null) {
+            return;
+        }
+        int stage = (int)(9.0f * progress);
+        if (progress == 0.0f) {
+            stage = -1;
+        }
+        BlockBreakingProgressS2CPacket packet = new BlockBreakingProgressS2CPacket(sourceId, CraftLocation.toBlockPosition(loc), stage);
+        this.getHandle().networkHandler.sendPacket(packet);
+    }
 
 	@Override
 	public void setWardenTimeSinceLastWarning(int arg0) {
@@ -2142,9 +2177,10 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 	}
 
 	@Override
-	public void showElderGuardian(boolean arg0) {
-		// TODO Auto-generated method stub
-		
+	public void showElderGuardian(boolean silent) {
+		if (this.getHandle().networkHandler != null) {
+            this.getHandle().networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.ELDER_GUARDIAN_EFFECT, silent ? 0.0f : 1.0f));
+        }
 	}
 
 	@Override
@@ -2338,10 +2374,39 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 	}
 
 	@Override
-	public void sendBlockChanges(@NotNull Collection<BlockState> blocks) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void sendBlockChanges(Collection<org.bukkit.block.BlockState> blocks) {
+        Preconditions.checkArgument((blocks != null ? 1 : 0) != 0, (Object)"blocks must not be null");
+        if (this.getHandle().networkHandler == null || blocks.isEmpty()) {
+            return;
+        }
+        HashMap<ChunkSectionPos, ChunkSectionChanges> changes = new HashMap<ChunkSectionPos, ChunkSectionChanges>();
+        for (org.bukkit.block.BlockState blockState : blocks) {
+            CraftBlockState cstate = (CraftBlockState)blockState;
+            BlockPos blockPosition = cstate.getPosition();
+            ChunkSectionPos sectionPosition = ChunkSectionPos.from(blockPosition);
+            ChunkSectionChanges sectionChanges = changes.computeIfAbsent(sectionPosition, ignore -> new ChunkSectionChanges());
+            sectionChanges.positions().add(ChunkSectionPos.packLocal(blockPosition));
+            sectionChanges.blockData().add(cstate.getHandle());
+        }
+        for (Map.Entry entry : changes.entrySet()) {
+            ChunkSectionChanges chunkChanges = (ChunkSectionChanges)entry.getValue();
+
+            ChunkDeltaUpdateS2CPacket packet = new ChunkDeltaUpdateS2CPacket((ChunkSectionPos)entry.getKey(), chunkChanges.positions(), null);
+            
+            net.minecraft.block.BlockState[] states = (net.minecraft.block.BlockState[])chunkChanges.blockData().toArray(net.minecraft.block.BlockState[]::new);
+            
+            ((IChunkDeltaUpdateS2CPacket)packet).cardboard$set_block_states(states);
+            this.getHandle().networkHandler.sendPacket(packet);
+        }
+    }
+	
+	@Desugar
+	private record ChunkSectionChanges(ShortSet positions, List<net.minecraft.block.BlockState> blockData) {
+
+        public ChunkSectionChanges() {
+            this(new ShortArraySet(), new ArrayList<>());
+        }
+    }
 
 	@Override
 	public void sendMultiBlockChange(@NotNull Map<? extends Position, BlockData> blockChanges) {
@@ -2452,6 +2517,134 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
         }
         this.getHandle().networkHandler.sendPacket(resourcePackPushPacket);
     }
+    
+    // 1.20.4 API
+
+	@Override
+    public Location getRespawnLocation() {
+        Optional<Vec3d> spawnLoc;
+        ServerWorld world = this.getHandle().server.getWorld(this.getHandle().getSpawnPointDimension());
+        BlockPos bed = this.getHandle().getSpawnPointPosition();
+        if (world != null && bed != null && (spawnLoc = PlayerEntity.findRespawnPosition(world, bed, this.getHandle().getSpawnAngle(), this.getHandle().isSpawnForced(), true)).isPresent()) {
+            Vec3d vec = spawnLoc.get();
+            return CraftLocation.toBukkit(vec, (World)world.getWorld(), this.getHandle().getSpawnAngle(), 0.0f);
+        }
+        return null;
+    }
+
+	@Override
+	public void setRespawnLocation(Location location) {
+        this.setRespawnLocation(location, false);
+    }
+
+	@Override
+    public void setRespawnLocation(Location location, boolean override) {
+        if (location == null) {
+            this.getHandle().setSpawnPoint(null, null, 0.0f, override, false);
+        } else {
+            this.getHandle().setSpawnPoint(((WorldImpl)location.getWorld()).getHandle().getRegistryKey(), CraftLocation.toBlockPosition(location), location.getYaw(), override, false);
+        }
+    }
+
+	@Override
+	public void sendPotionEffectChange(@NotNull LivingEntity entity, @NotNull PotionEffect effect) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void sendPotionEffectChangeRemove(@NotNull LivingEntity entity, @NotNull PotionEffectType type) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public @Range(from = 0, to = 2147483647) int calculateTotalExperiencePoints() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setExperienceLevelAndProgress(int totalExperience) {
+        int level = this.calculateLevelsForExperiencePoints(totalExperience);
+        int remainingPoints = totalExperience - this.calculateTotalExperiencePoints(level);
+        this.getHandle().experienceLevel = level;
+        this.getHandle().experienceProgress = (float)remainingPoints / (float)this.getExperiencePointsNeededForNextLevel();
+        this.getHandle().syncedExperience = -1;
+    }
+	
+	private int calculateTotalExperiencePoints(int level) {
+        if (level <= 16) {
+            return (int)(Math.pow(level, 2.0) + (double)(6 * level));
+        }
+        if (level <= 31) {
+            return (int)(2.5 * Math.pow(level, 2.0) - 40.5 * (double)level + 360.0);
+        }
+        return (int)(4.5 * Math.pow(level, 2.0) - 162.5 * (double)level + 2220.0);
+    }
+	
+	private int calculateLevelsForExperiencePoints(int points) {
+        if (points <= 352) {
+            return (int)Math.floor(Math.sqrt(points + 9) - 3.0);
+        }
+        if (points <= 1507) {
+            return (int)Math.floor(8.1 + Math.sqrt(0.4 * ((double)points - 195.975)));
+        }
+        return (int)Math.floor(18.055555555555557 + Math.sqrt(0.2222222222222222 * ((double)points - 752.9861111111111)));
+    }
+
+	@Override
+	public int getExperiencePointsNeededForNextLevel() {
+		return this.getHandle().getNextLevelExperience();
+	}
+
+	@Override
+	public void setResourcePack(UUID uuid, String url, byte[] hashBytes, Component prompt, boolean force) {
+        String hash;
+        if (hashBytes != null) {
+            hash = BaseEncoding.base16().lowerCase().encode(hashBytes);
+        } else {
+            hash = "";
+        }
+        this.getHandle().networkHandler.sendPacket(new ResourcePackRemoveS2CPacket(Optional.empty()));
+        this.getHandle().networkHandler.sendPacket(new ResourcePackSendS2CPacket(uuid, url, hash, force, Optional.ofNullable(prompt).map(CardboardAdventure::asVanilla)));
+    }
+
+	@Override
+	public void addResourcePack(UUID id, String url, byte[] hash, String prompt, boolean force) {
+		String hashStr = "";
+        if (hash != null) {
+            Preconditions.checkArgument((hash.length == 20 ? 1 : 0) != 0, (String)"Resource pack hash should be 20 bytes long but was %s", (int)hash.length);
+            hashStr = BaseEncoding.base16().lowerCase().encode(hash);
+        }
+        this.handlePushResourcePack(new ResourcePackSendS2CPacket(id, url, hashStr, force, CraftChatMessage.fromStringOrOptional(prompt, true)), false);
+	}
+
+	@Override
+	public void removeResourcePack(@NotNull UUID id) {
+		if (this.getHandle().networkHandler == null) {
+            return;
+        }
+        this.getHandle().networkHandler.sendPacket(new ResourcePackRemoveS2CPacket(Optional.of(id)));
+	}
+
+	@Override
+	public Set<Long> getSentChunkKeys() {
+        AsyncCatcher.catchOp("accessing sent chunks");
+        return LongSets.EMPTY_SET;
+        // return LongSets.unmodifiable((LongSet)this.getHandle().chunkLoader.getSentChunksRaw().clone());
+    }
+
+	@Override
+	public Set<Chunk> getSentChunks() {
+		return null;
+	}
+
+	@Override
+	public boolean isChunkSent(long chunkKey) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	
 
 }

@@ -138,21 +138,21 @@ public class CardboardChest extends CardboardLootableBlock<ChestBlockEntity> imp
     }
 
     @Override
-    public @Nullable Component customName() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void customName(@Nullable Component arg0) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
     public boolean isOpen() {
         // TODO Auto-generated method stub
         return false;
     }
+
+	@Override
+	public @Nullable Component customName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void customName(@Nullable Component customName) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

@@ -16,6 +16,7 @@ import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Formatting;
 import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.CraftServer;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -423,6 +424,15 @@ public final class CraftChatMessage {
             return component;
         }
         return CraftChatMessage.fromString(message, keepNewlines)[0];
+    }
+
+    // 1.20 API
+    public static Optional<Text> fromStringOrOptional(String message) {
+        return Optional.ofNullable(CraftChatMessage.fromStringOrNull(message));
+    }
+
+    public static Optional<Text> fromStringOrOptional(String message, boolean keepNewlines) {
+        return Optional.ofNullable(CraftChatMessage.fromStringOrNull(message, keepNewlines));
     }
 
 

@@ -151,6 +151,7 @@
     "network.MixinServerPlayNetworkHandler_ChatEvent",
     "network.MixinServerQueryNetworkHandler",
     "network.MixinServerConfigurationNetworkHandler",
+    "network.MixinChunkDeltaUpdateS2CPacket",
     "network.handler.MixinSPNH_InventoryClickEvent",
     "network.handler.MixinSPNH_PlayerCommandPreprocessEvent",
     "network.handler.MixinSPNH_SignUpdateEvent",

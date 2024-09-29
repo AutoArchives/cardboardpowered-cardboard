@@ -35,6 +35,8 @@ import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.entity.Entity;
+import org.bukkit.generator.structure.GeneratedStructure;
+import org.bukkit.generator.structure.Structure;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -83,6 +85,9 @@ public class CardboardChunk implements Chunk {
     private final int z;
     private static PalettedContainer<net.minecraft.block.BlockState> emptyBlockIDs;// = new ChunkSection(0).getContainer(); // TODO 1.18: ChunkSection contructor changed
     private static final byte[] emptyLight = new byte[2048];
+    
+    private static final byte[] FULL_LIGHT = new byte[2048];
+    private static final byte[] EMPTY_LIGHT = new byte[2048];
     
     public static void setEmptyBlockIds(net.minecraft.world.World world) {
         if (null == emptyBlockIDs) {
@@ -527,5 +532,60 @@ public class CardboardChunk implements Chunk {
         net.minecraft.world.chunk.Chunk chunk = this.getHandle(ChunkStatus.EMPTY);
         return chunk.getStatus().isAtLeast(ChunkStatus.FULL);
     }
+
+    // 1.20.4 API
+    
+	@Override
+	public ChunkSnapshot getChunkSnapshot(boolean includeMaxBlockY, boolean includeBiome,
+			boolean includeBiomeTempRain, boolean includeLightData) {
+		net.minecraft.world.chunk.Chunk chunk = this.getHandle(ChunkStatus.FULL);
+        ChunkSection[] cs = chunk.getSectionArray();
+        PalettedContainer[] sectionBlockIDs = new PalettedContainer[cs.length];
+        byte[][] sectionSkyLights = includeLightData ? new byte[cs.length][] : null;
+        byte[][] sectionEmitLights = includeLightData ? new byte[cs.length][] : null;
+        boolean[] sectionEmpty = new boolean[cs.length];
+        PalettedContainer[] biome = includeBiome || includeBiomeTempRain ? new PalettedContainer[cs.length] : null;
+        Registry<net.minecraft.world.biome.Biome> iregistry = this.worldServer.getRegistryManager().get(RegistryKeys.BIOME);
+        for (int i2 = 0; i2 < cs.length; ++i2) {
+            sectionEmpty[i2] = cs[i2].isEmpty();
+            sectionBlockIDs[i2] = !sectionEmpty[i2] ? cs[i2].getBlockStateContainer().copy() : emptyBlockIDs;
+            if (includeLightData) {
+                LightingProvider lightengine = this.worldServer.getLightingProvider();
+                ChunkNibbleArray skyLightArray = lightengine.get(LightType.SKY).getLightSection(ChunkSectionPos.from(this.x, chunk.sectionIndexToCoord(i2), this.z));
+                if (skyLightArray == null) {
+                    sectionSkyLights[i2] = this.worldServer.getDimension().hasSkyLight() ? FULL_LIGHT : EMPTY_LIGHT;
+                } else {
+                    sectionSkyLights[i2] = new byte[2048];
+                    System.arraycopy(skyLightArray.asByteArray(), 0, sectionSkyLights[i2], 0, 2048);
+                }
+                ChunkNibbleArray emitLightArray = lightengine.get(LightType.BLOCK).getLightSection(ChunkSectionPos.from(this.x, chunk.sectionIndexToCoord(i2), this.z));
+                if (emitLightArray == null) {
+                    sectionEmitLights[i2] = EMPTY_LIGHT;
+                } else {
+                    sectionEmitLights[i2] = new byte[2048];
+                    System.arraycopy(emitLightArray.asByteArray(), 0, sectionEmitLights[i2], 0, 2048);
+                }
+            }
+            if (biome == null) continue;
+            biome[i2] = ((PalettedContainer)cs[i2].getBiomeContainer()).copy();
+        }
+        Heightmap hmap = null;
+        if (includeMaxBlockY) {
+            hmap = new Heightmap(chunk, Heightmap.Type.MOTION_BLOCKING);
+            hmap.setTo(chunk, Heightmap.Type.MOTION_BLOCKING, chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING).asLongArray());
+        }
+        World world = this.getWorld();
+        return new CardboardChunkSnapshot(this.getX(), this.getZ(), chunk.getBottomY(), chunk.getTopY(), world.getName(), world.getFullTime(), sectionBlockIDs, sectionSkyLights, sectionEmitLights, sectionEmpty, hmap, iregistry, biome);
+	}
+
+	@Override
+	public Collection<GeneratedStructure> getStructures() {
+		return this.getCraftWorld().getStructures(this.getX(), this.getZ());
+	}
+
+	@Override
+	public Collection<GeneratedStructure> getStructures(@NotNull Structure structure) {
+		return this.getCraftWorld().getStructures(this.getX(), this.getZ(), structure);
+	}
 
 }

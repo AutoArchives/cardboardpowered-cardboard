@@ -13,8 +13,11 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Score;
+import org.cardboardpowered.adventure.CardboardAdventure;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import io.papermc.paper.scoreboard.numbers.NumberFormat;
 
 import java.util.Objects;
 
@@ -147,8 +150,9 @@ public class CardboardObjective extends CardboardScoreboardComponent implements 
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || getClass() != obj.getClass())
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
+        }
         final CardboardObjective other = (CardboardObjective) obj;
         return Objects.equals(this.objective, other.objective);
     }
@@ -157,8 +161,8 @@ public class CardboardObjective extends CardboardScoreboardComponent implements 
     
     @Override
     public @NotNull Component displayName() throws IllegalStateException {
-        // TODO Auto-generated method stub
-        return null;
+        CardboardScoreboard scoreboard = this.checkState();
+        return CardboardAdventure.asAdventure(this.objective.getDisplayName());
     }
 
     @Override
@@ -179,6 +183,37 @@ public class CardboardObjective extends CardboardScoreboardComponent implements 
 		checkState();
 
         return criteria;
+	}
+	
+	// 1.20.4 API:
+
+	@Override
+	public boolean willAutoUpdateDisplay() {
+        this.checkState();
+        return this.objective.shouldDisplayAutoUpdate();
+	}
+
+	@Override
+	public void setAutoUpdateDisplay(boolean autoUpdateDisplay) {
+        this.checkState();
+        this.objective.setDisplayAutoUpdate(autoUpdateDisplay);
+	}
+
+	@Override
+	public @Nullable NumberFormat numberFormat() {
+		this.checkState();
+        net.minecraft.scoreboard.number.NumberFormat vanilla = this.objective.getNumberFormat();
+        if (vanilla == null) {
+            return null;
+        }
+        return null;
+        // return PaperScoreboardFormat.asPaper(vanilla);
+	}
+
+	@Override
+	public void numberFormat(@Nullable NumberFormat format) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

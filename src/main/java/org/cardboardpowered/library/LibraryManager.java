@@ -144,7 +144,7 @@ public final class LibraryManager {
                     	
                     	String ver = library.version.split("-R0.1")[0];
 
-                    	String paper_jar = PAPER_MAVEN + "/io/papermc/paper/paper-api/" + ver + "-R0.1-SNAPSHOT/paper-api-" + ver + ".jar";
+                    	String paper_jar = PAPER_MAVEN + "/io/papermc/paper/paper-api/" + ver + "-R0.1-SNAPSHOT/paper-api-" + library.version + ".jar";
 
                     	downloadUrl = new URL(paper_jar);
                     	

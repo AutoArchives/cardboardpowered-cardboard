@@ -198,6 +198,12 @@ public class CardboardPotionEffectType extends PotionEffectType implements Handl
 		// TODO Auto-generated method stub
 		return this.id;
 	}
+
+	@Override
+	public @NotNull String getTranslationKey() {
+		// TODO Auto-generated method stub
+		return this.key.toString();
+	}
 	
 
 

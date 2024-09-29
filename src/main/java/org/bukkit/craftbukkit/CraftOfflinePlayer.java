@@ -1,8 +1,10 @@
 package org.bukkit.craftbukkit;
 
+import com.javazilla.bukkitfabric.BukkitFabricMod;
 import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
 import com.javazilla.bukkitfabric.interfaces.IMixinWorldSaveHandler;
 import com.mojang.authlib.GameProfile;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 
 import java.io.File;
@@ -13,9 +15,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
+
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.WhitelistEntry;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.WorldSaveHandler;
 
@@ -27,6 +35,7 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
 import org.bukkit.Statistic;
+import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
@@ -500,6 +509,58 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 			@Nullable String reason, @Nullable Duration duration, @Nullable String source) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	// 1.20.4 API:
+
+	@Override
+	public @Nullable Location getRespawnLocation() {
+        NbtCompound data = this.getData();
+        if (data == null) {
+            return null;
+        }
+        if (data.contains("SpawnX") && data.contains("SpawnY") && data.contains("SpawnZ")) {
+            float respawnAngle = data.getFloat("SpawnAngle");
+            World spawnWorld = this.server.getWorld(data.getString("SpawnWorld"));
+            if (data.contains("SpawnDimension")) {
+                DataResult< RegistryKey<net.minecraft.world.World> > result =
+                		net.minecraft.world.World.CODEC.parse((DynamicOps)NbtOps.INSTANCE, data.get("SpawnDimension"));
+                RegistryKey<net.minecraft.world.World> levelKey =
+                		result.resultOrPartial(arg_0 -> (BukkitFabricMod.LOGGER).log(Level.FINE, "", arg_0)).orElse(net.minecraft.world.World.OVERWORLD);
+                ServerWorld level = this.server.console.getWorld(levelKey);
+                World world = spawnWorld = level != null ? level.getWorld() : spawnWorld;
+            }
+            if (spawnWorld == null) {
+                return null;
+            }
+            return new Location(spawnWorld, (double)data.getInt("SpawnX"), (double)data.getInt("SpawnY"), (double)data.getInt("SpawnZ"), respawnAngle, 0.0f);
+        }
+        return null;
+	}
+
+	@Override
+	public @Nullable Location getLocation() {
+        NbtCompound data = this.getData();
+        if (data == null) {
+            return null;
+        }
+
+        if (data.contains("Pos") && data.contains("Rotation")) {
+            NbtList position = (NbtList) data.get("Pos");
+            NbtList rotation = (NbtList) data.get("Rotation");
+
+            UUID uuid = new UUID(data.getLong("WorldUUIDMost"), data.getLong("WorldUUIDLeast"));
+
+            return new Location(this.server.getWorld(uuid),
+                position.getDouble(0),
+                position.getDouble(1),
+                position.getDouble(2),
+                rotation.getFloat(0),
+                rotation.getFloat(1)
+            );
+        }
+
+        return null;
 	}
 
 }

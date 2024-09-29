@@ -14,6 +14,7 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.MushroomCow;
 import org.bukkit.entity.Projectile;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -113,6 +114,51 @@ public class MushroomImpl extends CowImpl implements MushroomCow {
         }
         this.getHandle().stewEffects = new SuspiciousStewEffectsComponent(nmsPairs);
         */
+	}
+	
+	// 1.20.4 API:
+
+	@Override
+	public boolean hasEffectsForNextStew() {
+        // SuspiciousStewEffectsComponent stewEffects = this.getHandle().stewEffects;
+        //return stewEffects != null && !stewEffects.effects().isEmpty();
+		return false;
+	}
+
+	@Override
+	public @NotNull List<PotionEffect> getEffectsForNextStew() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean addEffectToNextStew(@NotNull PotionEffect effect, boolean overwrite) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean addEffectToNextStew(@NotNull SuspiciousEffectEntry suspiciousEffectEntry, boolean overwrite) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean removeEffectFromNextStew(@NotNull PotionEffectType type) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean hasEffectForNextStew(@NotNull PotionEffectType type) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void clearEffectsForNextStew() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

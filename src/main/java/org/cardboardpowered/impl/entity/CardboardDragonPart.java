@@ -1,9 +1,11 @@
 package org.cardboardpowered.impl.entity;
 
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.damage.DamageSource;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.EnderDragonPart;
 import org.bukkit.entity.Entity;
+import org.jetbrains.annotations.NotNull;
 
 public class CardboardDragonPart extends CardboardComplexPart implements EnderDragonPart {
 
@@ -65,4 +67,12 @@ public class CardboardDragonPart extends CardboardComplexPart implements EnderDr
     public void resetMaxHealth() {
         getParent().resetMaxHealth();
     }
+
+    // 1.20.4 API:
+    
+	@Override
+	public void damage(double amount, @NotNull DamageSource damageSource) {
+		this.getParent().damage(amount, damageSource);
+	}
+
 }

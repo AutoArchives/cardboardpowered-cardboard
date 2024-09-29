@@ -96,18 +96,17 @@ dependencies {
 	// compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-20230921.165944-178")
 	
 	//compileOnly("io.papermc.paper:paper-api:1.20.2-R0.1-20231203.034718-122")
-	compileOnly("io.papermc.paper:paper-api:1.20.3-R0.1-20231207.043048-3")
-	// compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-20240528.102248-175")
+	// compileOnly("io.papermc.paper:paper-api:1.20.3-R0.1-20231207.043048-3")
+	compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-20240528.102248-175")
 	// compileOnly("io.papermc.paper:paper-api:1.20.5-R0.1-20240429.035133-20")
 	// compileOnly("io.papermc.paper:paper-api:1.20.6-R0.1-20240916.192025-126")
-	
-	
+
 	// Paper-API libs
 	compileOnly("net.md-5:bungeecord-chat:1.16-R0.4")
-	compileOnly("net.kyori:adventure-api:4.13.0")
-	compileOnly("net.kyori:adventure-text-serializer-gson:4.13.0")
-	compileOnly("net.kyori:adventure-text-serializer-legacy:4.13.0")
-	compileOnly("net.kyori:adventure-text-serializer-plain:4.13.0")
+	compileOnly("net.kyori:adventure-api:4.16.0")
+	compileOnly("net.kyori:adventure-text-serializer-gson:4.16.0")
+	compileOnly("net.kyori:adventure-text-serializer-legacy:4.16.0")
+	compileOnly("net.kyori:adventure-text-serializer-plain:4.16.0")
 
 	//extraLibs fileTree(dir: 'libs', include: "${project.paper_jar}")
     compileOnly fileTree(dir: 'libs', include: 'commons-lang-2.6.jar')

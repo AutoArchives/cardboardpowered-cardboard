@@ -3,9 +3,14 @@ package org.cardboardpowered.impl.entity;
 import net.kyori.adventure.text.Component;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.TntEntity;
+
+import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -76,17 +81,17 @@ public class TntImpl extends CraftEntity implements TNTPrimed {
             ((ITnt)getHandle()).setSourceBF(((LivingEntityImpl) source).getHandle());
         } else ((ITnt)getHandle()).setSourceBF(null);
     }
+    
+    // 1.20.4 API:
 
-    @Override
-    public @Nullable Component customName() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+	@Override
+	public void setBlockData(@NotNull BlockData data) {
+		this.getHandle().setBlockState(((CraftBlockData)data).getState());
+	}
 
-    @Override
-    public void customName(@Nullable Component arg0) {
-        // TODO Auto-generated method stub
-        
-    }
+	@Override
+	public @NotNull BlockData getBlockData() {
+        return CraftBlockData.fromData(this.getHandle().getBlockState());
+	}
 
 }
