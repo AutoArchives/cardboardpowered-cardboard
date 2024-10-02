@@ -34,6 +34,7 @@ import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ExperienceOrbEntity;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.VillagerEntity;
@@ -60,6 +61,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.hit.HitResult.Type;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.explosion.Explosion;
@@ -80,6 +82,7 @@ import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.CraftBlockStates;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.damage.CraftDamageSource;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -541,9 +544,12 @@ public class BukkitEventFactory {
         return event;
     }
 
-    public static PlayerDeathEvent callPlayerDeathEvent(ServerPlayerEntity victim, List<org.bukkit.inventory.ItemStack> drops, String deathMessage, boolean keepInventory) {
+    public static PlayerDeathEvent callPlayerDeathEvent(ServerPlayerEntity victim, DamageSource damageSource, List<org.bukkit.inventory.ItemStack> drops, String deathMessage, boolean keepInventory) {
         PlayerImpl entity = (PlayerImpl) ((IMixinServerEntityPlayer)victim).getBukkitEntity();
-        PlayerDeathEvent event = new PlayerDeathEvent(entity, drops, ((IMixinLivingEntity)victim).getExpReward(), 0, deathMessage);
+        
+        CraftDamageSource bukkitDamageSource = new CraftDamageSource(damageSource);
+        
+        PlayerDeathEvent event = new PlayerDeathEvent(entity, bukkitDamageSource, drops, ((IMixinLivingEntity)victim).getExpReward(), 0, deathMessage);
         event.setKeepInventory(keepInventory);
         org.bukkit.World world = entity.getWorld();
         Bukkit.getServer().getPluginManager().callEvent(event);
@@ -578,13 +584,15 @@ public class BukkitEventFactory {
         return event;
     }
 
-    public static EntityDeathEvent callEntityDeathEvent(net.minecraft.entity.LivingEntity victim, List<org.bukkit.inventory.ItemStack> drops) {
+    public static EntityDeathEvent callEntityDeathEvent(net.minecraft.entity.LivingEntity victim, DamageSource damageSource, List<org.bukkit.inventory.ItemStack> drops) {
         if (((IMixinEntity)victim).getBukkitEntity() instanceof UnknownEntity) {
             UnknownEntity uk = (UnknownEntity) ((IMixinEntity)victim).getBukkitEntity();
             BukkitFabricMod.LOGGER.info("Oh no! " + net.minecraft.entity.EntityType.getId(uk.nms.getType()).toString() + " is an unknown bukkit entity!");
         }
         LivingEntityImpl entity = (LivingEntityImpl) ((IMixinEntity)victim).getBukkitEntity();
-        EntityDeathEvent event = new EntityDeathEvent(entity, drops, ((IMixinLivingEntity)victim).getExpReward());
+        
+        CraftDamageSource bukkitDamageSource = new CraftDamageSource(damageSource);
+        EntityDeathEvent event = new EntityDeathEvent(entity, bukkitDamageSource, drops, ((IMixinLivingEntity)victim).getExpReward());
 
         if ((null == entity) || (null == entity.getWorld())) {
             boolean e = (null == entity);
@@ -603,6 +611,18 @@ public class BukkitEventFactory {
         }
 
         return event;
+    }
+    
+    
+    public int LivingEntity_getExpReward(net.minecraft.entity.LivingEntity thiz) {
+
+        if (thiz.getWorld() instanceof ServerWorld && !thiz.isExperienceDroppingDisabled()
+        		&& (thiz.shouldAlwaysDropXp() || thiz.playerHitTimer > 0 && thiz.shouldDropXp() && thiz.getWorld().getGameRules().getBoolean(GameRules.DO_MOB_LOOT))) {
+            int exp = thiz.getXpToDrop();
+            return exp;
+        } else {
+            return 0;
+        }
     }
 
     public static ExpBottleEvent callExpBottleEvent(Entity entity, int exp) {

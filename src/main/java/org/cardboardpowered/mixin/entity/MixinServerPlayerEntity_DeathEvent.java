@@ -86,7 +86,7 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
         String deathmessage = defaultMessage.getString();
         cardboard$deathMsg.set(deathmessage);
         keepLevel = keepInventory; // SPIGOT-2222: pre-set keepLevel
-        org.bukkit.event.entity.PlayerDeathEvent event = BukkitEventFactory.callPlayerDeathEvent(((ServerPlayerEntity) (Object) this), loot, deathmessage, keepInventory);
+        org.bukkit.event.entity.PlayerDeathEvent event = BukkitEventFactory.callPlayerDeathEvent(((ServerPlayerEntity) (Object) this), damageSource, loot, deathmessage, keepInventory);
         cardboard$deathEvent.set(event);
 
         // SPIGOT-943 - only call if they have an inventory open

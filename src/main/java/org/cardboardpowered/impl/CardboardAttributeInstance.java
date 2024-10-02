@@ -1,5 +1,6 @@
 package org.cardboardpowered.impl;
 
+import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import org.bukkit.attribute.Attribute;
@@ -8,6 +9,8 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.inventory.EquipmentSlot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import com.javazilla.bukkitfabric.Utils;
 
 import me.isaiah.common.cmixin.IMixinEntityAttributeModifier;
 
@@ -99,5 +102,15 @@ public class CardboardAttributeInstance implements AttributeInstance {
 	public void removeModifier(@NotNull UUID uuid) {
 		this.handle.removeModifier(uuid);
 	}
+
+    public static AttributeModifier convert(EntityAttributeModifier nms, AttributeModifierSlot slot) {
+        return new AttributeModifier(
+        		nms.uuid(),
+        		nms.name,
+        		nms.value(),
+        		AttributeModifier.Operation.values()[nms.operation().ordinal()],
+        		Utils.getSlot(slot)
+        );
+    }
 
 }

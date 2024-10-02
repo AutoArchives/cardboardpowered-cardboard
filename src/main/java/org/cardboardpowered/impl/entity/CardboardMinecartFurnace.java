@@ -18,7 +18,7 @@ public class CardboardMinecartFurnace extends CardboardMinecart implements Power
 
     @Override
     public EntityType getType() {
-        return EntityType.MINECART_FURNACE;
+        return EntityType.FURNACE_MINECART;
     }
 
     @Override

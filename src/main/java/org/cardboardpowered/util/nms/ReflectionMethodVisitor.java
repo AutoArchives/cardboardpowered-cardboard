@@ -27,6 +27,7 @@ import net.techcable.srglib.MethodSignature;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.util.Commodore;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.cardboardpowered.CardboardConfig;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -97,7 +98,13 @@ public class ReflectionMethodVisitor extends MethodVisitor {
 
     @Override
     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-        if (owner.equalsIgnoreCase("org/bukkit/Material")) {
+        if (CardboardConfig.DEBUG_VERBOSE_CALLS) {
+        	if (!owner.startsWith("java/")) {
+        		BukkitFabricMod.LOGGER.info(owner + " / " + name);
+        	}
+        }
+    	
+    	if (owner.equalsIgnoreCase("org/bukkit/Material")) {
             if (CraftMagicNumbers.MODDED_MATERIALS.containsKey(name)) { 
                 super.visitFieldInsn( opcode, owner, "STONE", desc );
                 return;
@@ -385,7 +392,13 @@ public class ReflectionMethodVisitor extends MethodVisitor {
     
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
-        if (name.equals("getCraftServer")) {
+        if (CardboardConfig.DEBUG_VERBOSE_CALLS) {
+        	if (!owner.startsWith("java/")) {
+        		BukkitFabricMod.LOGGER.info(owner + " / " + name);
+        	}
+        }
+    	
+    	if (name.equals("getCraftServer")) {
         	//System.out.println(owner + " " + name + " " + desc);
             // super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/ReflectionRemapper", name, desc, false );
             // return;

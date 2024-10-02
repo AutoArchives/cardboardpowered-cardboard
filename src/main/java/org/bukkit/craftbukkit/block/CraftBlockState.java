@@ -374,8 +374,13 @@ public class CraftBlockState implements BlockState {
 	// 1.20.2 API:
 	
 	@Override
-	public @NotNull BlockState copy() {
+	public BlockState copy() {
 		return new CraftBlockState(this, null);
+	}
+
+	@Override
+	public BlockState copy(Location location) {
+		return new CraftBlockState(this, location);
 	}
 
 }

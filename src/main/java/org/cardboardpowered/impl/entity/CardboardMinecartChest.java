@@ -33,7 +33,7 @@ public class CardboardMinecartChest extends CardboardMinecartSH implements Stora
 
     @Override
     public EntityType getType() {
-        return EntityType.MINECART_CHEST;
+        return EntityType.CHEST_MINECART;
     }
 
     @Override

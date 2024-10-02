@@ -39,6 +39,7 @@ public class CardboardConfig {
 	public static boolean REGISTRY_COMMAND_FIX = true;
 	
     public static boolean DEBUG_EVENT_CALL = false;
+    public static boolean DEBUG_VERBOSE_CALLS = false;
 
     public static void setup() throws Exception {
         File fabDir = FabricLoader.getInstance().getConfigDir().toFile();
@@ -67,6 +68,9 @@ public class CardboardConfig {
         
         boolean debug_0 = config.getOrDefault("debug_print_event_call", false);
         DEBUG_EVENT_CALL = debug_0;
+        
+        boolean verbose_calls = config.getOrDefault("debug_print_all_calls", false);
+        DEBUG_VERBOSE_CALLS = verbose_calls;
         
         String extraJar = config.getOrDefault("debug_extra_lib_file", "debug_extra.jar");
         if (extraJar.length() > 2) {

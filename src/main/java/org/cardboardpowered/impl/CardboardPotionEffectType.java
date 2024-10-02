@@ -8,14 +8,17 @@ import net.minecraft.registry.entry.RegistryEntry.Reference;
 
 import org.bukkit.Color;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
+import org.bukkit.craftbukkit.potion.CraftPotionEffectTypeCategory;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionEffectTypeCategory;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -40,6 +43,9 @@ public class CardboardPotionEffectType extends PotionEffectType implements Handl
     }
 
 	
+    public static PotionEffectType minecraftToBukkit(StatusEffect minecraft) {
+        return (PotionEffectType)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.STATUS_EFFECT, Registry.EFFECT);
+    }
 	
 	
     private final NamespacedKey key;
@@ -204,10 +210,10 @@ public class CardboardPotionEffectType extends PotionEffectType implements Handl
 		// TODO Auto-generated method stub
 		return this.key.toString();
 	}
-	
 
-
-
-
+	@Override
+	public @NotNull PotionEffectTypeCategory getCategory() {
+		return CraftPotionEffectTypeCategory.minecraftToBukkit(this.handle.getCategory());
+	}
 
 }

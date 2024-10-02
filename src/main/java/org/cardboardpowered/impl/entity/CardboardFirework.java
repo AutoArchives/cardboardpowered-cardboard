@@ -52,7 +52,7 @@ public class CardboardFirework extends ProjectileImpl implements Firework {
 
     @Override
     public EntityType getType() {
-        return EntityType.FIREWORK;
+        return EntityType.FIREWORK_ROCKET;
     }
 
     @Override

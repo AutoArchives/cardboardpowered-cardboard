@@ -155,4 +155,11 @@ public class CardboardChest extends CardboardLootableBlock<ChestBlockEntity> imp
 		
 	}
 
+	@Override
+	public boolean isBlocked() {
+		// TODO Auto-generated method stub
+		// TODO
+		return getHandle().blocksMovement();
+	}
+
 }

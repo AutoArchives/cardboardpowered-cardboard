@@ -5,6 +5,7 @@ import org.bukkit.damage.DamageSource;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.EnderDragonPart;
 import org.bukkit.entity.Entity;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class CardboardDragonPart extends CardboardComplexPart implements EnderDragonPart {
@@ -74,5 +75,12 @@ public class CardboardDragonPart extends CardboardComplexPart implements EnderDr
 	public void damage(double amount, @NotNull DamageSource damageSource) {
 		this.getParent().damage(amount, damageSource);
 	}
+	
+	// 1.20.6 API:
+	
+	@Override
+    public void heal(double amount, EntityRegainHealthEvent.RegainReason reason) {
+        this.getParent().heal(amount, reason);
+    }
 
 }

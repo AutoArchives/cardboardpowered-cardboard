@@ -50,7 +50,7 @@ public class CardboardEventManager {
                     }
                 }
 
-                org.spigotmc.event.entity.EntityDismountEvent SPevent = new org.spigotmc.event.entity.EntityDismountEvent(((IMixinEntity) vehicle).getBukkitEntity(), ((IMixinEntity) entity).getBukkitEntity());
+                org.bukkit.event.entity.EntityDismountEvent SPevent = new org.bukkit.event.entity.EntityDismountEvent(((IMixinEntity) vehicle).getBukkitEntity(), ((IMixinEntity) entity).getBukkitEntity());
                 if (((IMixinEntity) vehicle).isValidBF()) {
                     Bukkit.getPluginManager().callEvent(SPevent);
                 }
@@ -78,7 +78,7 @@ public class CardboardEventManager {
                     }
                 }
 
-                org.spigotmc.event.entity.EntityMountEvent SPevent = new org.spigotmc.event.entity.EntityMountEvent(((IMixinEntity) vehicle).getBukkitEntity(), ((IMixinEntity) entity).getBukkitEntity());
+                org.bukkit.event.entity.EntityMountEvent SPevent = new org.bukkit.event.entity.EntityMountEvent(((IMixinEntity) vehicle).getBukkitEntity(), ((IMixinEntity) entity).getBukkitEntity());
                 if (((IMixinEntity) entity).isValidBF()) {
                     Bukkit.getPluginManager().callEvent(SPevent);
                     if (SPevent.isCancelled()) {

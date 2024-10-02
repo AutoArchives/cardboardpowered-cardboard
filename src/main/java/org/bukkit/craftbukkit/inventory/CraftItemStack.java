@@ -693,7 +693,7 @@ public final class CraftItemStack extends ItemStack {
             case SUSPICIOUS_STEW: {
                 return new CraftMetaSuspiciousStew(item.getComponentChanges(), extraHandledDcts);
             }
-            /*case COD_BUCKET: 
+            case COD_BUCKET: 
             case PUFFERFISH_BUCKET: 
             case SALMON_BUCKET: 
             case TADPOLE_BUCKET: 
@@ -702,6 +702,7 @@ public final class CraftItemStack extends ItemStack {
             case PAINTING: {
                 return new CraftMetaEntityTag(item.getComponentChanges(), extraHandledDcts);
             }
+			/*
             case COMPASS: {
                 return new CraftMetaCompass(item.getComponentChanges(), extraHandledDcts);
             }

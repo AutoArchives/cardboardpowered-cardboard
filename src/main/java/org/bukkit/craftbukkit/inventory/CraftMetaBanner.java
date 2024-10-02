@@ -160,16 +160,16 @@ implements BannerMeta {
         return meta;
     }
 
-	@Override
+	// @Override
 	public @Nullable DyeColor getBaseColor() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
+	// @Override
 	public void setBaseColor(@Nullable DyeColor arg0) {
 		// TODO Auto-generated method stub
 		
 	}
-}
 
+}

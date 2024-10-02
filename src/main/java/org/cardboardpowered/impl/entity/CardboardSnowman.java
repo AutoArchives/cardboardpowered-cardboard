@@ -36,7 +36,7 @@ public class CardboardSnowman extends CardboardGolem implements Snowman {
 
     @Override
     public EntityType getType() {
-        return EntityType.SNOWMAN;
+        return EntityType.SNOW_GOLEM;
     }
 
     @Override

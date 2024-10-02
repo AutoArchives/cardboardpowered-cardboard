@@ -37,7 +37,7 @@ public class LightningStrikeImpl extends CraftEntity implements LightningStrike 
 
     @Override
     public EntityType getType() {
-        return EntityType.LIGHTNING;
+        return EntityType.LIGHTNING_BOLT;
     }
 
     private final LightningStrike.Spigot spigot = new LightningStrike.Spigot() {

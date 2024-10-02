@@ -11,15 +11,22 @@ import org.bukkit.GameEvent;
 import org.bukkit.Keyed;
 import org.bukkit.MusicInstrument;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
 import org.bukkit.Registry;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.block.Biome;
 import org.bukkit.craftbukkit.generator.structure.CraftStructure;
 import org.bukkit.craftbukkit.generator.structure.CraftStructureType;
 import org.bukkit.craftbukkit.inventory.trim.CraftTrimMaterial;
 import org.bukkit.craftbukkit.inventory.trim.CraftTrimPattern;
+import org.bukkit.craftbukkit.legacy.FieldRename;
 import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
+import org.bukkit.craftbukkit.util.ApiVersion;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Wolf;
 import org.bukkit.generator.structure.StructureType;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
 import org.bukkit.potion.PotionEffectType;
@@ -28,6 +35,8 @@ import org.cardboardpowered.impl.CardboardPotionEffectType;
 import org.cardboardpowered.impl.entity.WolfImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import com.javazilla.bukkitfabric.BukkitFabricMod;
 
 import net.minecraft.block.entity.BannerPattern;
 //import net.minecraft.enchantment.Enchantment;
@@ -42,22 +51,34 @@ import net.minecraft.registry.entry.RegistryEntry;
 public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
 
 	private static DynamicRegistryManager registry;
-	private final Class<? super B> bukkitClass;
+	private final Class<?> bukkitClass;
     private final net.minecraft.registry.Registry<M> minecraftRegistry;
     private final BiFunction<NamespacedKey, M, B> minecraftToBukkit;
+    
+    private final BiFunction<NamespacedKey, ApiVersion, NamespacedKey> serializationUpdater;
     
     private final Map<NamespacedKey, B> cache = new HashMap<NamespacedKey, B>();
     private final Map<B, NamespacedKey> byValue = new IdentityHashMap<B, NamespacedKey>();
     
     private boolean init;
     
-    public CraftRegistry(Class<? super B> bukkitClass, net.minecraft.registry.Registry<M> minecraftRegistry, BiFunction<NamespacedKey, M, B> minecraftToBukkit) {
+    /*
+    @Deprecated
+    public CraftRegistry(Class<?> bukkitClass, net.minecraft.registry.Registry<M> minecraftRegistry, BiFunction<NamespacedKey, M, B> minecraftToBukkit) {
         this.bukkitClass = bukkitClass;
         this.minecraftRegistry = minecraftRegistry;
         this.minecraftToBukkit = minecraftToBukkit;
     }
+    */
     
-    public static <B extends Keyed, M> B minecraftToBukkit(M minecraft, RegistryKey<net.minecraft.registry.Registry<M>> registryKey, Registry<B> bukkitRegistry) {
+    public CraftRegistry(Class<?> classToPreload, net.minecraft.registry.Registry<M> minecraftRegistry, BiFunction<NamespacedKey, M, B> minecraftToBukkit, BiFunction<NamespacedKey, ApiVersion, NamespacedKey> serializationUpdater) {
+        this.bukkitClass = classToPreload;
+        this.minecraftRegistry = minecraftRegistry;
+        this.minecraftToBukkit = minecraftToBukkit;
+        this.serializationUpdater = serializationUpdater;
+    }
+
+	public static <B extends Keyed, M> B minecraftToBukkit(M minecraft, RegistryKey<net.minecraft.registry.Registry<M>> registryKey, Registry<B> bukkitRegistry) {
         // Preconditions.checkArgument((minecraft != null ? 1 : 0) != 0);
         net.minecraft.registry.Registry<M> registry = CraftRegistry.getMinecraftRegistry(registryKey);
         Keyed bukkit = bukkitRegistry.get(
@@ -89,6 +110,8 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
 
         return this.minecraftToBukkit.apply(namespacedKey, minecraft);
     }
+    
+    
 
 	@Override
 	public @Nullable B get(@NotNull NamespacedKey namespacedKey) {
@@ -129,6 +152,8 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
 	        return bukkit;
 	}
 
+	/*
+	@Deprecated
 	public static <B extends Keyed> Registry<?> createRegistry(Class<B> bukkitClass, DynamicRegistryManager registryHolder) {
 		// TODO Auto-generated method stub
 		if (bukkitClass == Enchantment.class) {
@@ -162,13 +187,14 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         if (bukkitClass == DamageType.class) {
             return new CraftRegistry<>(DamageType.class, registryHolder.get(RegistryKeys.DAMAGE_TYPE), CraftDamageType::new);
         }
+        *
+        
         if (bukkitClass == Wolf.Variant.class) {
             return new CraftRegistry<>(Wolf.Variant.class, registryHolder.get(RegistryKeys.WOLF_VARIANT), WolfImpl.CraftVariant::new);
         }
-        // */
 		
 		return null;
-	}
+	}*/
 
 
     public static <B extends Keyed, M> RegistryEntry<M> bukkitToMinecraftHolder(B bukkit, RegistryKey<net.minecraft.registry.Registry<M>> registryKey) {
@@ -210,6 +236,29 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
     public static <B extends Keyed, M> M bukkitToMinecraft(B bukkit) {
         // Preconditions.checkArgument(bukkit != null);
         return ((Handleable<M>) bukkit).getHandle();
+    }
+
+    public static <B extends Keyed> B get(Registry<B> bukkit, NamespacedKey namespacedKey, ApiVersion apiVersion) {
+        if (bukkit instanceof CraftRegistry<B, ?> craft) {
+            return craft.get(craft.serializationUpdater.apply(namespacedKey, apiVersion));
+        }
+        if (bukkit instanceof Registry.SimpleRegistry) {
+            Registry.SimpleRegistry simple = (Registry.SimpleRegistry)bukkit;
+            Class bClass = simple.getType();
+            if (bClass == Biome.class) {
+                return (B)bukkit.get(FieldRename.BIOME_RENAME.apply(namespacedKey, apiVersion));
+            }
+            if (bClass == EntityType.class) {
+                return (B)bukkit.get(FieldRename.ENTITY_TYPE_RENAME.apply(namespacedKey, apiVersion));
+            }
+            if (bClass == Particle.class) {
+                return (B)bukkit.get(FieldRename.PARTICLE_TYPE_RENAME.apply(namespacedKey, apiVersion));
+            }
+            if (bClass == Attribute.class) {
+                return (B)bukkit.get(FieldRename.ATTRIBUTE_RENAME.apply(namespacedKey, apiVersion));
+            }
+        }
+        return (B)bukkit.get(namespacedKey);
     }
     
     

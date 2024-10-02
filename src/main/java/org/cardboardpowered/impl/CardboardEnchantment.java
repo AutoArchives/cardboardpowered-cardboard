@@ -6,6 +6,8 @@ import net.minecraft.enchantment.VanishingCurseEnchantment;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.EntityTypeTags;
+import net.minecraft.registry.tag.TagKey;
 
 import java.util.Set;
 
@@ -13,12 +15,14 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.enchantments.EnchantmentWrapper;
 import org.bukkit.entity.EntityCategory;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -230,8 +234,7 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 
     @Override
     public float getDamageIncrease(int arg0, @NotNull EntityCategory arg1) {
-        // TODO Auto-generated method stub
-        return 0;
+    	return this.handle.getAttackDamage(arg0, this.guessEntityTypeFromEnchantmentCategory(arg1));
     }
 
     @Override
@@ -306,6 +309,44 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 	public String getTranslationKey() {
 		return this.handle.getTranslationKey();
 	}
+	
+	// 1.20.6 API
+
+	@Override
+	public int getAnvilCost() {
+		return this.getHandle().getAnvilCost();
+	}
+
+	@Override
+	public float getDamageIncrease(int level, @NotNull EntityType entityType) {
+        return this.handle.getAttackDamage(level, CraftMagicNumbers.getEntityTypes(entityType));
+	}
+	
+    @Deprecated(forRemoval=true)
+    private net.minecraft.entity.EntityType<?> guessEntityTypeFromEnchantmentCategory(EntityCategory entityCategory) {
+        TagKey<net.minecraft.entity.EntityType<?>> tag;
+        switch (entityCategory) {
+            case ARTHROPOD: {
+                tag = EntityTypeTags.SENSITIVE_TO_BANE_OF_ARTHROPODS;
+                break;
+            }
+            case UNDEAD: {
+                tag = EntityTypeTags.SENSITIVE_TO_SMITE;
+                break;
+            }
+            case WATER: {
+                tag = EntityTypeTags.SENSITIVE_TO_IMPALING;
+                break;
+            }
+            default: {
+                tag = null;
+            }
+        }
+        if (tag == null) {
+            return null;
+        }
+        return Registries.ENTITY_TYPE.getEntryList(tag).map(e2 -> e2.size() > 0 ? (net.minecraft.entity.EntityType)e2.get(0).value() : null).orElse(null);
+    }
 
 
 }

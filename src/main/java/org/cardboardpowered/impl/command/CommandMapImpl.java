@@ -6,6 +6,7 @@ import org.bukkit.command.SimpleCommandMap;
 //<<<<<<< HEAD
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.Map;
 //=======
 import org.bukkit.command.defaults.PluginsCommand;
@@ -14,8 +15,12 @@ import org.bukkit.command.defaults.PluginsCommand;
 public class CommandMapImpl extends SimpleCommandMap {
 	private static final Class<?> CARDBOARD_VERSION_COMMAND = VersionCommand.class;
 
+	public static HashMap<String, Command> DUMMY_MAP = new HashMap<String, Command>();
+	
 	public CommandMapImpl(Server server) {
-		super(server);
+		super(server, DUMMY_MAP);
+		
+		
 		registerCardboardCommands();
 	}
 

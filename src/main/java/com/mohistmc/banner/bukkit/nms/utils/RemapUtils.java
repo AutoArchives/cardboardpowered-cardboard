@@ -76,6 +76,10 @@ public class RemapUtils {
         //jarMapping.classes.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/CraftServer", "org/bukkit/craftbukkit/CraftServer");
         //jarMapping.classes.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/CraftWorld", "org/cardboardpowered/impl/world/WorldImpl");
         
+        jarMapping.classes.put("org/spigotmc/event/entity/EntityMountEvent", "org/bukkit/event/entity/EntityMountEvent");
+        jarMapping.classes.put("org/spigotmc/event/entity/EntityDismountEvent", "org/bukkit/event/entity/EntityDismountEvent");
+
+        
         jarMapping.setInheritanceMap(new BannerInheritanceMap());
         jarMapping.setFallbackInheritanceProvider(new BannerInheritanceProvider());
 

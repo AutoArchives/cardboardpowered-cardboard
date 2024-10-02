@@ -93,7 +93,7 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
             this.dropEquipment(damagesource, ((entity instanceof PlayerEntity) ? EnchantmentHelper.getLooting((LivingEntity) entity) : 0), flag);
         }
 
-        BukkitEventFactory.callEntityDeathEvent(get(), ((IMixinEntity)this).cardboard_getDrops());
+        BukkitEventFactory.callEntityDeathEvent(get(), damagesource, ((IMixinEntity)this).cardboard_getDrops());
         ((IMixinEntity)this).cardboard_setDrops(new ArrayList<>());
         get().dropXp();
         ci.cancel();

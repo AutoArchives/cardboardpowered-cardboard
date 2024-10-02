@@ -86,12 +86,14 @@ public class MixinMaterial implements IMixinMaterial {
         return this.id;
     }
 	
+    /*
 	@Inject(at = @At("HEAD"), method = "isBlock0", cancellable = true, remap = false)
 	public void mod_is_block(CallbackInfoReturnable<Boolean> ci) {
 		if (isModded()) {
 			ci.setReturnValue(moddedData.isBlock());
 		}
 	}
+	*/
 	
 	@Inject(at = @At("HEAD"), method = "isItem", cancellable = true, remap = false)
 	public void mod_is_item(CallbackInfoReturnable<Boolean> ci) {

@@ -253,4 +253,10 @@ public class ArrowImpl extends AbstractProjectile implements AbstractArrow {
 		// this.getHandle().stack = CraftItemStack.asNMSCopy(item);
 	}
 
+	@Override
+	public void setItemStack(@NotNull ItemStack stack) {
+		// TODO Auto-generated method stub
+		// this.getHandle().stack = null;
+	}
+
 }

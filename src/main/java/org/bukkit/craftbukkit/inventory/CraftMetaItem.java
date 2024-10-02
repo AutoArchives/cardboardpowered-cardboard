@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.inventory;
 
 //<<<<<<< HEAD
-import com.destroystokyo.paper.Namespaced;
+// import com.destroystokyo.paper.Namespaced;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -16,7 +16,8 @@ import com.google.gson.JsonParseException;
 import com.javazilla.bukkitfabric.Utils;
 import com.mojang.authlib.GameProfile;
 
-import io.papermc.paper.inventory.ItemRarity;
+// import io.papermc.paper.inventory.ItemRarity;
+
 import me.isaiah.common.ICommonMod;
 import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.kyori.adventure.text.Component;
@@ -37,7 +38,11 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.nbt.visitor.NbtOrderedStringFormatter;
 import net.minecraft.predicate.BlockPredicate;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.nbt.NbtSizeTracker;
@@ -77,6 +82,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -91,9 +97,11 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.configuration.serialization.SerializableAs;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey.Specific;
+import org.bukkit.craftbukkit.inventory.components.CraftToolComponent;
 import org.bukkit.craftbukkit.inventory.tags.DeprecatedCustomTagContainer;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry;
@@ -103,12 +111,16 @@ import org.bukkit.craftbukkit.util.CraftNBTTagConfigSerializer;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemRarity;
 import org.bukkit.inventory.meta.BlockDataMeta;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.Repairable;
+import org.bukkit.inventory.meta.components.FoodComponent;
+import org.bukkit.inventory.meta.components.ToolComponent;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.persistence.PersistentDataContainer;
+import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.CardboardAttributable;
 import org.cardboardpowered.impl.CardboardAttributeInstance;
 import org.cardboardpowered.impl.CardboardEnchantment;
@@ -147,7 +159,7 @@ import org.cardboardpowered.interfaces.IComponentChanges;
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
 class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
-	 private Set<Namespaced> destroyableKeys = Sets.newHashSet();
+	 // private Set<Namespaced> destroyableKeys = Sets.newHashSet();
 	
 	    static class ItemMetaKey {
 	        final String BUKKIT;
@@ -391,6 +403,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     private Integer maxStackSize;
     private ItemRarity rarity;
     // private CraftFoodComponent food;
+    private CraftToolComponent tool;
     private int damage;
     private Integer maxDamage;
 
@@ -2389,7 +2402,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                         // CraftMetaArmor.TRIM.TYPE,
                         CraftMetaArmorStand.ENTITY_TAG.TYPE,
                         CraftMetaBanner.PATTERNS.TYPE,
-                        // CraftMetaEntityTag.ENTITY_TAG.TYPE,
+                        CraftMetaEntityTag.ENTITY_TAG.TYPE,
                         CraftMetaLeatherArmor.COLOR.TYPE,
                         CraftMetaMap.MAP_POST_PROCESSING.TYPE,
                         CraftMetaMap.MAP_COLOR.TYPE,
@@ -2468,23 +2481,25 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
     }*/
 
-    @Override
+    @Deprecated(forRemoval = true)
     public Set<Material> getCanDestroy() {
         return Collections.emptySet();//!this.hasDestroyableKeys() ? Collections.emptySet() : this.legacyGetMatsFromKeys(this.destroyableKeys);
 
     }
 
-    @Override
+    @Deprecated(forRemoval = true)
     public Set<Material> getCanPlaceOn() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    @Override
+    /*
+    @Deprecated(forRemoval = true)
     public Set<Namespaced> getDestroyableKeys() {
         // TODO Auto-generated method stub
         return null;
     }
+    */
 
     @Override
     public BaseComponent[] getDisplayNameComponent() {
@@ -2498,38 +2513,43 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         return null;
     }
 
-    @Override
+    /*
+    @Deprecated(forRemoval = true)
     public Set<Namespaced> getPlaceableKeys() {
         // TODO Auto-generated method stub
         return null;
     }
+    */
 
-    @Override
+    // @Override
+    @Deprecated(forRemoval = true)
     public boolean hasDestroyableKeys() {
         // TODO Auto-generated method stub
         return false;
     }
 
-    @Override
+    @Deprecated(forRemoval = true)
     public boolean hasPlaceableKeys() {
         // TODO Auto-generated method stub
         return false;
     }
 
-    @Override
+    @Deprecated(forRemoval = true)
     public void setCanDestroy(Set<Material> arg0) {
         // TODO Auto-generated method stub
     }
 
-    @Override
+    @Deprecated(forRemoval = true)
     public void setCanPlaceOn(Set<Material> arg0) {
         // TODO Auto-generated method stub
     }
 
-    @Override
+    /*
+    @Deprecated(forRemoval = true)
     public void setDestroyableKeys(Collection<Namespaced> arg0) {
         // TODO Auto-generated method stub
     }
+    */
 
     @Override
     public void setDisplayNameComponent(BaseComponent[] arg0) {
@@ -2541,10 +2561,12 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         // TODO Auto-generated method stub
     }
 
-    @Override
+    /*
+    @Deprecated(forRemoval = true)
     public void setPlaceableKeys(Collection<Namespaced> arg0) {
         // TODO Auto-generated method stub
     }
+    */
 
     @Override
     public @Nullable Component displayName() {
@@ -2640,5 +2662,84 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             this.enchantments.clear();
         }
 	}
+	
+	// 1.20.6 API
+
+	@Override
+	public @NotNull Component itemName() {
+		return CardboardAdventure.asAdventure(this.itemName);
+	}
+
+	@Override
+	public void itemName(Component name) {
+		this.itemName = CardboardAdventure.asVanilla(name);
+	}
+
+	@Override
+	public @NotNull String getItemName() {
+		return CraftChatMessage.fromComponent(this.itemName);
+	}
+
+	@Override
+	public void setItemName(@Nullable String name) {
+		this.itemName = CraftChatMessage.fromStringOrNull(name);
+	}
+
+	@Override
+	public int getMaxStackSize() {
+		return this.maxStackSize;
+	}
+
+	@Override
+	public @NotNull FoodComponent getFood() {
+        return null;
+		// return this.hasFood() ? new CraftFoodComponent(this.food) : new CraftFoodComponent(new FoodComponent(0, 0.0f, false, 1.6f, Collections.emptyList()));
+	}
+
+	@Override
+	public void setFood(@Nullable FoodComponent food) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean hasTool() {
+		return this.tool != null;
+	}
+
+	@Override
+	public @NotNull ToolComponent getTool() {
+        // return this.hasTool() ? new CraftToolComponent(this.tool) : new CraftToolComponent(new net.minecraft.component.type.ToolComponent(Collections.emptyList(), 1.0f, 0));
+		return null;
+	}
+
+	@Override
+	public void setTool(@Nullable ToolComponent tool) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+    public String getAsComponentString() {
+        Applicator tag = new Applicator(){};
+        this.applyToItem(tag);
+        ComponentChanges patch = tag.build();
+        DynamicRegistryManager registryAccess = CraftRegistry.getMinecraftRegistry();
+        RegistryOps<NbtElement> ops = registryAccess.getOps(NbtOps.INSTANCE);
+        Registry<DataComponentType<?>> componentTypeRegistry = registryAccess.get(RegistryKeys.DATA_COMPONENT_TYPE);
+        StringJoiner componentString = new StringJoiner(",", "[", "]");
+        for (Map.Entry<DataComponentType<?>, Optional<?>> entry : patch.entrySet()) {
+            DataComponentType<?> componentType = entry.getKey();
+            Optional<?> componentValue = entry.getValue();
+            String componentKey = componentTypeRegistry.getKey(componentType).orElseThrow().getValue().toString();
+            if (!componentValue.isPresent()) continue;
+            
+            // TODO
+            // NbtElement componentValueAsNBT = (NbtElement)componentType.getCodecOrThrow().encodeStart(ops, componentValue.get()).getOrThrow();
+            //String componentValueAsNBTString = new NbtOrderedStringFormatter("", 0, new ArrayList<String>()).apply(componentValueAsNBT);
+            // componentString.add(componentKey + "=" + componentValueAsNBTString);
+        }
+        return componentString.toString();
+    }
 
 }

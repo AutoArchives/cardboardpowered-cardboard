@@ -334,7 +334,7 @@ public final class CraftItemFactory implements ItemFactory {
         return DEFAULT_LEATHER_COLOR;
     }
 
-    @Override
+    // @Override
     public Material updateMaterial(ItemMeta meta, Material material) throws IllegalArgumentException {
         return ((CraftMetaItem) meta).updateMaterial(material);
     }

@@ -2,12 +2,21 @@ package org.cardboardpowered.impl.block;
 
 import net.minecraft.block.entity.ConduitBlockEntity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Conduit;
+import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.util.BoundingBox;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class CardboardConduit extends CardboardBlockEntityState<ConduitBlockEntity> implements Conduit {
@@ -71,6 +80,58 @@ public class CardboardConduit extends CardboardBlockEntityState<ConduitBlockEnti
         return null;
         // LivingEntity nmsEntity = conduit.targetEntity;
         //return nmsEntity != null ? (org.bukkit.entity.LivingEntity)nmsEntity.getBukkitEntity() : null;
+	}
+	
+	// 1.20.6 API
+
+	@Override
+	public @NotNull Collection<Block> getFrameBlocks() {
+       
+		/*
+		this.ensureNoWorldGeneration();
+        ArrayList<Block> blocks = new ArrayList<Block>();
+        ConduitBlockEntity conduit = (ConduitBlockEntity)this.getTileEntityFromWorld();
+        if (conduit != null) {
+            for (BlockPos position : conduit.activatingBlocks) {
+                blocks.add(CraftBlock.at((ServerWorld)this.getWorldHandle(), position));
+            }
+        }
+        return blocks;*/
+		
+		return null;
+	}
+
+	@Override
+	public int getFrameBlockCount() {
+		return 0;
+		//this.ensureNoWorldGeneration();
+        //ConduitBlockEntity conduit = (ConduitBlockEntity)this.getTileEntityFromWorld();
+        //return conduit != null ? conduit.activatingBlocks.size() : 0;
+	}
+
+	@Override
+	public boolean setTarget(org.bukkit.entity.@Nullable LivingEntity target) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean hasTarget() {
+        return false;
+		//ConduitBlockEntity conduit = (ConduitBlockEntity)this.getTileEntityFromWorld();
+        //return conduit != null && conduit.targetEntity != null && conduit.targetEntity.isAlive();
+    }
+
+	@Override
+	public @NotNull BoundingBox getHuntingArea() {
+		return null;
+		//Box bounds = ConduitBlockEntity.getAttackZone(this.getPosition());
+        //return new BoundingBox(bounds.minX, bounds.minY, bounds.minZ, bounds.maxX, bounds.maxY, bounds.maxZ);
+	}
+	
+    private void ensureNoWorldGeneration() {
+		// TODO Auto-generated method stub
+		
 	}
 
     /*public Collection<Block> getFrameBlocks() {

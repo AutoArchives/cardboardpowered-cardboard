@@ -1495,6 +1495,17 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 	public boolean hasNoPhysics() {
 		return this.getHandle().noClip;
 	}
+	
+	// 1.20.6 API:
+
+	@Override
+	public String getAsString() {
+		NbtCompound tag = new NbtCompound();
+		if (!this.getHandle().saveSelfNbt(tag)) {
+			return null;
+		}
+		return tag.asString();
+	}
 
 
 }

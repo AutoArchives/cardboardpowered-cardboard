@@ -1,6 +1,7 @@
 package org.cardboardpowered.impl.block;
 
 import net.minecraft.block.entity.EnderChestBlockEntity;
+import net.minecraft.util.math.BlockPos;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -45,5 +46,13 @@ public class CardboardEnderchest extends CardboardBlockEntityState<EnderChestBlo
         // TODO Auto-generated method stub
         
     }
+
+    // 1.20.6 API:
+    
+	@Override
+	public boolean isBlocked() {
+        BlockPos abovePos = this.getPosition().up();
+        return this.isPlaced() && this.getWorldHandle().getBlockState(abovePos).isSolidBlock(this.getWorldHandle(), abovePos);
+	}
 
 }

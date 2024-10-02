@@ -8,6 +8,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionEffectTypeCategory;
 import org.jetbrains.annotations.NotNull;
 
 public class ExtraPotionEffectTypeWrapper extends PotionEffectType {
@@ -98,5 +99,11 @@ public class ExtraPotionEffectTypeWrapper extends PotionEffectType {
 	public @NotNull String getTranslationKey() {
 		// TODO Auto-generated method stub
 		return this.key.value();
+	}
+
+	@Override
+	public @NotNull PotionEffectTypeCategory getCategory() {
+		// TODO Auto-generated method stub
+		return PotionEffectTypeCategory.NEUTRAL;
 	}
 }

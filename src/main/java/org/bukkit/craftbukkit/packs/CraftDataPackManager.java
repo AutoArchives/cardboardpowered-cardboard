@@ -14,11 +14,16 @@ import net.minecraft.world.level.LevelProperties;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
+import org.bukkit.block.BlockType;
+import org.bukkit.craftbukkit.block.CraftBlockType;
+import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.packs.CraftDataPack;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.packs.DataPack;
 import org.bukkit.packs.DataPackManager;
 import org.cardboardpowered.impl.world.WorldImpl;
+import org.jetbrains.annotations.NotNull;
 
 public class CraftDataPackManager
 implements DataPackManager {
@@ -90,5 +95,19 @@ implements DataPackManager {
         EntityType<?> nmsEntity = Registries.ENTITY_TYPE.get(new Identifier(entityType.getKey().getKey()));
         return nmsEntity.isEnabled(craftWorld.getHandle().getEnabledFeatures());
     }
+
+    // 1.20.6 API
+    
+	@Override
+	public boolean isEnabledByFeature(@NotNull ItemType itemType, @NotNull World world) {
+		// TODO Auto-generated method stub
+        return CraftItemType.bukkitToMinecraftNew((ItemType)itemType.typed()).isEnabled( ((WorldImpl)world) .getHandle().getEnabledFeatures());
+	}
+
+	@Override
+	public boolean isEnabledByFeature(@NotNull BlockType blockType, @NotNull World world) {
+		WorldImpl craftWorld = (WorldImpl)world;
+		return CraftBlockType.bukkitToMinecraftNew((BlockType)blockType.typed()).isEnabled(craftWorld.getHandle().getEnabledFeatures());
+	}
 }
 

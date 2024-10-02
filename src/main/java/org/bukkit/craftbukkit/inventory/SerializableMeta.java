@@ -117,7 +117,7 @@ implements ConfigurationSerializable {
                 //.put(CraftMetaAxolotlBucket.class, "AXOLOTL_BUCKET")
                 .put(CraftMetaCrossbow.class, "CROSSBOW")
                 .put(CraftMetaSuspiciousStew.class, "SUSPICIOUS_STEW")
-                //.put(CraftMetaEntityTag.class, "ENTITY_TAG")
+                .put(CraftMetaEntityTag.class, "ENTITY_TAG")
                 //.put(CraftMetaCompass.class, "COMPASS")
                 //.put(CraftMetaBundle.class, "BUNDLE")
                 //.put(CraftMetaMusicInstrument.class, "MUSIC_INSTRUMENT")

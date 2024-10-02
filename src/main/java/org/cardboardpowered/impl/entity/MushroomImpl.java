@@ -50,7 +50,7 @@ public class MushroomImpl extends CowImpl implements MushroomCow {
 
     @Override
     public EntityType getType() {
-        return EntityType.MUSHROOM_COW;
+        return EntityType.MOOSHROOM;
     }
 
 	@Override

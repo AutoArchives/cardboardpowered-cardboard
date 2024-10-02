@@ -35,6 +35,7 @@ import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.generator.structure.GeneratedStructure;
 import org.bukkit.generator.structure.Structure;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -586,6 +587,13 @@ public class CardboardChunk implements Chunk {
 	@Override
 	public Collection<GeneratedStructure> getStructures(@NotNull Structure structure) {
 		return this.getCraftWorld().getStructures(this.getX(), this.getZ(), structure);
+	}
+	
+	// 1.20.6 API:
+
+	@Override
+	public @NotNull Collection<Player> getPlayersSeeingChunk() {
+		return this.getWorld().getPlayersSeeingChunk((Chunk)this);
 	}
 
 }

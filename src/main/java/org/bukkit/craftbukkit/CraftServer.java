@@ -53,6 +53,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.ban.BanListType;
 import io.papermc.paper.datapack.DatapackManager;
 import io.papermc.paper.math.Position;
+import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
 import io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler;
 import io.papermc.paper.threadedregions.scheduler.RegionScheduler;
@@ -131,6 +132,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.conversations.Conversable;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.craftbukkit.entity.CraftEntityFactory;
 import org.bukkit.craftbukkit.inventory.CraftItemFactory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.packs.CraftDataPackManager;
@@ -141,6 +143,7 @@ import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityFactory;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.SpawnCategory;
 import org.bukkit.event.inventory.InventoryType;
@@ -2354,8 +2357,9 @@ public class CraftServer implements Server {
 
 	@Override
 	public <T extends Keyed> org.bukkit.@Nullable Registry<T> getRegistry(@NotNull Class<T> aClass) {
-		// TODO Auto-generated method stub
-        return (org.bukkit.Registry<T>) registries.computeIfAbsent(aClass, key -> CraftRegistry.createRegistry(aClass, console.getRegistryManager()));
+		return RegistryAccess.registryAccess().getRegistry(aClass);
+		
+		// Old: return (org.bukkit.Registry<T>) registries.computeIfAbsent(aClass, key -> CraftRegistry.createRegistry(aClass, console.getRegistryManager()));
 	}
 
 	@Override
@@ -2563,6 +2567,18 @@ public class CraftServer implements Server {
             return (B)new ProfileBanList(this.playerList.getUserBanList());
         }
         throw new IllegalArgumentException("Unknown BanListType: " + String.valueOf(type));
+	}
+	
+	// 1.20.6 API:
+
+	@Override
+	public boolean isAcceptingTransfers() {
+		return this.getServer().acceptsTransfers();
+	}
+
+	@Override
+	public @NotNull EntityFactory getEntityFactory() {
+		return CraftEntityFactory.instance();
 	}
 
     

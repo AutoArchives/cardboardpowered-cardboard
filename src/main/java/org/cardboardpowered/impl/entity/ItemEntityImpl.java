@@ -61,7 +61,7 @@ public class ItemEntityImpl extends CraftEntity implements Item {
 
     @Override
     public EntityType getType() {
-        return EntityType.DROPPED_ITEM;
+        return EntityType.ITEM;
     }
 
     public void setOwner(UUID uuid) {

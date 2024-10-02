@@ -2874,5 +2874,24 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 
         return structures;
     }
+
+    // 1.20.6 API
+    
+	@Override
+	public @NotNull Collection<Player> getPlayersSeeingChunk(@NotNull Chunk chunk) {
+		 return this.getPlayersSeeingChunk(chunk.getX(), chunk.getZ());
+	}
+
+	@Override
+	public @NotNull Collection<Player> getPlayersSeeingChunk(int x, int z) {
+        if (!this.isChunkLoaded(x, z)) {
+            return Collections.emptySet();
+        }
+        List<ServerPlayerEntity> players = this.getHandle().getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(new ChunkPos(x, z), false);
+        if (players.isEmpty()) {
+            return Collections.emptySet();
+        }
+        return players.stream().filter(Objects::nonNull).map(IMixinServerEntityPlayer::getBukkit).collect(Collectors.toUnmodifiableSet());
+	}
 	
 }

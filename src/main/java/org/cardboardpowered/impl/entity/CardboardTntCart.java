@@ -15,7 +15,7 @@ public class CardboardTntCart extends CardboardMinecart implements ExplosiveMine
 
     @Override
     public EntityType getType() {
-        return EntityType.MINECART_TNT;
+        return EntityType.TNT_MINECART;
     }
 
 	@Override

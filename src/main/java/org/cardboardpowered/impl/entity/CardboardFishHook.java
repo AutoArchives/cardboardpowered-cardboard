@@ -11,6 +11,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FishHook;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
 public class CardboardFishHook extends ProjectileImpl implements FishHook {
 
@@ -32,7 +33,7 @@ public class CardboardFishHook extends ProjectileImpl implements FishHook {
 
     @Override
     public EntityType getType() {
-        return EntityType.FISHING_HOOK;
+        return EntityType.FISHING_BOBBER;
     }
 
     @Override
@@ -232,6 +233,28 @@ public class CardboardFishHook extends ProjectileImpl implements FishHook {
 	public void setWaitTime(int arg0, int arg1) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	// 1.20.6 API
+	
+	@Override
+	public int getTimeUntilBite() {
+		// TODO Auto-generated method stub
+		// return this.getHandle().fishTravelCountdown;
+		return 0;
+	}
+
+	@Override
+	public void setTimeUntilBite(int ticks) throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void resetFishingState() {
+        FishingBobberEntity hook = this.getHandle();
+        // hook.resetTimeUntilLured();
+        // hook.fishTravelCountdown = 0;
 	}
 
 }

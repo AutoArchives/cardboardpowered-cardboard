@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
@@ -51,6 +52,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Instrument;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Note;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Particle;
@@ -2644,6 +2646,53 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 	public boolean isChunkSent(long chunkKey) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+	
+	// 1.20.6 API:
+
+	@Override
+	public @Nullable InetSocketAddress getHAProxyAddress() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isTransferred() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public @NotNull CompletableFuture<byte[]> retrieveCookie(@NotNull NamespacedKey key) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void storeCookie(@NotNull NamespacedKey key, @NotNull byte[] value) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+    public void transfer(String host, int port) {
+        //Preconditions.checkArgument((host != null ? 1 : 0) != 0, (Object)"Host cannot be null");
+        //Preconditions.checkState((this.getHandle().transferCookieConnection.getProtocol() == NetworkPhase.CONFIGURATION || this.getHandle().transferCookieConnection.getProtocol() == NetworkPhase.PLAY ? 1 : 0) != 0, (Object)"Can only transfer in CONFIGURATION or PLAY protocol.");
+        //this.getHandle().transferCookieConnection.sendPacket(new ServerTransferS2CPacket(host, port));
+    }
+
+	@Override
+	public <T> void spawnParticle(@NotNull Particle particle, @NotNull Location location, int count, double offsetX,
+			double offsetY, double offsetZ, double extra, @Nullable T data, boolean force) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public <T> void spawnParticle(@NotNull Particle particle, double x, double y, double z, int count, double offsetX,
+			double offsetY, double offsetZ, double extra, @Nullable T data, boolean force) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 

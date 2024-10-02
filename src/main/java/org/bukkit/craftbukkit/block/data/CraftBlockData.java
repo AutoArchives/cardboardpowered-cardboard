@@ -33,6 +33,7 @@ import org.bukkit.Material;
 import org.bukkit.SoundGroup;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockSupport;
+import org.bukkit.block.BlockType;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.structure.Mirror;
@@ -787,6 +788,42 @@ public class CraftBlockData implements BlockData {
 		
 	    private <T extends Comparable<T>> net.minecraft.block.BlockState copyProperty(net.minecraft.block.BlockState source, net.minecraft.block.BlockState target, Property<T> property) {
 	        return (net.minecraft.block.BlockState)target.with(property, source.get(property));
+	    }
+
+		public static CraftBlockData newData(BlockType blockType, String data) {
+	        net.minecraft.block.Block block;
+	        if (blockType != null && (block = CraftBlockType.bukkitToMinecraftNew(blockType)) != null) {
+	            Identifier key = Registries.BLOCK.getId(block);
+	            data = data == null ? key.toString() : String.valueOf(key) + data;
+	        }
+	        CraftBlockData cached = stringDataCache.computeIfAbsent(data, s -> CraftBlockData.createNewData(null, s));
+	        return (CraftBlockData) cached.clone();
+		}
+		
+		private static CraftBlockData createNewData(BlockType blockType, String data) {
+	        net.minecraft.block.BlockState blockData;
+	        net.minecraft.block.Block block = blockType == null ? null : ((CraftBlockType)blockType).getHandle();
+	        Map<Property<?>, Comparable<?>> parsed = null;
+	        if (data != null) {
+	            try {
+	                if (block != null) {
+	                    data = String.valueOf(Registries.BLOCK.getId(block)) + (String)data;
+	                }
+	                StringReader reader = new StringReader((String)data);
+	                BlockArgumentParser.BlockResult arg = BlockArgumentParser.block(Registries.BLOCK.getReadOnlyWrapper(), reader, false);
+	                Preconditions.checkArgument((!reader.canRead() ? 1 : 0) != 0, (Object)("Spurious trailing data: " + (String)data));
+	                blockData = arg.blockState();
+	                parsed = arg.properties();
+	            }
+	            catch (CommandSyntaxException ex) {
+	                throw new IllegalArgumentException("Could not parse data: " + (String)data, ex);
+	            }
+	        } else {
+	            blockData = block.getDefaultState();
+	        }
+	        CraftBlockData craft = CraftBlockData.fromData(blockData);
+	        craft.parsedStates = parsed;
+	        return craft;
 	    }
 
 }

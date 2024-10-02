@@ -19,6 +19,7 @@ import org.bukkit.Keyed;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.RegionAccessor;
+import org.bukkit.Registry;
 import org.bukkit.Statistic;
 import org.bukkit.UnsafeValues;
 import org.bukkit.World;
@@ -38,6 +39,7 @@ import org.bukkit.craftbukkit.potion.CraftPotionType;
 import org.bukkit.damage.DamageEffect;
 import org.bukkit.damage.DamageSource.Builder;
 import org.bukkit.damage.DamageType;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -638,20 +640,20 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         return null;
     }
 
-    @Override
+    // @Override
     public @NotNull Multimap<Attribute, AttributeModifier> getItemAttributes(@NotNull Material arg0,
             @NotNull EquipmentSlot arg1) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    @Override
+    // @Override
     public ItemRarity getItemRarity(Material arg0) {
         // TODO Auto-generated method stub
         return ItemRarity.COMMON;
     }
 
-    @Override
+    // @Override
     public ItemRarity getItemStackRarity(ItemStack arg0) {
         // TODO Auto-generated method stub
         return ItemRarity.COMMON;
@@ -717,7 +719,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         // TODO Auto-generated method stub
         return false;
     }
-    @Override
+    //@Override
     public boolean isCollidable(@NotNull Material arg0) {
         // TODO Auto-generated method stub
         return true;
@@ -865,6 +867,18 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         );
         return lines.stream().map(CardboardAdventure::asAdventure).toList();
     }
+	
+	@Override
+	public String get(Class<?> aClass, String s) {
+		if (aClass == Enchantment.class) {
+            // return FieldRename.convertEnchantmentName(ApiVersion.CURRENT, s);
+        }
+        return s;
+	}
+	@Override
+	public <B extends Keyed> B get(Registry<B> registry, NamespacedKey key) {
+		return CraftRegistry.get(registry, key, ApiVersion.CURRENT);
+	}
 
 
 }

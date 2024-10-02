@@ -106,6 +106,16 @@ public class Commodore {
         if (original.contains("com/earth2me/essentials/utils/VersionUtil")) {
         	return original.replace("com/earth2me/essentials/utils/VersionUtil", "org/cardboardpowered/util/VersionUtil");
         }
+        
+        // 1.20.6 Name changes
+        if (original.contains("org/spigotmc/event/entity/EntityMountEvent")) {
+        	return original.replace("org/spigotmc/event/entity/EntityMountEvent", "org/bukkit/event/entity/EntityMountEvent");
+        }
+        
+        if (original.contains("org/spigotmc/event/entity/EntityDismountEvent")) {
+        	return original.replace("org/spigotmc/event/entity/EntityDismountEvent", "org/bukkit/event/entity/EntityDismountEvent");
+        }
+        
 
         return rewrite != null ? rewrite : original;
     }
@@ -309,6 +319,11 @@ public class Commodore {
                         // SPIGOT-4608
                         if ((owner.equals("org/bukkit/Bukkit") || owner.equals("org/bukkit/Server")) && name.equals("getMap") && desc.equals("(S)Lorg/bukkit/map/MapView;")) {
                             super.visitMethodInsn(opcode,owner,name, "(I)Lorg/bukkit/map/MapView;", itf);
+                            return;
+                        }
+                        
+                        if (owner.startsWith("org/bukkit") && desc.contains("org/bukkit/util/Consumer")) {
+                        	super.visitMethodInsn(opcode, owner, name, desc.replace("org/bukkit/util/Consumer", "java/util/function/Consumer"), itf);
                             return;
                         }
                         

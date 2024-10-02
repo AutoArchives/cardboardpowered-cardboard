@@ -51,6 +51,7 @@ import org.bukkit.entity.Trident;
 import org.bukkit.entity.WitherSkull;
 import org.bukkit.entity.memory.MemoryKey;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
+import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -1216,6 +1217,20 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 	@Override
 	public int getActiveItemUsedTime() {
 		return this.getHandle().getItemUseTime();
+	}
+	
+	// 1.20.6 API:
+
+	@Override
+	public void heal(double amount, @NotNull RegainReason reason) {
+		// TODO Auto-generated method stub
+		this.heal(amount);
+	}
+
+	@Override
+	public boolean canUseEquipmentSlot(@NotNull EquipmentSlot slot) {
+		net.minecraft.entity.EquipmentSlot es = Utils.getNMS(slot);
+		return this.getHandle().canUseSlot( es );
 	}
 
 }

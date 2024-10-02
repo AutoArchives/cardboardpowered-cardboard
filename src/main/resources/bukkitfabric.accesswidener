@@ -551,3 +551,5 @@ mutable field net/minecraft/village/TradeOffer merchantExperience I
 accessible field net/minecraft/component/ComponentChanges$Builder changes Lit/unimi/dsi/fastutil/objects/Reference2ObjectMap;
 accessible field net/minecraft/component/ComponentChanges changedComponents Lit/unimi/dsi/fastutil/objects/Reference2ObjectMap;
 accessible field net/minecraft/item/BlockPredicatesChecker predicates Ljava/util/List;
+accessible class net/minecraft/registry/Registries$Initializer
+accessible class net/minecraft/registry/RegistryLoader$Loader
