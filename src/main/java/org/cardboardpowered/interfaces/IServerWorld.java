@@ -1,5 +1,7 @@
 package org.cardboardpowered.interfaces;
 
+import java.util.UUID;
+
 import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.impl.world.WorldImpl;
 
@@ -16,5 +18,9 @@ public interface IServerWorld {
 	default CraftServer getCraftServer() {
 		return CraftServer.INSTANCE;
 	}
+	
+	public void cardboard$set_uuid(UUID id);
+	
+	public UUID cardboard$get_uuid();
 
 }

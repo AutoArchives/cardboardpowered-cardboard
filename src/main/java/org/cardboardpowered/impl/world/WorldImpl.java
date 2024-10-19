@@ -1020,7 +1020,8 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 
 	@Override
 	public UUID getUID() {
-		return Utils.getWorldUUID(getWorldFolder());
+		return nms.cardboard$get_uuid();
+		// return Utils.getWorldUUID(getWorldFolder());
 	}
 
 	@Override

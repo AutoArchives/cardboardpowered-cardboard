@@ -294,8 +294,20 @@ public class BukkitFabricMod implements ModInitializer {
         } else {
             ((IMixinWorld)nms).set_bukkit_world( new WorldImpl(name, nms) );
         }
+        
+        // Object o = nms.convertable;
+
+        // this.uuid = WorldUUID.getUUID(levelStorageAccess.getDimensionPath(nms.getDimension()).toFile());
+        // nms.cardboard$set_uuid(Utils.getWorldUUID(((IMixinWorld)nms).getWorldImpl().getWorldFolder())); 
+        
         ((CraftServer)Bukkit.getServer()).addWorldToMap( ((IMixinWorld)nms).getWorldImpl() );
     }
+    
+    // TODO
+	//public File getWorldFolder() {
+		// FIXME BROKEN (check for DMM1 & DMM-1)
+	//	return CraftServer.server.getRunDirectory().toFile();
+	//}
 
     @EventHandler
     public void onPlayerInit(ServerPlayerInitEvent ev) {

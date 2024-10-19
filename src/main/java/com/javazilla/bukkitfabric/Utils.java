@@ -78,7 +78,7 @@ public class Utils {
             dos.writeLong(uuid.getMostSignificantBits());
             dos.writeLong(uuid.getLeastSignificantBits());
         } catch (IOException ex) {
-            BukkitFabricMod.LOGGER.warning("Failed to write " + file1 + ", " + ex.getMessage());
+            BukkitFabricMod.LOGGER.warning("Failed to write " + file1.getAbsolutePath() + ", " + ex.getMessage());
         } finally { if (dos != null) try {dos.close();} catch (IOException ex) {/*NOOP*/} }
         return uuid;
     }

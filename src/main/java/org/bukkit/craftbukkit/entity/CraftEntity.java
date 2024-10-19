@@ -81,6 +81,7 @@ import com.javazilla.bukkitfabric.interfaces.IMixinCommandOutput;
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
 
+import org.cardboardpowered.CardboardConfig;
 import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.entity.AbstractVillagerImpl;
 import org.cardboardpowered.impl.entity.AnimalsImpl;
@@ -1398,9 +1399,9 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         }
         return players.build();
 	}
-	
+
 	// 1.20.3 API:
-	
+
     public EntitySnapshot createSnapshot() {
         return CraftEntitySnapshot.create(this);
     }
@@ -1443,8 +1444,8 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         Box box = this.getHandle().getDimensions(this.getHandle().getPose())
         		.getBoxAt(locationClone.getX(), locationClone.getY(), locationClone.getZ());
         
-        CompletableFuture<Boolean> b = CompletableFuture.completedFuture( this.teleport(loc, cause, teleportFlags) );
-        
+        boolean tp = this.teleport(loc, cause);
+        CompletableFuture<Boolean> b = CompletableFuture.completedFuture( tp );
         return b;
         
         // TODO Async
