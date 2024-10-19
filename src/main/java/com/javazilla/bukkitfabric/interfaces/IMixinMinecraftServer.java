@@ -25,8 +25,8 @@ import net.minecraft.server.WorldGenerationProgressListenerFactory;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.world.PlayerSaveHandler;
 import net.minecraft.world.SaveProperties;
-import net.minecraft.world.WorldSaveHandler;
 import net.minecraft.world.gen.GeneratorOptions;
 import net.minecraft.world.level.ServerWorldProperties;
 import net.minecraft.world.level.storage.LevelStorage.Session;
@@ -55,7 +55,7 @@ public interface IMixinMinecraftServer {
 
     void initWorld(ServerWorld worldserver, ServerWorldProperties iworlddataserver, SaveProperties saveData, GeneratorOptions generatorsettings);
 
-    WorldSaveHandler getSaveHandler_BF();
+    PlayerSaveHandler getSaveHandler_BF();
 
     Session getSessionBF();
 

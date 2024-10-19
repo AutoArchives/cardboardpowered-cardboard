@@ -27,7 +27,6 @@ import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.BlockItem;
-import net.minecraft.item.MusicDiscItem;
 import net.minecraft.registry.RegistryKeys;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -189,7 +188,8 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
     }
 
     public boolean isRecord() {
-        return this.item instanceof MusicDiscItem;
+        return this.item.getComponents().contains(DataComponentTypes.JUKEBOX_PLAYABLE);
+        // old: return this.item instanceof MusicDiscItem;
     }
 
     public boolean isFuel() {

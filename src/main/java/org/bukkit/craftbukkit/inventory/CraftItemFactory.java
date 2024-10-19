@@ -7,9 +7,15 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.event.HoverEvent.ShowItem;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.hover.content.Content;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntryList.Named;
+import net.minecraft.registry.tag.EnchantmentTags;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Random;
 import java.util.function.UnaryOperator;
 
@@ -18,6 +24,7 @@ import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.util.CraftLegacy;
@@ -437,9 +444,11 @@ public final class CraftItemFactory implements ItemFactory {
     }
 
     private static ItemStack enchantItem(net.minecraft.util.math.random.Random source, ItemStack itemStack, int level, boolean allowTreasures) {
-        itemStack = CraftItemStack.asCraftCopy(itemStack);
-        CraftItemStack craft = (CraftItemStack) itemStack;
-        return CraftItemStack.asCraftMirror(EnchantmentHelper.enchant(CraftServer.server.getSaveProperties().getEnabledFeatures(), source, craft.handle, level, allowTreasures));
+    	itemStack = CraftItemStack.asCraftCopy(itemStack);
+        CraftItemStack craft = (CraftItemStack)itemStack;
+        DynamicRegistryManager registry = CraftRegistry.getMinecraftRegistry();
+        Optional<Named<Enchantment>> optional = allowTreasures ? Optional.empty() : registry.get(RegistryKeys.ENCHANTMENT).getEntryList(EnchantmentTags.IN_ENCHANTING_TABLE);
+        return CraftItemStack.asCraftMirror(EnchantmentHelper.enchant(source, craft.handle, level, registry, optional));
     }
 
 }

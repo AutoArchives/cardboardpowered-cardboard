@@ -23,7 +23,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommandYamlParser;
 import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.event.*;
-import org.bukkit.event.Listener;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
@@ -671,11 +670,9 @@ public class MixinSimplePluginManager {
 		 addPermission(perm, true);
 	}
 
-	/** @deprecated */
-	@Deprecated
 	/**
-	 * @reason .
-	 * @author .
+	 * @reason cardboard
+	 * @author cardboard
 	 */
 	@Overwrite(remap = false)
 	public void addPermission( Permission perm, boolean dirty) {

@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.nbt.NbtCompound;
@@ -68,7 +68,7 @@ implements SkullMeta {
         this.noteBlockSound = skullMeta.noteBlockSound;
     }
 
-    CraftMetaSkull(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaSkull(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaSkull.getOrEmpty(tag, SKULL_PROFILE).ifPresent(resolvableProfile -> this.setProfile(resolvableProfile.gameProfile()));
         CraftMetaSkull.getOrEmpty(tag, NOTE_BLOCK_SOUND).ifPresent(minecraftKey -> {
@@ -84,7 +84,7 @@ implements SkullMeta {
             if (object instanceof org.bukkit.profile.PlayerProfile) {
                 this.setOwnerProfile((org.bukkit.profile.PlayerProfile)object);
             } else {
-                this.setOwner(SerializableMeta.getString(map, CraftMetaSkull.SKULL_OWNER.BUKKIT, true));
+                this.setOwner(org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getString(map, CraftMetaSkull.SKULL_OWNER.BUKKIT, true));
             }
         }
         if (this.noteBlockSound == null && (object = map.get(CraftMetaSkull.NOTE_BLOCK_SOUND.BUKKIT)) != null) {

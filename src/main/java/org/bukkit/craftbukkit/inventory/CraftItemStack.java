@@ -28,7 +28,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Dynamic;
 
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.component.type.ProfileComponent;
@@ -236,7 +236,11 @@ public final class CraftItemStack extends ItemStack {
 
     @Override
     public int getEnchantmentLevel(Enchantment ench) {
-        return (handle == null) ? 0 : EnchantmentHelper.getLevel(CardboardEnchantment.getRaw(ench), handle);
+        
+        return (handle == null) ? 0 : EnchantmentHelper.getLevel(CardboardEnchantment.bukkitToMinecraftHolder(ench), handle);
+
+    	
+    	//return (handle == null) ? 0 : EnchantmentHelper.getLevel(CardboardEnchantment.getRaw(ench), handle);
     }
     
     @Override
@@ -305,7 +309,7 @@ public final class CraftItemStack extends ItemStack {
             return ImmutableMap.of();
         }
         ImmutableMap.Builder result = ImmutableMap.builder();
-        list.getEnchantmentsMap().forEach(entry -> {
+        list.getEnchantmentEntries().forEach(entry -> {
             RegistryEntry id = (RegistryEntry)entry.getKey();
             int level = entry.getIntValue();
             // TODO
@@ -373,7 +377,7 @@ public final class CraftItemStack extends ItemStack {
         return CraftItemStack.getItemMeta(item, material, null);
     }
 
-    public static ItemMeta getItemMeta(net.minecraft.item.ItemStack item, Material material, Set<DataComponentType<?>> extraHandledDcts) {
+    public static ItemMeta getItemMeta(net.minecraft.item.ItemStack item, Material material, Set<ComponentType<?>> extraHandledDcts) {
         if (!CraftItemStack.hasItemMeta(item)) {
             return CraftItemFactory.instance().getItemMeta(material);
         }

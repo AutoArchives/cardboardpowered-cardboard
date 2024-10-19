@@ -82,11 +82,11 @@ import net.minecraft.SharedConstants;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.item.TooltipType;
 import net.minecraft.datafixer.Schemas;
 import net.minecraft.datafixer.TypeReferences;
 import net.minecraft.item.Item;
 import net.minecraft.item.SpawnEggItem;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
@@ -418,7 +418,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         IMixinMaterial mm = (IMixinMaterial)(Object) mat;
         if (!mm.isModded()) return null;
 
-        Identifier id = new Identifier(mm.getModdedData().getId());
+        Identifier id = Identifier.of(mm.getModdedData().getId());
         Item item = Registries.ITEM.get(id);
         MATERIAL_ITEM.put(mat, item);
         return item;
@@ -433,7 +433,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         IMixinMaterial mm = (IMixinMaterial)(Object) mat;
         if (!mm.isModded()) return null;
 
-        Identifier id = new Identifier(mm.getModdedData().getId());
+        Identifier id = Identifier.of(mm.getModdedData().getId());
         Block block = Registries.BLOCK.get(id);
         MATERIAL_BLOCK.put(mat, block);
         return block;

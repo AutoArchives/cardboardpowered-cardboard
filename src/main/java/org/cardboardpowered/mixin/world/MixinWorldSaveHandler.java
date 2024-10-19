@@ -11,7 +11,7 @@ import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtSizeTracker;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.world.WorldSaveHandler;
+import net.minecraft.world.PlayerSaveHandler;
 import org.cardboardpowered.impl.entity.PlayerImpl;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -23,7 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.Optional;
 
-@Mixin(value = WorldSaveHandler.class, priority = 999)
+@Mixin(value = PlayerSaveHandler.class, priority = 999)
 public class MixinWorldSaveHandler implements IMixinWorldSaveHandler {
 
     @Shadow

@@ -13,7 +13,7 @@ import net.minecraft.component.Component;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.ComponentMap;
 import net.minecraft.component.ComponentMapImpl;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.nbt.NbtCompound;
@@ -74,7 +74,7 @@ implements BlockStateMeta {
         this.blockEntityTag = te.blockEntityTag;
     }
 
-    CraftMetaBlockState(ComponentChanges tag, Material material, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaBlockState(ComponentChanges tag, Material material, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         this.material = material;
         CraftMetaBlockState.getOrEmpty(tag, BLOCK_ENTITY_TAG).ifPresent(nbt -> {
@@ -88,7 +88,7 @@ implements BlockStateMeta {
             map.applyChanges(tag);
             TrackedDataComponentMap track = new TrackedDataComponentMap(map);
             this.blockEntityTag.applyComponents(track, tag);
-            for (DataComponentType<?> seen : track.seen) {
+            for (ComponentType<?> seen : track.seen) {
                 // TODO: 1.20.6
             	// this.unhandledTags.clear(seen);
             }
@@ -97,7 +97,7 @@ implements BlockStateMeta {
 
     CraftMetaBlockState(Map<String, Object> map) {
         super(map);
-        String matName = SerializableMeta.getString(map, "blockMaterial", true);
+        String matName = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getString(map, "blockMaterial", true);
         Material m = Material.getMaterial((String)matName);
         this.material = m != null ? m : Material.AIR;
         this.blockEntityTag = CraftMetaBlockState.getBlockState(this.material, this.internalTag);
@@ -238,7 +238,7 @@ implements BlockStateMeta {
 
     private static final class TrackedDataComponentMap
     implements ComponentMap {
-        private final Set<DataComponentType<?>> seen = new HashSet();
+        private final Set<ComponentType<?>> seen = new HashSet();
         private final ComponentMap handle;
 
         public TrackedDataComponentMap(ComponentMap map) {
@@ -246,13 +246,13 @@ implements BlockStateMeta {
         }
 
         @Override
-        public <T> T get(DataComponentType<? extends T> type) {
+        public <T> T get(ComponentType<? extends T> type) {
             this.seen.add(type);
             return this.handle.get(type);
         }
 
         @Override
-        public Set<DataComponentType<?>> getTypes() {
+        public Set<ComponentType<?>> getTypes() {
             return this.handle.getTypes();
         }
 

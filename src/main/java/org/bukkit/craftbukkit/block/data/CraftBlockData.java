@@ -13,8 +13,12 @@ import net.minecraft.block.BlockState;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.IntProperty;
@@ -27,6 +31,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.EmptyBlockView;
 
+import org.apache.commons.lang3.mutable.MutableDouble;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -747,15 +752,35 @@ public class CraftBlockData implements BlockData {
 		}
 
 		@Override
-		public float getDestroySpeed(@NotNull ItemStack itemStack, boolean considerEnchants) {
-	        int enchantLevel;
+		public float getDestroySpeed(ItemStack itemStack, boolean considerEnchants) {
 	        net.minecraft.item.ItemStack nmsItemStack = CraftItemStack.unwrap(itemStack);
 	        float speed = nmsItemStack.getMiningSpeedMultiplier(this.state);
-	        if (speed > 1.0f && considerEnchants && (enchantLevel = EnchantmentHelper.getLevel(Enchantments.EFFICIENCY, nmsItemStack)) > 0) {
-	            speed += (float)(enchantLevel * enchantLevel + 1);
+	        if (speed > 1.0f && considerEnchants) {
+	            RegistryEntry<EntityAttribute> attribute = EntityAttributes.PLAYER_MINING_EFFICIENCY;
+	            double initialBaseValue = attribute.value().getDefaultValue();
+	            MutableDouble modifiedBaseValue = new MutableDouble(initialBaseValue);
+	            MutableDouble baseValMul = new MutableDouble(1.0);
+	            MutableDouble totalValMul = new MutableDouble(1.0);
+	            EnchantmentHelper.applyAttributeModifiers(nmsItemStack, EquipmentSlot.MAINHAND, (attributeHolder, attributeModifier) -> {
+	                switch (attributeModifier.operation()) {
+	                    case ADD_VALUE: {
+	                        modifiedBaseValue.add(attributeModifier.value());
+	                        break;
+	                    }
+	                    case ADD_MULTIPLIED_BASE: {
+	                        baseValMul.add(attributeModifier.value());
+	                        break;
+	                    }
+	                    case ADD_MULTIPLIED_TOTAL: {
+	                        totalValMul.setValue(totalValMul.doubleValue() * (1.0 + attributeModifier.value()));
+	                    }
+	                }
+	            });
+	            double actualModifier = modifiedBaseValue.doubleValue() * baseValMul.doubleValue() * totalValMul.doubleValue();
+	            speed += (float)attribute.value().clamp(actualModifier);
 	        }
 	        return speed;
-		}
+	    }
 
 		// 1.20.2 API
 		@Override

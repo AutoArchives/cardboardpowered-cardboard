@@ -15,7 +15,7 @@ public final class CraftNamespacedKey {
     }
 
     public static NamespacedKey fromString(String string) {
-        return fromMinecraft(new Identifier(string));
+        return fromMinecraft(Identifier.of(string));
     }
 
     public static NamespacedKey fromMinecraft(Identifier minecraft) {
@@ -23,7 +23,7 @@ public final class CraftNamespacedKey {
     }
 
     public static Identifier toMinecraft(NamespacedKey key) {
-        return new Identifier(key.getNamespace(), key.getKey());
+        return Identifier.of(key.getNamespace(), key.getKey());
     }
 
 }

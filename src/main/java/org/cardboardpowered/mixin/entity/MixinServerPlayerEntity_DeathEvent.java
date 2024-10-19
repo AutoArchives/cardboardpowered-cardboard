@@ -18,6 +18,7 @@ import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 import com.javazilla.bukkitfabric.interfaces.IMixinInventory;
 import com.mojang.authlib.GameProfile;
 
+import net.minecraft.component.EnchantmentEffectComponentTypes;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTracker;
@@ -26,6 +27,7 @@ import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 // import net.minecraft.scoreboard.ScoreboardPlayerScore;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameRules;
@@ -66,7 +68,7 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
         
         if (!keepInventory) {
             for (net.minecraft.item.ItemStack item : ((IMixinInventory) ((ServerPlayerEntity) (Object) this).getInventory()).getContents()) {
-                if (!item.isEmpty() && !EnchantmentHelper.hasVanishingCurse(item)) {
+                if (!item.isEmpty() && !EnchantmentHelper.hasAnyEnchantmentsWith(item, EnchantmentEffectComponentTypes.PREVENT_EQUIPMENT_DROP)) {
                     loot.add(CraftItemStack.asCraftMirror(item));
                 }
             }
@@ -124,7 +126,10 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
             target = "Lnet/minecraft/server/network/ServerPlayerEntity;isSpectator()Z"))
     private void cardboard$check_event_drops(DamageSource damageSource, CallbackInfo ci) {
         // SPIGOT-5478 must be called manually now
-    	cb$this().dropXp();
+    	// cb$this().dropXp(damageSource.getAttacker());
+    	
+    	this.dropXp(damageSource.getAttacker());
+    	
         // we clean the player's inventory after the EntityDeathEvent is called so plugins can get the exact state of the inventory.
         if (!cardboard$deathEvent.get().getKeepInventory()) {
         	cb$this().getInventory().clear();
@@ -133,13 +138,14 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
 
     @Redirect(method = "onDeath",
             at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/server/network/ServerPlayerEntity;drop(Lnet/minecraft/entity/damage/DamageSource;)V"))
-    private void cardboard$cancel_vanilla_drop(ServerPlayerEntity instance, DamageSource damageSource) {
+            target = "Lnet/minecraft/server/network/ServerPlayerEntity;drop(Lnet/minecraft/server/world/ServerWorld; Lnet/minecraft/entity/damage/DamageSource;)V"))
+    private void cardboard$cancel_vanilla_drop(ServerPlayerEntity instance, ServerWorld world, DamageSource damageSource) {
     }
     
     // Lnet/minecraft/world/entity/LivingEntity;dropAllDeathLoot(Lnet/minecraft/world/damagesource/DamageSource;)V
     // Lnet/minecraft/entity/LivingEntity;drop(Lnet/minecraft/entity/damage/DamageSource;)V
-
+    // Lnet/minecraft/entity/LivingEntity;drop(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;)V
+    
     
     // TODO: 1.20.4
     /*@Redirect(method = "onDeath", at = @At(value = "INVOKE",

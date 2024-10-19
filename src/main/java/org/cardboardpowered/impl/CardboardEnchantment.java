@@ -1,14 +1,17 @@
 package org.cardboardpowered.impl;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.enchantment.BindingCurseEnchantment;
-import net.minecraft.enchantment.VanishingCurseEnchantment;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.registry.tag.TagKey;
+import net.minecraft.text.TextContent;
+import net.minecraft.text.TranslatableTextContent;
+import net.minecraft.util.Util;
 
+import java.util.Locale;
 import java.util.Set;
 
 import org.bukkit.NamespacedKey;
@@ -25,6 +28,7 @@ import org.bukkit.entity.EntityCategory;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.cardboardpowered.adventure.CardboardAdventure;
 import org.jetbrains.annotations.NotNull;
 
 import io.papermc.paper.enchantments.EnchantmentRarity;
@@ -32,12 +36,26 @@ import me.isaiah.common.ICommonMod;
 
 public class CardboardEnchantment extends Enchantment implements Handleable<net.minecraft.enchantment.Enchantment> {
 
-    private final net.minecraft.enchantment.Enchantment target;
+    //private final net.minecraft.enchantment.Enchantment target;
 
-    private final NamespacedKey key;
-    private final net.minecraft.enchantment.Enchantment handle;
-    private final int id;
+    //private final NamespacedKey key;
+    //private final net.minecraft.enchantment.Enchantment handle;
+    //private final int id;
     
+    private final NamespacedKey key;
+    private final RegistryEntry<net.minecraft.enchantment.Enchantment> handle;
+	
+    public CardboardEnchantment(NamespacedKey key,  net.minecraft.enchantment.Enchantment handle) {
+        this.key = key;
+        this.handle = CraftRegistry.getMinecraftRegistry(RegistryKeys.ENCHANTMENT).getEntry(handle);
+    }
+    
+    @Override
+    public net.minecraft.enchantment.Enchantment getHandle() {
+        return this.handle.value();
+    }
+    
+    /*
     public CardboardEnchantment(NamespacedKey key, net.minecraft.enchantment.Enchantment handle) {
     	// super(CraftNamespacedKey.fromMinecraft(Registries.ENCHANTMENT.getId(handle)));
         this.key = key;
@@ -49,160 +67,78 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
     @Deprecated
     public CardboardEnchantment(net.minecraft.enchantment.Enchantment target) {
     	this(CraftNamespacedKey.fromMinecraft(Registries.ENCHANTMENT.getId(target)), target);
-    }
+    }*/
 
     @Override
     public int getMaxLevel() {
-        return target.getMaxLevel();
+        return getHandle().getMaxLevel();
     }
 
     @Override
     public int getStartLevel() {
-        return target.getMinLevel();
+        return getHandle().getMinLevel();
     }
 
     @Override
     public EnchantmentTarget getItemTarget() {
-        /*switch (target.target) {
-            case ARMOR:
-                return EnchantmentTarget.ARMOR;
-            case ARMOR_FEET:
-                return EnchantmentTarget.ARMOR_FEET;
-            case ARMOR_HEAD:
-                return EnchantmentTarget.ARMOR_HEAD;
-            case ARMOR_LEGS:
-                return EnchantmentTarget.ARMOR_LEGS;
-            case ARMOR_CHEST:
-                return EnchantmentTarget.ARMOR_TORSO;
-            case DIGGER:
-                return EnchantmentTarget.TOOL;
-            case WEAPON:
-                return EnchantmentTarget.WEAPON;
-            case BOW:
-                return EnchantmentTarget.BOW;
-            case FISHING_ROD:
-                return EnchantmentTarget.FISHING_ROD;
-            case BREAKABLE:
-                return EnchantmentTarget.BREAKABLE;
-            case WEARABLE:
-                return EnchantmentTarget.WEARABLE;
-            case TRIDENT:
-                return EnchantmentTarget.TRIDENT;
-            case CROSSBOW:
-                return EnchantmentTarget.CROSSBOW;
-            default:
-                return null;
-        }*/
     	
+    	// TODO: remove compact
     	String mc_ver = ICommonMod.getIServer().getMinecraftVersion();
     	if (mc_ver.contains("1.20.4") || mc_ver.contains("1.20.1")) {
-    		// TODO
     		return EnchantmentTarget.ALL;
     	}
     	
-    	throw new UnsupportedOperationException("Method no longer applicable. Use Tags instead.");
+    	throw new UnsupportedOperationException("Method no longer supported Use Tags instead.");
     }
 
     @Override
     public boolean isTreasure() {
-        return target.isTreasure();
+    	return this.handle.isIn(EnchantmentTags.TREASURE);
     }
 
     @Override
     public boolean isCursed() {
-        return target instanceof BindingCurseEnchantment || target instanceof VanishingCurseEnchantment;
+        return this.handle.isIn(EnchantmentTags.CURSE);
     }
 
     @Override
     public boolean canEnchantItem(ItemStack item) {
-        return target.isAcceptableItem(CraftItemStack.asNMSCopy(item));
+        return getHandle().isAcceptableItem(CraftItemStack.asNMSCopy(item));
     }
 
     @Override
     public String getName() {
-        switch (Registries.ENCHANTMENT.getRawId(target)) {
-            case 0:
-                return "PROTECTION_ENVIRONMENTAL";
-            case 1:
-                return "PROTECTION_FIRE";
-            case 2:
-                return "PROTECTION_FALL";
-            case 3:
-                return "PROTECTION_EXPLOSIONS";
-            case 4:
-                return "PROTECTION_PROJECTILE";
-            case 5:
-                return "OXYGEN";
-            case 6:
-                return "WATER_WORKER";
-            case 7:
-                return "THORNS";
-            case 8:
-                return "DEPTH_STRIDER";
-            case 9:
-                return "FROST_WALKER";
-            case 10:
-                return "BINDING_CURSE";
-            case 11:
-                return "DAMAGE_ALL";
-            case 12:
-                return "DAMAGE_UNDEAD";
-            case 13:
-                return "DAMAGE_ARTHROPODS";
-            case 14:
-                return "KNOCKBACK";
-            case 15:
-                return "FIRE_ASPECT";
-            case 16:
-                return "LOOT_BONUS_MOBS";
-            case 17:
-                return "SWEEPING_EDGE";
-            case 18:
-                return "DIG_SPEED";
-            case 19:
-                return "SILK_TOUCH";
-            case 20:
-                return "DURABILITY";
-            case 21:
-                return "LOOT_BONUS_BLOCKS";
-            case 22:
-                return "ARROW_DAMAGE";
-            case 23:
-                return "ARROW_KNOCKBACK";
-            case 24:
-                return "ARROW_FIRE";
-            case 25:
-                return "ARROW_INFINITE";
-            case 26:
-                return "LUCK";
-            case 27:
-                return "LURE";
-            case 28:
-                return "LOYALTY";
-            case 29:
-                return "IMPALING";
-            case 30:
-                return "RIPTIDE";
-            case 31:
-                return "CHANNELING";
-            case 32:
-                return "MULTISHOT";
-            case 33:
-                return "QUICK_CHARGE";
-            case 34:
-                return "PIERCING";
-            case 35:
-                return "MENDING";
-            case 36:
-                return "VANISHING_CURSE";
-            default:
-                return "UNKNOWN_ENCHANT_" + Registries.ENCHANTMENT.getId(target);
+        String keyName;
+        if (!this.getKey().getNamespace().equals("minecraft")) {
+            return this.getKey().toString();
         }
+        return switch (keyName = this.getKey().getKey().toUpperCase(Locale.ROOT)) {
+            case "PROTECTION" -> "PROTECTION_ENVIRONMENTAL";
+            case "FIRE_PROTECTION" -> "PROTECTION_FIRE";
+            case "FEATHER_FALLING" -> "PROTECTION_FALL";
+            case "BLAST_PROTECTION" -> "PROTECTION_EXPLOSIONS";
+            case "PROJECTILE_PROTECTION" -> "PROTECTION_PROJECTILE";
+            case "RESPIRATION" -> "OXYGEN";
+            case "AQUA_AFFINITY" -> "WATER_WORKER";
+            case "SHARPNESS" -> "DAMAGE_ALL";
+            case "SMITE" -> "DAMAGE_UNDEAD";
+            case "BANE_OF_ARTHROPODS" -> "DAMAGE_ARTHROPODS";
+            case "LOOTING" -> "LOOT_BONUS_MOBS";
+            case "EFFICIENCY" -> "DIG_SPEED";
+            case "UNBREAKING" -> "DURABILITY";
+            case "FORTUNE" -> "LOOT_BONUS_BLOCKS";
+            case "POWER" -> "ARROW_DAMAGE";
+            case "PUNCH" -> "ARROW_KNOCKBACK";
+            case "FLAME" -> "ARROW_FIRE";
+            case "INFINITY" -> "ARROW_INFINITE";
+            case "LUCK_OF_THE_SEA" -> "LUCK";
+            default -> keyName;
+        };
     }
 
     public static net.minecraft.enchantment.Enchantment getRaw(Enchantment enchantment) {
         if (enchantment instanceof EnchantmentWrapper) enchantment = ((EnchantmentWrapper) enchantment).getEnchantment();
-        if (enchantment instanceof CardboardEnchantment) return ((CardboardEnchantment) enchantment).target;
+        if (enchantment instanceof CardboardEnchantment) return ((CardboardEnchantment) enchantment).getHandle();
 
         return null;
     }
@@ -213,17 +149,12 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
         if (!(other instanceof CardboardEnchantment)) return false;
 
         CardboardEnchantment ench = (CardboardEnchantment) other;
-        return !target.canCombine(ench.target);
-    }
-
-    public net.minecraft.enchantment.Enchantment getHandle() {
-        return target;
+        return !net.minecraft.enchantment.Enchantment.canBeCombined(this.handle, ench.handle);
     }
 
     @Override
-    public @NotNull Component displayName(int arg0) {
-        // TODO Auto-generated method stub
-        return null;
+    public @NotNull Component displayName(int lev) {
+        return CardboardAdventure.asAdventure(net.minecraft.enchantment.Enchantment.getName(this.handle, lev));
     }
 
     @Override
@@ -234,7 +165,7 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 
     @Override
     public float getDamageIncrease(int arg0, @NotNull EntityCategory arg1) {
-    	return this.handle.getAttackDamage(arg0, this.guessEntityTypeFromEnchantmentCategory(arg1));
+    	throw new UnsupportedOperationException("Not supported for 1.21+");
     }
 
     @Override
@@ -244,25 +175,25 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 
     @Override
     public boolean isDiscoverable() {
-        // TODO Auto-generated method stub
-        return false;
+        return this.handle.isIn(EnchantmentTags.IN_ENCHANTING_TABLE) || this.handle.isIn(EnchantmentTags.ON_RANDOM_LOOT) || this.handle.isIn(EnchantmentTags.ON_MOB_SPAWN_EQUIPMENT) || this.handle.isIn(EnchantmentTags.TRADEABLE) || this.handle.isIn(EnchantmentTags.ON_TRADED_EQUIPMENT);
     }
 
     @Override
     public boolean isTradeable() {
-        // TODO Auto-generated method stub
-        return false;
+        return this.handle.isIn(EnchantmentTags.TRADEABLE);
     }
 
     @Override
-    public @NotNull String translationKey() {
-        // TODO Auto-generated method stub
-        return null;
+    public String translationKey() {
+        TextContent textContent = this.getHandle().description().getContent();
+        if (!(textContent instanceof TranslatableTextContent)) {
+            throw new UnsupportedOperationException("Description isn't translatable!");
+        }
+        TranslatableTextContent translatableContents = (TranslatableTextContent)textContent;
+        return translatableContents.getKey();
     }
 
-	public static void bukkitToMinecraft() {
-		// TODO Auto-generated method stub
-		
+	public static void bukkitToMinecraft_old() {
 	}
 	
     public static net.minecraft.enchantment.Enchantment bukkitToMinecraft(Enchantment bukkit) {
@@ -273,9 +204,10 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
     }
 
 	public static Enchantment minecraftHolderToBukkit(RegistryEntry<net.minecraft.enchantment.Enchantment> id) {
-		// TODO Auto-generated method stub
+        return CardboardEnchantment.minecraftToBukkit(id.value());
+
 		
-		return CardboardEnchantment.getByKey( CraftNamespacedKey.fromMinecraft(id.getKey().get().getValue()) );
+		// return CardboardEnchantment.getByKey( CraftNamespacedKey.fromMinecraft(id.getKey().get().getValue()) );
 		// return minecraftToBukkit(minecraft.value());
 		// return null;
 	}
@@ -288,12 +220,12 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
     
 	@Override
 	public int getMinModifiedCost(int level) {
-		return this.handle.getMinPower(level);
+		return this.getHandle().getMinPower(level);
 	}
 
 	@Override
 	public int getMaxModifiedCost(int level) {
-		return this.handle.getMaxPower(level);
+		return this.getHandle().getMaxPower(level);
 	}
 
 	// 1.20.3 API:
@@ -307,7 +239,7 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 
 	@Override
 	public String getTranslationKey() {
-		return this.handle.getTranslationKey();
+        return Util.createTranslationKey("enchantment", this.handle.getKey().get().getValue());
 	}
 	
 	// 1.20.6 API
@@ -319,7 +251,7 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 
 	@Override
 	public float getDamageIncrease(int level, @NotNull EntityType entityType) {
-        return this.handle.getAttackDamage(level, CraftMagicNumbers.getEntityTypes(entityType));
+		throw new UnsupportedOperationException("Not supported for 1.21+");
 	}
 	
     @Deprecated(forRemoval=true)
@@ -347,6 +279,10 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
         }
         return Registries.ENTITY_TYPE.getEntryList(tag).map(e2 -> e2.size() > 0 ? (net.minecraft.entity.EntityType)e2.get(0).value() : null).orElse(null);
     }
+
+	public static RegistryEntry<net.minecraft.enchantment.Enchantment> bukkitToMinecraftHolder(Enchantment key2) {
+        return CraftRegistry.bukkitToMinecraftHolder(key2, RegistryKeys.ENCHANTMENT);
+	}
 
 
 }

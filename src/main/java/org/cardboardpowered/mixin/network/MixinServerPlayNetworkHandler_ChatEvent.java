@@ -22,11 +22,11 @@ public abstract class MixinServerPlayNetworkHandler_ChatEvent extends ServerComm
 
     private static final AtomicIntegerFieldUpdater<ServerPlayNetworkHandler> chatSpamField = AtomicIntegerFieldUpdater.newUpdater(ServerPlayNetworkHandler.class, "messageCooldownBukkit");
 
-    @Shadow
-    public int teleportRequestTick;
+    // @Shadow
+    // public int prevTeleportCheckTicks;
 
-    @Shadow
-    public int ticks;
+    // @Shadow
+    // public int ticks;
 
     @Shadow
     public Vec3d requestedTeleportPos;

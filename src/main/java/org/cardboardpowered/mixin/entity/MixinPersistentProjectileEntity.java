@@ -24,12 +24,13 @@ public abstract class MixinPersistentProjectileEntity implements IMixinPersisten
 
     @Shadow public boolean inGround;
     @Shadow public int life;
-    @Shadow public int punch;
+    // @Shadow public int punch;
     @Shadow public PersistentProjectileEntity.PickupPermission pickupType;
 
     @Override
     public int getPunchBF() {
-        return punch;
+        // API Removed
+    	return 0;
     }
 
     @Override

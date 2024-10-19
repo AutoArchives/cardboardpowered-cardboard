@@ -35,7 +35,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class LootTableImpl implements org.bukkit.loot.LootTable {
 
-    public static final LootContextParameter<Integer> LOOTING_MOD = new LootContextParameter<>(new Identifier("bukkit:looting_mod")); // CraftBukkit
+    public static final LootContextParameter<Integer> LOOTING_MOD = new LootContextParameter<>(Identifier.of("bukkit:looting_mod")); // CraftBukkit
 	
     private final LootTable handle;
     private final NamespacedKey key;
@@ -123,7 +123,7 @@ public class LootTableImpl implements org.bukkit.loot.LootTable {
 
             if (context.getKiller() != null) {
                 net.minecraft.entity.player.PlayerEntity nmsKiller = ((CraftHumanEntity) context.getKiller()).getHandle();
-                setMaybe(builder, LootContextParameters.KILLER_ENTITY, nmsKiller);
+                setMaybe(builder, LootContextParameters.ATTACKING_ENTITY, nmsKiller);
                 // If there is a player killer, damage source should reflect that in case loot tables use that information
                 setMaybe(builder, LootContextParameters.DAMAGE_SOURCE, handle.getDamageSources().playerAttack(nmsKiller));
                 setMaybe(builder, LootContextParameters.LAST_DAMAGE_PLAYER, nmsKiller); // SPIGOT-5603 - Set minecraft:killed_by_player
@@ -166,8 +166,8 @@ public class LootTableImpl implements org.bukkit.loot.LootTable {
         Location location = new Location(((IMixinWorld)info.getWorld()).getWorldImpl(), position.getX(), position.getY(), position.getZ());;
         LootContext.Builder contextBuilder = new LootContext.Builder(location);
 
-        if (info.hasParameter(LootContextParameters.KILLER_ENTITY)) {
-            CraftEntity killer = ((IMixinEntity) info.get(LootContextParameters.KILLER_ENTITY)).getBukkitEntity();
+        if (info.hasParameter(LootContextParameters.ATTACKING_ENTITY)) {
+            CraftEntity killer = ((IMixinEntity) info.get(LootContextParameters.ATTACKING_ENTITY)).getBukkitEntity();
             if (killer instanceof CraftHumanEntity) {
                 contextBuilder.killer((CraftHumanEntity) killer);
             }

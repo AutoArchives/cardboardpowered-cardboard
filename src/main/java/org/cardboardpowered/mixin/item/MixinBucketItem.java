@@ -37,7 +37,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(BucketItem.class)
 public class MixinBucketItem extends Item {
 
-    public MixinBucketItem(Settings settings) {
+    public MixinBucketItem(net.minecraft.item.Item.Settings settings) {
         super(settings);
     }
 

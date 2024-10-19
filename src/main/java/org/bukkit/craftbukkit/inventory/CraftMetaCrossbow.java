@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ChargedProjectilesComponent;
 import net.minecraft.item.ArrowItem;
@@ -40,7 +40,7 @@ implements CrossbowMeta {
         }
     }
 
-    CraftMetaCrossbow(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaCrossbow(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaCrossbow.getOrEmpty(tag, CHARGED_PROJECTILES).ifPresent(p -> {
             List<net.minecraft.item.ItemStack> list = p.getProjectiles();
@@ -56,7 +56,7 @@ implements CrossbowMeta {
 
     CraftMetaCrossbow(Map<String, Object> map) {
         super(map);
-        Iterable projectiles = SerializableMeta.getObject(Iterable.class, map, CraftMetaCrossbow.CHARGED_PROJECTILES.BUKKIT, true);
+        Iterable projectiles = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(Iterable.class, map, CraftMetaCrossbow.CHARGED_PROJECTILES.BUKKIT, true);
         if (projectiles != null) {
             for (Object stack : projectiles) {
                 if (!(stack instanceof ItemStack)) continue;

@@ -14,7 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import com.mojang.serialization.Lifecycle;
 
 import io.papermc.paper.registry.PaperRegistryAccess;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryLoader.Loader;
 import net.minecraft.registry.*;
 //import net.minecraft.registry.RegistryLoader.Loader;

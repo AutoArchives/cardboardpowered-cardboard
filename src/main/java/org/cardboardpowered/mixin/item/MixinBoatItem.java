@@ -59,7 +59,7 @@ public abstract class MixinBoatItem extends Item {
 
     @Shadow protected abstract BoatEntity createEntity(World world, HitResult hitResult, ItemStack stack, PlayerEntity player);
 
-    public MixinBoatItem(Settings settings) {
+    public MixinBoatItem(net.minecraft.item.Item.Settings settings) {
         super(settings);
     }
     

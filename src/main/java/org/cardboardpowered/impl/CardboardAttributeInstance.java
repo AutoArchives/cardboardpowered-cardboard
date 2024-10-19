@@ -1,12 +1,18 @@
 package org.cardboardpowered.impl;
 
+import net.kyori.adventure.key.Key;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.util.Identifier;
+
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.EquipmentSlotGroup;
+import org.cardboardpowered.adventure.CardboardAdventure;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -57,11 +63,6 @@ public class CardboardAttributeInstance implements AttributeInstance {
     }
 
     @Override
-    public void removeModifier(AttributeModifier modifier) {
-        handle.removeModifier(modifier.getUniqueId());
-    }
-
-    @Override
     public double getValue() {
         return handle.getValue();
     }
@@ -73,12 +74,25 @@ public class CardboardAttributeInstance implements AttributeInstance {
     }
 
     public static EntityAttributeModifier convert(AttributeModifier bukkit) {
-        return new EntityAttributeModifier(bukkit.getUniqueId(), bukkit.getName(), bukkit.getAmount(), EntityAttributeModifier.Operation.values()[bukkit.getOperation().ordinal()]);
+        
+    	// TODO
+    	
+    	Identifier pseudo_id = Identifier.of(bukkit.getName());
+    	
+        return new EntityAttributeModifier(pseudo_id, bukkit.getAmount(), EntityAttributeModifier.Operation.values()[bukkit.getOperation().ordinal()]);
+
+    	
+    	
+    	// return new EntityAttributeModifier(bukkit.getUniqueId(), bukkit.getName(), bukkit.getAmount(), EntityAttributeModifier.Operation.values()[bukkit.getOperation().ordinal()]);
     }
 
     public static AttributeModifier convert(EntityAttributeModifier nms) {
-    	IMixinEntityAttributeModifier ic = (IMixinEntityAttributeModifier) (Object) nms;
-        return new AttributeModifier(ic.IC$get_uuid(), nms.name, ic.IC$get_value(), AttributeModifier.Operation.values()[ic.IC$get_operation().ordinal()]);
+    	// IMixinEntityAttributeModifier ic = (IMixinEntityAttributeModifier) (Object) nms;
+    	
+    	return new AttributeModifier(CraftNamespacedKey.fromMinecraft(nms.id()).toString(), nms.value(), AttributeModifier.Operation.values()[nms.operation().ordinal()]);
+    	
+        // TODO
+    	// return new AttributeModifier(ic.IC$get_uuid(), nms.name, ic.IC$get_value(), AttributeModifier.Operation.values()[ic.IC$get_operation().ordinal()]);
     }
 
 	// @Override
@@ -89,28 +103,60 @@ public class CardboardAttributeInstance implements AttributeInstance {
     public static AttributeModifier convert(EntityAttributeModifier nms, EquipmentSlot slot) {
     	IMixinEntityAttributeModifier ic = (IMixinEntityAttributeModifier) (Object) nms;
     	
-        return new AttributeModifier(ic.IC$get_uuid(), nms.name, ic.IC$get_value(), AttributeModifier.Operation.values()[ic.IC$get_operation().ordinal()], slot);
+    	// TODO
+    	
+        return new AttributeModifier(ic.IC$get_uuid(), nms.id().toString(), ic.IC$get_value(), AttributeModifier.Operation.values()[ic.IC$get_operation().ordinal()], slot);
     }
 
 	@Override
 	public @Nullable AttributeModifier getModifier(@NotNull UUID uuid) {
-		EntityAttributeModifier modifier = this.handle.getModifier(uuid);
-		return modifier == null ? null : CardboardAttributeInstance.convert(modifier);
+		//EntityAttributeModifier modifier = this.handle.getModifier(AttributeMappings.uuidToKey(uuid));
+		// return modifier == null ? null : CardboardAttributeInstance.convert(modifier);
+		return this.getModifier(AttributeMappings.uuidToKey(uuid));
 	}
+	
+    public AttributeModifier getModifier(Key key) {
+        EntityAttributeModifier modifier = this.handle.getModifier(CardboardAdventure.asVanilla(key));
+        return modifier == null ? null : convert(modifier);
+    }
 
+    @Override
+    public void removeModifier(AttributeModifier modifier) {
+        // todo
+    	removeModifier(modifier.getUniqueId());
+    }
+	
 	@Override
 	public void removeModifier(@NotNull UUID uuid) {
-		this.handle.removeModifier(uuid);
+		this.removeModifier(AttributeMappings.uuidToKey(uuid));
 	}
+	
+	public void removeModifier(Key key) {
+        this.handle.removeModifier(CardboardAdventure.asVanilla(key));
+    }
 
     public static AttributeModifier convert(EntityAttributeModifier nms, AttributeModifierSlot slot) {
-        return new AttributeModifier(
-        		nms.uuid(),
-        		nms.name,
+        
+    	// TODO
+
+    	return new AttributeModifier(CraftNamespacedKey.fromMinecraft(nms.id()).toString(), nms.value(), AttributeModifier.Operation.values()[nms.operation().ordinal()]);
+    	
+    	/*
+    	return new AttributeModifier(
+        		nms.id(),
+        		null, // nms..name,
         		nms.value(),
         		AttributeModifier.Operation.values()[nms.operation().ordinal()],
         		Utils.getSlot(slot)
-        );
+        );*/
     }
+    
+    /*
+    public static AttributeModifier convert(EntityAttributeModifier nms) {
+        return new AttributeModifier(
+        		CraftNamespacedKey.fromMinecraft(nms.id()),
+        		nms.value(), AttributeModifier.Operation.values()[nms.operation().ordinal()], EquipmentSlotGroup.ANY);
+    }
+    */
 
 }

@@ -1019,7 +1019,7 @@ public enum CraftSound {
     }
 
     public static SoundEvent getSoundEffect(String s) {
-        SoundEvent effect = Registries.SOUND_EVENT.get(new Identifier(s));
+        SoundEvent effect = Registries.SOUND_EVENT.get(Identifier.of(s));
         Preconditions.checkArgument(effect != null, "Sound effect %s does not exist", s);
 
         return effect;

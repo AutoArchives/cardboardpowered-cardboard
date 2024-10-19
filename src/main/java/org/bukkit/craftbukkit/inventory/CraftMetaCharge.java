@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.FireworkExplosionComponent;
 import org.bukkit.FireworkEffect;
@@ -31,10 +31,10 @@ implements FireworkEffectMeta {
 
     CraftMetaCharge(Map<String, Object> map) {
         super(map);
-        this.setEffect(SerializableMeta.getObject(FireworkEffect.class, map, CraftMetaCharge.EXPLOSION.BUKKIT, true));
+        this.setEffect(org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(FireworkEffect.class, map, CraftMetaCharge.EXPLOSION.BUKKIT, true));
     }
 
-    CraftMetaCharge(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaCharge(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaCharge.getOrEmpty(tag, EXPLOSION).ifPresent(f2 -> {
             try {

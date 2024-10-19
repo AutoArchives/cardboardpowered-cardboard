@@ -5,7 +5,7 @@ import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.nbt.NbtCompound;
@@ -40,7 +40,7 @@ public class CraftMetaEntityTag extends CraftMetaItem {
         this.entityTag = entity.entityTag;
     }
 
-    CraftMetaEntityTag(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaEntityTag(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaEntityTag.getOrEmpty(tag, ENTITY_TAG).ifPresent(nbt -> {
             this.entityTag = nbt.copyNbt();

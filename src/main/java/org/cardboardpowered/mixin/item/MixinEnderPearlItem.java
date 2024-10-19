@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 @Mixin(value = EnderPearlItem.class, priority = 900)
 public class MixinEnderPearlItem extends Item {
 
-    public MixinEnderPearlItem(Settings settings) {
+    public MixinEnderPearlItem(net.minecraft.item.Item.Settings settings) {
         super(settings);
     }
 

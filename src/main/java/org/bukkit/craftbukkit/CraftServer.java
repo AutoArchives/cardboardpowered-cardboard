@@ -97,6 +97,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.dedicated.DedicatedPlayerManager;
 import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 import net.minecraft.server.dedicated.PendingServerCommand;
+import net.minecraft.server.dedicated.ServerPropertiesHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.ClickEvent;
@@ -108,7 +109,6 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.WorldSaveHandler;
 import net.minecraft.world.event.GameEvent;
 import org.apache.commons.lang.Validate;
 import org.bukkit.*;
@@ -330,8 +330,8 @@ import net.minecraft.registry.SimpleRegistry;
 import net.minecraft.village.ZombieSiegeManager;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.GameRules;
+import net.minecraft.world.PlayerSaveHandler;
 import net.minecraft.world.WanderingTraderManager;
-import net.minecraft.world.WorldSaveHandler;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.dimension.DimensionOptions;
 import net.minecraft.world.dimension.DimensionType;
@@ -1083,7 +1083,13 @@ public class CraftServer implements Server {
 
     @Override
     public boolean getAllowNether() {
-        return getServer().isNetherAllowed();
+    	return this.server.getProperties().allowNether;
+    	
+        // return getServer().isNetherAllowed();
+    }
+    
+    private ServerPropertiesHandler getProperties() {
+        return this.console.getProperties();
     }
 
     @Override
@@ -1272,7 +1278,7 @@ public class CraftServer implements Server {
 
     @Override
     public OfflinePlayer[] getOfflinePlayers() {
-        WorldSaveHandler storage = ((IMixinMinecraftServer)server).getSaveHandler_BF();
+        PlayerSaveHandler storage = ((IMixinMinecraftServer)server).getSaveHandler_BF();
         String[] files = storage.playerDataDir.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
@@ -2224,7 +2230,7 @@ public class CraftServer implements Server {
             inventoryCrafting.setStack(i, CraftItemStack.asNMSCopy(craftingMatrix[i]));
             ++i;
         }
-        return this.getServer().getRecipeManager().getFirstMatch(RecipeType.CRAFTING, inventoryCrafting, world.getHandle());
+        return this.getServer().getRecipeManager().getFirstMatch(RecipeType.CRAFTING, inventoryCrafting.createRecipeInput(), world.getHandle());
     }
 
     @Override

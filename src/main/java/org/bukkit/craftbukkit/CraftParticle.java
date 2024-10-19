@@ -120,7 +120,7 @@ public enum CraftParticle {
     }
 
     private CraftParticle(String minecraftKey) {
-        this.minecraftKey = new Identifier(minecraftKey);
+        this.minecraftKey = Identifier.of(minecraftKey);
 
         this.bukkit = Particle.valueOf(this.name());
         Preconditions.checkState(bukkit != null, "Bukkit particle %s does not exist", this.name());

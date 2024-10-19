@@ -31,8 +31,10 @@ public class ArrowImpl extends AbstractProjectile implements AbstractArrow {
 
     @Override
     public void setKnockbackStrength(int knockbackStrength) {
-        Validate.isTrue(knockbackStrength >= 0, "Knockback cannot be negative");
-        getHandle().setPunch(knockbackStrength);
+        // Removed in 1.21
+    	
+    	// Validate.isTrue(knockbackStrength >= 0, "Knockback cannot be negative");
+        // getHandle().setPunch(knockbackStrength);
     }
 
     @Override
@@ -127,7 +129,8 @@ public class ArrowImpl extends AbstractProjectile implements AbstractArrow {
 
     @Override
     public void setShotFromCrossbow(boolean shotFromCrossbow) {
-        getHandle().setShotFromCrossbow(shotFromCrossbow);
+        // Removed from 1.21
+    	// getHandle().setShotFromCrossbow(shotFromCrossbow);
     }
 
     @Override
@@ -149,12 +152,6 @@ public class ArrowImpl extends AbstractProjectile implements AbstractArrow {
     public boolean fromMobSpawner() {
         // TODO Auto-generated method stub
         return false;
-    }
-
-    @Override
-    public Chunk getChunk() {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     @Override

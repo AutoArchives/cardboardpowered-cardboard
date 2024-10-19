@@ -19,7 +19,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.WritableBookContentComponent;
 import net.minecraft.server.filter.FilteredMessage;
@@ -64,7 +64,7 @@ implements BookMeta // ,
         }
     }
 
-    CraftMetaBook(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaBook(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaBook.getOrEmpty(tag, BOOK_CONTENT).ifPresent(writable -> {
             List<RawFilteredPair<String>> pages = writable.pages();
@@ -79,7 +79,7 @@ implements BookMeta // ,
 
     CraftMetaBook(Map<String, Object> map) {
         super(map);
-        Iterable pages = SerializableMeta.getObject(Iterable.class, map, CraftMetaBook.BOOK_PAGES.BUKKIT, true);
+        Iterable pages = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(Iterable.class, map, CraftMetaBook.BOOK_PAGES.BUKKIT, true);
         if (pages != null) {
             this.pages = new ArrayList<String>();
             for (Object page : pages) {

@@ -30,8 +30,8 @@ public enum CraftStatistic {
     LEAVE_GAME(Stats.LEAVE_GAME),
     JUMP(Stats.JUMP),
     DROP_COUNT(Stats.DROP),
-    DROP(new Identifier("dropped")),
-    PICKUP(new Identifier("picked_up")),
+    DROP(Identifier.ofVanilla("dropped")),
+    PICKUP(Identifier.ofVanilla("picked_up")),
     PLAY_ONE_MINUTE(Stats.PLAY_TIME),
     TOTAL_WORLD_TIME(Stats.TOTAL_WORLD_TIME),
     WALK_ONE_CM(Stats.WALK_ONE_CM),
@@ -48,12 +48,12 @@ public enum CraftStatistic {
     SPRINT_ONE_CM(Stats.SPRINT_ONE_CM),
     CROUCH_ONE_CM(Stats.CROUCH_ONE_CM),
     AVIATE_ONE_CM(Stats.AVIATE_ONE_CM),
-    MINE_BLOCK(new Identifier("mined")),
-    USE_ITEM(new Identifier("used")),
-    BREAK_ITEM(new Identifier("broken")),
-    CRAFT_ITEM(new Identifier("crafted")),
-    KILL_ENTITY(new Identifier("killed")),
-    ENTITY_KILLED_BY(new Identifier("killed_by")),
+    MINE_BLOCK(Identifier.ofVanilla("mined")),
+    USE_ITEM(Identifier.ofVanilla("used")),
+    BREAK_ITEM(Identifier.ofVanilla("broken")),
+    CRAFT_ITEM(Identifier.ofVanilla("crafted")),
+    KILL_ENTITY(Identifier.ofVanilla("killed")),
+    ENTITY_KILLED_BY(Identifier.ofVanilla("killed_by")),
     TIME_SINCE_DEATH(Stats.TIME_SINCE_DEATH),
     TALKED_TO_VILLAGER(Stats.TALKED_TO_VILLAGER),
     TRADED_WITH_VILLAGER(Stats.TRADED_WITH_VILLAGER),
@@ -160,7 +160,7 @@ public enum CraftStatistic {
 
     public static net.minecraft.stat.Stat getEntityStatistic(org.bukkit.Statistic stat, EntityType entity) {
         if (entity.getName() != null) {
-            net.minecraft.entity.EntityType<?> nmsEntity = Registries.ENTITY_TYPE.get(new Identifier(entity.getName()));
+            net.minecraft.entity.EntityType<?> nmsEntity = Registries.ENTITY_TYPE.get(Identifier.ofVanilla(entity.getName()));
             if (stat == org.bukkit.Statistic.KILL_ENTITY)
                 return net.minecraft.stat.Stats.KILLED.getOrCreateStat(nmsEntity);
             if (stat == org.bukkit.Statistic.ENTITY_KILLED_BY)

@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.nbt.NbtCompound;
@@ -44,7 +44,7 @@ implements ArmorStandMeta {
         this.entityTag = armorStand.entityTag;
     }
 
-    CraftMetaArmorStand(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaArmorStand(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaArmorStand.getOrEmpty(tag, ENTITY_TAG).ifPresent(nbt -> {
             this.entityTag = nbt.copyNbt();

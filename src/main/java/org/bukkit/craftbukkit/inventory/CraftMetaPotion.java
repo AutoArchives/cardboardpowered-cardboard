@@ -12,7 +12,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -60,7 +60,7 @@ implements PotionMeta {
         }
     }
 
-    CraftMetaPotion(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaPotion(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaPotion.getOrEmpty(tag, POTION_CONTENTS).ifPresent(potionContents -> {
             potionContents.potion().ifPresent(potion -> {
@@ -95,14 +95,14 @@ implements PotionMeta {
         super(map);
         Iterable rawEffectList;
         Color color;
-        String typeString = SerializableMeta.getString(map, CraftMetaPotion.DEFAULT_POTION.BUKKIT, true);
+        String typeString = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getString(map, CraftMetaPotion.DEFAULT_POTION.BUKKIT, true);
         if (typeString != null) {
             this.type = CraftPotionType.stringToBukkit(typeString);
         }
-        if ((color = SerializableMeta.getObject(Color.class, map, CraftMetaPotion.POTION_COLOR.BUKKIT, true)) != null) {
+        if ((color = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(Color.class, map, CraftMetaPotion.POTION_COLOR.BUKKIT, true)) != null) {
             this.setColor(color);
         }
-        if ((rawEffectList = SerializableMeta.getObject(Iterable.class, map, CraftMetaPotion.POTION_EFFECTS.BUKKIT, true)) == null) {
+        if ((rawEffectList = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(Iterable.class, map, CraftMetaPotion.POTION_EFFECTS.BUKKIT, true)) == null) {
             return;
         }
         for (Object obj : rawEffectList) {

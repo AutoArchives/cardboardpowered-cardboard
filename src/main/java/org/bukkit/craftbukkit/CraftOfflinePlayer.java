@@ -25,8 +25,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.WhitelistEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.GlobalPos;
-import net.minecraft.world.WorldSaveHandler;
-
+import net.minecraft.world.PlayerSaveHandler;
 import org.bukkit.BanEntry;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
@@ -52,7 +51,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
     private final GameProfile profile;
     private final CraftServer server;
-    private final WorldSaveHandler storage;
+    private final PlayerSaveHandler storage;
 
     protected CraftOfflinePlayer(CraftServer server, GameProfile profile) {
         this.server = server;

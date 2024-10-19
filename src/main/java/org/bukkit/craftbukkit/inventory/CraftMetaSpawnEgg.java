@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.nbt.NbtCompound;
@@ -130,7 +130,7 @@ implements SpawnEggMeta {
         this.updateMaterial(null);
     }
 
-    CraftMetaSpawnEgg(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaSpawnEgg(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaSpawnEgg.getOrEmpty(tag, ENTITY_TAG).ifPresent(nbt -> {
             this.entityTag = nbt.copyNbt();
@@ -139,7 +139,7 @@ implements SpawnEggMeta {
 
     CraftMetaSpawnEgg(Map<String, Object> map) {
         super(map);
-        String entityType = SerializableMeta.getString(map, CraftMetaSpawnEgg.ENTITY_ID.BUKKIT, true);
+        String entityType = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getString(map, CraftMetaSpawnEgg.ENTITY_ID.BUKKIT, true);
         if (entityType != null) {
             this.spawnedType = EntityType.fromName((String)entityType);
         }
@@ -152,7 +152,7 @@ implements SpawnEggMeta {
             Map map;
             String entityType;
             this.entityTag = tag.getCompound(CraftMetaSpawnEgg.ENTITY_TAG.NBT);
-            if (context instanceof Map && (entityType = SerializableMeta.getString(map = (Map)context, CraftMetaSpawnEgg.ENTITY_ID.BUKKIT, true)) != null) {
+            if (context instanceof Map && (entityType = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getString(map = (Map)context, CraftMetaSpawnEgg.ENTITY_ID.BUKKIT, true)) != null) {
                 this.spawnedType = EntityType.fromName((String)entityType);
             }
             if (this.spawnedType != null) {
@@ -162,7 +162,7 @@ implements SpawnEggMeta {
                 // empty if block
             }
             if (this.entityTag.contains(CraftMetaSpawnEgg.ENTITY_ID.NBT)) {
-                this.spawnedType = EntityType.fromName((String)new Identifier(this.entityTag.getString(CraftMetaSpawnEgg.ENTITY_ID.NBT)).getPath());
+                this.spawnedType = EntityType.fromName((String)Identifier.of(this.entityTag.getString(CraftMetaSpawnEgg.ENTITY_ID.NBT)).getPath());
             }
         }
     }

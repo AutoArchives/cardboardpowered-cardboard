@@ -23,7 +23,7 @@ import net.minecraft.world.World;
 @Mixin(value = ChorusFruitItem.class, priority = 900)
 public class MixinChorusFruitItem extends Item {
 
-    public MixinChorusFruitItem(Settings settings) {
+    public MixinChorusFruitItem(net.minecraft.item.Item.Settings settings) {
         super(settings);
     }
 

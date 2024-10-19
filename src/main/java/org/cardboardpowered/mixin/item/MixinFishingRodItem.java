@@ -15,6 +15,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FishingBobberEntity;
 import net.minecraft.item.FishingRodItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
@@ -28,9 +29,10 @@ public class MixinFishingRodItem {
     public void bukkitize(World world, PlayerEntity entityhuman, Hand enumhand, CallbackInfoReturnable<TypedActionResult<ItemStack>> ci) {
         if (null == entityhuman.fishHook) {
             ItemStack itemstack = entityhuman.getStackInHand(enumhand);
-            int i = EnchantmentHelper.getLure(itemstack);
-            int j = EnchantmentHelper.getLuckOfTheSea(itemstack);
-    
+
+            int i = (int)(EnchantmentHelper.getFishingTimeReduction((ServerWorld) world, itemstack, entityhuman) * 20.0f);
+            int j = EnchantmentHelper.getFishingLuckBonus((ServerWorld) world, itemstack, entityhuman);
+            
             FishingBobberEntity entityfishinghook = new FishingBobberEntity(entityhuman, world, j, i);
             PlayerFishEvent playerFishEvent = new PlayerFishEvent((org.bukkit.entity.Player) ((IMixinEntity)entityhuman).getBukkitEntity(), null, (org.bukkit.entity.FishHook) ((IMixinEntity)entityfishinghook).getBukkitEntity(), PlayerFishEvent.State.FISHING);
             Bukkit.getPluginManager().callEvent(playerFishEvent);

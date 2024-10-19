@@ -120,14 +120,14 @@ public class CardboardAdventure {
     // Key
 
     public static Identifier asVanilla(final Key key) {
-        return new Identifier(key.namespace(), key.value());
+        return Identifier.of(key.namespace(), key.value());
     }
 
     public static Identifier asVanillaNullable(final Key key) {
         if (key == null) {
             return null;
         }
-        return new Identifier(key.namespace(), key.value());
+        return Identifier.of(key.namespace(), key.value());
     }
 
     // Component

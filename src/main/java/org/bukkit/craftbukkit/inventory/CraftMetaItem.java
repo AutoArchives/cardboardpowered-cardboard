@@ -24,8 +24,6 @@ import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
 import net.minecraft.component.type.*;
 import net.minecraft.component.*;
 import net.minecraft.entity.EquipmentSlot;
@@ -416,7 +414,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     private int version = CraftMagicNumbers.INSTANCE.getDataVersion(); // Internal use only*/
     
-    private static final Set<DataComponentType> HANDLED_TAGS = Sets.newHashSet();
+    private static final Set<ComponentType> HANDLED_TAGS = Sets.newHashSet();
     private static final CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new CraftPersistentDataTypeRegistry();
 
     private NbtCompound customTag;
@@ -503,7 +501,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         return result != null ? result : Optional.empty();
     }
     
-    CraftMetaItem(ComponentChanges tag, Set<DataComponentType<?>> extraHandledTags) {
+    CraftMetaItem(ComponentChanges tag, Set<ComponentType<?>> extraHandledTags) {
         CraftMetaItem.getOrEmpty(tag, NAME).ifPresent(component -> {
             this.displayName = component;
         });
@@ -612,11 +610,11 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }*/
         
 
-        Set<Map.Entry<DataComponentType<?>, Optional<?>>> keys = tag.entrySet();
-        for (Map.Entry<DataComponentType<?>, Optional<?>> key : keys) {
+        Set<Map.Entry<ComponentType<?>, Optional<?>>> keys = tag.entrySet();
+        for (Map.Entry<ComponentType<?>, Optional<?>> key : keys) {
             if (!CraftMetaItem.getHandledTags().contains(key.getKey())) {
                 key.getValue().ifPresentOrElse((value) -> {
-                    this.unhandledTags.add((DataComponentType) key.getKey(), value);
+                    this.unhandledTags.add((ComponentType) key.getKey(), value);
                 }, () -> {
                     this.unhandledTags.remove(key.getKey());
                 });
@@ -715,7 +713,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     static Map<Enchantment, Integer> buildEnchantments(ItemEnchantmentsComponent tag) {
         Map<Enchantment, Integer> enchantments = new LinkedHashMap<Enchantment, Integer>(tag.getSize());
   
-        tag.getEnchantmentsMap().forEach((entry) -> {
+        tag.getEnchantmentEntries().forEach((entry) -> {
             RegistryEntry<net.minecraft.enchantment.Enchantment> id = entry.getKey();
             int level = entry.getIntValue();
 
@@ -1286,9 +1284,9 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             itemTag.put(CraftMetaItem.MAX_DAMAGE, this.maxDamage);
         }
 
-        for (Map.Entry<DataComponentType<?>, Optional<?>> e : this.unhandledTags.build().entrySet()) {
+        for (Map.Entry<ComponentType<?>, Optional<?>> e : this.unhandledTags.build().entrySet()) {
             e.getValue().ifPresent((value) -> {
-                itemTag.builder.add((DataComponentType) e.getKey(), value);
+                itemTag.builder.add((ComponentType) e.getKey(), value);
             });
         }
 
@@ -1375,10 +1373,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         ItemEnchantmentsComponent.Builder list = new ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT);
 
         for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
-        	
-        	CardboardEnchantment.bukkitToMinecraft();
-        	
-            list.set(CardboardEnchantment.bukkitToMinecraft(entry.getKey()), entry.getValue());
+            list.set(CardboardEnchantment.bukkitToMinecraftHolder(entry.getKey()), entry.getValue());
         }
 
         // TODO: 1.20.6
@@ -2376,7 +2371,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         this.version = version;
     }
     
-    public static Set<DataComponentType> getHandledTags() {
+    public static Set<ComponentType> getHandledTags() {
         synchronized (CraftMetaItem.HANDLED_TAGS) {
             if (CraftMetaItem.HANDLED_TAGS.isEmpty()) {
                 CraftMetaItem.HANDLED_TAGS.addAll(Arrays.asList(
@@ -2614,17 +2609,17 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 	
     static final class ItemMetaKeyType<T>
     extends ItemMetaKey {
-        final DataComponentType<T> TYPE;
+        final ComponentType<T> TYPE;
 
-        ItemMetaKeyType(DataComponentType<T> type) {
+        ItemMetaKeyType(ComponentType<T> type) {
             this(type, null, null);
         }
 
-        ItemMetaKeyType(DataComponentType<T> type, String both) {
+        ItemMetaKeyType(ComponentType<T> type, String both) {
             this(type, both, both);
         }
 
-        ItemMetaKeyType(DataComponentType<T> type, String nbt, String bukkit) {
+        ItemMetaKeyType(ComponentType<T> type, String nbt, String bukkit) {
             super(nbt, bukkit);
             this.TYPE = type;
         }
@@ -2644,7 +2639,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             return this;
         }
 
-        <T> Applicator remove(DataComponentType<T> type) {
+        <T> Applicator remove(ComponentType<T> type) {
             this.builder.remove(type);
             return this;
         }
@@ -2726,10 +2721,10 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         ComponentChanges patch = tag.build();
         DynamicRegistryManager registryAccess = CraftRegistry.getMinecraftRegistry();
         RegistryOps<NbtElement> ops = registryAccess.getOps(NbtOps.INSTANCE);
-        Registry<DataComponentType<?>> componentTypeRegistry = registryAccess.get(RegistryKeys.DATA_COMPONENT_TYPE);
+        Registry<ComponentType<?>> componentTypeRegistry = registryAccess.get(RegistryKeys.DATA_COMPONENT_TYPE);
         StringJoiner componentString = new StringJoiner(",", "[", "]");
-        for (Map.Entry<DataComponentType<?>, Optional<?>> entry : patch.entrySet()) {
-            DataComponentType<?> componentType = entry.getKey();
+        for (Map.Entry<ComponentType<?>, Optional<?>> entry : patch.entrySet()) {
+            ComponentType<?> componentType = entry.getKey();
             Optional<?> componentValue = entry.getValue();
             String componentKey = componentTypeRegistry.getKey(componentType).orElseThrow().getValue().toString();
             if (!componentValue.isPresent()) continue;

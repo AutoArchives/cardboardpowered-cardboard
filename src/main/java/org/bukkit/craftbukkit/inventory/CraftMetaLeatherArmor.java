@@ -5,7 +5,7 @@ import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.DyedColorComponent;
 import org.bukkit.Color;
@@ -40,7 +40,7 @@ implements LeatherArmorMeta {
         CraftMetaLeatherArmor.readColor((LeatherArmorMeta)this, meta);
     }
 
-    CraftMetaLeatherArmor(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaLeatherArmor(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaLeatherArmor.readColor((LeatherArmorMeta)this, tag);
     }
@@ -144,7 +144,7 @@ implements LeatherArmorMeta {
     }
 
     static void readColor(LeatherArmorMeta meta, Map<String, Object> map) {
-        meta.setColor(SerializableMeta.getObject(Color.class, map, CraftMetaLeatherArmor.COLOR.BUKKIT, true));
+        meta.setColor(org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(Color.class, map, CraftMetaLeatherArmor.COLOR.BUKKIT, true));
     }
 
     static boolean hasColor(LeatherArmorMeta meta) {

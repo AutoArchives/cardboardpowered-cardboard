@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.FireworkExplosionComponent;
 import net.minecraft.component.type.FireworksComponent;
@@ -45,7 +45,7 @@ implements FireworkMeta {
         }
     }
 
-    CraftMetaFirework(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaFirework(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaFirework.getOrEmpty(tag, FIREWORKS).ifPresent(fireworks -> {
             this.power = fireworks.flightDuration();
@@ -134,11 +134,11 @@ implements FireworkMeta {
 
     CraftMetaFirework(Map<String, Object> map) {
         super(map);
-        Integer power = SerializableMeta.getObject(Integer.class, map, CraftMetaFirework.FLIGHT.BUKKIT, true);
+        Integer power = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(Integer.class, map, CraftMetaFirework.FLIGHT.BUKKIT, true);
         if (power != null) {
             this.power = power;
         }
-        Iterable effects = SerializableMeta.getObject(Iterable.class, map, CraftMetaFirework.EXPLOSIONS.BUKKIT, true);
+        Iterable effects = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(Iterable.class, map, CraftMetaFirework.EXPLOSIONS.BUKKIT, true);
         this.safelyAddEffects(effects, false);
     }
 

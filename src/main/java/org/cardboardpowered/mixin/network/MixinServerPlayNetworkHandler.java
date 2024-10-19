@@ -12,6 +12,7 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.ClientConnection;
+import net.minecraft.network.DisconnectionInfo;
 import net.minecraft.network.NetworkThreadUtils;
 import net.minecraft.network.PacketCallbacks;
 import net.minecraft.network.packet.c2s.common.ResourcePackStatusC2SPacket;
@@ -92,7 +93,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
     private static final AtomicIntegerFieldUpdater<ServerPlayNetworkHandler> chatSpamField = AtomicIntegerFieldUpdater.newUpdater(ServerPlayNetworkHandler.class, "messageCooldownBukkit");
 
     @Shadow
-    public int teleportRequestTick;
+    public int prevTeleportCheckTicks;
 
     @Shadow
     public int ticks;
@@ -152,7 +153,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
 
         IMixinPlayNetworkHandler im = (IMixinPlayNetworkHandler) get();
         im.cb_get_connection().send(new DisconnectS2CPacket(reason), PacketCallbacks.always(() -> im.cb_get_connection().disconnect(reason_final)));
-        get().onDisconnected(reason);
+        get().onDisconnected(new DisconnectionInfo(reason));
         //im.cb_get_connection().disableAutoRead();
         im.cb_get_connection().tryDisableAutoRead();
         
@@ -289,7 +290,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
         if (++this.requestedTeleportId == Integer.MAX_VALUE)
             this.requestedTeleportId = 0;
 
-        this.teleportRequestTick = this.ticks;
+        this.prevTeleportCheckTicks = this.ticks;
         this.player.updatePositionAndAngles(d0, d1, d2, f, f1);
 
         this.player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(d0 - d3, d1 - d4, d2 - d5, f - f2, f1 - f3, set, this.requestedTeleportId));
@@ -349,13 +350,13 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
                 if (this.ticks == 0) ((ServerPlayNetworkHandler)(Object)this).syncWithPlayerPosition();
 
                 if (this.requestedTeleportPos != null) {
-                    if (this.ticks - this.teleportRequestTick > 20) {
-                        this.teleportRequestTick = this.ticks;
+                    if (this.ticks - this.prevTeleportCheckTicks > 20) {
+                        this.prevTeleportCheckTicks = this.ticks;
                         this.requestTeleport(this.requestedTeleportPos.x, this.requestedTeleportPos.y, this.requestedTeleportPos.z, this.player.getYaw(), this.player.getPitch());
                     }
                     this.allowedPlayerTicks = 20; // Bukkit
                 } else {
-                    this.teleportRequestTick = this.ticks;
+                    this.prevTeleportCheckTicks = this.ticks;
                     double d0 = packet.getX(this.player.getX()); // clamp
                     double d1 = packet.getY(this.player.getY());
                     double d2 = packet.getZ(this.player.getZ());

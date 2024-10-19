@@ -305,7 +305,7 @@ public final class CraftLegacyMaterials {
                         continue;
 
                     String name = blockTag.get("Name").asString("");
-                    Block block = Registries.BLOCK.get(new Identifier(name));
+                    Block block = Registries.BLOCK.get(Identifier.of(name));
                     if (block == null)
                         continue;
                     BlockState blockData = block.getDefaultState();
@@ -372,7 +372,7 @@ public final class CraftLegacyMaterials {
                 if (newId.equals("minecraft:spawn_egg"))
                     newId = "minecraft:pig_spawn_egg";
 
-                Item newMaterial = Registries.ITEM.get(new Identifier(newId));
+                Item newMaterial = Registries.ITEM.get(Identifier.of(newId));
 
                 if (newMaterial == Items.AIR)
                     continue;

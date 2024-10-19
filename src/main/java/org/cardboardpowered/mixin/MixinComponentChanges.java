@@ -9,12 +9,12 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.Optional;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 
 @Mixin(ComponentChanges.Builder.class)
 public class MixinComponentChanges implements IComponentChanges {
 
-    @Shadow @Final private Reference2ObjectMap<DataComponentType<?>, Optional<?>> changes;
+    @Shadow @Final private Reference2ObjectMap<ComponentType<?>, Optional<?>> changes;
 
     @Override
     public void copy(ComponentChanges orig) {
@@ -22,7 +22,7 @@ public class MixinComponentChanges implements IComponentChanges {
     }
 
     @Override
-    public void clear(DataComponentType<?> type) {
+    public void clear(ComponentType<?> type) {
         this.changes.remove(type);
     }
 

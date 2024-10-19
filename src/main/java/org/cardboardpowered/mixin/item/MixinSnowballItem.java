@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 @Mixin(value = SnowballItem.class, priority = 900)
 public class MixinSnowballItem extends Item {
 
-    public MixinSnowballItem(Settings settings) {
+    public MixinSnowballItem(net.minecraft.item.Item.Settings settings) {
         super(settings);
     }
 

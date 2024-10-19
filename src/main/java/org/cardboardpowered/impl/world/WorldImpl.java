@@ -859,7 +859,7 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 	@SuppressWarnings("resource")
 	@Override
 	public Chunk[] getLoadedChunks() {
-		Long2ObjectLinkedOpenHashMap<ChunkHolder> chunks = ((IMixinThreadedAnvilChunkStorage) (nms.getChunkManager().threadedAnvilChunkStorage)).getChunkHoldersBF();
+		Long2ObjectLinkedOpenHashMap<ChunkHolder> chunks = ((IMixinThreadedAnvilChunkStorage) (nms.getChunkManager().chunkLoadingManager)).getChunkHoldersBF();
 		return chunks.values()
 				.stream()
 				.map(IMixinChunkHolder::getFullChunkNow)
@@ -1053,7 +1053,7 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 	@Override
 	public File getWorldFolder() {
 		// FIXME BROKEN (check for DMM1 & DMM-1)
-		return nms.getServer().getRunDirectory();
+		return nms.getServer().getRunDirectory().toFile();
 	}
 
 	@Override
@@ -1079,7 +1079,7 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 	@Override
 	public boolean isChunkGenerated(int x, int z) {
 		try {
-			return isChunkLoaded(x, z) || nms.getChunkManager().threadedAnvilChunkStorage.getNbt(new ChunkPos(x, z)) != null;
+			return isChunkLoaded(x, z) || nms.getChunkManager().chunkLoadingManager.getNbt(new ChunkPos(x, z)) != null;
 		} catch(Exception ex) {
 			throw new RuntimeException(ex);
 		}
@@ -2887,7 +2887,7 @@ public class WorldImpl extends CraftRegionAccessor implements World {
         if (!this.isChunkLoaded(x, z)) {
             return Collections.emptySet();
         }
-        List<ServerPlayerEntity> players = this.getHandle().getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(new ChunkPos(x, z), false);
+        List<ServerPlayerEntity> players = this.getHandle().getChunkManager().chunkLoadingManager.getPlayersWatchingChunk(new ChunkPos(x, z), false);
         if (players.isEmpty()) {
             return Collections.emptySet();
         }

@@ -28,7 +28,7 @@ import net.minecraft.util.hit.HitResult;
 @Mixin(EnderEyeItem.class)
 public class MixinEnderEyeItem extends Item {
 
-    public MixinEnderEyeItem(Settings settings) {
+    public MixinEnderEyeItem(net.minecraft.item.Item.Settings settings) {
         super(settings);
     }
 

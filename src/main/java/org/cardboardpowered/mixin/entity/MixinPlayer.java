@@ -75,6 +75,7 @@ import net.minecraft.screen.ScreenHandlerListener;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity.RespawnPos;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Identifier;
@@ -425,7 +426,8 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
             ((ServerPlayerEntity)(Object)this).totalExperience = entityplayer.totalExperience;
             ((ServerPlayerEntity)(Object)this).experienceProgress = entityplayer.experienceProgress;
             ((ServerPlayerEntity)(Object)this).setScore(entityplayer.getScore());
-            ((ServerPlayerEntity)(Object)this).lastNetherPortalPosition = entityplayer.lastNetherPortalPosition;
+            // TODO
+            //((ServerPlayerEntity)(Object)this).lastNetherPortalPosition = entityplayer.lastNetherPortalPosition;
         } else if (((ServerPlayerEntity)(Object)this).getWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || entityplayer.isSpectator()) {
             ((ServerPlayerEntity)(Object)this).inventory.clone(entityplayer.inventory);
             ((ServerPlayerEntity)(Object)this).experienceLevel = entityplayer.experienceLevel;
@@ -483,7 +485,8 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         	plr.unsetRemoved();
             Vec3d position = null;
             if (plr.getSpawnPointDimension() != null && (world = plr.server.getWorld(plr.getSpawnPointDimension())) != null && plr.getSpawnPointPosition() != null) {
-                position = PlayerEntity.findRespawnPosition((ServerWorld)world, plr.getSpawnPointPosition(), plr.getSpawnAngle(), false, false).orElse(null);
+                position = ServerPlayerEntity.findRespawnPosition((ServerWorld)world, plr.getSpawnPointPosition(), plr.getSpawnAngle(), false, false)
+                		.map(RespawnPos::pos).orElse(null);
             }
             if (world == null || position == null) {
                 world = ((WorldImpl)Bukkit.getServer().getWorlds().get(0)).getHandle();

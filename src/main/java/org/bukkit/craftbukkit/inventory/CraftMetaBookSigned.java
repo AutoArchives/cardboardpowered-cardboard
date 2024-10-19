@@ -16,7 +16,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.WrittenBookContentComponent;
 import net.minecraft.server.filter.FilteredMessage;
@@ -79,7 +79,7 @@ implements BookMeta {
         }
     }
 
-    CraftMetaBookSigned(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaBookSigned(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaBookSigned.getOrEmpty(tag, BOOK_CONTENT).ifPresent(written -> {
             this.title = written.title().raw();
@@ -97,9 +97,9 @@ implements BookMeta {
 
     CraftMetaBookSigned(Map<String, Object> map) {
         super(map);
-        this.setAuthor(SerializableMeta.getString(map, CraftMetaBookSigned.BOOK_AUTHOR.BUKKIT, true));
-        this.setTitle(SerializableMeta.getString(map, CraftMetaBookSigned.BOOK_TITLE.BUKKIT, true));
-        Iterable pages = SerializableMeta.getObject(Iterable.class, map, CraftMetaBookSigned.BOOK_PAGES.BUKKIT, true);
+        this.setAuthor(org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getString(map, CraftMetaBookSigned.BOOK_AUTHOR.BUKKIT, true));
+        this.setTitle(org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getString(map, CraftMetaBookSigned.BOOK_TITLE.BUKKIT, true));
+        Iterable pages = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(Iterable.class, map, CraftMetaBookSigned.BOOK_PAGES.BUKKIT, true);
         if (pages != null) {
             this.pages = new ArrayList<Text>();
             for (Object page : pages) {
@@ -107,8 +107,8 @@ implements BookMeta {
                 this.internalAddPage(CraftChatMessage.fromJSON(CraftChatMessage.fromJSONOrStringToJSON((String)page, false, true, 1024, false)));
             }
         }
-        this.resolved = SerializableMeta.getBoolean(map, CraftMetaBookSigned.RESOLVED.BUKKIT);
-        this.generation = SerializableMeta.getObjectOptionally(Integer.class, map, CraftMetaBookSigned.GENERATION.BUKKIT, true).orElse(0);
+        this.resolved = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getBoolean(map, CraftMetaBookSigned.RESOLVED.BUKKIT);
+        this.generation = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObjectOptionally(Integer.class, map, CraftMetaBookSigned.GENERATION.BUKKIT, true).orElse(0);
     }
 
     @Override

@@ -47,8 +47,8 @@ import net.minecraft.util.math.random.RandomSequencesState;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
 import net.minecraft.world.ForcedChunkState;
 import net.minecraft.world.PersistentStateManager;
+import net.minecraft.world.PlayerSaveHandler;
 import net.minecraft.world.SaveProperties;
-import net.minecraft.world.WorldSaveHandler;
 import net.minecraft.world.border.WorldBorder;
 import net.minecraft.world.dimension.DimensionOptions;
 import net.minecraft.world.gen.GeneratorOptions;
@@ -98,7 +98,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     }
 
    // @Shadow @Final public DynamicRegistryManager.Impl registryManager;
-    @Shadow @Final public WorldSaveHandler saveHandler;
+    @Shadow @Final public PlayerSaveHandler saveHandler;
     // @Shadow @Final private static Logger LOGGER;
     //@Shadow @Final public Executor workerExecutor;
    // @Shadow @Final public WorldGenerationProgressListenerFactory worldGenerationProgressListenerFactory;
@@ -126,7 +126,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     private boolean forceTicks;
 
     @Override
-    public WorldSaveHandler getSaveHandler_BF() {
+    public PlayerSaveHandler getSaveHandler_BF() {
         return saveHandler;
     }
 
@@ -193,7 +193,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     public void afterWorldLoad(CallbackInfo ci) {
         for (ServerWorld worldserver : ((MinecraftServer)(Object)this).getWorlds()) {
             if (worldserver != getOverworld()) {
-                this.loadSpawn(worldserver.getChunkManager().threadedAnvilChunkStorage.worldGenerationProgressListener, worldserver);
+                this.loadSpawn(worldserver.getChunkManager().chunkLoadingManager.worldGenerationProgressListener, worldserver);
                 CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldLoadEvent(((IMixinWorld)worldserver).getWorldImpl()));
             }
         }

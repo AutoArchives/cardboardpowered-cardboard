@@ -85,12 +85,16 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.AbstractWindChargeEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.DragonFireballEntity;
+import net.minecraft.entity.projectile.ExplosiveProjectileEntity;
+import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.entity.projectile.FishingBobberEntity;
 import net.minecraft.entity.projectile.LlamaSpitEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.ShulkerBulletEntity;
 import net.minecraft.entity.projectile.SmallFireballEntity;
 import net.minecraft.entity.projectile.SpectralArrowEntity;
@@ -106,6 +110,7 @@ import net.minecraft.item.Items;
 //<<<<<<< HEAD
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Chunk;
@@ -139,6 +144,9 @@ import org.cardboardpowered.impl.inventory.CardboardEntityEquipment;
 import org.cardboardpowered.impl.world.WorldImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -245,96 +253,9 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
         return nms;
     }
 
-    @SuppressWarnings({ "unchecked" })
     @Override
-    public <T extends Projectile> T launchProjectile(Class<? extends T> projectile, Vector arg1) {
-        net.minecraft.world.World world = ((WorldImpl) getWorld()).getHandle();
-        net.minecraft.entity.Entity launch = null;
-
-        if (Snowball.class.isAssignableFrom(projectile)) {
-            launch = new SnowballEntity(world, getHandle());
-            ((ThrownEntity) launch).setVelocity(getHandle(), getHandle().pitch, getHandle().yaw, 0.0F, 1.5F, 1.0F); // ItemSnowball
-        } else if (Egg.class.isAssignableFrom(projectile)) {
-            launch = new EggEntity(world, getHandle());
-            ((ThrownEntity) launch).setVelocity(getHandle(), getHandle().pitch, getHandle().yaw, 0.0F, 1.5F, 1.0F); // ItemEgg
-        } else if (EnderPearl.class.isAssignableFrom(projectile)) {
-            launch = new EnderPearlEntity(world, getHandle());
-            ((ThrownEntity) launch).setVelocity(getHandle(), getHandle().pitch, getHandle().yaw, 0.0F, 1.5F, 1.0F); // ItemEnderPearl
-        } else if (AbstractArrow.class.isAssignableFrom(projectile)) {
-            if (TippedArrow.class.isAssignableFrom(projectile)) {
-            	
-            	
-                launch = new ArrowEntity(world, getHandle(), new net.minecraft.item.ItemStack(Items.ARROW));
-                ((IMixinArrowEntity)(ArrowEntity) launch).setType(CardboardPotionUtil.fromBukkit(new PotionData(PotionType.WATER, false, false)));
-            } else if (SpectralArrow.class.isAssignableFrom(projectile)) {
-                launch = new SpectralArrowEntity(world, getHandle(), new net.minecraft.item.ItemStack(Items.ARROW));
-            } else if (Trident.class.isAssignableFrom(projectile)) {
-                launch = new TridentEntity(world, getHandle(), new net.minecraft.item.ItemStack(net.minecraft.item.Items.TRIDENT));
-            } else {
-                launch = new ArrowEntity(world, getHandle(), new net.minecraft.item.ItemStack(Items.ARROW));
-            }
-            ((PersistentProjectileEntity) launch).setVelocity(getHandle(), getHandle().pitch, getHandle().yaw, 0.0F, 3.0F, 1.0F); // ItemBow
-        } else if (ThrownPotion.class.isAssignableFrom(projectile)) {
-            if (LingeringPotion.class.isAssignableFrom(projectile)) {
-                launch = new PotionEntity(world, getHandle());
-                ((PotionEntity) launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.LINGERING_POTION, 1)));
-            } else {
-                launch = new PotionEntity(world, getHandle());
-                ((PotionEntity) launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.SPLASH_POTION, 1)));
-            }
-            ((ThrownEntity) launch).setVelocity(getHandle(), getHandle().pitch, getHandle().yaw, -20.0F, 0.5F, 1.0F); // ItemSplashPotion
-        } else if (ThrownExpBottle.class.isAssignableFrom(projectile)) {
-            launch = new ExperienceBottleEntity(world, getHandle());
-            ((ThrownEntity) launch).setVelocity(getHandle(), getHandle().pitch, getHandle().yaw, -20.0F, 0.7F, 1.0F); // ItemExpBottle
-        } else if (FishHook.class.isAssignableFrom(projectile) && getHandle() instanceof PlayerEntity) {
-            launch = new FishingBobberEntity((PlayerEntity) getHandle(), world, 0, 0);
-        } else if (Fireball.class.isAssignableFrom(projectile)) {
-            Location location = getEyeLocation();
-            Vector direction = location.getDirection().multiply(10);
-
-            if (SmallFireball.class.isAssignableFrom(projectile)) {
-                launch = new SmallFireballEntity(world, getHandle(), direction.getX(), direction.getY(), direction.getZ());
-            } else if (WitherSkull.class.isAssignableFrom(projectile)) {
-                launch = new WitherSkullEntity(world, getHandle(), direction.getX(), direction.getY(), direction.getZ());
-            } else if (DragonFireball.class.isAssignableFrom(projectile)) {
-                launch = new DragonFireballEntity(world, getHandle(), direction.getX(), direction.getY(), direction.getZ());
-            } else {
-               // launch = new FireballEntity(world, getHandle(), direction.getX(), direction.getY(), direction.getZ(), 0); // TODO 1.17: check last value
-            }
-
-            if (null != launch) {
-                ((IMixinEntity) launch).setProjectileSourceBukkit(this);
-                launch.refreshPositionAndAngles(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
-            }
-        } else if (LlamaSpit.class.isAssignableFrom(projectile)) {
-            Location location = getEyeLocation();
-            Vector direction = location.getDirection();
-
-            launch = net.minecraft.entity.EntityType.LLAMA_SPIT.create(world);
-
-            ((LlamaSpitEntity) launch).setOwner(getHandle());
-            ((LlamaSpitEntity) launch).setVelocity(direction.getX(), direction.getY(), direction.getZ(), 1.5F, 10.0F); // EntityLlama
-            launch.refreshPositionAndAngles(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
-        } else if (ShulkerBullet.class.isAssignableFrom(projectile)) {
-            Location location = getEyeLocation();
-
-            launch = new ShulkerBulletEntity(world, getHandle(), null, null);
-            launch.refreshPositionAndAngles(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
-        } else if (Firework.class.isAssignableFrom(projectile)) {
-            Location location = getEyeLocation();
-
-            launch = new FireworkRocketEntity(world, net.minecraft.item.ItemStack.EMPTY, getHandle());
-            launch.refreshPositionAndAngles(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
-        }
-
-        Validate.notNull(launch, "Projectile not supported");
-
-        if (arg1 != null) {
-            ((T) ((IMixinEntity)launch).getBukkitEntity()).setVelocity(arg1);
-        }
-
-        world.spawnEntity(launch);
-        return (T) ((IMixinEntity)launch).getBukkitEntity();
+    public <T extends Projectile> T launchProjectile(Class<? extends T> projectile, Vector velocity) {
+    	return this.launchProjectile(projectile, velocity, null);
     }
 
     @Override
@@ -425,7 +346,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public Entity getLeashHolder() throws IllegalStateException {
-        return ((IMixinEntity)((MobEntity) nms).getHoldingEntity()).getBukkitEntity();
+        return ((IMixinEntity)((MobEntity) nms).getLeashHolder()).getBukkitEntity();
     }
 
     private List<Block> getLineOfSight(Set<Material> transparent, int maxDistance, int maxLength) {
@@ -546,7 +467,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
     public boolean isLeashed() {
         if (!(getHandle() instanceof MobEntity))
             return false;
-        return ((MobEntity) getHandle()).getHoldingEntity() != null;
+        return ((MobEntity) getHandle()).getLeashHolder() != null;
     }
 
     @Override
@@ -930,7 +851,106 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 	
 	// @Override
 	public <T extends Projectile> T launchProjectile(Class<? extends T> projectile, Vector velocity, java.util.function.Consumer<? super T> function) {
-		return null;
+		ServerWorld world = ((WorldImpl)this.getWorld()).getHandle();
+        ProjectileEntity launch = null;
+        if (Snowball.class.isAssignableFrom(projectile)) {
+            launch = new SnowballEntity(world, this.getHandle());
+            ((ThrownEntity)launch).setVelocity(this.getHandle(), this.getHandle().getPitch(), this.getHandle().getYaw(), 0.0f, 1.5f, 1.0f);
+        } else if (Egg.class.isAssignableFrom(projectile)) {
+            launch = new EggEntity(world, this.getHandle());
+            ((ThrownEntity)launch).setVelocity(this.getHandle(), this.getHandle().getPitch(), this.getHandle().getYaw(), 0.0f, 1.5f, 1.0f);
+        } else if (EnderPearl.class.isAssignableFrom(projectile)) {
+            launch = new EnderPearlEntity(world, this.getHandle());
+            ((ThrownEntity)launch).setVelocity(this.getHandle(), this.getHandle().getPitch(), this.getHandle().getYaw(), 0.0f, 1.5f, 1.0f);
+        } else if (AbstractArrow.class.isAssignableFrom(projectile)) {
+            if (TippedArrow.class.isAssignableFrom(projectile)) {
+                launch = new ArrowEntity(world, this.getHandle(), new net.minecraft.item.ItemStack(Items.ARROW), null);
+                ((Arrow)launch.getBukkitEntity()).setBasePotionType(PotionType.WATER);
+            } else {
+                launch = SpectralArrow.class.isAssignableFrom(projectile) ? new SpectralArrowEntity(world, this.getHandle(), new net.minecraft.item.ItemStack(Items.SPECTRAL_ARROW), null) : (Trident.class.isAssignableFrom(projectile) ? new TridentEntity(world, this.getHandle(), new net.minecraft.item.ItemStack(Items.TRIDENT)) : new ArrowEntity(world, this.getHandle(), new net.minecraft.item.ItemStack(Items.ARROW), null));
+            }
+            ((PersistentProjectileEntity)launch).setVelocity(this.getHandle(), this.getHandle().getPitch(), this.getHandle().getYaw(), 0.0f, Trident.class.isAssignableFrom(projectile) ? 2.5f : 3.0f, 1.0f);
+        } else if (ThrownPotion.class.isAssignableFrom(projectile)) {
+            if (LingeringPotion.class.isAssignableFrom(projectile)) {
+                launch = new PotionEntity(world, this.getHandle());
+                ((PotionEntity)launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(Material.LINGERING_POTION, 1)));
+            } else {
+                launch = new PotionEntity(world, this.getHandle());
+                ((PotionEntity)launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(Material.SPLASH_POTION, 1)));
+            }
+            ((ThrownEntity)launch).setVelocity(this.getHandle(), this.getHandle().getPitch(), this.getHandle().getYaw(), -20.0f, 0.5f, 1.0f);
+        } else if (ThrownExpBottle.class.isAssignableFrom(projectile)) {
+            launch = new ExperienceBottleEntity(world, this.getHandle());
+            ((ThrownEntity)launch).setVelocity(this.getHandle(), this.getHandle().getPitch(), this.getHandle().getYaw(), -20.0f, 0.7f, 1.0f);
+        } else if (FishHook.class.isAssignableFrom(projectile) && this.getHandle() instanceof PlayerEntity) {
+            launch = new FishingBobberEntity((PlayerEntity)this.getHandle(), world, 0, 0);
+        } else if (Fireball.class.isAssignableFrom(projectile)) {
+            Location location = this.getEyeLocation();
+            Vector direction = location.getDirection().multiply(10);
+            Vec3d vec = new Vec3d(direction.getX(), direction.getY(), direction.getZ());
+            if (SmallFireball.class.isAssignableFrom(projectile)) {
+                launch = new SmallFireballEntity(world, this.getHandle(), vec);
+            } else if (WitherSkull.class.isAssignableFrom(projectile)) {
+                launch = new WitherSkullEntity(world, this.getHandle(), vec);
+            } else if (DragonFireball.class.isAssignableFrom(projectile)) {
+                launch = new DragonFireballEntity(world, this.getHandle(), vec);
+            } else if (AbstractWindCharge.class.isAssignableFrom(projectile)) {
+                launch = BreezeWindCharge.class.isAssignableFrom(projectile)
+                		? net.minecraft.entity.EntityType.BREEZE_WIND_CHARGE.create(world)
+                		: net.minecraft.entity.EntityType.WIND_CHARGE.create(world);
+                ((AbstractWindChargeEntity)launch).setOwner(this.getHandle());
+                ((AbstractWindChargeEntity)launch).setVelocity(this.getHandle(), this.getHandle().getPitch(), this.getHandle().getYaw(), 0.0f, 1.5f, 1.0f);
+            } else {
+                launch = new FireballEntity(world, this.getHandle(), vec, 1);
+            }
+            ((ExplosiveProjectileEntity)launch).setProjectileSourceBukkit(this);
+            // TODO: launch.preserveMotion = true;
+            launch.refreshPositionAndAngles(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+        } else if (LlamaSpit.class.isAssignableFrom(projectile)) {
+            Location location = this.getEyeLocation();
+            Vector direction = location.getDirection();
+            launch = net.minecraft.entity.EntityType.LLAMA_SPIT.create(world);
+            ((LlamaSpitEntity)launch).setOwner(this.getHandle());
+            ((LlamaSpitEntity)launch).setVelocity(direction.getX(), direction.getY(), direction.getZ(), 1.5f, 10.0f);
+            launch.refreshPositionAndAngles(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+        } else if (ShulkerBullet.class.isAssignableFrom(projectile)) {
+            Location location = this.getEyeLocation();
+            launch = new ShulkerBulletEntity(world, this.getHandle(), null, null);
+            launch.refreshPositionAndAngles(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+        } else if (Firework.class.isAssignableFrom(projectile)) {
+            Location location = this.getEyeLocation();
+            
+            // TODO
+            
+            /*
+            launch = new FireworkRocketEntity(world, FireworkRocketEntity.getDefaultStack(), this.getHandle(), location.getX(), location.getY() - (double)0.15f, location.getZ(), true);
+            float f2 = 0.0f;
+            int projectileSize = 1;
+            int i2 = 0;
+            float f3 = projectileSize == 1 ? 0.0f : 2.0f * f2 / (float)(projectileSize - 1);
+            float f4 = (float)((projectileSize - 1) % 2) * f3 / 2.0f;
+            float f5 = 1.0f;
+            float yaw = f4 + f5 * (float)((i2 + 1) / 2) * f3;
+            Vec3d vec3 = this.getHandle().getOppositeRotationVector(1.0f);
+            Quaternionf quaternionf = new Quaternionf().setAngleAxis((double)(yaw * ((float)Math.PI / 180)), vec3.x, vec3.y, vec3.z);
+            Vec3d vec32 = this.getHandle().getRotationVec(1.0f);
+            Vector3f vector3f = vec32.toVector3f().rotate((Quaternionfc)quaternionf);
+            ((FireworkRocketEntity)launch).setVelocity(vector3f.x(), vector3f.y(), vector3f.z(), 1.6f, 1.0f);
+            */
+            
+            launch = new FireworkRocketEntity(world, net.minecraft.item.ItemStack.EMPTY, getHandle());
+            launch.refreshPositionAndAngles(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+            
+        }
+        // Preconditions.checkArgument((launch != null ? 1 : 0) != 0, (String)"Projectile (%s) not supported", (Object)projectile.getName());
+        if (velocity != null) {
+            ((Projectile)launch.getBukkitEntity()).setVelocity(velocity);
+        }
+        if (function != null) {
+            function.accept((T) (Projectile) launch.getBukkitEntity());
+        }
+        world.spawnEntity(launch);
+        return (T)((Projectile)launch.getBukkitEntity());
 	}
 
 	@Override
@@ -946,15 +966,15 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 	}
 
 	public void broadcastSlotBreak(EquipmentSlot slot) {
-		this.getHandle().sendEquipmentBreakStatus( Utils.getNMS(slot));
+        this.getHandle().getWorld().sendEntityStatus(this.getHandle(), net.minecraft.entity.LivingEntity.getEquipmentBreakStatus(Utils.getNMS(slot)));
 	}
 
 	public void broadcastSlotBreak(EquipmentSlot slot, Collection<Player> players) {
 		if (players.isEmpty()) {
 			return;
 		}
-		// EntityStatusS2CPacket packet = new EntityStatusS2CPacket(this.getHandle(), net.minecraft.entity.LivingEntity.getEquipmentBreakStatus( Utils.getNMS(slot)));
-		// players.forEach(player -> ((PlayerImpl)player).getHandle().networkHandler.sendPacket(packet));
+		EntityStatusS2CPacket packet = new EntityStatusS2CPacket(this.getHandle(), net.minecraft.entity.LivingEntity.getEquipmentBreakStatus( Utils.getNMS(slot)));
+		players.forEach(player -> ((PlayerImpl)player).getHandle().networkHandler.sendPacket(packet));
 	}
 
 	@Override

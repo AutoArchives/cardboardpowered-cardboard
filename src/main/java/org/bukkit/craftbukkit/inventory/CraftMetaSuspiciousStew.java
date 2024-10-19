@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.SuspiciousStewEffectsComponent;
 import org.bukkit.Material;
@@ -43,7 +43,7 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
         }
     }
 
-    CraftMetaSuspiciousStew(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaSuspiciousStew(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         getOrEmpty(tag, CraftMetaSuspiciousStew.EFFECTS).ifPresent((suspiciousStewEffects) -> {
             List<SuspiciousStewEffectsComponent.StewEffect> list = suspiciousStewEffects.effects();

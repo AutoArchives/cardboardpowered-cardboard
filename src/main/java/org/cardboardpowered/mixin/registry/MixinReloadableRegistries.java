@@ -18,6 +18,7 @@ import java.util.concurrent.Executor;
 import net.minecraft.loot.LootDataType;
 import net.minecraft.registry.MutableRegistry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.registry.SimpleRegistry;
 import net.minecraft.registry.entry.RegistryEntryInfo;
@@ -44,7 +45,8 @@ public class MixinReloadableRegistries {
             SimpleRegistry writableRegistry = new SimpleRegistry(type.registryKey(), Lifecycle.experimental());
             PaperRegistryAccess.instance().registerReloadableRegistry(type.registryKey(), writableRegistry);
             HashMap<Identifier, JsonElement> map = new HashMap<Identifier, JsonElement>();
-            JsonDataLoader.load(resourceManager, type.directory(), GSON, map);
+            String string = RegistryKeys.getPath(type.registryKey());
+            JsonDataLoader.load(resourceManager, string, GSON, map);
             map.forEach((id, json) -> type.parse((Identifier)id, ops, json).ifPresent(value -> writableRegistry.add(RegistryKey.of(type.registryKey(), id), value, DEFAULT_REGISTRY_ENTRY_INFO)));
             return writableRegistry;
         }, prepareExecutor);

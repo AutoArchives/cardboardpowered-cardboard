@@ -12,9 +12,9 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.context.LootContext;
 import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.loot.function.LootingEnchantLootFunction;
+import net.minecraft.loot.function.EnchantedCountIncreaseLootFunction;
 
-@Mixin(LootingEnchantLootFunction.class)
+@Mixin(EnchantedCountIncreaseLootFunction.class)
 public class MixinLootingEnchantLootFunction {
 
     @Shadow

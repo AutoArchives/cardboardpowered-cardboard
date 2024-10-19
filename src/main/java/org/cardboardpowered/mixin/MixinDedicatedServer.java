@@ -60,10 +60,10 @@ public abstract class MixinDedicatedServer extends MixinMCServer implements IDed
 	@Inject(at = @At(value = "JUMP", ordinal = 8), method = "setupServer()Z") // TODO keep ordinal updated
 	private void init(CallbackInfoReturnable<Boolean> ci) {
 		// Register Bukkit Enchantments
-		for(Enchantment enchantment : Registries.ENCHANTMENT) {
+		// for(Enchantment enchantment : Registries.ENCHANTMENT) {
 			// TODO: check for 1.20.3+
 			// org.bukkit.enchantments.Enchantment.registerEnchantment(new CardboardEnchantment(enchantment));
-		}
+		//}
 
 		CraftMagicNumbers.test();
 		CraftMagicNumbers.setupUnknownModdedMaterials();

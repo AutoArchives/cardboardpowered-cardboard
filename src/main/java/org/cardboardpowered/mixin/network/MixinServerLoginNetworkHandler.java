@@ -435,7 +435,7 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
     private boolean transferred;
      
     /**
-     * @auther cardboard mod
+     * @author cardboard mod
      * @reason TODO: Injection here fails
      */
     @Overwrite

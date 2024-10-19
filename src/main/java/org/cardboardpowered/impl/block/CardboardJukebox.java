@@ -10,7 +10,6 @@ import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.block.Jukebox;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -102,8 +101,7 @@ public class CardboardJukebox extends CardboardBlockEntityState<JukeboxBlockEnti
             return;
         }
         JukeboxBlockEntity jukebox = (JukeboxBlockEntity)tileEntity;
-        jukebox.isPlaying = false;
-        this.getWorld().playEffect(this.getLocation(), Effect.IRON_DOOR_CLOSE, 0);
+        jukebox.getManager().stopPlaying(tileEntity.getWorld(), tileEntity.getCachedState());
     }
 
 	@Override
@@ -136,9 +134,7 @@ public class CardboardJukebox extends CardboardBlockEntityState<JukeboxBlockEnti
         if (record.isEmpty() || this.isPlaying()) {
             return false;
         }
-        jukebox.isPlaying = true;
-        jukebox.recordStartTick = jukebox.tickCount;
-        this.getWorld().playEffect(this.getLocation(), Effect.RECORD_PLAY, (Object)CraftMagicNumbers.getMaterial(record.getItem()));
+        jukebox.reloadDisc();
         return true;
 	}
 

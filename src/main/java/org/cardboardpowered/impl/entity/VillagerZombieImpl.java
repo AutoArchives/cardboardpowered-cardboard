@@ -6,6 +6,7 @@ import java.util.Locale;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.ZombieVillagerEntity;
 import net.minecraft.util.Identifier;
+import net.minecraft.village.VillagerProfession;
 import net.minecraft.registry.Registries;
 import org.apache.commons.lang.Validate;
 import org.bukkit.OfflinePlayer;
@@ -45,7 +46,9 @@ public class VillagerZombieImpl extends ZombieImpl implements ZombieVillager {
     @Override
     public void setVillagerProfession(Villager.Profession profession) {
         Validate.notNull(profession);
-        getHandle().setVillagerData(getHandle().getVillagerData().withProfession(Registries.VILLAGER_PROFESSION.get(new Identifier(profession.name().toLowerCase(Locale.ROOT)))));
+        Identifier id = Identifier.ofVanilla( profession.name().toLowerCase(Locale.ROOT) ); // new Identifier(profession.name().toLowerCase(Locale.ROOT));
+        VillagerProfession data = Registries.VILLAGER_PROFESSION.get(id);
+        getHandle().setVillagerData(getHandle().getVillagerData().withProfession(data));
     }
 
     @Override

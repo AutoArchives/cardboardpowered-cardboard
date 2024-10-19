@@ -21,10 +21,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(EndGatewayBlockEntity.class)
 public class MixinEndGatewayBlockEntity {
 
-	// I tried using LocalCapture but it kept making up
-	// that i was using ServerWorld which crashed the game
-	// So this messy solution will have to do
-
+	/*
 	@Shadow
 	private static void startTeleportCooldown(World world, BlockPos pos, BlockState state, EndGatewayBlockEntity be) {
 	}
@@ -75,5 +72,6 @@ public class MixinEndGatewayBlockEntity {
 		PlayerTeleportEvent teleEvent = new PlayerTeleportEvent(player, player.getLocation(), location, PlayerTeleportEvent.TeleportCause.END_GATEWAY);
 		return teleEvent.isCancelled() ? null : teleEvent.getTo();
 	}
+	*/
 
 }

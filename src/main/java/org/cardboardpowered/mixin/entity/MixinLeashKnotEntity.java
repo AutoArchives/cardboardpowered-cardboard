@@ -39,9 +39,9 @@ public class MixinLeashKnotEntity {
         MobEntity entityinsentient;
         while (iterator.hasNext()) {
             entityinsentient = (MobEntity) iterator.next();
-            if (entityinsentient.getHoldingEntity() == entityhuman) {
+            if (entityinsentient.getLeashHolder() == entityhuman) {
                 if (BukkitEventFactory.callPlayerLeashEntityEvent(entityinsentient, ((LeashKnotEntity)(Object)this), entityhuman).isCancelled()) {
-                    ((ServerPlayerEntity) entityhuman).networkHandler.sendPacket(new EntityAttachS2CPacket(entityinsentient, entityinsentient.getHoldingEntity()));
+                    ((ServerPlayerEntity) entityhuman).networkHandler.sendPacket(new EntityAttachS2CPacket(entityinsentient, entityinsentient.getLeashHolder()));
                     continue;
                 }
                 entityinsentient.attachLeash((LeashKnotEntity)(Object)this, true);
@@ -53,7 +53,7 @@ public class MixinLeashKnotEntity {
         iterator = list.iterator();
         while (iterator.hasNext()) {
             entityinsentient = (MobEntity) iterator.next();
-            if (entityinsentient.isLeashed() && entityinsentient.getHoldingEntity() == getBF()) {
+            if (entityinsentient.isLeashed() && entityinsentient.getLeashHolder() == getBF()) {
                 if (BukkitEventFactory.callPlayerUnleashEntityEvent(entityinsentient, entityhuman).isCancelled()) {
                     die = false;
                     continue;

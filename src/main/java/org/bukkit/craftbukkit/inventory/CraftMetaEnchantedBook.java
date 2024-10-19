@@ -5,7 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import org.bukkit.Material;
@@ -34,7 +34,7 @@ implements EnchantmentStorageMeta {
         }
     }
 
-    CraftMetaEnchantedBook(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaEnchantedBook(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaEnchantedBook.getOrEmpty(tag, STORED_ENCHANTMENTS).ifPresent(itemEnchantments -> {
             this.enchantments = CraftMetaEnchantedBook.buildEnchantments(itemEnchantments);

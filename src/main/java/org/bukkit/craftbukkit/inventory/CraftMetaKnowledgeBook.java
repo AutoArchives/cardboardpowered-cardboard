@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.util.Identifier;
 import org.bukkit.Material;
@@ -32,7 +32,7 @@ implements KnowledgeBookMeta {
         }
     }
 
-    CraftMetaKnowledgeBook(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaKnowledgeBook(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaKnowledgeBook.getOrEmpty(tag, BOOK_RECIPES).ifPresent(pages -> {
             for (int i2 = 0; i2 < pages.size(); ++i2) {

@@ -36,9 +36,11 @@ public interface IMixinChunkHolder {
         // Either<Chunk, ChunkHolder.Unloaded> either = statusFuture.getNow(null);
         // return (either == null) ? null : (WorldChunk) either.left().orElse(null);
         
-    	CompletableFuture<OptionalChunk<Chunk>> statusFuture = holder.getFutureFor(ChunkStatus.FULL);
-    	OptionalChunk<Chunk>  either = statusFuture.getNow(null);
-        return (either == null) ? null : (WorldChunk) either.orElse(null);
+    	return (WorldChunk) holder.getUncheckedOrNull(ChunkStatus.FULL);
+    	
+    	// CompletableFuture<OptionalChunk<Chunk>> statusFuture = holder.getFutureFor(ChunkStatus.FULL);
+    	// OptionalChunk<Chunk>  either = statusFuture.getNow(null);
+        // return (either == null) ? null : (WorldChunk) either.orElse(null);
         
     }
 

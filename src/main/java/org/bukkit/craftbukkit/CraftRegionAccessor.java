@@ -30,6 +30,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
 import net.minecraft.world.gen.feature.TreeConfiguredFeatures;
@@ -408,7 +409,9 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
         // Preconditions.checkArgument((!entity.isInWorld() ? 1 : 0) != 0, (Object)"Entity has already been added to a world");
         Entity nmsEntity = ((CraftEntity)entity).getHandle();
         if (nmsEntity.getWorld() != this.getHandle().toServerWorld()) {
-            nmsEntity = nmsEntity.moveToWorld(this.getHandle().toServerWorld());
+            
+            nmsEntity = nmsEntity.teleportTo(new TeleportTarget(this.getHandle().toServerWorld(), nmsEntity, TeleportTarget.NO_OP));
+        	// nmsEntity = nmsEntity.teleportTo(this.getHandle().toServerWorld());
         }
         this.addEntityWithPassengers(nmsEntity, CreatureSpawnEvent.SpawnReason.CUSTOM);
         return (T)((IMixinEntity)nmsEntity).getBukkitEntity();

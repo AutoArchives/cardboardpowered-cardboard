@@ -23,8 +23,8 @@ public class MixinTridentItem {
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;incrementStat(Lnet/minecraft/stat/Stat;)V"), method = "Lnet/minecraft/item/TridentItem;onStoppedUsing(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/entity/LivingEntity;I)V")
     public void doBukkitEvent_PlayerRiptideEvent(ItemStack itemstack, World world, LivingEntity entity, int i, CallbackInfo ci) {
-        int k = EnchantmentHelper.getRiptide(itemstack);
-        if (k > 0) {
+        float k = EnchantmentHelper.getTridentSpinAttackStrength(itemstack, entity);
+        if (k > 0.0f) {
             PlayerRiptideEvent event = new PlayerRiptideEvent((Player)((IMixinEntity)entity).getBukkitEntity(), CraftItemStack.asCraftMirror(itemstack));
             event.getPlayer().getServer().getPluginManager().callEvent(event);
         }

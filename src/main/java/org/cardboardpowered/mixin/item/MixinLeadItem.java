@@ -31,7 +31,7 @@ import java.util.List;
 @Mixin(value = LeadItem.class, priority = 900)
 public class MixinLeadItem extends Item {
 
-    public MixinLeadItem(Settings settings) {
+    public MixinLeadItem(net.minecraft.item.Item.Settings settings) {
         super(settings);
     }
 
@@ -52,7 +52,7 @@ public class MixinLeadItem extends Item {
 
         while(var11.hasNext()) {
             MobEntity mobEntity = (MobEntity)var11.next();
-            if (mobEntity.getHoldingEntity() == player) {
+            if (mobEntity.getLeashHolder() == player) {
                 if (leashKnotEntity == null) {
                     leashKnotEntity = LeashKnotEntity.getOrCreate(world, pos);
 

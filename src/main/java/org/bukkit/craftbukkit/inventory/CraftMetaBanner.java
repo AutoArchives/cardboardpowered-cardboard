@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BannerPatternsComponent;
 import org.bukkit.DyeColor;
@@ -40,7 +40,7 @@ implements BannerMeta {
         this.patterns = new ArrayList<Pattern>(banner.patterns);
     }
 
-    CraftMetaBanner(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaBanner(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaBanner.getOrEmpty(tag, PATTERNS).ifPresent(entityTag -> {
             List<BannerPatternsComponent.Layer> patterns = entityTag.layers();
@@ -56,7 +56,7 @@ implements BannerMeta {
 
     CraftMetaBanner(Map<String, Object> map) {
         super(map);
-        Iterable rawPatternList = SerializableMeta.getObject(Iterable.class, map, CraftMetaBanner.PATTERNS.BUKKIT, true);
+        Iterable rawPatternList = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(Iterable.class, map, CraftMetaBanner.PATTERNS.BUKKIT, true);
         if (rawPatternList == null) {
             return;
         }

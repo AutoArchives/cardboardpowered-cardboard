@@ -92,7 +92,7 @@ implements DataPackManager {
         Preconditions.checkArgument((world != null ? 1 : 0) != 0, (Object)"world cannot be null");
         Preconditions.checkArgument((entityType != org.bukkit.entity.EntityType.UNKNOWN ? 1 : 0) != 0, (Object)"EntityType.UNKNOWN its not allowed here");
         WorldImpl craftWorld = (WorldImpl)world;
-        EntityType<?> nmsEntity = Registries.ENTITY_TYPE.get(new Identifier(entityType.getKey().getKey()));
+        EntityType<?> nmsEntity = Registries.ENTITY_TYPE.get(Identifier.of(entityType.getKey().getKey()));
         return nmsEntity.isEnabled(craftWorld.getHandle().getEnabledFeatures());
     }
 

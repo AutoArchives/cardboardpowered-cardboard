@@ -19,9 +19,9 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.PlayerAssociatedNetworkHandler;
+import net.minecraft.server.world.ServerChunkLoadingManager;
+import net.minecraft.server.world.ServerChunkLoadingManager.EntityTracker;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage.EntityTracker;
 import net.minecraft.text.Text;
 import net.minecraft.text.Texts;
 import net.minecraft.util.math.Box;
@@ -987,7 +987,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         ImmutableSet.Builder<Player> players = ImmutableSet.builder();
         ServerWorld world = (ServerWorld) nms.getWorld();
         EntityTracker entityTracker = world.getChunkManager()
-                .threadedAnvilChunkStorage.entityTrackers
+                .chunkLoadingManager.entityTrackers
                 .get(this.getEntityId());
         if (entityTracker != null) {
 
@@ -1388,7 +1388,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         // Preconditions.checkState((!this.entity.generation ? 1 : 0) != 0, (Object)"Cannot get tracking players during world generation");
         ImmutableSet.Builder<Player> players = ImmutableSet.builder();
         ServerWorld world = ((WorldImpl)this.getWorld()).getHandle();
-        ThreadedAnvilChunkStorage.EntityTracker entityTracker = (ThreadedAnvilChunkStorage.EntityTracker)world.getChunkManager().threadedAnvilChunkStorage.entityTrackers.get(this.getEntityId());
+        ServerChunkLoadingManager.EntityTracker entityTracker = (ServerChunkLoadingManager.EntityTracker)world.getChunkManager().chunkLoadingManager.entityTrackers.get(this.getEntityId());
         if (entityTracker != null) {
             for (PlayerAssociatedNetworkHandler connection : entityTracker.listeners) {
                 players.add(

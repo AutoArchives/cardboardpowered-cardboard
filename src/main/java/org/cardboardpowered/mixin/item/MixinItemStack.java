@@ -14,7 +14,6 @@ import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.ComponentMapImpl;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
-import net.minecraft.enchantment.UnbreakingEnchantment;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -83,8 +82,8 @@ public class MixinItemStack implements IItemStack {
     }
 
     
-    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/item/ItemStack;damage(ILnet/minecraft/util/math/random/Random;Lnet/minecraft/server/network/ServerPlayerEntity;Ljava/lang/Runnable;)V", cancellable = true)
-    public void callPlayerItemDamageEvent(int i, Random random, ServerPlayerEntity player, Runnable cb, CallbackInfo ci) {
+    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/item/ItemStack;damage(ILnet/minecraft/server/world/ServerWorld;Lnet/minecraft/server/network/ServerPlayerEntity;Ljava/util/function/Consumer;)V", cancellable = true)
+    public void callPlayerItemDamageEvent( int i, ServerWorld world, ServerPlayerEntity player, java.util.function.Consumer<Item> breakCallback, CallbackInfo ci) {
         if (!((ItemStack)(Object)this).isDamageable()) {
             //ci.setReturnValue(false);
             ci.cancel();
@@ -93,11 +92,13 @@ public class MixinItemStack implements IItemStack {
         int j;
 
         if (i > 0) {
-            j = EnchantmentHelper.getLevel(Enchantments.UNBREAKING, ((ItemStack)(Object)this));
-            for (int l = 0; j > 0 && l < i; ++l) if (UnbreakingEnchantment.shouldPreventDamage(((ItemStack)(Object)this), j, random)) i--;
+            
+        	j = EnchantmentHelper.getItemDamage(player.getServerWorld(), ((ItemStack)(Object)this), i);
+        	// j = EnchantmentHelper.getLevel(Enchantments.UNBREAKING, ((ItemStack)(Object)this));
+            // for (int l = 0; j > 0 && l < i; ++l) if (UnbreakingEnchantment.shouldPreventDamage(((ItemStack)(Object)this), j, random)) i--;
 
             if (player != null) {
-                PlayerItemDamageEvent event = new PlayerItemDamageEvent((Player) ((IMixinServerEntityPlayer)player).getBukkitEntity(), CraftItemStack.asCraftMirror((ItemStack)(Object)this), i);
+                PlayerItemDamageEvent event = new PlayerItemDamageEvent((Player) ((IMixinServerEntityPlayer)player).getBukkitEntity(), CraftItemStack.asCraftMirror((ItemStack)(Object)this), i, j);
                 event.getPlayer().getServer().getPluginManager().callEvent(event);
 
                 if (i != event.getDamage() || event.isCancelled()) event.getPlayer().updateInventory();
@@ -123,7 +124,16 @@ public class MixinItemStack implements IItemStack {
         //ci.setReturnValue(j >= ((ItemStack)(Object)this).getMaxDamage());
         
         if (j >= ((ItemStack)(Object)this).getMaxDamage()) {
-        	cb.run();
+        	// cb.run();
+        	
+        	Item item = ((ItemStack)(Object)this).getItem();
+            if (this.count == 1 && player instanceof ServerPlayerEntity) {
+                ServerPlayerEntity serverPlayer = (ServerPlayerEntity)player;
+                BukkitEventFactory.callPlayerItemBreakEvent(serverPlayer, ((ItemStack)(Object)this));
+            }
+            ((ItemStack)(Object)this).decrement(1);
+            breakCallback.accept(item);
+        	
         }
         
         ci.cancel();
@@ -175,7 +185,22 @@ public class MixinItemStack implements IItemStack {
         ((IMixinWorld)context.getWorld()).setCaptureBlockStates_BF(false);
         return actionResult;
     }
+    
+    @Inject(
+    		method = "damage(ILnet/minecraft/server/world/ServerWorld;Lnet/minecraft/server/network/ServerPlayerEntity;Ljava/util/function/Consumer;)V",
+    		require = 0,
+    		at = @At(
+    				value = "INVOKE",
+    				target = "Ljava/util/function/Consumer;accept(Ljava/lang/Object;)V"
+    		)
+    )
+    private void arclight$itemBreak(int amount, ServerWorld level, ServerPlayerEntity serverPlayer, Consumer<Item> onBroken, CallbackInfo ci) {
+        if (this.count == 1 && serverPlayer != null) {
+        	BukkitEventFactory.callPlayerItemBreakEvent(serverPlayer, (ItemStack) (Object) this);
+        }
+    }
 
+    /*
     @Inject(
     		method = "method_56097",
     		at = @At(
@@ -183,11 +208,12 @@ public class MixinItemStack implements IItemStack {
     				target = "Lnet/minecraft/item/ItemStack;decrement(I)V"
     			)
     	)
-    private <T extends LivingEntity> void cardboard$call_player_item_break_event(LivingEntity entityIn, EquipmentSlot equipmentSlot, CallbackInfo ci) {
+    private <T extends LivingEntity> void cardboard$call_player_item_break_event(LivingEntity entityIn, EquipmentSlot equipmentSlot, Item item, CallbackInfo ci) {
         if (this.count == 1 && entityIn instanceof PlayerEntity) {
         	BukkitEventFactory.callPlayerItemBreakEvent((PlayerEntity) entityIn, ((ItemStack)(Object)this));
-        }
+      }
     }
+    */
 
     /*@Inject(at = @At("HEAD"), method = "damage(ILnet/minecraft/entity/LivingEntity;Ljava/util/function/Consumer;)V", cancellable = true)
     public <T extends LivingEntity> void damage(int i, T t0, Consumer<T> consumer, CallbackInfo ci) {

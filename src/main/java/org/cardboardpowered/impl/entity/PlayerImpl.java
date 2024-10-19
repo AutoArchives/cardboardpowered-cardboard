@@ -158,6 +158,7 @@ import net.kyori.adventure.util.TriState;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.advancement.PlayerAdvancementTracker;
 import net.minecraft.block.entity.SignBlockEntity;
+import net.minecraft.entity.Entity.RemovalReason;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
@@ -182,6 +183,7 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.WhitelistEntry;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity.RespawnPos;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -431,7 +433,7 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 				}
 			}
 
-			sendPayload(new Identifier("register"), stream.toByteArray());
+			sendPayload(Identifier.ofVanilla("register"), stream.toByteArray());
 		}
 	}
 
@@ -444,7 +446,7 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 		if(channels.contains(channel)) {
 			channel = StandardMessenger.validateAndCorrectChannel(channel);
 
-			sendPayload(new Identifier(channel), message);
+			sendPayload(Identifier.ofVanilla(channel), message);
 		}
 	}
 
@@ -1231,7 +1233,7 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
     public void stopSound(String sound, org.bukkit.SoundCategory category) {
         if (getHandle().networkHandler == null) return;
 
-        getHandle().networkHandler.sendPacket(new StopSoundS2CPacket(new Identifier(sound), category == null ? net.minecraft.sound.SoundCategory.MASTER : net.minecraft.sound.SoundCategory.valueOf(category.name())));
+        getHandle().networkHandler.sendPacket(new StopSoundS2CPacket(Identifier.ofVanilla(sound), category == null ? net.minecraft.sound.SoundCategory.MASTER : net.minecraft.sound.SoundCategory.valueOf(category.name())));
     }
 
     @Override
@@ -1404,7 +1406,7 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
         @Override
         public void respawn() {
             if (getHealth() <= 0 && isOnline())
-                nms.getServer().getPlayerManager().respawnPlayer( getHandle(), false );
+                nms.getServer().getPlayerManager().respawnPlayer( getHandle(), false, RemovalReason.KILLED );
         }
 
         @Override
@@ -1464,7 +1466,7 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
         BlockPos bed = getHandle().getSpawnPointPosition();
 
         if (world != null && bed != null) {
-            Optional<Vec3d> spawnLoc = PlayerEntity.findRespawnPosition((ServerWorld) ((WorldImpl) world).getHandle(), bed, getHandle().getSpawnAngle(), getHandle().isSpawnForced(), true);
+            Optional<Vec3d> spawnLoc = ServerPlayerEntity.findRespawnPosition((ServerWorld) ((WorldImpl) world).getHandle(), bed, getHandle().getSpawnAngle(), getHandle().isSpawnForced(), true).map(RespawnPos::pos);
             if (spawnLoc.isPresent()) {
                 Vec3d vec = spawnLoc.get();
                 return new Location(world, vec.x, vec.y, vec.z);
@@ -2527,7 +2529,7 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
         Optional<Vec3d> spawnLoc;
         ServerWorld world = this.getHandle().server.getWorld(this.getHandle().getSpawnPointDimension());
         BlockPos bed = this.getHandle().getSpawnPointPosition();
-        if (world != null && bed != null && (spawnLoc = PlayerEntity.findRespawnPosition(world, bed, this.getHandle().getSpawnAngle(), this.getHandle().isSpawnForced(), true)).isPresent()) {
+        if (world != null && bed != null && (spawnLoc = ServerPlayerEntity.findRespawnPosition(world, bed, this.getHandle().getSpawnAngle(), this.getHandle().isSpawnForced(), true).map(RespawnPos::pos)).isPresent()) {
             Vec3d vec = spawnLoc.get();
             return CraftLocation.toBukkit(vec, (World)world.getWorld(), this.getHandle().getSpawnAngle(), 0.0f);
         }

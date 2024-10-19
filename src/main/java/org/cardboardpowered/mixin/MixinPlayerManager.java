@@ -35,7 +35,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
-import net.minecraft.network.packet.s2c.play.GameStateChangeS2CPacket;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.BannedIpEntry;
@@ -43,6 +42,7 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerLoginNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity.RespawnPos;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -88,12 +88,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.function.Function;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.Entity.RemovalReason;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.world.WorldProperties;
-import net.minecraft.network.packet.s2c.play.EntityStatusEffectS2CPacket;
 import net.minecraft.network.packet.s2c.play.*;
 //>>>>>>> upstream/ver/1.20
 
@@ -133,7 +133,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
                 Optional<?> optional;
 
                 if (blockposition != null)
-                    optional = PlayerEntity.findRespawnPosition(worldserver1, blockposition, f, flag1, flag);
+                    optional = ServerPlayerEntity.findRespawnPosition(worldserver1, blockposition, f, flag1, flag).map(RespawnPos::pos);
                 else optional = Optional.empty();
 
                 if (optional.isPresent()) {
@@ -319,7 +319,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
      * @reason bukkit
      */
     @Overwrite
-    public ServerPlayerEntity respawnPlayer(ServerPlayerEntity playerIn, boolean conqueredEnd) {
+    public ServerPlayerEntity respawnPlayer(ServerPlayerEntity playerIn, boolean conqueredEnd, RemovalReason removalReason) {
         playerIn.stopRiding(); // CraftBukkit
         this.players.remove(playerIn);
         
@@ -330,10 +330,10 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         // CraftBukkit start
         // Banner start - remain original field to compat with carpet
         ServerWorld worldserver_vanilla = this.server.getWorld(playerIn.getSpawnPointDimension());
-        Optional optional_vanilla;
+        Optional<Vec3d> optional_vanilla;
 
         if (worldserver_vanilla != null && blockposition != null) {
-            optional_vanilla = net.minecraft.entity.player.PlayerEntity.findRespawnPosition(worldserver_vanilla, blockposition, f, flag1, conqueredEnd);
+            optional_vanilla = ServerPlayerEntity.findRespawnPosition(worldserver_vanilla, blockposition, f, flag1, conqueredEnd).map(RespawnPos::pos);
         } else {
             optional_vanilla = Optional.empty();
         }

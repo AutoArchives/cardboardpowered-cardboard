@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.MapColorComponent;
 import net.minecraft.component.type.MapIdComponent;
@@ -47,7 +47,7 @@ implements MapMeta {
         this.color = map.color;
     }
 
-    CraftMetaMap(ComponentChanges tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaMap(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaMap.getOrEmpty(tag, MAP_ID).ifPresent(mapId -> {
             this.mapId = mapId.id();
@@ -70,17 +70,17 @@ implements MapMeta {
         Color color;
         String locName;
         Boolean scaling;
-        Integer id = SerializableMeta.getObject(Integer.class, map, CraftMetaMap.MAP_ID.BUKKIT, true);
+        Integer id = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(Integer.class, map, CraftMetaMap.MAP_ID.BUKKIT, true);
         if (id != null) {
             this.setMapId(id);
         }
-        if ((scaling = SerializableMeta.getObject(Boolean.class, map, CraftMetaMap.MAP_SCALING.BUKKIT, true)) != null) {
+        if ((scaling = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(Boolean.class, map, CraftMetaMap.MAP_SCALING.BUKKIT, true)) != null) {
             this.setScaling(scaling);
         }
-        if ((locName = SerializableMeta.getString(map, CraftMetaMap.MAP_LOC_NAME.BUKKIT, true)) != null) {
+        if ((locName = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getString(map, CraftMetaMap.MAP_LOC_NAME.BUKKIT, true)) != null) {
             this.setLocationName(locName);
         }
-        if ((color = SerializableMeta.getObject(Color.class, map, CraftMetaMap.MAP_COLOR.BUKKIT, true)) != null) {
+        if ((color = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(Color.class, map, CraftMetaMap.MAP_COLOR.BUKKIT, true)) != null) {
             this.setColor(color);
         }
     }

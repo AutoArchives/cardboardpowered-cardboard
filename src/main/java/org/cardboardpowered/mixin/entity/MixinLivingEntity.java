@@ -12,6 +12,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Arm;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
@@ -83,19 +84,19 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
     }
 
     @Inject(at = @At("HEAD"), method = "drop", cancellable = true)
-    public void cardboard_doDrop(DamageSource damagesource, CallbackInfo ci) {
+    public void cardboard_doDrop(ServerWorld world, DamageSource damagesource, CallbackInfo ci) {
         Entity entity = damagesource.getAttacker();
 
         boolean flag = get().playerHitTimer > 0;
         get().dropInventory();
         if (!get().isBaby() && get().getWorld().getGameRules().getBoolean(GameRules.DO_MOB_LOOT)) {
             this.dropLoot(damagesource, flag);
-            this.dropEquipment(damagesource, ((entity instanceof PlayerEntity) ? EnchantmentHelper.getLooting((LivingEntity) entity) : 0), flag);
+            this.dropEquipment((ServerWorld) world, damagesource, flag);
         }
 
         BukkitEventFactory.callEntityDeathEvent(get(), damagesource, ((IMixinEntity)this).cardboard_getDrops());
         ((IMixinEntity)this).cardboard_setDrops(new ArrayList<>());
-        get().dropXp();
+        this.dropXp(damagesource.getAttacker());
         ci.cancel();
         return;
     }
@@ -123,9 +124,16 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
     public void dropLoot(DamageSource damagesource, boolean flag) {
     }
 
+    //@Shadow
+    //public void dropEquipment(DamageSource damagesource, int i, boolean flag) {
+    //}
+    
     @Shadow
-    public void dropEquipment(DamageSource damagesource, int i, boolean flag) {
+    public void dropEquipment( ServerWorld world, DamageSource source, boolean causedByPlayer) {
     }
+    
+    @Shadow
+    public void dropXp( Entity attacker) {}
 
 	@Shadow public abstract Arm getMainArm();
 	/**

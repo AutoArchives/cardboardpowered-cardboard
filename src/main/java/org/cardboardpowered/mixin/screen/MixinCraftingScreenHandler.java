@@ -13,6 +13,7 @@ import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.recipe.CraftingRecipe;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeType;
+import net.minecraft.recipe.input.CraftingRecipeInput;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.ScreenHandler;
@@ -61,15 +62,16 @@ public class MixinCraftingScreenHandler extends MixinScreenHandler {
 
     private static void aBF(int i, World world, PlayerEntity entityhuman, RecipeInputInventory inventorycrafting, CraftingResultInventory inventorycraftresult, ScreenHandler container) {
         if (!world.isClient) {
+        	CraftingRecipeInput craftinginput = inventorycrafting.createRecipeInput();
             ServerPlayerEntity entityplayer = (ServerPlayerEntity) entityhuman;
             ItemStack itemstack = ItemStack.EMPTY;
             Optional<RecipeEntry<CraftingRecipe>> optional = world.getServer().getRecipeManager().getFirstMatch(
-                    RecipeType.CRAFTING, inventorycrafting, world);
+                    RecipeType.CRAFTING, craftinginput, world);
 
             if (optional.isPresent()) {
                 RecipeEntry<CraftingRecipe> recipecrafting = optional.get();
                 if (inventorycraftresult.shouldCraftRecipe(world, entityplayer, recipecrafting))
-                    itemstack = recipecrafting.value().craft(inventorycrafting, DynamicRegistryManager.EMPTY);
+                    itemstack = recipecrafting.value().craft(craftinginput, world.getRegistryManager());
             }
             itemstack = BukkitEventFactory.callPreCraftEvent(inventorycrafting, inventorycraftresult, itemstack, ((IMixinScreenHandler)container).getBukkitView(), false);
             inventorycraftresult.setStack(0, itemstack);
