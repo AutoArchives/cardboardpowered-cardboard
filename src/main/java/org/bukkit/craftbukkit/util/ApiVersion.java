@@ -97,11 +97,11 @@ public final class ApiVersion implements Comparable<ApiVersion> {
     }
 
     static {
-        versions = new HashMap<String, ApiVersion>();
-        CURRENT = ApiVersion.getOrCreateVersion("1.20.6");
-        FLATTENING = ApiVersion.getOrCreateVersion("1.13");
-        FIELD_NAME_PARITY = ApiVersion.getOrCreateVersion("1.20.5");
-        NONE = ApiVersion.getOrCreateVersion("none");
+        versions = new HashMap<>();
+        CURRENT = getOrCreateVersion("1.21.1");
+        FLATTENING = getOrCreateVersion("1.13");
+        FIELD_NAME_PARITY = getOrCreateVersion("1.20.5");
+        NONE = getOrCreateVersion("none");
     }
 
 }

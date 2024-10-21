@@ -526,24 +526,50 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         return false;
     }
 
-    private static final List<String> SUPPORTED_API = Arrays.asList("1.13", "1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20");
+    private static final List<String> SUPPORTED_API = Arrays.asList("1.13", "1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20", "1.21");
 
-    @Override
-    public void checkSupported(PluginDescriptionFile pdf) throws InvalidPluginException {
+    //@Override
+    public void checkSupported_old(PluginDescriptionFile pdf) throws InvalidPluginException {
         String minimumVersion = "1.12"; // TODO
         int minimumIndex = SUPPORTED_API.indexOf(minimumVersion);
 
         if (pdf.getAPIVersion() != null) {
             int pluginIndex = SUPPORTED_API.indexOf(pdf.getAPIVersion());
-            if (pluginIndex == -1) throw new InvalidPluginException("Unsupported API version " + pdf.getAPIVersion());
+            if (pluginIndex == -1) {
+            	throw new InvalidPluginException("Unsupported API version " + pdf.getAPIVersion());
+            }
 
-            if (pluginIndex < minimumIndex)
+            if (pluginIndex < minimumIndex) {
                 throw new InvalidPluginException("Plugin API version " + pdf.getAPIVersion() + " is lower than the minimum allowed version. Please update or replace it.");
+            }
         } else {
             if (minimumIndex == -1) {
                 CraftLegacyMaterials.init();
                 Bukkit.getLogger().log(Level.WARNING, "Legacy plugin " + pdf.getFullName() + " does not specify an api-version.");
             } else throw new InvalidPluginException("Plugin API version " + pdf.getAPIVersion() + " is lower than the minimum allowed version. Please update or replace it.");
+        }
+    }
+    
+    @Override
+    public void checkSupported(PluginDescriptionFile pdf) throws InvalidPluginException {
+        ApiVersion toCheck = ApiVersion.getOrCreateVersion(pdf.getAPIVersion());
+        // ApiVersion minimumVersion = ApiVersion.getOrCreateVersion("1.12"); // TODO
+
+        if (toCheck.isNewerThan(ApiVersion.CURRENT)) {
+            // Newer than supported
+            throw new InvalidPluginException("Unsupported API version " + pdf.getAPIVersion());
+        }
+
+        // if (toCheck.isOlderThan(minimumVersion)) {
+        // }
+
+        if (toCheck.isOlderThan(ApiVersion.FLATTENING)) {
+            // TODO
+        	// CraftLegacy.init();
+        }
+
+        if (toCheck == ApiVersion.NONE) {
+            Bukkit.getLogger().log(Level.WARNING, "Legacy plugin " + pdf.getFullName() + " does not specify an api-version.");
         }
     }
 

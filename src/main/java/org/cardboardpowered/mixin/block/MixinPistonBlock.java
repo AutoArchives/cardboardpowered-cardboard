@@ -18,30 +18,42 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.List;
 
 //@MixinInfo(events = {"BlockPistonExtendEvent","BlockPistonRetractEvent","BlockPistonEvent"})
 @Mixin(PistonBlock.class)
 public class MixinPistonBlock {
-    
+
+	/*
     private PistonHandler cardboard_ph;
 
     @Redirect(at = @At(value = "NEW", target = "(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;Z)Lnet/minecraft/block/piston/PistonHandler;"), method = "tryMove")
     public PistonHandler cardboard_storePH(World world, BlockPos pos, Direction dir, boolean retract) {
         return (cardboard_ph = new PistonHandler(world,pos,dir,retract));
     }
+    */
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/block/piston/PistonHandler;getBrokenBlocks()Ljava/util/List;"),
-            method = "move", cancellable = true)
-    public void cardboard_doPistonEvents(World world, BlockPos pos, Direction dir, boolean retract, CallbackInfoReturnable<Boolean> ci) {
+    @Inject(at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/block/piston/PistonHandler;getBrokenBlocks()Ljava/util/List;"),
+            method = "move", cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
+    public void cardboard_doPistonEvents(World world, BlockPos pos, Direction dir, boolean retract, CallbackInfoReturnable<Boolean> ci,
+    		BlockPos blockPos, PistonHandler helper) {
 
         final org.bukkit.block.Block bblock = ((IMixinWorld)world).getWorldImpl().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
 
-        final List<BlockPos> moved = cardboard_ph.getMovedBlocks();
-        final List<BlockPos> broken = cardboard_ph.getBrokenBlocks();
+		// TODO: Fix null
+		//if (null == cardboard_ph) {
+		//	System.out.println("Debug: MixinPistonBlock: null == cardboard_ph.");
+		//	return;
+		//}
 
-        Direction enumdirection1 = retract ? cardboard_ph.pistonDirection : cardboard_ph.pistonDirection ;
+        final List<BlockPos> moved = helper.getMovedBlocks();
+        final List<BlockPos> broken = helper.getBrokenBlocks();
+
+        // Direction enumdirection1 = retract ? helper.pistonDirection : helper.pistonDirection ;
+        
+        Direction enumdirection1 = retract ? dir : dir.getOpposite();
 
         List<org.bukkit.block.Block> blocks = new DualBlockList(moved, broken, bblock.getWorld()) {
 

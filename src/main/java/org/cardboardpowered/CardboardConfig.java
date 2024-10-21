@@ -67,14 +67,18 @@ public class CardboardConfig {
         ArrayList<String> disables = (ArrayList<String>)config.getObject("mixin-force-disable");
         disabledMixins.addAll(disables);
         
-        boolean debug_0 = config.getOrDefault("debug_print_event_call", false);
-        DEBUG_EVENT_CALL = debug_0;
+        try {
+        	setup_debug(config);
+        } catch (Exception ignore) {
+        	// Entry does not exist.
+        }
         
-        boolean verbose_calls = config.getOrDefault("debug_print_all_calls", false);
-        DEBUG_VERBOSE_CALLS = verbose_calls;
-        
-        boolean debug_other = config.getOrDefault("debug_other", false);
-        DEBUG_OTHER = debug_other;
+    }
+    
+    private static void setup_debug(FileConfiguration config) throws Exception {
+        DEBUG_EVENT_CALL = config.getOrDefault("debug_print_event_call", false);
+        DEBUG_VERBOSE_CALLS =  config.getOrDefault("debug_print_all_calls", false);
+        DEBUG_OTHER = config.getOrDefault("debug_other", false);
         
         String extraJar = config.getOrDefault("debug_extra_lib_file", "debug_extra.jar");
         if (extraJar.length() > 2) {
@@ -89,7 +93,6 @@ public class CardboardConfig {
         	}
         	
         }
-        
     }
 
     private static void save_default(File file) throws IOException {
