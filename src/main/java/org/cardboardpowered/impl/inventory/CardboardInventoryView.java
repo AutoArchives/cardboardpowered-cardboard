@@ -22,7 +22,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 
 import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
 
-public class CardboardInventoryView extends InventoryView {
+// public class CardboardInventoryView extends InventoryView {
+public class CardboardInventoryView<T extends ScreenHandler> extends CardboardAbstractInventoryView {
 
     private final ScreenHandler container;
     private CraftHumanEntity player;

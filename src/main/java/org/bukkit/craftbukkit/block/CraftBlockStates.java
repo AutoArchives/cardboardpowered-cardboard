@@ -1,14 +1,3 @@
-/*
- * Decompiled with CFR 0.152.
- * 
- * Could not load the following classes:
- *  com.google.common.base.Preconditions
- *  javax.annotation.Nullable
- *  org.bukkit.Material
- *  org.bukkit.World
- *  org.bukkit.block.Block
- *  org.bukkit.block.BlockState
- */
 package org.bukkit.craftbukkit.block;
 
 import com.google.common.base.Preconditions;

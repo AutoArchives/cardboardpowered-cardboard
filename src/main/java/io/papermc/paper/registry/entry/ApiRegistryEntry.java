@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 import net.minecraft.registry.Registry;
 import org.bukkit.Keyed;
 
-public class ApiRegistryEntry<M, B extends Keyed> extends BaseRegistryEntry<M, B, org.bukkit.Registry<B>> {
+public class ApiRegistryEntry<M, B extends Keyed> extends BaseRegistryEntry<M, B> {
 
     private final Supplier<org.bukkit.Registry<B>> registrySupplier;
 

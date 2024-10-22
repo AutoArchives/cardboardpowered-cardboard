@@ -14,6 +14,7 @@ import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
 
 import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.inventory.CardboardAbstractInventoryView;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.jetbrains.annotations.NotNull;
 
@@ -43,7 +44,7 @@ public class CraftContainer extends ScreenHandler {
     }
 
     public CraftContainer(final Inventory inventory, final PlayerEntity player, int id) {
-        this(new InventoryView() {
+        this(new CardboardAbstractInventoryView() {
             @Override public Inventory getTopInventory()    { return inventory;  }
             @Override public Inventory getBottomInventory() { return getPlayer().getInventory(); }
             @Override public HumanEntity getPlayer()        { return (HumanEntity)((IMixinEntity)player).getBukkitEntity(); }

@@ -14,12 +14,12 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.DefaultQualifier;
 
 @DefaultQualifier(value=NonNull.class)
-public class CraftRegistryEntry<M, B extends Keyed>
-extends BaseRegistryEntry<M, B, CraftRegistry<B, M>> {
+public class CraftRegistryEntry<M, B extends Keyed> extends BaseRegistryEntry<M, B> {
+
     private static final BiFunction<NamespacedKey, ApiVersion, NamespacedKey> EMPTY = (namespacedKey, apiVersion) -> namespacedKey;
     protected final Class<?> classToPreload;
     protected final BiFunction<NamespacedKey, M, B> minecraftToBukkit;
-    private BiFunction<NamespacedKey, ApiVersion, NamespacedKey> updater = EMPTY;
+    protected BiFunction<NamespacedKey, ApiVersion, NamespacedKey> updater = EMPTY;
 
     protected CraftRegistryEntry(net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey, RegistryKey<B> apiKey, Class<?> classToPreload, BiFunction<NamespacedKey, M, B> minecraftToBukkit) {
         super(mcKey, apiKey);
@@ -28,7 +28,7 @@ extends BaseRegistryEntry<M, B, CraftRegistry<B, M>> {
     }
 
     @Override
-    public RegistryEntry<M, B, CraftRegistry<B, M>> withSerializationUpdater(BiFunction<NamespacedKey, ApiVersion, NamespacedKey> updater) {
+    public RegistryEntry<M, B> withSerializationUpdater(BiFunction<NamespacedKey, ApiVersion, NamespacedKey> updater) {
         this.updater = updater;
         return this;
     }
@@ -41,5 +41,5 @@ extends BaseRegistryEntry<M, B, CraftRegistry<B, M>> {
     private CraftRegistry<B, M> createApiRegistry(Registry<M> nmsRegistry) {
         return new CraftRegistry<B, M>(this.classToPreload, nmsRegistry, this.minecraftToBukkit, this.updater);
     }
-}
 
+}

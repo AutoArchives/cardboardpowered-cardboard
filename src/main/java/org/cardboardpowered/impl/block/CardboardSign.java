@@ -221,4 +221,16 @@ public class CardboardSign<T extends SignBlockEntity> extends CardboardBlockEnti
         return id == null ? null : Bukkit.getPlayer((UUID)id);
 	}
 
+	@Override
+	public UUID getAllowedEditorUniqueId() {
+		// this.ensureNoWorldGeneration();
+        return ((SignBlockEntity)this.getTileEntity()).getEditor();
+	}
+
+	@Override
+	public void setAllowedEditorUniqueId(UUID uuid) {
+		// this.ensureNoWorldGeneration();
+        ((SignBlockEntity)this.getTileEntity()).setEditor(uuid);
+	}
+
 }

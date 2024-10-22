@@ -2,6 +2,7 @@ package org.cardboardpowered.impl.block;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -20,6 +21,9 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.entity.MobSpawnerBlockEntity;
 import net.minecraft.block.spawner.MobSpawnerEntry;
+import net.minecraft.block.spawner.MobSpawnerLogic;
+import net.minecraft.entity.EquipmentTable;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
@@ -215,5 +219,27 @@ public class CardboardMobspawner extends CardboardBlockEntityState<MobSpawnerBlo
 	        */
 		return null;
 	}
+
+	@Override
+	public void setSpawnedEntity(@NotNull SpawnerEntry spawnerEntry) {
+		// TODO Auto-generated method stub
+        setSpawnedEntity(((MobSpawnerBlockEntity)this.getSnapshot()).getLogic(), spawnerEntry.getSnapshot(), spawnerEntry.getSpawnRule(), spawnerEntry.getEquipment());
+
+	}
+	
+    public static void setSpawnedEntity(MobSpawnerLogic spawner, EntitySnapshot snapshot, SpawnRule spawnRule, SpawnerEntry.Equipment equipment) {
+        // TODO
+    	/*
+    	spawner.spawnPotentials = DataPool.empty();
+        if (snapshot == null) {
+            spawner.spawnEntry = new MobSpawnerEntry();
+            return;
+        }
+        NbtCompound compoundTag = ((CraftEntitySnapshot)snapshot).getData();
+        spawner.spawnEntry = new MobSpawnerEntry(compoundTag, Optional.ofNullable(toMinecraftRule(spawnRule)), getEquipment(equipment));
+        */
+    }
+    
+
 
 }

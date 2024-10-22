@@ -1,5 +1,7 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.destroystokyo.paper.Namespaced;
+import com.destroystokyo.paper.NamespacedTag;
 //<<<<<<< HEAD
 // import com.destroystokyo.paper.Namespaced;
 import com.google.common.base.Preconditions;
@@ -43,11 +45,14 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.entry.RegistryEntryList;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.nbt.NbtSizeTracker;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Property;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.Unit;
 
@@ -71,6 +76,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -89,6 +95,7 @@ import java.util.logging.Logger;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.data.BlockData;
@@ -115,6 +122,7 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.Repairable;
 import org.bukkit.inventory.meta.components.FoodComponent;
+import org.bukkit.inventory.meta.components.JukeboxPlayableComponent;
 import org.bukkit.inventory.meta.components.ToolComponent;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -402,7 +410,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     private ItemRarity rarity;
     // private CraftFoodComponent food;
     private CraftToolComponent tool;
-    private int damage;
+    private Integer damage;
     private Integer maxDamage;
 
     /*private static final Set<String> HANDLED_TAGS = Sets.newHashSet();
@@ -2736,5 +2744,86 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
         return componentString.toString();
     }
+
+	// 1.21:
+	
+	@Override
+	public boolean hasDamageValue() {
+		return this.damage != null;
+	}
+
+	@Override
+	public void resetDamage() {
+		this.damage = null;
+	}
+
+	@Override
+	public boolean hasJukeboxPlayable() {
+		return false;
+		// return this.jukebox != null;
+	}
+
+	@Override
+	public @NotNull JukeboxPlayableComponent getJukeboxPlayable() {
+        return null;
+		// return this.hasJukeboxPlayable() ? new CraftJukeboxComponent(this.jukebox) : new CraftJukeboxComponent(new JukeboxPlayableComponent(new RegistryPair<JukeboxSong>(JukeboxSongs.THIRTEEN), true));
+	}
+
+	@Override
+	public void setJukeboxPlayable(@Nullable JukeboxPlayableComponent jukeboxPlayable) {
+		// TODO Auto-generated method stub
+		// this.jukebox = jukeboxPlayable == null ? null : new CraftJukeboxComponent((CraftJukeboxComponent)jukeboxPlayable);
+	}
+
+	private static Set<Namespaced> convertToLegacyNamespaced(Collection<BlockPredicate> predicates) {
+        HashSet namespaceds = Sets.newHashSet();
+        for (BlockPredicate predicate : predicates) {
+            if (predicate.blocks().isEmpty()) continue;
+            RegistryEntryList<Block> holders = predicate.blocks().get();
+            if (holders instanceof RegistryEntryList.Named) {
+                RegistryEntryList.Named named = (RegistryEntryList.Named)holders;
+                namespaceds.add(new NamespacedTag(named.getTag().id().getNamespace(), named.getTag().id().getPath()));
+                continue;
+            }
+            holders.forEach(h2 -> h2.getKey().ifPresent(key -> namespaceds.add(new NamespacedKey(key.getValue().getNamespace(), key.getValue().getPath()))));
+        }
+        return namespaceds;
+    }
+	
+	@Override
+	public @NotNull Set<Namespaced> getDestroyableKeys() {
+        return !this.hasDestroyableKeys() ? Collections.emptySet() : CraftMetaItem.convertToLegacyNamespaced(this.canBreakPredicates);
+
+	}
+	
+	private static List<BlockPredicate> convertFromLegacyNamespaced(Collection<Namespaced> namespaceds) {
+        ArrayList<BlockPredicate> predicates = new ArrayList<BlockPredicate>();
+        for (Namespaced namespaced : namespaceds) {
+            if (namespaced instanceof NamespacedKey) {
+                NamespacedKey key = (NamespacedKey)namespaced;
+                predicates.add(BlockPredicate.Builder.create().blocks(CraftBlockType.bukkitToMinecraft(Objects.requireNonNull((Material)org.bukkit.Registry.MATERIAL.get(key)))).build());
+                continue;
+            }
+            if (!(namespaced instanceof NamespacedTag)) continue;
+            NamespacedTag tag = (NamespacedTag)namespaced;
+            predicates.add(BlockPredicate.Builder.create().tag(TagKey.of(RegistryKeys.BLOCK, Identifier.of(tag.getNamespace(), tag.getKey()))).build());
+        }
+        return predicates;
+    }
+
+	@Override
+	public void setDestroyableKeys(@NotNull Collection<Namespaced> canDestroy) {
+		this.canBreakPredicates = CraftMetaItem.convertFromLegacyNamespaced(canDestroy);
+	}
+
+	@Override
+	public @NotNull Set<Namespaced> getPlaceableKeys() {
+        return !this.hasPlaceableKeys() ? Collections.emptySet() : CraftMetaItem.convertToLegacyNamespaced(this.canPlaceOnPredicates);
+	}
+
+	@Override
+	public void setPlaceableKeys(@NotNull Collection<Namespaced> canPlaceOn) {
+		this.canPlaceOnPredicates = CraftMetaItem.convertFromLegacyNamespaced(canPlaceOn);
+	}
 
 }

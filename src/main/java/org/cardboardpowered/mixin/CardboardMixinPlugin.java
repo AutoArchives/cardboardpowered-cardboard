@@ -78,10 +78,12 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         // libraries.add( new Library("io.papermc", "paper-api", "1.20.1-R0.1-20230921.165944-178", SHA1, "71680be2f2e80f25e20ae4b49ebd84539d306a44", "paper") );
         // libraries.add( new Library("io.papermc", "paper-api", "1.20.2-R0.1-20231203.034718-122", SHA1, "faf51e2d9f8eacd902e990a05b2760798acc0b37", "paper") );
         // libraries.add( new Library("io.papermc", "paper-api", "1.20.3-R0.1-20231207.043048-3", SHA1, "c54200af33674c0fdc965317a1c72e3a0e02e236", "paper") );
-
         // libraries.add( new Library("io.papermc", "paper-api", "1.20.4-R0.1-20240528.102248-175", SHA1, "1655f2444d10a3eb8f176f97c3431731e7cc7c1a", "paper") );
         // libraries.add( new Library("io.papermc", "paper-api", "1.20.5-R0.1-20240429.035133-20", SHA1, "5ea381742186b489251fdbf6e7dba7fdcc142b4d", "paper") );
-        libraries.add( new Library("io.papermc", "paper-api", "1.20.6-R0.1-20240916.192025-126", SHA1, "15ac8ae6289dddb563d17a20dd3ed80ad89eb629", "paper"));
+        // libraries.add( new Library("io.papermc", "paper-api", "1.20.6-R0.1-20240916.192025-126", SHA1, "15ac8ae6289dddb563d17a20dd3ed80ad89eb629", "paper"));
+
+        // libraries.add( new Library("io.papermc", "paper-api", "1.21.1-R0.1-20240810.105324-1", SHA1, "f1f242327127cc802d94fba1ec823d420d86ff2d", "paper"));
+        libraries.add( new Library("io.papermc", "paper-api", "1.21.1-R0.1-20241021.162528-124", SHA1, "2bc94e08501ef8145e562ae57daa03a5363630a7", "paper"));
 
         
         

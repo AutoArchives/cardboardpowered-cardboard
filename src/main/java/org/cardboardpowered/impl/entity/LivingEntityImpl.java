@@ -1252,5 +1252,19 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 		net.minecraft.entity.EquipmentSlot es = Utils.getNMS(slot);
 		return this.getHandle().canUseSlot( es );
 	}
+	
+	// 1.21:
+
+	@Override
+	public void broadcastHurtAnimation(@NotNull Collection<Player> players) {
+		 for (Player player : players) {
+			 ((PlayerImpl)player).sendHurtAnimation(0.0f, this);
+		 }
+	}
+
+	@Override
+	public void setRiptiding(boolean riptiding) {
+		// this.getHandle().setLivingFlag(4, riptiding);
+	}
 
 }

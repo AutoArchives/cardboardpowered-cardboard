@@ -64,17 +64,26 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.javazilla.bukkitfabric.BukkitFabricMod;
 import com.javazilla.bukkitfabric.BukkitLogger;
 import com.javazilla.bukkitfabric.interfaces.IMixinMaterial;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JsonOps;
+
 import io.izzel.arclight.api.EnumHelper;
 import io.izzel.arclight.api.Unsafe;
 import io.papermc.paper.inventory.ItemRarity;
 import io.papermc.paper.inventory.tooltip.TooltipContext;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
 import io.papermc.paper.plugin.lifecycle.event.PaperLifecycleEventManager;
+import io.papermc.paper.registry.PaperRegistries;
+import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.registry.set.NamedRegistryKeySetImpl;
+import io.papermc.paper.registry.tag.Tag;
+import io.papermc.paper.registry.tag.TagKey;
 import me.isaiah.common.cmixin.IMixinItemStack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -82,6 +91,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.datafixer.Schemas;
 import net.minecraft.datafixer.TypeReferences;
 import net.minecraft.item.Item;
@@ -93,8 +103,11 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.potion.Potion;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryOps;
+import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -812,9 +825,9 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         return block != null ? block.getTranslationKey() : null;
     }
 
-	@Override
-	public @Nullable FeatureFlag getFeatureFlag(@NotNull NamespacedKey key) {
-        Preconditions.checkArgument((key != null ? 1 : 0) != 0, "key cannot be null");
+	// @Override
+	public FeatureFlag getFeatureFlag(@NotNull NamespacedKey key) {
+        Preconditions.checkArgument(key != null, "key cannot be null");
         return CraftFeatureFlag.getFromNMS(key);
 	}
 
@@ -905,6 +918,55 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 	public <B extends Keyed> B get(Registry<B> registry, NamespacedKey key) {
 		return CraftRegistry.get(registry, key, ApiVersion.CURRENT);
 	}
+
+	// 1.21:
+	
+	@Override
+	public <A extends Keyed, M> @Nullable Tag<A> getTag(@NotNull TagKey<A> tagKey) {
+        if (tagKey.registryKey() != RegistryKey.ENTITY_TYPE || tagKey.registryKey() != RegistryKey.FLUID) {
+            throw new UnsupportedOperationException(String.valueOf(tagKey.registryKey()) + " doesn't have tags");
+        }
+        net.minecraft.registry.RegistryKey nmsKey = PaperRegistries.registryToNms(tagKey.registryKey());
+        net.minecraft.registry.Registry nmsRegistry = CraftRegistry.getMinecraftRegistry().get(nmsKey);
+        return (Tag<A>) nmsRegistry.getEntryList(PaperRegistries.toNms(tagKey)).map(named -> new NamedRegistryKeySetImpl(tagKey, (RegistryEntryList.Named) named)).orElse(null);
+	}
+
+	@Override
+	public ItemStack createEmptyStack() {
+		return CraftItemStack.asCraftMirror(null);
+	}
+
+	@Override
+	public @NotNull JsonObject serializeItemAsJson(@NotNull ItemStack itemStack) {
+		JsonObject item;
+        Preconditions.checkNotNull((Object)itemStack, (Object)"Cannot serialize empty ItemStack");
+        Preconditions.checkArgument((!itemStack.isEmpty() ? 1 : 0) != 0, (Object)"Cannot serialize empty ItemStack");
+        DynamicRegistryManager.Immutable reg = CraftServer.server.getRegistryManager();
+        RegistryOps ops = reg.getOps(JsonOps.INSTANCE);
+        // TODO
+        //NbtComponent.SERIALIZE_CUSTOM_AS_SNBT.set(true);
+        try {
+            item = ((JsonElement)net.minecraft.item.ItemStack.CODEC.encodeStart(ops, CraftItemStack.unwrap(itemStack)).getOrThrow()).getAsJsonObject();
+        } finally {
+            // TODO
+        	// NbtComponent.SERIALIZE_CUSTOM_AS_SNBT.set(false);
+        }
+        item.addProperty("DataVersion", (Number)this.getDataVersion());
+        return item;
+	}
+
+	@Override
+	public ItemStack deserializeItemFromJson(JsonObject data) throws IllegalArgumentException {
+		throw new IllegalArgumentException("cardboard: deserializeItemFromJson not implemented");
+        /*
+		Preconditions.checkNotNull((Object)data, (Object)"null cannot be deserialized");
+        int dataVersion = data.get("DataVersion").getAsInt();
+        int currentVersion = INSTANCE.getDataVersion();
+        data = MCDataConverter.convertJson(MCTypeRegistry.ITEM_STACK, data, false, dataVersion, currentVersion);
+        RegistryOps ops = CraftServer.server.getRegistryManager().getOps(JsonOps.INSTANCE);
+        return CraftItemStack.asCraftMirror((net.minecraft.item.ItemStack)net.minecraft.item.ItemStack.CODEC.parse(ops, data).getOrThrow(IllegalArgumentException::new));
+    	*/
+    }
 
 
 }

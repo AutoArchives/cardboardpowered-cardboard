@@ -14,12 +14,15 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.item.Item;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.javazilla.bukkitfabric.Utils;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+
 import net.minecraft.block.ComposterBlock;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.component.DataComponentTypes;
@@ -28,6 +31,8 @@ import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.BlockItem;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.util.Rarity;
+
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.World;
@@ -38,6 +43,7 @@ import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 
 import org.bukkit.inventory.CreativeCategory;
+import org.bukkit.inventory.ItemRarity;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -75,7 +81,9 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
 	
 	private final NamespacedKey key;
     private final Item item;
-    private final Class<M> itemMetaClass;
+    // private final Class<M> itemMetaClass;
+    private final Supplier<CraftItemMetas.ItemMetaData<M>> itemMetaData;
+    
 
     public static Material minecraftToBukkit(Item item) {
         return CraftMagicNumbers.getMaterial(item);
@@ -86,19 +94,21 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
     }
 
     public static ItemType minecraftToBukkitNew(Item minecraft) {
-        return (ItemType)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.ITEM, Registry.ITEM);
+        return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.ITEM, Registry.ITEM);
     }
 
     public static Item bukkitToMinecraftNew(ItemType bukkit) {
-        return (Item)CraftRegistry.bukkitToMinecraft(bukkit);
+        return CraftRegistry.bukkitToMinecraft(bukkit);
     }
 
     public CraftItemType(NamespacedKey key, Item item) {
         this.key = key;
         this.item = item;
-        this.itemMetaClass = this.getItemMetaClass(item);
+        // this.itemMetaClass = this.getItemMetaClass(item);
+        this.itemMetaData = Suppliers.memoize(() -> CraftItemMetas.getItemMetaData(this));
     }
 
+    /*
     private Class<M> getItemMetaClass(Item item) {
         ItemMeta meta = new ItemStack(this.asMaterial()).getItemMeta();
         if (meta != null && CraftMetaEntityTag.class != meta.getClass()) {
@@ -106,6 +116,7 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
         }
         return (Class<M>) ItemMeta.class;
     }
+    */
 
     @NotNull
     public ItemType.Typed<ItemMeta> typed() {
@@ -114,7 +125,7 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
 
     @NotNull
     public <Other extends ItemMeta> ItemType.Typed<Other> typed(@NotNull Class<Other> itemMetaType) {
-        if (itemMetaType.isAssignableFrom(this.itemMetaClass)) {
+    	if (itemMetaType.isAssignableFrom(this.itemMetaData.get().metaClass())) {
             return (ItemType.Typed<Other>) this;
         }
         throw new IllegalArgumentException("Cannot type item type " + this.key.toString() + " to meta type " + itemMetaType.getSimpleName());
@@ -135,6 +146,16 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
         return this.createItemStack(1, metaConfigurator);
     }
 
+    public ItemStack createItemStack(int amount, @Nullable Consumer<? super M> metaConfigurator) {
+        net.minecraft.item.ItemStack stack = new net.minecraft.item.ItemStack(this.item, amount);
+        CraftItemStack mirror = CraftItemStack.asCraftMirror(stack);
+        if (metaConfigurator != null) {
+            mirror.editMeta(this.getItemMetaClass(), metaConfigurator);
+        }
+        return mirror;
+    }
+
+    /*
     @NotNull
     public ItemStack createItemStack(int amount, @Nullable Consumer<? super M> metaConfigurator) {
         ItemStack itemStack = new ItemStack(this.asMaterial(), amount);
@@ -145,6 +166,7 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
         }
         return itemStack;
     }
+    */
 
     @Override
     public Item getHandle() {
@@ -169,8 +191,17 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
         if (this == ItemType.AIR) {
             throw new UnsupportedOperationException("Air does not have ItemMeta");
         }
+        return this.itemMetaData.get().metaClass();
+    }
+    
+    /*
+    public Class<M> getItemMetaClass_old() {
+        if (this == ItemType.AIR) {
+            throw new UnsupportedOperationException("Air does not have ItemMeta");
+        }
         return this.itemMetaClass;
     }
+    */
 
     public int getMaxStackSize() {
         if (this == AIR) {
@@ -260,5 +291,11 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
     public String translationKey() {
         return this.item.getTranslationKey();
     }
+
+	@Override
+	public ItemRarity getItemRarity() {
+        Rarity rarity = this.item.getComponents().get(DataComponentTypes.RARITY);
+        return rarity == null ? null : ItemRarity.valueOf((String)rarity.name());
+	}
 	
 }

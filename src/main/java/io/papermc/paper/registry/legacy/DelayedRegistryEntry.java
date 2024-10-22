@@ -7,7 +7,7 @@ import net.minecraft.registry.Registry;
 import org.bukkit.Keyed;
 
 @com.github.bsideup.jabel.Desugar
-public record DelayedRegistryEntry<M, T extends Keyed, R extends org.bukkit.Registry<T>>(RegistryEntry<M, T, R> delegate) implements RegistryEntry<M, T, R>
+public record DelayedRegistryEntry<M, T extends Keyed>(RegistryEntry<M, T> delegate) implements RegistryEntry<M, T>
 {
     @Override
     public net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey() {

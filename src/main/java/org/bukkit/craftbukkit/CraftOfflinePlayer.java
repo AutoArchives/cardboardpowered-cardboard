@@ -7,6 +7,9 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 
+import io.papermc.paper.persistence.PaperPersistentDataContainerView;
+import io.papermc.paper.persistence.PersistentDataContainerView;
+
 import java.io.File;
 import java.time.Duration;
 import java.time.Instant;
@@ -561,5 +564,41 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
         return null;
 	}
+
+	@Override
+	public @NotNull PersistentDataContainerView getPersistentDataContainer() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/*
+	// Paper start - Add Offline PDC API
+	private static final org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry();
+	private io.papermc.paper.persistence.@org.checkerframework.checker.nullness.qual.MonotonicNonNull PersistentDataContainerView persistentDataContainerView;
+
+	@Override
+	public io.papermc.paper.persistence.PersistentDataContainerView getPersistentDataContainer() {
+	    if (this.persistentDataContainerView == null) {
+	        this.persistentDataContainerView = new io.papermc.paper.persistence.PaperPersistentDataContainerView(DATA_TYPE_REGISTRY) {
+
+	            private CompoundTag getPersistentTag() {
+	                return net.minecraft.Optionull.map(CraftOfflinePlayer.this.getData(), data -> data.getCompound("BukkitValues"));
+	            }
+
+	            @Override
+	            public CompoundTag toTagCompound() {
+	                return java.util.Objects.requireNonNullElseGet(this.getPersistentTag(), CompoundTag::new);
+	            }
+
+	            @Override
+	            public net.minecraft.nbt.Tag getTag(String key) {
+	                return net.minecraft.Optionull.map(this.getPersistentTag(), tag -> tag.get(key));
+	            }
+	        };
+	    }
+	    return this.persistentDataContainerView;
+	}
+	// Paper end - Add Offline PDC API
+	*/
 
 }

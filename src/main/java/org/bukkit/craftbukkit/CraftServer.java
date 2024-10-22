@@ -58,6 +58,7 @@ import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
 import io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler;
 import io.papermc.paper.threadedregions.scheduler.RegionScheduler;
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.SharedConstants;
@@ -179,7 +180,9 @@ import org.bukkit.scoreboard.Criteria;
 import org.bukkit.structure.StructureManager;
 import org.bukkit.util.StringUtil;
 import org.bukkit.util.permissions.DefaultPermissions;
+import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.CardboardBossBar;
+import org.cardboardpowered.impl.CraftServerLinks;
 import org.cardboardpowered.impl.IpBanList;
 import org.cardboardpowered.impl.ProfileBanList;
 import org.cardboardpowered.impl.command.BukkitCommandWrapper;
@@ -351,7 +354,7 @@ import net.minecraft.world.level.storage.LevelStorage;
 public class CraftServer implements Server {
 
     public final String serverName = "Cardboard";
-    public final String bukkitVersion = "1.20.6-R0.1-SNAPSHOT"; // "1.19.4-R0.1-SNAPSHOT"; // "1.19.2-R0.1-SNAPSHOT";
+    public final String bukkitVersion = "1.21.1-R0.1-SNAPSHOT"; // "1.20.6-R0.1-SNAPSHOT"; // "1.19.4-R0.1-SNAPSHOT"; // "1.19.2-R0.1-SNAPSHOT";
     public final String serverVersion;
     public final String shortVersion;
 
@@ -397,6 +400,7 @@ public class CraftServer implements Server {
     public CraftDataPackManager dataPackManager;
     
     private CraftServerTickManager serverTickManager;
+    private CraftServerLinks serverLinks;
     
     public CraftServer(MinecraftDedicatedServer nms) {
     	
@@ -426,6 +430,7 @@ public class CraftServer implements Server {
         
         this.dataPackManager = new CraftDataPackManager(this.getServer().getDataPackManager());
         this.serverTickManager = new CraftServerTickManager(console.getTickManager());
+        this.serverLinks = new CraftServerLinks(console);
         
         loadIcon();
         
@@ -433,6 +438,11 @@ public class CraftServer implements Server {
         
         // Register PotionEffectType
         BukkitFabricMod.registerPotionEffectType();
+    }
+    
+    @Override
+    public ServerLinks getServerLinks() {
+        return this.serverLinks;
     }
  
     public static IUserCache getUC() {
@@ -2037,9 +2047,10 @@ public class CraftServer implements Server {
     }
 
 
-    @Override
+    //@Override
+    @Deprecated(forRemoval = true)
     public ChunkData createVanillaChunkData(World arg0, int arg1, int arg2) {
-        // TODO Auto-generated method stub
+        // Removed API in 1.21
         return null;
     }
 
@@ -2586,6 +2597,15 @@ public class CraftServer implements Server {
 	public @NotNull EntityFactory getEntityFactory() {
 		return CraftEntityFactory.instance();
 	}
+
+	@Override
+	public World getWorld(Key worldKey) {
+        ServerWorld worldServer = this.server.getWorld(RegistryKey.of(RegistryKeys.WORLD, CardboardAdventure.asVanilla(worldKey)));
+        if (worldServer == null) {
+            return null;
+        }
+        return worldServer.getWorld();
+    }
 
     
 

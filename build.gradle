@@ -102,7 +102,9 @@ dependencies {
 	//	exclude group: "net.kyori", module: "adventure-bom"
 	//}
 	
-	compileOnly("io.papermc.paper:paper-api:1.20.6-R0.1-20240916.192025-126")
+	// compileOnly("io.papermc.paper:paper-api:1.20.6-R0.1-20240916.192025-126")
+	//compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-20240810.105324-1")
+	compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-20241021.162528-124")
 
 	// Paper-API libs
 	compileOnly("net.md-5:bungeecord-chat:1.16-R0.4")

@@ -13,6 +13,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.entity.CreeperPowerEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class CreeperImpl extends MonsterImpl implements Creeper {
 
@@ -165,4 +166,18 @@ public class CreeperImpl extends MonsterImpl implements Creeper {
         // TODO Auto-generated method stub
         
     }
+
+	@Override
+	public void ignite(@NotNull Entity entity) {
+		// TODO Auto-generated method stub
+		getHandle().ignite();
+	}
+
+	@Override
+	public @Nullable Entity getIgniter() {
+        // TODO Mixin creeper
+		// return this.getHandle().entityIgniter != null ? this.getHandle().entityIgniter.getBukkitEntity() : null;
+		return null;
+	}
+
 }

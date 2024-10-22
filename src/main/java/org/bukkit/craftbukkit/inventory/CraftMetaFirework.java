@@ -205,7 +205,7 @@ implements FireworkMeta {
         return !this.hasEffects() && !this.hasPower();
     }
 
-    boolean hasPower() {
+    public boolean hasPower() {
         return this.power != 0;
     }
 

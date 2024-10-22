@@ -1,6 +1,7 @@
 package org.cardboardpowered.mixin.registry;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -8,8 +9,10 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 import com.javazilla.bukkitfabric.BukkitFabricMod;
+import com.mojang.serialization.Lifecycle;
 
 import io.papermc.paper.registry.PaperRegistryAccess;
+import io.papermc.paper.registry.data.util.Conversions;
 import net.minecraft.registry.entry.RegistryEntryInfo;
 import net.minecraft.util.Identifier;
 import net.minecraft.Bootstrap;
@@ -19,7 +22,7 @@ import net.minecraft.registry.Registries.Initializer;
 
 @Mixin(Registries.class)
 public class MixinRegistries {
-
+	
 	@Shadow
     private static Map<Identifier, Supplier<?>> DEFAULT_ENTRIES;
 

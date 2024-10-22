@@ -1,16 +1,21 @@
 package org.bukkit.craftbukkit;
 
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.world.event.Vibrations;
+
 import org.bukkit.GameEvent;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.jetbrains.annotations.NotNull;
 
 public class CraftGameEvent extends GameEvent implements Handleable<net.minecraft.world.event.GameEvent> {
 
     private final NamespacedKey key;
+    private final RegistryKey<net.minecraft.world.event.GameEvent> handleKey;
     private final net.minecraft.world.event.GameEvent handle;
 
     public static GameEvent minecraftToBukkit(net.minecraft.world.event.GameEvent minecraft) {
@@ -23,6 +28,7 @@ public class CraftGameEvent extends GameEvent implements Handleable<net.minecraf
 
     public CraftGameEvent(NamespacedKey key, net.minecraft.world.event.GameEvent handle) {
         this.key = key;
+        this.handleKey = RegistryKey.of(RegistryKeys.GAME_EVENT, CraftNamespacedKey.toMinecraft(key));
         this.handle = handle;
     }
 
@@ -53,5 +59,15 @@ public class CraftGameEvent extends GameEvent implements Handleable<net.minecraf
     public String toString() {
         return "CraftGameEvent{key=" + String.valueOf(this.key) + "}";
     }
+
+	@Override
+	public int getRange() {
+		return this.handle.notificationRadius();
+	}
+
+	@Override
+	public int getVibrationLevel() {
+        return Vibrations.getFrequency(this.handleKey);
+	}
 
 }

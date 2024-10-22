@@ -788,5 +788,10 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
         this.getHandle().enchantmentTableSeed = i2;
 	}
 
+	@Override
+	public void startRiptideAttack(int duration, float damage, @Nullable ItemStack attackItem) {
+		this.getHandle().useRiptide(duration, damage, CraftItemStack.asNMSCopy(attackItem));
+	}
+
 }
 

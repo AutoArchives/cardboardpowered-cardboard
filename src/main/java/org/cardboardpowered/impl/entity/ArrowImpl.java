@@ -256,4 +256,28 @@ public class ArrowImpl extends AbstractProjectile implements AbstractArrow {
 		// this.getHandle().stack = null;
 	}
 
+	@Override
+	public ItemStack getWeapon() {
+		if (this.getHandle().getWeaponStack() == null) {
+			return null;
+		}
+		return CraftItemStack.asBukkitCopy(this.getHandle().getWeaponStack());
+	}
+
+	@Override
+	public void setWeapon(@NotNull ItemStack item) {
+		this.getHandle().weapon = CraftItemStack.asNMSCopy(item);
+	}
+
+	@Override
+	public void setShooter(@Nullable ProjectileSource shooter, boolean resetPickupStatus) {
+        if (shooter instanceof CraftEntity) {
+            CraftEntity craftEntity = (CraftEntity)shooter;
+            this.getHandle().setOwner(craftEntity.getHandle());
+        } else {
+            this.getHandle().setOwner(null);
+        }
+        this.getHandle().setProjectileSourceBukkit(shooter);
+	}
+
 }

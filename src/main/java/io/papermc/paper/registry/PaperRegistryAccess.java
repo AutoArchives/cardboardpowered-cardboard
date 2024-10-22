@@ -10,7 +10,6 @@ import io.papermc.paper.registry.entry.RegistryEntry;
 import io.papermc.paper.registry.legacy.DelayedRegistry;
 import io.papermc.paper.registry.legacy.DelayedRegistryEntry;
 import io.papermc.paper.registry.legacy.LegacyRegistryIdentifiers;
-import io.papermc.paper.world.structure.ConfiguredStructure;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -38,19 +37,12 @@ implements RegistryAccess {
     public Set<RegistryKey<?>> getLoadedServerBackedRegistries() {
         return this.registries.keySet().stream().filter(registryHolder -> !(PaperRegistries.getEntry(registryHolder) instanceof ApiRegistryEntry)).collect(Collectors.toUnmodifiableSet());
     }
-
+    
     @Deprecated(forRemoval=true)
     public <T extends Keyed> org.bukkit.Registry<T> getRegistry(Class<T> type) {
-        RegistryEntry<?, T, ?> entry;
-        
-        RegistryKey<T> registryKey;
-        if (type == ConfiguredStructure.class) {
-            registryKey = (RegistryKey<T>) PaperRegistries.CONFIGURED_STRUCTURE_REGISTRY_KEY;
-            entry = (RegistryEntry<?, T, ?>) PaperRegistries.CONFIGURED_STRUCTURE_REGISTRY_ENTRY;
-        } else {
-            registryKey = Objects.requireNonNull(PaperRegistryAccess.byType(type), () -> String.valueOf(type) + " is not a valid registry type");
-            entry = PaperRegistries.getEntry(registryKey);
-        }
+
+        RegistryKey<T> registryKey = Objects.requireNonNull(PaperRegistryAccess.byType(type), () -> String.valueOf(type) + " is not a valid registry type");
+        RegistryEntry<?, T> entry = PaperRegistries.getEntry(registryKey);
         RegistryHolder<T> registry = (RegistryHolder<T>) this.registries.get(registryKey);
         if (registry != null) {
             return registry.get();
@@ -67,7 +59,7 @@ implements RegistryAccess {
         if (PaperRegistries.getEntry(key) == null) {
             throw new NoSuchElementException(String.valueOf(key) + " is not a valid registry key");
         }
-        @Nullable RegistryHolder<?> registryHolder = this.registries.get(key);
+        RegistryHolder<?> registryHolder = this.registries.get(key);
         if (registryHolder == null) {
             throw new IllegalArgumentException(String.valueOf(key) + " points to a registry that is not available yet");
         }
@@ -91,7 +83,7 @@ implements RegistryAccess {
     }
 
     private <M, B extends Keyed, R extends org.bukkit.Registry<B>> void registerRegistry(net.minecraft.registry.RegistryKey<? extends Registry<M>> resourceKey, Registry<M> registry, boolean replace) {
-        RegistryEntry<M, B, R> entry = PaperRegistries.getEntry(resourceKey);
+    	@Nullable RegistryEntry<M, B> entry = PaperRegistries.getEntry(resourceKey);
         if (entry == null) {
             return;
         }

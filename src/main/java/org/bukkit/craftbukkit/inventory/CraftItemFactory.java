@@ -2,15 +2,21 @@ package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.collect.ImmutableSet;
 
+import io.papermc.paper.registry.set.PaperRegistrySets;
+import io.papermc.paper.registry.set.RegistryKeySet;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.event.HoverEvent.ShowItem;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.hover.content.Content;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.registry.entry.RegistryEntryList.Named;
 import net.minecraft.registry.tag.EnchantmentTags;
 
@@ -28,6 +34,7 @@ import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.util.CraftLegacy;
+import org.bukkit.craftbukkit.util.RandomSourceWrapper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemFactory;
@@ -415,13 +422,6 @@ public final class CraftItemFactory implements ItemFactory {
 		return null;
 	}
 
-	@Override
-	public @NotNull ItemStack enchantWithLevels(@NotNull ItemStack arg0, @Range(from = 1, to = 30) int arg1,
-			boolean arg2, @NotNull Random arg3) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
 	// 1.20.2 API:
 
 	@Override
@@ -449,6 +449,26 @@ public final class CraftItemFactory implements ItemFactory {
         DynamicRegistryManager registry = CraftRegistry.getMinecraftRegistry();
         Optional<Named<Enchantment>> optional = allowTreasures ? Optional.empty() : registry.get(RegistryKeys.ENCHANTMENT).getEntryList(EnchantmentTags.IN_ENCHANTING_TABLE);
         return CraftItemStack.asCraftMirror(EnchantmentHelper.enchant(source, craft.handle, level, registry, optional));
+    }
+
+	@Override
+    public ItemStack enchantWithLevels(ItemStack itemStack, int levels, boolean allowTreasure, Random random) {
+        return this.enchantWithLevels(itemStack, levels, allowTreasure ? Optional.empty() : CraftServer.server.getRegistryManager().get(RegistryKeys.ENCHANTMENT).getEntryList(EnchantmentTags.IN_ENCHANTING_TABLE), random);
+    }
+
+	@Override
+    public ItemStack enchantWithLevels(ItemStack itemStack, int levels, RegistryKeySet<org.bukkit.enchantments.Enchantment> keySet, Random random) {
+		return this.enchantWithLevels(itemStack, levels, Optional.of(PaperRegistrySets.convertToNms(RegistryKeys.ENCHANTMENT, CraftServer.server.getRegistryManager().getOps(NbtOps.INSTANCE).registryInfoGetter, keySet)), random);
+    }
+
+    private ItemStack enchantWithLevels(ItemStack itemStack, int levels, Optional<? extends RegistryEntryList<net.minecraft.enchantment.Enchantment>> possibleEnchantments, Random random) {
+        net.minecraft.item.ItemStack internalStack = CraftItemStack.asNMSCopy(itemStack);
+        if (internalStack.hasEnchantments()) {
+            internalStack.set(DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT);
+        }
+        DynamicRegistryManager.Immutable registryAccess = CraftServer.server.getRegistryManager();
+        net.minecraft.item.ItemStack enchanted = EnchantmentHelper.enchant(new RandomSourceWrapper(random), internalStack, levels, registryAccess, possibleEnchantments);
+        return CraftItemStack.asCraftMirror(enchanted);
     }
 
 }

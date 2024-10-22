@@ -22,7 +22,7 @@ public interface RegistryHolder<B extends Keyed> {
             return this.delayedRegistry;
         }
 
-        <M> void loadFrom(DelayedRegistryEntry<M, B, R> delayedEntry, Registry<M> registry) {
+        <M> void loadFrom(DelayedRegistryEntry<M, B> delayedEntry, Registry<M> registry) {
             RegistryHolder<B> delegateHolder = delayedEntry.delegate().createRegistryHolder(registry);
             if (!(delegateHolder instanceof Memoized)) {
                 throw new IllegalArgumentException(String.valueOf(delegateHolder) + " must be a memoized holder");

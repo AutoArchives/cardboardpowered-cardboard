@@ -48,6 +48,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.DyeColor;
 import org.bukkit.Effect;
+import org.bukkit.EntityEffect;
 import org.bukkit.GameMode;
 import org.bukkit.Instrument;
 import org.bukkit.Location;
@@ -56,6 +57,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Note;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Particle;
+import org.bukkit.ServerLinks;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.Statistic;
@@ -78,6 +80,7 @@ import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.CraftStatistic;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.scoreboard.CardboardScoreboard;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
@@ -111,6 +114,7 @@ import org.bukkit.util.Vector;
 import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.AdvancementImpl;
 import org.cardboardpowered.impl.AdvancementProgressImpl;
+import org.cardboardpowered.impl.CraftServerLinks;
 import org.cardboardpowered.impl.block.CardboardSign;
 
 import com.destroystokyo.paper.ClientOption;
@@ -164,6 +168,7 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.common.ResourcePackRemoveS2CPacket;
 import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
+import net.minecraft.network.packet.s2c.common.ServerLinksS2CPacket;
 import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.ChatSuggestionsS2CPacket;
@@ -171,6 +176,7 @@ import net.minecraft.network.packet.s2c.play.ChunkDeltaUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.ClearTitleS2CPacket;
 //import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.play.DamageTiltS2CPacket;
+import net.minecraft.network.packet.s2c.play.EntityStatusS2CPacket;
 import net.minecraft.network.packet.s2c.play.ExperienceBarUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameStateChangeS2CPacket;
 import net.minecraft.network.packet.s2c.play.ParticleS2CPacket;
@@ -2275,6 +2281,14 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
         this.getHandle().networkHandler.sendPacket(new DamageTiltS2CPacket(this.getEntityId(), actualYaw));
 	}
 
+    public void sendHurtAnimation(float yaw, Entity target) {
+        if (this.getHandle().networkHandler == null) {
+            return;
+        }
+        float actualYaw = yaw + 90.0f;
+        this.getHandle().networkHandler.sendPacket(new DamageTiltS2CPacket(target.getEntityId(), actualYaw));
+    }
+
 	@Override
     public void setExpCooldown(int ticks) {
         // TODO
@@ -2696,6 +2710,30 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	@Override
+    public void sendLinks(ServerLinks links) {
+        if (this.getHandle().networkHandler == null) {
+            return;
+        }
+        Preconditions.checkArgument(links != null, (Object)"links cannot be null");
+        net.minecraft.server.ServerLinks nms = ((CraftServerLinks)links).getServerLinks();
+        this.getHandle().networkHandler.sendPacket(new ServerLinksS2CPacket(nms.getLinks()));
+    }
+
+	@Override
+	public void startRiptideAttack(int duration, float attackStrength, @Nullable ItemStack attackItem) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void sendEntityEffect(EntityEffect effect, Entity target) {
+        if (this.getHandle().networkHandler == null || !effect.isApplicableTo(target)) {
+            return;
+        }
+        this.getHandle().networkHandler.sendPacket(new EntityStatusS2CPacket(((CraftEntity)target).getHandle(), effect.getData()));
+    }
 	
 
 }

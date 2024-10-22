@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
@@ -38,7 +39,10 @@ import org.jetbrains.annotations.Nullable;
 
 import com.javazilla.bukkitfabric.BukkitFabricMod;
 
+import io.papermc.paper.registry.RegistryAccess;
 import net.minecraft.block.entity.BannerPattern;
+import net.minecraft.item.trim.ArmorTrim;
+import net.minecraft.item.trim.ArmorTrimMaterial;
 //import net.minecraft.enchantment.Enchantment;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
@@ -260,8 +264,23 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         }
         return (B)bukkit.get(namespacedKey);
     }
-    
-    
+
+	@Override
+	public B getOrThrow(NamespacedKey key) {
+		final B value = this.get(key);
+		if (value == null) {
+			throw new java.util.NoSuchElementException("CraftRegistry: No value for " + key + " in " + this);
+		}
+		return value;
+	}
+
+    public static <T extends Keyed, M> Optional<T> unwrapAndConvertHolder(io.papermc.paper.registry.RegistryKey<T> registryKey, RegistryEntry<M> value) {
+        return CraftRegistry.unwrapAndConvertHolder(RegistryAccess.registryAccess().getRegistry(registryKey), value);
+    }
+
+    public static <T extends Keyed, M> Optional<T> unwrapAndConvertHolder(Registry<T> registry, RegistryEntry<M> value) {
+        return value.getKey().map(key -> registry.get(CraftNamespacedKey.fromMinecraft(key.getValue())));
+    }
 
     /*private static DynamicRegistryManager registry;
 

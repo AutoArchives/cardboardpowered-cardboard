@@ -1,9 +1,11 @@
 package org.cardboardpowered.impl;
 
 import net.kyori.adventure.text.Component;
+import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.registry.tag.TagKey;
@@ -12,10 +14,13 @@ import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Util;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
+import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -27,11 +32,17 @@ import org.bukkit.enchantments.EnchantmentWrapper;
 import org.bukkit.entity.EntityCategory;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.cardboardpowered.adventure.CardboardAdventure;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import io.papermc.paper.enchantments.EnchantmentRarity;
+import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.registry.set.PaperRegistrySets;
+import io.papermc.paper.registry.set.RegistryKeySet;
 import me.isaiah.common.ICommonMod;
 
 public class CardboardEnchantment extends Enchantment implements Handleable<net.minecraft.enchantment.Enchantment> {
@@ -282,6 +293,37 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 
 	public static RegistryEntry<net.minecraft.enchantment.Enchantment> bukkitToMinecraftHolder(Enchantment key2) {
         return CraftRegistry.bukkitToMinecraftHolder(key2, RegistryKeys.ENCHANTMENT);
+	}
+
+	@Override
+	public @NotNull Set<EquipmentSlotGroup> getActiveSlotGroups() {
+        return this.getHandle().definition().slots().stream().map(CraftEquipmentSlot::getSlot).collect(Collectors.toSet());
+	}
+
+	@Override
+	public @NotNull Component description() {
+		return CardboardAdventure.asAdventure(this.handle.value().description());
+	}
+
+	@Override
+	public @NotNull RegistryKeySet<ItemType> getSupportedItems() {
+        return PaperRegistrySets.convertToApi(RegistryKey.ITEM, this.handle.value().getApplicableItems());
+	}
+
+	@Override
+	public @Nullable RegistryKeySet<ItemType> getPrimaryItems() {
+		Optional<RegistryEntryList<Item>> primaryItems = this.handle.value().definition().primaryItems();
+        return primaryItems.map(holders -> PaperRegistrySets.convertToApi(RegistryKey.ITEM, holders)).orElse(null);
+	}
+
+	@Override
+	public int getWeight() {
+		return this.handle.value().getWeight();
+	}
+
+	@Override
+	public @NotNull RegistryKeySet<Enchantment> getExclusiveWith() {
+		return PaperRegistrySets.convertToApi(RegistryKey.ENCHANTMENT, this.handle.value().exclusiveSet());
 	}
 
 

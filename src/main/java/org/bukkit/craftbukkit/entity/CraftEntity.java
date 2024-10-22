@@ -66,7 +66,7 @@ import org.cardboardpowered.interfaces.IWorldChunk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -1508,5 +1508,12 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 		return tag.asString();
 	}
 
+	// 1.21
+    public void broadcastHurtAnimation(Collection<Player> players) {
+        Preconditions.checkArgument((!players.contains(this) ? 1 : 0) != 0, (Object)"Cannot broadcast hurt animation to self without a yaw");
+        for (Player player : players) {
+            ((PlayerImpl)player).sendHurtAnimation(0.0f, this);
+        }
+    }
 
 }

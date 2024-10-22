@@ -543,3 +543,9 @@ accessible method net/minecraft/entity/mob/MobEntity getXpToDrop ()I
 accessible method net/minecraft/server/network/ServerPlayerEntity findRespawnPosition (Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;FZZ)Ljava/util/Optional;
 accessible method net/minecraft/entity/LivingEntity getEquipmentBreakStatus (Lnet/minecraft/entity/EquipmentSlot;)B
 accessible method net/minecraft/entity/projectile/PersistentProjectileEntity setPierceLevel (B)V
+accessible field net/minecraft/entity/projectile/PersistentProjectileEntity weapon Lnet/minecraft/item/ItemStack;
+accessible field net/minecraft/server/dedicated/MinecraftDedicatedServer serverLinks Lnet/minecraft/server/ServerLinks;
+mutable field net/minecraft/server/dedicated/MinecraftDedicatedServer serverLinks Lnet/minecraft/server/ServerLinks;
+accessible method net/minecraft/registry/SimpleRegistry assertNotFrozen (Lnet/minecraft/registry/RegistryKey;)V
+accessible field net/minecraft/registry/ServerDynamicRegistryType STATIC_REGISTRY_MANAGER Lnet/minecraft/registry/DynamicRegistryManager$Immutable;
+accessible field net/minecraft/registry/RegistryOps registryInfoGetter Lnet/minecraft/registry/RegistryOps$RegistryInfoGetter;

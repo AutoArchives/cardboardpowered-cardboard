@@ -1,6 +1,3 @@
-/*
- * Decompiled with CFR 0.151.
- */
 package org.cardboardpowered.impl.entity;
 
 import net.minecraft.entity.passive.MuleEntity;

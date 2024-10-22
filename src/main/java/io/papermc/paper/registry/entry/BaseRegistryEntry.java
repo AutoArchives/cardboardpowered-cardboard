@@ -5,7 +5,7 @@ import io.papermc.paper.registry.entry.RegistryEntry;
 import net.minecraft.registry.Registry;
 import org.bukkit.Keyed;
 
-public abstract class BaseRegistryEntry<M, B extends Keyed, R extends org.bukkit.Registry<B>> implements RegistryEntry<M, B, R> {
+public abstract class BaseRegistryEntry<M, B extends Keyed> implements RegistryEntry<M, B> {
 
     private final net.minecraft.registry.RegistryKey<? extends Registry<M>> minecraftRegistryKey;
     private final RegistryKey<B> apiRegistryKey;
@@ -24,5 +24,4 @@ public abstract class BaseRegistryEntry<M, B extends Keyed, R extends org.bukkit
     public final RegistryKey<B> apiKey() {
         return this.apiRegistryKey;
     }
-
 }

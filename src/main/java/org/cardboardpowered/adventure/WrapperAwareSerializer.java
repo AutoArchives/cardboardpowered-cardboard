@@ -1,15 +1,26 @@
 package org.cardboardpowered.adventure;
 
+import java.util.function.Supplier;
+
 import org.bukkit.craftbukkit.CraftServer;
+
+import com.google.common.base.Suppliers;
 
 import me.isaiah.common.ICommonMod;
 import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.text.Text;
 
-final class WrapperAwareSerializer implements ComponentSerializer<Component, Component, Text> {
+public class WrapperAwareSerializer implements ComponentSerializer<Component, Component, Text> {
 
+	private final Supplier<RegistryOps<Object>> javaOps;
+	
+    public WrapperAwareSerializer(Supplier<RegistryOps<Object>> javaOps) {
+    	this.javaOps = Suppliers.memoize(javaOps::get);
+    }
+	
     @Override
     public Component deserialize(final Text input) {
         if (input instanceof CardboardAdventureComponent) {

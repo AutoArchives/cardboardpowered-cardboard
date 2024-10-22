@@ -6,8 +6,12 @@ import java.util.UUID;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.ZombieVillager;
@@ -23,12 +27,142 @@ import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.util.math.BlockPos;
 
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.village.TradeOffers;
 import net.minecraft.village.VillagerProfession;
+import net.minecraft.village.VillagerType;
 
 public class VillagerImpl extends AbstractVillagerImpl implements Villager {
 
-    public VillagerImpl(CraftServer server, VillagerEntity entity) {
+	public static class CraftProfession
+    implements Villager.Profession,
+    Handleable<VillagerProfession> {
+        private static int count = 0;
+        private final NamespacedKey key;
+        private final VillagerProfession villagerProfession;
+        private final String name;
+        private final int ordinal;
+
+        public static Villager.Profession minecraftToBukkit(VillagerProfession minecraft) {
+            return (Villager.Profession)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.VILLAGER_PROFESSION, Registry.VILLAGER_PROFESSION);
+        }
+
+        public static VillagerProfession bukkitToMinecraft(Villager.Profession bukkit) {
+            return (VillagerProfession)CraftRegistry.bukkitToMinecraft(bukkit);
+        }
+
+        public CraftProfession(NamespacedKey key, VillagerProfession villagerProfession) {
+            this.key = key;
+            this.villagerProfession = villagerProfession;
+            this.name = "minecraft".equals(key.getNamespace()) ? key.getKey().toUpperCase(Locale.ROOT) : key.toString();
+            this.ordinal = count++;
+        }
+
+        @Override
+        public VillagerProfession getHandle() {
+            return this.villagerProfession;
+        }
+
+        public NamespacedKey getKey() {
+            return this.key;
+        }
+
+        public int compareTo(Villager.Profession profession) {
+            return this.ordinal - profession.ordinal();
+        }
+
+        public String name() {
+            return this.name;
+        }
+
+        public int ordinal() {
+            return this.ordinal;
+        }
+
+        public String toString() {
+            return this.name();
+        }
+
+        public boolean equals(Object other) {
+            if (this == other) {
+                return true;
+            }
+            if (!(other instanceof CraftProfession)) {
+                return false;
+            }
+            return this.getKey().equals((Object)((Villager.Profession)other).getKey());
+        }
+
+        public int hashCode() {
+            return this.getKey().hashCode();
+        }
+    }
+
+	public static class CraftType
+    implements Villager.Type,
+    Handleable<VillagerType> {
+        private static int count = 0;
+        private final NamespacedKey key;
+        private final VillagerType villagerType;
+        private final String name;
+        private final int ordinal;
+
+        public static Villager.Type minecraftToBukkit(VillagerType minecraft) {
+            return (Villager.Type)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.VILLAGER_TYPE, Registry.VILLAGER_TYPE);
+        }
+
+        public static VillagerType bukkitToMinecraft(Villager.Type bukkit) {
+            return (VillagerType)CraftRegistry.bukkitToMinecraft(bukkit);
+        }
+
+        public CraftType(NamespacedKey key, VillagerType villagerType) {
+            this.key = key;
+            this.villagerType = villagerType;
+            this.name = "minecraft".equals(key.getNamespace()) ? key.getKey().toUpperCase(Locale.ROOT) : key.toString();
+            this.ordinal = count++;
+        }
+
+        @Override
+        public VillagerType getHandle() {
+            return this.villagerType;
+        }
+
+        public NamespacedKey getKey() {
+            return this.key;
+        }
+
+        public int compareTo(Villager.Type type) {
+            return this.ordinal - type.ordinal();
+        }
+
+        public String name() {
+            return this.name;
+        }
+
+        public int ordinal() {
+            return this.ordinal;
+        }
+
+        public String toString() {
+            return this.name();
+        }
+
+        public boolean equals(Object other) {
+            if (this == other) {
+                return true;
+            }
+            if (!(other instanceof CraftType)) {
+                return false;
+            }
+            return this.getKey().equals((Object)((Villager.Type)other).getKey());
+        }
+
+        public int hashCode() {
+            return this.getKey().hashCode();
+        }
+    }
+
+	public VillagerImpl(CraftServer server, VillagerEntity entity) {
         super(server, entity);
     }
 

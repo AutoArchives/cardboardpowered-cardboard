@@ -259,7 +259,7 @@ public class PluginClassLoader extends URLClassLoader {
                         this.resolveClass(result);
                     }
                     
-                    if (debug_folder.isDirectory() && path.contains("worldedit")) {
+                    if (debug_folder.isDirectory() && (path.contains("worldedit") || path.contains("essentials") || path.contains("ess3") || path.contains("earth2me")) ) {
 	                    File out = new File("C:\\Users\\isaia\\Documents\\fo\\" + name.replace('.', File.separatorChar) + ".class");
 	                    try {
 	                    	Files.createDirectories(out.toPath().getParent());

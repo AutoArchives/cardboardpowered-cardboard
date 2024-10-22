@@ -102,7 +102,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 //>>>>>>> upstream/ver/1.20
-import com.destroystokyo.paper.HeightmapType;
+// import com.destroystokyo.paper.HeightmapType;
 import com.google.common.base.Preconditions;
 import com.javazilla.bukkitfabric.Utils;
 import com.javazilla.bukkitfabric.impl.MetaDataStoreBase;
@@ -2179,10 +2179,12 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 		return (int) nms.iterateEntities().spliterator().getExactSizeIfKnown();//.entitiesByUuid.size();
 	}
 
+	/*
 	@Override
 	public int getHighestBlockYAt(int arg0, int arg1, HeightmapType arg2) throws UnsupportedOperationException {
 		return this.getHighestBlockYAt(arg0, arg1);
 	}
+	*/
 
 	@Override
 	public MoonPhase getMoonPhase() {
@@ -2241,15 +2243,15 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 		// TODO Auto-generated method stub
 	}
 
-	@Override
+	// @Override
 	public boolean doesBedWork() {
-		// TODO Auto-generated method stub
+		// Removed API
 		return false;
 	}
 
-	@Override
+	// @Override
 	public boolean doesRespawnAnchorWork() {
-		// TODO Auto-generated method stub
+		// Removed API
 		return false;
 	}
 
@@ -2296,9 +2298,9 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 		return 0;
 	}
 
-	@Override
+	// @Override
 	public boolean hasBedrockCeiling() {
-		// TODO Auto-generated method stub
+		// Removed API
 		return false;
 	}
 
@@ -2308,9 +2310,9 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 		return false;
 	}
 
-	@Override
+	// @Override
 	public boolean hasSkylight() {
-		// TODO Auto-generated method stub
+		// Removed API
 		return false;
 	}
 
@@ -2332,9 +2334,9 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 		return false;
 	}
 
-	@Override
+	// @Override
 	public boolean isUltrawarm() {
-		// TODO Auto-generated method stub
+		// Removed API
 		return false;
 	}
 
@@ -2893,6 +2895,59 @@ public class WorldImpl extends CraftRegionAccessor implements World {
             return Collections.emptySet();
         }
         return players.stream().filter(Objects::nonNull).map(IMixinServerEntityPlayer::getBukkit).collect(Collectors.toUnmodifiableSet());
+	}
+	
+	// 1.21:
+
+	@Override
+	public boolean isVoidDamageEnabled() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setVoidDamageEnabled(boolean enabled) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public float getVoidDamageAmount() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setVoidDamageAmount(float voidDamageAmount) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public double getVoidDamageMinBuildHeightOffset() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setVoidDamageMinBuildHeightOffset(double minBuildHeightOffset) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean createExplosion(@Nullable Entity source, @NotNull Location loc, float power, boolean setFire,
+			boolean breakBlocks, boolean excludeSourceFromDamage) {
+		// TODO Auto-generated method stub
+        this.nms.createExplosion(
+        		(net.minecraft.entity.Entity)(source != null ? ((CraftEntity)source).getHandle() : null),
+        		(double)loc.getX(), (double)loc.getY(), (double)loc.getZ(),
+        		(float)power, (boolean)setFire, 
+        		(net.minecraft.world.World.ExplosionSourceType)(breakBlocks ? net.minecraft.world.World.ExplosionSourceType.MOB : net.minecraft.world.World.ExplosionSourceType.NONE))
+        		
+        		;
+        return true;
+
 	}
 	
 }
