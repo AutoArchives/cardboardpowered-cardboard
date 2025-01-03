@@ -1,6 +1,8 @@
 package org.cardboardpowered.mixin.world;
 
+import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.event.world.WorldSaveEvent;
 import org.cardboardpowered.impl.world.WorldImpl;
 import org.cardboardpowered.interfaces.IServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,10 +28,10 @@ public class MixinServerWorld extends MixinWorld implements IServerWorld {
         // ((CraftServer)Bukkit.getServer()).addWorldToMap(getWorldImpl());
     }*/
 
-    @Inject(at = @At("HEAD"), method = "save")
-    public void doWorldSaveEvent(ProgressListener aa, boolean bb, boolean cc, CallbackInfo ci) {
-        if (!cc) {
-            org.bukkit.Bukkit.getPluginManager().callEvent(new org.bukkit.event.world.WorldSaveEvent(getWorldImpl())); // WorldSaveEvent
+    @Inject(at = @At("HEAD"), method = "save(Lnet/minecraft/util/ProgressListener;ZZ)V", cancellable = false)
+    public void doWorldSaveEvent(ProgressListener aa, boolean flush, boolean savingDisabled, CallbackInfo ci) {
+        if (!savingDisabled) {
+            Bukkit.getPluginManager().callEvent(new WorldSaveEvent(getWorldImpl())); // WorldSaveEvent
         }
     }
     
