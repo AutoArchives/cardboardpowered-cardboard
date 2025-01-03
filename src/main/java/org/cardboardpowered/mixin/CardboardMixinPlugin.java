@@ -132,7 +132,7 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
 
         if (mixin.contains("item.MixinChorusFruitItem")) {
             FabricLoader loader = FabricLoader.getInstance();
-            String[] conflicts = {"porting_lib", "porting_lib_entity", "bclib", "porting_lib_base", "porting_lib_common"}
+            String[] conflicts = {"porting_lib", "porting_lib_entity", "bclib", "porting_lib_base", "porting_lib_common"};
             for (String confli : conflicts) {
                 boolean create_mod = loader.isModLoaded("porting_lib") || loader.isModLoaded(confli);
                 if (create_mod) {
