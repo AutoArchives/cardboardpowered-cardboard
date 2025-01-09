@@ -306,7 +306,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
                 gen = TreeConfiguredFeatures.OAK;
             }
         }
-        RegistryEntry<ConfiguredFeature<?, ?>> holder = access.getRegistryManager().get(RegistryKeys.CONFIGURED_FEATURE).getEntry(gen).orElse(null);
+        RegistryEntry<ConfiguredFeature<?, ?>> holder = access.getRegistryManager().getOrThrow(RegistryKeys.CONFIGURED_FEATURE).getOptional(gen).orElse(null);
         return holder != null ? (holder.value()).generate(access, chunkGenerator, random, pos) : false;
     }
 

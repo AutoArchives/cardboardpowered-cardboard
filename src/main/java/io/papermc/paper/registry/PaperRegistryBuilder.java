@@ -7,20 +7,21 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public interface PaperRegistryBuilder<M, T> extends RegistryBuilder<T> {
 
-    public M build();
+    M build();
 
     @FunctionalInterface
-    public static interface Factory<M, T, B extends PaperRegistryBuilder<M, T>> {
-        public B create(Conversions var1, TypedKey<T> var2);
-    }
+    interface Filler<M, T, B extends PaperRegistryBuilder<M, T>> {
 
-    @FunctionalInterface
-    public static interface Filler<M, T, B extends PaperRegistryBuilder<M, T>> {
-        public B fill(Conversions var1, TypedKey<T> var2, @Nullable M var3);
+        B fill(Conversions conversions, @Nullable M nms);
 
-        default public Factory<M, T, B> asFactory() {
-            return (lookup, key) -> this.fill(lookup, key, null);
+        default Factory<M, T, B> asFactory() {
+            return (lookup) -> this.fill(lookup, null);
         }
     }
 
+    @FunctionalInterface
+    interface Factory<M, T, B extends PaperRegistryBuilder<M, T>> {
+
+        B create(Conversions conversions);
+    }
 }

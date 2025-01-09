@@ -14,7 +14,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
-import net.kyori.adventure.text.Component;
 import net.minecraft.component.ComponentMap;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.enchantment.Enchantment;
@@ -23,38 +22,52 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.text.Text;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
-import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemType;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.qual.DefaultQualifier;
 import org.jetbrains.annotations.Range;
+import org.jspecify.annotations.Nullable;
 
-@DefaultQualifier(value=NonNull.class)
-public class PaperEnchantmentRegistryEntry
-implements EnchantmentRegistryEntry {
-    protected @MonotonicNonNull Text description;
-    protected @MonotonicNonNull RegistryEntryList<Item> supportedItems;
+import static io.papermc.paper.registry.data.util.Checks.asArgument;
+import static io.papermc.paper.registry.data.util.Checks.asArgumentMin;
+import static io.papermc.paper.registry.data.util.Checks.asConfigured;
+
+public class PaperEnchantmentRegistryEntry implements EnchantmentRegistryEntry {
+
+    // Top level
+    protected @Nullable Text description;
+
+    // Definition
+    protected @Nullable RegistryEntryList<Item> supportedItems;
     protected @Nullable RegistryEntryList<Item> primaryItems;
     protected OptionalInt weight = OptionalInt.empty();
     protected OptionalInt maxLevel = OptionalInt.empty();
-    protected Enchantment.Cost minimumCost;
-    protected Enchantment.Cost maximumCost;
+    protected Enchantment.@Nullable Cost minimumCost;
+    protected Enchantment.@Nullable Cost maximumCost;
     protected OptionalInt anvilCost = OptionalInt.empty();
-    protected @MonotonicNonNull List<AttributeModifierSlot> activeSlots;
-    protected RegistryEntryList<Enchantment> exclusiveWith = RegistryEntryList.empty();
+    protected @Nullable List<AttributeModifierSlot> activeSlots;
+
+    // Exclusive
+    protected RegistryEntryList<Enchantment> exclusiveWith = RegistryEntryList.empty(); // Paper added default to empty.
+
+    // Effects
     protected ComponentMap effects;
+
     protected final Conversions conversions;
 
-    public PaperEnchantmentRegistryEntry(Conversions conversions, TypedKey<org.bukkit.enchantments.Enchantment> ignoredKey, @Nullable Enchantment internal) {
+    public PaperEnchantmentRegistryEntry(
+        final Conversions conversions,
+        final @Nullable Enchantment internal
+    ) {
         this.conversions = conversions;
         if (internal == null) {
             this.effects = ComponentMap.EMPTY;
             return;
         }
+
+        // top level
         this.description = internal.description();
-        Enchantment.Definition definition = internal.definition();
+
+        // definition
+        final Enchantment.Definition definition = internal.definition();
         this.supportedItems = definition.supportedItems();
         this.primaryItems = definition.primaryItems().orElse(null);
         this.weight = OptionalInt.of(definition.weight());
@@ -63,118 +76,154 @@ implements EnchantmentRegistryEntry {
         this.maximumCost = definition.maxCost();
         this.anvilCost = OptionalInt.of(definition.anvilCost());
         this.activeSlots = definition.slots();
+
+        // exclusive
         this.exclusiveWith = internal.exclusiveSet();
+
+        // effects
         this.effects = internal.effects();
     }
 
-    public Component description() {
-        return this.conversions.asAdventure(Checks.asConfigured(this.description, "description"));
+    @Override
+    public net.kyori.adventure.text.Component description() {
+        return this.conversions.asAdventure(asConfigured(this.description, "description"));
     }
 
+    @Override
     public RegistryKeySet<ItemType> supportedItems() {
-        return PaperRegistrySets.convertToApi(RegistryKey.ITEM, Checks.asConfigured(this.supportedItems, "supportedItems"));
+        return PaperRegistrySets.convertToApi(RegistryKey.ITEM, asConfigured(this.supportedItems, "supportedItems"));
     }
 
+    @Override
     public @Nullable RegistryKeySet<ItemType> primaryItems() {
         return this.primaryItems == null ? null : PaperRegistrySets.convertToApi(RegistryKey.ITEM, this.primaryItems);
     }
 
-    public @Range(from=1L, to=1024L) int weight() {
-        return Checks.asConfigured(this.weight, "weight");
+    @Override
+    public @Range(from = 1, to = 1024) int weight() {
+        return asConfigured(this.weight, "weight");
     }
 
-    public @Range(from=1L, to=255L) int maxLevel() {
-        return Checks.asConfigured(this.maxLevel, "maxLevel");
+    @Override
+    public @Range(from = 1, to = 255) int maxLevel() {
+        return asConfigured(this.maxLevel, "maxLevel");
     }
 
-    public EnchantmentRegistryEntry.EnchantmentCost minimumCost() {
-        Enchantment.Cost cost = Checks.asConfigured(this.minimumCost, "minimumCost");
-        return EnchantmentRegistryEntry.EnchantmentCost.of((int)cost.base(), (int)cost.perLevelAboveFirst());
+    @Override
+    public EnchantmentCost minimumCost() {
+        final Enchantment.Cost cost = asConfigured(this.minimumCost, "minimumCost");
+        return EnchantmentRegistryEntry.EnchantmentCost.of(cost.base(), cost.perLevelAboveFirst());
     }
 
-    public EnchantmentRegistryEntry.EnchantmentCost maximumCost() {
-        Enchantment.Cost cost = Checks.asConfigured(this.maximumCost, "maximumCost");
-        return EnchantmentRegistryEntry.EnchantmentCost.of((int)cost.base(), (int)cost.perLevelAboveFirst());
+    @Override
+    public EnchantmentCost maximumCost() {
+        final Enchantment.Cost cost = asConfigured(this.maximumCost, "maximumCost");
+        return EnchantmentRegistryEntry.EnchantmentCost.of(cost.base(), cost.perLevelAboveFirst());
     }
 
-    public @Range(from=0L, to=0x7FFFFFFFL) int anvilCost() {
-        return Checks.asConfigured(this.anvilCost, "anvilCost");
+    @Override
+    public @Range(from = 0, to = Integer.MAX_VALUE) int anvilCost() {
+        return asConfigured(this.anvilCost, "anvilCost");
     }
 
-    public List<EquipmentSlotGroup> activeSlots() {
-        return Collections.unmodifiableList(Lists.transform(Checks.asConfigured(this.activeSlots, "activeSlots"), CraftEquipmentSlot::getSlot));
+    @Override
+    public List<org.bukkit.inventory.EquipmentSlotGroup> activeSlots() {
+        return Collections.unmodifiableList(Lists.transform(asConfigured(this.activeSlots, "activeSlots"), CraftEquipmentSlot::getSlot));
     }
 
+    @Override
     public RegistryKeySet<org.bukkit.enchantments.Enchantment> exclusiveWith() {
         return PaperRegistrySets.convertToApi(RegistryKey.ENCHANTMENT, this.exclusiveWith);
     }
 
-    public static final class PaperBuilder
-    extends PaperEnchantmentRegistryEntry
-    implements EnchantmentRegistryEntry.Builder,
-    PaperRegistryBuilder<Enchantment, org.bukkit.enchantments.Enchantment> {
-        public PaperBuilder(Conversions conversions, TypedKey<org.bukkit.enchantments.Enchantment> key, @Nullable Enchantment internal) {
-            super(conversions, key, internal);
+    public static final class PaperBuilder extends PaperEnchantmentRegistryEntry implements EnchantmentRegistryEntry.Builder,
+        PaperRegistryBuilder<Enchantment, org.bukkit.enchantments.Enchantment> {
+
+        public PaperBuilder(final Conversions conversions, final @Nullable Enchantment internal) {
+            super(conversions, internal);
         }
 
-        public EnchantmentRegistryEntry.Builder description(Component description) {
-            this.description = this.conversions.asVanilla(Checks.asArgument(description, "description"));
+        @Override
+        public Builder description(final net.kyori.adventure.text.Component description) {
+            this.description = this.conversions.asVanilla(asArgument(description, "description"));
             return this;
         }
 
-        public EnchantmentRegistryEntry.Builder supportedItems(RegistryKeySet<ItemType> supportedItems) {
-            this.supportedItems = PaperRegistrySets.convertToNms(RegistryKeys.ITEM, this.conversions.lookup(), Checks.asArgument(supportedItems, "supportedItems"));
+        @Override
+        public Builder supportedItems(final RegistryKeySet<ItemType> supportedItems) {
+            this.supportedItems = PaperRegistrySets.convertToNms(RegistryKeys.ITEM, this.conversions.lookup(), asArgument(supportedItems, "supportedItems"));
             return this;
         }
 
-        public EnchantmentRegistryEntry.Builder primaryItems(@Nullable RegistryKeySet<ItemType> primaryItems) {
+        @Override
+        public Builder primaryItems(final @Nullable RegistryKeySet<ItemType> primaryItems) {
             this.primaryItems = primaryItems == null ? null : PaperRegistrySets.convertToNms(RegistryKeys.ITEM, this.conversions.lookup(), primaryItems);
             return this;
         }
 
-        public EnchantmentRegistryEntry.Builder weight(@Range(from=1L, to=1024L) int weight) {
+        @Override
+        public Builder weight(final @Range(from = 1, to = 1024) int weight) {
             this.weight = OptionalInt.of(Checks.asArgumentRange(weight, "weight", 1, 1024));
             return this;
         }
 
-        public EnchantmentRegistryEntry.Builder maxLevel(@Range(from=1L, to=255L) int maxLevel) {
+        @Override
+        public Builder maxLevel(final @Range(from = 1, to = 255) int maxLevel) {
             this.maxLevel = OptionalInt.of(Checks.asArgumentRange(maxLevel, "maxLevel", 1, 255));
             return this;
         }
 
-        public EnchantmentRegistryEntry.Builder minimumCost(EnchantmentRegistryEntry.EnchantmentCost minimumCost) {
-            EnchantmentRegistryEntry.EnchantmentCost validCost = Checks.asArgument(minimumCost, "minimumCost");
+        @Override
+        public Builder minimumCost(final EnchantmentCost minimumCost) {
+            final EnchantmentCost validCost = asArgument(minimumCost, "minimumCost");
             this.minimumCost = Enchantment.leveledCost(validCost.baseCost(), validCost.additionalPerLevelCost());
             return this;
         }
 
-        public EnchantmentRegistryEntry.Builder maximumCost(EnchantmentRegistryEntry.EnchantmentCost maximumCost) {
-            EnchantmentRegistryEntry.EnchantmentCost validCost = Checks.asArgument(maximumCost, "maximumCost");
+        @Override
+        public Builder maximumCost(final EnchantmentCost maximumCost) {
+            final EnchantmentCost validCost = asArgument(maximumCost, "maximumCost");
             this.maximumCost = Enchantment.leveledCost(validCost.baseCost(), validCost.additionalPerLevelCost());
             return this;
         }
 
-        public EnchantmentRegistryEntry.Builder anvilCost(@Range(from=0L, to=0x7FFFFFFFL) int anvilCost) {
-            Preconditions.checkArgument((anvilCost >= 0 ? 1 : 0) != 0, (Object)"anvilCost must be non-negative");
-            this.anvilCost = OptionalInt.of(Checks.asArgumentMin(anvilCost, "anvilCost", 0));
+        @Override
+        public Builder anvilCost(final @Range(from = 0, to = Integer.MAX_VALUE) int anvilCost) {
+            Preconditions.checkArgument(anvilCost >= 0, "anvilCost must be non-negative");
+            this.anvilCost = OptionalInt.of(asArgumentMin(anvilCost, "anvilCost", 0));
             return this;
         }
 
-        public EnchantmentRegistryEntry.Builder activeSlots(Iterable<EquipmentSlotGroup> activeSlots) {
-            this.activeSlots = Lists.newArrayList((Iterable)Iterables.transform(Checks.asArgument(activeSlots, "activeSlots"), CraftEquipmentSlot::getNMSGroup));
+        @Override
+        public Builder activeSlots(final Iterable<org.bukkit.inventory.EquipmentSlotGroup> activeSlots) {
+            this.activeSlots = Lists.newArrayList(Iterables.transform(asArgument(activeSlots, "activeSlots"), CraftEquipmentSlot::getNMSGroup));
             return this;
         }
 
-        public EnchantmentRegistryEntry.Builder exclusiveWith(RegistryKeySet<org.bukkit.enchantments.Enchantment> exclusiveWith) {
-            this.exclusiveWith = PaperRegistrySets.convertToNms(RegistryKeys.ENCHANTMENT, this.conversions.lookup(), Checks.asArgument(exclusiveWith, "exclusiveWith"));
+        @Override
+        public Builder exclusiveWith(final RegistryKeySet<org.bukkit.enchantments.Enchantment> exclusiveWith) {
+            this.exclusiveWith = PaperRegistrySets.convertToNms(RegistryKeys.ENCHANTMENT, this.conversions.lookup(), asArgument(exclusiveWith, "exclusiveWith"));
             return this;
         }
 
         @Override
         public Enchantment build() {
-            Enchantment.Definition def = new Enchantment.Definition(Checks.asConfigured(this.supportedItems, "supportedItems"), Optional.ofNullable(this.primaryItems), this.weight(), this.maxLevel(), Checks.asConfigured(this.minimumCost, "minimumCost"), Checks.asConfigured(this.maximumCost, "maximumCost"), this.anvilCost(), Collections.unmodifiableList(Checks.asConfigured(this.activeSlots, "activeSlots")));
-            return new Enchantment(Checks.asConfigured(this.description, "description"), def, this.exclusiveWith, this.effects);
+            final Enchantment.Definition def = new Enchantment.Definition(
+                asConfigured(this.supportedItems, "supportedItems"),
+                Optional.ofNullable(this.primaryItems),
+                this.weight(),
+                this.maxLevel(),
+                asConfigured(this.minimumCost, "minimumCost"),
+                asConfigured(this.maximumCost, "maximumCost"),
+                this.anvilCost(),
+                Collections.unmodifiableList(asConfigured(this.activeSlots, "activeSlots"))
+            );
+            return new Enchantment(
+                asConfigured(this.description, "description"),
+                def,
+                this.exclusiveWith,
+                this.effects
+            );
         }
     }
 }
-

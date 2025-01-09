@@ -19,7 +19,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.RaycastContext;
@@ -46,7 +45,7 @@ public class MixinBucketItem extends Item {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Inject(method = "use", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/FluidDrainable;tryDrainFluid(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/WorldAccess;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/item/ItemStack;"))
-    public void use_BF(World world, PlayerEntity player, Hand enumhand, CallbackInfoReturnable<TypedActionResult> ci) {
+    public void use_BF(World world, PlayerEntity player, Hand enumhand, CallbackInfoReturnable<ActionResult> ci) {
         BlockHitResult movingobjectpositionblock = raycast(world, player, this.fluid == Fluids.EMPTY ? RaycastContext.FluidHandling.NONE : RaycastContext.FluidHandling.ANY);
         BlockHitResult movingobjectpositionblock1 = (BlockHitResult) movingobjectpositionblock;
         BlockPos blockposition = movingobjectpositionblock1.getBlockPos();
@@ -59,7 +58,8 @@ public class MixinBucketItem extends Item {
             if (event.isCancelled()) {
                 ((ServerPlayerEntity) player).networkHandler.sendPacket(new BlockUpdateS2CPacket(world, blockposition)); // SPIGOT-5163 (see PlayerInteractManager)
                 ((Player)((IMixinServerEntityPlayer) player).getBukkitEntity()).updateInventory(); // SPIGOT-4541
-                ci.setReturnValue(new TypedActionResult(ActionResult.FAIL, player.getStackInHand(enumhand)));
+                // ci.setReturnValue(new TypedActionResult(ActionResult.FAIL, player.getStackInHand(enumhand)));
+                ci.setReturnValue(ActionResult.FAIL);
                 return;
             }
         }

@@ -5,6 +5,9 @@ import com.google.common.base.Preconditions;
 import io.papermc.paper.potion.SuspiciousEffectEntry;
 import net.kyori.adventure.sound.Sound.Source;
 import net.minecraft.entity.passive.MooshroomEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.server.world.ServerWorld;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -17,6 +20,7 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
+import org.cardboardpowered.adventure.CardboardAdventure;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -82,14 +86,15 @@ public class MushroomImpl extends CowImpl implements MushroomCow {
 
 	@Override
 	public boolean readyToBeSheared() {
-		// TODO Auto-generated method stub
-		return false;
+		return this.getHandle().isShearable();
 	}
 
 	@Override
 	public void shear(@NotNull Source arg0) {
-		// TODO Auto-generated method stub
-		this.getHandle().sheared(net.minecraft.sound.SoundCategory.AMBIENT);
+		// this.getHandle().sheared(net.minecraft.sound.SoundCategory.AMBIENT);
+
+		if (!(this.getHandle().getWorld() instanceof final ServerWorld serverLevel)) return;
+        this.getHandle().sheared(serverLevel, CardboardAdventure.asVanilla(arg0), new ItemStack(Items.SHEARS));
 	}
 	
 	// 1.20.2 API:

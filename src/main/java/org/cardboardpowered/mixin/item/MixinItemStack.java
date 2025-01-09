@@ -11,7 +11,7 @@ import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentMapImpl;
+import net.minecraft.component.MergedComponentMap;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EquipmentSlot;
@@ -55,7 +55,7 @@ public class MixinItemStack implements IItemStack {
     private int count;
     
     @Shadow
-    private ComponentMapImpl components;
+    private MergedComponentMap components;
 
     @Override
     public void cardboard$restore_patch(ComponentChanges changes) {
@@ -77,7 +77,7 @@ public class MixinItemStack implements IItemStack {
         this.bukkitStack = null;
         this.item = item;
         ComponentChanges patch = ((ItemStack)(Object)this).getComponentChanges();
-        this.components = new ComponentMapImpl(this.item.getComponents());
+        this.components = new MergedComponentMap(this.item.getComponents());
         ((ItemStack)(Object)this).applyUnvalidatedChanges(patch);
     }
 

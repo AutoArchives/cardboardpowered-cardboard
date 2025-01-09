@@ -80,6 +80,7 @@ import net.minecraft.item.map.MapState;
 import net.minecraft.recipe.CraftingRecipe;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeType;
+import net.minecraft.recipe.ServerRecipeManager;
 import net.minecraft.registry.DefaultedRegistry;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -1025,7 +1026,8 @@ public class CraftServer implements Server {
 	@Override
 	public boolean dispatchCommand(CommandSender sender, String commandLine) throws CommandException {
 		if(sender instanceof Entity) {
-			ServerCommandSource source = ((CraftEntity) sender).nms.getCommandSource();
+			ServerWorld world = (ServerWorld) ((CraftEntity) sender).nms.getWorld();
+			ServerCommandSource source = ((CraftEntity) sender).nms.getCommandSource(world);
 
 			try {
 				String theCommand;
@@ -1451,7 +1453,7 @@ public class CraftServer implements Server {
             case "blocks": {
               //  Preconditions.checkArgument((clazz == Material.class ? 1 : 0) != 0, (Object)"Block namespace must have material type");
                 TagKey<Block> blockTagKey = TagKey.of(RegistryKeys.BLOCK, key);
-                if (Registries.BLOCK.getEntryList(blockTagKey).isPresent()) {
+                if (Registries.BLOCK.getOptional(blockTagKey).isPresent()) {
                 	return (Tag<T>) new BlockTagImpl((Registry<Block>)Registries.BLOCK, blockTagKey);
                 }
                 System.out.println("NULL BLOCKS! " + tag.toString());;
@@ -1460,7 +1462,7 @@ public class CraftServer implements Server {
             case "items": {
                // Preconditions.checkArgument((clazz == Material.class ? 1 : 0) != 0, (Object)"Item namespace must have material type");
                 TagKey<Item> itemTagKey = TagKey.of(RegistryKeys.ITEM, key);
-                if (Registries.ITEM.getEntryList(itemTagKey).isPresent()) {
+                if (Registries.ITEM.getOptional(itemTagKey).isPresent()) {
                 	return (Tag<T>) new ItemTagImpl((Registry<Item>)Registries.ITEM, itemTagKey);
                 }
                 break;
@@ -1468,7 +1470,7 @@ public class CraftServer implements Server {
             case "fluids": {
               //  Preconditions.checkArgument((clazz == Fluid.class ? 1 : 0) != 0, (Object)"Fluid namespace must have fluid type");
                 TagKey<Fluid> fluidTagKey = TagKey.of(RegistryKeys.FLUID, key);
-                if (Registries.FLUID.getEntryList(fluidTagKey).isPresent()) {
+                if (Registries.FLUID.getOptional(fluidTagKey).isPresent()) {
                 	return (Tag<T>) new FluidTagImpl((Registry<Fluid>)Registries.FLUID, fluidTagKey);
                 }
                 break;
@@ -1476,7 +1478,7 @@ public class CraftServer implements Server {
             case "entity_types": {
                // Preconditions.checkArgument((clazz == EntityType.class ? 1 : 0) != 0, (Object)"Entity type namespace must have entity type");
                 TagKey<EntityType<?>> entityTagKey = TagKey.of(RegistryKeys.ENTITY_TYPE, key);
-                if (Registries.ENTITY_TYPE.getEntryList(entityTagKey).isPresent()) {
+                if (Registries.ENTITY_TYPE.getOptional(entityTagKey).isPresent()) {
                 	return (Tag<T>) new EntityTagImpl((Registry<EntityType<?>>)Registries.ENTITY_TYPE, entityTagKey);
                 }
                 break;
@@ -1484,7 +1486,7 @@ public class CraftServer implements Server {
             case "game_events": {
                 //Preconditions.checkArgument((clazz == GameEvent.class ? 1 : 0) != 0, (Object)"Game Event namespace must have GameEvent type");
                 TagKey<GameEvent> gameEventTagKey = TagKey.of(RegistryKeys.GAME_EVENT, key);
-                if (Registries.GAME_EVENT.getEntryList(gameEventTagKey).isPresent()) {
+                if (Registries.GAME_EVENT.getOptional(gameEventTagKey).isPresent()) {
                 	return (Tag<T>) new CraftGameEventTag((Registry<GameEvent>)Registries.GAME_EVENT, gameEventTagKey);
                 }
                 break;
@@ -1503,27 +1505,27 @@ public class CraftServer implements Server {
               //  Preconditions.checkArgument((clazz == Material.class ? 1 : 0) != 0, (Object)"Block namespace must have material type");
                 DefaultedRegistry<Block> blockTags = Registries.BLOCK;
                 
-                return (Iterable)(blockTags).streamTagsAndEntries().map(pair -> new BlockTagImpl((Registry<Block>)blockTags, (TagKey)pair.getFirst())).collect(ImmutableList.toImmutableList());
+                return (Iterable)(blockTags).streamTags().map(pair -> new BlockTagImpl((Registry<Block>)blockTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
             }
             case "items": {
               //  Preconditions.checkArgument((clazz == Material.class ? 1 : 0) != 0, (Object)"Item namespace must have material type");
                 DefaultedRegistry<Item> itemTags = Registries.ITEM;
-                return (Iterable)(itemTags).streamTagsAndEntries().map(pair -> new ItemTagImpl((Registry<Item>)itemTags, (TagKey)pair.getFirst())).collect(ImmutableList.toImmutableList());
+                return (Iterable)(itemTags).streamTags().map(pair -> new ItemTagImpl((Registry<Item>)itemTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
             }
             case "fluids": {
               //  Preconditions.checkArgument((clazz == Material.class ? 1 : 0) != 0, (Object)"Fluid namespace must have fluid type");
                 DefaultedRegistry<Fluid> fluidTags = Registries.FLUID;
-                return (Iterable)(fluidTags).streamTagsAndEntries().map(pair -> new FluidTagImpl((Registry<Fluid>)fluidTags, (TagKey)pair.getFirst())).collect(ImmutableList.toImmutableList());
+                return (Iterable)(fluidTags).streamTags().map(pair -> new FluidTagImpl((Registry<Fluid>)fluidTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
             }
             case "entity_types": {
               //  Preconditions.checkArgument((clazz == EntityType.class ? 1 : 0) != 0, (Object)"Entity type namespace must have entity type");
                 DefaultedRegistry<EntityType<?>> entityTags = Registries.ENTITY_TYPE;
-                return (Iterable)(entityTags).streamTagsAndEntries().map(pair -> new EntityTagImpl((Registry<EntityType<?>>)entityTags, (TagKey)pair.getFirst())).collect(ImmutableList.toImmutableList());
+                return (Iterable)(entityTags).streamTags().map(pair -> new EntityTagImpl((Registry<EntityType<?>>)entityTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
             }
             case "game_events": {
                 // Preconditions.checkArgument((clazz == GameEvent.class ? 1 : 0) != 0);
                 DefaultedRegistry<GameEvent> gameEvents = Registries.GAME_EVENT;
-                return (Iterable)(gameEvents).streamTagsAndEntries().map(pair -> new CraftGameEventTag((Registry<GameEvent>)gameEvents, pair.getFirst())).collect(ImmutableList.toImmutableList());
+                return (Iterable)(gameEvents).streamTags().map(pair -> new CraftGameEventTag((Registry<GameEvent>)gameEvents, pair.getTag())).collect(ImmutableList.toImmutableList());
             }
         }
         throw new IllegalArgumentException();
@@ -1834,9 +1836,10 @@ public class CraftServer implements Server {
         }
         return removed;
     }
-    
+
     public void playerList_reloadRecipeData() {
-        SynchronizeRecipesS2CPacket packetplayoutrecipeupdate = new SynchronizeRecipesS2CPacket(this.server.getRecipeManager().sortedValues());
+        ServerRecipeManager craftingmanager = this.server.getRecipeManager();
+        SynchronizeRecipesS2CPacket packetplayoutrecipeupdate = new SynchronizeRecipesS2CPacket(craftingmanager.getPropertySets(), craftingmanager.getStonecutterRecipeForSync());
         for (ServerPlayerEntity entityplayer : this.server.getPlayerManager().players) {
             entityplayer.networkHandler.sendPacket(packetplayoutrecipeupdate);
             entityplayer.getRecipeBook().sendInitRecipesPacket(entityplayer);
@@ -1984,7 +1987,7 @@ public class CraftServer implements Server {
     @Override
     public Recipe getRecipe(NamespacedKey recipeKey) {
         Preconditions.checkArgument(recipeKey != null, "recipeKey == null");
-        Optional<RecipeEntry<?>> opt = getServer().getRecipeManager().get(CraftNamespacedKey.toMinecraft(recipeKey));
+        Optional<RecipeEntry<?>> opt = getServer().getRecipeManager().get(RecipeInterface.toMinecraft(recipeKey));
 
         return !opt.isPresent() ? null : ((IMixinRecipe)(Object) opt.get()).toBukkitRecipe();
     }
@@ -2607,6 +2610,44 @@ public class CraftServer implements Server {
         return worldServer.getWorld();
     }
 
+    // 1.21.4 API:
+	@Override
+    public boolean isPaused() {
+        return this.console.isPaused();
+		// TODO: return this.console.isTickPaused();
+    }
+
+    @Override
+    public void allowPausing(final Plugin plugin, final boolean value) {
+        // this.console.addPluginAllowingSleep(plugin.getName(), value);
+    }
     
+    @Override
+    public int getPauseWhenEmptyTime() {
+        return this.getProperties().pauseWhenEmptySeconds;
+    }
+    
+    @Override
+    public void setPauseWhenEmptyTime(int seconds) {
+        // TODO
+    	// this.getProperties().pauseWhenEmptySeconds = seconds;
+    }
+
+	@Override
+	public boolean isOwnedByCurrentRegion(@NotNull World world, int minChunkX, int minChunkZ, int maxChunkX,
+			int maxChunkZ) {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	@Override
+	public boolean isGlobalTickThread() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+    
+    // public boolean isTickPaused() {
+    //    return console.idleTickCount > 0 && console.idleTickCount >= console.getPauseWhenEmptySeconds() * 20;
+    //}
 
 }

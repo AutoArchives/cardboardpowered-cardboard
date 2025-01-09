@@ -54,8 +54,8 @@ public abstract class CardboardMinecartSH extends CardboardMinecart implements L
         Identifier newKey = (table == null) ? null : CraftNamespacedKey.toMinecraft(table.getKey());
         // getHandle().setLootTable(newKey, seed);
         
-    	Registry<net.minecraft.loot.LootTable> reg = CraftServer.server.getRegistryManager().get(RegistryKeys.LOOT_TABLE);
-    	Optional<net.minecraft.loot.LootTable> mc_table = reg.getOrEmpty( newKey );
+    	Registry<net.minecraft.loot.LootTable> reg = CraftServer.server.getRegistryManager().getOrThrow(RegistryKeys.LOOT_TABLE);
+    	Optional<net.minecraft.loot.LootTable> mc_table = reg.getOptionalValue( newKey );
     	
     	if (mc_table.isPresent()) {
     		Optional<RegistryKey<net.minecraft.loot.LootTable>> mc_key = reg.getKey(mc_table.get());

@@ -10,6 +10,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.DisconnectionInfo;
@@ -47,6 +48,7 @@ import net.minecraft.world.WorldView;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -227,35 +229,77 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
 
     @Override
     public void teleport(Location dest) {
-        requestTeleport(dest.getX(), dest.getY(), dest.getZ(), dest.getYaw(), dest.getPitch(), Collections.emptySet());
+    	
+    	PlayerPosition pos = new PlayerPosition(CraftLocation.toVec3D(dest), Vec3d.ZERO, dest.getYaw(), dest.getPitch());
+    	requestTeleport(pos, Collections.emptySet());
+    	
+        // requestTeleport(dest.getX(), dest.getY(), dest.getZ(), dest.getYaw(), dest.getPitch(), Collections.emptySet());
     }
+    
+    /*
+    public boolean teleport(PlayerPosition positionmoverotation, Set<PositionFlag> set, PlayerTeleportEvent.TeleportCause cause) {
+        PlayerPosition absolutePosition;
+        Location to;
+        CraftPlayer player = this.getCraftPlayer();
+        Location from = player.getLocation();
+        if (from.equals((Object)(to = CraftLocation.toBukkit((absolutePosition = PlayerPosition.apply(PlayerPosition.fromEntity(this.player), positionmoverotation, set)).position(), this.getCraftPlayer().getWorld(), absolutePosition.yaw(), absolutePosition.pitch())))) {
+            this.internalTeleport(positionmoverotation, set);
+            return true;
+        }
+        EnumSet<TeleportFlag.Relative> relativeFlags = EnumSet.noneOf(TeleportFlag.Relative.class);
+        for (PositionFlag relativeArgument : set) {
+            TeleportFlag.Relative flag = CraftPlayer.deltaRelativeToAPI(relativeArgument);
+            if (flag == null) continue;
+            relativeFlags.add(flag);
+        }
+        PlayerTeleportEvent event = new PlayerTeleportEvent((Player)player, from.clone(), to.clone(), cause, Set.copyOf(relativeFlags));
+        this.cserver.getPluginManager().callEvent((Event)event);
+        if (event.isCancelled() || !to.equals((Object)event.getTo())) {
+            to = event.isCancelled() ? event.getFrom() : event.getTo();
+            positionmoverotation = new PlayerPosition(CraftLocation.toVec3D(to), Vec3d.ZERO, to.getYaw(), to.getPitch());
+        }
+        this.internalTeleport(positionmoverotation, set);
+        return !event.isCancelled();
+    }
+    */
 
     /**
      * @author cardboard
      * @reason PlayerTeleportEvent
      */
     @Overwrite
-    public void requestTeleport(double d0, double d1, double d2, float f, float f1, Set<PositionFlag> set) {
+    //public void requestTeleport(double d0, double d1, double d2, float f, float f1, Set<PositionFlag> set) {
+    public void requestTeleport( PlayerPosition pos, Set<PositionFlag> flags) {
 
     	Player player = this.getPlayer();
         Location from = player.getLocation();
 
-        double x = d0;
-        double y = d1;
-        double z = d2;
-        float yaw = f;
-        float pitch = f1;
+        // double x = d0;
+        // double y = d1;
+        // double z = d2;
+        // float yaw = f;
+        // float pitch = f1;
+        
+        Vec3d poss = pos.position();
+        double x = poss.x;
+        double y = poss.x;
+        double z = poss.x;
+        
+        float yaw = pos.yaw();
+        float pitch = pos.pitch();
 
         Location to = new Location(this.getPlayer().getWorld(), x, y, z, yaw, pitch);
         // SPIGOT-5171: Triggered on join
         if (from.equals(to)) {
-            this.internalTeleport(d0, d1, d2, f, f1, set, false);
+        	this.internalTeleport(pos, flags);
+        	// this.internalTeleport(d0, d1, d2, f, f1, set, false);
             return;
         }
 
         PlayerTeleportEvent event = new PlayerTeleportEvent(player, from.clone(), to.clone(), PlayerTeleportEvent.TeleportCause.UNKNOWN);
         Bukkit.getPluginManager().callEvent(event);
 
+        /*
         if (event.isCancelled() || !to.equals(event.getTo())) {
             set.clear(); // Can't relative teleport
             to = event.isCancelled() ? event.getFrom() : event.getTo();
@@ -265,19 +309,56 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
             f = to.getYaw();
             f1 = to.getPitch();
         }
+        */
+        
+        if (event.isCancelled() || !to.equals(event.getTo())) {
+        	flags.clear(); // Can't relative teleport
+        	
+            to = event.isCancelled() ? event.getFrom() : event.getTo();
+            pos = new PlayerPosition(CraftLocation.toVec3D(to), Vec3d.ZERO, to.getYaw(), to.getPitch());
+        }
 
-        this.internalTeleport(d0, d1, d2, f, f1, set, false);
+        this.internalTeleport(pos, flags);
+        
+        // this.internalTeleport(d0, d1, d2, f, f1, set, false);
         return;
     }
+    
+    public void internalTeleport(PlayerPosition positionmoverotation, Set<PositionFlag> set) {
+        // AsyncCatcher.catchOp("teleport");
+        if (this.player.isRemoved()) {
+            // LOGGER.info("Attempt to teleport removed player {} restricted", (Object)this.player.getNameForScoreboard());
+            // if (this.server.isDebugging()) {
+            //    TraceUtil.dumpTraceForThread("Attempt to teleport removed player");
+            //}
+            return;
+        }
+        if (Float.isNaN(positionmoverotation.yaw())) {
+            positionmoverotation = new PlayerPosition(positionmoverotation.position(), positionmoverotation.deltaMovement(), 0.0f, positionmoverotation.pitch());
+        }
+        if (Float.isNaN(positionmoverotation.pitch())) {
+            positionmoverotation = new PlayerPosition(positionmoverotation.position(), positionmoverotation.deltaMovement(), positionmoverotation.yaw(), 0.0f);
+        }
+        this.justTeleported = true;
+        this.prevTeleportCheckTicks = this.ticks;
+        if (++this.requestedTeleportId == Integer.MAX_VALUE) {
+            this.requestedTeleportId = 0;
+        }
+        this.player.setPosition(positionmoverotation, set);
+        this.requestedTeleportPos = this.player.getPos();
+        this.lastPosX = this.requestedTeleportPos.x;
+        this.lastPosY = this.requestedTeleportPos.y;
+        this.lastPosZ = this.requestedTeleportPos.z;
+        this.lastYaw = this.player.getYaw();
+        this.lastPitch = this.player.getPitch();
+        this.player.networkHandler.sendPacket(PlayerPositionLookS2CPacket.of(this.requestedTeleportId, positionmoverotation, set));
+    }
 
-    public void internalTeleport(double d0, double d1, double d2, float f, float f1, Set<PositionFlag> set, boolean shouldDismount_unused) {
+    /*
+    public void internalTeleport_dep(double d0, double d1, double d2, float f, float f1, Set<PositionFlag> set, boolean shouldDismount_unused) {
         if (Float.isNaN(f)) f = 0.0f;
         if (Float.isNaN(f1)) f1 = 0.0f;
         
-        /*BlockPos pos = BlockPos.ofFloored(d0, d1, d2);
-        if (!player.getWorld().getBlockState(pos).isAir()) {
-            BukkitFabricMod.LOGGER.info("Safe Teleport stopped teleport.");
-        }*/
 
         this.justTeleported = true;
         double d3 = set.contains(PositionFlag.X) ? this.player.getX() : 0.0;
@@ -293,8 +374,13 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
         this.prevTeleportCheckTicks = this.ticks;
         this.player.updatePositionAndAngles(d0, d1, d2, f, f1);
 
+        this.player.networkHandler.sendPacket(PlayerPositionLookS2CPacket.of(this.requestedTeleportId, positionmoverotation, set));
+
+        PlayerPosition pos = new PlayerPosition(requestedTeleportPos, requestedTeleportPos, f3, f3);
+
         this.player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(d0 - d3, d1 - d4, d2 - d5, f - f2, f1 - f3, set, this.requestedTeleportId));
     }
+    */
 
     @Inject(at = @At("HEAD"), method = "onClientCommand", cancellable = true)
     public void onClientCommand(ClientCommandC2SPacket packetplayinentityaction, CallbackInfo ci) {
@@ -417,6 +503,8 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
                             }
                             //double speed = 1;
 
+                            // TODO: 1.21.4
+                            /*
                             if (!this.player.isInTeleportationState() && (! this.player.getWorld().getGameRules().getBoolean(GameRules.DISABLE_ELYTRA_MOVEMENT_CHECK) || !this.player.isFallFlying())) {
                                 float f2 = this.player.isFallFlying() ? 300.0F : 100.0F;
 
@@ -425,8 +513,8 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
                                    // ServerPlayNetworkHandler.LOGGER.warn("{} moved too quickly! {},{},{}", this.player.getDisplayName().getString(), d7, d8, d9);
                                     this.requestTeleport(this.player.getX(), this.player.getY(), this.player.getZ(), this.player.getYaw(), this.player.getPitch());
                                     return;
-                                }*/
-                            }
+                                }* /
+                            }*/
 
                             Box axisalignedbb = this.player.getBoundingBox();
 
@@ -507,7 +595,14 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
                                 }
                                 this.player.updatePositionAndAngles(d0, d1, d2, f, f1); // Copied from above
 
-                                this.floating = d12 >= -0.03125D && this.player.interactionManager.getGameMode() != GameMode.SPECTATOR && !CraftServer.server.isFlightEnabled() && !this.player.abilities.allowFlying && !this.player.hasStatusEffect(StatusEffects.LEVITATION) && !this.player.isFallFlying() && this.isEntityOnAir((Entity) this.player) && !this.player.isUsingRiptide();
+                                boolean flaga = this.player.isGliding();
+                                boolean flag2 = this.player.groundCollision;
+                                boolean flag4 = this.player.isUsingRiptide();
+                                
+                                // this.floating = d12 >= -0.03125D && this.player.interactionManager.getGameMode() != GameMode.SPECTATOR && !CraftServer.server.isFlightEnabled() && !this.player.abilities.allowFlying && !this.player.hasStatusEffect(StatusEffects.LEVITATION) && !this.player.isFallFlying() && this.isEntityOnAir((Entity) this.player) && !this.player.isUsingRiptide();
+                                this.floating = d12 >= -0.03125D && !flag2 && this.player.interactionManager.getGameMode() != GameMode.SPECTATOR && !this.server.isFlightEnabled() && !this.player.getAbilities().allowFlying && !this.player.hasStatusEffect(StatusEffects.LEVITATION) && !flaga && !flag4 && this.isEntityOnAir(this.player);
+
+                                
                                 //this.player.getWorld().getChunkManager().updatePosition(this.player);
                                 worldserver.getChunkManager().updatePosition(this.player);
                                 //this.player.handleFall(this.player.getY() - d6, packet.isOnGround());

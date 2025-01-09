@@ -13,6 +13,7 @@ import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.recipe.CraftingBookCategory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CardboardShapelessRecipe extends ShapelessRecipe implements RecipeInterface {
@@ -39,10 +40,16 @@ public class CardboardShapelessRecipe extends ShapelessRecipe implements RecipeI
 
     @Override
     public void addToCraftingManager() {
-        List<org.bukkit.inventory.RecipeChoice> ingred = this.getChoiceList();
-        DefaultedList<Ingredient> data = DefaultedList.ofSize(ingred.size(), Ingredient.EMPTY);
-        for (int i = 0; i < ingred.size(); i++) data.set(i, toNMS(ingred.get(i), true));
+        // List<org.bukkit.inventory.RecipeChoice> ingred = this.getChoiceList();
+        // DefaultedList<Ingredient> data = DefaultedList.ofSize(ingred.size(), Ingredient.EMPTY);
+        // for (int i = 0; i < ingred.size(); i++) data.set(i, toNMS(ingred.get(i), true));
 
+        List<org.bukkit.inventory.RecipeChoice> ingred = this.getChoiceList();
+        List<Ingredient> data = new ArrayList<>(ingred.size());
+        for (org.bukkit.inventory.RecipeChoice i : ingred) {
+            data.add(this.toNMS(i, true));
+        }
+        
         ((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(getKey(), new net.minecraft.recipe.ShapelessRecipe(this.getGroup(), RecipeInterface.getCategory(this.getCategory()), CraftItemStack.asNMSCopy(this.getResult()), data));
     }
     

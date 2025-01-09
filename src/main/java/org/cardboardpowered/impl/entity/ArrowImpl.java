@@ -6,6 +6,7 @@ import com.javazilla.bukkitfabric.interfaces.IMixinPersistentProjectileEntity;
 
 import net.kyori.adventure.text.Component;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Chunk;
@@ -124,7 +125,8 @@ public class ArrowImpl extends AbstractProjectile implements AbstractArrow {
 
     @Override
     public boolean isShotFromCrossbow() {
-        return getHandle().isShotFromCrossbow();
+        net.minecraft.item.ItemStack firedFromWeapon = this.getHandle().getWeaponStack();
+        return firedFromWeapon != null && firedFromWeapon.isOf(Items.CROSSBOW);
     }
 
     @Override

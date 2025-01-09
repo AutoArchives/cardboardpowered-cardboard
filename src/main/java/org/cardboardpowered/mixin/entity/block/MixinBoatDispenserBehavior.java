@@ -1,20 +1,6 @@
 /**
  * The Bukkit for Fabric Project
- * Copyright (C) 2020 Javazilla Software and contributors
- * 
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation; either 
- * version 3 of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Copyright (C) 2025 Cardboard contributors
  */
 package org.cardboardpowered.mixin.entity.block;
 
@@ -23,6 +9,9 @@ import net.minecraft.block.DispenserBlock;
 import net.minecraft.block.dispenser.BoatDispenserBehavior;
 import net.minecraft.block.dispenser.DispenserBehavior;
 import net.minecraft.block.dispenser.ItemDispenserBehavior;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.vehicle.AbstractBoatEntity;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
@@ -41,8 +30,11 @@ public class MixinBoatDispenserBehavior {
     @Shadow
     public ItemDispenserBehavior itemDispenser;
 
+    //@Shadow
+    // public BoatEntity.Type boatType;
+
     @Shadow
-    public BoatEntity.Type boatType;
+    private EntityType<? extends AbstractBoatEntity> boatType;
 
     public ItemStack dispenseSilently(BlockPointer isourceblock, ItemStack itemstack) {
         Direction enumdirection = (Direction) isourceblock.state().get(DispenserBlock.FACING);
@@ -86,10 +78,18 @@ public class MixinBoatDispenserBehavior {
             }
         }
 
-        BoatEntity entityboat = new BoatEntity(worldserver, event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ());
+        // BoatEntity entityboat = new BoatEntity(worldserver, event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ());
 
-        entityboat.setVariant(this.boatType);
-        entityboat.setYaw(enumdirection.asRotation());
+        AbstractBoatEntity entityboat = this.boatType.create(worldserver, SpawnReason.DISPENSER);
+        
+        if (null != entityboat) {
+        	entityboat.initPosition(event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ());
+        	EntityType.copier(worldserver, itemstack, null).accept(entityboat);
+        	entityboat.setYaw(enumdirection.getPositiveHorizontalDegrees());
+        }
+
+        
+        // entityboat.setVariant(this.boatType);
         if (!worldserver.spawnEntity(entityboat)) itemstack.increment(1); // CraftBukkit
         return itemstack;
     }

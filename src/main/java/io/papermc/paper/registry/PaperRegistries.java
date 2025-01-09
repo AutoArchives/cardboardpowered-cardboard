@@ -64,6 +64,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.bukkit.inventory.MenuType;
 
+import static io.papermc.paper.registry.entry.RegistryEntryBuilder.start;
+
 @DefaultQualifier(value=NonNull.class)
 public final class PaperRegistries {
     
@@ -127,7 +129,7 @@ public final class PaperRegistries {
     }
 
     public static <M, T> TagKey<T> fromNms(net.minecraft.registry.tag.TagKey<M> tagKey) {
-        return TagKey.create(PaperRegistries.registryFromNms(tagKey.registry()), (Key)CraftNamespacedKey.fromMinecraft(tagKey.id()));
+        return TagKey.create(PaperRegistries.registryFromNms(tagKey.registryRef()), (Key)CraftNamespacedKey.fromMinecraft(tagKey.id()));
     }
 
     public static <M, T> net.minecraft.registry.tag.TagKey<M> toNms(TagKey<T> tagKey) {
@@ -136,6 +138,14 @@ public final class PaperRegistries {
     }
 
     private PaperRegistries() {
+    	
+    	// api-only
+    	List.of(
+        start(RegistryKeys.ENTITY_TYPE, io.papermc.paper.registry.RegistryKey.ENTITY_TYPE).apiOnly(PaperSimpleRegistry::entityType),
+        start(RegistryKeys.PARTICLE_TYPE, io.papermc.paper.registry.RegistryKey.PARTICLE_TYPE).apiOnly(PaperSimpleRegistry::particleType),
+        start(RegistryKeys.POTION, io.papermc.paper.registry.RegistryKey.POTION).apiOnly(PaperSimpleRegistry::potion),
+        start(RegistryKeys.MEMORY_MODULE_TYPE, io.papermc.paper.registry.RegistryKey.MEMORY_MODULE_TYPE).apiOnly(() -> (org.bukkit.Registry<MemoryKey<?>>) (org.bukkit.Registry) org.bukkit.Registry.MEMORY_MODULE_TYPE)
+        );
     }
 
     static {

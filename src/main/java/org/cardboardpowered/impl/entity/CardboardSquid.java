@@ -1,29 +1,22 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.passive.SquidEntity;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Squid;
 
-public class CardboardSquid extends CardboardWaterMob implements Squid {
+public class CardboardSquid extends AgeableImpl implements Squid {
 
-    public CardboardSquid(CraftServer server, SquidEntity entity) {
+    public CardboardSquid(CraftServer server, net.minecraft.entity.passive.SquidEntity entity) {
         super(server, entity);
     }
 
     @Override
-    public SquidEntity getHandle() {
-        return (SquidEntity) nms;
+    public net.minecraft.entity.passive.SquidEntity getHandle() {
+        return (net.minecraft.entity.passive.SquidEntity) this.nms;
     }
 
     @Override
     public String toString() {
-        return "Squid";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.SQUID;
+        return "CraftSquid";
     }
 
 }

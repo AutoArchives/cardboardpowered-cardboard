@@ -1,46 +1,52 @@
 package io.papermc.paper.registry.data;
 
 import io.papermc.paper.registry.PaperRegistryBuilder;
-import io.papermc.paper.registry.TypedKey;
-import io.papermc.paper.registry.data.util.Checks;
 import io.papermc.paper.registry.data.util.Conversions;
 import java.util.OptionalInt;
-import org.bukkit.GameEvent;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.framework.qual.DefaultQualifier;
+import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Range;
+import org.jspecify.annotations.Nullable;
 
-@DefaultQualifier(value=NonNull.class)
-public class PaperGameEventRegistryEntry
-implements GameEventRegistryEntry {
+import static io.papermc.paper.registry.data.util.Checks.asArgumentMin;
+import static io.papermc.paper.registry.data.util.Checks.asConfigured;
+
+public class PaperGameEventRegistryEntry implements GameEventRegistryEntry {
+
     protected OptionalInt range = OptionalInt.empty();
 
-    public PaperGameEventRegistryEntry(Conversions ignoredConversions, TypedKey<GameEvent> ignoredKey, net.minecraft.world.event.GameEvent nms) {
-        if (nms == null) {
-            return;
-        }
-        this.range = OptionalInt.of(nms.notificationRadius());
+    public PaperGameEventRegistryEntry(
+        final Conversions ignoredConversions,
+        final @Nullable GameEvent internal
+    ) {
+        if (internal == null) return;
+
+        this.range = OptionalInt.of(internal.notificationRadius());
     }
 
-    public @Range(from=0L, to=0x7FFFFFFFL) int range() {
-        return Checks.asConfigured(this.range, "range");
+    @Override
+    public @Range(from = 0, to = Integer.MAX_VALUE) int range() {
+        return asConfigured(this.range, "range");
     }
 
-    public static final class PaperBuilder extends PaperGameEventRegistryEntry
-    implements GameEventRegistryEntry.Builder, PaperRegistryBuilder<net.minecraft.world.event.GameEvent, GameEvent> {
-        public PaperBuilder(Conversions conversions, TypedKey<GameEvent> key, net.minecraft.world.event.GameEvent nms) {
-            super(conversions, key, nms);
+    public static final class PaperBuilder extends PaperGameEventRegistryEntry implements GameEventRegistryEntry.Builder,
+        PaperRegistryBuilder<GameEvent, org.bukkit.GameEvent> {
+
+        public PaperBuilder(
+            final Conversions conversions,
+            final @Nullable GameEvent internal
+        ) {
+            super(conversions, internal);
         }
 
-        public GameEventRegistryEntry.Builder range(@Range(from=0L, to=0x7FFFFFFFL) int range) {
-            this.range = OptionalInt.of(Checks.asArgumentMin(range, "range", 0));
+        @Override
+        public GameEventRegistryEntry.Builder range(final @Range(from = 0, to = Integer.MAX_VALUE) int range) {
+            this.range = OptionalInt.of(asArgumentMin(range, "range", 0));
             return this;
         }
 
         @Override
-        public net.minecraft.world.event.GameEvent build() {
-            return new net.minecraft.world.event.GameEvent(this.range());
+        public GameEvent build() {
+            return new GameEvent(this.range());
         }
     }
-
 }

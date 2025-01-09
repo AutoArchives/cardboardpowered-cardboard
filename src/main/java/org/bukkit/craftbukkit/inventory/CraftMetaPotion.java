@@ -46,6 +46,8 @@ implements PotionMeta {
     private PotionType type;
     private List<PotionEffect> customEffects;
     private Color color;
+    
+    private String customName;
 
     CraftMetaPotion(CraftMetaItem meta) {
         super(meta);
@@ -55,6 +57,7 @@ implements PotionMeta {
         CraftMetaPotion potionMeta = (CraftMetaPotion)meta;
         this.type = potionMeta.type;
         this.color = potionMeta.color;
+        this.customName = potionMeta.customName;
         if (potionMeta.hasCustomEffects()) {
             this.customEffects = new ArrayList<PotionEffect>(potionMeta.customEffects);
         }
@@ -74,6 +77,11 @@ implements PotionMeta {
                     // empty catch block
                 }
             });
+            
+            potionContents.customName().ifPresent((name) -> {
+                this.customName = name;
+            });
+            
             List<StatusEffectInstance> list = potionContents.customEffects();
             int length = list.size();
             this.customEffects = new ArrayList<PotionEffect>(length);
@@ -114,6 +122,29 @@ implements PotionMeta {
     @Override
     void applyToItem(CraftMetaItem.Applicator tag) {
         super.applyToItem(tag);
+
+        if (this.isPotionEmpty()) {
+            return;
+        }
+
+        Optional<RegistryEntry<Potion>> defaultPotion = (this.hasBasePotionType()) ? Optional.of(CraftPotionType.bukkitToMinecraftHolder(this.type)) : Optional.empty();
+        Optional<Integer> potionColor = (this.hasColor()) ? Optional.of(this.color.asRGB()) : Optional.empty(); // Paper
+        Optional<String> customName = Optional.ofNullable(this.customName);
+
+        List<StatusEffectInstance> effectList = new ArrayList<>();
+        if (this.customEffects != null) {
+            for (PotionEffect effect : this.customEffects) {
+                effectList.add(new StatusEffectInstance(CraftPotionEffectType.bukkitToMinecraftHolder(effect.getType()), effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles(), effect.hasIcon()));
+            }
+        }
+
+        tag.put(CraftMetaPotion.POTION_CONTENTS, new PotionContentsComponent(defaultPotion, potionColor, effectList, customName));
+    }
+    
+    /*
+    @Override
+    void applyToItem(CraftMetaItem.Applicator tag) {
+        super.applyToItem(tag);
         Optional<RegistryEntry<Potion>> defaultPotion = this.hasBasePotionType() ? Optional.of(CraftPotionType.bukkitToMinecraftHolder(this.type)) : Optional.empty();
         Optional<Integer> potionColor = this.hasColor() ? Optional.of(this.color.asRGB()) : Optional.empty();
         ArrayList<StatusEffectInstance> effectList = new ArrayList<StatusEffectInstance>();
@@ -123,7 +154,7 @@ implements PotionMeta {
             }
         }
         tag.put(POTION_CONTENTS, new PotionContentsComponent(defaultPotion, potionColor, effectList));
-    }
+    }*/
 
     @Override
     boolean isEmpty() {
@@ -132,6 +163,22 @@ implements PotionMeta {
 
     boolean isPotionEmpty() {
         return this.type == null && !this.hasCustomEffects() && !this.hasColor();
+    }
+    
+    // @Override
+    public boolean hasCustomPotionName() {
+        return this.customName != null;
+    }
+
+    // @Override
+    public String getCustomPotionName() {
+        return this.customName;
+    }
+
+    // @Override
+    public void setCustomPotionName(String customName) {
+        Preconditions.checkArgument(customName == null || customName.length() <= 32767, "Custom name is longer than 32767 characters");
+        this.customName = customName;
     }
 
     @Override

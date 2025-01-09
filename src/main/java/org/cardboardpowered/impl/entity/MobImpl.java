@@ -2,6 +2,7 @@ package org.cardboardpowered.impl.entity;
 
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.vehicle.BoatEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Random;
@@ -182,7 +183,7 @@ public class MobImpl extends LivingEntityImpl implements Mob {
 
 	@Override
 	public int getPossibleExperienceReward() {
-        return this.getHandle().getXpToDrop();
+        return this.getHandle().getExperienceToDrop((ServerWorld) this.getHandle().getWorld()); // getXpToDrop();
 	}
 	// 1.20.2 API:
 	

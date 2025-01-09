@@ -8,11 +8,14 @@ import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
+import com.javazilla.bukkitfabric.interfaces.IMixinPlayerManager;
 import com.javazilla.bukkitfabric.interfaces.IMixinRecipeManager;
 import com.mojang.serialization.JsonOps;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.recipe.PreparedRecipes;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeManager;
@@ -21,6 +24,8 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.resource.ResourceManager;
+import net.minecraft.resource.featuretoggle.FeatureSet;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
 import net.minecraft.util.profiler.Profiler;
@@ -113,7 +118,28 @@ public class MixinRecipeManager implements IMixinRecipeManager {
         LOGGER_BF.info("Loaded " + this.recipesById.size() + " recipes");
     }
     */
+    
+    @Shadow
+    public PreparedRecipes preparedRecipes = PreparedRecipes.EMPTY;
+    
+    private FeatureSet featureflagset;
+    
+    @Override
+    public void addRecipe(RecipeEntry<?> irecipe) {
+        AsyncCatcher.catchOp("Recipe Add");
+        // this.preparedRecipes.addRecipe(irecipe);
+        // this.finalizeRecipeLoading();
+    }
+    
+    public void finalizeRecipeLoading() {
+        if (this.featureflagset != null) {
+            // this.initialize(this.featureflagset);
 
+            // TODO IMixinMinecraftServer.getServer().getPlayerManager().reloadRecipes();
+        }
+    }
+
+    /*
     @Override
     public void addRecipe(RecipeEntry<?> irecipe) {
         // AsyncCatcher.catchOp("Recipe Add");
@@ -124,6 +150,7 @@ public class MixinRecipeManager implements IMixinRecipeManager {
         map.add(irecipe);
         this.recipesById.put(irecipe.id(), irecipe);
     }
+    */
     
     // @Override
     /*public void addRecipe_old(RecipeEntry<?> entry) {

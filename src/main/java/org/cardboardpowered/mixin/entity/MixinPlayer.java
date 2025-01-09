@@ -428,7 +428,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
             ((ServerPlayerEntity)(Object)this).setScore(entityplayer.getScore());
             // TODO
             //((ServerPlayerEntity)(Object)this).lastNetherPortalPosition = entityplayer.lastNetherPortalPosition;
-        } else if (((ServerPlayerEntity)(Object)this).getWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || entityplayer.isSpectator()) {
+        } else if (((ServerPlayerEntity)(Object)this).getServerWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || entityplayer.isSpectator()) {
             ((ServerPlayerEntity)(Object)this).inventory.clone(entityplayer.inventory);
             ((ServerPlayerEntity)(Object)this).experienceLevel = entityplayer.experienceLevel;
             ((ServerPlayerEntity)(Object)this).totalExperience = entityplayer.totalExperience;

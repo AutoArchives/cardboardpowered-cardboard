@@ -15,17 +15,20 @@ import net.minecraft.block.CraftingTableBlock;
 import net.minecraft.block.EnchantingTableBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
+import net.minecraft.entity.player.ItemCooldownManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket;
 import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeManager;
+import net.minecraft.recipe.ServerRecipeManager;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerListener;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Arm;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -45,6 +48,7 @@ import org.cardboardpowered.impl.entity.PlayerImpl;
 import org.cardboardpowered.impl.inventory.CardboardDoubleChestInventory;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.impl.inventory.CardboardPlayerInventory;
+import org.cardboardpowered.impl.inventory.recipe.RecipeInterface;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -165,10 +169,10 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
     private Collection<RecipeEntry<?>> bukkitKeysToMinecraftRecipes(Collection<NamespacedKey> recipeKeys) {
         Collection<RecipeEntry<?>> recipes = new ArrayList<>();
-        RecipeManager manager = getHandle().getWorld().getServer().getRecipeManager();
+        ServerRecipeManager manager = getHandle().getWorld().getServer().getRecipeManager();
 
         for (NamespacedKey recipeKey : recipeKeys) {
-            Optional<RecipeEntry<?>> recipe = manager.get(CraftNamespacedKey.toMinecraft(recipeKey));
+            Optional<RecipeEntry<?>> recipe = manager.get(RecipeInterface.toMinecraft(recipeKey));
 	        recipe.ifPresent(recipes::add);
         }
 
@@ -237,7 +241,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
     @Override
     public org.bukkit.entity.Entity getShoulderEntityLeft() {
         if (!getHandle().getShoulderEntityLeft().isEmpty()) {
-            Optional<net.minecraft.entity.Entity> shoulder = net.minecraft.entity.EntityType.getEntityFromNbt(getHandle().getShoulderEntityLeft(), getHandle().getWorld());
+            Optional<net.minecraft.entity.Entity> shoulder = net.minecraft.entity.EntityType.getEntityFromNbt(getHandle().getShoulderEntityLeft(), getHandle().getWorld(), net.minecraft.entity.SpawnReason.LOAD);
             return (!shoulder.isPresent()) ? null : ((IMixinEntity)shoulder.get()).getBukkitEntity();
         }
         return null;
@@ -246,7 +250,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
     @Override
     public org.bukkit.entity.Entity getShoulderEntityRight() {
         if (!getHandle().getShoulderEntityRight().isEmpty()) {
-            Optional<net.minecraft.entity.Entity> shoulder = net.minecraft.entity.EntityType.getEntityFromNbt(getHandle().getShoulderEntityRight(), getHandle().getWorld());
+            Optional<net.minecraft.entity.Entity> shoulder = net.minecraft.entity.EntityType.getEntityFromNbt(getHandle().getShoulderEntityRight(), getHandle().getWorld(), net.minecraft.entity.SpawnReason.LOAD);
             return (!shoulder.isPresent()) ? null : ((IMixinEntity)shoulder.get()).getBukkitEntity();
         }
         return null;
@@ -259,7 +263,14 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
     @Override
     public boolean hasCooldown(Material arg0) {
-        return getHandle().getItemCooldownManager().isCoolingDown(CraftMagicNumbers.getItem(arg0));
+        // return getHandle().getItemCooldownManager().isCoolingDown(CraftMagicNumbers.getItem(arg0));
+    	return this.hasCooldown(new ItemStack(arg0));
+    }
+    
+    public boolean hasCooldown(ItemStack item) {
+        Preconditions.checkArgument(item != null, "Material cannot be null");
+
+        return this.getHandle().getItemCooldownManager().isCoolingDown(CraftItemStack.asNMSCopy(item));
     }
 
     @Override
@@ -780,18 +791,39 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
 	@Override
 	public int getEnchantmentSeed() {
-        return this.getHandle().getEnchantmentTableSeed();
+        return this.getHandle().getEnchantingTableSeed();
 	}
 
 	@Override
 	public void setEnchantmentSeed(int i2) {
-        this.getHandle().enchantmentTableSeed = i2;
+        this.getHandle().enchantingTableSeed = i2;
 	}
 
 	@Override
 	public void startRiptideAttack(int duration, float damage, @Nullable ItemStack attackItem) {
 		this.getHandle().useRiptide(duration, damage, CraftItemStack.asNMSCopy(attackItem));
 	}
+
+	@Override
+	public void setCooldown(ItemStack item, int ticks) {
+		Preconditions.checkArgument(item != null, "Material cannot be null");
+		Preconditions.checkArgument(ticks >= 0, "Cannot have negative cooldown");
+
+		this.getHandle().getItemCooldownManager().set(CraftItemStack.asNMSCopy(item), ticks);
+	}
+
+	@Override
+    public int getCooldown(ItemStack item) {
+        Preconditions.checkArgument(item != null, "Material cannot be null");
+
+        Identifier group = this.getHandle().getItemCooldownManager().getGroup(CraftItemStack.asNMSCopy(item));
+        if (group == null) {
+            return 0;
+        }
+
+        ItemCooldownManager.Entry cooldown = this.getHandle().getItemCooldownManager().entries.get(group);
+        return (cooldown == null) ? 0 : Math.max(0, cooldown.endTick() - this.getHandle().getItemCooldownManager().tick);
+    }
 
 }
 

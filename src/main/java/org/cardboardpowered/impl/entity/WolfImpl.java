@@ -75,7 +75,7 @@ public class WolfImpl extends TameableAnimalImpl implements Wolf {
 
 	@Override
 	public boolean isWet() {
-		 return this.getHandle().isFurWet();
+		 return this.getHandle().isWet();
 	}
 
 	// 1.20.6 API

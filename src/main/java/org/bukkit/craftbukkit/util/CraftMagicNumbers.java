@@ -27,14 +27,17 @@ import org.bukkit.advancement.Advancement;
 import org.bukkit.attribute.Attributable;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.block.Biome;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftFeatureFlag;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftStatistic;
+import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.legacy.FieldRename;
 import org.bukkit.craftbukkit.potion.CraftPotionType;
 import org.bukkit.damage.DamageEffect;
 import org.bukkit.damage.DamageSource.Builder;
@@ -69,6 +72,7 @@ import com.google.gson.JsonObject;
 import com.javazilla.bukkitfabric.BukkitFabricMod;
 import com.javazilla.bukkitfabric.BukkitLogger;
 import com.javazilla.bukkitfabric.interfaces.IMixinMaterial;
+import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
@@ -226,9 +230,9 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
             if (material.isLegacy()) continue;
 
             Identifier key = key(material);
-            Registries.ITEM.getOrEmpty(key).ifPresent((item) -> MATERIAL_ITEM.put(material, item));
-            Registries.BLOCK.getOrEmpty(key).ifPresent((block) -> MATERIAL_BLOCK.put(material, block));
-            Registries.FLUID.getOrEmpty(key).ifPresent((fluid) -> MATERIAL_FLUID.put(material, fluid));
+            Registries.ITEM.getOptionalValue(key).ifPresent((item) -> MATERIAL_ITEM.put(material, item));
+            Registries.BLOCK.getOptionalValue(key).ifPresent((block) -> MATERIAL_BLOCK.put(material, block));
+            Registries.FLUID.getOptionalValue(key).ifPresent((fluid) -> MATERIAL_FLUID.put(material, fluid));
         }
     }
 
@@ -244,9 +248,9 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         for (Material material : Material.values()) {
             if (material.isLegacy()) continue;
             Identifier key = key(material);
-            Registries.ITEM.getOrEmpty(key).ifPresent((item) -> MATERIAL_ITEM.put(material, item));
-            Registries.BLOCK.getOrEmpty(key).ifPresent((block) -> MATERIAL_BLOCK.put(material, block));
-            Registries.FLUID.getOrEmpty(key).ifPresent((fluid) -> MATERIAL_FLUID.put(material, fluid));
+            Registries.ITEM.getOptionalValue(key).ifPresent((item) -> MATERIAL_ITEM.put(material, item));
+            Registries.BLOCK.getOptionalValue(key).ifPresent((block) -> MATERIAL_BLOCK.put(material, block));
+            Registries.FLUID.getOptionalValue(key).ifPresent((fluid) -> MATERIAL_FLUID.put(material, fluid));
         }
     }
     
@@ -358,9 +362,9 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 
         for (Material material : list) {
             Identifier key = key(material);
-            Registries.ITEM.getOrEmpty(key).ifPresent((item) -> MATERIAL_ITEM.put(material, item));
-            Registries.BLOCK.getOrEmpty(key).ifPresent((block) -> MATERIAL_BLOCK.put(material, block));
-            Registries.FLUID.getOrEmpty(key).ifPresent((fluid) -> MATERIAL_FLUID.put(material, fluid));
+            Registries.ITEM.getOptionalValue(key).ifPresent((item) -> MATERIAL_ITEM.put(material, item));
+            Registries.BLOCK.getOptionalValue(key).ifPresent((block) -> MATERIAL_BLOCK.put(material, block));
+            Registries.FLUID.getOptionalValue(key).ifPresent((fluid) -> MATERIAL_FLUID.put(material, fluid));
         }
     }
 
@@ -641,7 +645,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         return null;
     }
 
-    @Override
+    // @Override
     public String getTimingsServerName() {
         return "Fabric";
     }
@@ -669,7 +673,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         return 0;
     }
 
-    @Override
+    // @Override
     public void reportTimings() {
     }
 
@@ -706,8 +710,8 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 
     @Override
     public String getTranslationKey(ItemStack arg0) {
-        // TODO Auto-generated method stub
-        return null;
+    	net.minecraft.item.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(arg0);
+        return nmsItemStack.getItem().getTranslationKey();
     }
 
     @Override
@@ -776,16 +780,19 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 	public CreativeCategory getCreativeCategory(Material arg0) {
 		return CreativeCategory.BUILDING_BLOCKS;
 	}
+
 	@Override
 	public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(Material arg0, EquipmentSlot arg1) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@SuppressWarnings("resource")
 	@Override
 	public @NotNull String getMainLevelName() {
-		// TODO Auto-generated method stub
-		return null;
+        return ((net.minecraft.server.dedicated.MinecraftDedicatedServer) IMixinMinecraftServer.getServer()).getProperties().levelName;
 	}
+
 	@Override
 	public PlainTextComponentSerializer plainTextSerializer() {
 		// TODO Auto-generated method stub
@@ -855,7 +862,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 
 	@Override
 	public InternalPotionData getInternalPotionData(NamespacedKey key) {
-		Potion potReg = CraftRegistry.getMinecraftRegistry(RegistryKeys.POTION).getOrEmpty(CraftNamespacedKey.toMinecraft(key)).orElseThrow();
+		Potion potReg = CraftRegistry.getMinecraftRegistry(RegistryKeys.POTION).getOptionalValue(CraftNamespacedKey.toMinecraft(key)).orElseThrow();
         return new CraftPotionType(key, potReg);
 	}
 	
@@ -877,11 +884,14 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 	}
 
 	@Override
-	public @Nullable Color getSpawnEggLayerColor(EntityType entityType, int layer) {
-        net.minecraft.entity.EntityType<?> nmsType = CraftEntityType.bukkitToMinecraft(entityType);
-        SpawnEggItem eggItem = SpawnEggItem.forEntity(nmsType);
-        return eggItem == null ? null : Color.fromRGB((int)eggItem.getColor(layer));
-	}
+	public org.bukkit.Color getSpawnEggLayerColor(final EntityType entityType, final int layer) {
+		final net.minecraft.entity.EntityType<?> nmsType = org.bukkit.craftbukkit.entity.CraftEntityType.bukkitToMinecraft(entityType);
+		final net.minecraft.item.SpawnEggItem eggItem = net.minecraft.item.SpawnEggItem.forEntity(nmsType);
+		if (eggItem != null) {
+			throw new UnsupportedOperationException("Not yet implemented");
+		}
+		return eggItem == null ? null : org.bukkit.Color.fromRGB(1); // TODO
+    }
 
 	@Override
 	public LifecycleEventManager<Plugin> createPluginLifecycleEventManager(JavaPlugin plugin,
@@ -910,7 +920,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 	@Override
 	public String get(Class<?> aClass, String s) {
 		if (aClass == Enchantment.class) {
-            // return FieldRename.convertEnchantmentName(ApiVersion.CURRENT, s);
+            return FieldRename.convertEnchantmentName(ApiVersion.CURRENT, s);
         }
         return s;
 	}
@@ -921,14 +931,21 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 
 	// 1.21:
 	
-	@Override
+	// note: removed in 1.21.4
+	// @Override
 	public <A extends Keyed, M> @Nullable Tag<A> getTag(@NotNull TagKey<A> tagKey) {
-        if (tagKey.registryKey() != RegistryKey.ENTITY_TYPE || tagKey.registryKey() != RegistryKey.FLUID) {
+        
+		// Removed?
+		return null;
+		
+		/*
+		if (tagKey.registryKey() != RegistryKey.ENTITY_TYPE || tagKey.registryKey() != RegistryKey.FLUID) {
             throw new UnsupportedOperationException(String.valueOf(tagKey.registryKey()) + " doesn't have tags");
         }
         net.minecraft.registry.RegistryKey nmsKey = PaperRegistries.registryToNms(tagKey.registryKey());
         net.minecraft.registry.Registry nmsRegistry = CraftRegistry.getMinecraftRegistry().get(nmsKey);
         return (Tag<A>) nmsRegistry.getEntryList(PaperRegistries.toNms(tagKey)).map(named -> new NamedRegistryKeySetImpl(tagKey, (RegistryEntryList.Named) named)).orElse(null);
+		*/
 	}
 
 	@Override
@@ -967,6 +984,16 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         return CraftItemStack.asCraftMirror((net.minecraft.item.ItemStack)net.minecraft.item.ItemStack.CODEC.parse(ops, data).getOrThrow(IllegalArgumentException::new));
     	*/
     }
+	
+	 private Biome customBiome;
+	    @Override
+	    public Biome getCustomBiome() {
+	        if (this.customBiome == null) {
+	            this.customBiome = new org.bukkit.craftbukkit.block.CraftBiome(NamespacedKey.minecraft("custom"), null);
+	        }
+
+	        return this.customBiome;
+	    }
 
 
 }

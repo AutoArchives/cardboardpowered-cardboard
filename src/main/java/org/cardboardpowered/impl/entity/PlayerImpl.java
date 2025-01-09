@@ -41,6 +41,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.bukkit.BanEntry;
@@ -50,6 +51,7 @@ import org.bukkit.DyeColor;
 import org.bukkit.Effect;
 import org.bukkit.EntityEffect;
 import org.bukkit.GameMode;
+import org.bukkit.Input;
 import org.bukkit.Instrument;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -86,6 +88,7 @@ import org.bukkit.craftbukkit.scoreboard.CardboardScoreboard;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
@@ -114,6 +117,7 @@ import org.bukkit.util.Vector;
 import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.AdvancementImpl;
 import org.cardboardpowered.impl.AdvancementProgressImpl;
+import org.cardboardpowered.impl.CraftInput;
 import org.cardboardpowered.impl.CraftServerLinks;
 import org.cardboardpowered.impl.block.CardboardSign;
 
@@ -1211,11 +1215,21 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
         spawnParticle(particle, location.getX(), location.getY(), location.getZ(), count, offsetX, offsetY, offsetZ, extra, data);
     }
 
+    
+    
     @Override
     public <T> void spawnParticle(Particle particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double extra, T data) {
         if (data != null && !particle.getDataType().isInstance(data))
             throw new IllegalArgumentException("data should be " + particle.getDataType() + " got " + data.getClass());
-        ParticleS2CPacket packetplayoutworldparticles = new ParticleS2CPacket(CraftParticle.toNMS(particle, data), true, (float) x, (float) y, (float) z, (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count);
+        
+        // ParticleS2CPacket packetplayoutworldparticles = new ParticleS2CPacket(CraftParticle.createParticleParam(particle, data), false, extra, x, y, z, (float)offsetX, (float)offsetY, (float)offsetZ, (float)extra, count);
+
+        boolean force = false;
+        
+        ParticleS2CPacket packetplayoutworldparticles = new ParticleS2CPacket(CraftParticle.createParticleParam(particle, data), false, force, x, y, z, (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count); // Paper - fix x/y/z precision loss
+
+        
+        // ParticleS2CPacket packetplayoutworldparticles = new ParticleS2CPacket(CraftParticle.toNMS(particle, data), true, (float) x, (float) y, (float) z, (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count);
         getHandle().networkHandler.sendPacket(packetplayoutworldparticles);
 
     }
@@ -2707,8 +2721,14 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 	@Override
 	public <T> void spawnParticle(@NotNull Particle particle, double x, double y, double z, int count, double offsetX,
 			double offsetY, double offsetZ, double extra, @Nullable T data, boolean force) {
-		// TODO Auto-generated method stub
-		
+		if (data != null && !particle.getDataType().isInstance(data))
+            throw new IllegalArgumentException("data should be " + particle.getDataType() + " got " + data.getClass());
+        
+        ParticleS2CPacket packetplayoutworldparticles = new ParticleS2CPacket(CraftParticle.createParticleParam(particle, data), false, force, x, y, z, (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count); // Paper - fix x/y/z precision loss
+
+        
+        // ParticleS2CPacket packetplayoutworldparticles = new ParticleS2CPacket(CraftParticle.toNMS(particle, data), true, (float) x, (float) y, (float) z, (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count);
+        getHandle().networkHandler.sendPacket(packetplayoutworldparticles);
 	}
 	
 	@Override
@@ -2734,6 +2754,38 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
         }
         this.getHandle().networkHandler.sendPacket(new EntityStatusS2CPacket(((CraftEntity)target).getHandle(), effect.getData()));
     }
+	
+	// 1.21.4:
+
+	@Override
+	public int getPlayerListOrder() {
+		return this.getHandle().getPlayerListOrder();
+	}
+
+	@Override
+	public void setPlayerListOrder(int order) {
+		/*
+		 this.getHandle().listOrder = order;
+	        // Paper start - Send update packet
+	        if (getHandle().networkHandler == null) return; // Updates are possible before the player has fully joined
+	        for (ServerPlayerEntity player : server.getHandle().players) {
+	            if (player.getBukkitEntity().canSee(this)) {
+	                player.networkHandler.sendPacket(new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_LIST_ORDER, getHandle()));
+	            }
+	        }
+	        // Paper end - Send update packet
+	         */
+	}
+
+	@Override
+	public @NotNull Collection<EnderPearl> getEnderPearls() {
+        return this.getHandle().getEnderPearls().stream().map((e) -> (EnderPearl) (((IMixinEntity)e).getBukkitEntity())).collect(Collectors.toList());
+	}
+
+	@Override
+	public @NotNull Input getCurrentInput() {
+        return new CraftInput(this.getHandle().getPlayerInput());
+	}
 	
 
 }

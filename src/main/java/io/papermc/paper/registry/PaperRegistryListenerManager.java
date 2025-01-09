@@ -70,6 +70,8 @@ public class PaperRegistryListenerManager {
     public <M> void registerWithListeners(Registry<M> registry, RegistryKey<M> key, M nms, net.minecraft.registry.entry.RegistryEntryInfo registrationInfo, Conversions conversions) {
         this.registerWithListeners(registry, key, nms, registrationInfo, MutableRegistry::add, conversions);
     }
+    
+    
 
     public <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>, R> R registerWithListeners(Registry<M> registry, RegistryKey<M> key, M nms, net.minecraft.registry.entry.RegistryEntryInfo registrationInfo, RegisterMethod<M, R> registerMethod, Conversions conversions) {
         // Preconditions.checkState((boolean)LaunchEntryPointHandler.INSTANCE.hasEntered(Entrypoint.BOOTSTRAPPER), (Object)(String.valueOf(registry.getKey()) + " tried to run modification listeners before bootstrappers have been called"));
@@ -83,6 +85,8 @@ public class PaperRegistryListenerManager {
         // B builder = (B) modifiableEntry.fillBuilder(conversions, typedKey, nms);
         // return (R) this.registerWithListeners(registry, modifiableEntry, key, nms, builder, registrationInfo, registerMethod, conversions);
     }
+    
+    
 
     <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> void registerWithListeners(MutableRegistry<M> registry, RegistryEntryInfo<M, T> entry, RegistryKey<M> key, B builder, net.minecraft.registry.entry.RegistryEntryInfo registrationInfo, Conversions conversions) {
         // if (!RegistryEntry.Modifiable.isModifiable(entry) || !this.valueAddEventTypes.hasHandlers(entry.apiKey())) {
@@ -154,4 +158,7 @@ public class PaperRegistryListenerManager {
     public static interface RegisterMethod<M, R> {
         public R register(MutableRegistry<M> var1, RegistryKey<M> var2, M var3, net.minecraft.registry.entry.RegistryEntryInfo var4);
     }
+    
+    
+    
 }

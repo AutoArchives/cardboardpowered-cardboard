@@ -1,42 +1,45 @@
 package org.bukkit.craftbukkit.inventory;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.recipe.Recipe;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.meta.KnowledgeBookMeta;
+import org.cardboardpowered.impl.inventory.recipe.RecipeInterface;
 
-@DelegateDeserialization(value=SerializableMeta.class)
-public class CraftMetaKnowledgeBook
-extends CraftMetaItem
-implements KnowledgeBookMeta {
-    static final CraftMetaItem.ItemMetaKeyType<List<Identifier>> BOOK_RECIPES = new CraftMetaItem.ItemMetaKeyType<List<Identifier>>(DataComponentTypes.RECIPES, "Recipes");
+@DelegateDeserialization(SerializableMeta.class)
+public class CraftMetaKnowledgeBook extends CraftMetaItem implements KnowledgeBookMeta {
+
+    static final ItemMetaKeyType<List<RegistryKey<Recipe<?>>>> BOOK_RECIPES = new ItemMetaKeyType<>(DataComponentTypes.RECIPES, "Recipes");
     static final int MAX_RECIPES = Short.MAX_VALUE;
+
     protected List<NamespacedKey> recipes = new ArrayList<NamespacedKey>();
 
     CraftMetaKnowledgeBook(CraftMetaItem meta) {
         super(meta);
+
         if (meta instanceof CraftMetaKnowledgeBook) {
-            CraftMetaKnowledgeBook bookMeta = (CraftMetaKnowledgeBook)meta;
+            CraftMetaKnowledgeBook bookMeta = (CraftMetaKnowledgeBook) meta;
             this.recipes.addAll(bookMeta.recipes);
         }
     }
 
-    CraftMetaKnowledgeBook(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
-        super(tag, extraHandledDcts);
-        CraftMetaKnowledgeBook.getOrEmpty(tag, BOOK_RECIPES).ifPresent(pages -> {
-            for (int i2 = 0; i2 < pages.size(); ++i2) {
-                Identifier recipe = (Identifier)pages.get(i2);
+    CraftMetaKnowledgeBook(ComponentChanges tag, java.util.Set<net.minecraft.component.ComponentType<?>> extraHandledDcts) { // Paper
+        super(tag, extraHandledDcts); // Paper
+
+        getOrEmpty(tag, CraftMetaKnowledgeBook.BOOK_RECIPES).ifPresent((pages) -> {
+            for (int i = 0; i < pages.size(); i++) {
+                Identifier recipe = pages.get(i).getValue();
+
                 this.addRecipe(CraftNamespacedKey.fromMinecraft(recipe));
             }
         });
@@ -44,11 +47,13 @@ implements KnowledgeBookMeta {
 
     CraftMetaKnowledgeBook(Map<String, Object> map) {
         super(map);
-        Iterable pages = SerializableMeta.getObject(Iterable.class, map, CraftMetaKnowledgeBook.BOOK_RECIPES.BUKKIT, true);
+
+        Iterable<?> pages = SerializableMeta.getObject(Iterable.class, map, CraftMetaKnowledgeBook.BOOK_RECIPES.BUKKIT, true);
         if (pages != null) {
             for (Object page : pages) {
-                if (!(page instanceof String)) continue;
-                this.addRecipe(CraftNamespacedKey.fromString((String)page));
+                if (page instanceof String) {
+                    this.addRecipe(CraftNamespacedKey.fromString((String) page));
+                }
             }
         }
     }
@@ -56,12 +61,13 @@ implements KnowledgeBookMeta {
     @Override
     void applyToItem(CraftMetaItem.Applicator itemData) {
         super.applyToItem(itemData);
+
         if (this.hasRecipes()) {
-            ArrayList<Identifier> list = new ArrayList<Identifier>();
+            List<RegistryKey<Recipe<?>>> list = new ArrayList<>();
             for (NamespacedKey recipe : this.recipes) {
-                list.add(CraftNamespacedKey.toMinecraft(recipe));
+                list.add(RecipeInterface.toMinecraft(recipe));
             }
-            itemData.put(BOOK_RECIPES, list);
+            itemData.put(CraftMetaKnowledgeBook.BOOK_RECIPES, list);
         }
     }
 
@@ -71,32 +77,33 @@ implements KnowledgeBookMeta {
     }
 
     boolean isBookEmpty() {
-        return !this.hasRecipes();
+        return !(this.hasRecipes());
     }
 
     @Override
-    boolean applicableTo(Material type) {
-        return type == Material.KNOWLEDGE_BOOK;
-    }
-
     public boolean hasRecipes() {
         return !this.recipes.isEmpty();
     }
 
-    public void addRecipe(NamespacedKey ... recipes) {
+    @Override
+    public void addRecipe(NamespacedKey... recipes) {
         for (NamespacedKey recipe : recipes) {
-            if (recipe == null) continue;
-            if (this.recipes.size() >= Short.MAX_VALUE) {
-                return;
+            if (recipe != null) {
+                if (this.recipes.size() >= CraftMetaKnowledgeBook.MAX_RECIPES) {
+                    return;
+                }
+
+                this.recipes.add(recipe);
             }
-            this.recipes.add(recipe);
         }
     }
 
+    @Override
     public List<NamespacedKey> getRecipes() {
         return Collections.unmodifiableList(this.recipes);
     }
 
+    @Override
     public void setRecipes(List<NamespacedKey> recipes) {
         this.recipes.clear();
         for (NamespacedKey recipe : recipes) {
@@ -106,14 +113,14 @@ implements KnowledgeBookMeta {
 
     @Override
     public CraftMetaKnowledgeBook clone() {
-        CraftMetaKnowledgeBook meta = (CraftMetaKnowledgeBook)super.clone();
+        CraftMetaKnowledgeBook meta = (CraftMetaKnowledgeBook) super.clone();
         meta.recipes = new ArrayList<NamespacedKey>(this.recipes);
         return meta;
     }
 
     @Override
     int applyHash() {
-        int original;
+        final int original;
         int hash = original = super.applyHash();
         if (this.hasRecipes()) {
             hash = 61 * hash + 17 * this.recipes.hashCode();
@@ -127,8 +134,9 @@ implements KnowledgeBookMeta {
             return false;
         }
         if (meta instanceof CraftMetaKnowledgeBook) {
-            CraftMetaKnowledgeBook that = (CraftMetaKnowledgeBook)meta;
-            return this.hasRecipes() ? that.hasRecipes() && this.recipes.equals(that.recipes) : !that.hasRecipes();
+            CraftMetaKnowledgeBook that = (CraftMetaKnowledgeBook) meta;
+
+            return (this.hasRecipes() ? that.hasRecipes() && this.recipes.equals(that.recipes) : !that.hasRecipes());
         }
         return true;
     }
@@ -139,16 +147,17 @@ implements KnowledgeBookMeta {
     }
 
     @Override
-    ImmutableMap.Builder<String, Object> serialize(ImmutableMap.Builder<String, Object> builder) {
+    Builder<String, Object> serialize(Builder<String, Object> builder) {
         super.serialize(builder);
+
         if (this.hasRecipes()) {
-            ArrayList<String> recipesString = new ArrayList<String>();
+            List<String> recipesString = new ArrayList<String>();
             for (NamespacedKey recipe : this.recipes) {
                 recipesString.add(recipe.toString());
             }
             builder.put(CraftMetaKnowledgeBook.BOOK_RECIPES.BUKKIT, recipesString);
         }
+
         return builder;
     }
 }
-

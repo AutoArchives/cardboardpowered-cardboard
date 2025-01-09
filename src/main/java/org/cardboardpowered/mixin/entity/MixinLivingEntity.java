@@ -82,14 +82,19 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
             return;
         }
     }
+    
+    @Shadow
+    public void dropInventory( ServerWorld world) {
+    	// Shadowed
+    }
 
     @Inject(at = @At("HEAD"), method = "drop", cancellable = true)
     public void cardboard_doDrop(ServerWorld world, DamageSource damagesource, CallbackInfo ci) {
         Entity entity = damagesource.getAttacker();
 
         boolean flag = get().playerHitTimer > 0;
-        get().dropInventory();
-        if (!get().isBaby() && get().getWorld().getGameRules().getBoolean(GameRules.DO_MOB_LOOT)) {
+        this.dropInventory(world);
+        if (!get().isBaby() && world.getGameRules().getBoolean(GameRules.DO_MOB_LOOT)) {
             this.dropLoot(damagesource, flag);
             this.dropEquipment((ServerWorld) world, damagesource, flag);
         }
@@ -106,13 +111,33 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
         return 0;
     }*/
 
+    
+    // TODO: getExperienceToDrop
+    
+    @Shadow
+    public int getExperienceToDrop(ServerWorld world) {
+    	return 0; // Shadowed
+    }
+    
+    @Shadow
+    public boolean shouldAlwaysDropExperience() {
+    	return true; // Shadowed
+    }
+    
     @Override
     public int getExpReward() {
-        if ((get().shouldAlwaysDropXp() || get().lastDamageTime > 0 && get().shouldAlwaysDropXp() && this.mc_world().getGameRules().getBoolean(GameRules.DO_MOB_LOOT))) {
-            //int i = getXpToDrop(get().attackingPlayer);
-            int i = get().getXpToDrop();
-        	return i;
-        } else return 0;
+    	World w = this.mc_world();
+    	
+    	if (w instanceof ServerWorld) {
+    		ServerWorld sw = (ServerWorld) w;
+            if ((this.shouldAlwaysDropExperience() || get().lastDamageTime > 0 && this.shouldAlwaysDropExperience() && sw.getGameRules().getBoolean(GameRules.DO_MOB_LOOT))) {
+                //int i = getXpToDrop(get().attackingPlayer);
+            	int i = getExperienceToDrop(sw);
+            	return i;
+            }
+    	}
+        
+        return 0;
     }
 
     @Override

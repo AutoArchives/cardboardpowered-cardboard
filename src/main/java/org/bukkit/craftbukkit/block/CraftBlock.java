@@ -873,8 +873,8 @@ public class CraftBlock implements Block {
 	
 	@Override
 	public void fluidTick() {
-        this.getNMSFluid().onScheduledTick(getHandle(), this.position);
-
+        // this.getNMSFluid().onScheduledTick(getHandle(), this.position);
+        this.getNMSFluid().onScheduledTick(getHandle(), this.position, this.getNMS());
 	}
 
     //

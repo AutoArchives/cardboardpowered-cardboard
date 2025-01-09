@@ -22,6 +22,7 @@ import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MarkerEntity;
 import net.minecraft.entity.OminousItemSpawnerEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.TntEntity;
 import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
@@ -325,7 +326,7 @@ public final class CraftEntityTypes {
     }
 
     private static <R extends Entity> Function<SpawnData, R> fromEntityType(EntityType<R> entityTypes) {
-        return spawnData -> entityTypes.create(spawnData.minecraftWorld());
+        return spawnData -> entityTypes.create(spawnData.minecraftWorld(), SpawnReason.COMMAND);
     }
 
     private static <R extends LivingEntity> Function<SpawnData, R> createLiving(EntityType<R> entityTypes) {

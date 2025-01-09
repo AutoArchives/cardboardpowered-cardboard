@@ -47,38 +47,39 @@ public abstract class CardboardFurnace<T extends AbstractFurnaceBlockEntity> ext
 
     @Override
     public short getBurnTime() {
-        return (short) this.getSnapshot().burnTime;
+        return (short) this.getSnapshot().litTimeRemaining;
     }
 
     @Override
     public void setBurnTime(short burnTime) {
-        this.getSnapshot().burnTime = burnTime;
+        this.getSnapshot().litTimeRemaining = burnTime;
         this.data = this.data.with(AbstractFurnaceBlock.LIT, burnTime > 0);
     }
 
     @Override
     public short getCookTime() {
-        return (short) this.getSnapshot().cookTime;
+        return (short) this.getSnapshot().cookingTimeSpent;
     }
 
     @Override
     public void setCookTime(short cookTime) {
-        this.getSnapshot().cookTime = cookTime;
+        this.getSnapshot().cookingTimeSpent = cookTime;
     }
 
     @Override
     public int getCookTimeTotal() {
-        return this.getSnapshot().cookTimeTotal;
+        return this.getSnapshot().cookingTotalTime;
     }
 
     @Override
     public void setCookTimeTotal(int cookTimeTotal) {
-        this.getSnapshot().cookTimeTotal = cookTimeTotal;
+        this.getSnapshot().cookingTotalTime = cookTimeTotal;
     }
 
     @Override
     public double getCookSpeedMultiplier() {
         // TODO Auto-generated method stub
+    	// return this.getSnapshot().cookSpeedMultiplier;
         return 0;
     }
 
@@ -119,15 +120,30 @@ public abstract class CardboardFurnace<T extends AbstractFurnaceBlockEntity> ext
 	}
 
 	@Override
-	public void setRecipeUsedCount(@NotNull CookingRecipe<?> arg0, int arg1) {
+	public void setRecipeUsedCount(@NotNull CookingRecipe<?> furnaceRecipe, int count) {
 		// TODO Auto-generated method stub
-		
+		/*
+		final var location = io.papermc.paper.util.MCUtil.toResourceKey(net.minecraft.registry.RegistryKeys.RECIPE, furnaceRecipe.getKey());
+        java.util.Optional<net.minecraft.recipe.RecipeEntry<?>> nmsRecipe = (this.isPlaced() ? this.world.getHandle().getRecipeManager() : net.minecraft.server.MinecraftServer.getServer().getRecipeManager()).get(location);
+        com.google.common.base.Preconditions.checkArgument(nmsRecipe.isPresent() && nmsRecipe.get().value() instanceof net.minecraft.recipe.AbstractCookingRecipe, furnaceRecipe.getKey() + " is not recognized as a valid and registered furnace recipe");
+        if (count > 0) {
+            this.getSnapshot().recipesUsed.put(location, count);
+        } else {
+            this.getSnapshot().recipesUsed.removeInt(location);
+        }
+        */
 	}
 
 	@Override
-	public void setRecipesUsed(@NotNull Map<CookingRecipe<?>, Integer> arg0) {
-		// TODO Auto-generated method stub
-		
+	public void setRecipesUsed(@NotNull Map<CookingRecipe<?>, Integer> recipesUsed) {
+		/*
+		this.getSnapshot().recipesUsed.clear();
+        recipesUsed.forEach((recipe, integer) -> {
+            if (integer != null) {
+                this.setRecipeUsedCount(recipe, integer);
+            }
+        });
+        */
 	}
 
 }

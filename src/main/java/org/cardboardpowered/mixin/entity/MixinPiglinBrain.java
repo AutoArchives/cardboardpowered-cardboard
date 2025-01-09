@@ -29,6 +29,7 @@ import net.minecraft.entity.mob.PiglinBrain;
 import net.minecraft.entity.mob.PiglinEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.server.world.ServerWorld;
 
 @MixinInfo(events = {"EntityPickupItemEvent"})
 @Mixin(value = PiglinBrain.class, priority = 900)
@@ -39,7 +40,7 @@ public class MixinPiglinBrain {
      * @author .
      */
     @Overwrite
-    public static void loot(PiglinEntity entitypiglin, ItemEntity entityitem) {
+    public static void loot(ServerWorld world, PiglinEntity entitypiglin, ItemEntity entityitem) {
         stopWalking(entitypiglin);
         ItemStack itemstack;
 
@@ -59,7 +60,7 @@ public class MixinPiglinBrain {
         } else if (isFood(itemstack) && !hasAteRecently(entitypiglin)) {
             setEatenRecently(entitypiglin);
         } else {
-            boolean flag = !entitypiglin.tryEquip(itemstack).equals(ItemStack.EMPTY);
+            boolean flag = !entitypiglin.tryEquip(world, itemstack).equals(ItemStack.EMPTY);
             if (!flag) barterItem(entitypiglin, itemstack);
         }
     }

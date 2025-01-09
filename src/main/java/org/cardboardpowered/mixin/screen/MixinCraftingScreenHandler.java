@@ -70,7 +70,7 @@ public class MixinCraftingScreenHandler extends MixinScreenHandler {
 
             if (optional.isPresent()) {
                 RecipeEntry<CraftingRecipe> recipecrafting = optional.get();
-                if (inventorycraftresult.shouldCraftRecipe(world, entityplayer, recipecrafting))
+                if (inventorycraftresult.shouldCraftRecipe(entityplayer, recipecrafting))
                     itemstack = recipecrafting.value().craft(craftinginput, world.getRegistryManager());
             }
             itemstack = BukkitEventFactory.callPreCraftEvent(inventorycrafting, inventorycraftresult, itemstack, ((IMixinScreenHandler)container).getBukkitView(), false);

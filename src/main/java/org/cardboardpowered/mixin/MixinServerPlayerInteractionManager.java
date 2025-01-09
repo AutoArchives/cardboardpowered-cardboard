@@ -35,7 +35,6 @@ import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -237,7 +236,7 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
             cancelledBlock = !(itileinventory instanceof NamedScreenHandlerFactory);
         }
 
-        if (entityplayer.getItemCooldownManager().isCoolingDown(itemstack.getItem()))
+        if (entityplayer.getItemCooldownManager().isCoolingDown(itemstack))
             cancelledBlock = true;
 
         PlayerInteractEvent event = BukkitEventFactory.callPlayerInteractEvent(entityplayer, Action.RIGHT_CLICK_BLOCK, blockposition, movingobjectpositionblock.getSide(), itemstack, cancelledBlock, enumhand);
@@ -268,6 +267,21 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
             ItemStack itemstack1 = itemstack.copy();
 
             if (!flag1) {
+            	
+            	 ActionResult enuminteractionresult1 = iblockdata.onUseWithItem(player.getStackInHand(enumhand), world, player, enumhand, movingobjectpositionblock);
+                 if (enuminteractionresult1.isAccepted()) {
+                     Criteria.ITEM_USED_ON_BLOCK.trigger(player, blockposition, itemstack1);
+                     ci.setReturnValue(enuminteractionresult1);
+                     return;
+                 }
+                 if (enuminteractionresult1 instanceof ActionResult.PassToDefaultBlockAction && enumhand == Hand.MAIN_HAND && (enuminteractionresult = iblockdata.onUse(world, player, movingobjectpositionblock)).isAccepted()) {
+                     Criteria.DEFAULT_BLOCK_USE.trigger(player, blockposition);
+                     ci.setReturnValue(enuminteractionresult1);
+                     return;
+                 }
+            	
+                 /*
+                  Old 1.21.1:
             	ItemActionResult iteminteractionresult = iblockdata.onUseWithItem(player.getStackInHand(enumhand), world, player, enumhand, movingobjectpositionblock);
             	
             	if (iteminteractionresult.isAccepted()) {
@@ -280,6 +294,7 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
                     ci.setReturnValue(enuminteractionresult);
                     return;
                 }
+                */
             	
                 // old 1.20.4:
             	/*

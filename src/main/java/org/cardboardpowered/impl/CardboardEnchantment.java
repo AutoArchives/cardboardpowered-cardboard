@@ -265,6 +265,7 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 		throw new UnsupportedOperationException("Not supported for 1.21+");
 	}
 	
+	/*
     @Deprecated(forRemoval=true)
     private net.minecraft.entity.EntityType<?> guessEntityTypeFromEnchantmentCategory(EntityCategory entityCategory) {
         TagKey<net.minecraft.entity.EntityType<?>> tag;
@@ -290,6 +291,7 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
         }
         return Registries.ENTITY_TYPE.getEntryList(tag).map(e2 -> e2.size() > 0 ? (net.minecraft.entity.EntityType)e2.get(0).value() : null).orElse(null);
     }
+    */
 
 	public static RegistryEntry<net.minecraft.enchantment.Enchantment> bukkitToMinecraftHolder(Enchantment key2) {
         return CraftRegistry.bukkitToMinecraftHolder(key2, RegistryKeys.ENCHANTMENT);

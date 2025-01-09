@@ -225,7 +225,7 @@ public class CardboardEnderdragon extends CardboardComplexEntity implements Ende
 	}
 	
     public int getPossibleExperienceReward() {
-        return this.getHandle().getXpToDrop();
+        return this.getHandle().getExperienceToDrop((net.minecraft.server.world.ServerWorld) this.getHandle().getWorld(), null);
     }
 
     // 1.20.2 API

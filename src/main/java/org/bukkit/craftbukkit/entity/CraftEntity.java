@@ -794,7 +794,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 		            ((WorldImpl) loc.getWorld()).getHandle(),
                     loc.getX(), loc.getY(), loc.getZ(),
                     EnumSet.allOf(PositionFlag.class),
-                    loc.getYaw(), loc.getPitch());
+                    loc.getYaw(), loc.getPitch(), true);
             return true;
         }
         return true;
@@ -1423,8 +1423,17 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     private net.minecraft.entity.Entity copy(net.minecraft.world.World level) {
         NbtCompound compoundTag = new NbtCompound();
         this.getHandle().saveSelfNbt(compoundTag);
-        return net.minecraft.entity.EntityType.loadEntityWithPassengers(compoundTag, level, java.util.function.Function.identity());
+        return net.minecraft.entity.EntityType.loadEntityWithPassengers(compoundTag, level, net.minecraft.entity.SpawnReason.LOAD, java.util.function.Function.identity());
     }
+    
+    /*
+    private net.minecraft.entity.Entity copy(net.minecraft.world.World level) {
+        NbtCompound compoundTag = new NbtCompound();
+        this.getHandle().saveAsPassenger(compoundTag, false);
+        return net.minecraft.entity.EntityType.loadEntityWithPassengers(compoundTag, level, net.minecraft.entity.SpawnReason.LOAD, java.util.function.Function.identity());
+    }
+    */
+
 
 	@Override
     public boolean isInWorld() {

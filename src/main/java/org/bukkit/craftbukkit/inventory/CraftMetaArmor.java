@@ -27,7 +27,7 @@ import org.bukkit.inventory.meta.trim.TrimPattern;
 public class CraftMetaArmor
 extends CraftMetaItem
 implements ArmorMeta {
-    static final CraftMetaItem.ItemMetaKeyType<net.minecraft.item.trim.ArmorTrim> TRIM = new CraftMetaItem.ItemMetaKeyType<net.minecraft.item.trim.ArmorTrim>(DataComponentTypes.TRIM, "trim");
+    static final CraftMetaItem.ItemMetaKeyType<net.minecraft.item.equipment.trim.ArmorTrim> TRIM = new CraftMetaItem.ItemMetaKeyType<net.minecraft.item.equipment.trim.ArmorTrim>(DataComponentTypes.TRIM, "trim");
     static final CraftMetaItem.ItemMetaKey TRIM_MATERIAL = new CraftMetaItem.ItemMetaKey("material");
     static final CraftMetaItem.ItemMetaKey TRIM_PATTERN = new CraftMetaItem.ItemMetaKey("pattern");
     private ArmorTrim trim;
@@ -43,8 +43,8 @@ implements ArmorMeta {
     CraftMetaArmor(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaArmor.getOrEmpty(tag, TRIM).ifPresent(trimCompound -> {
-            TrimMaterial trimMaterial = CraftRegistry.unwrapAndConvertHolder(RegistryKey.TRIM_MATERIAL, trimCompound.getMaterial()).orElse(null);
-            TrimPattern trimPattern = CraftRegistry.unwrapAndConvertHolder(RegistryKey.TRIM_PATTERN, trimCompound.getPattern()).orElse(null);
+            TrimMaterial trimMaterial = CraftRegistry.unwrapAndConvertHolder(RegistryKey.TRIM_MATERIAL, trimCompound.material()).orElse(null);
+            TrimPattern trimPattern = CraftRegistry.unwrapAndConvertHolder(RegistryKey.TRIM_PATTERN, trimCompound.pattern()).orElse(null);
             if (trimMaterial == null || trimPattern == null) {
                 return;
             }
@@ -79,7 +79,7 @@ implements ArmorMeta {
     void applyToItem(CraftMetaItem.Applicator itemTag) {
         super.applyToItem(itemTag);
         if (this.hasTrim()) {
-            itemTag.put(TRIM, new net.minecraft.item.trim.ArmorTrim(CraftTrimMaterial.bukkitToMinecraftHolder(this.trim.getMaterial()), CraftTrimPattern.bukkitToMinecraftHolder(this.trim.getPattern()), !this.hasItemFlag(ItemFlag.HIDE_ARMOR_TRIM)));
+            itemTag.put(TRIM, new net.minecraft.item.equipment.trim.ArmorTrim(CraftTrimMaterial.bukkitToMinecraftHolder(this.trim.getMaterial()), CraftTrimPattern.bukkitToMinecraftHolder(this.trim.getPattern()), !this.hasItemFlag(ItemFlag.HIDE_ARMOR_TRIM)));
         }
     }
 

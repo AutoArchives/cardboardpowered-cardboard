@@ -4,7 +4,11 @@ import static org.bukkit.craftbukkit.inventory.CraftMetaItem.ENCHANTMENTS;
 // import static org.bukkit.craftbukkit.inventory.CraftMetaItem.ENCHANTMENTS_ID;
 // import static org.bukkit.craftbukkit.inventory.CraftMetaItem.ENCHANTMENTS_LVL;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang.Validate;
@@ -28,8 +32,10 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Dynamic;
 
 import net.minecraft.component.ComponentChanges;
+import net.minecraft.component.ComponentMap;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.MergedComponentMap;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.datafixer.TypeReferences;
@@ -38,9 +44,13 @@ import net.minecraft.item.Item;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.predicate.ComponentPredicate;
+import net.minecraft.predicate.NumberRange;
+import net.minecraft.predicate.item.ItemPredicate;
 import net.minecraft.util.Identifier;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.entry.RegistryEntryList;
 
 @DelegateDeserialization(ItemStack.class)
 public final class CraftItemStack extends ItemStack {
@@ -63,6 +73,14 @@ public final class CraftItemStack extends ItemStack {
             setItemMeta(stack, original.getItemMeta());
 
         return stack;
+    }
+    
+    public static List<net.minecraft.item.ItemStack> asNMSCopy(List<? extends ItemStack> originals) {
+        ArrayList<net.minecraft.item.ItemStack> items = new ArrayList<net.minecraft.item.ItemStack>(originals.size());
+        for (ItemStack itemStack : originals) {
+            items.add(CraftItemStack.asNMSCopy(itemStack));
+        }
+        return items;
     }
 
     public static net.minecraft.item.ItemStack copyNMSStack(net.minecraft.item.ItemStack original, int amount) {
@@ -155,7 +173,7 @@ public final class CraftItemStack extends ItemStack {
             if (hasItemMeta())
                 setItemMeta(handle, getItemMeta(handle)); // This will create the appropriate item meta, which will contain all the data we intend to keep
         }
-        setData(null);
+        setData((MaterialData) null);
     }
 
     @Override
@@ -879,6 +897,13 @@ public final class CraftItemStack extends ItemStack {
             return craftItemStack.handle != null ? craftItemStack.handle : net.minecraft.item.ItemStack.EMPTY;
         }
         return CraftItemStack.asNMSCopy(bukkit);
+    }
+
+    public static ItemPredicate asCriterionConditionItem(ItemStack original) {
+        net.minecraft.item.ItemStack nms = CraftItemStack.asNMSCopy(original);
+        ComponentPredicate predicate = ComponentPredicate.of(MergedComponentMap.create(ComponentMap.EMPTY, nms.getComponentChanges()));
+
+        return new ItemPredicate(Optional.of(RegistryEntryList.of(nms.getRegistryEntry())), NumberRange.IntRange.ANY, predicate, Collections.emptyMap());
     }
 
     /*static boolean hasItemMeta(net.minecraft.item.ItemStack item) {

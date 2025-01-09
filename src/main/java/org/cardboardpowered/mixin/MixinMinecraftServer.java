@@ -349,13 +349,20 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         this.executeModerately();
         worldloadlistener.stop();
         //chunkproviderserver.getLightingProvider().setTaskBatchSize(5);
-        this.updateMobSpawnOptions_1_15_2();
+        this.updateMobSpawnOptions();
 
         this.forceTicks = false;
     }
+    
+    @Shadow
+    private void updateMobSpawnOptions() {
+    	
+    }
 
+    @Deprecated
     private void updateMobSpawnOptions_1_15_2() {
-        Iterator<ServerWorld> iterator = ((MinecraftServer)(Object)this).getWorlds().iterator();
+        /*
+    	Iterator<ServerWorld> iterator = ((MinecraftServer)(Object)this).getWorlds().iterator();
 
         while (iterator.hasNext()) {
             ServerWorld worldserver = (ServerWorld) iterator.next();
@@ -363,7 +370,8 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
             worldserver.setMobSpawnOptions(((MinecraftServer)(Object)this).isMonsterSpawningEnabled(),
                     ((MinecraftServer)(Object)this).shouldSpawnAnimals());
         }
-
+        */
+    	this.updateMobSpawnOptions();
     }
 
     private void executeModerately() {

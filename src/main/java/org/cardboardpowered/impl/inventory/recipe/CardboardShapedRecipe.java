@@ -14,6 +14,8 @@ import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.recipe.CraftingBookCategory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -52,16 +54,35 @@ public class CardboardShapedRecipe extends ShapedRecipe implements RecipeInterfa
         String[] shape = this.getShape();
         Map<Character, org.bukkit.inventory.RecipeChoice> ingred = this.getChoiceMap();
         int width = shape[0].length();
-        DefaultedList<Ingredient> data = DefaultedList.ofSize(shape.length * width, Ingredient.EMPTY);
+        DefaultedList<Optional<Ingredient>> data = DefaultedList.ofSize(shape.length * width, Optional.empty()); // Ingredient.EMPTY
 
         for (int i = 0; i < shape.length; i++) {
             String row = shape[i];
             for (int j = 0; j < row.length(); j++)
-                data.set(i * width + j, toNMS(ingred.get(row.charAt(j)), false));
+                data.set(i * width + j, Optional.of(toNMS(ingred.get(row.charAt(j)), false)));
         }
 
-        ((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(getKey(), new net.minecraft.recipe.ShapedRecipe(this.getGroup(), RecipeInterface.getCategory(this.getCategory()), new RawShapedRecipe(width, shape.length, data, Optional.empty()), CraftItemStack.asNMSCopy(this.getResult())));
+        ((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(
+        		getKey(),
+        		new net.minecraft.recipe.ShapedRecipe(
+        				this.getGroup(),
+        				RecipeInterface.getCategory(this.getCategory()),
+        				new RawShapedRecipe(width, shape.length, data, Optional.empty()),
+        				CraftItemStack.asNMSCopy(this.getResult())
+        		)
+        );
     }
+    
+    /*
+    public void addToCraftingManager() {
+        List ingred = this.getChoiceList();
+        ArrayList<Ingredient> data = new ArrayList<Ingredient>(ingred.size());
+        for (RecipeChoice i : ingred) {
+            data.add(this.toNMS(i, true));
+        }
+        MinecraftServer.getServer().getRecipeManager().addRecipe(new RecipeEntry<ShapelessRecipe>(CraftRecipe.toMinecraft(this.getKey()), new ShapelessRecipe(this.getGroup(), CraftRecipe.getCategory(this.getCategory()), CraftItemStack.asNMSCopy(this.getResult()), data)));
+    }
+    */
     
     // TODO: Update API to 1.19.4
     public CraftingBookCategory getCategory() {

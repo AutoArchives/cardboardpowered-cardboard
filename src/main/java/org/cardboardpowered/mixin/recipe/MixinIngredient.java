@@ -1,5 +1,7 @@
 package org.cardboardpowered.mixin.recipe;
 
+import java.util.Objects;
+
 import org.cardboardpowered.interfaces.IIngredient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -7,14 +9,45 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.Ingredient.Entry;
+// import net.minecraft.recipe.Ingredient.Entry;
+import net.minecraft.registry.entry.RegistryEntryList;
 
 @Mixin(Ingredient.class)
 public class MixinIngredient implements IIngredient {
 
-	@Shadow public Entry[] entries;
+	@Shadow
+	private RegistryEntryList<Item> entries;
+	
+	// Paper start
+	@Override
+	public RegistryEntryList<Item> cb$entries() {
+		return entries;
+	}
+	
+	private java.util.List<ItemStack> itemStacks;
+	
+	@Override
+	public boolean cb$isExact() {
+        return this.itemStacks != null;
+    }
+	
+	@Override
+	public java.util.List<ItemStack> cb$itemStacks() {
+		return this.itemStacks;
+	}
+	
+	@Override
+	public void cardboard$set_itemStacks(java.util.List<ItemStack> stacks) {
+		this.itemStacks = stacks;
+	}
+
+	// Paper end
+	
+	
+	// @Shadow public Entry[] entries;
     @Shadow public ItemStack[] matchingStacks;
     // @Shadow public void cacheMatchingStacks() {}
     
@@ -39,7 +72,21 @@ public class MixinIngredient implements IIngredient {
             at = @At("HEAD"),
             cancellable = true)
     private void banner$test(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-        for (ItemStack banner$stack : this.getMatchingStacks()) {
+
+    	if (exact_BF || this.cb$isExact()) {
+    		for (ItemStack itemstack1 : this.cb$itemStacks()) {
+    			if (itemstack1.getItem() == stack.getItem() && ItemStack.areItemsAndComponentsEqual(stack, itemstack1)) {
+    				cir.setReturnValue(true);
+    				return;
+    			}
+    		}
+    		cir.setReturnValue(false);
+    		return;
+    	}
+
+    	
+    	/*
+    	for (ItemStack banner$stack : this.getMatchingStacks()) {
             // CraftBukkit start
             if (exact_BF) {
             	
@@ -58,7 +105,30 @@ public class MixinIngredient implements IIngredient {
             }
             // CraftBukkit end
         }
+        */
     }
+    
+    @Inject(method = "equals(Ljava/lang/Object;)Z",
+            at = @At("RETURN"),
+            cancellable = true)
+    private void cardboard$does_ingredient_equal(Object other, CallbackInfoReturnable<Boolean> cir) {
+    	if (other instanceof Ingredient ingredient) {
+    		boolean paper_equals = Objects.equals(this.itemStacks, ((IIngredient)ingredient).cb$itemStacks());
+    		if (!paper_equals) {
+    			cir.setReturnValue(false);
+    			return;
+    		}
+    	}
+    }
+    
+    /*
+    @Override
+    public boolean equals(Object other) {
+    	// return other instanceof Ingredient ingredient && Objects.equals(this.values, ingredient.values);
+    	return other instanceof Ingredient ingredient && 
+    			Objects.equals(this.cb$entries(), ingredient.cb$entries()) && Objects.equals(this.itemStacks, ingredient.itemStacks);
+    }
+    */
     
     /*
     public boolean test(ItemStack itemstack) {

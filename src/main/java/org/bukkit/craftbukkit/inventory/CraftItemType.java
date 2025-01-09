@@ -18,7 +18,14 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.javazilla.bukkitfabric.Utils;
+import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
 
+import io.papermc.paper.datacomponent.DataComponentType;
+import io.papermc.paper.datacomponent.DataComponentType.Valued;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -46,6 +53,7 @@ import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.ItemRarity;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 /*
 import org.bukkit.craftbukkit.CraftWorld;
@@ -224,7 +232,8 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
     }
 
     public boolean isFuel() {
-        return AbstractFurnaceBlockEntity.canUseAsFuel(new net.minecraft.item.ItemStack(this.item));
+        return IMixinMinecraftServer.getServer().getFuelRegistry().isFuel(new net.minecraft.item.ItemStack(this.item));
+        // return AbstractFurnaceBlockEntity.canUseAsFuel(new net.minecraft.item.ItemStack(this.item));
     }
 
     public boolean isCompostable() {
@@ -237,8 +246,8 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
     }
 
     public ItemType getCraftingRemainingItem() {
-        Item expectedItem = this.item.getRecipeRemainder();
-        return expectedItem == null ? null : CraftItemType.minecraftToBukkitNew(expectedItem);
+        net.minecraft.item.ItemStack expectedItem = this.item.getRecipeRemainder();
+        return expectedItem.isEmpty() ? null : CraftItemType.minecraftToBukkitNew(expectedItem.getItem());
     }
 
     @NotNull
@@ -250,21 +259,24 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
         EquipmentSlot nmsSlot = Utils.getNMS(slot);
         return this.getDefaultAttributeModifiers((AttributeModifierSlot sg) -> sg.matches(nmsSlot));
     }
+    
+    private Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(final java.util.function.Predicate<net.minecraft.component.type.AttributeModifierSlot> slotPredicate) {
+        // Paper end - improve/fix item default attribute API
+        ImmutableMultimap.Builder<Attribute, AttributeModifier> defaultAttributes = ImmutableMultimap.builder();
 
-    private Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(Predicate<AttributeModifierSlot> slotPredicate) {
-        ImmutableMultimap.Builder defaultAttributes = ImmutableMultimap.builder();
         AttributeModifiersComponent nmsDefaultAttributes = this.item.getComponents().getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
-        if (nmsDefaultAttributes.modifiers().isEmpty()) {
-            nmsDefaultAttributes = this.item.getAttributeModifiers();
-        }
-        for (AttributeModifiersComponent.Entry entry : nmsDefaultAttributes.modifiers()) {
+        // Paper start - improve/fix item default attribute API
+        for (final net.minecraft.component.type.AttributeModifiersComponent.Entry entry : nmsDefaultAttributes.modifiers()) {
             if (!slotPredicate.test(entry.slot())) continue;
-            Attribute attribute = CardboardAttributable.minecraftHolderToBukkit(entry.attribute());
-            AttributeModifier modifier = CardboardAttributeInstance.convert(entry.modifier(), entry.slot());
+            final Attribute attribute = CardboardAttributable.minecraftHolderToBukkit(entry.attribute());
+            final AttributeModifier modifier = CardboardAttributeInstance.convert(entry.modifier(), entry.slot());
             defaultAttributes.put(attribute, modifier);
         }
+        // Paper end - improve/fix item default attribute API
+
         return defaultAttributes.build();
     }
+
 
     public CreativeCategory getCreativeCategory() {
         return CreativeCategory.BUILDING_BLOCKS;
@@ -297,5 +309,39 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
         Rarity rarity = this.item.getComponents().get(DataComponentTypes.RARITY);
         return rarity == null ? null : ItemRarity.valueOf((String)rarity.name());
 	}
+
+	@Override
+	public <T> @Nullable T getDefaultData(@NotNull Valued<T> type) {
+		return null;
+		// return (T)PaperDataComponentType.convertDataComponentValue(this.item.getComponents(), (PaperDataComponentType.ValuedImpl)type);
+	}
+
+	@Override
+	public boolean hasDefaultData(@NotNull DataComponentType type) {
+		return this.item.getComponents().contains(PaperDataComponentType_bukkitToMinecraft(type));
+	}
+
+	@Override
+	public @Unmodifiable @NotNull Set<DataComponentType> getDefaultDataTypes() {
+		return PaperDataComponentType_minecraftToBukkit(this.item.getComponents().getTypes());
+	}
+	
+	
+	// TODO: move to PaperDataComponentType
+	public static <T> net.minecraft.component.ComponentType<T> PaperDataComponentType_bukkitToMinecraft(final DataComponentType type) {
+        return CraftRegistry.bukkitToMinecraft(type);
+    }
+	
+	public static DataComponentType PaperDataComponentType_minecraftToBukkit(final net.minecraft.component.ComponentType<?> type) {
+        return CraftRegistry.minecraftToBukkit(type, RegistryKeys.DATA_COMPONENT_TYPE, Registry.DATA_COMPONENT_TYPE);
+    }
+	
+	public static Set<DataComponentType> PaperDataComponentType_minecraftToBukkit(final Set<net.minecraft.component.ComponentType<?>> nmsTypes) {
+        final Set<DataComponentType> types = new HashSet<>(nmsTypes.size());
+        for (final net.minecraft.component.ComponentType<?> nmsType : nmsTypes) {
+            types.add(PaperDataComponentType_minecraftToBukkit(nmsType));
+        }
+        return Collections.unmodifiableSet(types);
+    }
 	
 }

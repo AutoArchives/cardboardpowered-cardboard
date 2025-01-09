@@ -1,6 +1,7 @@
 package org.cardboardpowered.impl.entity;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.util.TriState;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
@@ -144,5 +145,20 @@ public class CardboardMinecart extends VehicleImpl implements Minecart {
         // TODO Auto-generated method stub
         
     }
+
+ // Paper start - Friction API
+    @org.jetbrains.annotations.NotNull
+    @Override
+    public net.kyori.adventure.util.TriState getFrictionState() {
+        return net.kyori.adventure.util.TriState.NOT_SET;
+    	//return this.getHandle().frictionState;
+    }
+
+    @Override
+    public void setFrictionState(@org.jetbrains.annotations.NotNull net.kyori.adventure.util.TriState state) {
+        java.util.Objects.requireNonNull(state, "state may not be null");
+        // this.getHandle().frictionState = state;
+    }
+    // Paper end - Friction API
 
 }

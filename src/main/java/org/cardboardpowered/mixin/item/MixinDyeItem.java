@@ -45,7 +45,7 @@ public class MixinDyeItem {
                 entitysheep.setColor(DyeColor.byId((byte) event.getColor().getWoolData()));
                 itemstack.decrement(1);
             }
-            return ActionResult.success(entityhuman.getWorld().isClient);
+            return ActionResult.SUCCESS; // ActionResult.success(entityhuman.getWorld().isClient);
         }
         return ActionResult.PASS;
     }

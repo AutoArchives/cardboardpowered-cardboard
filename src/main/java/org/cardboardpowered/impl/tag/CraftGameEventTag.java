@@ -27,7 +27,7 @@ public class CraftGameEventTag extends TagImpl<net.minecraft.world.event.GameEve
 	
 	@Override
 	public boolean isTagged(@NotNull GameEvent gameEvent) {
-	    return registry.entryOf(KEY_CACHE.computeIfAbsent(gameEvent, event -> RegistryKey.of(RegistryKeys.GAME_EVENT, CraftNamespacedKey.toMinecraft(event.getKey())))).isIn(tag);
+	    return registry.getOrThrow(KEY_CACHE.computeIfAbsent(gameEvent, event -> RegistryKey.of(RegistryKeys.GAME_EVENT, CraftNamespacedKey.toMinecraft(event.getKey())))).isIn(tag);
 	}
 
 	@Override

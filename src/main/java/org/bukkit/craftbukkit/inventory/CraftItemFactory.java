@@ -444,16 +444,16 @@ public final class CraftItemFactory implements ItemFactory {
     }
 
     private static ItemStack enchantItem(net.minecraft.util.math.random.Random source, ItemStack itemStack, int level, boolean allowTreasures) {
-    	itemStack = CraftItemStack.asCraftCopy(itemStack);
-        CraftItemStack craft = (CraftItemStack)itemStack;
+        itemStack = CraftItemStack.asCraftCopy(itemStack);
+        CraftItemStack craft = (CraftItemStack) itemStack;
         DynamicRegistryManager registry = CraftRegistry.getMinecraftRegistry();
-        Optional<Named<Enchantment>> optional = allowTreasures ? Optional.empty() : registry.get(RegistryKeys.ENCHANTMENT).getEntryList(EnchantmentTags.IN_ENCHANTING_TABLE);
+        Optional<RegistryEntryList.Named<Enchantment>> optional = (allowTreasures) ? Optional.empty() : registry.getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.IN_ENCHANTING_TABLE);
         return CraftItemStack.asCraftMirror(EnchantmentHelper.enchant(source, craft.handle, level, registry, optional));
     }
 
 	@Override
     public ItemStack enchantWithLevels(ItemStack itemStack, int levels, boolean allowTreasure, Random random) {
-        return this.enchantWithLevels(itemStack, levels, allowTreasure ? Optional.empty() : CraftServer.server.getRegistryManager().get(RegistryKeys.ENCHANTMENT).getEntryList(EnchantmentTags.IN_ENCHANTING_TABLE), random);
+        return this.enchantWithLevels(itemStack, levels, allowTreasure ? Optional.empty() : CraftServer.server.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.IN_ENCHANTING_TABLE), random);
     }
 
 	@Override

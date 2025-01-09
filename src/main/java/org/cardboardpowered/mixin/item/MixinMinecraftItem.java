@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(value = MinecartItem.class, priority = 999)
 public class MixinMinecraftItem {
 
-	@Shadow @Final private AbstractMinecartEntity.Type type;
+	// @Shadow @Final private AbstractMinecartEntity.Type type;
 
 	
     @Redirect(method = "useOnBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;spawnEntity(Lnet/minecraft/entity/Entity;)Z"))

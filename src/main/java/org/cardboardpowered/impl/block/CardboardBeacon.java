@@ -2,16 +2,23 @@ package org.cardboardpowered.impl.block;
 
 import net.kyori.adventure.text.Component;
 import net.minecraft.block.entity.BeaconBlockEntity;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.inventory.ContainerLock;
+import net.minecraft.predicate.ComponentPredicate;
+import net.minecraft.predicate.NumberRange;
+import net.minecraft.predicate.item.ItemPredicate;
 import net.minecraft.registry.Registries;
+import net.minecraft.text.Text;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Beacon;
 import org.bukkit.block.Block;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.Nullable;
@@ -20,6 +27,8 @@ import me.isaiah.common.cmixin.IMixinBeaconBlockEntity;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
 
 public class CardboardBeacon extends CardboardBlockEntityState<BeaconBlockEntity> implements Beacon {
 
@@ -91,17 +100,33 @@ public class CardboardBeacon extends CardboardBlockEntityState<BeaconBlockEntity
 
     @Override
     public boolean isLocked() {
-        return !this.getSnapshot().lock.key.isEmpty();
+    	return this.getSnapshot().lock != ContainerLock.EMPTY;
     }
 
     @Override
     public String getLock() {
-        return this.getSnapshot().lock.key;
+        Optional<? extends Text> customName = this.getSnapshot().lock.predicate().components().toChanges().get(DataComponentTypes.CUSTOM_NAME);
+
+        return (customName != null) ? customName.map(CraftChatMessage::fromComponent).orElse("") : "";
     }
 
     @Override
     public void setLock(String key) {
-        this.getSnapshot().lock = (key == null) ? ContainerLock.EMPTY : new ContainerLock(key);
+        if (key == null) {
+            this.getSnapshot().lock = ContainerLock.EMPTY;
+        } else {
+            ComponentPredicate predicate = ComponentPredicate.builder().add(DataComponentTypes.CUSTOM_NAME, CraftChatMessage.fromStringOrNull(key)).build();
+            this.getSnapshot().lock = new ContainerLock(new ItemPredicate(Optional.empty(), NumberRange.IntRange.ANY, predicate, Collections.emptyMap()));
+        }
+    }
+    
+    @Override
+    public void setLockItem(ItemStack key) {
+        if (key == null) {
+            this.getSnapshot().lock = ContainerLock.EMPTY;
+        } else {
+            this.getSnapshot().lock = new ContainerLock(CraftItemStack.asCriterionConditionItem(key));
+        }
     }
 
     @Override

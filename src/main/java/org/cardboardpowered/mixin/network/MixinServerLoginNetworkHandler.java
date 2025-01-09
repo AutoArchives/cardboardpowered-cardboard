@@ -296,7 +296,7 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
     @Shadow
     private void sendSuccessPacket(GameProfile profile) {
         this.state = State.PROTOCOL_SWITCHING;
-        this.connection.send(new LoginSuccessS2CPacket(profile, true));
+        this.connection.send(new LoginSuccessS2CPacket(profile));
     }
 	
 

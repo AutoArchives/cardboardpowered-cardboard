@@ -10,6 +10,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Shearable;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.BlockPointer;
 
@@ -59,11 +60,17 @@ public class MixinShearsDispenserBehavior {
         }
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Shearable;sheared(Lnet/minecraft/sound/SoundCategory;)V"),
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Shearable;sheared(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/sound/SoundCategory;Lnet/minecraft/item/ItemStack;)V"),
             method = "tryShearEntity")
-    private static void doEvent(Shearable s, SoundCategory cat) {
-        if (!callBlockShearEntityEvent((LivingEntity)s, cardboard_block, cardboard_saved, Shearable_generateDefaultDrops()).isCancelled()) {
-            s.sheared(cat);
+    private static void doEvent(ServerWorld sworld, Shearable s, SoundCategory cat, ItemStack stack) {
+    	BlockShearEntityEvent event = callBlockShearEntityEvent((LivingEntity)s, cardboard_block, cardboard_saved, Shearable_generateDefaultDrops());
+    	if (!event.isCancelled()) {
+           
+    		CraftItemStack.asNMSCopy(event.getDrops());
+    		s.sheared(sworld, SoundCategory.BLOCKS, stack);
+        	// s.sheared(sworld, SoundCategory.BLOCKS, stack, CraftItemStack.asNMSCopy(event.getDrops()));
+        	
+        	// s.sheared(cat);
         }
     }
     

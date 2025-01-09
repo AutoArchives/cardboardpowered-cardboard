@@ -10,15 +10,24 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.ComplexRecipe;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.CraftingRecipe;
 
-public class CardboardComplexRecipe implements RecipeInterface, ComplexRecipe {
+public class CardboardComplexRecipe extends CraftingRecipe implements RecipeInterface, ComplexRecipe {
 
-    private final RecipeEntry<SpecialCraftingRecipe> recipe;
+    // private final RecipeEntry<SpecialCraftingRecipe> recipe;
 
-    public CardboardComplexRecipe(RecipeEntry<SpecialCraftingRecipe> recipe) {
+    //public CardboardComplexRecipe(RecipeEntry<SpecialCraftingRecipe> recipe) {
+    //    this.recipe = recipe;
+    //}
+    
+    private final SpecialCraftingRecipe recipe;
+
+    public CardboardComplexRecipe(NamespacedKey key, ItemStack result, SpecialCraftingRecipe recipe) {
+        super(key, result);
         this.recipe = recipe;
     }
 
+    /*
     @Override
     public ItemStack getResult() {
         return CraftItemStack.asCraftMirror(recipe.value().getResult(DynamicRegistryManager.EMPTY));
@@ -33,5 +42,12 @@ public class CardboardComplexRecipe implements RecipeInterface, ComplexRecipe {
     public void addToCraftingManager() {
         ((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(recipe);
     }
+    */
+    
+    @Override
+    public void addToCraftingManager() {
+    	((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(new RecipeEntry<>(RecipeInterface.toMinecraft(this.getKey()), this.recipe));
+    }
+    
 
 }

@@ -203,7 +203,15 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
             reason = getHandle().getDamageSources().mobAttack(((LivingEntityImpl) source).getHandle());
         }
 
-        nms.damage(reason, (float) arg0);
+        // nms.damage(reason, (float) arg0);
+        damage(arg0, reason);
+    }
+    
+    private void damage(double amount, DamageSource damageSource) {
+        // Preconditions.checkArgument(damageSource != null, "damageSource cannot be null");
+        // Preconditions.checkState(!this.getHandle().generation, "Cannot damage entity during world generation");
+
+        this.getHandle().serverDamage(damageSource, (float) amount);
     }
 
     @Override
@@ -551,7 +559,10 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
     private boolean unleash() {
         if (!isLeashed())
             return false;
-        ((MobEntity) getHandle()).detachLeash(true, false);
+        // ((MobEntity) getHandle()).detachLeash(true, false);
+        
+        ((MobEntity) getHandle()).detachLeash();
+        
         return true;
     }
 
@@ -854,13 +865,13 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 		ServerWorld world = ((WorldImpl)this.getWorld()).getHandle();
         ProjectileEntity launch = null;
         if (Snowball.class.isAssignableFrom(projectile)) {
-            launch = new SnowballEntity(world, this.getHandle());
+            launch = new SnowballEntity(world, this.getHandle(), new net.minecraft.item.ItemStack(Items.SNOWBALL));
             ((ThrownEntity)launch).setVelocity(this.getHandle(), this.getHandle().getPitch(), this.getHandle().getYaw(), 0.0f, 1.5f, 1.0f);
         } else if (Egg.class.isAssignableFrom(projectile)) {
-            launch = new EggEntity(world, this.getHandle());
+            launch = new EggEntity(world, this.getHandle(), new net.minecraft.item.ItemStack(Items.EGG));
             ((ThrownEntity)launch).setVelocity(this.getHandle(), this.getHandle().getPitch(), this.getHandle().getYaw(), 0.0f, 1.5f, 1.0f);
         } else if (EnderPearl.class.isAssignableFrom(projectile)) {
-            launch = new EnderPearlEntity(world, this.getHandle());
+            launch = new EnderPearlEntity(world, this.getHandle(), new net.minecraft.item.ItemStack(Items.ENDER_PEARL));
             ((ThrownEntity)launch).setVelocity(this.getHandle(), this.getHandle().getPitch(), this.getHandle().getYaw(), 0.0f, 1.5f, 1.0f);
         } else if (AbstractArrow.class.isAssignableFrom(projectile)) {
             if (TippedArrow.class.isAssignableFrom(projectile)) {
@@ -872,18 +883,22 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
             ((PersistentProjectileEntity)launch).setVelocity(this.getHandle(), this.getHandle().getPitch(), this.getHandle().getYaw(), 0.0f, Trident.class.isAssignableFrom(projectile) ? 2.5f : 3.0f, 1.0f);
         } else if (ThrownPotion.class.isAssignableFrom(projectile)) {
             if (LingeringPotion.class.isAssignableFrom(projectile)) {
-                launch = new PotionEntity(world, this.getHandle());
+                launch = new PotionEntity(world, this.getHandle(), new net.minecraft.item.ItemStack(Items.LINGERING_POTION));
                 ((PotionEntity)launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(Material.LINGERING_POTION, 1)));
             } else {
-                launch = new PotionEntity(world, this.getHandle());
+                launch = new PotionEntity(world, this.getHandle(), new net.minecraft.item.ItemStack(Items.SPLASH_POTION));
                 ((PotionEntity)launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(Material.SPLASH_POTION, 1)));
             }
             ((ThrownEntity)launch).setVelocity(this.getHandle(), this.getHandle().getPitch(), this.getHandle().getYaw(), -20.0f, 0.5f, 1.0f);
         } else if (ThrownExpBottle.class.isAssignableFrom(projectile)) {
-            launch = new ExperienceBottleEntity(world, this.getHandle());
+            launch = new ExperienceBottleEntity(world, this.getHandle(), new net.minecraft.item.ItemStack(Items.EXPERIENCE_BOTTLE));
             ((ThrownEntity)launch).setVelocity(this.getHandle(), this.getHandle().getPitch(), this.getHandle().getYaw(), -20.0f, 0.7f, 1.0f);
         } else if (FishHook.class.isAssignableFrom(projectile) && this.getHandle() instanceof PlayerEntity) {
-            launch = new FishingBobberEntity((PlayerEntity)this.getHandle(), world, 0, 0);
+            // launch = new FishingBobberEntity((PlayerEntity)this.getHandle(), world, 0, 0, new net.minecraft.item.ItemStack(Items.FISHING_ROD));
+            
+        	launch = net.minecraft.entity.EntityType.FISHING_BOBBER.create(world, net.minecraft.entity.SpawnReason.COMMAND);
+        	// launch.refreshPositionAndAngles(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+            
         } else if (Fireball.class.isAssignableFrom(projectile)) {
             Location location = this.getEyeLocation();
             Vector direction = location.getDirection().multiply(10);
@@ -896,8 +911,8 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
                 launch = new DragonFireballEntity(world, this.getHandle(), vec);
             } else if (AbstractWindCharge.class.isAssignableFrom(projectile)) {
                 launch = BreezeWindCharge.class.isAssignableFrom(projectile)
-                		? net.minecraft.entity.EntityType.BREEZE_WIND_CHARGE.create(world)
-                		: net.minecraft.entity.EntityType.WIND_CHARGE.create(world);
+                		? net.minecraft.entity.EntityType.BREEZE_WIND_CHARGE.create(world, net.minecraft.entity.SpawnReason.TRIGGERED)
+                		: net.minecraft.entity.EntityType.WIND_CHARGE.create(world, net.minecraft.entity.SpawnReason.TRIGGERED);
                 ((AbstractWindChargeEntity)launch).setOwner(this.getHandle());
                 ((AbstractWindChargeEntity)launch).setVelocity(this.getHandle(), this.getHandle().getPitch(), this.getHandle().getYaw(), 0.0f, 1.5f, 1.0f);
             } else {
@@ -909,7 +924,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
         } else if (LlamaSpit.class.isAssignableFrom(projectile)) {
             Location location = this.getEyeLocation();
             Vector direction = location.getDirection();
-            launch = net.minecraft.entity.EntityType.LLAMA_SPIT.create(world);
+            launch = net.minecraft.entity.EntityType.LLAMA_SPIT.create(world, net.minecraft.entity.SpawnReason.TRIGGERED);
             ((LlamaSpitEntity)launch).setOwner(this.getHandle());
             ((LlamaSpitEntity)launch).setVelocity(direction.getX(), direction.getY(), direction.getZ(), 1.5f, 10.0f);
             launch.refreshPositionAndAngles(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());

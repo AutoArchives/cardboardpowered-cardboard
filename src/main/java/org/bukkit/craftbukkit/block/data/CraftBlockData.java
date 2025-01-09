@@ -18,6 +18,7 @@ import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.EnumProperty;
@@ -43,6 +44,7 @@ import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.structure.Mirror;
 import org.bukkit.block.structure.StructureRotation;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftSoundGroup;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockStates;
@@ -570,7 +572,7 @@ public class CraftBlockData implements BlockData {
                 }
 
                 StringReader reader = new StringReader(data);
-                BlockArgumentParser.BlockResult arg = BlockArgumentParser.block(Registries.BLOCK.getReadOnlyWrapper(), reader, false);
+                BlockArgumentParser.BlockResult arg = BlockArgumentParser.block(CraftRegistry.getMinecraftRegistry(RegistryKeys.BLOCK), reader, false);
                 Preconditions.checkArgument(!reader.canRead(), "Spurious trailing data: " + data);
 
                 blockData = arg.blockState();
@@ -609,7 +611,7 @@ public class CraftBlockData implements BlockData {
                     data = Registries.BLOCK.getId(block) + (String)data;
                 }
                 StringReader reader = new StringReader((String)data);
-                BlockArgumentParser.BlockResult arg = BlockArgumentParser.block(Registries.BLOCK.getReadOnlyWrapper(), reader, false);
+                BlockArgumentParser.BlockResult arg = BlockArgumentParser.block(CraftRegistry.getMinecraftRegistry(RegistryKeys.BLOCK), reader, false);
                 Preconditions.checkArgument((!reader.canRead() ? 1 : 0) != 0, (Object)("Spurious trailing data: " + (String)data));
                 blockData = arg.blockState();
                 parsed = arg.properties();
@@ -756,7 +758,7 @@ public class CraftBlockData implements BlockData {
 	        net.minecraft.item.ItemStack nmsItemStack = CraftItemStack.unwrap(itemStack);
 	        float speed = nmsItemStack.getMiningSpeedMultiplier(this.state);
 	        if (speed > 1.0f && considerEnchants) {
-	            RegistryEntry<EntityAttribute> attribute = EntityAttributes.PLAYER_MINING_EFFICIENCY;
+	            RegistryEntry<EntityAttribute> attribute = EntityAttributes.MINING_EFFICIENCY;
 	            double initialBaseValue = attribute.value().getDefaultValue();
 	            MutableDouble modifiedBaseValue = new MutableDouble(initialBaseValue);
 	            MutableDouble baseValMul = new MutableDouble(1.0);
@@ -835,7 +837,7 @@ public class CraftBlockData implements BlockData {
 	                    data = String.valueOf(Registries.BLOCK.getId(block)) + (String)data;
 	                }
 	                StringReader reader = new StringReader((String)data);
-	                BlockArgumentParser.BlockResult arg = BlockArgumentParser.block(Registries.BLOCK.getReadOnlyWrapper(), reader, false);
+	                BlockArgumentParser.BlockResult arg = BlockArgumentParser.block(CraftRegistry.getMinecraftRegistry(RegistryKeys.BLOCK), reader, false);
 	                Preconditions.checkArgument((!reader.canRead() ? 1 : 0) != 0, (Object)("Spurious trailing data: " + (String)data));
 	                blockData = arg.blockState();
 	                parsed = arg.properties();

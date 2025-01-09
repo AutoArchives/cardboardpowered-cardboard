@@ -139,12 +139,14 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
         this.bukkit = getEntity(CraftServer.INSTANCE, (Entity)(Object)this);
     }
 
+    /*
     public void sendSystemMessage(Text message) {
         // TODO: 1.19
     	
     	((Entity) (Object) this).sendMessage(message);
     	//((Entity) (Object) this).sendSystemMessage(message, UUID.randomUUID());
     }
+    */
 
     public boolean valid = false;
     public boolean cardboard$inWorld = false;
@@ -448,7 +450,7 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
             case DYING:
                 b = Pose.DYING;
                 break;
-            case FALL_FLYING:
+            case GLIDING:
                 b = Pose.FALL_FLYING;
                 break;
             case LONG_JUMPING:

@@ -5,7 +5,7 @@ accessible	field	net/minecraft/network/packet/c2s/handshake/HandshakeC2SPacket	a
 accessible	method	net/minecraft/server/ServerConfigEntry	getKey	()Ljava/lang/Object;
 accessible	field	net/minecraft/entity/boss/BossBar	color	Lnet/minecraft/entity/boss/BossBar$Color;
 accessible	method	net/minecraft/entity/decoration/AbstractDecorationEntity	setFacing	(Lnet/minecraft/util/math/Direction;)V
-accessible	field	net/minecraft/block/entity/AbstractFurnaceBlockEntity	burnTime	I
+accessible	field	net/minecraft/block/entity/AbstractFurnaceBlockEntity	litTimeRemaining	I
 accessible	field	net/minecraft/network/ClientConnection	address	Ljava/net/SocketAddress;
 accessible	field	net/minecraft/entity/boss/dragon/EnderDragonEntity	parts	[Lnet/minecraft/entity/boss/dragon/EnderDragonPart;
 accessible	field	net/minecraft/network/packet/s2c/play/PlayerSpawnPositionS2CPacket	pos	Lnet/minecraft/util/math/BlockPos;
@@ -90,7 +90,7 @@ mutable	field	net/minecraft/entity/LivingEntity	activeItemStack	Lnet/minecraft/i
 accessible	field	net/minecraft/entity/LivingEntity	lastDamageTime	J
 mutable	field	net/minecraft/entity/LivingEntity	lastDamageTime	J
 accessible	field	net/minecraft/entity/LivingEntity	brain	Lnet/minecraft/entity/ai/brain/Brain;
-accessible	method	net/minecraft/entity/LivingEntity	shouldAlwaysDropXp	()Z
+accessible	method	net/minecraft/entity/LivingEntity	shouldAlwaysDropExperience	()Z
 accessible	method	net/minecraft/entity/LivingEntity	knockback	(Lnet/minecraft/entity/LivingEntity;)V
 accessible	method	net/minecraft/entity/LivingEntity	onKilledBy	(Lnet/minecraft/entity/LivingEntity;)V
 accessible	method	net/minecraft/entity/LivingEntity	dropInventory	()V
@@ -484,8 +484,8 @@ accessible field net/minecraft/entity/player/PlayerEntity inventory Lnet/minecra
 accessible field net/minecraft/entity/Entity yaw F
 accessible field net/minecraft/entity/Entity pitch F
 accessible field net/minecraft/entity/player/PlayerEntity abilities Lnet/minecraft/entity/player/PlayerAbilities;
-accessible field net/minecraft/world/ChunkSerializer CODEC Lcom/mojang/serialization/Codec;
-accessible method net/minecraft/world/biome/Biome getTemperature (Lnet/minecraft/util/math/BlockPos;)F
+accessible field net/minecraft/world/chunk/SerializedChunk CODEC Lcom/mojang/serialization/Codec;
+accessible method net/minecraft/world/biome/Biome getTemperature (Lnet/minecraft/util/math/BlockPos;I)F
 accessible field net/minecraft/server/MinecraftServer resourceManagerHolder Lnet/minecraft/server/MinecraftServer$ResourceManagerHolder;
 accessible field net/minecraft/entity/projectile/FireworkRocketEntity ITEM Lnet/minecraft/entity/data/TrackedData;
 accessible field net/minecraft/entity/projectile/FireworkRocketEntity SHOT_AT_ANGLE Lnet/minecraft/entity/data/TrackedData;
@@ -493,8 +493,8 @@ accessible field net/minecraft/entity/projectile/FireworkRocketEntity lifeTime I
 accessible class net/minecraft/server/MinecraftServer$ResourceManagerHolder
 accessible method net/minecraft/block/DispenserBlock dispense (Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;)V
 accessible method net/minecraft/block/DropperBlock dispense (Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;)V
-accessible field net/minecraft/block/entity/AbstractFurnaceBlockEntity cookTime I
-accessible field net/minecraft/block/entity/AbstractFurnaceBlockEntity cookTimeTotal I
+accessible field net/minecraft/block/entity/AbstractFurnaceBlockEntity cookingTimeSpent I
+accessible field net/minecraft/block/entity/AbstractFurnaceBlockEntity cookingTotalTime I
 accessible field net/minecraft/block/spawner/MobSpawnerLogic spawnDelay I
 accessible field net/minecraft/block/spawner/MobSpawnerLogic minSpawnDelay I
 accessible field net/minecraft/block/spawner/MobSpawnerLogic maxNearbyEntities I
@@ -512,7 +512,7 @@ accessible field net/minecraft/resource/featuretoggle/FeatureFlag universe Lnet/
 accessible field net/minecraft/resource/ResourcePackProfile packFactory Lnet/minecraft/resource/ResourcePackProfile$PackFactory;
 accessible field net/minecraft/server/world/ServerWorld worldProperties Lnet/minecraft/world/level/ServerWorldProperties;
 accessible field net/minecraft/entity/LivingEntity STUCK_ARROW_COUNT Lnet/minecraft/entity/data/TrackedData;
-accessible field net/minecraft/entity/player/PlayerEntity enchantmentTableSeed I
+accessible field net/minecraft/entity/player/PlayerEntity enchantingTableSeed I
 accessible field net/minecraft/entity/FallingBlockEntity fallHurtAmount F
 accessible field net/minecraft/entity/FallingBlockEntity fallHurtMax I
 accessible method net/minecraft/entity/vehicle/TntMinecartEntity explode (D)V
@@ -538,8 +538,8 @@ accessible field net/minecraft/item/BlockPredicatesChecker predicates Ljava/util
 accessible class net/minecraft/registry/Registries$Initializer
 accessible class net/minecraft/server/network/ServerPlayerEntity$RespawnPos
 accessible class net/minecraft/registry/RegistryLoader$Loader
-accessible method net/minecraft/entity/LivingEntity getXpToDrop ()I
-accessible method net/minecraft/entity/mob/MobEntity getXpToDrop ()I
+accessible method net/minecraft/entity/LivingEntity getExperienceToDrop (Lnet/minecraft/server/world/ServerWorld;)I
+accessible method net/minecraft/entity/mob/MobEntity getExperienceToDrop (Lnet/minecraft/server/world/ServerWorld;)I
 accessible method net/minecraft/server/network/ServerPlayerEntity findRespawnPosition (Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;FZZ)Ljava/util/Optional;
 accessible method net/minecraft/entity/LivingEntity getEquipmentBreakStatus (Lnet/minecraft/entity/EquipmentSlot;)B
 accessible method net/minecraft/entity/projectile/PersistentProjectileEntity setPierceLevel (B)V
@@ -549,3 +549,15 @@ mutable field net/minecraft/server/dedicated/MinecraftDedicatedServer serverLink
 accessible method net/minecraft/registry/SimpleRegistry assertNotFrozen (Lnet/minecraft/registry/RegistryKey;)V
 accessible field net/minecraft/registry/ServerDynamicRegistryType STATIC_REGISTRY_MANAGER Lnet/minecraft/registry/DynamicRegistryManager$Immutable;
 accessible field net/minecraft/registry/RegistryOps registryInfoGetter Lnet/minecraft/registry/RegistryOps$RegistryInfoGetter;
+accessible field net/minecraft/recipe/SingleStackRecipe result Lnet/minecraft/item/ItemStack;
+accessible method net/minecraft/recipe/SingleStackRecipe result ()Lnet/minecraft/item/ItemStack;
+accessible method net/minecraft/recipe/SingleStackRecipe ingredient ()Lnet/minecraft/recipe/Ingredient;
+accessible field net/minecraft/recipe/SingleStackRecipe ingredient Lnet/minecraft/recipe/Ingredient;
+accessible field net/minecraft/recipe/ShapelessRecipe ingredients Ljava/util/List;
+accessible field net/minecraft/recipe/ShapelessRecipe result Lnet/minecraft/item/ItemStack;
+accessible field net/minecraft/recipe/ShapedRecipe result Lnet/minecraft/item/ItemStack;
+accessible field net/minecraft/entity/vehicle/TntMinecartEntity explosionPower F
+accessible field net/minecraft/entity/vehicle/TntMinecartEntity explosionSpeedFactor F
+accessible class net/minecraft/entity/player/ItemCooldownManager$Entry
+accessible field net/minecraft/entity/player/ItemCooldownManager entries Ljava/util/Map;
+accessible field net/minecraft/entity/player/ItemCooldownManager tick I

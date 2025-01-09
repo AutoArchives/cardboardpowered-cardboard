@@ -1,5 +1,6 @@
 package org.cardboardpowered.impl.tag;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -12,6 +13,7 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry.Reference;
 
 public class FluidTagImpl extends TagImpl<Fluid, org.bukkit.Fluid> {
 
@@ -20,7 +22,15 @@ public class FluidTagImpl extends TagImpl<Fluid, org.bukkit.Fluid> {
     }
 
     public boolean isTagged(org.bukkit.Fluid fluid) {
-        return this.registry.entryOf(RegistryKey.of(RegistryKeys.FLUID, CraftNamespacedKey.toMinecraft(fluid.getKey()))).isIn(this.tag);
+    	 
+    	Optional<Reference<Fluid>> aa = this.registry.getEntry( CraftNamespacedKey.toMinecraft(fluid.getKey()) );
+    	if (aa.isEmpty()) {
+    		return false;
+    	}
+    	
+    	return aa.get().isIn(this.tag);
+    	
+        // this.registry.entryOf(RegistryKey.of(RegistryKeys.FLUID, CraftNamespacedKey.toMinecraft(fluid.getKey()))).isIn(this.tag);
     }
 
     public Set<org.bukkit.Fluid> getValues() {

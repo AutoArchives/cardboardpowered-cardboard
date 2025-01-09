@@ -68,7 +68,7 @@ public class CardboardAttributable implements Attributable {
     public static EntityAttribute bukkitToMinecraft(Attribute bukkit) {
         // Preconditions.checkArgument((bukkit != null ? 1 : 0) != 0);
     	
-    	return Registries.ATTRIBUTE.getOrEmpty(CraftNamespacedKey.toMinecraft(bukkit.getKey())).orElseThrow();
+    	return Registries.ATTRIBUTE.getOptionalValue(CraftNamespacedKey.toMinecraft(bukkit.getKey())).orElseThrow();
     	
         // return (EntityAttribute)CraftRegistry.getMinecraftRegistry(RegistryKeys.ATTRIBUTE).getOrEmpty(CraftNamespacedKey.toMinecraft(bukkit.getKey())).orElseThrow();
     }
@@ -97,7 +97,7 @@ public class CardboardAttributable implements Attributable {
     public static Attribute minecraftToBukkit(EntityAttribute minecraft) {
         // Preconditions.checkArgument((minecraft != null ? 1 : 0) != 0);
     	
-    	net.minecraft.registry.Registry<EntityAttribute> registry = ICommonMod.getIServer().getMinecraft().getRegistryManager().get(RegistryKeys.ATTRIBUTE);
+    	net.minecraft.registry.Registry<EntityAttribute> registry = ICommonMod.getIServer().getMinecraft().getRegistryManager().getOrThrow(RegistryKeys.ATTRIBUTE);
     	
         // net.minecraft.registry.Registry registry = CraftRegistry.getMinecraftRegistry(RegistryKeys.ATTRIBUTE);
         Attribute bukkit = (Attribute)Registry.ATTRIBUTE.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft).orElseThrow().getValue()));

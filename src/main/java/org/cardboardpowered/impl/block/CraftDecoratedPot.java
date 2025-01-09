@@ -70,7 +70,8 @@ public class CraftDecoratedPot extends CardboardBlockEntityState<DecoratedPotBlo
     }
 
     public List<Material> getShards() {
-        return ((DecoratedPotBlockEntity)this.getSnapshot()).getSherds().stream().stream().map(CraftItemType::minecraftToBukkit).collect(Collectors.toUnmodifiableList());
+        return this.getSnapshot().getSherds().toList().stream().map(CraftItemType::minecraftToBukkit).collect(Collectors.toUnmodifiableList());
+    	// return ((DecoratedPotBlockEntity)this.getSnapshot()).getSherds().stream().stream().map(CraftItemType::minecraftToBukkit).collect(Collectors.toUnmodifiableList());
     }
 
     @Override

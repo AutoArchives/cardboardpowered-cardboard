@@ -30,10 +30,13 @@ import java.util.List;
 @Mixin(value = ArmorItem.class, priority = 900)
 public class MixinArmorItem {
 
+	// TODO 1.21.4
+	
     /**
      * @reason .
      * @author .
      */
+	/*
     @Overwrite
     public static boolean dispenseArmor(BlockPointer isourceblock, ItemStack itemstack) {
         BlockPos blockposition = isourceblock.pos().offset((Direction) isourceblock.state().get(DispenserBlock.FACING));
@@ -79,5 +82,6 @@ public class MixinArmorItem {
             return true;
         }
     }
+    */
 
 }

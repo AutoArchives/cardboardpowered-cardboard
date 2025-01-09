@@ -222,7 +222,8 @@ public class BukkitEventFactory {
 
     public static BlockIgniteEvent callBlockIgniteEvent(World world, int x, int y, int z, Explosion explosion) {
         org.bukkit.World bukkitWorld = ((IMixinWorld) world).getWorldImpl();
-        org.bukkit.entity.Entity igniter = explosion.entity == null ? null : ((IMixinEntity)explosion.entity).getBukkitEntity();
+        // org.bukkit.entity.Entity igniter = explosion.entity == null ? null : ((IMixinEntity)explosion.entity).getBukkitEntity();
+        org.bukkit.entity.Entity igniter = explosion.getEntity() == null ? null : explosion.getEntity().getBukkitEntity();
 
         BlockIgniteEvent event = new BlockIgniteEvent(bukkitWorld.getBlockAt(x, y, z), IgniteCause.EXPLOSION, igniter);
         CraftServer.INSTANCE.getPluginManager().callEvent(event);
@@ -567,7 +568,7 @@ public class BukkitEventFactory {
 
         NamespacedKey key = null; // CraftNamespacedKey.fromMinecraft(((IMixinLootManager)world.getHandle().getServer().getLootManager()).getLootTableToKeyMapBF().get(lootTable));
 
-        Registry<LootTable> reg = CraftServer.server.getRegistryManager().get(RegistryKeys.LOOT_TABLE);
+        Registry<LootTable> reg = CraftServer.server.getRegistryManager().getOrThrow(RegistryKeys.LOOT_TABLE);
         Optional<RegistryKey<LootTable>> opt = reg.getKey(lootTable);
         if (opt.isPresent()) {
         	key = LootTableImpl.minecraftToBukkitKey(opt.get());
@@ -617,8 +618,8 @@ public class BukkitEventFactory {
     public int LivingEntity_getExpReward(net.minecraft.entity.LivingEntity thiz) {
 
         if (thiz.getWorld() instanceof ServerWorld && !thiz.isExperienceDroppingDisabled()
-        		&& (thiz.shouldAlwaysDropXp() || thiz.playerHitTimer > 0 && thiz.shouldDropXp() && thiz.getWorld().getGameRules().getBoolean(GameRules.DO_MOB_LOOT))) {
-            int exp = thiz.getXpToDrop();
+        		&& (thiz.shouldAlwaysDropExperience() || thiz.playerHitTimer > 0 && thiz.shouldDropExperience() && ((ServerWorld)thiz.getWorld()).getGameRules().getBoolean(GameRules.DO_MOB_LOOT))) {
+            int exp = thiz.getExperienceToDrop((ServerWorld) thiz.getWorld());
             return exp;
         } else {
             return 0;

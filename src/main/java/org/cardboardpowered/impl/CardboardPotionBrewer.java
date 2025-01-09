@@ -41,7 +41,7 @@ public class CardboardPotionBrewer implements PotionBrewer {
         
         List<StatusEffectInstance> mcEffects = new ArrayList<>();// Potion.byId(ss).getEffects();
 
-        ICommonMod.getIServer().getMinecraft().getRegistryManager().get(RegistryKeys.STATUS_EFFECT);
+        ICommonMod.getIServer().getMinecraft().getRegistryManager().getOrThrow(RegistryKeys.STATUS_EFFECT);
         Optional<Reference<StatusEffect>> opt = Registries.STATUS_EFFECT.getEntry(Identifier.of(ss));
         
         mcEffects.add(new StatusEffectInstance(opt.get()));

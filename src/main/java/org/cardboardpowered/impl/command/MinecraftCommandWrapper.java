@@ -5,6 +5,8 @@ import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.world.ServerWorld;
+
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -61,7 +63,7 @@ public final class MinecraftCommandWrapper extends BukkitCommand {
         if (s instanceof PlayerImpl)
             return ((PlayerImpl)s).getHandle().getCommandSource();
         if (s instanceof CraftEntity)
-            return ((CraftEntity)s).getHandle().getCommandSource();
+            return ((CraftEntity)s).getHandle().getCommandSource( (ServerWorld) ((CraftEntity)s).getWorld() );
         if (s instanceof ConsoleCommandSender)
             return ((CraftServer) s.getServer()).getServer().getCommandSource();
 

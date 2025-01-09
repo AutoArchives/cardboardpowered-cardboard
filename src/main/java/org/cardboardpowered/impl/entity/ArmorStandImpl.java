@@ -163,7 +163,7 @@ public class ArmorStandImpl extends LivingEntityImpl implements ArmorStand {
 
     @Override
     public boolean hasBasePlate() {
-        return !getHandle().shouldHideBasePlate();
+        return getHandle().shouldShowBasePlate();
     }
 
     @Override

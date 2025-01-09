@@ -1,40 +1,16 @@
 package com.javazilla.bukkitfabric.impl;
 
-import com.google.common.base.Preconditions;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
-import net.minecraft.entity.Entity;
 import net.minecraft.loot.LootTable;
-import net.minecraft.loot.context.LootContextParameter;
-import net.minecraft.loot.context.LootContextParameterSet;
-import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.loot.context.LootContextType;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.entity.CraftEntity;
-import org.bukkit.craftbukkit.entity.CraftHumanEntity;
-import org.bukkit.craftbukkit.inventory.CraftInventory;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.util.CraftNamespacedKey;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.loot.LootContext;
-import org.cardboardpowered.impl.world.WorldImpl;
-import org.jetbrains.annotations.Nullable;
 
-public class LootTableImpl implements org.bukkit.loot.LootTable {
+public class LootTableImpl extends org.bukkit.craftbukkit.CraftLootTable {
 
+	public LootTableImpl(NamespacedKey key, LootTable handle) {
+		super(key, handle);
+	}
+//implements org.bukkit.loot.LootTable {
+
+	/*
     public static final LootContextParameter<Integer> LOOTING_MOD = new LootContextParameter<>(Identifier.of("bukkit:looting_mod")); // CraftBukkit
 	
     private final LootTable handle;
@@ -199,4 +175,6 @@ public class LootTableImpl implements org.bukkit.loot.LootTable {
         org.bukkit.loot.LootTable table = (org.bukkit.loot.LootTable) obj;
         return table.getKey().equals(this.getKey());
     }
+    */
+    
 }

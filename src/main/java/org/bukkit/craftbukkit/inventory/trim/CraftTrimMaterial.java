@@ -3,7 +3,7 @@ package org.bukkit.craftbukkit.inventory.trim;
 import com.google.common.base.Preconditions;
 import java.util.Objects;
 import net.kyori.adventure.text.Component;
-import net.minecraft.item.trim.ArmorTrimMaterial;
+import net.minecraft.item.equipment.trim.ArmorTrimMaterial;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.TranslatableTextContent;

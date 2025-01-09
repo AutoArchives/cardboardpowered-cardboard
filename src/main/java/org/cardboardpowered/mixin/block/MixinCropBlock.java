@@ -55,12 +55,15 @@ public abstract class MixinCropBlock extends PlantBlock {
                     "ZLnet/minecraft/entity/Entity;)Z"))
     private void bukkit_entityChangeBlockEvent(BlockState state, World world, BlockPos pos, Entity entity,
                                                CallbackInfo ci) {
-        if (BukkitEventFactory
-                .callEntityChangeBlockEvent(entity, pos, Blocks.AIR.getDefaultState(), !world.getGameRules()
-                        .getBoolean(GameRules.DO_MOB_GRIEFING))
-                .isCancelled()) {
-            super.onEntityCollision(state, world, pos, entity);
-            ci.cancel();
-        }
+    	if (world instanceof ServerWorld) {
+            ServerWorld sworld = (ServerWorld)world;
+	    	if (BukkitEventFactory
+	                .callEntityChangeBlockEvent(entity, pos, Blocks.AIR.getDefaultState(), !sworld.getGameRules()
+	                        .getBoolean(GameRules.DO_MOB_GRIEFING))
+	                .isCancelled()) {
+	            super.onEntityCollision(state, world, pos, entity);
+	            ci.cancel();
+	        }
+    	}
     }
 }

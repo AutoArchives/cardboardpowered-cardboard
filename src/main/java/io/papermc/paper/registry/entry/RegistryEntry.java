@@ -4,118 +4,131 @@ import io.papermc.paper.registry.PaperRegistryBuilder;
 import io.papermc.paper.registry.RegistryHolder;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.TypedKey;
+import io.papermc.paper.registry.WritableCraftRegistry;
 import io.papermc.paper.registry.data.util.Conversions;
-import io.papermc.paper.registry.entry.ApiRegistryEntry;
-import io.papermc.paper.registry.entry.CraftRegistryEntry;
-import io.papermc.paper.registry.entry.RegistryEntryInfo;
+// TODO import io.papermc.paper.registry.event.RegistryEntryAddEventImpl;
+// TODO import io.papermc.paper.registry.event.RegistryFreezeEventImpl;
 import io.papermc.paper.registry.legacy.DelayedRegistryEntry;
-import io.papermc.paper.registry.legacy.*;
-import io.papermc.paper.registry.entry.*;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.registry.Registry;
+import net.minecraft.world.gen.structure.StructureType;
+
 import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.ApiVersion;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.framework.qual.DefaultQualifier;
-import io.papermc.paper.registry.legacy.DelayedRegistryEntry;
+import org.jspecify.annotations.Nullable;
 
-@DefaultQualifier(value=NonNull.class)
-public interface RegistryEntry<M, B extends Keyed>
-extends RegistryEntryInfo<M, B> {
-    public RegistryHolder<B> createRegistryHolder(Registry<M> var1);
+import static io.papermc.paper.registry.entry.RegistryEntryBuilder.start;
 
-    default public RegistryEntry<M, B> withSerializationUpdater(BiFunction<NamespacedKey, ApiVersion, NamespacedKey> updater) {
+public interface RegistryEntry<M, B extends Keyed> extends RegistryEntryInfo<M, B> { // TODO remove Keyed
+
+    RegistryHolder<B> createRegistryHolder(Registry<M> nmsRegistry);
+
+    default RegistryEntry<M, B> withSerializationUpdater(final BiFunction<NamespacedKey, ApiVersion, NamespacedKey> updater) {
         return this;
     }
 
+    /**
+     * This should only be used if the registry instance needs to exist early due to the need
+     * to populate a field in {@link org.bukkit.Registry}. Data-driven registries shouldn't exist
+     * as fields, but instead be obtained via {@link io.papermc.paper.registry.RegistryAccess#getRegistry(RegistryKey)}
+     */
     @Deprecated
-    default public RegistryEntry<M, B> delayed() {
-        return new DelayedRegistryEntry(this);
+    default RegistryEntry<M, B> delayed() {
+        return new DelayedRegistryEntry<>(this);
     }
 
-    private static <M, B extends Keyed> RegistryEntryInfo<M, B> possiblyUnwrap(RegistryEntryInfo<M, B> entry) {
-        RegistryEntryInfo<M, B> registryEntryInfo;
-        if (entry instanceof DelayedRegistryEntry) {
-            DelayedRegistryEntry delayed = (DelayedRegistryEntry)entry;
-            registryEntryInfo = delayed.delegate();
-        } else {
-            registryEntryInfo = entry;
-        }
-        return registryEntryInfo;
+    interface BuilderHolder<M, T, B extends PaperRegistryBuilder<M, T>> extends RegistryEntryInfo<M, T> {
+
+        B fillBuilder(Conversions conversions, M nms);
     }
 
-    public static <M, B extends Keyed> RegistryEntry<M, B> entry(net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey, RegistryKey<B> apiKey, Class<?> classToPreload, BiFunction<NamespacedKey, M, B> minecraftToBukkit) {
-        return new CraftRegistryEntry<M, B>(mcKey, apiKey, classToPreload, minecraftToBukkit);
-    }
+    /**
+     * Can mutate values being added to the registry
+     */
+    interface Modifiable<M, T, B extends PaperRegistryBuilder<M, T>> extends BuilderHolder<M, T, B> {
 
-    public static <M, B extends Keyed> RegistryEntry<M, B> apiOnly(net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey, RegistryKey<B> apiKey, Supplier<org.bukkit.Registry<B>> apiRegistrySupplier) {
-        return new ApiRegistryEntry(mcKey, apiKey, apiRegistrySupplier);
-    }
-
-    public static <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> RegistryEntry<M, T> modifiable(net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey, RegistryKey<T> apiKey, Class<?> toPreload, BiFunction<NamespacedKey, M, T> minecraftToBukkit, PaperRegistryBuilder.Filler<M, T, B> filler) {
-        return new ModifiableRegistryEntry<M, T, B>(mcKey, apiKey, toPreload, minecraftToBukkit, filler);
-    }
-
-    public static <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> RegistryEntry<M, T> writable(net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey, RegistryKey<T> apiKey, Class<?> toPreload, BiFunction<NamespacedKey, M, T> minecraftToBukkit, PaperRegistryBuilder.Filler<M, T, B> filler) {
-        return new WritableRegistryEntry<M, T, B>(mcKey, apiKey, toPreload, minecraftToBukkit, filler);
-    }
-
-    public static interface Writable<M, T extends Keyed, B extends PaperRegistryBuilder<M, T>>
-    extends Modifiable<M, T, B>,
-    Addable<M, T, B> {
-        public static boolean isWritable(RegistryEntryInfo<?, ?> entry) {
-            DelayedRegistryEntry delayed;
-            return entry instanceof Writable || entry instanceof DelayedRegistryEntry && (delayed = (DelayedRegistryEntry)entry).delegate() instanceof Writable;
+        static boolean isModifiable(final @Nullable RegistryEntryInfo<?, ?> entry) {
+            return entry instanceof RegistryEntry.Modifiable<?, ?, ?> || (entry instanceof final DelayedRegistryEntry<?, ?> delayed && delayed.delegate() instanceof RegistryEntry.Modifiable<?, ?, ?>);
         }
 
-        public static <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> Writable<M, T, B> asWritable(RegistryEntryInfo<M, T> entry) {
-            return (Writable)RegistryEntry.possiblyUnwrap(entry);
-        }
-    }
-
-    public static interface Addable<M, T extends Keyed, B extends PaperRegistryBuilder<M, T>>
-    extends BuilderHolder<M, T, B> {
-        
-    	/*
-    	default public RegistryFreezeEventImpl<T, B> createFreezeEvent(WritableCraftRegistry<M, T, B> writableRegistry, Conversions conversions) {
-            return new RegistryFreezeEventImpl(this.apiKey(), writableRegistry.createApiWritableRegistry(conversions), conversions);
-        }
-        */
-
-        public static boolean isAddable(RegistryEntryInfo<?, ?> entry) {
-            DelayedRegistryEntry delayed;
-            return entry instanceof Addable || entry instanceof DelayedRegistryEntry && (delayed = (DelayedRegistryEntry)entry).delegate() instanceof Addable;
-        }
-
-        public static <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> Addable<M, T, B> asAddable(RegistryEntryInfo<M, T> entry) {
-            return (Addable)RegistryEntry.possiblyUnwrap(entry);
-        }
-    }
-
-    public static interface Modifiable<M, T, B extends PaperRegistryBuilder<M, T>>
-    extends BuilderHolder<M, T, B> {
-        public static boolean isModifiable(RegistryEntryInfo<?, ?> entry) {
-            DelayedRegistryEntry delayed;
-            return entry instanceof Modifiable || entry instanceof DelayedRegistryEntry && (delayed = (DelayedRegistryEntry)entry).delegate() instanceof Modifiable;
-        }
-
-        public static <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> Modifiable<M, T, B> asModifiable(RegistryEntryInfo<M, T> entry) {
-            return (Modifiable)RegistryEntry.possiblyUnwrap(entry);
+        static <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> Modifiable<M, T, B> asModifiable(final RegistryEntryInfo<M, T> entry) { // TODO remove Keyed
+            return (Modifiable<M, T, B>) possiblyUnwrap(entry);
         }
 
         /*
-        default public RegistryEntryAddEventImpl<T, B> createEntryAddEvent(TypedKey<T> key, B initialBuilder, Conversions conversions) {
-            return new RegistryEntryAddEventImpl<T, B>(key, initialBuilder, this.apiKey(), conversions);
+        default RegistryEntryAddEventImpl<T, B> createEntryAddEvent(final TypedKey<T> key, final B initialBuilder, final Conversions conversions) {
+            return new RegistryEntryAddEventImpl<>(key, initialBuilder, this.apiKey(), conversions);
         }
         */
     }
 
-    public static interface BuilderHolder<M, T, B extends PaperRegistryBuilder<M, T>>
-    extends RegistryEntryInfo<M, T> {
-        public B fillBuilder(Conversions var1, TypedKey<T> var2, M var3);
-    }
-}
+    /**
+     * Can only add new values to the registry, not modify any values.
+     */
+    interface Addable<M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> extends BuilderHolder<M, T, B> { // TODO remove Keyed
 
+    	/*
+        default RegistryFreezeEventImpl<T, B> createFreezeEvent(final WritableCraftRegistry<M, T, B> writableRegistry, final Conversions conversions) {
+            return new RegistryFreezeEventImpl<>(this.apiKey(), writableRegistry.createApiWritableRegistry(conversions), conversions);
+        }
+        */
+
+        static boolean isAddable(final @Nullable RegistryEntryInfo<?, ?> entry) {
+            return entry instanceof RegistryEntry.Addable<?, ?, ?> || (entry instanceof final DelayedRegistryEntry<?, ?> delayed && delayed.delegate() instanceof RegistryEntry.Addable<?, ?, ?>);
+        }
+
+        static <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> Addable<M, T, B> asAddable(final RegistryEntryInfo<M, T> entry) {
+            return (Addable<M, T, B>) possiblyUnwrap(entry);
+        }
+    }
+
+    /**
+     * Can mutate values and add new values.
+     */
+    interface Writable<M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> extends Modifiable<M, T, B>, Addable<M, T, B> { // TODO remove Keyed
+
+        static boolean isWritable(final @Nullable RegistryEntryInfo<?, ?> entry) {
+            return entry instanceof RegistryEntry.Writable<?, ?, ?> || (entry instanceof final DelayedRegistryEntry<?, ?> delayed && delayed.delegate() instanceof RegistryEntry.Writable<?, ?, ?>);
+        }
+
+        static <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> Writable<M, T, B> asWritable(final RegistryEntryInfo<M, T> entry) { // TODO remove Keyed
+            return (Writable<M, T, B>) possiblyUnwrap(entry);
+        }
+    }
+
+    private static <M, B extends Keyed> RegistryEntryInfo<M, B> possiblyUnwrap(final RegistryEntryInfo<M, B> entry) {
+        return entry instanceof final DelayedRegistryEntry<M, B> delayed ? delayed.delegate() : entry;
+    }
+
+    @Deprecated
+    public static <M, B extends Keyed> RegistryEntry<M, B> apiOnly(
+    		net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey,
+    				RegistryKey<B> apiKey,
+    				Supplier<org.bukkit.Registry<B>> apiRegistrySupplier) {
+        return new ApiRegistryEntry(mcKey, apiKey, apiRegistrySupplier);
+    }
+    
+    @Deprecated
+    public static <M, B extends Keyed> RegistryEntry<M, B> entry(
+    		net.minecraft.registry.RegistryKey<? extends Registry<M>> aa,
+    				RegistryKey<B> bb,
+    				Class<?> cc,
+    				BiFunction<NamespacedKey, M, B> dd) {
+
+        return start(aa, bb).craft(cc, dd).build();
+	}
+
+    @Deprecated
+	public static <M, B extends Keyed, T extends PaperRegistryBuilder<M, B>> RegistryEntry<M, B> writable(net.minecraft.registry.RegistryKey<Registry<M>> a,
+			RegistryKey<B> b, Class<?> c, BiFunction<NamespacedKey, M, B> d,
+			io.papermc.paper.registry.PaperRegistryBuilder.Filler<M, B, T> e) {
+		// TODO Auto-generated method stub
+		
+        return start(a, b).craft(c, d).writable(e);
+	}
+
+}

@@ -51,9 +51,9 @@ public class CraftEntitySnapshot implements EntitySnapshot {
 
     private net.minecraft.entity.Entity createInternal(World world) {
         net.minecraft.world.World nms = ((WorldImpl) world).getHandle();
-        net.minecraft.entity.Entity internal = net.minecraft.entity.EntityType.loadEntityWithPassengers(this.data, nms, Function.identity());
+        net.minecraft.entity.Entity internal = net.minecraft.entity.EntityType.loadEntityWithPassengers(this.data, nms, net.minecraft.entity.SpawnReason.LOAD, Function.identity());
         if (internal == null) { // Try creating by type
-            internal = CraftEntityType.bukkitToMinecraft(this.type).create(nms);
+            internal = CraftEntityType.bukkitToMinecraft(this.type).create(nms, net.minecraft.entity.SpawnReason.LOAD);
         }
 
         Preconditions.checkArgument(internal != null, "Error creating new entity."); // This should only fail if the stored NBTTagCompound is malformed.

@@ -49,10 +49,11 @@ public abstract class TagImpl<N, B extends Keyed> implements Tag<B> {
     public TagImpl(Registry<N> registry, TagKey<N> tag) {
         this.registry = registry;
         this.tag = tag;
-        this.handle = registry.getEntryList(this.tag).orElseThrow();
+        // this.handle = registry.getEntryList(this.tag).orElseThrow();
+        this.handle = registry.getOptional(this.tag).orElseThrow();
     }
 
-    protected RegistryEntryList.Named<N> getHandle() {
+    public RegistryEntryList.Named<N> getHandle() {
         return handle;
     }
 

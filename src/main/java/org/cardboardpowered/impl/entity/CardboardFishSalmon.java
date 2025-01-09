@@ -61,5 +61,16 @@ public class CardboardFishSalmon extends CardboardFish implements Salmon {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	@Override
+    public void setVariant(Variant variant) {
+        this.getHandle().setVariant(net.minecraft.entity.passive.SalmonEntity.Variant.values()[variant.ordinal()]);
+    }
+	
+	@Override
+    public Variant getVariant() {
+        return Variant.values()[this.getHandle().getVariant().ordinal()];
+    }
+
 
 }

@@ -12,9 +12,9 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.Component;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.ComponentMap;
-import net.minecraft.component.ComponentMapImpl;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.MergedComponentMap;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -84,7 +84,7 @@ implements BlockStateMeta {
             if (this.blockEntityTag == null) {
                 this.blockEntityTag = CraftMetaBlockState.getBlockState(material, null);
             }
-            ComponentMapImpl map = new ComponentMapImpl(ComponentMap.EMPTY);
+            MergedComponentMap map = new MergedComponentMap(ComponentMap.EMPTY);
             map.applyChanges(tag);
             TrackedDataComponentMap track = new TrackedDataComponentMap(map);
             this.blockEntityTag.applyComponents(track, tag);

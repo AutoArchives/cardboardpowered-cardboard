@@ -10,6 +10,7 @@ import net.kyori.adventure.text.Component;
 import net.minecraft.advancement.Advancement;
 
 import org.bukkit.NamespacedKey;
+import org.bukkit.advancement.AdvancementRequirements;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -69,6 +70,11 @@ public class AdvancementImpl implements org.bukkit.advancement.Advancement {
 		// TODO Auto-generated method stub
 		return Component.text("Hello world");
 	}
+
+	@Override
+	public AdvancementRequirements getRequirements() {
+        return new CraftAdvancementRequirements(this.handle.value().requirements());
+    }
 
 }
 

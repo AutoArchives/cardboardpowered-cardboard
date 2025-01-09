@@ -1,14 +1,24 @@
 package org.bukkit.craftbukkit.block;
 
 import net.minecraft.block.entity.LockableContainerBlockEntity;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.inventory.ContainerLock;
+import net.minecraft.predicate.ComponentPredicate;
+import net.minecraft.predicate.NumberRange;
+import net.minecraft.predicate.item.ItemPredicate;
+import net.minecraft.text.Text;
+
+import java.util.Collections;
+import java.util.Optional;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
+import org.bukkit.inventory.ItemStack;
 import org.cardboardpowered.impl.block.CardboardBlockEntityState;
 
 public abstract class CraftContainer<T extends LockableContainerBlockEntity> extends CardboardBlockEntityState<T> implements Container {
@@ -39,17 +49,24 @@ public abstract class CraftContainer<T extends LockableContainerBlockEntity> ext
 
     @Override
     public boolean isLocked() {
-        return !this.getSnapshot().lock.key.isEmpty();
+    	return this.getSnapshot().lock != ContainerLock.EMPTY;
     }
 
     @Override
     public String getLock() {
-        return this.getSnapshot().lock.key;
+    	Optional<? extends Text> customName = this.getSnapshot().lock.predicate().components().toChanges().get(DataComponentTypes.CUSTOM_NAME);
+
+        return (customName != null) ? customName.map(CraftChatMessage::fromComponent).orElse("") : "";
     }
 
     @Override
     public void setLock(String key) {
-        this.getSnapshot().lock = (key == null) ? ContainerLock.EMPTY : new ContainerLock(key);
+    	if (key == null) {
+            this.getSnapshot().lock = ContainerLock.EMPTY;
+        } else {
+            ComponentPredicate predicate = ComponentPredicate.builder().add(DataComponentTypes.CUSTOM_NAME, CraftChatMessage.fromStringOrNull(key)).build();
+            this.getSnapshot().lock = new ContainerLock(new ItemPredicate(Optional.empty(), NumberRange.IntRange.ANY, predicate, Collections.emptyMap()));
+        }
     }
 
     @Override
@@ -68,6 +85,15 @@ public abstract class CraftContainer<T extends LockableContainerBlockEntity> ext
     public void applyTo(T container) {
         super.applyTo(container);
         if (this.getSnapshot().customName == null) container.customName = null;// container.setCustomName(null);
+    }
+    
+    @Override
+    public void setLockItem(ItemStack key) {
+        if (key == null) {
+            this.getSnapshot().lock = ContainerLock.EMPTY;
+        } else {
+            this.getSnapshot().lock = new ContainerLock(CraftItemStack.asCriterionConditionItem(key));
+        }
     }
 
 }

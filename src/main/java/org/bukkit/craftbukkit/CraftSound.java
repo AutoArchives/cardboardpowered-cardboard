@@ -1044,7 +1044,7 @@ public enum CraftSound {
         Preconditions.checkArgument(bukkit != null);
 
         return CraftRegistry.getMinecraftRegistry(RegistryKeys.SOUND_EVENT)
-                .getOrEmpty(CraftNamespacedKey.toMinecraft(bukkit.getKey())).orElseThrow();
+                .getOptionalValue(CraftNamespacedKey.toMinecraft(bukkit.getKey())).orElseThrow();
     }
 
     public static RegistryEntry<SoundEvent> bukkitToMinecraftHolder(Sound bukkit) {

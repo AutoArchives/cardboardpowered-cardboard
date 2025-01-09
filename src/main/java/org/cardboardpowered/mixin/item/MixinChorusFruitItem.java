@@ -11,18 +11,21 @@ import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ChorusFruitItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.consume.TeleportRandomlyConsumeEffect;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
-@Mixin(value = ChorusFruitItem.class, priority = 900)
-public class MixinChorusFruitItem extends Item {
+@Mixin(value = TeleportRandomlyConsumeEffect.class, priority = 900)
+public class MixinChorusFruitItem { // extends Item {
 
+	// TODO
+	
+	/*
     public MixinChorusFruitItem(net.minecraft.item.Item.Settings settings) {
         super(settings);
     }
@@ -30,7 +33,7 @@ public class MixinChorusFruitItem extends Item {
     /**
      * @reason .
      * @author .
-     */
+     *
     @Overwrite
     public ItemStack finishUsing(ItemStack itemstack, World world, LivingEntity entity) {
         ItemStack itemstack1 = super.finishUsing(itemstack, world, entity);
@@ -59,9 +62,9 @@ public class MixinChorusFruitItem extends Item {
                 break;
             }
         }
-        if (entity instanceof PlayerEntity) ((PlayerEntity) entity).getItemCooldownManager().set(this, 20);
+        if (entity instanceof PlayerEntity) ((PlayerEntity) entity).getItemCooldownManager().set(itemstack, 20);
 
         return itemstack1;
-    }
+    }*/
 
 }

@@ -18,7 +18,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 
 @MixinInfo(events = {"PlayerFishEvent"})
@@ -26,7 +25,7 @@ import net.minecraft.world.World;
 public class MixinFishingRodItem {
 
     @Inject(at = @At("HEAD"), method = "use", cancellable = true)
-    public void bukkitize(World world, PlayerEntity entityhuman, Hand enumhand, CallbackInfoReturnable<TypedActionResult<ItemStack>> ci) {
+    public void bukkitize(World world, PlayerEntity entityhuman, Hand enumhand, CallbackInfoReturnable<ActionResult> ci) {
         if (null == entityhuman.fishHook) {
             ItemStack itemstack = entityhuman.getStackInHand(enumhand);
 
@@ -39,11 +38,11 @@ public class MixinFishingRodItem {
     
             if (playerFishEvent.isCancelled()) {
                 entityhuman.fishHook = null;
-                ci.setReturnValue( new TypedActionResult<ItemStack>(ActionResult.PASS, itemstack) );
+                ci.setReturnValue( ActionResult.PASS );
                 return;
             }
             world.spawnEntity(entityfishinghook); 
-            ci.setReturnValue(TypedActionResult.success(itemstack, false));
+            ci.setReturnValue( ActionResult.SUCCESS );
             return;
         }
     }

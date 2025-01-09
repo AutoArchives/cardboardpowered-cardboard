@@ -7,7 +7,9 @@ import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.util.Identifier;
 import org.bukkit.NamespacedKey;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.cardboardpowered.impl.inventory.recipe.RecipeInterface;
 
 import com.google.common.collect.Multimap;
 
@@ -17,7 +19,7 @@ public interface IMixinRecipeManager {
 
     default void addRecipe(NamespacedKey key, Recipe<?> recipe) {
         addRecipe(new RecipeEntry<>(
-                CraftNamespacedKey.toMinecraft(key),
+        		RecipeInterface.toMinecraft(key),
                 recipe
         ));
     }

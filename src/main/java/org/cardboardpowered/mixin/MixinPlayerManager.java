@@ -173,7 +173,9 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         } else location.setWorld(((IMixinWorld)worldserver).getWorldImpl());
         ServerWorld worldserver1 = ((WorldImpl) location.getWorld()).getHandle();
         World fromWorld = player.getWorld();
-        player.teleport(worldserver1, location.getX(), location.getY(), location.getZ(), 0, 0);
+        
+        // TODO: 1.21.4: Check this
+        player.teleport(worldserver1, location.getX(), location.getY(), location.getZ(), null, 0, 0, false);
 
         if (fromWorld != ((WorldImpl) location.getWorld()).getHandle()) {
             PlayerChangedWorldEvent event = new PlayerChangedWorldEvent((Player) ((IMixinServerEntityPlayer)player).getBukkitEntity(), ((IMixinWorld)fromWorld).getWorldImpl());
@@ -428,7 +430,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         //entityplayer1.forceSetPositionRotation(banner$loc.getX(), banner$loc.getY(), banner$loc.getZ(), banner$loc.getYaw(), banner$loc.getPitch());
         // CraftBukkit end
 
-        while (avoidSuffocation.getAndSet(true) && !worldserver1.isSpaceEmpty(entityplayer1) && entityplayer1.getY() < (double) worldserver1.getTopY()) {
+        while (avoidSuffocation.getAndSet(true) && !worldserver1.isSpaceEmpty(entityplayer1) && entityplayer1.getY() < (double) worldserver1.getTopYInclusive()) {
             entityplayer1.setPosition(entityplayer1.getX(), entityplayer1.getY() + 1.0D, entityplayer1.getZ());
         }
 

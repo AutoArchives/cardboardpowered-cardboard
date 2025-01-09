@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
 
 import net.minecraft.entity.ai.brain.MemoryModuleType;
-import net.minecraft.entity.ai.brain.task.GoToWorkTask;
+import net.minecraft.entity.ai.brain.task.UpdateJobSiteTask;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @MixinInfo(events = {"VillagerCareerChangeEvent"})
-@Mixin(value = GoToWorkTask.class, priority = 999)
+@Mixin(value = UpdateJobSiteTask.class, priority = 999)
 public class MixinGoToWorkTask {
 
     @Redirect(method = "method_46891", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/passive/VillagerEntity;setVillagerData(Lnet/minecraft/village/VillagerData;)V"))

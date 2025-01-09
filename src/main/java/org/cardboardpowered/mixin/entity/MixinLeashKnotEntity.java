@@ -58,7 +58,8 @@ public class MixinLeashKnotEntity {
                     die = false;
                     continue;
                 }
-                entityinsentient.detachLeash(true, !entityhuman.getAbilities().creativeMode);
+                // entityinsentient.detachLeash(true, !entityhuman.getAbilities().creativeMode);
+                entityinsentient.detachLeash();
             }
         }
         if (die) getBF().remove(RemovalReason.KILLED);

@@ -67,8 +67,11 @@ public class CardboardInventoryView<T extends ScreenHandler> extends CardboardAb
     @Override
     public void setItem(int slot, ItemStack item) {
         net.minecraft.item.ItemStack stack = CraftItemStack.asNMSCopy(item);
-        if (slot >= 0) container.getSlot(slot).setStack(stack);
-        else player.getHandle().dropStack(stack);
+        if (slot >= 0) {
+            this.container.getSlot(slot).setStackNoCallbacks(stack);
+        } else {
+            this.player.getHandle().dropItem(stack, false);
+        }
     }
 
     @Override

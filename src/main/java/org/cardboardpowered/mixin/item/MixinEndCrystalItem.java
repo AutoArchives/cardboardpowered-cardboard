@@ -55,7 +55,8 @@ public class MixinEndCrystalItem {
             if (enderdragonbattle != null) enderdragonbattle.respawnDragon();
         }
         itemactioncontext.getStack().decrement(1);
-        return ActionResult.success(world.isClient);
+        return ActionResult.SUCCESS;
+        //return ActionResult.success(world.isClient);
     }
 
 }
