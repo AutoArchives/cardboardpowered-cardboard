@@ -1,6 +1,5 @@
 accessWidener	v1	named
 # Bukkit for Fabric Access Widener
-accessible	method	net/minecraft/recipe/Ingredient	<init>	(Ljava/util/stream/Stream;)V
 accessible	field	net/minecraft/network/packet/c2s/handshake/HandshakeC2SPacket	address	Ljava/lang/String;
 accessible	method	net/minecraft/server/ServerConfigEntry	getKey	()Ljava/lang/Object;
 accessible	field	net/minecraft/entity/boss/BossBar	color	Lnet/minecraft/entity/boss/BossBar$Color;
@@ -28,12 +27,6 @@ accessible	field	net/minecraft/util/thread/ThreadExecutor	name	Ljava/lang/String
 mutable	field	net/minecraft/util/thread/ThreadExecutor	name	Ljava/lang/String;
 accessible	method	net/minecraft/util/thread/ThreadExecutor	runTasks	()V
 accessible	method	net/minecraft/util/thread/ThreadExecutor	runTask	()Z
-extendable	class	net/minecraft/util/thread/MessageListener$1
-accessible	field	net/minecraft/util/thread/TaskExecutor	executor	Ljava/util/concurrent/Executor;
-mutable	field	net/minecraft/util/thread/TaskExecutor	executor	Ljava/util/concurrent/Executor;
-accessible	field	net/minecraft/util/thread/TaskExecutor	name	Ljava/lang/String;
-mutable	field	net/minecraft/util/thread/TaskExecutor	name	Ljava/lang/String;
-accessible	method	net/minecraft/util/thread/TaskExecutor	execute	()V
 accessible	field	net/minecraft/inventory/DoubleInventory	first	Lnet/minecraft/inventory/Inventory;
 mutable	field	net/minecraft/inventory/DoubleInventory	first	Lnet/minecraft/inventory/Inventory;
 accessible	field	net/minecraft/inventory/DoubleInventory	second	Lnet/minecraft/inventory/Inventory;
@@ -75,8 +68,6 @@ accessible	field	net/minecraft/entity/LivingEntity	attackingPlayer	Lnet/minecraf
 mutable	field	net/minecraft/entity/LivingEntity	attackingPlayer	Lnet/minecraft/entity/player/PlayerEntity;
 accessible	field	net/minecraft/entity/LivingEntity	playerHitTimer	I
 mutable	field	net/minecraft/entity/LivingEntity	playerHitTimer	I
-accessible	field	net/minecraft/entity/LivingEntity	scoreAmount	I
-mutable	field	net/minecraft/entity/LivingEntity	scoreAmount	I
 accessible	field	net/minecraft/entity/LivingEntity	lastDamageTaken	F
 mutable	field	net/minecraft/entity/LivingEntity	lastDamageTaken	F
 accessible	field	net/minecraft/entity/LivingEntity	jumping	Z
@@ -93,7 +84,6 @@ accessible	field	net/minecraft/entity/LivingEntity	brain	Lnet/minecraft/entity/a
 accessible	method	net/minecraft/entity/LivingEntity	shouldAlwaysDropExperience	()Z
 accessible	method	net/minecraft/entity/LivingEntity	knockback	(Lnet/minecraft/entity/LivingEntity;)V
 accessible	method	net/minecraft/entity/LivingEntity	onKilledBy	(Lnet/minecraft/entity/LivingEntity;)V
-accessible	method	net/minecraft/entity/LivingEntity	dropInventory	()V
 accessible	method	net/minecraft/entity/LivingEntity	jump	()V
 accessible	method	net/minecraft/entity/LivingEntity	attackLivingEntity	(Lnet/minecraft/entity/LivingEntity;)V
 accessible	field	net/minecraft/entity/mob/MobEntity	target	Lnet/minecraft/entity/LivingEntity;
@@ -106,7 +96,6 @@ accessible	field	net/minecraft/entity/mob/MobEntity	persistent	Z
 mutable	field	net/minecraft/entity/mob/MobEntity	persistent	Z
 accessible	field	net/minecraft/entity/mob/MobEntity	lootTableSeed	J
 mutable	field	net/minecraft/entity/mob/MobEntity	lootTableSeed	J
-accessible	method	net/minecraft/entity/mob/MobEntity	loot	(Lnet/minecraft/entity/ItemEntity;)V
 extendable	class	net/minecraft/entity/EntityPose
 extendable	class	net/minecraft/entity/EntityInteraction$1
 accessible	field	net/minecraft/entity/FallingBlockEntity	block	Lnet/minecraft/block/BlockState;
@@ -161,57 +150,20 @@ accessible	field	net/minecraft/item/ItemStack	count	I
 mutable	field	net/minecraft/item/ItemStack	count	I
 accessible	field	net/minecraft/item/ItemStack	item	Lnet/minecraft/item/Item;
 mutable	field	net/minecraft/item/ItemStack	item	Lnet/minecraft/item/Item;
-accessible	field	net/minecraft/item/ToolItem	material	Lnet/minecraft/item/ToolMaterial;
-mutable	field	net/minecraft/item/ToolItem	material	Lnet/minecraft/item/ToolMaterial;
-accessible	field	net/minecraft/recipe/AbstractCookingRecipe	type	Lnet/minecraft/recipe/RecipeType;
-mutable	field	net/minecraft/recipe/AbstractCookingRecipe	type	Lnet/minecraft/recipe/RecipeType;
-accessible	field	net/minecraft/recipe/AbstractCookingRecipe	group	Ljava/lang/String;
-mutable	field	net/minecraft/recipe/AbstractCookingRecipe	group	Ljava/lang/String;
 accessible	field	net/minecraft/recipe/AbstractCookingRecipe	experience	F
 mutable	field	net/minecraft/recipe/AbstractCookingRecipe	experience	F
-accessible	class	net/minecraft/recipe/Ingredient$StackEntry
-accessible	method	net/minecraft/recipe/Ingredient$StackEntry <init> (Lnet/minecraft/item/ItemStack;)V
-accessible	class	net/minecraft/recipe/Ingredient$TagEntry
-accessible	class	net/minecraft/recipe/Ingredient$Entry
 extendable	class	net/minecraft/recipe/Ingredient
-accessible	field	net/minecraft/recipe/Ingredient	entries	[Lnet/minecraft/recipe/Ingredient$Entry;
-mutable	field	net/minecraft/recipe/Ingredient	entries	[Lnet/minecraft/recipe/Ingredient$Entry;
-accessible	field	net/minecraft/recipe/Ingredient	matchingStacks	[Lnet/minecraft/item/ItemStack;
-mutable	field	net/minecraft/recipe/Ingredient	matchingStacks	[Lnet/minecraft/item/ItemStack;
-accessible	field	net/minecraft/recipe/RecipeManager	errored	Z
-mutable	field	net/minecraft/recipe/RecipeManager	errored	Z
-accessible	method	net/minecraft/recipe/RecipeManager	apply	(Ljava/util/Map;Lnet/minecraft/resource/ResourceManager;Lnet/minecraft/util/profiler/Profiler;)V
 extendable	class	net/minecraft/recipe/RecipeType$1
 accessible	field	net/minecraft/recipe/ShapedRecipe	group	Ljava/lang/String;
 accessible	field	net/minecraft/recipe/ShapelessRecipe	group	Ljava/lang/String;
 mutable	field	net/minecraft/recipe/ShapelessRecipe	group	Ljava/lang/String;
-accessible	field	net/minecraft/recipe/CuttingRecipe	group	Ljava/lang/String;
-mutable	field	net/minecraft/recipe/CuttingRecipe	group	Ljava/lang/String;
 accessible	field	net/minecraft/world/CommandBlockExecutor	command	Ljava/lang/String;
 mutable	field	net/minecraft/world/CommandBlockExecutor	command	Ljava/lang/String;
 accessible	field	net/minecraft/world/CommandBlockExecutor	customName	Lnet/minecraft/text/Text;
 mutable	field	net/minecraft/world/CommandBlockExecutor	customName	Lnet/minecraft/text/Text;
 extendable	class	net/minecraft/util/math/ChunkPos$1
-accessible	field	net/minecraft/util/math/ChunkPos$1	position	Lnet/minecraft/util/math/ChunkPos;
-mutable	field	net/minecraft/util/math/ChunkPos$1	position	Lnet/minecraft/util/math/ChunkPos;
 extendable	class	net/minecraft/world/EmptyBlockView
 extendable	class	net/minecraft/world/explosion/Explosion$DestructionType
-accessible	field	net/minecraft/world/explosion/Explosion	createFire	Z
-mutable	field	net/minecraft/world/explosion/Explosion	createFire	Z
-accessible	field	net/minecraft/world/explosion/Explosion	world	Lnet/minecraft/world/World;
-mutable	field	net/minecraft/world/explosion/Explosion	world	Lnet/minecraft/world/World;
-accessible	field	net/minecraft/world/explosion/Explosion	x	D
-mutable	field	net/minecraft/world/explosion/Explosion	x	D
-accessible	field	net/minecraft/world/explosion/Explosion	y	D
-mutable	field	net/minecraft/world/explosion/Explosion	y	D
-accessible	field	net/minecraft/world/explosion/Explosion	z	D
-mutable	field	net/minecraft/world/explosion/Explosion	z	D
-accessible	field	net/minecraft/world/explosion/Explosion	entity	Lnet/minecraft/entity/Entity;
-mutable	field	net/minecraft/world/explosion/Explosion	entity	Lnet/minecraft/entity/Entity;
-accessible	field	net/minecraft/world/explosion/Explosion	power	F
-mutable	field	net/minecraft/world/explosion/Explosion	power	F
-accessible	field	net/minecraft/world/explosion/Explosion	affectedPlayers	Ljava/util/Map;
-mutable	field	net/minecraft/world/explosion/Explosion	affectedPlayers	Ljava/util/Map;
 extendable	class	net/minecraft/world/GameMode
 accessible	field	net/minecraft/world/GameMode	id	I
 mutable	field	net/minecraft/world/GameMode	id	I
@@ -271,14 +223,8 @@ accessible	field	net/minecraft/block/entity/BlockEntity	pos	Lnet/minecraft/util/
 mutable	field	net/minecraft/block/entity/BlockEntity	pos	Lnet/minecraft/util/math/BlockPos;
 accessible	field	net/minecraft/block/entity/BlockEntity	removed	Z
 mutable	field	net/minecraft/block/entity/BlockEntity	removed	Z
-extendable	class	net/minecraft/block/entity/BlockEntityType$Builder
-accessible	field	net/minecraft/block/entity/BlockEntityType$Builder	blocks	Ljava/util/Set;
-mutable	field	net/minecraft/block/entity/BlockEntityType$Builder	blocks	Ljava/util/Set;
 accessible	field	net/minecraft/block/entity/BlockEntityType	blocks	Ljava/util/Set;
 mutable	field	net/minecraft/block/entity/BlockEntityType	blocks	Ljava/util/Set;
-accessible	field	net/minecraft/block/entity/BlockEntityType	type	Lcom/mojang/datafixers/types/Type;
-mutable	field	net/minecraft/block/entity/BlockEntityType	type	Lcom/mojang/datafixers/types/Type;
-accessible	method	net/minecraft/block/entity/BlockEntityType	create	(Ljava/lang/String;Lnet/minecraft/block/entity/BlockEntityType$Builder;)Lnet/minecraft/block/entity/BlockEntityType;
 accessible	class	net/minecraft/block/entity/BrewingStandBlockEntity$1
 accessible	field	net/minecraft/block/entity/BrewingStandBlockEntity	brewTime	I
 mutable	field	net/minecraft/block/entity/BrewingStandBlockEntity	brewTime	I
@@ -298,7 +244,6 @@ mutable	field	net/minecraft/block/entity/LecternBlockEntity	inventory	Lnet/minec
 accessible	field	net/minecraft/block/entity/LecternBlockEntity	book	Lnet/minecraft/item/ItemStack;
 mutable	field	net/minecraft/block/entity/LecternBlockEntity	book	Lnet/minecraft/item/ItemStack;
 accessible	method	net/minecraft/block/entity/LecternBlockEntity	setCurrentPage	(I)V
-accessible	method	net/minecraft/block/entity/LecternBlockEntity	getCommandSource	(Lnet/minecraft/entity/player/PlayerEntity;)Lnet/minecraft/server/command/ServerCommandSource;
 accessible	field	net/minecraft/block/entity/LootableContainerBlockEntity	lootTableSeed	J
 mutable	field	net/minecraft/block/entity/LootableContainerBlockEntity	lootTableSeed	J
 extendable	class	net/minecraft/block/entity/ShulkerBoxBlockEntity$AnimationStage
@@ -335,8 +280,6 @@ accessible	field	net/minecraft/server/command/CommandManager	dispatcher	Lcom/moj
 mutable	field	net/minecraft/server/command/CommandManager	dispatcher	Lcom/mojang/brigadier/CommandDispatcher;
 accessible	field	net/minecraft/world/PersistentStateManager	dataFixer	Lcom/mojang/datafixers/DataFixer;
 mutable	field	net/minecraft/world/PersistentStateManager	dataFixer	Lcom/mojang/datafixers/DataFixer;
-accessible	field	net/minecraft/world/PersistentStateManager	directory	Ljava/io/File;
-mutable	field	net/minecraft/world/PersistentStateManager	directory	Ljava/io/File;
 accessible	field	net/minecraft/world/level/LevelProperties	time	J
 mutable	field	net/minecraft/world/level/LevelProperties	time	J
 accessible	field	net/minecraft/world/level/LevelProperties	version	I
@@ -443,7 +386,6 @@ accessible	class	net/minecraft/server/ServerNetworkIo$1
 accessible	class	net/minecraft/server/ServerNetworkIo$2
 accessible	field	net/minecraft/server/ServerNetworkIo	channels	Ljava/util/List;
 accessible	field	net/minecraft/server/network/ServerPlayNetworkHandler	ticks	I
-accessible	field	net/minecraft/server/network/ServerPlayNetworkHandler	messageCooldown	I
 accessible	field	net/minecraft/server/network/ServerPlayNetworkHandler	requestedTeleportPos	Lnet/minecraft/util/math/Vec3d;
 accessible	field	net/minecraft/server/network/ServerPlayNetworkHandler	requestedTeleportId	I
 accessible	field	net/minecraft/server/network/ServerPlayNetworkHandler	floating	Z
@@ -460,7 +402,6 @@ accessible	field	net/minecraft/block/entity/StructureBlockBlockEntity	showBoundi
 accessible	field	net/minecraft/block/entity/StructureBlockBlockEntity	metadata	Ljava/lang/String;
 accessible	field	net/minecraft/block/entity/StructureBlockBlockEntity	mirror	Lnet/minecraft/util/BlockMirror;
 accessible	field	net/minecraft/block/entity/StructureBlockBlockEntity	integrity	F
-accessible	field	net/minecraft/inventory/ContainerLock	key	Ljava/lang/String;
 accessible	field	net/minecraft/village/TradeOffer	sellItem	Lnet/minecraft/item/ItemStack;
 accessible	field	net/minecraft/village/TradeOffer	merchantExperience	I
 accessible	field	net/minecraft/village/TradeOffer	uses	I
@@ -475,8 +416,6 @@ accessible method net/minecraft/nbt/StringNbtReader parsePrimitive (Ljava/lang/S
 accessible method net/minecraft/nbt/StringNbtReader parseElementPrimitiveArray ()Lnet/minecraft/nbt/NbtElement;
 accessible class net/minecraft/entity/mob/SpellcastingIllagerEntity$Spell
 accessible field net/minecraft/scoreboard/ScoreboardCriterion CRITERIA Ljava/util/Map;
-accessible field net/minecraft/screen/PlayerScreenHandler craftingResult Lnet/minecraft/inventory/CraftingResultInventory;
-mutable field net/minecraft/screen/PlayerScreenHandler craftingResult Lnet/minecraft/inventory/CraftingResultInventory;
 accessible class net/minecraft/server/world/ServerWorld$ServerEntityHandler
 accessible method net/minecraft/server/network/ServerPlayerEntity onScreenHandlerOpened (Lnet/minecraft/screen/ScreenHandler;)V
 accessible class net/minecraft/util/UserCache$Entry
