@@ -179,8 +179,9 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
         }
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;spawnEntity(Lnet/minecraft/entity/Entity;)Z"), method = "dropStack(Lnet/minecraft/item/ItemStack;F)Lnet/minecraft/entity/ItemEntity;")
-    public boolean dropStackEvent1(World world, Entity entity, ItemStack itemstack, float f) {
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;spawnEntity(Lnet/minecraft/entity/Entity;)Z"),
+    		method = "dropStack(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/item/ItemStack;F)Lnet/minecraft/entity/ItemEntity;")
+    public boolean dropStackEvent1(World world, Entity entity, ServerWorld sworld, ItemStack itemstack, float f) {
         if (itemstack.isEmpty())
             return false;
 

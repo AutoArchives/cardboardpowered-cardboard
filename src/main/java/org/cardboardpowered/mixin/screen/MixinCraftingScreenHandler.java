@@ -37,8 +37,10 @@ public class MixinCraftingScreenHandler extends MixinScreenHandler {
 
 	// Lnet/minecraft/screen/CraftingScreenHandler;input:Lnet/minecraft/inventory/RecipeInputInventory;
 	
-    @Shadow public RecipeInputInventory input;
-    @Shadow public CraftingResultInventory result;
+	// Lnet/minecraft/screen/AbstractCraftingScreenHandler;craftingInventory:Lnet/minecraft/inventory/RecipeInputInventory;
+	
+    //@Shadow public RecipeInputInventory input;
+    // @Shadow public CraftingResultInventory result;
     @Shadow public ScreenHandlerContext context;
     @Shadow public PlayerEntity player;
 
@@ -55,7 +57,9 @@ public class MixinCraftingScreenHandler extends MixinScreenHandler {
         if (bukkitEntity != null)
             return bukkitEntity;
 
-        CraftInventoryCrafting inventory = new CraftInventoryCrafting(this.input, this.result);
+        CraftingScreenHandler thiz = (CraftingScreenHandler) (Object) this;
+
+        CraftInventoryCrafting inventory = new CraftInventoryCrafting(thiz.craftingInventory, thiz.craftingResultInventory);
         bukkitEntity = new CardboardInventoryView((Player)((IMixinEntity)this.playerInv.player).getBukkitEntity(), inventory, (CraftingScreenHandler)(Object)this);
         return bukkitEntity;
     }
@@ -80,13 +84,14 @@ public class MixinCraftingScreenHandler extends MixinScreenHandler {
     }
 
     /**
-     * @reason .
-     * @author .
+     * @reason Call PreCraftEvent
+     * @author cardboard
      */
     @Overwrite
     public void onContentChanged(Inventory iinventory) {
         this.context.run((world, blockposition) -> {
-            aBF(((CraftingScreenHandler)(Object)this).syncId, world, this.player, this.input, this.result, (CraftingScreenHandler)(Object)this);
+        	CraftingScreenHandler thiz = (CraftingScreenHandler)(Object)this;
+            aBF(((CraftingScreenHandler)(Object)this).syncId, world, this.player, thiz.craftingInventory, thiz.craftingResultInventory, thiz);
         });
     }
 

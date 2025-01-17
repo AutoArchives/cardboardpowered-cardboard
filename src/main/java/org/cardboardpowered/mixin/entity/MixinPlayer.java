@@ -21,6 +21,7 @@ package org.cardboardpowered.mixin.entity;
 //<<<<<<< HEAD
 //=======
 import java.util.OptionalInt;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -33,9 +34,11 @@ import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.impl.world.WorldImpl;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerChangedMainHandEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.MainHand;
 import org.spongepowered.asm.mixin.Mixin;
@@ -69,6 +72,7 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerListener;
@@ -86,6 +90,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.util.math.Vec3d;
 //>>>>>>> upstream/ver/1.20
 import net.minecraft.world.GameRules;
+import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -156,7 +161,85 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     public void onDisconnect(CallbackInfo ci) {
         // CraftServer.INSTANCE.playerView.remove(this.bukkit);
     }
+    
+    private ServerWorld cb$from;
+    
+    @Inject(cancellable = true, at = @At(
+    		value = "INVOKE",
+    		target = "Lnet/minecraft/world/TeleportTarget;world()Lnet/minecraft/server/world/ServerWorld;"
+    ), method = "Lnet/minecraft/server/network/ServerPlayerEntity;teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/server/network/ServerPlayerEntity;")
+    public void cardboard$do_teleport_event(TeleportTarget target, CallbackInfoReturnable<ServerPlayerEntity> ci) {
+    	ServerPlayerEntity thiz = (ServerPlayerEntity) (Object) this;
+    	//ServerWorld serverWorld = target.world();
+    	// ServerWorld serverWorld2 = thiz.getServerWorld();
+    	cb$from = thiz.getServerWorld(); // Cardboard - store from world
+    	
+    	Location exit = CraftLocation.toBukkit(target.position(), target.world().getWorld());
 
+    	PlayerTeleportEvent tpEvent = new PlayerTeleportEvent(
+    			this.getBukkitEntity(),
+    			this.getBukkitEntity().getLocation(),
+    			exit,
+    			PlayerTeleportEvent.TeleportCause.UNKNOWN
+    	);
+        Bukkit.getPluginManager().callEvent(tpEvent);
+
+        Location newExit = tpEvent.getTo();
+        
+        if (tpEvent.isCancelled() || null == newExit) {
+            ci.setReturnValue(null);
+            return;
+        }
+        
+        if (!newExit.equals(exit)) {
+            // worldserver = ((WorldImpl)newExit.getWorld()).getHandle();
+        	
+        	// Set our new TeleportTarget
+        	target.world = ((WorldImpl)newExit.getWorld()).getHandle();
+        	target.position = CraftLocation.toVec3D(newExit);
+        	target.velocity = Vec3d.ZERO;
+        	target.yaw = newExit.getYaw();
+        	target.pitch = newExit.getPitch();
+        	
+        	/*
+            target = new TeleportTarget(
+            		((WorldImpl)newExit.getWorld()).getHandle(),
+            		CraftLocation.toVec3D(newExit),
+            		Vec3d.ZERO,
+            		newExit.getYaw(),
+            		newExit.getPitch(),
+            		// target.missingRespawnBlock(),
+            		// target.asPassenger(),
+            		// Set.of(),
+            		target.postTeleportTransition() // ,
+            		// target.cause()
+            );
+            */
+        }
+    }
+    
+    @Inject(at = @At(
+    		value = "RETURN"
+    ), method = "Lnet/minecraft/server/network/ServerPlayerEntity;teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/server/network/ServerPlayerEntity;")
+    public void cardboard$do_world_change(TeleportTarget target, CallbackInfoReturnable<ServerPlayerEntity> e) {
+    	ServerPlayerEntity thiz = (ServerPlayerEntity) (Object) this;
+    	
+    	if (thiz.isRemoved()) {
+    		return;
+    	}
+    	
+    	ServerWorld serverWorld = target.world();
+		RegistryKey<World> registryKey = cb$from.getRegistryKey();
+
+		if (serverWorld.getRegistryKey() == registryKey) {
+			return;
+		}
+
+		PlayerChangedWorldEvent changeEvent = new PlayerChangedWorldEvent((Player)this.getBukkitEntity(), cb$from.getWorld());
+        CraftServer.INSTANCE.getPluginManager().callEvent(changeEvent);
+    }
+
+    /*
     @Inject(at = @At("HEAD"), method = "teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V", cancellable = true)
     public void teleport1(ServerWorld worldserver, double x, double y, double z, float f, float f1, CallbackInfo ci) {
         PlayerTeleportEvent event = new PlayerTeleportEvent(this.getBukkitEntity(), this.getBukkitEntity().getLocation(), new Location(((IMixinWorld)worldserver).getWorldImpl(), x,y,z,f,f1), PlayerTeleportEvent.TeleportCause.UNKNOWN);
@@ -166,7 +249,9 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
             ci.cancel();
         }
     }
+    */
 
+    // World Standard
     public String locale_BF = "en_us";
 
     @Inject(at = @At("HEAD"), method = "setClientOptions")

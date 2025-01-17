@@ -35,6 +35,7 @@ import java.util.Map;
 @Mixin(Explosion.class)
 public class MixinExplosion {
 
+	/*
     @Shadow @Final private World world;
     @Shadow @Final private double x;
     @Shadow @Final private double y;
@@ -48,6 +49,7 @@ public class MixinExplosion {
     @Shadow @Final private boolean createFire;
     //@Shadow @Final private Random random;
     @Shadow @Final private Map<PlayerEntity, Vec3d> affectedPlayers = Maps.newHashMap();
+    */
 
     public boolean wasCanceled = false; // Added by Bukkit
 

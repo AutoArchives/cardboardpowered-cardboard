@@ -1,6 +1,6 @@
 /**
  * Cardboard - Paper API for Fabric
- * Copyright (C) 2020 Cardboard Contributors
+ * Copyright (C) 2020-2025 Cardboard Contributors
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public
@@ -37,7 +37,7 @@ public class MixinPiglinBrain {
 
     /**
      * @reason .
-     * @author .
+     * @author Cardboard
      */
     @Overwrite
     public static void loot(ServerWorld world, PiglinEntity entitypiglin, ItemEntity entityitem) {
@@ -55,7 +55,7 @@ public class MixinPiglinBrain {
 
         if (isGoldenItem(itemstack)) {
             entitypiglin.getBrain().forget(MemoryModuleType.TIME_TRYING_TO_REACH_ADMIRE_ITEM);
-            swapItemWithOffHand(entitypiglin, itemstack);
+            swapItemWithOffHand(world, entitypiglin, itemstack);
             setAdmiringItem((LivingEntity) entitypiglin);
         } else if (isFood(itemstack) && !hasAteRecently(entitypiglin)) {
             setEatenRecently(entitypiglin);
@@ -72,7 +72,7 @@ public class MixinPiglinBrain {
     @Shadow public static boolean hasAteRecently(PiglinEntity entitypiglin) {return false;}
     @Shadow public static boolean isFood(ItemStack item) {return false;}
     @Shadow public static ItemStack getItemFromStack(ItemEntity entityitem) {return null;}
-    @Shadow public static void swapItemWithOffHand(PiglinEntity entitypiglin, ItemStack itemstack) {}
+    @Shadow public static void swapItemWithOffHand(ServerWorld world, PiglinEntity entitypiglin, ItemStack itemstack) {}
     @Shadow public static void stopWalking(PiglinEntity entitypiglin) {}
     @Shadow public static void barterItem(PiglinEntity entitypiglin, ItemStack itemstack) {}
 

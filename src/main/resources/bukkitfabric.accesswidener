@@ -500,3 +500,15 @@ accessible field net/minecraft/entity/vehicle/TntMinecartEntity explosionSpeedFa
 accessible class net/minecraft/entity/player/ItemCooldownManager$Entry
 accessible field net/minecraft/entity/player/ItemCooldownManager entries Ljava/util/Map;
 accessible field net/minecraft/entity/player/ItemCooldownManager tick I
+accessible field net/minecraft/world/TeleportTarget world Lnet/minecraft/server/world/ServerWorld;
+accessible field net/minecraft/world/TeleportTarget position Lnet/minecraft/util/math/Vec3d;
+accessible field net/minecraft/world/TeleportTarget velocity Lnet/minecraft/util/math/Vec3d;
+accessible field net/minecraft/world/TeleportTarget yaw F
+accessible field net/minecraft/world/TeleportTarget pitch F
+mutable field net/minecraft/world/TeleportTarget world Lnet/minecraft/server/world/ServerWorld;
+mutable field net/minecraft/world/TeleportTarget position Lnet/minecraft/util/math/Vec3d;
+mutable field net/minecraft/world/TeleportTarget velocity Lnet/minecraft/util/math/Vec3d;
+mutable field net/minecraft/world/TeleportTarget yaw F
+mutable field net/minecraft/world/TeleportTarget pitch F
+accessible field net/minecraft/screen/AbstractCraftingScreenHandler craftingInventory Lnet/minecraft/inventory/RecipeInputInventory;
+accessible field net/minecraft/screen/AbstractCraftingScreenHandler craftingResultInventory Lnet/minecraft/inventory/CraftingResultInventory;

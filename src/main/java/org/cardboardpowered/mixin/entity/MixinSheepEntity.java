@@ -12,6 +12,7 @@ import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -27,14 +28,16 @@ public class MixinSheepEntity {
             return;
         }
     }
+    
+    // Lnet/minecraft/entity/Shearable;sheared(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/sound/SoundCategory;Lnet/minecraft/item/ItemStack;)V
 
-    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/entity/passive/SheepEntity;sheared(Lnet/minecraft/sound/SoundCategory;)V")
-    public void cardboardForceDrops_START(SoundCategory a, CallbackInfo ci) {
+    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/entity/passive/SheepEntity;sheared(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/sound/SoundCategory;Lnet/minecraft/item/ItemStack;)V")
+    public void cardboardForceDrops_START(ServerWorld world, SoundCategory a, ItemStack stack, CallbackInfo ci) {
         ((IMixinEntity)(Object)this).cardboard_setForceDrops(true);
     }
 
-    @Inject(at = @At("TAIL"), method = "Lnet/minecraft/entity/passive/SheepEntity;sheared(Lnet/minecraft/sound/SoundCategory;)V")
-    public void cardboardForceDrops_END(SoundCategory a, CallbackInfo ci) {
+    @Inject(at = @At("TAIL"), method = "Lnet/minecraft/entity/passive/SheepEntity;sheared(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/sound/SoundCategory;Lnet/minecraft/item/ItemStack;)V")
+    public void cardboardForceDrops_END(ServerWorld world, SoundCategory a, ItemStack stack, CallbackInfo ci) {
         ((IMixinEntity)(Object)this).cardboard_setForceDrops(false);
     }
 

@@ -27,8 +27,8 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(BoatDispenserBehavior.class)
 public class MixinBoatDispenserBehavior {
 
-    @Shadow
-    public ItemDispenserBehavior itemDispenser;
+    // @Shadow
+    // public ItemDispenserBehavior itemDispenser;
 
     //@Shadow
     // public BoatEntity.Type boatType;

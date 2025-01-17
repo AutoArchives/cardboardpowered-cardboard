@@ -95,13 +95,13 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
         boolean flag = get().playerHitTimer > 0;
         this.dropInventory(world);
         if (!get().isBaby() && world.getGameRules().getBoolean(GameRules.DO_MOB_LOOT)) {
-            this.dropLoot(damagesource, flag);
+            this.dropLoot(world, damagesource, flag);
             this.dropEquipment((ServerWorld) world, damagesource, flag);
         }
 
         BukkitEventFactory.callEntityDeathEvent(get(), damagesource, ((IMixinEntity)this).cardboard_getDrops());
         ((IMixinEntity)this).cardboard_setDrops(new ArrayList<>());
-        this.dropXp(damagesource.getAttacker());
+        this.dropExperience(world, damagesource.getAttacker());
         ci.cancel();
         return;
     }
@@ -146,7 +146,7 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
     }
 
     @Shadow
-    public void dropLoot(DamageSource damagesource, boolean flag) {
+    public void dropLoot(ServerWorld world, DamageSource damagesource, boolean flag) {
     }
 
     //@Shadow
@@ -158,7 +158,7 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
     }
     
     @Shadow
-    public void dropXp( Entity attacker) {}
+    public void dropExperience( ServerWorld world, Entity attacker) {}// dropXp( Entity attacker) {}
 
 	@Shadow public abstract Arm getMainArm();
 	/**

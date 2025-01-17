@@ -21,7 +21,14 @@ import net.minecraft.world.World;
 @Mixin(TridentItem.class)
 public class MixinTridentItem {
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;incrementStat(Lnet/minecraft/stat/Stat;)V"), method = "Lnet/minecraft/item/TridentItem;onStoppedUsing(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/entity/LivingEntity;I)V")
+    @Inject(at =
+    		@At(
+    				value = "INVOKE",
+    				target = "Lnet/minecraft/world/World;playSoundFromEntity(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/entity/Entity;Lnet/minecraft/sound/SoundEvent;Lnet/minecraft/sound/SoundCategory;FF)V"
+    				// target = "Lnet/minecraft/entity/player/PlayerEntity;incrementStat(Lnet/minecraft/stat/Stat;)V"
+    		),
+    		method =
+    		"onStoppedUsing(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/entity/LivingEntity;I)V")
     public void doBukkitEvent_PlayerRiptideEvent(ItemStack itemstack, World world, LivingEntity entity, int i, CallbackInfo ci) {
         float k = EnchantmentHelper.getTridentSpinAttackStrength(itemstack, entity);
         if (k > 0.0f) {

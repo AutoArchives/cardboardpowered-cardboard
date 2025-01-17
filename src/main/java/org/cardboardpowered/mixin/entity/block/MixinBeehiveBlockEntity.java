@@ -12,7 +12,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BeehiveBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.BeeEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -25,16 +24,20 @@ public class MixinBeehiveBlockEntity extends BlockEntity {
     }
     
     // NOTE: 1.20.6: Removed ZI argument
+    
+    // NOTE: 1.21.4: tryEnterHive(Entity) -> tryEnterHive(BeeEntity)
 
+    
+    // Lnet/minecraft/block/entity/BeehiveBlockEntity;tryEnterHive(Lnet/minecraft/entity/passive/BeeEntity;)V
+    
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;stopRiding()V"), cancellable = true,
-            method = "Lnet/minecraft/block/entity/BeehiveBlockEntity;tryEnterHive(Lnet/minecraft/entity/Entity;)V")
-    public void bukkitize_tryEnterHive(Entity entity, CallbackInfo ci) {
+            method = "Lnet/minecraft/block/entity/BeehiveBlockEntity;tryEnterHive(Lnet/minecraft/entity/passive/BeeEntity;)V")
+    public void bukkitize_tryEnterHive(BeeEntity entity, CallbackInfo ci) {
         if (this.world != null) {
             org.bukkit.event.entity.EntityEnterBlockEvent event = new org.bukkit.event.entity.EntityEnterBlockEvent(((IMixinEntity)entity).getBukkitEntity(), CraftBlock.at((ServerWorld) world, getPos()));
             org.bukkit.Bukkit.getPluginManager().callEvent(event);
             if (event.isCancelled()) {
-                if (entity instanceof BeeEntity)
-                    ((BeeEntity) entity).setCannotEnterHiveTicks(400);
+                entity.setCannotEnterHiveTicks(400);
                 ci.cancel();
                 return;
             }

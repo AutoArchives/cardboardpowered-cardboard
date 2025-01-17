@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(value = PotionItem.class, priority = 900)
 public class MixinPotionItem {
 
+	/*
     @Inject(
     		method = "finishUsing",
     		at = @At(
@@ -24,4 +25,6 @@ public class MixinPotionItem {
     public void cardboard$potionitem_set_effect_event_cause(ItemStack stack, World world, LivingEntity user, CallbackInfoReturnable<ItemStack> cir) {
         ((IMixinLivingEntity) user).pushEffectCause(EntityPotionEffectEvent.Cause.POTION_DRINK);
     }
+    */
+
 }

@@ -20,13 +20,9 @@ import java.util.Set;
 public class MixinServerScoreboard extends Scoreboard {
 
     @Shadow
-    public Set<ScoreboardObjective> objectives;
+    public Set<ScoreboardObjective> syncableObjectives;
 
-    /**
-     * @reason .
-     * @author .
-     */
-    @Overwrite
+    /*
     public void addScoreboardObjective(ScoreboardObjective scoreboardobjective) {
         List<Packet<?>> list = ((ServerScoreboard)(Object)this).createChangePackets(scoreboardobjective);
         Iterator iterator = CraftServer.INSTANCE.getHandle().getPlayerManager().getPlayerList().iterator();
@@ -42,14 +38,9 @@ public class MixinServerScoreboard extends Scoreboard {
             }
         }
 
-        this.objectives.add(scoreboardobjective);
+        this.syncableObjectives.add(scoreboardobjective);
     }
 
-    /**
-     * @reason .
-     * @author .
-     */
-    @Overwrite
     public void removeScoreboardObjective(ScoreboardObjective scoreboardobjective) {
         List<Packet<?>> list = ((ServerScoreboard)(Object)this).createRemovePackets(scoreboardobjective);
         Iterator iterator = CraftServer.INSTANCE.getHandle().getPlayerManager().getPlayerList().iterator();
@@ -65,13 +56,57 @@ public class MixinServerScoreboard extends Scoreboard {
             }
         }
 
-        this.objectives.remove(scoreboardobjective);
+        this.syncableObjectives.remove(scoreboardobjective);
     }
 
     private void sendAll(Packet packet) {
         for (ServerPlayerEntity entityplayer : CraftServer.server.getPlayerManager().players)
             if (((PlayerImpl)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() == (ServerScoreboard)(Object)this)
                 entityplayer.networkHandler.sendPacket(packet);
+    }
+    */
+    
+    /**
+     * @author Cardboard
+     * @reason bukkitize scoreboard
+     */
+    @Overwrite
+    public void startSyncing(ScoreboardObjective objective) {
+        List<Packet<?>> list = ((ServerScoreboard)(Object)this).createChangePackets(objective);
+        for (ServerPlayerEntity entityplayer : CraftServer.INSTANCE.getHandle().getPlayerManager().getPlayerList()) {
+            if (((PlayerImpl)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue;
+            for (Packet<?> packet : list) {
+                entityplayer.networkHandler.sendPacket(packet);
+            }
+        }
+        this.syncableObjectives.add(objective);
+    }
+    
+    /**
+     * @author Cardboard
+     * @reason bukkitize scoreboard
+     */
+    @Overwrite
+    public void stopSyncing(ScoreboardObjective objective) {
+        List<Packet<?>> list = ((ServerScoreboard)(Object)this).createRemovePackets(objective);
+        for (ServerPlayerEntity entityplayer : CraftServer.INSTANCE.getHandle().getPlayerManager().getPlayerList()) {
+            if (((PlayerImpl)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue;
+            for (Packet<?> packet : list) {
+                entityplayer.networkHandler.sendPacket(packet);
+            }
+        }
+        this.syncableObjectives.remove(objective);
+    }
+    
+    /**
+     * @author Cardboard
+     * @reason bukkitize scoreboard
+     */
+    private void broadcastAll(Packet packet) {
+        for (ServerPlayerEntity entityplayer : CraftServer.INSTANCE.getHandle().getPlayerManager().players) {
+            if (((PlayerImpl)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != this) continue;
+            entityplayer.networkHandler.sendPacket(packet);
+        }
     }
 
 }

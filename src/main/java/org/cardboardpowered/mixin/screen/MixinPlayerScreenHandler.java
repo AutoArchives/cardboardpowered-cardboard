@@ -15,6 +15,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.inventory.CraftingResultInventory;
+import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.ScreenHandler;
@@ -24,8 +25,8 @@ import net.minecraft.text.Text;
 @Mixin(PlayerScreenHandler.class)
 public class MixinPlayerScreenHandler extends MixinScreenHandler implements NamedScreenHandlerFactory {
 
-	@Shadow public RecipeInputInventory craftingInput;
-    @Shadow private CraftingResultInventory craftingResult;
+	// @Shadow public RecipeInputInventory craftingInput;
+    // @Shadow private CraftingResultInventory craftingResult;
     private CardboardInventoryView bukkitEntity = null;
     private PlayerInventory player;
 
@@ -45,8 +46,10 @@ public class MixinPlayerScreenHandler extends MixinScreenHandler implements Name
     public CardboardInventoryView getBukkitView() {
         if (bukkitEntity != null)
             return bukkitEntity;
+        
+        PlayerScreenHandler thiz = (PlayerScreenHandler)(Object)this;
 
-        CraftInventoryCrafting inventory = new CraftInventoryCrafting(this.craftingInput, this.craftingResult);
+        CraftInventoryCrafting inventory = new CraftInventoryCrafting(thiz.craftingInventory, thiz.craftingResultInventory);
         bukkitEntity = new CardboardInventoryView((Player)((IMixinServerEntityPlayer)this.player.player).getBukkitEntity(), inventory, (PlayerScreenHandler)(Object)this);
         return bukkitEntity;
     }

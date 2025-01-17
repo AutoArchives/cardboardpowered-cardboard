@@ -22,7 +22,7 @@ import net.minecraft.item.ItemStack;
 @Mixin(PersistentProjectileEntity.class)
 public abstract class MixinPersistentProjectileEntity implements IMixinPersistentProjectileEntity {
 
-    @Shadow public boolean inGround;
+    // @Shadow public boolean inGround;
     @Shadow public int life;
     // @Shadow public int punch;
     @Shadow public PersistentProjectileEntity.PickupPermission pickupType;
@@ -35,12 +35,17 @@ public abstract class MixinPersistentProjectileEntity implements IMixinPersisten
 
     @Override
     public boolean getInGroundBF() {
-        return inGround;
+        return isInGround();
     }
 
     @Override
     public void setLifeBF(int value) {
         this.life = value;
+    }
+    
+    @Shadow
+    public boolean isInGround() {
+        return false; // Shadowed
     }
 
     private PersistentProjectileEntity getBF() {
@@ -50,7 +55,7 @@ public abstract class MixinPersistentProjectileEntity implements IMixinPersisten
     @SuppressWarnings("deprecation")
     @Inject(at = @At("HEAD"), method = "onPlayerCollision", cancellable = true)
     public void doBukkitEvent_PlayerPickupArrowEvent(PlayerEntity entityhuman, CallbackInfo ci) {
-        if (!getBF().getWorld().isClient && (this.inGround || getBF().isNoClip()) && getBF().shake <= 0) {
+        if (!getBF().getWorld().isClient && (this.isInGround() || getBF().isNoClip()) && getBF().shake <= 0) {
             ItemStack itemstack = this.asItemStack();
             if (this.pickupType == PickupPermission.ALLOWED && !itemstack.isEmpty()) {
                 ItemEntity item = new ItemEntity(getBF().getWorld(), getBF().getX(), getBF().getY(), getBF().getZ(), itemstack);

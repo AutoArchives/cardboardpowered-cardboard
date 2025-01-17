@@ -36,8 +36,8 @@ import net.minecraft.util.Identifier;
 @Mixin(ReloadableRegistries.class)
 public class MixinReloadableRegistries {
 
-	@Shadow
-    private static final Gson GSON = new GsonBuilder().create();
+	// @Shadow
+    // private static final Gson GSON = new GsonBuilder().create();
 	
 	@Shadow
     private static final RegistryEntryInfo DEFAULT_REGISTRY_ENTRY_INFO = new RegistryEntryInfo(Optional.empty(), Lifecycle.experimental());
