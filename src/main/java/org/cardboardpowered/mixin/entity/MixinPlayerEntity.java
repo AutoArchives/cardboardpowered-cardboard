@@ -10,34 +10,45 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import com.llamalad7.mixinextras.sugar.Local;
 
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
 
-@Mixin(value = PlayerEntity.class, priority = 900)
+@Mixin(value = ServerPlayerEntity.class, priority = 900)
 public class MixinPlayerEntity {
     
-    private ItemEntity cardboard_stored_entity;
+    // private ItemEntity cardboard_stored_entity;
 
+	/*
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ItemEntity;setPickupDelay(I)V"),
-            method = "Lnet/minecraft/entity/player/PlayerEntity;dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;")
+            method = "dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;")
     public void store_item_entity(ItemEntity ie, int i, net.minecraft.item.ItemStack stack, boolean z, boolean z2) {
         ie.setPickupDelay(i);
         cardboard_stored_entity = ie;
     }
+    */
 
     @SuppressWarnings("deprecation")
     @Inject(at = @At("RETURN"),
-            method = "Lnet/minecraft/entity/player/PlayerEntity;dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;",
-            cancellable = true)
-    public void cardboard_doPlayerDropItemEvent(net.minecraft.item.ItemStack stack, boolean throwRandomly, boolean retainOwnership, CallbackInfoReturnable<ItemEntity> ci) {
+            method = "dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;",
+            cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
+    public void cardboard_doPlayerDropItemEvent(
+    		net.minecraft.item.ItemStack stack,
+    		boolean throwRandomly,
+    		boolean retainOwnership,
+    		CallbackInfoReturnable<ItemEntity> ci,
+    		@Local ItemEntity itemEntity
+    ) {
         if (stack.isEmpty()) {
             return;
         }
         Player player = (Player)(((IMixinEntity)this).getBukkitEntity());
-        Item drop = (Item) ((IMixinEntity)cardboard_stored_entity).getBukkitEntity();
+        Item drop = (Item) ((IMixinEntity)itemEntity).getBukkitEntity();
         PlayerDropItemEvent event = new PlayerDropItemEvent(player, drop);
         Bukkit.getServer().getPluginManager().callEvent(event);
 
@@ -50,10 +61,10 @@ public class MixinPlayerEntity {
                 player.getInventory().setItemInHand(cur);
             } else player.getInventory().addItem(drop.getItemStack());
 
-            cardboard_stored_entity = null;
+            itemEntity = null;
             ci.setReturnValue(null);
         }
-        cardboard_stored_entity = null;
+        // cardboard_stored_entity = null;
     }
 
 }

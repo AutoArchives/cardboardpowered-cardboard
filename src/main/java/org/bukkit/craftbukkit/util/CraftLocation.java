@@ -1,11 +1,14 @@
 package org.bukkit.craftbukkit.util;
 
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.GlobalPos;
 // import net.minecraft.util.math.PositionImpl;
 import net.minecraft.util.math.Vec3d;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.cardboardpowered.impl.world.WorldImpl;
 
+import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
 
 public final class CraftLocation {
@@ -64,6 +67,15 @@ public final class CraftLocation {
     // public static PositionImpl toPosition(Location location) {
     //    return new PositionImpl(location.getX(), location.getY(), location.getZ());
     //}
+    
+    public static GlobalPos toGlobalPos(Location location) {
+        return GlobalPos.create(((WorldImpl)location.getWorld()).getHandle().getRegistryKey(), CraftLocation.toBlockPosition(location));
+    }
+
+    public static Location fromGlobalPos(GlobalPos globalPos) {
+        BlockPos pos = globalPos.pos();
+        return new Location((World)IMixinMinecraftServer.getServer().getWorld(globalPos.dimension()).getWorld(), (double)pos.getX(), (double)pos.getY(), (double)pos.getZ());
+    }
 
 
     public static Vec3d toVec3D(Location location) {

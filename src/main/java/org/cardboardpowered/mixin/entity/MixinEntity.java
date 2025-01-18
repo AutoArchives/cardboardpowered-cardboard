@@ -19,6 +19,8 @@ package org.cardboardpowered.mixin.entity;
 
 import com.javazilla.bukkitfabric.interfaces.IMixinCommandOutput;
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import com.llamalad7.mixinextras.sugar.Local;
+
 import me.isaiah.common.entity.IRemoveReason;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
@@ -90,6 +92,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 
@@ -178,10 +181,11 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
             this.bukkit = getEntity(CraftServer.INSTANCE, (Entity)(Object)this);
         }
     }
+    
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;spawnEntity(Lnet/minecraft/entity/Entity;)Z"),
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;spawnEntity(Lnet/minecraft/entity/Entity;)Z"),
     		method = "dropStack(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/item/ItemStack;F)Lnet/minecraft/entity/ItemEntity;")
-    public boolean dropStackEvent1(World world, Entity entity, ServerWorld sworld, ItemStack itemstack, float f) {
+    public boolean dropStackEvent1(ServerWorld world, Entity entity, ServerWorld sworld, ItemStack itemstack, float f) {
         if (itemstack.isEmpty())
             return false;
 

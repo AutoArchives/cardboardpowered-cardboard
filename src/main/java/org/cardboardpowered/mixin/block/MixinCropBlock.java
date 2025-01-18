@@ -25,7 +25,10 @@ public abstract class MixinCropBlock extends PlantBlock {
     protected MixinCropBlock(AbstractBlock.Settings settings) {
         super(settings);
     }
+    
+    // TODO: 1.21.4
 
+    /*
     @Redirect (method = "randomTick", at = @At (value = "INVOKE",
             target = "Lnet/minecraft/server/world/ServerWorld;setBlockState" +
                     "(Lnet/minecraft/util/math/BlockPos;" +
@@ -46,7 +49,7 @@ public abstract class MixinCropBlock extends PlantBlock {
             target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$Key;)Z"))
     private boolean bukkit_ifHack(GameRules instance, GameRules.Key<GameRules.BooleanRule> rule) {
         return true;
-        /*mumfrey pls allow us to add conditions to ifs*/
+        // mumfrey pls allow us to add conditions to ifs
     }
 
     @Inject (method = "onEntityCollision", at = @At (value = "INVOKE",
@@ -65,5 +68,6 @@ public abstract class MixinCropBlock extends PlantBlock {
 	            ci.cancel();
 	        }
     	}
-    }
+    }*/
+
 }

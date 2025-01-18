@@ -24,16 +24,15 @@ import org.bukkit.craftbukkit.inventory.SerializableMeta;
 import org.bukkit.inventory.meta.FireworkMeta;
 
 @DelegateDeserialization(value=SerializableMeta.class)
-public class CraftMetaFirework
-extends CraftMetaItem
-implements FireworkMeta {
+public class CraftMetaFirework extends CraftMetaItem implements FireworkMeta {
+
     static final CraftMetaItem.ItemMetaKeyType<FireworksComponent> FIREWORKS = new CraftMetaItem.ItemMetaKeyType<FireworksComponent>(DataComponentTypes.FIREWORKS, "Fireworks");
     static final CraftMetaItem.ItemMetaKey FLIGHT = new CraftMetaItem.ItemMetaKey("power");
     static final CraftMetaItem.ItemMetaKey EXPLOSIONS = new CraftMetaItem.ItemMetaKey("firework-effects");
     private ArrayList<FireworkEffect> effects;
     public int power;
 
-    CraftMetaFirework(CraftMetaItem meta) {
+    public CraftMetaFirework(CraftMetaItem meta) {
         super(meta);
         if (!(meta instanceof CraftMetaFirework)) {
             return;
@@ -45,7 +44,7 @@ implements FireworkMeta {
         }
     }
 
-    CraftMetaFirework(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
+    public CraftMetaFirework(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaFirework.getOrEmpty(tag, FIREWORKS).ifPresent(fireworks -> {
             this.power = fireworks.flightDuration();
@@ -64,7 +63,7 @@ implements FireworkMeta {
         });
     }
 
-    static FireworkEffect getEffect(FireworkExplosionComponent explosion) {
+    public static FireworkEffect getEffect(FireworkExplosionComponent explosion) {
         int color;
         FireworkEffect.Builder effect = FireworkEffect.builder().flicker(explosion.hasTwinkle()).trail(explosion.hasTrail()).with(CraftMetaFirework.getEffectType(explosion.shape()));
         IntList colors = explosion.colors();
@@ -84,7 +83,7 @@ implements FireworkMeta {
         return effect.build();
     }
 
-    static FireworkExplosionComponent getExplosion(FireworkEffect effect) {
+    public static FireworkExplosionComponent getExplosion(FireworkEffect effect) {
         IntList colors = CraftMetaFirework.addColors(effect.getColors());
         IntList fadeColors = CraftMetaFirework.addColors(effect.getFadeColors());
         return new FireworkExplosionComponent(CraftMetaFirework.getNBT(effect.getType()), colors, fadeColors, effect.hasTrail(), effect.hasFlicker());
@@ -111,7 +110,7 @@ implements FireworkMeta {
         throw new IllegalArgumentException("Unknown effect type " + String.valueOf(type));
     }
 
-    static FireworkEffect.Type getEffectType(FireworkExplosionComponent.Type nbt) {
+    public static FireworkEffect.Type getEffectType(FireworkExplosionComponent.Type nbt) {
         switch (nbt) {
             case SMALL_BALL: {
                 return FireworkEffect.Type.BALL;
@@ -132,7 +131,7 @@ implements FireworkMeta {
         throw new IllegalArgumentException("Unknown effect type " + String.valueOf(nbt));
     }
 
-    CraftMetaFirework(Map<String, Object> map) {
+    public CraftMetaFirework(Map<String, Object> map) {
         super(map);
         Integer power = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(Integer.class, map, CraftMetaFirework.FLIGHT.BUKKIT, true);
         if (power != null) {
@@ -146,7 +145,7 @@ implements FireworkMeta {
         return this.effects != null && !this.effects.isEmpty();
     }
 
-    void safelyAddEffects(Iterable<?> collection, boolean throwOnOversize) {
+    public void safelyAddEffects(Iterable<?> collection, boolean throwOnOversize) {
         if (collection == null || collection instanceof Collection && ((Collection)collection).isEmpty()) {
             return;
         }
@@ -179,7 +178,7 @@ implements FireworkMeta {
         itemTag.put(FIREWORKS, new FireworksComponent(this.power, effects));
     }
 
-    static IntList addColors(List<Color> colors) {
+    public static IntList addColors(List<Color> colors) {
         if (colors.isEmpty()) {
             return IntList.of();
         }
@@ -319,5 +318,7 @@ implements FireworkMeta {
         Preconditions.checkArgument((power < 128 ? 1 : 0) != 0, (String)"power cannot be more than 127: %s", (int)power);
         this.power = power;
     }
+
+
 }
 

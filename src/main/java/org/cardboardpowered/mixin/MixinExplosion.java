@@ -33,7 +33,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.util.Map;
 
 @Mixin(Explosion.class)
-public class MixinExplosion {
+public interface MixinExplosion {
 
 	/*
     @Shadow @Final private World world;
@@ -51,7 +51,7 @@ public class MixinExplosion {
     @Shadow @Final private Map<PlayerEntity, Vec3d> affectedPlayers = Maps.newHashMap();
     */
 
-    public boolean wasCanceled = false; // Added by Bukkit
+    // public boolean wasCanceled = false; // Added by Bukkit
 
     /**
      * @author BukkitFabric

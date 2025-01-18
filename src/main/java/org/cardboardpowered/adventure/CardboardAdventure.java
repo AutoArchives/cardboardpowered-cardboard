@@ -4,6 +4,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.JavaOps;
 
 import io.netty.util.AttributeKey;
+import io.papermc.paper.adventure.PaperAdventure;
 import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.inventory.Book;
@@ -29,6 +30,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.RawFilteredPair;
@@ -121,7 +123,7 @@ public class CardboardAdventure {
     public static final ComponentSerializer<Component, Component, Text> WRAPPER_AWARE_SERIALIZER = new WrapperAwareSerializer(() -> CraftRegistry.getMinecraftRegistry().getOps(JavaOps.INSTANCE));
 
     
-    private CardboardAdventure() {
+    public CardboardAdventure() {
     }
 
     // Key
@@ -400,4 +402,13 @@ public class CardboardAdventure {
         }
         return asVanilla(component);
     }
+
+	public static Key asAdventure(Identifier key) {
+        return Key.key((String)key.getNamespace(), (String)key.getPath());
+    }
+	
+	public static Key asAdventureKey(RegistryKey<?> key) {
+        return PaperAdventure.asAdventure(key.getValue());
+    }
+
 }

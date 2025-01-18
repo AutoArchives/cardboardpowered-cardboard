@@ -30,6 +30,9 @@ public class MixinBeehiveBlockEntity extends BlockEntity {
     
     // Lnet/minecraft/block/entity/BeehiveBlockEntity;tryEnterHive(Lnet/minecraft/entity/passive/BeeEntity;)V
     
+    // TODO: 1.21.4
+    
+    /*
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;stopRiding()V"), cancellable = true,
             method = "Lnet/minecraft/block/entity/BeehiveBlockEntity;tryEnterHive(Lnet/minecraft/entity/passive/BeeEntity;)V")
     public void bukkitize_tryEnterHive(BeeEntity entity, CallbackInfo ci) {
@@ -43,5 +46,6 @@ public class MixinBeehiveBlockEntity extends BlockEntity {
             }
         }
     }
+    */
 
 }

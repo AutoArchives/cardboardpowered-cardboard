@@ -20,6 +20,7 @@ import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.recipe.RecipeType;
+import net.minecraft.recipe.ServerRecipeManager;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.registry.RegistryWrapper;
@@ -46,49 +47,41 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-@Mixin(RecipeManager.class)
+@Mixin(ServerRecipeManager.class) // Note: 1.21.4: RecipeManager->ServerRecipeManager // 72, 79, 52, 55, 58, 66, 114
 public class MixinRecipeManager implements IMixinRecipeManager {
 
-	@Shadow
-    public Multimap<RecipeType<?>, RecipeEntry<?>> recipesByType = ImmutableMultimap.of();
+	// TODO @Shadow
+    // public Multimap<RecipeType<?>, RecipeEntry<?>> recipesByType = ImmutableMultimap.of();
 	
-	@Shadow
-    private Map<Identifier, RecipeEntry<?>> recipesById = ImmutableMap.of();
+	// TODO @Shadow
+    // private Map<Identifier, RecipeEntry<?>> recipesById = ImmutableMap.of();
 	
-	@Shadow
-	private RegistryWrapper.WrapperLookup registryLookup;
+	// TODO @Shadow
+	// private RegistryWrapper.WrapperLookup registryLookup;
 	
 	@Override
 	public  Multimap<RecipeType<?>, RecipeEntry<?>> cb$get_recipesByType() {
-		return recipesByType;
+		return null; // TODO return recipesByType;
 	}
-	
-    //@Invoker("deserialize")
-    //protected static RecipeEntry<?> method_17720(Identifier minecraftkey, JsonObject jsonobject) {
-    //    return null;
-    //}
-	
-	
-	
 
-    @Shadow public boolean errored;
+    // TODO @Shadow public boolean errored;
     // @Shadow public Map<RecipeType<?>, Map<Identifier, RecipeEntry<?>>> recipes = ImmutableMap.of();
     // @Shadow public <C extends Inventory, T extends Recipe<C>> Map<Identifier, Recipe<C>> getAllOfType(RecipeType<T> recipes) {return null;}
 
     @Unique private static final Logger LOGGER_BF = LogManager.getLogger("Bukkit|RecipeManager");
 
-    @Inject(at = @At("RETURN"), method = "apply(Ljava/util/Map;Lnet/minecraft/resource/ResourceManager;Lnet/minecraft/util/profiler/Profiler;)V")
+    /*TODO@Inject(at = @At("RETURN"), method = "apply(Ljava/util/Map;Lnet/minecraft/resource/ResourceManager;Lnet/minecraft/util/profiler/Profiler;)V")
     public void cardboard$apply_make_mut(Map<Identifier, JsonElement> map, ResourceManager rm, Profiler gameprofilerfiller, CallbackInfo ci) {
     	this.recipesById = new HashMap<>(this.recipesById);
         this.recipesByType = LinkedHashMultimap.create(this.recipesByType);
         LOGGER_BF.info("Loaded " + this.recipesById.size() + " recipes");
-    }
+    }*/
     
-    @Inject(method = "setRecipes", at = @At("RETURN"))
+    /*TODO@Inject(method = "setRecipes", at = @At("RETURN"))
     private void cardboard$set_recipes_make_mut(Iterable<RecipeEntry<?>> recipes, CallbackInfo ci) {
     	this.recipesById = new HashMap<>(this.recipesById);
         this.recipesByType = LinkedHashMultimap.create(this.recipesByType);
-    }
+    }*/
     
     /*
      * @author BukkitFabric
@@ -119,8 +112,8 @@ public class MixinRecipeManager implements IMixinRecipeManager {
     }
     */
     
-    @Shadow
-    public PreparedRecipes preparedRecipes = PreparedRecipes.EMPTY;
+    // TODO @Shadow
+    // public PreparedRecipes preparedRecipes = PreparedRecipes.EMPTY;
     
     private FeatureSet featureflagset;
     
@@ -175,19 +168,19 @@ public class MixinRecipeManager implements IMixinRecipeManager {
     
     @Override
     public void clearRecipes() {
-        this.recipesByType = LinkedHashMultimap.create();
-        this.recipesById = Maps.newHashMap();
+        // TODO this.recipesByType = LinkedHashMultimap.create();
+        // TODO this.recipesById = Maps.newHashMap();
     }
     
     @Override
     public boolean removeRecipe(Identifier mcKey) {
-        Iterator iter = this.recipesByType.values().iterator();
+        /*Iterator iter = this.recipesByType.values().iterator();
         while (iter.hasNext()) {
             RecipeEntry recipe = (RecipeEntry)iter.next();
             if (!recipe.id().equals(mcKey)) continue;
             iter.remove();
         }
-        return this.recipesById.remove(mcKey) != null;
+        return this.recipesById.remove(mcKey) != null;*/ return false; // TODO
     }
 
 

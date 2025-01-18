@@ -48,7 +48,7 @@ public class MixinIngredient implements IIngredient {
 	
 	
 	// @Shadow public Entry[] entries;
-    @Shadow public ItemStack[] matchingStacks;
+    // @Shadow public ItemStack[] matchingStacks;
     // @Shadow public void cacheMatchingStacks() {}
     
     public boolean exact_BF;
@@ -63,10 +63,10 @@ public class MixinIngredient implements IIngredient {
         exact_BF = value;
     }
     
-    @Shadow
-    public ItemStack[] getMatchingStacks() {
-    	return null;
-    }
+    // @Shadow
+    // public ItemStack[] getMatchingStacks() {
+    //	return null;
+    // }
     
     @Inject(method = "test(Lnet/minecraft/item/ItemStack;)Z",
             at = @At("HEAD"),

@@ -27,7 +27,23 @@ public class CraftRegistryEntry<M, B extends Keyed> extends BaseRegistryEntry<M,
         final RegistryTypeMapper<M, B> minecraftToBukkit
     ) {
         super(mcKey, apiKey);
-        Preconditions.checkArgument(!classToPreload.getPackageName().startsWith("net.minecraft"), classToPreload + " should not be in the net.minecraft package as the class-to-preload");
+        
+        // Cardboard - start
+        boolean do_check = true;
+        
+        String cn = classToPreload.getName();
+        
+        if (cn.contains("class_")) {
+        	System.out.println("Debug: Ignoring preload of " + cn);
+        	do_check = false;
+        }
+        
+        // Cardboard - end
+        
+        if (do_check) {
+        	Preconditions.checkArgument(!classToPreload.getPackageName().startsWith("net.minecraft"), classToPreload + " should not be in the net.minecraft package as the class-to-preload");
+        }
+        
         this.classToPreload = classToPreload;
         this.minecraftToBukkit = minecraftToBukkit;
     }

@@ -60,8 +60,11 @@ public class MixinSlimeEntity extends MixinEntity implements ISlimeEntity {
             return;
         }
     }*/
+    
+    // TODO: 1.21.4
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;spawnEntity(Lnet/minecraft/entity/Entity;)Z"), method = "remove")
+    /*
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;spawnEntity(Lnet/minecraft/entity/Entity;)Z"), method = "remove")
     public boolean doBukkitEvent_RedirectSpawnEntity(World w, Entity e) {
         this.slimes_B.add((SlimeEntity)e);
         return false;
@@ -69,7 +72,7 @@ public class MixinSlimeEntity extends MixinEntity implements ISlimeEntity {
 
     /**
      * @reason EntityTransformEvent
-     */
+     *
     @Inject(at = @At(value = "TAIL"), method = "remove", cancellable = true)
     public void doBukkitEvent_RedirectSpawnEntity_2(CallbackInfo ci) {
         EntityTransformEvent ev = BukkitEventFactory.callEntityTransformEvent((SlimeEntity)(Object)this, slimes_B, EntityTransformEvent.TransformReason.SPLIT);
@@ -80,5 +83,6 @@ public class MixinSlimeEntity extends MixinEntity implements ISlimeEntity {
         for (net.minecraft.entity.LivingEntity living : slimes_B)
             this.mc_world().spawnEntity(living); // TODO SpawnReason.SLIME_SPLIT
     }
+    */
 
 }
