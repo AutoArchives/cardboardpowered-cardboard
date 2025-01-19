@@ -1,20 +1,20 @@
 /**
  * Cardboard - Bukkit for Fabric
- * Copyright (C) 2023 Cardboard contributors
+ * Copyright (C) 2023-2025 Cardboard contributors
  */
 package org.cardboardpowered.mixin.entity;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinSaddledComponent;
+import org.cardboardpowered.interfaces.ISaddledComponent;
 
 import net.minecraft.entity.SaddledComponent;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 
 @Mixin(SaddledComponent.class)
-public class MixinSaddledComponent implements IMixinSaddledComponent {
+public class MixinSaddledComponent implements ISaddledComponent {
 
     @Shadow public DataTracker dataTracker;
     @Shadow public TrackedData<Integer> boostTime;

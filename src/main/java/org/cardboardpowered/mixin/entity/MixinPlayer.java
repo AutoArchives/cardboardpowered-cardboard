@@ -135,7 +135,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     }
 
     @Override
-    public CommandSender getBukkitSender(ServerCommandSource serverCommandSource) {
+    public CommandSender getBukkitSender(ServerCommandSource wrapper) {
         return bukkit;
     }
 

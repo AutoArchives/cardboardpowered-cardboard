@@ -1,29 +1,37 @@
 /**
  * The Bukkit for Fabric Project
- * Copyright (C) 2020 Javazilla Software and contributors
- * 
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either 
- * version 3 of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Copyright (C) 2020-2025 Isaiah & Cardboard contributors
  */
 package com.javazilla.bukkitfabric.interfaces;
 
 import org.bukkit.command.CommandSender;
 
+import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.command.ServerCommandSource;
 
 public interface IMixinCommandOutput {
 
-    CommandSender getBukkitSender(ServerCommandSource serverCommandSource);
+	/**
+	 */
+    default CommandSender getBukkitSender(ServerCommandSource source) {
+
+    	if (source.isExecutedByPlayer()) {
+    		// Cardboard Note: Redirect ServerPlayerEntity$3 to ServerPlayerEntity
+    		return ( (IMixinCommandOutput) source.getPlayer() ).getBukkitSender(source);
+    	}
+
+    	if (null != source.entity) {
+    		return ( (IMixinCommandOutput) source.getEntity() ).getBukkitSender(source);
+    	}
+    	
+    	CommandOutput output = source.output;
+    	
+    	// Memic Default Error
+    	String msg1 = " does not define or inherit an implementation of the resolved method 'org.bukkit.command.CommandSender";
+    	String msg2 = " getBukkitSender(net.minecraft.class_2168/ServerCommandSource)' of interface IMixinCommandOutput.";
+    	throw new AbstractMethodError(
+    			"Receiver class " + output.getClass().getName() + msg1 +  msg2
+    	);
+    }
 
 }

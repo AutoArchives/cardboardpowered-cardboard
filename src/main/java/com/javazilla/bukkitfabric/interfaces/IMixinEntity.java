@@ -1,6 +1,6 @@
 /**
  * Cardboard
- * Copyright (C) 2020-2022 contributors
+ * Copyright (C) 2020-2025 contributors
  */
 package com.javazilla.bukkitfabric.interfaces;
 

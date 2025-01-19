@@ -13,10 +13,10 @@ import org.bukkit.command.CommandException;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Player;
+import org.cardboardpowered.interfaces.IServerCommandSource;
 
 import com.google.common.collect.ImmutableList;
 import com.javazilla.bukkitfabric.interfaces.IMixinCommandOutput;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerCommandSource;
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -79,7 +79,7 @@ public class BukkitCommandWrapper implements com.mojang.brigadier.Command<Server
 
     @Override
     public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) {
-        List<String> results = ((CraftServer)Bukkit.getServer()).tabComplete(((IMixinServerCommandSource) context.getSource()).getBukkitSender(), builder.getInput(), context.getSource().getWorld(), context.getSource().getPosition(), true);
+        List<String> results = ((CraftServer)Bukkit.getServer()).tabComplete(((IServerCommandSource) context.getSource()).getBukkitSender(), builder.getInput(), context.getSource().getWorld(), context.getSource().getPosition(), true);
 
         // Defaults to sub nodes, but we have just one giant args node, so offset accordingly
         builder = builder.createOffset(builder.getInput().lastIndexOf(' ') + 1);
