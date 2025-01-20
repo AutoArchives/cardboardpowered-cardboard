@@ -52,6 +52,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 //>>>>>>> upstream/ver/1.20
 import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
 import com.javazilla.bukkitfabric.interfaces.IMixinCommandOutput;
+import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 import com.javazilla.bukkitfabric.interfaces.IMixinScreenHandler;
 import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
@@ -76,11 +77,13 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerListener;
+import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity.RespawnPos;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -117,6 +120,54 @@ import java.util.OptionalInt;
 @Mixin(value = ServerPlayerEntity.class, priority = 999)
 public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCommandOutput, IMixinServerEntityPlayer  {
 
+	
+	@Shadow
+	private CommandOutput commandOutput;
+	
+	public CommandOutput cb$get_command_output() {
+		return commandOutput;
+	}
+	
+	public void cb$set_command_output(CommandOutput out) {
+		this.commandOutput = out;
+	}
+	
+	public void cb$set_bukkit_command_output(CommandOutput out) {
+		// this.commandOutput = out;
+		
+		this.commandOutput = new CommandOutput() {
+
+			@Override
+			public void sendMessage(Text message) {
+				out.sendMessage(message);
+			}
+
+			@Override
+			public boolean shouldBroadcastConsoleToOps() {
+				return out.shouldBroadcastConsoleToOps();
+			}
+
+			@Override
+			public boolean shouldReceiveFeedback() {
+				return out.shouldReceiveFeedback();
+			}
+
+			@Override
+			public boolean shouldTrackOutput() {
+				// TODO Auto-generated method stub
+				return false;
+			}
+			
+			// @Override
+            public CommandSender getBukkitSender(ServerCommandSource wrapper) {
+                return ( (IMixinEntity)  ((ServerPlayerEntity) (Object) this) ) .getBukkitEntity();
+            	// return ServerPlayerEntity.this.getBukkitEntity();
+            }
+			
+		};
+		
+	}
+	
     private PlayerImpl bukkit;
 
     public ClientConnection connectionBF;
@@ -173,7 +224,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     	//ServerWorld serverWorld = target.world();
     	// ServerWorld serverWorld2 = thiz.getServerWorld();
     	cb$from = thiz.getServerWorld(); // Cardboard - store from world
-    	
+
     	Location exit = CraftLocation.toBukkit(target.position(), target.world().getWorld());
 
     	PlayerTeleportEvent tpEvent = new PlayerTeleportEvent(

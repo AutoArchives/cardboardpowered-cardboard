@@ -74,6 +74,7 @@
     "entity.MixinPersistentProjectileEntity",
     "entity.MixinPiglinBrain",
     "entity.MixinPlayer",
+    "entity.MixinServerPlayerEntityCommandSender",
     "entity.MixinPlayerEntity",
     "entity.MixinProjectileEntity",
     "entity.MixinSaddledComponent",
