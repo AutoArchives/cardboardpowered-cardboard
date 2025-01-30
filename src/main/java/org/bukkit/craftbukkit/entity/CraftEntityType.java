@@ -1,6 +1,9 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
+
+import io.papermc.paper.registry.RegistryKey;
+
 import java.util.Locale;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -61,6 +64,6 @@ public class CraftEntityType {
         NamespacedKey key = NamespacedKey.fromString(string);
 
         // Now also convert from when keys where saved
-        return CraftRegistry.get(Registry.ENTITY_TYPE, key, ApiVersion.CURRENT);
+        return CraftRegistry.get(RegistryKey.ENTITY_TYPE, key, ApiVersion.CURRENT);
     }
 }

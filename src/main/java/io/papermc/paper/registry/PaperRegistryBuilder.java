@@ -14,8 +14,8 @@ public interface PaperRegistryBuilder<M, T> extends RegistryBuilder<T> {
 
         B fill(Conversions conversions, @Nullable M nms);
 
-        default Factory<M, T, B> asFactory() {
-            return (lookup) -> this.fill(lookup, null);
+        default B create(final Conversions conversions) {
+            return this.fill(conversions, null);
         }
     }
 

@@ -7,7 +7,6 @@ import java.util.UUID;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
@@ -44,7 +43,7 @@ public class VillagerImpl extends AbstractVillagerImpl implements Villager {
         private final int ordinal;
 
         public static Villager.Profession minecraftToBukkit(VillagerProfession minecraft) {
-            return (Villager.Profession)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.VILLAGER_PROFESSION, Registry.VILLAGER_PROFESSION);
+            return (Villager.Profession)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.VILLAGER_PROFESSION);
         }
 
         public static VillagerProfession bukkitToMinecraft(Villager.Profession bukkit) {
@@ -108,7 +107,7 @@ public class VillagerImpl extends AbstractVillagerImpl implements Villager {
         private final int ordinal;
 
         public static Villager.Type minecraftToBukkit(VillagerType minecraft) {
-            return (Villager.Type)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.VILLAGER_TYPE, Registry.VILLAGER_TYPE);
+            return (Villager.Type)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.VILLAGER_TYPE);
         }
 
         public static VillagerType bukkitToMinecraft(Villager.Type bukkit) {

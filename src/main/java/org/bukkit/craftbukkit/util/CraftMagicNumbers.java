@@ -8,8 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.logging.Level;
+import java.util.stream.Stream;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -79,6 +81,7 @@ import com.mojang.serialization.JsonOps;
 
 import io.izzel.arclight.api.EnumHelper;
 import io.izzel.arclight.api.Unsafe;
+import io.papermc.paper.entity.EntitySerializationFlag;
 import io.papermc.paper.inventory.ItemRarity;
 import io.papermc.paper.inventory.tooltip.TooltipContext;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
@@ -98,6 +101,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.datafixer.Schemas;
 import net.minecraft.datafixer.TypeReferences;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.item.tooltip.TooltipType;
@@ -131,6 +135,7 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.block.data.IMagicNumbers;
 import org.bukkit.craftbukkit.damage.CraftDamageEffect;
 import org.bukkit.craftbukkit.damage.CraftDamageSourceBuilder;
+import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftEntityType;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Entity;
@@ -873,7 +878,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         return CardboardAttributable.bukkitToMinecraft(attribute).getTranslationKey();
 	}
 
-	@Override
+	// @Override
 	public @Nullable DamageEffect getDamageEffect(String key) {
         return CraftDamageEffect.getById(key);
 	}
@@ -924,8 +929,9 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         }
         return s;
 	}
+
 	@Override
-	public <B extends Keyed> B get(Registry<B> registry, NamespacedKey key) {
+	public <B extends Keyed> B get(RegistryKey<B> registry, NamespacedKey key) {
 		return CraftRegistry.get(registry, key, ApiVersion.CURRENT);
 	}
 
@@ -985,6 +991,34 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     	*/
     }
 	
+	private byte[] serializeNbtToBytes(NbtCompound compound) {
+        compound.putInt("DataVersion", getDataVersion());
+        java.io.ByteArrayOutputStream outputStream = new java.io.ByteArrayOutputStream();
+        try {
+            net.minecraft.nbt.NbtIo.writeCompressed(
+                compound,
+                outputStream
+            );
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        return outputStream.toByteArray();
+    }
+
+    private NbtCompound deserializeNbtFromBytes(byte[] data) {
+        NbtCompound compound;
+        try {
+            compound = net.minecraft.nbt.NbtIo.readCompressed(
+                new java.io.ByteArrayInputStream(data), net.minecraft.nbt.NbtSizeTracker.ofUnlimitedBytes()
+            );
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        int dataVersion = compound.getInt("DataVersion");
+        Preconditions.checkArgument(dataVersion <= getDataVersion(), "Newer version! Server downgrades are not supported!");
+        return compound;
+    }
+	
 	 private Biome customBiome;
 	    @Override
 	    public Biome getCustomBiome() {
@@ -994,6 +1028,74 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 
 	        return this.customBiome;
 	    }
+
+
+		@Override
+	    public byte[] serializeEntity(org.bukkit.entity.Entity entity, EntitySerializationFlag... serializationFlags) {
+	        Preconditions.checkNotNull(entity, "null cannot be serialized");
+	        Preconditions.checkArgument(entity instanceof CraftEntity, "Only CraftEntities can be serialized");
+
+	        Set<EntitySerializationFlag> flags = Set.of(serializationFlags);
+	        final boolean serializePassangers = flags.contains(EntitySerializationFlag.PASSENGERS);
+	        final boolean forceSerialization = flags.contains(EntitySerializationFlag.FORCE);
+	        final boolean allowPlayerSerialization = flags.contains(EntitySerializationFlag.PLAYER);
+	        final boolean allowMiscSerialization = flags.contains(EntitySerializationFlag.MISC);
+	        final boolean includeNonSaveable = allowPlayerSerialization || allowMiscSerialization;
+
+	        net.minecraft.entity.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+	        (serializePassangers ? nmsEntity.streamSelfAndPassengers() : Stream.of(nmsEntity)).forEach(e -> {
+	            // Ensure force flag is not needed
+	            Preconditions.checkArgument(
+	                (e.getBukkitEntity().isValid() && e.getBukkitEntity().isPersistent()) || forceSerialization,
+	                "Cannot serialize invalid or non-persistent entity %s(%s) without the FORCE flag",
+	                e.getType().getUntranslatedName(),
+	                e.getUuidAsString()
+	            );
+
+	            if (e instanceof PlayerEntity) {
+	                // Ensure player flag is not needed
+	                Preconditions.checkArgument(
+	                    allowPlayerSerialization,
+	                    "Cannot serialize player(%s) without the PLAYER flag",
+	                    e.getUuidAsString()
+	                );
+	            } else {
+	                // Ensure player flag is not needed
+	                Preconditions.checkArgument(
+	                    nmsEntity.getType().isSaveable() || allowMiscSerialization,
+	                    "Cannot serialize misc non-saveable entity %s(%s) without the MISC flag",
+	                    e.getType().getUntranslatedName(),
+	                    e.getUuidAsString()
+	                );
+	            }
+	        });
+
+	        NbtCompound compound = new NbtCompound();
+	        if (serializePassangers) {
+	            // TODO
+	        	// if (!nmsEntity.saveAsPassenger(compound, true, includeNonSaveable, forceSerialization)) {
+	                throw new IllegalArgumentException("Couldn't serialize entity");
+	            // }
+	        } else {
+	            /*
+	        	List<net.minecraft.entity.Entity> pass = new ArrayList<>(nmsEntity.getPassengerList());
+	            nmsEntity.passengerList = com.google.common.collect.ImmutableList.of();
+	            boolean serialized = nmsEntity.saveAsPassenger(compound, true, includeNonSaveable, forceSerialization);
+	            nmsEntity.passengerList = com.google.common.collect.ImmutableList.copyOf(pass);
+	            if (!serialized) {
+	                throw new IllegalArgumentException("Couldn't serialize entity");
+	            }
+	            */
+	        }
+	        return serializeNbtToBytes(compound);
+	    }
+		
+		@Override
+		public @NotNull Entity deserializeEntity(byte @NotNull [] data, @NotNull World world, boolean preserveUUID,
+				boolean preservePassengers) {
+			// TODO Auto-generated method stub
+			return null;
+		}
 
 
 }

@@ -2,51 +2,45 @@ package io.papermc.paper.registry;
 
 import com.mojang.serialization.Lifecycle;
 import io.papermc.paper.registry.data.util.Conversions;
-import io.papermc.paper.registry.entry.RegistryEntry;
-import io.papermc.paper.registry.entry.RegistryTypeMapper;
+import io.papermc.paper.registry.entry.RegistryEntryMeta;
 import io.papermc.paper.registry.event.WritableRegistry;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntryInfo;
 import org.bukkit.Keyed;
-import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.CraftRegistry;
-import org.bukkit.craftbukkit.util.ApiVersion;
+import org.cardboardpowered.interfaces.ISimpleRegistry;
 
 public class WritableCraftRegistry<M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> extends CraftRegistry<T, M> {
 
     private static final RegistryEntryInfo FROM_PLUGIN = new RegistryEntryInfo(Optional.empty(), Lifecycle.experimental());
 
-    private final RegistryEntry.BuilderHolder<M, T, B> entry;
+    private final RegistryEntryMeta.Buildable<M, T, B> meta;
     private final net.minecraft.registry.SimpleRegistry<M> registry;
-    private final PaperRegistryBuilder.Factory<M, T, ? extends B> builderFactory;
 
     public WritableCraftRegistry(
-        final RegistryEntry.BuilderHolder<M, T, B> entry,
-        final Class<?> classToPreload,
         final net.minecraft.registry.SimpleRegistry<M> registry,
-        final BiFunction<NamespacedKey, ApiVersion, NamespacedKey> serializationUpdater,
-        final PaperRegistryBuilder.Factory<M, T, ? extends B> builderFactory,
-        final RegistryTypeMapper<M, T> minecraftToBukkit
+        final RegistryEntryMeta.Buildable<M, T, B> meta
     ) {
-        super(classToPreload, registry, minecraftToBukkit, serializationUpdater);
-        this.entry = entry;
+        super(meta, registry);
         this.registry = registry;
-        this.builderFactory = builderFactory;
+        this.meta = meta;
     }
 
-    public void register(final TypedKey<T> key, final Consumer<? super B> value, final Conversions conversions) {
+    public void register(final TypedKey<T> key, final Consumer<RegistryBuilderFactory<T, B>> value, final Conversions conversions) {
         final RegistryKey<M> resourceKey = PaperRegistries.toNms(key);
         this.registry.assertNotFrozen(resourceKey);
-        final B builder = this.newBuilder(conversions);
-        value.accept(builder);
+        
+        ISimpleRegistry<M> cbr = (ISimpleRegistry<M>) this.registry;
+        
+        final PaperRegistryBuilderFactory<M, T, B> builderFactory = new PaperRegistryBuilderFactory<M, T, B>(conversions, this.meta.builderFiller(), cbr.cb$temporaryUnfrozenMap()::get);
+        value.accept(builderFactory);
         PaperRegistryListenerManager.INSTANCE.registerWithListeners(
             this.registry,
-            RegistryEntry.Modifiable.asModifiable(this.entry),
+            this.meta,
             resourceKey,
-            builder,
+            builderFactory.requireBuilder(),
             FROM_PLUGIN,
             conversions
         );
@@ -54,10 +48,6 @@ public class WritableCraftRegistry<M, T extends Keyed, B extends PaperRegistryBu
 
     public WritableRegistry<T, B> createApiWritableRegistry(final Conversions conversions) {
         return new ApiWritableRegistry(conversions);
-    }
-
-    protected B newBuilder(final Conversions conversions) {
-        return this.builderFactory.create(conversions);
     }
 
     public class ApiWritableRegistry implements WritableRegistry<T, B> {
@@ -69,7 +59,7 @@ public class WritableCraftRegistry<M, T extends Keyed, B extends PaperRegistryBu
         }
 
         @Override
-        public void register(final TypedKey<T> key, final Consumer<? super B> value) {
+        public void registerWith(final TypedKey<T> key, final Consumer<RegistryBuilderFactory<T, B>> value) {
             WritableCraftRegistry.this.register(key, value, this.conversions);
         }
     }

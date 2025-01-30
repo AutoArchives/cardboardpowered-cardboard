@@ -5,6 +5,7 @@ import org.spongepowered.asm.mixin.Mixin;
 
 import com.javazilla.bukkitfabric.interfaces.IMixinCommandOutput;
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
 
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -18,9 +19,12 @@ public class MixinServerPlayerEntityCommandSender implements IMixinCommandOutput
     public CommandSender getBukkitSender(ServerCommandSource source) {
 		System.out.println("DEBUG: getBukkitSender!");
 		
-		ServerPlayerEntity plr = source.getPlayer();
+		if (source.isExecutedByPlayer()) {
+			ServerPlayerEntity plr = source.getPlayer();
+			return ((IMixinServerEntityPlayer) plr) .getBukkit();
+		}
 		
-		return ((IMixinEntity) plr) .getBukkitEntity();
+		return ((IMixinEntity) source.entity).getBukkitEntity();
 		
 		// return ( (IMixinEntity)  ((ServerPlayerEntity) (Object) this) ) .getBukkitEntity();
     }

@@ -3,6 +3,7 @@ package io.papermc.paper.registry.legacy;
 import io.papermc.paper.registry.RegistryHolder;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.entry.RegistryEntry;
+import io.papermc.paper.registry.entry.RegistryEntryMeta;
 import net.minecraft.registry.Registry;
 import org.bukkit.Keyed;
 
@@ -23,5 +24,11 @@ public record DelayedRegistryEntry<M, T extends Keyed>(RegistryEntry<M, T> deleg
     public RegistryHolder<T> createRegistryHolder(Registry<M> nmsRegistry) {
         return this.delegate.createRegistryHolder(nmsRegistry);
     }
+    
+    @Override
+    public RegistryEntryMeta<M, T> meta() {
+        return this.delegate.meta();
+    }
+
 }
 

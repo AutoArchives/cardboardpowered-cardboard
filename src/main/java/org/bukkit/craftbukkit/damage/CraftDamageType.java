@@ -120,7 +120,7 @@ public class CraftDamageType implements DamageType, Handleable<net.minecraft.ent
     }
 
     public static DamageType minecraftToBukkit(net.minecraft.entity.damage.DamageType minecraftDamageType) {
-        return CraftRegistry.minecraftToBukkit(minecraftDamageType, RegistryKeys.DAMAGE_TYPE, Registry.DAMAGE_TYPE);
+        return CraftRegistry.minecraftToBukkit(minecraftDamageType, RegistryKeys.DAMAGE_TYPE);
     }
 
 }

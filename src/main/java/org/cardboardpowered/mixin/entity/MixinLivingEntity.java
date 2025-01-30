@@ -17,6 +17,7 @@ import net.minecraft.util.Arm;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
@@ -45,12 +46,14 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
     private AttributeContainer attributes;
 
     private boolean PICE_canceled = false;
-    private CardboardAttributable craftAttributes;
+    // private CardboardAttributable craftAttributes;
+    private CraftAttributeMap craftAttributes;
 
     @Override
-    public CardboardAttributable cardboard_getAttr() {
+    public CraftAttributeMap cardboard_getAttr() {
         if (null == craftAttributes) {
-            this.craftAttributes = new CardboardAttributable(this.attributes);
+
+            this.craftAttributes = new CraftAttributeMap( get().getAttributes() ); // new CardboardAttributable(this.attributes);
         }
         return craftAttributes;
     }

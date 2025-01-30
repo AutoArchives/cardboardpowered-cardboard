@@ -1,26 +1,13 @@
 package org.bukkit.craftbukkit.inventory.util;
 
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BeaconBlockEntity;
-import net.minecraft.block.entity.BlastFurnaceBlockEntity;
-import net.minecraft.block.entity.BrewingStandBlockEntity;
-import net.minecraft.block.entity.CrafterBlockEntity;
-import net.minecraft.block.entity.DispenserBlockEntity;
-import net.minecraft.block.entity.FurnaceBlockEntity;
-import net.minecraft.block.entity.HopperBlockEntity;
-import net.minecraft.block.entity.LecternBlockEntity;
-import net.minecraft.block.entity.SmokerBlockEntity;
-import net.minecraft.screen.AnvilScreenHandler;
-import net.minecraft.screen.CartographyTableScreenHandler;
-import net.minecraft.screen.CraftingScreenHandler;
-import net.minecraft.screen.EnchantmentScreenHandler;
-import net.minecraft.screen.GrindstoneScreenHandler;
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
-import net.minecraft.screen.SmithingScreenHandler;
-import net.minecraft.screen.StonecutterScreenHandler;
-import net.minecraft.text.Text;
 import org.bukkit.craftbukkit.inventory.CraftMenuType;
-import org.bukkit.craftbukkit.inventory.util.CraftMenuBuilder;
+import org.bukkit.craftbukkit.inventory.CraftMerchant;
+import org.bukkit.craftbukkit.inventory.view.CraftMerchantView;
+import org.bukkit.craftbukkit.inventory.view.builder.CraftAccessLocationInventoryViewBuilder;
+import org.bukkit.craftbukkit.inventory.view.builder.CraftBlockEntityInventoryViewBuilder;
+import org.bukkit.craftbukkit.inventory.view.builder.CraftDoubleChestInventoryViewBuilder;
+import org.bukkit.craftbukkit.inventory.view.builder.CraftMerchantInventoryViewBuilder;
+import org.bukkit.craftbukkit.inventory.view.builder.CraftStandardInventoryViewBuilder;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.MenuType;
 import org.bukkit.inventory.view.AnvilView;
@@ -33,78 +20,157 @@ import org.bukkit.inventory.view.LecternView;
 import org.bukkit.inventory.view.LoomView;
 import org.bukkit.inventory.view.MerchantView;
 import org.bukkit.inventory.view.StonecutterView;
+import org.bukkit.inventory.view.builder.InventoryViewBuilder;
+import org.jspecify.annotations.NullMarked;
 
-import com.github.bsideup.jabel.Desugar;
+import com.javazilla.bukkitfabric.interfaces.IMixinScreenHandler;
 import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
 
+import java.util.function.Supplier;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.entity.BeaconBlockEntity;
+import net.minecraft.block.entity.BlastFurnaceBlockEntity;
+import net.minecraft.block.entity.BrewingStandBlockEntity;
+import net.minecraft.block.entity.CrafterBlockEntity;
+import net.minecraft.block.entity.DispenserBlockEntity;
+import net.minecraft.block.entity.FurnaceBlockEntity;
+import net.minecraft.block.entity.HopperBlockEntity;
+import net.minecraft.block.entity.LecternBlockEntity;
+import net.minecraft.block.entity.ShulkerBoxBlockEntity;
+import net.minecraft.block.entity.SmokerBlockEntity;
+import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
+import net.minecraft.screen.AnvilScreenHandler;
+import net.minecraft.screen.CartographyTableScreenHandler;
+import net.minecraft.screen.CraftingScreenHandler;
+import net.minecraft.screen.EnchantmentScreenHandler;
+import net.minecraft.screen.GrindstoneScreenHandler;
+import net.minecraft.screen.MerchantScreenHandler;
+import net.minecraft.screen.SmithingScreenHandler;
+import net.minecraft.screen.StonecutterScreenHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
+import net.minecraft.village.Merchant;
+import net.minecraft.village.TradeOfferList;
 
+@NullMarked
 public final class CraftMenus {
-    private static final CraftMenuBuilder STANDARD = (player, menuType) -> menuType.create(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory());
 
-    public static <V extends InventoryView> MenuTypeData<V> getMenuTypeData(CraftMenuType<?> menuType) {
-    	if (menuType == MenuType.GENERIC_3X3) {
-            return CraftMenus.asType(new MenuTypeData<InventoryView>(InventoryView.class, CraftMenuBuilder.tileEntity(DispenserBlockEntity::new, Blocks.DISPENSER)));
+    public record MenuTypeData<V extends InventoryView, B extends InventoryViewBuilder<V>>(Class<V> viewClass, Supplier<B> viewBuilder) {
+    }
+
+    // This is a temporary measure that will likely be removed with the rewrite of HumanEntity#open[] methods
+    public static void openMerchantMenu(final ServerPlayerEntity player, final MerchantScreenHandler merchant) {
+    	
+    	IMixinScreenHandler ish = (IMixinScreenHandler) merchant;
+    	CraftMerchantView view = (CraftMerchantView)  ish.getBukkitView();
+    	CraftMerchant merch = (CraftMerchant) view.getMerchant();
+    	final Merchant minecraftMerchant = merch.getMerchant();
+    	
+        // final Merchant minecraftMerchant = ((CraftMerchant) merchant.getBukkitView().getMerchant()).getMerchant();
+        int level = 1;
+        if (minecraftMerchant instanceof final VillagerEntity villager) {
+            level = villager.getVillagerData().getLevel();
+        }
+
+        if (minecraftMerchant.getCustomer() != null) { // merchant's can only have one trader
+            ((IMixinServerEntityPlayer) minecraftMerchant.getCustomer()).closeHandledScreen();
+        }
+
+        minecraftMerchant.setCustomer(player);
+
+        Text title = ish.getTitle();// Text.literal("TODO: CARDBOARD SET TITLE");
+        // TODO: merchant.getTitle()
+
+        player.networkHandler.sendPacket(new OpenScreenS2CPacket(merchant.syncId, net.minecraft.screen.ScreenHandlerType.MERCHANT, title));
+        player.currentScreenHandler = merchant;
+        player.onScreenHandlerOpened(merchant);
+        // Copy IMerchant#openTradingScreen
+        TradeOfferList merchantrecipelist = minecraftMerchant.getOffers();
+
+        if (!merchantrecipelist.isEmpty()) {
+            player.sendTradeOffers(merchant.syncId, merchantrecipelist, level, minecraftMerchant.getExperience(), minecraftMerchant.isLeveledMerchant(), minecraftMerchant.canRefreshTrades());
+        }
+        // End Copy IMerchant#openTradingScreen
+    }
+
+    public static <V extends InventoryView, B extends InventoryViewBuilder<V>> MenuTypeData<V, B> getMenuTypeData(final CraftMenuType<?, ?> menuType) {
+        final net.minecraft.screen.ScreenHandlerType<?> handle = menuType.getHandle();
+        // this sucks horribly but it should work for now
+        if (menuType == MenuType.GENERIC_9X6) {
+            return asType(new MenuTypeData<>(InventoryView.class, () -> new CraftDoubleChestInventoryViewBuilder<>(handle)));
+        }
+        if (menuType == MenuType.GENERIC_9X3) {
+            return asType(new MenuTypeData<>(InventoryView.class, () -> new CraftBlockEntityInventoryViewBuilder<>(handle, Blocks.CHEST, null)));
+        }
+        // this isn't ideal as both dispenser and dropper are 3x3, InventoryType can't currently handle generic 3x3s with size 9
+        // this needs to be removed when inventory creation is overhauled
+        if (menuType == MenuType.GENERIC_3X3) {
+            return asType(new MenuTypeData<>(InventoryView.class, () -> new CraftBlockEntityInventoryViewBuilder<>(handle, Blocks.DISPENSER, DispenserBlockEntity::new)));
         }
         if (menuType == MenuType.CRAFTER_3X3) {
-            return CraftMenus.asType(new MenuTypeData<CrafterView>(CrafterView.class, CraftMenuBuilder.tileEntity(CrafterBlockEntity::new, Blocks.CRAFTER)));
+            return asType(new MenuTypeData<>(CrafterView.class, () -> new CraftBlockEntityInventoryViewBuilder<>(handle, Blocks.CRAFTER, CrafterBlockEntity::new)));
         }
         if (menuType == MenuType.ANVIL) {
-            return CraftMenus.asType(new MenuTypeData<AnvilView>(AnvilView.class, CraftMenuBuilder.worldAccess(AnvilScreenHandler::new)));
+            return asType(new MenuTypeData<>(AnvilView.class, () -> new CraftAccessLocationInventoryViewBuilder<>(handle, AnvilScreenHandler::new)));
         }
         if (menuType == MenuType.BEACON) {
-            return CraftMenus.asType(new MenuTypeData<BeaconView>(BeaconView.class, CraftMenuBuilder.tileEntity(BeaconBlockEntity::new, Blocks.BEACON)));
+            return asType(new MenuTypeData<>(BeaconView.class, () -> new CraftBlockEntityInventoryViewBuilder<>(handle, Blocks.BEACON, BeaconBlockEntity::new)));
         }
         if (menuType == MenuType.BLAST_FURNACE) {
-            return CraftMenus.asType(new MenuTypeData<FurnaceView>(FurnaceView.class, CraftMenuBuilder.tileEntity(BlastFurnaceBlockEntity::new, Blocks.BLAST_FURNACE)));
+            return asType(new MenuTypeData<>(FurnaceView.class, () -> new CraftBlockEntityInventoryViewBuilder<>(handle, Blocks.BLAST_FURNACE, BlastFurnaceBlockEntity::new)));
         }
         if (menuType == MenuType.BREWING_STAND) {
-            return CraftMenus.asType(new MenuTypeData<BrewingStandView>(BrewingStandView.class, CraftMenuBuilder.tileEntity(BrewingStandBlockEntity::new, Blocks.BREWING_STAND)));
+            return asType(new MenuTypeData<>(BrewingStandView.class, () -> new CraftBlockEntityInventoryViewBuilder<>(handle, Blocks.BREWING_STAND, BrewingStandBlockEntity::new)));
         }
         if (menuType == MenuType.CRAFTING) {
-            return CraftMenus.asType(new MenuTypeData<InventoryView>(InventoryView.class, CraftMenuBuilder.worldAccess(CraftingScreenHandler::new)));
+            return asType(new MenuTypeData<>(InventoryView.class, () -> new CraftAccessLocationInventoryViewBuilder<>(handle, CraftingScreenHandler::new)));
         }
         if (menuType == MenuType.ENCHANTMENT) {
-            return CraftMenus.asType(new MenuTypeData<EnchantmentView>(EnchantmentView.class, (player, type) -> new SimpleNamedScreenHandlerFactory((syncId, inventory, human) -> CraftMenuBuilder.worldAccess(EnchantmentScreenHandler::new).build(player, type), Text.empty()).createMenu(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory(), player)));
+            return asType(new MenuTypeData<>(EnchantmentView.class, () -> new CraftAccessLocationInventoryViewBuilder<>(handle, EnchantmentScreenHandler::new)));
         }
         if (menuType == MenuType.FURNACE) {
-            return CraftMenus.asType(new MenuTypeData<FurnaceView>(FurnaceView.class, CraftMenuBuilder.tileEntity(FurnaceBlockEntity::new, Blocks.FURNACE)));
+            return asType(new MenuTypeData<>(FurnaceView.class, () -> new CraftBlockEntityInventoryViewBuilder<>(handle, Blocks.FURNACE, FurnaceBlockEntity::new)));
         }
         if (menuType == MenuType.GRINDSTONE) {
-            return CraftMenus.asType(new MenuTypeData<InventoryView>(InventoryView.class, CraftMenuBuilder.worldAccess(GrindstoneScreenHandler::new)));
+            return asType(new MenuTypeData<>(InventoryView.class, () -> new CraftAccessLocationInventoryViewBuilder<>(handle, GrindstoneScreenHandler::new)));
         }
+        // We really don't need to be creating a tile entity for hopper but currently InventoryType doesn't have capacity
+        // to understand otherwise
         if (menuType == MenuType.HOPPER) {
-            return CraftMenus.asType(new MenuTypeData<InventoryView>(InventoryView.class, CraftMenuBuilder.tileEntity(HopperBlockEntity::new, Blocks.HOPPER)));
+            return asType(new MenuTypeData<>(InventoryView.class, () -> new CraftBlockEntityInventoryViewBuilder<>(handle, Blocks.HOPPER, HopperBlockEntity::new)));
         }
+        // We also don't need to create a tile entity for lectern, but again InventoryType isn't smart enough to know any better
         if (menuType == MenuType.LECTERN) {
-            return CraftMenus.asType(new MenuTypeData<LecternView>(LecternView.class, CraftMenuBuilder.tileEntity(LecternBlockEntity::new, Blocks.LECTERN)));
+            return asType(new MenuTypeData<>(LecternView.class, () -> new CraftBlockEntityInventoryViewBuilder<>(handle, Blocks.LECTERN, LecternBlockEntity::new)));
         }
         if (menuType == MenuType.LOOM) {
-            return CraftMenus.asType(new MenuTypeData<LoomView>(LoomView.class, STANDARD));
+            return asType(new MenuTypeData<>(LoomView.class, () -> new CraftStandardInventoryViewBuilder<>(handle)));
         }
         if (menuType == MenuType.MERCHANT) {
-            return CraftMenus.asType(new MenuTypeData<MerchantView>(MerchantView.class, STANDARD));
+            return asType(new MenuTypeData<>(MerchantView.class, () -> new CraftMerchantInventoryViewBuilder<>(handle)));
+        }
+        if (menuType == MenuType.SHULKER_BOX) {
+            return asType(new MenuTypeData<>(InventoryView.class, () -> new CraftBlockEntityInventoryViewBuilder<>(handle, Blocks.SHULKER_BOX, ShulkerBoxBlockEntity::new)));
         }
         if (menuType == MenuType.SMITHING) {
-            return CraftMenus.asType(new MenuTypeData<InventoryView>(InventoryView.class, CraftMenuBuilder.worldAccess(SmithingScreenHandler::new)));
+            return asType(new MenuTypeData<>(InventoryView.class, () -> new CraftAccessLocationInventoryViewBuilder<>(handle, SmithingScreenHandler::new)));
         }
         if (menuType == MenuType.SMOKER) {
-            return CraftMenus.asType(new MenuTypeData<FurnaceView>(FurnaceView.class, CraftMenuBuilder.tileEntity(SmokerBlockEntity::new, Blocks.SMOKER)));
+            return asType(new MenuTypeData<>(FurnaceView.class, () -> new CraftBlockEntityInventoryViewBuilder<>(handle, Blocks.SMOKER, SmokerBlockEntity::new)));
         }
         if (menuType == MenuType.CARTOGRAPHY_TABLE) {
-            return CraftMenus.asType(new MenuTypeData<InventoryView>(InventoryView.class, CraftMenuBuilder.worldAccess(CartographyTableScreenHandler::new)));
+            return asType(new MenuTypeData<>(InventoryView.class, () -> new CraftAccessLocationInventoryViewBuilder<>(handle, CartographyTableScreenHandler::new)));
         }
         if (menuType == MenuType.STONECUTTER) {
-            return CraftMenus.asType(new MenuTypeData<StonecutterView>(StonecutterView.class, CraftMenuBuilder.worldAccess(StonecutterScreenHandler::new)));
+            return asType(new MenuTypeData<>(StonecutterView.class, () -> new CraftAccessLocationInventoryViewBuilder<>(handle, StonecutterScreenHandler::new)));
         }
-        return CraftMenus.asType(new MenuTypeData<InventoryView>(InventoryView.class, STANDARD));
+
+        return asType(new MenuTypeData<>(InventoryView.class, () -> new CraftStandardInventoryViewBuilder<>(handle)));
     }
 
-    private static <V extends InventoryView> MenuTypeData<V> asType(MenuTypeData<?> data) {
-        return (MenuTypeData<V>) data;
-    }
-
-    @Desugar
-    public record MenuTypeData<V extends InventoryView>(Class<V> viewClass, CraftMenuBuilder menuBuilder) {
+    @SuppressWarnings("unchecked")
+    private static <V extends InventoryView, B extends InventoryViewBuilder<V>> MenuTypeData<V, B> asType(final MenuTypeData<?, ?> data) {
+        return (MenuTypeData<V, B>) data;
     }
 }
-

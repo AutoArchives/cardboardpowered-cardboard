@@ -22,7 +22,7 @@ public class CraftTrimPattern implements TrimPattern, Handleable<ArmorTrimPatter
     private final ArmorTrimPattern handle;
 
     public static TrimPattern minecraftToBukkit(ArmorTrimPattern minecraft) {
-        return (TrimPattern)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.TRIM_PATTERN, Registry.TRIM_PATTERN);
+        return (TrimPattern)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.TRIM_PATTERN);
     }
 
     public static TrimPattern minecraftHolderToBukkit(RegistryEntry<ArmorTrimPattern> minecraft) {

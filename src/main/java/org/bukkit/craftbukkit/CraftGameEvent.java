@@ -19,7 +19,7 @@ public class CraftGameEvent extends GameEvent implements Handleable<net.minecraf
     private final net.minecraft.world.event.GameEvent handle;
 
     public static GameEvent minecraftToBukkit(net.minecraft.world.event.GameEvent minecraft) {
-        return (GameEvent)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.GAME_EVENT, Registry.GAME_EVENT);
+        return (GameEvent)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.GAME_EVENT);
     }
 
     public static net.minecraft.world.event.GameEvent bukkitToMinecraft(GameEvent bukkit) {

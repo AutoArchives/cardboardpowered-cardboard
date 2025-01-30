@@ -14,6 +14,9 @@ import net.minecraft.block.Block;
 import net.minecraft.registry.RegistryKeys;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+
+import java.util.Collection;
 import java.util.function.Consumer;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
@@ -33,7 +36,9 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.inventory.ItemType;
 import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.interfaces.IBlockState;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 
 public class CraftBlockType<B extends BlockData> implements BlockType.Typed<B>, Handleable<Block> {
 
@@ -68,7 +73,7 @@ public class CraftBlockType<B extends BlockData> implements BlockType.Typed<B>, 
     }
 
     public static BlockType minecraftToBukkitNew(Block minecraft) {
-        return (BlockType)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.BLOCK, Registry.BLOCK);
+        return (BlockType)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.BLOCK);
     }
 
     public static Block bukkitToMinecraftNew(BlockType bukkit) {
@@ -228,5 +233,16 @@ public class CraftBlockType<B extends BlockData> implements BlockType.Typed<B>, 
         return false;
     	// TODO return this.block.collidable;
     }
+
+	@Override
+	public @Unmodifiable @NotNull Collection<B> createBlockDataStates() {
+		final ImmutableList<BlockState> possibleStates = this.block.getStateManager().getStates();
+        final ImmutableList.Builder<B> builder = ImmutableList.builderWithExpectedSize(possibleStates.size());
+        for (final BlockState possibleState : possibleStates) {
+        	IBlockState cardboard_state = (IBlockState) possibleState;
+            builder.add(this.blockDataClass.cast(cardboard_state.createCraftBlockData()));
+        }
+        return builder.build();
+	}
     
 }

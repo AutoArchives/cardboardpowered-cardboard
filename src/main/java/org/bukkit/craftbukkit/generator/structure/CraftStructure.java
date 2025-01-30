@@ -2,7 +2,6 @@ package org.bukkit.craftbukkit.generator.structure;
 
 import net.minecraft.registry.RegistryKeys;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.generator.structure.CraftStructureType;
 import org.bukkit.craftbukkit.util.Handleable;
@@ -16,7 +15,7 @@ public class CraftStructure extends Structure implements Handleable<net.minecraf
     private final StructureType structureType;
 
     public static Structure minecraftToBukkit(net.minecraft.world.gen.structure.Structure minecraft) {
-        return (Structure)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.STRUCTURE, Registry.STRUCTURE);
+        return (Structure)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.STRUCTURE);
     }
 
     public static net.minecraft.world.gen.structure.Structure bukkitToMinecraft(Structure bukkit) {

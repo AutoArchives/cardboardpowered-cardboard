@@ -25,7 +25,7 @@ Handleable<PaintingVariant> {
     private final int ordinal;
 
     public static Art minecraftToBukkit(PaintingVariant minecraft) {
-        return (Art)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.PAINTING_VARIANT, Registry.ART);
+        return (Art)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.PAINTING_VARIANT);
     }
 
     public static Art minecraftHolderToBukkit(RegistryEntry<PaintingVariant> minecraft) {

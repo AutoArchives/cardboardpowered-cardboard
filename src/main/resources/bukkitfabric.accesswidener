@@ -515,3 +515,8 @@ accessible field net/minecraft/screen/AbstractCraftingScreenHandler craftingResu
 accessible field net/minecraft/component/type/ContainerComponent MAX_SLOTS I
 accessible field net/minecraft/component/type/ContainerComponent stacks Lnet/minecraft/util/collection/DefaultedList;
 accessible method net/minecraft/block/AbstractBlock$AbstractBlockState asBlockState ()Lnet/minecraft/block/BlockState;
+accessible field net/minecraft/screen/AnvilScreenHandler levelCost Lnet/minecraft/screen/Property;
+accessible field net/minecraft/screen/AnvilScreenHandler newItemName Ljava/lang/String;
+accessible field net/minecraft/screen/AnvilScreenHandler repairItemUsage I
+accessible field net/minecraft/screen/BrewingStandScreenHandler propertyDelegate Lnet/minecraft/screen/PropertyDelegate;
+accessible field net/minecraft/block/ChestBlock NAME_RETRIEVER Lnet/minecraft/block/DoubleBlockProperties$PropertyRetriever;

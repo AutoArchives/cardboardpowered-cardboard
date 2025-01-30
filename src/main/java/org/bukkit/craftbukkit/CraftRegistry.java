@@ -1,263 +1,95 @@
 package org.bukkit.craftbukkit;
 
+import com.google.common.base.Preconditions;
+import io.papermc.paper.registry.PaperRegistries;
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.registry.entry.RegistryEntryMeta;
+import io.papermc.paper.registry.set.NamedRegistryKeySetImpl;
+import io.papermc.paper.registry.tag.Tag;
+import io.papermc.paper.util.Holderable;
+import io.papermc.paper.util.MCUtil;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
-
-import org.bukkit.GameEvent;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.entry.RegistryEntryOwner;
 import org.bukkit.Keyed;
-import org.bukkit.MusicInstrument;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Registry;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.block.Biome;
-import org.bukkit.craftbukkit.generator.structure.CraftStructure;
-import org.bukkit.craftbukkit.generator.structure.CraftStructureType;
-import org.bukkit.craftbukkit.inventory.trim.CraftTrimMaterial;
-import org.bukkit.craftbukkit.inventory.trim.CraftTrimPattern;
 import org.bukkit.craftbukkit.legacy.FieldRename;
-import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
 import org.bukkit.craftbukkit.util.ApiVersion;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.Handleable;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Wolf;
-import org.bukkit.generator.structure.StructureType;
-import org.bukkit.inventory.meta.trim.TrimMaterial;
-import org.bukkit.potion.PotionEffectType;
-import org.cardboardpowered.impl.CardboardEnchantment;
-import org.cardboardpowered.impl.CardboardPotionEffectType;
-import org.cardboardpowered.impl.entity.WolfImpl;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import com.javazilla.bukkitfabric.BukkitFabricMod;
-
-import io.papermc.paper.registry.RegistryAccess;
-import net.minecraft.block.entity.BannerPattern;
-import net.minecraft.item.equipment.trim.ArmorTrim;
-import net.minecraft.item.equipment.trim.ArmorTrimMaterial;
-//import net.minecraft.enchantment.Enchantment;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper.WrapperLookup;
-import net.minecraft.registry.entry.RegistryEntry;
-
-import io.papermc.paper.registry.entry.RegistryTypeMapper;
-
-// TODO
 public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
 
-	private static DynamicRegistryManager registry;
-	private final Class<?> bukkitClass;
-    private final net.minecraft.registry.Registry<M> minecraftRegistry;
-    // private final BiFunction<NamespacedKey, M, B> minecraftToBukkit;
-    
-    private final RegistryTypeMapper<M, B> minecraftToBukkit;
-    
-    private final BiFunction<NamespacedKey, ApiVersion, NamespacedKey> serializationUpdater;
-    
-    private final Map<NamespacedKey, B> cache = new HashMap<NamespacedKey, B>();
-    private final Map<B, NamespacedKey> byValue = new IdentityHashMap<B, NamespacedKey>();
-    
-    private boolean init;
-    
-    /*
-    @Deprecated
-    public CraftRegistry(Class<?> bukkitClass, net.minecraft.registry.Registry<M> minecraftRegistry, BiFunction<NamespacedKey, M, B> minecraftToBukkit) {
-        this.bukkitClass = bukkitClass;
-        this.minecraftRegistry = minecraftRegistry;
-        this.minecraftToBukkit = minecraftToBukkit;
-    }
-    */
-    
-    public CraftRegistry(Class<?> bukkitClass, net.minecraft.registry.Registry<M> minecraftRegistry, BiFunction<? super NamespacedKey, M, B> minecraftToBukkit, BiFunction<NamespacedKey, ApiVersion, NamespacedKey> serializationUpdater) {
-        this(bukkitClass, minecraftRegistry, new RegistryTypeMapper<M, B>(minecraftToBukkit), serializationUpdater);
-    }
+    private static net.minecraft.registry.DynamicRegistryManager registry;
 
-    public CraftRegistry(Class<?> bukkitClass, net.minecraft.registry.Registry<M> minecraftRegistry, RegistryTypeMapper<M, B> minecraftToBukkit, BiFunction<NamespacedKey, ApiVersion, NamespacedKey> serializationUpdater) {
-        this.bukkitClass = bukkitClass;
-        this.minecraftRegistry = minecraftRegistry;
-        this.minecraftToBukkit = minecraftToBukkit;
-        this.serializationUpdater = serializationUpdater;
-    }
-    
-    /*
-    public CraftRegistry(Class<?> classToPreload, net.minecraft.registry.Registry<M> minecraftRegistry, BiFunction<NamespacedKey, M, B> minecraftToBukkit, BiFunction<NamespacedKey, ApiVersion, NamespacedKey> serializationUpdater) {
-        this.bukkitClass = classToPreload;
-        this.minecraftRegistry = minecraftRegistry;
-        this.minecraftToBukkit = minecraftToBukkit;
-        this.serializationUpdater = serializationUpdater;
-    }
-    */
-
-	public static <B extends Keyed, M> B minecraftToBukkit(M minecraft, RegistryKey<net.minecraft.registry.Registry<M>> registryKey, Registry<B> bukkitRegistry) {
-        // Preconditions.checkArgument((minecraft != null ? 1 : 0) != 0);
-        net.minecraft.registry.Registry<M> registry = CraftRegistry.getMinecraftRegistry(registryKey);
-        Keyed bukkit = bukkitRegistry.get(
-        		CraftNamespacedKey.fromMinecraft(
-        				registry.getKey(minecraft).orElseThrow(
-        						() -> new IllegalStateException(
-        								String.format("Cannot convert '%s' to bukkit representation, since it is not registered.", minecraft)
-        						)
-        				).getValue()
-        		)
-        	);
-        // Preconditions.checkArgument((bukkit != null ? 1 : 0) != 0);
-        return (B)bukkit;
-    }
-    
-    public static void setMinecraftRegistry(DynamicRegistryManager registry) {
+    public static void setMinecraftRegistry(final net.minecraft.registry.DynamicRegistryManager registry) {
+        Preconditions.checkState(CraftRegistry.registry == null, "Registry already set");
         CraftRegistry.registry = registry;
     }
-    
-	@Override
-	public Iterator<B> iterator() {
-		 return this.stream().iterator();
-	}
-	
-	/*
-    public B createBukkit(NamespacedKey namespacedKey, M minecraft) {
-        if (minecraft == null) {
-            return null;
-        }
 
-        return this.minecraftToBukkit.apply(namespacedKey, minecraft);
+    public static net.minecraft.registry.DynamicRegistryManager getMinecraftRegistry() {
+        return CraftRegistry.registry;
     }
-    */
-    
-    public B createBukkit(NamespacedKey namespacedKey, RegistryEntry<M> minecraft) {
-        if (minecraft == null) {
-            return null;
-        }
-        
-        this.minecraftToBukkit.createBukkit(namespacedKey, minecraft);
-        
-        return (B)((Keyed)this.minecraftToBukkit.createBukkit(namespacedKey, minecraft));
+
+    public static <E> net.minecraft.registry.Registry<E> getMinecraftRegistry(net.minecraft.registry.RegistryKey<? extends net.minecraft.registry.Registry<E>> key) {
+        return CraftRegistry.getMinecraftRegistry().getOrThrow(key);
     }
-    
-    
 
-	@Override
-	public @Nullable B get(@NotNull NamespacedKey namespacedKey) {
-		 B cached = this.cache.get(namespacedKey);
-	        if (cached != null) {
-	            return cached;
-	        }
-
-	        // Make sure that the bukkit class is loaded before creating an instance.
-	        // This ensures that only one instance with a given key is created.
-	        //
-	        // Without this code (when bukkit class is not loaded):
-	        // Registry#get -> #createBukkit -> (load class -> create default) -> put in cache
-	        // Result: Registry#get != <bukkitClass>.<field> for possible one registry item
-	        //
-	        // With this code (when bukkit class is not loaded):
-	        // Registry#get -> (load class -> create default) -> Registry#get -> get from cache
-	        // Result: Registry#get == <bukkitClass>.<field>
-	        if (!this.init) {
-	            this.init = true;
-	            try {
-	                Class.forName(this.bukkitClass.getName());
-	            } catch (ClassNotFoundException e) {
-	                throw new RuntimeException("Could not load registry class " + this.bukkitClass, e);
-	            }
-
-	            return this.get(namespacedKey);
-	        }
-
-	        B bukkit = this.createBukkit(namespacedKey, this.minecraftRegistry.getEntry(CraftNamespacedKey.toMinecraft(namespacedKey)).orElse(null));
-	        if (bukkit == null) {
-	            return null;
-	        }
-
-	        this.cache.put(namespacedKey, bukkit);
-	        this.byValue.put(bukkit, namespacedKey); // Paper - improve Registry
-
-	        return bukkit;
-	}
-
-	/*
-	@Deprecated
-	public static <B extends Keyed> Registry<?> createRegistry(Class<B> bukkitClass, DynamicRegistryManager registryHolder) {
-		// TODO Auto-generated method stub
-		if (bukkitClass == Enchantment.class) {
-            return new CraftRegistry<CardboardEnchantment, net.minecraft.enchantment.Enchantment>(Enchantment.class, registryHolder.get(RegistryKeys.ENCHANTMENT), CardboardEnchantment::new);
-        }
-        if (bukkitClass == GameEvent.class) {
-            return new CraftRegistry<>(GameEvent.class, registryHolder.get(RegistryKeys.GAME_EVENT), CraftGameEvent::new);
-        }
-		if (bukkitClass == MusicInstrument.class) {
-			return new CraftRegistry<>(MusicInstrument.class, registryHolder.get(RegistryKeys.INSTRUMENT), CraftMusicInstrument::new);
-		}
-
-		if (bukkitClass == PotionEffectType.class) {
-            return new CraftRegistry<>(PotionEffectType.class, registryHolder.get(RegistryKeys.STATUS_EFFECT), CardboardPotionEffectType::new);
-        }
-        
-        if (bukkitClass == org.bukkit.generator.structure.Structure.class) {
-            return new CraftRegistry<>(org.bukkit.generator.structure.Structure.class, registryHolder.get(RegistryKeys.STRUCTURE), CraftStructure::new);
-        }
-        if (bukkitClass == StructureType.class) {
-            return new CraftRegistry<>(StructureType.class, Registries.STRUCTURE_TYPE, CraftStructureType::new);
-        }
-        if (bukkitClass == TrimMaterial.class) {
-            return new CraftRegistry<>(TrimMaterial.class, registryHolder.get(RegistryKeys.TRIM_MATERIAL), CraftTrimMaterial::new);
-        }
-        
-        /*
-        if (bukkitClass == TrimPattern.class) {
-            return new CraftRegistry<>(TrimPattern.class, registryHolder.get(RegistryKeys.TRIM_PATTERN), CraftTrimPattern::new);
-        }
-        if (bukkitClass == DamageType.class) {
-            return new CraftRegistry<>(DamageType.class, registryHolder.get(RegistryKeys.DAMAGE_TYPE), CraftDamageType::new);
-        }
-        *
-        
-        if (bukkitClass == Wolf.Variant.class) {
-            return new CraftRegistry<>(Wolf.Variant.class, registryHolder.get(RegistryKeys.WOLF_VARIANT), WolfImpl.CraftVariant::new);
-        }
-		
-		return null;
-	}*/
-
-
-    public static <B extends Keyed, M> RegistryEntry<M> bukkitToMinecraftHolder(B bukkit, RegistryKey<net.minecraft.registry.Registry<M>> registryKey) {
-        // Preconditions.checkArgument(bukkit != null);
+    /**
+     * Usage note: Only use this method to delegate the conversion methods from the individual Craft classes to here.
+     * Do not use it in other parts of CraftBukkit, use the methods in the respective Craft classes instead.
+     *
+     * @param minecraft   the minecraft representation
+     * @param registryKey the registry key of the minecraft registry to use
+     * @return the bukkit representation of the minecraft value
+     */
+    public static <B extends Keyed, M> B minecraftToBukkit(M minecraft, net.minecraft.registry.RegistryKey<? extends net.minecraft.registry.Registry<M>> registryKey) {
+        Preconditions.checkArgument(minecraft != null);
 
         net.minecraft.registry.Registry<M> registry = CraftRegistry.getMinecraftRegistry(registryKey);
-
-        // TODO (M)
-        if (registry.getEntry((M) CraftRegistry.bukkitToMinecraft(bukkit)) instanceof RegistryEntry.Reference<M> holder) {
-            return holder;
+        final Registry<B> bukkitRegistry = RegistryAccess.registryAccess().getRegistry(PaperRegistries.registryFromNms(registryKey));
+        final java.util.Optional<net.minecraft.registry.RegistryKey<M>> resourceKey = registry.getKey(minecraft);
+        if (resourceKey.isEmpty() && bukkitRegistry instanceof final CraftRegistry<?, ?> craftRegistry && craftRegistry.supportsDirectHolders()) {
+            return ((CraftRegistry<B, M>) bukkitRegistry).createBukkit(RegistryEntry.of(minecraft));
+        } else if (resourceKey.isEmpty()) {
+            throw new IllegalStateException(String.format("Cannot convert '%s' to bukkit representation, since it is not registered.", minecraft));
         }
+        final B bukkit = bukkitRegistry.get(CraftNamespacedKey.fromMinecraft(resourceKey.get().getValue()));
 
-        throw new IllegalArgumentException("No Reference holder found for " + bukkit
-                + ", this can happen if a plugin creates its own registry entry with out properly registering it.");
+        Preconditions.checkArgument(bukkit != null);
+
+        return bukkit;
     }
 
-	public static DynamicRegistryManager getMinecraftRegistry() {
-		// TODO Auto-generated method stub
-		return CraftServer.server.getRegistryManager();
-	}
+    public static <B extends Keyed, M> B minecraftHolderToBukkit(final RegistryEntry<M> minecraft, final net.minecraft.registry.RegistryKey<? extends net.minecraft.registry.Registry<M>> registryKey) {
+        Preconditions.checkArgument(minecraft != null);
 
-    public static <E> net.minecraft.registry.Registry<E> getMinecraftRegistry(RegistryKey<net.minecraft.registry.Registry<E>> key) {
-        return CraftServer.server.getRegistryManager().getOrThrow(key);
+        final Registry<B> bukkitRegistry = RegistryAccess.registryAccess().getRegistry(PaperRegistries.registryFromNms(registryKey));
+        final B bukkit = switch (minecraft) {
+            case final net.minecraft.registry.entry.RegistryEntry.Direct<M> direct -> {
+                if (!(bukkitRegistry instanceof final CraftRegistry<?, ?> craftRegistry) || !craftRegistry.supportsDirectHolders()) {
+                    throw new IllegalArgumentException("Cannot convert direct holder to bukkit representation");
+                }
+                yield ((CraftRegistry<B, M>) bukkitRegistry).createBukkit(direct);
+            }
+            case final net.minecraft.registry.entry.RegistryEntry.Reference<M> reference -> bukkitRegistry.get(MCUtil.fromResourceKey(reference.registryKey()));
+            default -> throw new IllegalArgumentException("Unknown holder: " + minecraft);
+        };
+        Preconditions.checkArgument(bukkit != null);
+
+        return bukkit;
     }
-   
-
-	@Override
-	public @NotNull Stream<B> stream() {
-		return this.minecraftRegistry.getIds().stream().map(minecraftKey -> this.get(CraftNamespacedKey.fromMinecraft(minecraftKey)));
-	}
 
     /**
      * Usage note: Only use this method to delegate the conversion methods from the individual Craft classes to here.
@@ -267,110 +99,129 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
      * @return the minecraft representation of the bukkit value
      */
     public static <B extends Keyed, M> M bukkitToMinecraft(B bukkit) {
-        // Preconditions.checkArgument(bukkit != null);
+        Preconditions.checkArgument(bukkit != null);
+
         return ((Handleable<M>) bukkit).getHandle();
     }
 
-    public static <B extends Keyed> B get(Registry<B> bukkit, NamespacedKey namespacedKey, ApiVersion apiVersion) {
-        if (bukkit instanceof CraftRegistry<B, ?> craft) {
-            return craft.get(craft.serializationUpdater.apply(namespacedKey, apiVersion));
+    public static <B extends Keyed, M> RegistryEntry<M> bukkitToMinecraftHolder(B bukkit, net.minecraft.registry.RegistryKey<net.minecraft.registry.Registry<M>> registryKey) {
+        Preconditions.checkArgument(bukkit != null);
+        // Paper start - support direct Holder
+        if (bukkit instanceof io.papermc.paper.util.Holderable<?>) {
+            return ((io.papermc.paper.util.Holderable<M>) bukkit).getHolder();
         }
-        if (bukkit instanceof Registry.SimpleRegistry) {
-            Registry.SimpleRegistry simple = (Registry.SimpleRegistry)bukkit;
-            Class bClass = simple.getType();
-            if (bClass == Biome.class) {
-                return (B)bukkit.get(FieldRename.BIOME_RENAME.apply(namespacedKey, apiVersion));
-            }
-            if (bClass == EntityType.class) {
-                return (B)bukkit.get(FieldRename.ENTITY_TYPE_RENAME.apply(namespacedKey, apiVersion));
-            }
-            if (bClass == Particle.class) {
-                return (B)bukkit.get(FieldRename.PARTICLE_TYPE_RENAME.apply(namespacedKey, apiVersion));
-            }
-            if (bClass == Attribute.class) {
-                return (B)bukkit.get(FieldRename.ATTRIBUTE_RENAME.apply(namespacedKey, apiVersion));
-            }
+        // Paper end - support direct Holder
+
+        net.minecraft.registry.Registry<M> registry = CraftRegistry.getMinecraftRegistry(registryKey);
+
+        if (registry.getEntry((M) CraftRegistry.bukkitToMinecraft(bukkit)) instanceof RegistryEntry.Reference<M> holder) {
+            return holder;
         }
-        return (B)bukkit.get(namespacedKey);
+
+        throw new IllegalArgumentException("No Reference holder found for " + bukkit
+                + ", this can happen if a plugin creates its own registry entry with out properly registering it.");
     }
 
-	@Override
-	public B getOrThrow(NamespacedKey key) {
-		final B value = this.get(key);
-		if (value == null) {
-			throw new java.util.NoSuchElementException("CraftRegistry: No value for " + key + " in " + this);
-		}
-		return value;
-	}
-
-    public static <T extends Keyed, M> Optional<T> unwrapAndConvertHolder(io.papermc.paper.registry.RegistryKey<T> registryKey, RegistryEntry<M> value) {
-        return CraftRegistry.unwrapAndConvertHolder(RegistryAccess.registryAccess().getRegistry(registryKey), value);
-    }
-
-    public static <T extends Keyed, M> Optional<T> unwrapAndConvertHolder(Registry<T> registry, RegistryEntry<M> value) {
+    // Paper start - fixup upstream being dum
+    public static <T extends Keyed, M> Optional<T> unwrapAndConvertHolder(final RegistryKey<T> registryKey, final RegistryEntry<M> value) {
+        final Registry<T> registry = RegistryAccess.registryAccess().getRegistry(registryKey);
+        if (registry instanceof final CraftRegistry<?,?> craftRegistry && craftRegistry.supportsDirectHolders() && value.getType() == RegistryEntry.Type.DIRECT) {
+            return Optional.of(((CraftRegistry<T, M>) registry).createBukkit(value));
+        }
         return value.getKey().map(key -> registry.get(CraftNamespacedKey.fromMinecraft(key.getValue())));
     }
+    // Paper end - fixup upstream being dum
 
-    /*private static DynamicRegistryManager registry;
+    // Paper - move to PaperRegistries
 
-    public static void setMinecraftRegistry(DynamicRegistryManager registry) {
-        Preconditions.checkState(CraftRegistry.registry == null, "Registry already set");
-        CraftRegistry.registry = registry;
+    // Paper - NOTE: As long as all uses of the method below relate to *serialization* via ConfigurationSerializable, it's fine
+    public static <B extends Keyed> B get(RegistryKey<B> bukkitKey, NamespacedKey namespacedKey, ApiVersion apiVersion) {
+        final Registry<B> bukkit = RegistryAccess.registryAccess().getRegistry(bukkitKey);
+        if (bukkit instanceof CraftRegistry<B, ?> craft) {
+            return craft.get(craft.serializationUpdater.apply(namespacedKey, apiVersion)); // Paper
+        }
+
+        if (bukkit instanceof Registry.SimpleRegistry<?> simple) {
+            Class<?> bClass = simple.getType();
+
+            if (bClass == EntityType.class) {
+                return bukkit.get(FieldRename.ENTITY_TYPE_RENAME.apply(namespacedKey, apiVersion));
+            }
+
+            if (bClass == Particle.class) {
+                return bukkit.get(FieldRename.PARTICLE_TYPE_RENAME.apply(namespacedKey, apiVersion));
+            }
+        }
+
+        return bukkit.get(namespacedKey);
     }
 
-    public static DynamicRegistryManager getMinecraftRegistry() {
-        return registry;
-    }
-
-    public static <E> net.minecraft.util.registry.Registry<E> getMinecraftRegistry(RegistryKey<net.minecraft.util.registry.Registry<E>> key) {
-        return getMinecraftRegistry().get(key);
-    }
-
-    public static <B extends Keyed> Registry<?> createRegistry(Class<B> bukkitClass, DynamicRegistryManager registryHolder) {
-        if (bukkitClass == GameEvent.class) {
-            return new CraftRegistry<>(registryHolder.get(RegistryKeys.GAME_EVENT), CraftGameEvent::new);
-        }
-        if (bukkitClass == MusicInstrument.class) {
-            return new CraftRegistry<>(registryHolder.get(RegistryKeys.INSTRUMENT), CraftMusicInstrument::new);
-        }
-        if (bukkitClass == Structure.class) {
-            return new CraftRegistry<>(registryHolder.get(RegistryKeys.STRUCTURE), CraftStructure::new);
-        }
-        if (bukkitClass == StructureType.class) {
-            return new CraftRegistry<>(Registries.STRUCTURE_TYPE, CraftStructureType::new);
-        }
-        if (bukkitClass == TrimMaterial.class) {
-            return new CraftRegistry<>(registryHolder.get(RegistryKeys.TRIM_MATERIAL), CraftTrimMaterial::new);
-        }
-        if (bukkitClass == TrimPattern.class) {
-            return new CraftRegistry<>(registryHolder.get(RegistryKeys.TRIM_PATTERN), CraftTrimPattern::new);
-        }
-
-        return null;
-    }
-
+    private final Class<?> bukkitClass; // Paper - relax preload class
     private final Map<NamespacedKey, B> cache = new HashMap<>();
     private final net.minecraft.registry.Registry<M> minecraftRegistry;
-    private final BiFunction<NamespacedKey, M, B> minecraftToBukkit;
+    private final io.papermc.paper.registry.entry.RegistryTypeMapper<M, B> minecraftToBukkit; // Paper - switch to Holder
+    private final BiFunction<NamespacedKey, ApiVersion, NamespacedKey> serializationUpdater; // Paper - rename to make it *clear* what it is *only* for
+    private final InvalidHolderOwner invalidHolderOwner = new InvalidHolderOwner();
+    private boolean lockReferenceHolders;
 
-    public CraftRegistry(net.minecraft.util.registry.Registry<M> minecraftRegistry, BiFunction<NamespacedKey, M, B> minecraftToBukkit) {
+    public CraftRegistry(Class<?> bukkitClass, net.minecraft.registry.Registry<M> minecraftRegistry, BiFunction<? super NamespacedKey, M, B> minecraftToBukkit, BiFunction<NamespacedKey, ApiVersion, NamespacedKey> serializationUpdater) { // Paper - relax preload class
+        // Paper start - switch to Holder
+        this(bukkitClass, minecraftRegistry, new io.papermc.paper.registry.entry.RegistryTypeMapper<>(minecraftToBukkit), serializationUpdater);
+    }
+    public CraftRegistry(final RegistryEntryMeta.ServerSide<M, B> meta, final net.minecraft.registry.Registry<M> minecraftRegistry) {
+        this(meta.classToPreload(), minecraftRegistry, meta.registryTypeMapper(), meta.serializationUpdater());
+    }
+    public CraftRegistry(Class<?> bukkitClass, net.minecraft.registry.Registry<M> minecraftRegistry, io.papermc.paper.registry.entry.RegistryTypeMapper<M, B> minecraftToBukkit, BiFunction<NamespacedKey, ApiVersion, NamespacedKey> serializationUpdater) { // Paper - relax preload class
+        // Paper end - support Holders
+        this.bukkitClass = bukkitClass;
         this.minecraftRegistry = minecraftRegistry;
         this.minecraftToBukkit = minecraftToBukkit;
+        this.serializationUpdater = serializationUpdater;
+        this.lockReferenceHolders = !this.minecraftToBukkit.constructorUsesHolder();
     }
+
+    public void lockReferenceHolders() {
+        Preconditions.checkState(this.cache.isEmpty(), "Registry %s is already loaded", this.minecraftRegistry.getKey());
+
+        try {
+            Class.forName(this.bukkitClass.getName()); // this should always trigger the initialization of the class
+        } catch (final ClassNotFoundException e) {
+            throw new IllegalStateException("Failed to load class " + this.bukkitClass.getSimpleName(), e);
+        }
+        if (!this.minecraftToBukkit.constructorUsesHolder()) {
+            return;
+        }
+        Preconditions.checkState(!this.lockReferenceHolders, "Reference holders are already locked");
+        this.lockReferenceHolders = true;
+    }
+
+    // Paper - inline into CraftRegistry#get(Registry, NamespacedKey, ApiVersion) above
 
     @Override
     public B get(NamespacedKey namespacedKey) {
-        B cached = cache.get(namespacedKey);
+        B cached = this.cache.get(namespacedKey);
         if (cached != null) {
             return cached;
         }
 
-        B bukkit = createBukkit(namespacedKey, minecraftRegistry.getOrEmpty(CraftNamespacedKey.toMinecraft(namespacedKey)).orElse(null));
+        final Optional<RegistryEntry.Reference<M>> holderOptional = this.minecraftRegistry.getEntry(CraftNamespacedKey.toMinecraft(namespacedKey));
+        final RegistryEntry.Reference<M> holder;
+        if (holderOptional.isPresent()) {
+            holder = holderOptional.get();
+        } else if (!this.lockReferenceHolders && this.minecraftToBukkit.constructorUsesHolder()) { // only works if its Holderable
+            // we lock the reference holders after the preload class has been initialized
+            // this is to support the vanilla mechanic of preventing vanilla registry entries being loaded. We need
+            // to create something to fill the API constant fields, so we create a dummy reference holder.
+            holder = RegistryEntry.Reference.standAlone(this.invalidHolderOwner, MCUtil.toResourceKey(this.minecraftRegistry.getKey(), namespacedKey));
+        } else {
+            holder = null;
+        }
+        final B bukkit = this.createBukkit(holder);
         if (bukkit == null) {
             return null;
         }
 
-        cache.put(namespacedKey, bukkit);
+        this.cache.put(namespacedKey, bukkit);
 
         return bukkit;
     }
@@ -378,23 +229,54 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
     @NotNull
     @Override
     public Stream<B> stream() {
-        return minecraftRegistry.getIds().stream().map(minecraftKey -> get(CraftNamespacedKey.fromMinecraft(minecraftKey)));
+        return this.minecraftRegistry.getIds().stream().map(minecraftKey -> this.get(CraftNamespacedKey.fromMinecraft(minecraftKey)));
     }
 
     @Override
     public Iterator<B> iterator() {
-        return stream().iterator();
+        return this.stream().iterator();
     }
 
-    public B createBukkit(NamespacedKey namespacedKey, M minecraft) {
+    public B createBukkit(RegistryEntry<M> minecraft) {
         if (minecraft == null) {
             return null;
         }
 
-        return minecraftToBukkit.apply(namespacedKey, minecraft);
+        return this.minecraftToBukkit.createBukkit(minecraft);
     }
 
-    public Stream<B> values() {
-        return minecraftRegistry.getIds().stream().map(minecraftKey -> get(CraftNamespacedKey.fromMinecraft(minecraftKey)));
-    }*/
+    public boolean supportsDirectHolders() {
+        return this.minecraftToBukkit.supportsDirectHolders();
+    }
+
+    // Paper start - improve Registry
+    @Override
+    public NamespacedKey getKey(final B value) {
+        if (value instanceof Holderable<?> holderable) {
+            return holderable.getKeyOrNull();
+        }
+        return value.getKey();
+    }
+    // Paper end - improve Registry
+
+    // Paper start - RegistrySet API
+    @Override
+    public boolean hasTag(final io.papermc.paper.registry.tag.TagKey<B> key) {
+        return this.minecraftRegistry.getOptional(net.minecraft.registry.tag.TagKey.of(this.minecraftRegistry.getKey(), io.papermc.paper.adventure.PaperAdventure.asVanilla(key.key()))).isPresent();
+    }
+
+    @Override
+    public io.papermc.paper.registry.tag.Tag<B> getTag(final io.papermc.paper.registry.tag.TagKey<B> key) {
+        final net.minecraft.registry.entry.RegistryEntryList.Named<M> namedHolderSet = this.minecraftRegistry.getOptional(io.papermc.paper.registry.PaperRegistries.toNms(key)).orElseThrow();
+        return new io.papermc.paper.registry.set.NamedRegistryKeySetImpl<>(key, namedHolderSet);
+    }
+
+    @Override
+    public Collection<Tag<B>> getTags() {
+        return this.minecraftRegistry.streamTags().<Tag<B>>map(NamedRegistryKeySetImpl::new).toList();
+    }
+    // Paper end - RegistrySet API
+
+    final class InvalidHolderOwner implements RegistryEntryOwner<M> {
+    }
 }

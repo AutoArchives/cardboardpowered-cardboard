@@ -3,6 +3,9 @@ package io.papermc.paper.registry.data.util;
 import com.mojang.serialization.JavaOps;
 // import io.papermc.paper.adventure.WrapperAwareSerializer;
 import net.kyori.adventure.text.Component;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.text.Text;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -10,11 +13,32 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.jetbrains.annotations.Contract;
 
+import java.util.Optional;
+
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.cardboardpowered.adventure.WrapperAwareSerializer;
 
 @DefaultQualifier(value=NonNull.class)
 public class Conversions {
 
+	private static @Nullable Conversions globalInstance;
+    public static Conversions global() {
+        if (globalInstance == null) {
+            final DynamicRegistryManager globalAccess = CraftRegistry.getMinecraftRegistry();
+            // Preconditions.checkState(globalAccess != null, "Global registry access is not available");
+            globalInstance = new Conversions(new RegistryOps.RegistryInfoGetter() {
+                @Override
+                public <T> Optional<RegistryOps.RegistryInfo<T>> getRegistryInfo(final RegistryKey<? extends Registry<? extends T>> registryRef) {
+                    final Registry<T> registry = globalAccess.getOrThrow(registryRef);
+                    return Optional.of(
+                        new RegistryOps.RegistryInfo<>(registry, registry, registry.getLifecycle())
+                    );
+                }
+            });
+        }
+        return globalInstance;
+    }
+	
     private final RegistryOps.RegistryInfoGetter lookup;
     private final WrapperAwareSerializer serializer;
 

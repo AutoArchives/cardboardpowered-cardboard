@@ -9,6 +9,7 @@ import io.papermc.paper.registry.data.PaperGameEventRegistryEntry;
 import io.papermc.paper.registry.data.PaperPaintingVariantRegistryEntry;
 import io.papermc.paper.registry.entry.RegistryEntry;
 import io.papermc.paper.registry.entry.RegistryEntryBuilder;
+import io.papermc.paper.registry.entry.RegistryEntryMeta;
 import io.papermc.paper.registry.tag.TagKey;
 // import io.papermc.paper.world.structure.ConfiguredStructure;
 import io.papermc.paper.world.structure.PaperConfiguredStructure;
@@ -25,6 +26,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.world.gen.structure.Structure;
 
 import org.bukkit.Art;
+import org.bukkit.Fluid;
 import org.bukkit.GameEvent;
 import org.bukkit.JukeboxSong;
 import org.bukkit.Keyed;
@@ -35,6 +37,7 @@ import org.bukkit.block.Biome;
 import org.bukkit.block.BlockType;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.craftbukkit.CraftArt;
+import org.bukkit.craftbukkit.CraftFluid;
 import org.bukkit.craftbukkit.CraftGameEvent;
 import org.bukkit.craftbukkit.CraftJukeboxSong;
 import org.bukkit.craftbukkit.CraftMusicInstrument;
@@ -66,6 +69,7 @@ import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.bukkit.map.MapCursor;
 import org.bukkit.potion.PotionEffectType;
 import org.cardboardpowered.adventure.CardboardAdventure;
+import org.cardboardpowered.impl.CardboardAttributable;
 import org.cardboardpowered.impl.CardboardEnchantment;
 import org.cardboardpowered.impl.entity.CardboardCat;
 import org.cardboardpowered.impl.entity.CraftFrog;
@@ -131,9 +135,13 @@ public final class PaperRegistries {
 	        RegistryEntryBuilder.start(RegistryKeys.SCREEN_HANDLER, RegistryKey.MENU).craft(MenuType.class, CraftMenuType::new).build(),
 	        
 	        // TODO
-	        RegistryEntry.apiOnly(RegistryKeys.ATTRIBUTE, RegistryKey.ATTRIBUTE, () -> org.bukkit.Registry.ATTRIBUTE),
-			RegistryEntry.apiOnly(RegistryKeys.SOUND_EVENT, RegistryKey.SOUND_EVENT, () -> org.bukkit.Registry.SOUNDS),
-			RegistryEntry.apiOnly(RegistryKeys.FLUID, RegistryKey.FLUID, () -> org.bukkit.Registry.FLUID),
+	        // RegistryEntry.apiOnly(RegistryKeys.ATTRIBUTE, RegistryKey.ATTRIBUTE, () -> org.bukkit.Registry.ATTRIBUTE),
+			//RegistryEntry.apiOnly(RegistryKeys.SOUND_EVENT, RegistryKey.SOUND_EVENT, () -> org.bukkit.Registry.SOUNDS),
+			// RegistryEntry.apiOnly(RegistryKeys.FLUID, RegistryKey.FLUID, () -> org.bukkit.Registry.FLUID),
+			
+			start(RegistryKeys.ATTRIBUTE, io.papermc.paper.registry.RegistryKey.ATTRIBUTE).craft(Attribute.class, CardboardAttributable::new).build(),
+            start(RegistryKeys.FLUID, io.papermc.paper.registry.RegistryKey.FLUID).craft(Fluid.class, CraftFluid::new).build(),
+            start(RegistryKeys.SOUND_EVENT, io.papermc.paper.registry.RegistryKey.SOUND_EVENT).craft(Sound.class, CraftSound::new, true).build(),
 	        
 	        // RegistryEntryBuilder.start(RegistryKeys.ATTRIBUTE, RegistryKey.ATTRIBUTE).craft(Attribute.class, CraftAttribute::new).build(),
 	        // RegistryEntryBuilder.start(RegistryKeys.FLUID, RegistryKey.FLUID).craft(Fluid.class, CraftFluid::new).build(),
@@ -146,7 +154,7 @@ public final class PaperRegistries {
 	        RegistryEntryBuilder.start(RegistryKeys.TRIM_PATTERN, RegistryKey.TRIM_PATTERN).craft(TrimPattern.class, CraftTrimPattern::new).build().delayed(),
 	        RegistryEntryBuilder.start(RegistryKeys.DAMAGE_TYPE, RegistryKey.DAMAGE_TYPE).craft(DamageType.class, CraftDamageType::new).build().delayed(),
 	        RegistryEntryBuilder.start(RegistryKeys.WOLF_VARIANT, RegistryKey.WOLF_VARIANT).craft(Wolf.Variant.class, WolfImpl.CraftVariant::new).build().delayed(),
-	        RegistryEntryBuilder.start(RegistryKeys.ENCHANTMENT, RegistryKey.ENCHANTMENT).craft(Enchantment.class, CardboardEnchantment::new).writable(PaperEnchantmentRegistryEntry.PaperBuilder::new).withSerializationUpdater(FieldRename.ENCHANTMENT_RENAME).delayed(),
+	        RegistryEntryBuilder.start(RegistryKeys.ENCHANTMENT, RegistryKey.ENCHANTMENT).craft(Enchantment.class, CardboardEnchantment::new).serializationUpdater(FieldRename.ENCHANTMENT_RENAME).writable(PaperEnchantmentRegistryEntry.PaperBuilder::new).delayed(),
 	        RegistryEntryBuilder.start(RegistryKeys.JUKEBOX_SONG, RegistryKey.JUKEBOX_SONG).craft(JukeboxSong.class, CraftJukeboxSong::new).build().delayed(),
 	        RegistryEntryBuilder.start(RegistryKeys.BANNER_PATTERN, RegistryKey.BANNER_PATTERN).craft(PatternType.class, CraftPatternType::new).build().delayed(),
 	        RegistryEntryBuilder.start(RegistryKeys.PAINTING_VARIANT, RegistryKey.PAINTING_VARIANT).craft(Art.class, CraftArt::new).writable(PaperPaintingVariantRegistryEntry.PaperBuilder::new).delayed(),
@@ -155,7 +163,7 @@ public final class PaperRegistries {
 	        RegistryEntryBuilder.start(RegistryKeys.PARTICLE_TYPE, RegistryKey.PARTICLE_TYPE).apiOnly(PaperSimpleRegistry::particleType),
 	        RegistryEntryBuilder.start(RegistryKeys.POTION, RegistryKey.POTION).apiOnly(PaperSimpleRegistry::potion),
 	        // RegistryEntryBuilder.start(RegistryKeys.MEMORY_MODULE_TYPE, RegistryKey.MEMORY_MODULE_TYPE).apiOnly(() -> org.bukkit.Registry.MEMORY_MODULE_TYPE)
-			RegistryEntry.apiOnly(RegistryKeys.MEMORY_MODULE_TYPE, RegistryKey.MEMORY_MODULE_TYPE, () -> (org.bukkit.Registry<MemoryKey<?>>) (org.bukkit.Registry) org.bukkit.Registry.MEMORY_MODULE_TYPE)
+			start(RegistryKeys.MEMORY_MODULE_TYPE, io.papermc.paper.registry.RegistryKey.MEMORY_MODULE_TYPE).apiOnly(() -> (org.bukkit.Registry<MemoryKey<?>>) (org.bukkit.Registry) org.bukkit.Registry.MEMORY_MODULE_TYPE)
 	);
 
     private static final Map<RegistryKey<?>, RegistryEntry<?, ?>> BY_REGISTRY_KEY;
@@ -168,6 +176,8 @@ public final class PaperRegistries {
     public static <M, T extends Keyed> @Nullable RegistryEntry<M, T> getEntry(RegistryKey<? super T> registryKey) {
         return (@Nullable RegistryEntry<M, T>) BY_REGISTRY_KEY.get(registryKey);
     }
+    
+    
 
     public static <M, T> RegistryKey<T> registryFromNms(net.minecraft.registry.RegistryKey<? extends Registry<M>> registryResourceKey) {
         return (RegistryKey<T>) Objects.requireNonNull(BY_RESOURCE_KEY.get(registryResourceKey), String.valueOf(registryResourceKey) + " doesn't have an api RegistryKey").apiKey();
@@ -193,6 +203,18 @@ public final class PaperRegistries {
     public static <M, T> net.minecraft.registry.tag.TagKey<M> toNms(TagKey<T> tagKey) {
     	net.minecraft.registry.RegistryKey<? extends Registry<M>> key = PaperRegistries.registryToNms(tagKey.registryKey());
         return net.minecraft.registry.tag.TagKey.of(key, CardboardAdventure.asVanilla(tagKey.key()));
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> RegistryEntryMeta.Buildable<M, T, B> getBuildableMeta(final net.minecraft.registry.RegistryKey<? extends Registry<M>> registryKey) {
+        final RegistryEntry<M, T> entry = getEntry(registryKey);
+        if (entry == null) {
+            throw new IllegalArgumentException("No registry entry for " + registryKey);
+        }
+        if (!(entry.meta() instanceof final RegistryEntryMeta.Buildable<M, T, ?> buildableMeta)) {
+            throw new IllegalArgumentException("Registry entry for " + registryKey + " is not buildable");
+        }
+        return (RegistryEntryMeta.Buildable<M, T, B>) buildableMeta;
     }
 
     private PaperRegistries() {

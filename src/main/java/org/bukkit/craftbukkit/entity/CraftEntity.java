@@ -181,6 +181,7 @@ import org.cardboardpowered.impl.world.WorldImpl;
 import org.cardboardpowered.interfaces.IWorldChunk;
 import com.mojang.brigadier.LiteralMessage;
 
+import io.papermc.paper.entity.LookAnchor;
 import io.papermc.paper.entity.TeleportFlag;
 import io.papermc.paper.threadedregions.scheduler.EntityScheduler;
 import me.isaiah.common.entity.IEntity;
@@ -1524,5 +1525,13 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
             ((PlayerImpl)player).sendHurtAnimation(0.0f, this);
         }
     }
+    
+    // 1.21.4: (moved from Player)
+
+	@Override
+	public void lookAt(double arg0, double arg1, double arg2, @NotNull LookAnchor arg3) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

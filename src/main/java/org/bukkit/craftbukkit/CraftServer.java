@@ -191,6 +191,7 @@ import org.cardboardpowered.impl.command.CardboardConsoleCommandSender;
 import org.cardboardpowered.impl.command.CommandMapImpl;
 import org.cardboardpowered.impl.command.MinecraftCommandWrapper;
 import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.impl.inventory.InventoryCreator;
 import org.cardboardpowered.impl.inventory.recipe.CardboardBlastingRecipe;
 import org.cardboardpowered.impl.inventory.recipe.CardboardCampfireRecipe;
@@ -2208,7 +2209,7 @@ public class CraftServer implements Server {
         ScreenHandler container = new ScreenHandler(null, -1){
 
             //@Override
-            public InventoryView getBukkitView() {
+            public CardboardInventoryView getBukkitView() {
                 return null;
             }
 
@@ -2644,6 +2645,12 @@ public class CraftServer implements Server {
 	public boolean isGlobalTickThread() {
 		// TODO Auto-generated method stub
 		return true;
+	}
+
+	@Override
+	public @NotNull Merchant createMerchant() {
+		// TODO Auto-generated method stub
+		return null;
 	}
     
     // public boolean isTickPaused() {

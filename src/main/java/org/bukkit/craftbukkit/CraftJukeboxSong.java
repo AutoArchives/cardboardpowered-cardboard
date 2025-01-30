@@ -17,7 +17,7 @@ public class CraftJukeboxSong implements JukeboxSong, Handleable<net.minecraft.b
     private final net.minecraft.block.jukebox.JukeboxSong handle;
 
     public static JukeboxSong minecraftToBukkit(net.minecraft.block.jukebox.JukeboxSong minecraft) {
-        return (JukeboxSong)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.JUKEBOX_SONG, Registry.JUKEBOX_SONG);
+        return (JukeboxSong)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.JUKEBOX_SONG);
     }
 
     public static JukeboxSong minecraftHolderToBukkit(RegistryEntry<net.minecraft.block.jukebox.JukeboxSong> minecraft) {

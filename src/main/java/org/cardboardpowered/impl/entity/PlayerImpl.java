@@ -2148,18 +2148,6 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 	}
 
 	@Override
-	public void lookAt(@NotNull Entity arg0, @NotNull LookAnchor arg1, @NotNull LookAnchor arg2) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void lookAt(double arg0, double arg1, double arg2, @NotNull LookAnchor arg3) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public void removeAdditionalChatCompletions(@NotNull Collection<String> arg0) {
         this.getHandle().networkHandler.sendPacket(new ChatSuggestionsS2CPacket(ChatSuggestionsS2CPacket.Action.REMOVE, new ArrayList<String>(arg0)));
 	}
@@ -2787,5 +2775,10 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
         return new CraftInput(this.getHandle().getPlayerInput());
 	}
 	
+	@Override
+	public void lookAt(@NotNull Entity arg0, @NotNull LookAnchor arg1, @NotNull LookAnchor arg2) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

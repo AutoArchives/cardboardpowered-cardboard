@@ -224,7 +224,7 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 	}
 	
     public static Enchantment minecraftToBukkit(net.minecraft.enchantment.Enchantment minecraft) {
-        return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.ENCHANTMENT, Registry.ENCHANTMENT);
+        return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.ENCHANTMENT);
     }
     
     // 1.20.2 API: 

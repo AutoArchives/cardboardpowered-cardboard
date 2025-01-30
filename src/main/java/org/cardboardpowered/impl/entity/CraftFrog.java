@@ -63,7 +63,7 @@ implements Frog {
         private final int ordinal;
 
         public static Frog.Variant minecraftToBukkit(FrogVariant minecraft) {
-            return (Frog.Variant)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.FROG_VARIANT, Registry.FROG_VARIANT);
+            return (Frog.Variant)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.FROG_VARIANT);
         }
 
         public static Frog.Variant minecraftHolderToBukkit(RegistryEntry<FrogVariant> minecraft) {

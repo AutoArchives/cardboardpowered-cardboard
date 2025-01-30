@@ -28,7 +28,7 @@
   ],
 
   "depends": {
-    "fabricloader": ">=0.11.0",
+    "fabricloader": ">=0.12.0",
     "fabric-api": "*",
     "java": ">=16",
     "icommon": "*"
@@ -42,7 +42,8 @@
       "net/minecraft/class_1297": ["com/javazilla/bukkitfabric/interfaces/IMixinEntity"],
       "net/minecraft/class_3222": ["com/javazilla/bukkitfabric/interfaces/IMixinServerEntityPlayer"],
       "net/minecraft/class_1937": ["com/javazilla/bukkitfabric/interfaces/IMixinWorld"],
-      "net/minecraft/class_3218": ["org/cardboardpowered/interfaces/IServerWorld"]
+      "net/minecraft/class_3218": ["org/cardboardpowered/interfaces/IServerWorld"],
+      "net/minecraft/class_1703": ["org/cardboardpowered/interfaces/IScreenHandler"]
     }
   }
 

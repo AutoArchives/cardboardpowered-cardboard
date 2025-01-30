@@ -22,7 +22,7 @@ public class CraftTrimMaterial implements TrimMaterial, Handleable<ArmorTrimMate
     private final ArmorTrimMaterial handle;
 
     public static TrimMaterial minecraftToBukkit(ArmorTrimMaterial minecraft) {
-        return (TrimMaterial)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.TRIM_MATERIAL, Registry.TRIM_MATERIAL);
+        return (TrimMaterial)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.TRIM_MATERIAL);
     }
 
     public static TrimMaterial minecraftHolderToBukkit(RegistryEntry<ArmorTrimMaterial> minecraft) {

@@ -1,6 +1,5 @@
 package io.papermc.paper.datacomponent.item;
 
-import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.util.MCUtil;
 import java.util.List;
@@ -19,8 +18,8 @@ public record PaperBannerPatternLayers(
 ) implements BannerPatternLayers, Handleable<net.minecraft.component.type.BannerPatternsComponent> {
 
     private static List<Pattern> convert(final net.minecraft.component.type.BannerPatternsComponent nmsPatterns) {
-        return MCUtil.transformUnmodifiable(nmsPatterns.layers(), input -> {
-            final Optional<PatternType> type = CraftRegistry.unwrapAndConvertHolder(RegistryAccess.registryAccess().getRegistry(RegistryKey.BANNER_PATTERN), input.pattern());
+    	return MCUtil.transformUnmodifiable(nmsPatterns.layers(), input -> {
+            final Optional<PatternType> type = CraftRegistry.unwrapAndConvertHolder(RegistryKey.BANNER_PATTERN, input.pattern());
             return new Pattern(Objects.requireNonNull(DyeColor.getByWoolData((byte) input.color().getId())), type.orElseThrow(() -> new IllegalStateException("Inlined banner patterns are not supported yet in the API!")));
         });
     }

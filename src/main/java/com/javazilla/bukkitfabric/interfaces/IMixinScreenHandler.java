@@ -19,7 +19,9 @@
 package com.javazilla.bukkitfabric.interfaces;
 
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import org.cardboardpowered.interfaces.IScreenHandler;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
@@ -27,7 +29,7 @@ import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
 import net.minecraft.util.collection.DefaultedList;
 
-public interface IMixinScreenHandler {
+public interface IMixinScreenHandler extends IScreenHandler {
 
     CardboardInventoryView getBukkitView();
 
@@ -36,6 +38,19 @@ public interface IMixinScreenHandler {
     void setTitle(Text title);
 
     void transferTo(ScreenHandler other, CraftHumanEntity player);
+    
+    /*
+    public default void transferTo(ScreenHandler other, CraftHumanEntity player) {
+    	CardboardInventoryView source = this.getBukkitView();
+    	CardboardInventoryView destination = other.getBukkitView();
+
+        ( (IMixinInventory) ((CraftInventory)source.getTopInventory()).getInventory() ).onClose(player);
+        ( (IMixinInventory) ((CraftInventory)source.getBottomInventory()).getInventory() ).onClose(player);
+        ( (IMixinInventory) ((CraftInventory)destination.getTopInventory()).getInventory() ).onOpen(player);
+        ( (IMixinInventory) ((CraftInventory)destination.getBottomInventory()).getInventory() ).onOpen(player);
+    }
+    */
+
 
     DefaultedList<ItemStack> getTrackedStacksBF();
 

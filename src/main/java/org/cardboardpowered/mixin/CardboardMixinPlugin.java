@@ -84,7 +84,9 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
 
         // libraries.add( new Library("io.papermc", "paper-api", "1.21.1-R0.1-20240810.105324-1", SHA1, "f1f242327127cc802d94fba1ec823d420d86ff2d", "paper"));
         // libraries.add( new Library("io.papermc", "paper-api", "1.21.1-R0.1-20241021.162528-124", SHA1, "2bc94e08501ef8145e562ae57daa03a5363630a7", "paper"));
-        libraries.add( new Library("io.papermc", "paper-api", "1.21.4-R0.1-20241215.095037-18", SHA1, "83ab82c30f937f3b7620e1f24191e98ee6270a60", "paper"));
+        // libraries.add( new Library("io.papermc", "paper-api", "1.21.4-R0.1-20241215.095037-18", SHA1, "83ab82c30f937f3b7620e1f24191e98ee6270a60", "paper"));
+        // libraries.add( new Library("io.papermc", "paper-api", "1.21.4-R0.1-20241226.084728-40", SHA1, "982e25808ef6c419a4be15c88ff2c7bd0bc23258", "paper"));
+        libraries.add( new Library("io.papermc", "paper-api", "1.21.4-R0.1-20250118.134032-116", SHA1, "6a1c95efe04acca299d975021cfc9f33ca28d4c0", "paper"));
 
         
         
@@ -103,13 +105,22 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         // TODO: Check Adventure version
         // String adventureVersion = "4.9.3";
         // String adventureVersion = "4.13.1";
-        String adventureVersion = "4.16.0";
+        // String adventureVersion = "4.16.0";
+        String adventureVersion = "4.18.0";
 
-        libraries.add( new Library("net.kyori", "adventure-api", adventureVersion, SHA1, "cb966704b813d30d4ee9f0b97167b4063a249c34", null) );
-        libraries.add( new Library("net.kyori", "adventure-key", adventureVersion, SHA1, "b695c40a7d2fd658246de78ea428e8f8dc7ffd2d", null) );
-        libraries.add( new Library("net.kyori", "adventure-text-serializer-gson", adventureVersion, SHA1, "5650ed18040e070aa05855ebcb890e6e1e36ee0e", null) );
-        libraries.add( new Library("net.kyori", "adventure-text-serializer-legacy", adventureVersion, SHA1, "21b9450c659146ea4ac6ef3555b5ea1008566b69", null) );
-        libraries.add( new Library("net.kyori", "adventure-text-serializer-plain", adventureVersion, SHA1, "4d5e8b73aac1e5e17dd24a75edd8fd077098e18c", null) );
+        libraries.add( new Library("net.kyori", "adventure-api", adventureVersion, SHA1, "2c26e57011830cb86f86b9f9d936fcffdf43e8b8", null) );
+        libraries.add( new Library("net.kyori", "adventure-key", adventureVersion, SHA1, "dc9db1a20e8ddc9ca50bebbf0a5af7d7a8812f95", null) );
+        libraries.add( new Library("net.kyori", "adventure-text-serializer-gson", adventureVersion, SHA1, "f0f59c9bc9747626d6e51d4a99bc5a76eaca59ab", null) );
+        libraries.add( new Library("net.kyori", "adventure-text-serializer-legacy", adventureVersion, SHA1, "04bf5d9605f768ebff17cf44db9998bf24a56572", null) );
+        libraries.add( new Library("net.kyori", "adventure-text-serializer-plain", adventureVersion, SHA1, "5870a0c2d8825ada8e127086592419c67003a5c0", null) );
+        libraries.add( new Library("net.kyori", "adventure-text-minimessage", adventureVersion, SHA1, "b4d004e56668e9670836c3c191a501cd92f3784e", null) );
+
+        
+        // libraries.add( new Library("net.kyori", "adventure-api", adventureVersion, SHA1, "cb966704b813d30d4ee9f0b97167b4063a249c34", null) );
+        // libraries.add( new Library("net.kyori", "adventure-key", adventureVersion, SHA1, "b695c40a7d2fd658246de78ea428e8f8dc7ffd2d", null) );
+        // libraries.add( new Library("net.kyori", "adventure-text-serializer-gson", adventureVersion, SHA1, "5650ed18040e070aa05855ebcb890e6e1e36ee0e", null) );
+        // libraries.add( new Library("net.kyori", "adventure-text-serializer-legacy", adventureVersion, SHA1, "21b9450c659146ea4ac6ef3555b5ea1008566b69", null) );
+        // libraries.add( new Library("net.kyori", "adventure-text-serializer-plain", adventureVersion, SHA1, "4d5e8b73aac1e5e17dd24a75edd8fd077098e18c", null) );
         
         // libraries.add( new Library("net.kyori", "adventure-api", adventureVersion, SHA1, "b0054b3a4d144f09962fe72abc746191e7f931a2", null) );
         // libraries.add( new Library("net.kyori", "adventure-text-serializer-gson", adventureVersion, SHA1, "141df0329e00b791bcc8b2921cd715ac7d506bbe", null) );

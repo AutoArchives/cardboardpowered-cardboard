@@ -95,7 +95,7 @@ public class WolfImpl extends TameableAnimalImpl implements Wolf {
 	public static class CraftVariant implements Variant, Handleable<WolfVariant> {
 
         public static Variant minecraftToBukkit(WolfVariant minecraft) {
-            return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.WOLF_VARIANT, org.bukkit.Registry.WOLF_VARIANT);
+            return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.WOLF_VARIANT);
         }
 
         public static Variant minecraftHolderToBukkit(RegistryEntry<WolfVariant> minecraft) {

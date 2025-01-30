@@ -23,17 +23,17 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
 
 // public class CardboardInventoryView extends InventoryView {
-public class CardboardInventoryView<T extends ScreenHandler> extends CardboardAbstractInventoryView {
+public class CardboardInventoryView<T extends ScreenHandler, I extends Inventory> extends CardboardAbstractInventoryView {
 
-    private final ScreenHandler container;
-    private CraftHumanEntity player;
-    private final CraftInventory viewing;
-    private final String originalTitle;
-    private String title;
+    public final ScreenHandler container;
+    public CraftHumanEntity player;
+    public final I viewing;
+    public final String originalTitle;
+    public String title;
 
-    public CardboardInventoryView(HumanEntity player, Inventory viewing, ScreenHandler container) {
+    public CardboardInventoryView(HumanEntity player, I viewing, ScreenHandler container) {
         this.player = (null !=player) ? (CraftHumanEntity) player : null;
-        this.viewing = (CraftInventory) viewing;
+        this.viewing = viewing;
         this.container = container;
         this.title = this.originalTitle = CraftChatMessage.fromComponent(((IMixinScreenHandler)container).getTitle() );
     }
@@ -44,7 +44,7 @@ public class CardboardInventoryView<T extends ScreenHandler> extends CardboardAb
     }
 
     @Override
-    public Inventory getTopInventory() {
+    public I getTopInventory() {
         return viewing;
     }
 
@@ -114,5 +114,10 @@ public class CardboardInventoryView<T extends ScreenHandler> extends CardboardAb
         entityPlayer.networkHandler.sendPacket(new OpenScreenS2CPacket(containerId, windowType, CraftChatMessage.fromString(title)[0]));
         ((Player)view.getPlayer()).updateInventory();
     }
+
+	public I getTopInventorya() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

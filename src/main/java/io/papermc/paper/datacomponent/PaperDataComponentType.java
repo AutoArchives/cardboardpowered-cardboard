@@ -28,7 +28,7 @@ Handleable<ComponentType<NMS>> {
     }
 
     public static DataComponentType minecraftToBukkit(ComponentType<?> type) {
-        return (DataComponentType)CraftRegistry.minecraftToBukkit(type, RegistryKeys.DATA_COMPONENT_TYPE, Registry.DATA_COMPONENT_TYPE);
+        return (DataComponentType)CraftRegistry.minecraftToBukkit(type, RegistryKeys.DATA_COMPONENT_TYPE);
     }
 
     public static Set<DataComponentType> minecraftToBukkit(Set<ComponentType<?>> nmsTypes) {

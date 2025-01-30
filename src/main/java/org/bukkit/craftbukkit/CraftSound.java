@@ -11,6 +11,52 @@ import org.apache.commons.lang.Validate;
 import org.bukkit.Sound;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
+
+import io.papermc.paper.util.OldEnumHolderable;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.sound.SoundEvent;
+import org.bukkit.Sound;
+
+public class CraftSound extends OldEnumHolderable<Sound, SoundEvent> implements Sound {
+
+    private static int count = 0;
+
+    public static Sound minecraftToBukkit(SoundEvent minecraft) {
+        return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.SOUND_EVENT);
+    }
+
+    public static SoundEvent bukkitToMinecraft(Sound bukkit) {
+        return CraftRegistry.bukkitToMinecraft(bukkit);
+    }
+
+    public static RegistryEntry<SoundEvent> bukkitToMinecraftHolder(Sound bukkit) {
+        return CraftRegistry.bukkitToMinecraftHolder(bukkit, RegistryKeys.SOUND_EVENT);
+    }
+
+    public CraftSound(RegistryEntry<SoundEvent> soundEffect) {
+        super(soundEffect, count++);
+    }
+
+    // Paper start
+    public static String getSound(Sound sound) {
+        return sound.getKey().getKey();
+    }
+    // Paper end
+    
+    public static Sound getBukkit(SoundEvent soundEffect) {
+        return Sound.ENTITY_GENERIC_EXPLODE;
+    }
+
+	public static SoundEvent getSoundEffect(String str) {
+		SoundEvent effect = Registries.SOUND_EVENT.get(Identifier.of(str));
+		return effect;
+	}
+    
+}
+
+/*
+
 public enum CraftSound {
 
     AMBIENT_BASALT_DELTAS_ADDITIONS("ambient.basalt_deltas.additions"),
@@ -1061,3 +1107,4 @@ public enum CraftSound {
     }
 
 }
+*/

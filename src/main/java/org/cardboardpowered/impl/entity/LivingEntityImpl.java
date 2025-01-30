@@ -20,6 +20,7 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -183,7 +184,8 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public AttributeInstance getAttribute(Attribute att) {
-        return ((IMixinLivingEntity) nms).cardboard_getAttr().getAttribute(att);
+
+        return ((IMixinLivingEntity) nms).cardboard_getAttr().getAttribute(att); //.getAttribute(att, nms.getAttributes());
     }
 
     @Override
@@ -806,9 +808,17 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
     }
     // PaperAPI - end
 
+    public CraftAttributeMap craftAttributes;
+    
     @Override
     public void registerAttribute(Attribute att) {
-        ((IMixinLivingEntity) nms).cardboard_getAttr().registerAttribute(att);
+    	
+    	if (this.craftAttributes == null) {
+    		this.craftAttributes = new CraftAttributeMap( nms.getAttributes());
+    	}
+    	
+        // ((IMixinLivingEntity) nms).cardboard_getAttr().registerAttribute(att);
+    	this.craftAttributes.registerAttribute(att);
     }
 
     @Override

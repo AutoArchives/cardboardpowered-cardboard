@@ -102,7 +102,7 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
     }
 
     public static ItemType minecraftToBukkitNew(Item minecraft) {
-        return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.ITEM, Registry.ITEM);
+        return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.ITEM);
     }
 
     public static Item bukkitToMinecraftNew(ItemType bukkit) {
@@ -333,7 +333,7 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
     }
 	
 	public static DataComponentType PaperDataComponentType_minecraftToBukkit(final net.minecraft.component.ComponentType<?> type) {
-        return CraftRegistry.minecraftToBukkit(type, RegistryKeys.DATA_COMPONENT_TYPE, Registry.DATA_COMPONENT_TYPE);
+        return CraftRegistry.minecraftToBukkit(type, RegistryKeys.DATA_COMPONENT_TYPE);
     }
 	
 	public static Set<DataComponentType> PaperDataComponentType_minecraftToBukkit(final Set<net.minecraft.component.ComponentType<?>> nmsTypes) {

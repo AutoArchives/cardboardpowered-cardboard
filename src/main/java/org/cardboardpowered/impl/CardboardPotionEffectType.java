@@ -44,7 +44,7 @@ public class CardboardPotionEffectType extends PotionEffectType implements Handl
 
 	
     public static PotionEffectType minecraftToBukkit(StatusEffect minecraft) {
-        return (PotionEffectType)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.STATUS_EFFECT, Registry.EFFECT);
+        return (PotionEffectType)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.STATUS_EFFECT);
     }
 	
 	

@@ -22,7 +22,7 @@ public final class CraftMapCursor {
         private final int ordinal;
 
         public static MapCursor.Type minecraftToBukkit(MapDecorationType minecraft) {
-            return (MapCursor.Type)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.MAP_DECORATION_TYPE, Registry.MAP_DECORATION_TYPE);
+            return (MapCursor.Type)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.MAP_DECORATION_TYPE);
         }
 
         public static MapCursor.Type minecraftHolderToBukkit(RegistryEntry<MapDecorationType> minecraft) {

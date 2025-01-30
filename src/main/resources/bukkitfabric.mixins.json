@@ -163,6 +163,7 @@
     "registry.MixinRegistries",
     "registry.MixinRegistryLoader",
     "registry.MixinReloadableRegistries",
+    "registry.MixinSimpleRegistry",
     "screen.MixinAbstractFurnaceScreenHandler",
     "screen.MixinAnvilScreenHandler",
     "screen.MixinBeaconScreenHandler",

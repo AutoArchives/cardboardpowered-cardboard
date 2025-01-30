@@ -17,6 +17,7 @@ import io.papermc.paper.registry.WritableCraftRegistry;
 import io.papermc.paper.registry.data.util.Conversions;
 import io.papermc.paper.registry.entry.RegistryEntry;
 import io.papermc.paper.registry.entry.RegistryEntryInfo;
+import io.papermc.paper.registry.entry.RegistryEntryMeta;
 // import io.papermc.paper.registry.event.RegistryEntryAddEventImpl;
 // import io.papermc.paper.registry.event.RegistryEventMap;
 import io.papermc.paper.registry.event.RegistryEventProvider;
@@ -73,7 +74,14 @@ public class PaperRegistryListenerManager {
     
     
 
-    public <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>, R> R registerWithListeners(Registry<M> registry, RegistryKey<M> key, M nms, net.minecraft.registry.entry.RegistryEntryInfo registrationInfo, RegisterMethod<M, R> registerMethod, Conversions conversions) {
+    public <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>, R> R registerWithListeners(
+    		Registry<M> registry,
+    		RegistryKey<M> key,
+    		M nms,
+    		net.minecraft.registry.entry.RegistryEntryInfo registrationInfo,
+    		RegisterMethod<M, R> registerMethod,
+    		Conversions conversions
+    	) {
         // Preconditions.checkState((boolean)LaunchEntryPointHandler.INSTANCE.hasEntered(Entrypoint.BOOTSTRAPPER), (Object)(String.valueOf(registry.getKey()) + " tried to run modification listeners before bootstrappers have been called"));
         
         @Nullable RegistryEntry<M, T> entry = PaperRegistries.getEntry(registry.getKey());
@@ -86,6 +94,23 @@ public class PaperRegistryListenerManager {
         // return (R) this.registerWithListeners(registry, modifiableEntry, key, nms, builder, registrationInfo, registerMethod, conversions);
     }
     
+    <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> void registerWithListeners( // TODO remove Keyed
+            final MutableRegistry<M> registry,
+            final RegistryEntryMeta.Buildable<M, T, B> entry,
+            final RegistryKey<M> key,
+            final B builder,
+            final net.minecraft.registry.entry.RegistryEntryInfo registrationInfo,
+            final Conversions conversions
+        ) {
+            if (!entry.modificationApiSupport().canModify() /*|| !this.valueAddEventTypes.hasHandlers(entry.apiKey())*/) {
+                registry.add(key, builder.build(), registrationInfo);
+                return;
+            }
+            this.registerWithListeners(registry, entry, key, null, builder, registrationInfo, MutableRegistry::add, conversions);
+        }
+    
+    
+    
     
 
     <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> void registerWithListeners(MutableRegistry<M> registry, RegistryEntryInfo<M, T> entry, RegistryKey<M> key, B builder, net.minecraft.registry.entry.RegistryEntryInfo registrationInfo, Conversions conversions) {
@@ -96,26 +121,39 @@ public class PaperRegistryListenerManager {
         // this.registerWithListeners(registry, RegistryEntry.Modifiable.asModifiable(entry), key, null, builder, registrationInfo, MutableRegistry::add, conversions);
     }
 
+    /*
     public <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>, R> R registerWithListeners(Registry<M> registry, RegistryEntry.Modifiable<M, T, B> entry, RegistryKey<M> key, @Nullable M oldNms, B builder, net.minecraft.registry.entry.RegistryEntryInfo registrationInfo, RegisterMethod<M, R> registerMethod, Conversions conversions) {
-        // Identifier beingAdded = key.getValue();
-        // TypedKey typedKey = TypedKey.create(entry.apiKey(), (Key)Key.key((String)beingAdded.getNamespace(), (String)beingAdded.getPath()));
-        
-        // RegistryEntryAddEventImpl<T, B> event = entry.createEntryAddEvent(typedKey, builder, conversions);
-        // LifecycleEventRunner.INSTANCE.callEvent(this.valueAddEventTypes.getEventType(entry.apiKey()), event);
-        
-        /*
-        if (oldNms != null) {
-            ((SimpleRegistry)registry).clearIntrusiveHolder(oldNms);
-        }
-        Object newNms = ((PaperRegistryBuilder)event.builder()).build();
-        if (oldNms != null && !newNms.equals(oldNms)) {
-            registrationInfo = new net.minecraft.registry.entry.RegistryEntryInfo(Optional.empty(), Lifecycle.experimental());
-        }
-        */
         M newNms = oldNms;
         
         return (R) registerMethod.register((MutableRegistry)registry, key, newNms, registrationInfo);
     }
+    */
+    
+    public <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>, R> R registerWithListeners( // TODO remove Keyed
+            final Registry<M> registry,
+            final RegistryEntryMeta.Buildable<M, T, B> entry,
+            final RegistryKey<M> key,
+            final @Nullable M oldNms,
+            final B builder,
+            net.minecraft.registry.entry.RegistryEntryInfo registrationInfo,
+            final RegisterMethod<M, R> registerMethod,
+            final Conversions conversions
+        ) {
+            // @Subst("namespace:key") final Identifier beingAdded = key.getValue();
+            // @SuppressWarnings("PatternValidation") final TypedKey<T> typedKey = TypedKey.create(entry.apiKey(), Key.key(beingAdded.getNamespace(), beingAdded.getPath()));
+            // final RegistryEntryAddEventImpl<T, B> event = entry.createEntryAddEvent(typedKey, builder, conversions);
+            // LifecycleEventRunner.INSTANCE.callEvent(this.valueAddEventTypes.getEventType(entry.apiKey()), event);
+            //if (oldNms != null) {
+            //    ((SimpleRegistry<M>) registry).clearIntrusiveHolder(oldNms);
+            //}
+            final M newNms = oldNms; // event.builder().build();
+            /*
+            if (oldNms != null && !newNms.equals(oldNms)) {
+                registrationInfo = new RegistryEntryInfo(Optional.empty(), Lifecycle.experimental());
+            }
+            */
+            return registerMethod.register((MutableRegistry<M>) registry, key, newNms, registrationInfo);
+        }
 
     private static <M> M registerWithInstance(MutableRegistry<M> writableRegistry, RegistryKey<M> key, M value, net.minecraft.registry.entry.RegistryEntryInfo registrationInfo) {
         writableRegistry.add(key, value, registrationInfo);
@@ -142,7 +180,7 @@ public class PaperRegistryListenerManager {
         }
         return this.valueAddEventTypes.getOrCreate(type.registryKey(), RegistryEntryAddEventTypeImpl::new);
     }
-    */
+    *
 
     public <T, B extends RegistryBuilder<T>> LifecycleEventType.Prioritizable<BootstrapContext, RegistryFreezeEvent<T, B>> getRegistryFreezeEventType(RegistryEventProvider<T, B> type) {
         if (!RegistryEntry.Addable.isAddable(PaperRegistries.getEntry(type.registryKey()))) {
@@ -152,6 +190,17 @@ public class PaperRegistryListenerManager {
         BukkitFabricMod.LOGGER.info("Debug: Crap.");
         return null;
         // return this.freezeEventTypes.getOrCreate(type.registryKey(), RegistryLifecycleEventType::new);
+    }
+    */
+    
+    public <T, B extends RegistryBuilder<T>> LifecycleEventType.Prioritizable<BootstrapContext, RegistryFreezeEvent<T, B>> getRegistryFreezeEventType(final RegistryEventProvider<T, B> type) {
+        final RegistryEntry<?, ?> entry = PaperRegistries.getEntry(type.registryKey());
+        if (entry == null || !entry.meta().modificationApiSupport().canAdd()) {
+            throw new IllegalArgumentException(type.registryKey() + " does not support RegistryFreezeEvent");
+        }
+        BukkitFabricMod.LOGGER.info("Debug: Crap.");
+        return null;
+        //return this.freezeEventTypes.getOrCreate(type.registryKey(), RegistryLifecycleEventType::new);
     }
 
     @FunctionalInterface

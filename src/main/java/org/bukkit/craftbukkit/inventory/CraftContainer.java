@@ -82,8 +82,8 @@ public class CraftContainer extends ScreenHandler {
         }, player, id);
     }
 
-    public InventoryView getBukkitView() {
-        return view;
+    public CardboardInventoryView getBukkitView() {
+        return (CardboardInventoryView) view;
     }
 
     private int getSize() {

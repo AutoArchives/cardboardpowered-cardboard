@@ -23,7 +23,7 @@ public class CraftPatternType implements PatternType, Handleable<BannerPattern> 
     private final int ordinal;
 
     public static PatternType minecraftToBukkit(BannerPattern minecraft) {
-        return (PatternType)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.BANNER_PATTERN, Registry.BANNER_PATTERN);
+        return (PatternType)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.BANNER_PATTERN);
     }
 
     public static PatternType minecraftHolderToBukkit(RegistryEntry<BannerPattern> minecraft) {

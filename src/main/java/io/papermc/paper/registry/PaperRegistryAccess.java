@@ -5,8 +5,8 @@ import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryAccessHolder;
 import io.papermc.paper.registry.RegistryHolder;
 import io.papermc.paper.registry.RegistryKey;
-import io.papermc.paper.registry.entry.ApiRegistryEntry;
 import io.papermc.paper.registry.entry.RegistryEntry;
+import io.papermc.paper.registry.entry.RegistryEntryMeta;
 import io.papermc.paper.registry.legacy.DelayedRegistry;
 import io.papermc.paper.registry.legacy.DelayedRegistryEntry;
 import io.papermc.paper.registry.legacy.LegacyRegistryIdentifiers;
@@ -35,40 +35,56 @@ implements RegistryAccess {
 
     @VisibleForTesting
     public Set<RegistryKey<?>> getLoadedServerBackedRegistries() {
-        return this.registries.keySet().stream().filter(registryHolder -> !(PaperRegistries.getEntry(registryHolder) instanceof ApiRegistryEntry)).collect(Collectors.toUnmodifiableSet());
+        return this.registries.keySet().stream().filter(registryHolder -> {
+            final RegistryEntry<?, ?> entry = PaperRegistries.getEntry(registryHolder);
+            return entry != null && !(entry.meta() instanceof RegistryEntryMeta.ApiOnly<?,?>);
+        }).collect(Collectors.toUnmodifiableSet());
     }
     
     @Deprecated(forRemoval=true)
-    public <T extends Keyed> org.bukkit.Registry<T> getRegistry(Class<T> type) {
+    public <T extends Keyed> org.bukkit.Registry<T> getRegistry(final Class<T> type) {
+        final RegistryKey<T> registryKey = byType(type);
+        // If our mapping from Class -> RegistryKey did not contain the passed type it was either a completely invalid type or a registry
+        // that merely exists as a SimpleRegistry in the org.bukkit.Registry type. We cannot return a registry for these, return null
+        // as per method contract in Bukkit#getRegistry.
+        if (registryKey == null) return null;
 
-        RegistryKey<T> registryKey = Objects.requireNonNull(PaperRegistryAccess.byType(type), () -> String.valueOf(type) + " is not a valid registry type");
-        RegistryEntry<?, T> entry = PaperRegistries.getEntry(registryKey);
-        RegistryHolder<T> registry = (RegistryHolder<T>) this.registries.get(registryKey);
+        final RegistryEntry<?, T> entry = PaperRegistries.getEntry(registryKey);
+        final RegistryHolder<T> registry = (RegistryHolder<T>) this.registries.get(registryKey);
         if (registry != null) {
+            // if the registry exists, return right away. Since this is the "legacy" method, we return DelayedRegistry
+            // for the non-builtin Registry instances stored as fields in Registry.
             return registry.get();
-        }
-        if (entry instanceof DelayedRegistryEntry) {
-            RegistryHolder.Delayed delayedHolder = new RegistryHolder.Delayed();
-            this.registries.put((RegistryKey<?>)registryKey, delayedHolder);
+        } else if (entry instanceof DelayedRegistryEntry<?, T>) {
+            // if the registry doesn't exist and the entry is marked as "delayed", we create a registry holder that is empty
+            // which will later be filled with the actual registry. This is so the fields on org.bukkit.Registry can be populated with
+            // registries that don't exist at the time org.bukkit.Registry is statically initialized.
+            final RegistryHolder<T> delayedHolder = new RegistryHolder.Delayed<>();
+            this.registries.put(registryKey, delayedHolder);
             return delayedHolder.get();
+        } else {
+            // if the registry doesn't exist yet or doesn't have a delayed entry, just return null
+            return null;
         }
-        return null;
     }
 
-    public <T extends Keyed> org.bukkit.Registry<T> getRegistry(RegistryKey<T> key) {
+    @Override
+    public <T extends Keyed> org.bukkit.Registry<T> getRegistry(final RegistryKey<T> key) {
         if (PaperRegistries.getEntry(key) == null) {
-            throw new NoSuchElementException(String.valueOf(key) + " is not a valid registry key");
+            throw new NoSuchElementException(key + " is not a valid registry key");
         }
-        RegistryHolder<?> registryHolder = this.registries.get(key);
+        final RegistryHolder<T> registryHolder = (RegistryHolder<T>) this.registries.get(key);
         if (registryHolder == null) {
-            throw new IllegalArgumentException(String.valueOf(key) + " points to a registry that is not available yet");
+            throw new IllegalArgumentException(key + " points to a registry that is not available yet");
         }
-        return (org.bukkit.Registry<T>) PaperRegistryAccess.possiblyUnwrap(registryHolder.get());
+        // since this is the getRegistry method that uses the modern RegistryKey, we unwrap any DelayedRegistry instances
+        // that might be returned here. I don't think reference equality is required when doing getRegistry(RegistryKey.WOLF_VARIANT) == Registry.WOLF_VARIANT
+        return possiblyUnwrap(registryHolder.get());
     }
+
 
     private static <T extends Keyed> org.bukkit.Registry<T> possiblyUnwrap(org.bukkit.Registry<T> registry) {
-        if (registry instanceof DelayedRegistry) {
-            DelayedRegistry delayedRegistry = (DelayedRegistry)registry;
+    	if (registry instanceof final DelayedRegistry<T, ?> delayedRegistry) {
             return delayedRegistry.delegate();
         }
         return registry;
@@ -90,9 +106,8 @@ implements RegistryAccess {
         @Nullable RegistryHolder<?> registryHolder = this.registries.get(entry.apiKey());
         if (registryHolder == null || replace) {
             this.registries.put(entry.apiKey(), entry.createRegistryHolder(registry));
-        } else if (registryHolder instanceof RegistryHolder.Delayed && entry instanceof DelayedRegistryEntry) {
-            DelayedRegistryEntry delayedEntry = (DelayedRegistryEntry)entry;
-            ((RegistryHolder.Delayed)registryHolder).loadFrom(delayedEntry, registry);
+        } else if (registryHolder instanceof RegistryHolder.Delayed<?, ?> && entry instanceof final DelayedRegistryEntry<M, B> delayedEntry) {
+            ((RegistryHolder.Delayed<B, R>)registryHolder).loadFrom(delayedEntry, registry);
         } else {
             throw new IllegalArgumentException(String.valueOf(resourceKey) + " has already been created");
         }

@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 public class CraftMusicInstrument extends MusicInstrument implements Handleable<Instrument> {
 
     public static MusicInstrument minecraftToBukkit(Instrument minecraft) {
-        return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.INSTRUMENT, Registry.INSTRUMENT);
+        return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.INSTRUMENT);
     }
 
     public static MusicInstrument minecraftHolderToBukkit(RegistryEntry<Instrument> minecraft) {

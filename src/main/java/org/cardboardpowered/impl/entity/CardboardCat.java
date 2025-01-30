@@ -31,7 +31,7 @@ public class CardboardCat extends TameableAnimalImpl implements Cat {
         private final int ordinal;
 
         public static Cat.Type minecraftToBukkit(CatVariant minecraft) {
-            return (Cat.Type)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.CAT_VARIANT, Registry.CAT_VARIANT);
+            return (Cat.Type)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.CAT_VARIANT);
         }
 
         public static Cat.Type minecraftHolderToBukkit(RegistryEntry<CatVariant> minecraft) {

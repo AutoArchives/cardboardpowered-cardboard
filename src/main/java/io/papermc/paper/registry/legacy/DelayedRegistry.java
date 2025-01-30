@@ -1,20 +1,26 @@
 package io.papermc.paper.registry.legacy;
 
+import io.papermc.paper.registry.tag.Tag;
+import io.papermc.paper.registry.tag.TagKey;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
-public final class DelayedRegistry<T extends Keyed, R extends Registry<T>>
-implements Registry<T> {
-    private @MonotonicNonNull Supplier<? extends R> delegate;
+/**
+ * This is to support the now-deprecated fields in {@link Registry} for
+ * data-driven registries.
+ */
+public final class DelayedRegistry<T extends Keyed, R extends Registry<T>> implements Registry<T> {
 
-    public void load(Supplier<? extends R> registry) {
+    private @Nullable Supplier<? extends R> delegate;
+
+    public void load(final Supplier<? extends R> registry) {
         if (this.delegate != null) {
             throw new IllegalStateException("Registry already loaded!");
         }
@@ -28,25 +34,38 @@ implements Registry<T> {
         return this.delegate.get();
     }
 
-    public @Nullable T get(NamespacedKey key) {
-        return (T)this.delegate().get(key);
+    @Override
+    public @Nullable T get(final NamespacedKey key) {
+        return this.delegate().get(key);
     }
 
+    @Override
     public Iterator<T> iterator() {
         return this.delegate().iterator();
     }
 
+    @Override
     public Stream<T> stream() {
         return this.delegate().stream();
     }
 
-    public NamespacedKey getKey(T value) {
+    @Override
+    public @Nullable NamespacedKey getKey(final T value) {
         return this.delegate().getKey(value);
     }
 
-	@Override
-	public @NotNull T getOrThrow(@NotNull NamespacedKey key) {
-		return this.delegate().getOrThrow(key);
-	}
-}
+    @Override
+    public boolean hasTag(final TagKey<T> key) {
+        return this.delegate().hasTag(key);
+    }
 
+    @Override
+    public @NonNull Tag<T> getTag(final TagKey<T> key) {
+        return this.delegate().getTag(key);
+    }
+
+    @Override
+    public Collection<Tag<T>> getTags() {
+        return this.delegate().getTags();
+    }
+}

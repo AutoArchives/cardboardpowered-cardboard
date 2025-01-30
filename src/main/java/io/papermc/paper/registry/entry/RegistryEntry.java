@@ -23,9 +23,47 @@ import org.jspecify.annotations.Nullable;
 
 import static io.papermc.paper.registry.entry.RegistryEntryBuilder.start;
 
+
+public interface RegistryEntry<M, A extends Keyed> { // TODO remove Keyed
+
+    RegistryHolder<A> createRegistryHolder(Registry<M> nmsRegistry);
+
+    RegistryEntryMeta<M, A> meta();
+
+    default RegistryKey<A> apiKey() {
+        return this.meta().apiKey();
+    }
+
+    default net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey() {
+        return this.meta().mcKey();
+    }
+
+    /**
+     * This should only be used if the registry instance needs to exist early due to the need
+     * to populate a field in {@link org.bukkit.Registry}. Data-driven registries shouldn't exist
+     * as fields, but instead be obtained via {@link io.papermc.paper.registry.RegistryAccess#getRegistry(RegistryKey)}
+     */
+    @Deprecated
+    default RegistryEntry<M, A> delayed() {
+        return new DelayedRegistryEntry<>(this);
+    }
+}
+
+/*
+
 public interface RegistryEntry<M, B extends Keyed> extends RegistryEntryInfo<M, B> { // TODO remove Keyed
 
     RegistryHolder<B> createRegistryHolder(Registry<M> nmsRegistry);
+    
+    RegistryEntryMeta<M, B> meta();
+    
+    default RegistryKey<B> apiKey() {
+        return this.meta().apiKey();
+    }
+
+    default net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey() {
+        return this.meta().mcKey();
+    }
 
     default RegistryEntry<M, B> withSerializationUpdater(final BiFunction<NamespacedKey, ApiVersion, NamespacedKey> updater) {
         return this;
@@ -35,7 +73,7 @@ public interface RegistryEntry<M, B extends Keyed> extends RegistryEntryInfo<M, 
      * This should only be used if the registry instance needs to exist early due to the need
      * to populate a field in {@link org.bukkit.Registry}. Data-driven registries shouldn't exist
      * as fields, but instead be obtained via {@link io.papermc.paper.registry.RegistryAccess#getRegistry(RegistryKey)}
-     */
+     *
     @Deprecated
     default RegistryEntry<M, B> delayed() {
         return new DelayedRegistryEntry<>(this);
@@ -48,7 +86,7 @@ public interface RegistryEntry<M, B extends Keyed> extends RegistryEntryInfo<M, 
 
     /**
      * Can mutate values being added to the registry
-     */
+     *
     interface Modifiable<M, T, B extends PaperRegistryBuilder<M, T>> extends BuilderHolder<M, T, B> {
 
         static boolean isModifiable(final @Nullable RegistryEntryInfo<?, ?> entry) {
@@ -63,19 +101,19 @@ public interface RegistryEntry<M, B extends Keyed> extends RegistryEntryInfo<M, 
         default RegistryEntryAddEventImpl<T, B> createEntryAddEvent(final TypedKey<T> key, final B initialBuilder, final Conversions conversions) {
             return new RegistryEntryAddEventImpl<>(key, initialBuilder, this.apiKey(), conversions);
         }
-        */
+        *
     }
 
     /**
      * Can only add new values to the registry, not modify any values.
-     */
+     *
     interface Addable<M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> extends BuilderHolder<M, T, B> { // TODO remove Keyed
 
     	/*
         default RegistryFreezeEventImpl<T, B> createFreezeEvent(final WritableCraftRegistry<M, T, B> writableRegistry, final Conversions conversions) {
             return new RegistryFreezeEventImpl<>(this.apiKey(), writableRegistry.createApiWritableRegistry(conversions), conversions);
         }
-        */
+        *
 
         static boolean isAddable(final @Nullable RegistryEntryInfo<?, ?> entry) {
             return entry instanceof RegistryEntry.Addable<?, ?, ?> || (entry instanceof final DelayedRegistryEntry<?, ?> delayed && delayed.delegate() instanceof RegistryEntry.Addable<?, ?, ?>);
@@ -88,7 +126,7 @@ public interface RegistryEntry<M, B extends Keyed> extends RegistryEntryInfo<M, 
 
     /**
      * Can mutate values and add new values.
-     */
+     *
     interface Writable<M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> extends Modifiable<M, T, B>, Addable<M, T, B> { // TODO remove Keyed
 
         static boolean isWritable(final @Nullable RegistryEntryInfo<?, ?> entry) {
@@ -132,3 +170,4 @@ public interface RegistryEntry<M, B extends Keyed> extends RegistryEntryInfo<M, 
 	}
 
 }
+*/

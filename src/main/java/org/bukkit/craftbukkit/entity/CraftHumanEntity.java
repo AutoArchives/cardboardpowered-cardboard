@@ -15,6 +15,7 @@ import net.minecraft.block.CraftingTableBlock;
 import net.minecraft.block.EnchantingTableBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.ItemCooldownManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket;
@@ -63,6 +64,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.FishHook;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent.Reason;
@@ -92,6 +94,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
@@ -824,6 +827,63 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
         ItemCooldownManager.Entry cooldown = this.getHandle().getItemCooldownManager().entries.get(group);
         return (cooldown == null) ? 0 : Math.max(0, cooldown.endTick() - this.getHandle().getItemCooldownManager().tick);
     }
+
+	@Override
+	public Item dropItem(final int slot, final int amount, final boolean throwRandomly, final @Nullable Consumer<Item> entityOperation) {
+        Preconditions.checkArgument(slot >= 0 && slot < this.inventory.getSize(), "Slot %s is not a valid inventory slot.", slot);
+
+        return internalDropItemFromInventory(this.inventory.getItem(slot), amount, throwRandomly, entityOperation);
+    }
+	
+	 @Override
+	    @Nullable
+	    public Item dropItem(final @NotNull EquipmentSlot slot, final int amount, final boolean throwRandomly, final @Nullable Consumer<Item> entityOperation) {
+	        return internalDropItemFromInventory(this.inventory.getItem(slot), amount, throwRandomly, entityOperation);
+	    }
+
+	    @Nullable
+	    private Item internalDropItemFromInventory(final ItemStack originalItemStack, final int amount, final boolean throwRandomly, final @Nullable Consumer<Item> entityOperation) {
+	        if (originalItemStack == null || originalItemStack.isEmpty() || amount <= 0) return null;
+
+	        final net.minecraft.item.ItemStack nmsItemStack = CraftItemStack.unwrap(originalItemStack);
+	        final net.minecraft.item.ItemStack dropContent = nmsItemStack.split(amount);
+
+	        // This will return the itemstack back to its original amount in case events fail
+	        final ItemEntity droppedEntity = this.getHandle().dropItem(dropContent, throwRandomly, true/*, true, entityOperation*/);
+	        return droppedEntity == null ? null : (Item) ((IMixinEntity)droppedEntity).getBukkitEntity();
+	    }
+
+
+	@Override
+	public Item dropItem(final ItemStack itemStack, final boolean throwRandomly, final @Nullable Consumer<Item> entityOperation) {
+        // This method implementation differs from the previous dropItem implementations, as it does not source
+        // its itemstack from the players inventory. As such, we cannot reuse #internalDropItemFromInventory.
+        Preconditions.checkArgument(itemStack != null, "Cannot drop a null itemstack");
+        if (itemStack.isEmpty()) return null;
+
+        final net.minecraft.item.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(itemStack);
+
+        // Do *not* call the event here, the item is not in the player inventory, they are not dropping it / do not need recovering logic (which would be a dupe).
+        final ItemEntity droppedEntity = this.getHandle().dropItem(nmsItemStack, throwRandomly, true/*, false, entityOperation*/);
+        return droppedEntity == null ? null : (Item) ((IMixinEntity)droppedEntity).getBukkitEntity();
+    }
+
+	// Paper start - Potential bed api
+    @Override
+    public Location getPotentialRespawnLocation() {
+        ServerPlayerEntity handle = (ServerPlayerEntity) getHandle();
+        BlockPos bed = handle.getSpawnPointPosition();
+        if (bed == null) {
+            return null;
+        }
+
+        net.minecraft.server.world.ServerWorld worldServer = handle.server.getWorld(handle.getSpawnPointDimension());
+        if (worldServer == null) {
+            return null;
+        }
+        return new Location(worldServer.getWorld(), bed.getX(), bed.getY(), bed.getZ());
+    }
+    // Paper end
 
 }
 
