@@ -62,7 +62,7 @@ public class MixinShearsDispenserBehavior {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Shearable;sheared(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/sound/SoundCategory;Lnet/minecraft/item/ItemStack;)V"),
             method = "tryShearEntity")
-    private static void doEvent(ServerWorld sworld, Shearable s, SoundCategory cat, ItemStack stack) {
+    private static void doEvent(Shearable s, ServerWorld sworld, SoundCategory cat, ItemStack stack) {
     	BlockShearEntityEvent event = callBlockShearEntityEvent((LivingEntity)s, cardboard_block, cardboard_saved, Shearable_generateDefaultDrops());
     	if (!event.isCancelled()) {
            

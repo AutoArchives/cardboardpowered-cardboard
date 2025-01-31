@@ -20,7 +20,7 @@ import net.minecraft.util.Hand;
 @Mixin(SheepEntity.class)
 public class MixinSheepEntity {
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/passive/SheepEntity;sheared(Lnet/minecraft/sound/SoundCategory;)V") , method = "interactMob", cancellable = true)
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/passive/SheepEntity;sheared(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/sound/SoundCategory;Lnet/minecraft/item/ItemStack;)V") , method = "interactMob", cancellable = true)
     public void doBukkitEvent_PlayerShearEntityEvent(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> ci) {
         ItemStack itemstack = player.getStackInHand(hand);
         if (!BukkitEventFactory.handlePlayerShearEntityEvent(player, (SheepEntity)(Object)this, itemstack, hand)) {
@@ -31,12 +31,14 @@ public class MixinSheepEntity {
     
     // Lnet/minecraft/entity/Shearable;sheared(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/sound/SoundCategory;Lnet/minecraft/item/ItemStack;)V
 
-    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/entity/passive/SheepEntity;sheared(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/sound/SoundCategory;Lnet/minecraft/item/ItemStack;)V")
+    @Inject(at = @At("HEAD"),
+    		method = "Lnet/minecraft/entity/passive/SheepEntity;sheared(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/sound/SoundCategory;Lnet/minecraft/item/ItemStack;)V")
     public void cardboardForceDrops_START(ServerWorld world, SoundCategory a, ItemStack stack, CallbackInfo ci) {
         ((IMixinEntity)(Object)this).cardboard_setForceDrops(true);
     }
 
-    @Inject(at = @At("TAIL"), method = "Lnet/minecraft/entity/passive/SheepEntity;sheared(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/sound/SoundCategory;Lnet/minecraft/item/ItemStack;)V")
+    @Inject(at = @At("TAIL"),
+    		method = "Lnet/minecraft/entity/passive/SheepEntity;sheared(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/sound/SoundCategory;Lnet/minecraft/item/ItemStack;)V")
     public void cardboardForceDrops_END(ServerWorld world, SoundCategory a, ItemStack stack, CallbackInfo ci) {
         ((IMixinEntity)(Object)this).cardboard_setForceDrops(false);
     }

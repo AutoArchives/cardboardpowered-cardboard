@@ -20,7 +20,7 @@ public class MixinServerConfigurationNetworkHandler {
 	
 	@Redirect(at = @At(value = "INVOKE",
 	         target = "Lnet/minecraft/server/PlayerManager;checkCanJoin(Ljava/net/SocketAddress;Lcom/mojang/authlib/GameProfile;)Lnet/minecraft/text/Text;"),
-	         method = "Lnet/minecraft/network/listener/ServerConfigurationPacketListener;onReady(Lnet/minecraft/network/packet/c2s/config/ReadyC2SPacket;)V")
+	         method = "onReady(Lnet/minecraft/network/packet/c2s/config/ReadyC2SPacket;)V")
 	public Text cardboard$onReady_checkCanJoin(PlayerManager man, SocketAddress a, GameProfile b) {
 		
 		// cardboard - bukkit: login checks already completed by now

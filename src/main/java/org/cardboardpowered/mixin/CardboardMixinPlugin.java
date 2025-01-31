@@ -115,7 +115,7 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         libraries.add( new Library("net.kyori", "adventure-text-serializer-plain", adventureVersion, SHA1, "5870a0c2d8825ada8e127086592419c67003a5c0", null) );
         libraries.add( new Library("net.kyori", "adventure-text-minimessage", adventureVersion, SHA1, "b4d004e56668e9670836c3c191a501cd92f3784e", null) );
 
-        
+         
         // libraries.add( new Library("net.kyori", "adventure-api", adventureVersion, SHA1, "cb966704b813d30d4ee9f0b97167b4063a249c34", null) );
         // libraries.add( new Library("net.kyori", "adventure-key", adventureVersion, SHA1, "b695c40a7d2fd658246de78ea428e8f8dc7ffd2d", null) );
         // libraries.add( new Library("net.kyori", "adventure-text-serializer-gson", adventureVersion, SHA1, "5650ed18040e070aa05855ebcb890e6e1e36ee0e", null) );

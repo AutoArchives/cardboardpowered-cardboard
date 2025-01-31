@@ -55,7 +55,7 @@ public class MixinBowItem {
      * TODO: use inject
      */
     @Overwrite
-    protected void shootAll(ServerWorld world, LivingEntity shooter, Hand hand, ItemStack stack, List<ItemStack> projectiles, float speed, float divergence, boolean critical, LivingEntity target) {
+    public void shootAll(ServerWorld world, LivingEntity shooter, Hand hand, ItemStack stack, List<ItemStack> projectiles, float speed, float divergence, boolean critical, LivingEntity target) {
         float f = 10.0f;
         float g = projectiles.size() == 1 ? 0.0f : 20.0f / (float)(projectiles.size() - 1);
         float h = (float)((projectiles.size() - 1) % 2) * g / 2.0f;

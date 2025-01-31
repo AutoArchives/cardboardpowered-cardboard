@@ -11,6 +11,7 @@ import net.minecraft.item.MinecartItem;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -38,8 +39,8 @@ public class MixinMinecraftItem {
             locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
     private void cardboard$minecart_entity_place_event(ItemUsageContext useOnContext, CallbackInfoReturnable<ActionResult> cir,
                                     World level, BlockPos blockPos, BlockState blockState, ItemStack itemStack,
-                                    ServerWorld serverLevel, RailShape railShape, double d,
-                                    AbstractMinecartEntity abstractMinecart) {
+                                    RailShape railShape, double d, Vec3d vec,
+                                    AbstractMinecartEntity abstractMinecart, ServerWorld serverLevel) {
         // CraftBukkit start
         if (BukkitEventFactory.callEntityPlaceEvent(useOnContext, abstractMinecart).isCancelled()) {
             cir.setReturnValue(ActionResult.FAIL);

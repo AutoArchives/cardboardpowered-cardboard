@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 
@@ -28,8 +29,8 @@ public class MixinTridentItem {
     				// target = "Lnet/minecraft/entity/player/PlayerEntity;incrementStat(Lnet/minecraft/stat/Stat;)V"
     		),
     		method =
-    		"onStoppedUsing(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/entity/LivingEntity;I)V")
-    public void doBukkitEvent_PlayerRiptideEvent(ItemStack itemstack, World world, LivingEntity entity, int i, CallbackInfo ci) {
+    		"onStoppedUsing(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/entity/LivingEntity;I)Z")
+    public void doBukkitEvent_PlayerRiptideEvent(ItemStack itemstack, World world, LivingEntity entity, int i, CallbackInfoReturnable<Boolean> ci) {
         float k = EnchantmentHelper.getTridentSpinAttackStrength(itemstack, entity);
         if (k > 0.0f) {
             PlayerRiptideEvent event = new PlayerRiptideEvent((Player)((IMixinEntity)entity).getBukkitEntity(), CraftItemStack.asCraftMirror(itemstack));
