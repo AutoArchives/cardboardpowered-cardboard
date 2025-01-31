@@ -1,4 +1,4 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.mob.EndermanEntity;
@@ -12,12 +12,13 @@ import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.material.MaterialData;
+import org.cardboardpowered.impl.entity.MonsterImpl;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("deprecation")
-public class EndermanImpl extends MonsterImpl implements Enderman {
+public class CraftEnderman extends MonsterImpl implements Enderman {
 
-    public EndermanImpl(CraftServer server, EndermanEntity entity) {
+    public CraftEnderman(CraftServer server, EndermanEntity entity) {
         super(server, entity);
     }
 

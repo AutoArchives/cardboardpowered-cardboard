@@ -3,13 +3,14 @@ package org.cardboardpowered.impl.entity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftProjectile;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.ThrowableProjectile;
 import org.bukkit.inventory.ItemStack;
 
 import com.javazilla.bukkitfabric.interfaces.IMixinThrownItemEntity;
 
-public class ThrowableProjectileImpl extends ProjectileImpl implements ThrowableProjectile {
+public class ThrowableProjectileImpl extends CraftProjectile implements ThrowableProjectile {
 
     public ThrowableProjectileImpl(CraftServer server, ProjectileEntity entity) {
         super(server, entity);

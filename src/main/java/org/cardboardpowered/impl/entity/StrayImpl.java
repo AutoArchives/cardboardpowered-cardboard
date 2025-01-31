@@ -2,10 +2,11 @@ package org.cardboardpowered.impl.entity;
 
 import net.minecraft.entity.mob.StrayEntity;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftSkeleton;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Stray;
 
-public class StrayImpl extends SkeletonImpl implements Stray {
+public class StrayImpl extends CraftSkeleton implements Stray {
 
     public StrayImpl(CraftServer server, StrayEntity entity) {
         super(server, entity);

@@ -1,4 +1,4 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.entity.passive.TurtleEntity;
 
@@ -6,10 +6,11 @@ import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Turtle;
+import org.cardboardpowered.impl.entity.AnimalsImpl;
 
-public class TurtleImpl extends AnimalsImpl implements Turtle {
+public class CraftTurtle extends AnimalsImpl implements Turtle {
 
-    public TurtleImpl(CraftServer server, TurtleEntity entity) {
+    public CraftTurtle(CraftServer server, TurtleEntity entity) {
         super(server, entity);
     }
 

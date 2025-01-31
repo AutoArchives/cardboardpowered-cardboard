@@ -1,15 +1,16 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import net.kyori.adventure.text.Component;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Snowball;
+import org.cardboardpowered.impl.entity.ThrowableProjectileImpl;
 import org.jetbrains.annotations.Nullable;
 
-public class SnowballImpl extends ThrowableProjectileImpl implements Snowball {
+public class CraftSnowball extends ThrowableProjectileImpl implements Snowball {
 
-    public SnowballImpl(CraftServer server, SnowballEntity entity) {
+    public CraftSnowball(CraftServer server, SnowballEntity entity) {
         super(server, entity);
     }
 
@@ -20,7 +21,7 @@ public class SnowballImpl extends ThrowableProjectileImpl implements Snowball {
 
     @Override
     public String toString() {
-        return "SnowballImpl";
+        return "CraftSnowball";
     }
 
     @Override

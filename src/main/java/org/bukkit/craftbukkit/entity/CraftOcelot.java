@@ -1,13 +1,14 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.entity.passive.OcelotEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Ocelot;
+import org.cardboardpowered.impl.entity.AnimalsImpl;
 
-public class OcelotImpl extends AnimalsImpl implements Ocelot {
+public class CraftOcelot extends AnimalsImpl implements Ocelot {
  
-    public OcelotImpl(CraftServer server, OcelotEntity ocelot) {
+    public CraftOcelot(CraftServer server, OcelotEntity ocelot) {
         super(server, ocelot);
     }
 

@@ -1,4 +1,4 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import java.util.Locale;
@@ -11,15 +11,16 @@ import net.minecraft.registry.Registries;
 import org.apache.commons.lang.Validate;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftZombie;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.ZombieVillager;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
 
-public class VillagerZombieImpl extends ZombieImpl implements ZombieVillager {
+public class CraftVillagerZombie extends CraftZombie implements ZombieVillager {
 
-    public VillagerZombieImpl(CraftServer server, ZombieVillagerEntity entity) {
+    public CraftVillagerZombie(CraftServer server, ZombieVillagerEntity entity) {
         super(server, entity);
     }
 

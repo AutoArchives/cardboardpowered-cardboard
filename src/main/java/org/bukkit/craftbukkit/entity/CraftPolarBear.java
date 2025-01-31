@@ -1,13 +1,14 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.entity.passive.PolarBearEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.PolarBear;
+import org.cardboardpowered.impl.entity.AnimalsImpl;
 
-public class PolarBearImpl extends AnimalsImpl implements PolarBear {
+public class CraftPolarBear extends AnimalsImpl implements PolarBear {
 
-    public PolarBearImpl(CraftServer server, PolarBearEntity entity) {
+    public CraftPolarBear(CraftServer server, PolarBearEntity entity) {
         super(server, entity);
     }
 

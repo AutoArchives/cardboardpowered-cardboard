@@ -2,10 +2,11 @@
 
 import net.minecraft.entity.mob.ZombifiedPiglinEntity;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftZombie;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.PigZombie;
 
-public class CardboardPigZombie extends ZombieImpl implements PigZombie {
+public class CardboardPigZombie extends CraftZombie implements PigZombie {
 
     public CardboardPigZombie(CraftServer server, ZombifiedPiglinEntity entity) {
         super(server, entity);

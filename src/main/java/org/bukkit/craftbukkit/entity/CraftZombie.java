@@ -1,4 +1,4 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.entity.mob.ZombieEntity;
@@ -7,10 +7,11 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.Zombie;
+import org.cardboardpowered.impl.entity.MonsterImpl;
 
-public class ZombieImpl extends MonsterImpl implements Zombie {
+public class CraftZombie extends MonsterImpl implements Zombie {
 
-    public ZombieImpl(CraftServer server, ZombieEntity entity) {
+    public CraftZombie(CraftServer server, ZombieEntity entity) {
         super(server, entity);
     }
 

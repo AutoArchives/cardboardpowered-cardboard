@@ -1,4 +1,4 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.passive.WolfVariant;
@@ -14,13 +14,12 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Wolf;
-import org.jetbrains.annotations.NotNull;
 
 import com.google.common.base.Preconditions;
 
-public class WolfImpl extends TameableAnimalImpl implements Wolf {
+public class CraftWolf extends CraftTameableAnimal implements Wolf {
 
-    public WolfImpl(CraftServer server, WolfEntity wolf) {
+    public CraftWolf(CraftServer server, WolfEntity wolf) {
         super(server, wolf);
     }
 

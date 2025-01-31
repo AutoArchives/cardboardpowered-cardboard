@@ -3,12 +3,13 @@ package org.cardboardpowered.impl.entity;
 import com.google.common.base.Preconditions;
 import net.minecraft.entity.passive.ParrotEntity;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftTameableAnimal;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Parrot;
 
-public class ParrotImpl extends TameableAnimalImpl implements Parrot {
+public class CraftParrot extends CraftTameableAnimal implements Parrot {
 
-    public ParrotImpl(CraftServer server, ParrotEntity parrot) {
+    public CraftParrot(CraftServer server, ParrotEntity parrot) {
         super(server, parrot);
     }
 

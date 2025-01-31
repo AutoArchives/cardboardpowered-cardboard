@@ -1,4 +1,4 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import java.util.UUID;
 import net.minecraft.entity.passive.TameableEntity;
@@ -6,12 +6,13 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Tameable;
+import org.cardboardpowered.impl.entity.AnimalsImpl;
 
 import me.isaiah.common.cmixin.IMixinTameableEntity;
 
-public class TameableAnimalImpl extends AnimalsImpl implements Tameable, Creature {
+public class CraftTameableAnimal extends AnimalsImpl implements Tameable, Creature {
 
-    public TameableAnimalImpl(CraftServer server, TameableEntity entity) {
+    public CraftTameableAnimal(CraftServer server, TameableEntity entity) {
         super(server, entity);
     }
 

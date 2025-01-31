@@ -46,6 +46,8 @@ import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.banner.CraftPatternType;
 import org.bukkit.craftbukkit.damage.CraftDamageType;
+import org.bukkit.craftbukkit.entity.CraftFrog;
+import org.bukkit.craftbukkit.entity.CraftWolf;
 import org.bukkit.craftbukkit.generator.structure.CraftStructure;
 import org.bukkit.craftbukkit.generator.structure.CraftStructureType;
 import org.bukkit.craftbukkit.inventory.CraftItemType;
@@ -72,9 +74,7 @@ import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.CardboardAttributable;
 import org.cardboardpowered.impl.CardboardEnchantment;
 import org.cardboardpowered.impl.entity.CardboardCat;
-import org.cardboardpowered.impl.entity.CraftFrog;
 import org.cardboardpowered.impl.entity.VillagerImpl;
-import org.cardboardpowered.impl.entity.WolfImpl;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
@@ -153,7 +153,7 @@ public final class PaperRegistries {
 	        RegistryEntryBuilder.start(RegistryKeys.TRIM_MATERIAL, RegistryKey.TRIM_MATERIAL).craft(TrimMaterial.class, CraftTrimMaterial::new).build().delayed(),
 	        RegistryEntryBuilder.start(RegistryKeys.TRIM_PATTERN, RegistryKey.TRIM_PATTERN).craft(TrimPattern.class, CraftTrimPattern::new).build().delayed(),
 	        RegistryEntryBuilder.start(RegistryKeys.DAMAGE_TYPE, RegistryKey.DAMAGE_TYPE).craft(DamageType.class, CraftDamageType::new).build().delayed(),
-	        RegistryEntryBuilder.start(RegistryKeys.WOLF_VARIANT, RegistryKey.WOLF_VARIANT).craft(Wolf.Variant.class, WolfImpl.CraftVariant::new).build().delayed(),
+	        RegistryEntryBuilder.start(RegistryKeys.WOLF_VARIANT, RegistryKey.WOLF_VARIANT).craft(Wolf.Variant.class, CraftWolf.CraftVariant::new).build().delayed(),
 	        RegistryEntryBuilder.start(RegistryKeys.ENCHANTMENT, RegistryKey.ENCHANTMENT).craft(Enchantment.class, CardboardEnchantment::new).serializationUpdater(FieldRename.ENCHANTMENT_RENAME).writable(PaperEnchantmentRegistryEntry.PaperBuilder::new).delayed(),
 	        RegistryEntryBuilder.start(RegistryKeys.JUKEBOX_SONG, RegistryKey.JUKEBOX_SONG).craft(JukeboxSong.class, CraftJukeboxSong::new).build().delayed(),
 	        RegistryEntryBuilder.start(RegistryKeys.BANNER_PATTERN, RegistryKey.BANNER_PATTERN).craft(PatternType.class, CraftPatternType::new).build().delayed(),

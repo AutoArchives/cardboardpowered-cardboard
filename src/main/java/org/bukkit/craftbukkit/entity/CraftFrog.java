@@ -1,4 +1,4 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import java.util.Locale;
@@ -14,10 +14,10 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.entity.Frog;
+import org.cardboardpowered.impl.entity.AnimalsImpl;
 
-public class CraftFrog
-extends AnimalsImpl
-implements Frog {
+public class CraftFrog extends AnimalsImpl implements Frog {
+
     public CraftFrog(CraftServer server, FrogEntity entity) {
         super(server, entity);
     }
@@ -53,9 +53,7 @@ implements Frog {
         this.getHandle().setVariant(CraftVariant.bukkitToMinecraftHolder(variant));
     }
 
-    public static class CraftVariant
-    implements Frog.Variant,
-    Handleable<FrogVariant> {
+    public static class CraftVariant implements Frog.Variant, Handleable<FrogVariant> {
         private static int count = 0;
         private final NamespacedKey key;
         private final FrogVariant frogVariant;
@@ -124,5 +122,5 @@ implements Frog {
             return this.getKey().hashCode();
         }
     }
-}
 
+}

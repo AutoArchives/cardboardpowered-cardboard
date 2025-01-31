@@ -1,4 +1,4 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import net.kyori.adventure.text.Component;
 import net.minecraft.entity.LivingEntity;
@@ -19,9 +19,9 @@ import org.bukkit.entity.TNTPrimed;
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.ITnt;
 
-public class TntImpl extends CraftEntity implements TNTPrimed {
+public class CraftTNTPrimed extends CraftEntity implements TNTPrimed {
 
-    public TntImpl(CraftServer server, TntEntity entity) {
+    public CraftTNTPrimed(CraftServer server, TntEntity entity) {
         super(entity);
     }
 

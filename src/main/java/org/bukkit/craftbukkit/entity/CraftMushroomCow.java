@@ -1,4 +1,4 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 
@@ -14,6 +14,7 @@ import java.util.function.Consumer;
 
 import org.bukkit.SoundCategory;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftCow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.MushroomCow;
 import org.bukkit.entity.Projectile;
@@ -25,9 +26,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
-public class MushroomImpl extends CowImpl implements MushroomCow {
+public class CraftMushroomCow extends CraftCow implements MushroomCow {
 
-    public MushroomImpl(CraftServer server, MooshroomEntity entity) {
+    public CraftMushroomCow(CraftServer server, MooshroomEntity entity) {
         super(server, entity);
     }
 

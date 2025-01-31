@@ -1,17 +1,18 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import org.bukkit.craftbukkit.CraftServer;
+import org.cardboardpowered.impl.entity.AbstractProjectile;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
 import org.bukkit.entity.Projectile;
 import org.bukkit.projectiles.ProjectileSource;
 
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 
-public abstract class ProjectileImpl extends AbstractProjectile implements Projectile {
+public abstract class CraftProjectile extends AbstractProjectile implements Projectile {
 
-    public ProjectileImpl(CraftServer server, net.minecraft.entity.projectile.ProjectileEntity entity) {
+    public CraftProjectile(CraftServer server, net.minecraft.entity.projectile.ProjectileEntity entity) {
         super(server, entity);
     }
 

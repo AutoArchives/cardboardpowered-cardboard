@@ -1,15 +1,16 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.entity.mob.AbstractSkeletonEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Skeleton;
+import org.cardboardpowered.impl.entity.MonsterImpl;
 
 @SuppressWarnings("deprecation")
-public class SkeletonImpl extends MonsterImpl implements Skeleton {
+public class CraftSkeleton extends MonsterImpl implements Skeleton {
 
-    public SkeletonImpl(CraftServer server, AbstractSkeletonEntity entity) {
+    public CraftSkeleton(CraftServer server, AbstractSkeletonEntity entity) {
         super(server, entity);
     }
 

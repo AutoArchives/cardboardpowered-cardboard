@@ -1,6 +1,7 @@
 package org.cardboardpowered.impl.entity;
 
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftIllager;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Pillager;
@@ -8,7 +9,7 @@ import org.bukkit.inventory.Inventory;
 
 import net.minecraft.entity.mob.PillagerEntity;
 
-public class CardboardPillager extends CardboardIllager implements Pillager {
+public class CardboardPillager extends CraftIllager implements Pillager {
 
     public CardboardPillager(CraftServer server, PillagerEntity entity) {
         super(server, entity);

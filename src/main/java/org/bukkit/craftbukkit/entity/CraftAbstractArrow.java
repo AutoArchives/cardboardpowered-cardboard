@@ -1,4 +1,4 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
@@ -21,12 +21,13 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
+import org.cardboardpowered.impl.entity.AbstractProjectile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ArrowImpl extends AbstractProjectile implements AbstractArrow {
+public class CraftAbstractArrow extends AbstractProjectile implements AbstractArrow {
 
-    public ArrowImpl(CraftServer server, PersistentProjectileEntity entity) {
+    public CraftAbstractArrow(CraftServer server, PersistentProjectileEntity entity) {
         super(server, entity);
     }
 

@@ -1,12 +1,13 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.entity.mob.IllagerEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Illager;
+import org.cardboardpowered.impl.entity.CardboardRaider;
 
-public class CardboardIllager extends CardboardRaider implements Illager {
+public class CraftIllager extends CardboardRaider implements Illager {
 
-    public CardboardIllager(CraftServer server, IllagerEntity entity) {
+    public CraftIllager(CraftServer server, IllagerEntity entity) {
         super(server, entity);
     }
 

@@ -12,6 +12,7 @@ import net.minecraft.entity.projectile.thrown.PotionEntity;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftProjectile;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ThrownPotion;
@@ -22,7 +23,7 @@ import org.cardboardpowered.impl.CardboardPotionUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class CardboardThrownPotion extends ProjectileImpl implements ThrownPotion {
+public class CardboardThrownPotion extends CraftProjectile implements ThrownPotion {
 
     public CardboardThrownPotion(CraftServer server, PotionEntity entity) {
         super(server, entity);

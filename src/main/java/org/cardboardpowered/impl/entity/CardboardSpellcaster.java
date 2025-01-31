@@ -3,9 +3,10 @@ package org.cardboardpowered.impl.entity;
 import com.google.common.base.Preconditions;
 import net.minecraft.entity.mob.SpellcastingIllagerEntity;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftIllager;
 import org.bukkit.entity.Spellcaster;
 
-public class CardboardSpellcaster extends CardboardIllager implements Spellcaster {
+public class CardboardSpellcaster extends CraftIllager implements Spellcaster {
 
     public CardboardSpellcaster(CraftServer server, SpellcastingIllagerEntity entity) {
         super(server, entity);

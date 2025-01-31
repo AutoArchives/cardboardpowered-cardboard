@@ -5,9 +5,10 @@ import org.bukkit.entity.LivingEntity;
 
 import net.minecraft.entity.mob.DrownedEntity;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftZombie;
 import org.bukkit.entity.Drowned;
 
-public class CardboardDrowned extends ZombieImpl implements Drowned {
+public class CardboardDrowned extends CraftZombie implements Drowned {
 
     public CardboardDrowned(CraftServer server, DrownedEntity entity) {
         super(server, entity);

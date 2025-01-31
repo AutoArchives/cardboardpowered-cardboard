@@ -1,13 +1,14 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.entity.passive.CowEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Cow;
 import org.bukkit.entity.EntityType;
+import org.cardboardpowered.impl.entity.AnimalsImpl;
 
-public class CowImpl extends AnimalsImpl implements Cow {
+public class CraftCow extends AnimalsImpl implements Cow {
 
-    public CowImpl(CraftServer server, CowEntity entity) {
+    public CraftCow(CraftServer server, CowEntity entity) {
         super(server, entity);
     }
 

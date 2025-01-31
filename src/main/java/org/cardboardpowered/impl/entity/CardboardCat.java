@@ -15,11 +15,12 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftTameableAnimal;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.entity.Cat;
 import org.bukkit.entity.EntityType;
 
-public class CardboardCat extends TameableAnimalImpl implements Cat {
+public class CardboardCat extends CraftTameableAnimal implements Cat {
 
 	public static class CraftType
     implements Cat.Type,

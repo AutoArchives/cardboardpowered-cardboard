@@ -1,13 +1,14 @@
-package org.cardboardpowered.impl.entity;
+package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.entity.mob.SpiderEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Spider;
+import org.cardboardpowered.impl.entity.MonsterImpl;
 
-public class SpiderImpl extends MonsterImpl implements Spider {
+public class CraftSpider extends MonsterImpl implements Spider {
 
-    public SpiderImpl(CraftServer server, SpiderEntity entity) {
+    public CraftSpider(CraftServer server, SpiderEntity entity) {
         super(server, entity);
     }
 
@@ -18,7 +19,7 @@ public class SpiderImpl extends MonsterImpl implements Spider {
 
     @Override
     public String toString() {
-        return "SpiderImpl";
+        return "CraftSpider";
     }
 
     @Override

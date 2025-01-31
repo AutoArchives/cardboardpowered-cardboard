@@ -86,7 +86,6 @@ import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.entity.AbstractVillagerImpl;
 import org.cardboardpowered.impl.entity.AnimalsImpl;
 import org.cardboardpowered.impl.entity.ArmorStandImpl;
-import org.cardboardpowered.impl.entity.ArrowImpl;
 import org.cardboardpowered.impl.entity.CardboardAmbient;
 import org.cardboardpowered.impl.entity.CardboardBat;
 import org.cardboardpowered.impl.entity.CardboardBlaze;
@@ -115,7 +114,6 @@ import org.cardboardpowered.impl.entity.CardboardGuardianElder;
 import org.cardboardpowered.impl.entity.CardboardHanging;
 import org.cardboardpowered.impl.entity.CardboardHorse;
 import org.cardboardpowered.impl.entity.CardboardHusk;
-import org.cardboardpowered.impl.entity.CardboardIllager;
 import org.cardboardpowered.impl.entity.CardboardIllusioner;
 import org.cardboardpowered.impl.entity.CardboardIronGolem;
 import org.cardboardpowered.impl.entity.CardboardLlama;
@@ -144,42 +142,26 @@ import org.cardboardpowered.impl.entity.CardboardVindicator;
 import org.cardboardpowered.impl.entity.CardboardWaterMob;
 import org.cardboardpowered.impl.entity.CardboardWitch;
 import org.cardboardpowered.impl.entity.CardboardWither;
-import org.cardboardpowered.impl.entity.ChickenImpl;
-import org.cardboardpowered.impl.entity.CowImpl;
+import org.cardboardpowered.impl.entity.CraftParrot;
 import org.cardboardpowered.impl.entity.CreatureImpl;
 import org.cardboardpowered.impl.entity.CreeperImpl;
 import org.cardboardpowered.impl.entity.EggImpl;
-import org.cardboardpowered.impl.entity.EndermanImpl;
-import org.cardboardpowered.impl.entity.EndermiteImpl;
 import org.cardboardpowered.impl.entity.ExperienceOrbImpl;
 import org.cardboardpowered.impl.entity.FallingBlockImpl;
 import org.cardboardpowered.impl.entity.ItemEntityImpl;
 import org.cardboardpowered.impl.entity.LightningStrikeImpl;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
 import org.cardboardpowered.impl.entity.MonsterImpl;
-import org.cardboardpowered.impl.entity.MushroomImpl;
-import org.cardboardpowered.impl.entity.OcelotImpl;
-import org.cardboardpowered.impl.entity.ParrotImpl;
 import org.cardboardpowered.impl.entity.PlayerImpl;
-import org.cardboardpowered.impl.entity.PolarBearImpl;
-import org.cardboardpowered.impl.entity.SkeletonImpl;
 import org.cardboardpowered.impl.entity.SlimeImpl;
-import org.cardboardpowered.impl.entity.SnowballImpl;
-import org.cardboardpowered.impl.entity.SpiderImpl;
 import org.cardboardpowered.impl.entity.StrayImpl;
-import org.cardboardpowered.impl.entity.TntImpl;
 import org.cardboardpowered.impl.entity.TridentImpl;
-import org.cardboardpowered.impl.entity.TurtleImpl;
 import org.cardboardpowered.impl.entity.UnknownEntity;
 import org.cardboardpowered.impl.entity.VillagerImpl;
-import org.cardboardpowered.impl.entity.VillagerZombieImpl;
 import org.cardboardpowered.impl.entity.WanderingTraderImpl;
 import org.cardboardpowered.impl.entity.WitherSkeletonImpl;
-import org.cardboardpowered.impl.entity.WolfImpl;
-import org.cardboardpowered.impl.entity.ZombieImpl;
 import org.cardboardpowered.impl.world.WorldImpl;
 import org.cardboardpowered.interfaces.IWorldChunk;
-import com.mojang.brigadier.LiteralMessage;
 
 import io.papermc.paper.entity.LookAnchor;
 import io.papermc.paper.entity.TeleportFlag;
@@ -1110,16 +1092,16 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
             else if (entity instanceof PathAwareEntity) {
                 // Animals
                 if (entity instanceof AnimalEntity) {
-                    if (entity instanceof ChickenEntity) { return new ChickenImpl(server, (ChickenEntity) entity); }
+                    if (entity instanceof ChickenEntity) { return new CraftChicken(server, (ChickenEntity) entity); }
                     else if (entity instanceof CowEntity) {
-                        if (entity instanceof MooshroomEntity) { return new MushroomImpl(server, (MooshroomEntity) entity); }
-                        else { return new CowImpl(server, (CowEntity) entity); }
+                        if (entity instanceof MooshroomEntity) { return new CraftMushroomCow(server, (MooshroomEntity) entity); }
+                        else { return new CraftCow(server, (CowEntity) entity); }
                     }
                     else if (entity instanceof PigEntity) { return new CardboardPig(server, (PigEntity) entity); }
                     else if (entity instanceof TameableEntity) {
-                        if (entity instanceof WolfEntity) { return new WolfImpl(server, (WolfEntity) entity); }
+                        if (entity instanceof WolfEntity) { return new CraftWolf(server, (WolfEntity) entity); }
                         else if (entity instanceof CatEntity) { return new CardboardCat(server, (CatEntity) entity); }
-                        else if (entity instanceof ParrotEntity) { return new ParrotImpl(server, (ParrotEntity) entity); }
+                        else if (entity instanceof ParrotEntity) { return new CraftParrot(server, (ParrotEntity) entity); }
                     }
                     //else if (entity instanceof SheepEntity) { return new CraftSheep(server, (SheepEntity) entity); }
                     else if (entity instanceof AbstractHorseEntity) {
@@ -1133,9 +1115,9 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
                         //else if (entity instanceof ZombieHorseEntity) { return new CraftZombieHorse(server, (ZombieHorseEntity) entity); }
                     }
                     //else if (entity instanceof RabbitEntity) { return new CraftRabbit(server, (RabbitEntity) entity); }
-                    else if (entity instanceof PolarBearEntity) { return new PolarBearImpl(server, (PolarBearEntity) entity); }
-                    else if (entity instanceof TurtleEntity) { return new TurtleImpl(server, (TurtleEntity) entity); }
-                    else if (entity instanceof OcelotEntity) { return new OcelotImpl(server, (OcelotEntity) entity); }
+                    else if (entity instanceof PolarBearEntity) { return new CraftPolarBear(server, (PolarBearEntity) entity); }
+                    else if (entity instanceof TurtleEntity) { return new CraftTurtle(server, (TurtleEntity) entity); }
+                    else if (entity instanceof OcelotEntity) { return new CraftOcelot(server, (OcelotEntity) entity); }
                     else if (entity instanceof PandaEntity) { return new CardboardPanda(server, (PandaEntity) entity); }
                     //else if (entity instanceof FoxEntity) { return new CraftFox(server, (FoxEntity) entity); }
                     //else if (entity instanceof BeeEntity) { return new CraftBee(server, (BeeEntity) entity); }
@@ -1148,27 +1130,27 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
                     if (entity instanceof ZombieEntity) {
                         if (entity instanceof ZombifiedPiglinEntity) { return new CardboardPigZombie(server, (ZombifiedPiglinEntity) entity); }
                         else if (entity instanceof HuskEntity) { return new CardboardHusk(server, (HuskEntity) entity); }
-                        else if (entity instanceof ZombieVillagerEntity) { return new VillagerZombieImpl(server, (ZombieVillagerEntity) entity); }
+                        else if (entity instanceof ZombieVillagerEntity) { return new CraftVillagerZombie(server, (ZombieVillagerEntity) entity); }
                         else if (entity instanceof DrownedEntity) { return new CardboardDrowned(server, (DrownedEntity) entity); }
-                        else { return new ZombieImpl(server, (ZombieEntity) entity); }
+                        else { return new CraftZombie(server, (ZombieEntity) entity); }
                     }
                     else if (entity instanceof CreeperEntity) { return new CreeperImpl(server, (CreeperEntity) entity); }
-                    else if (entity instanceof EndermanEntity) { return new EndermanImpl(server, (EndermanEntity) entity); }
+                    else if (entity instanceof EndermanEntity) { return new CraftEnderman(server, (EndermanEntity) entity); }
                     else if (entity instanceof SilverfishEntity) { return new CardboardSilverfish(server, (SilverfishEntity) entity); }
                     else if (entity instanceof GiantEntity) { return new CardboardGiant(server, (GiantEntity) entity); }
                     else if (entity instanceof AbstractSkeletonEntity) {
                         if (entity instanceof StrayEntity) { return new StrayImpl(server, (StrayEntity) entity); }
                         else if (entity instanceof WitherSkeletonEntity) { return new WitherSkeletonImpl(server, (WitherSkeletonEntity) entity); }
-                        else { return new SkeletonImpl(server, (AbstractSkeletonEntity) entity); }
+                        else { return new CraftSkeleton(server, (AbstractSkeletonEntity) entity); }
                     }
                     else if (entity instanceof BlazeEntity) { return new CardboardBlaze(server, (BlazeEntity) entity); }
                     else if (entity instanceof WitchEntity) { return new CardboardWitch(server, (WitchEntity) entity); }
                     else if (entity instanceof WitherEntity) { return new CardboardWither(server, (WitherEntity) entity); }
                     else if (entity instanceof SpiderEntity) {
                         if (entity instanceof CaveSpiderEntity) { return new CardboardCaveSpider(server, (CaveSpiderEntity) entity); }
-                        else { return new SpiderImpl(server, (SpiderEntity) entity); }
+                        else { return new CraftSpider(server, (SpiderEntity) entity); }
                     }
-                    else if (entity instanceof EndermiteEntity) { return new EndermiteImpl(server, (EndermiteEntity) entity); }
+                    else if (entity instanceof EndermiteEntity) { return new CraftEndermite(server, (EndermiteEntity) entity); }
                     else if (entity instanceof GuardianEntity) {
                         if (entity instanceof ElderGuardianEntity) { return new CardboardGuardianElder(server, (ElderGuardianEntity) entity); }
                         else { return new CardboardGuardian(server, (GuardianEntity) entity); }
@@ -1182,7 +1164,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
                         }
                         else if (entity instanceof VindicatorEntity) { return new CardboardVindicator(server, (VindicatorEntity) entity); }
                         else if (entity instanceof PillagerEntity) { return new CardboardPillager(server, (PillagerEntity) entity); }
-                        else { return new CardboardIllager(server, (IllagerEntity) entity); }
+                        else { return new CraftIllager(server, (IllagerEntity) entity); }
                     }
                     //else if (entity instanceof RavagerEntity) { return new CraftRavager(server, (RavagerEntity) entity); }
                     //else if (entity instanceof AbstractPiglinEntity) {
@@ -1238,12 +1220,12 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         //else if (entity instanceof SpectralArrowEntity) { return new CraftSpectralArrow(server, (SpectralArrowEntity) entity); }
         else if (entity instanceof PersistentProjectileEntity) {
             if (entity instanceof TridentEntity) { return new TridentImpl(server, (TridentEntity) entity); }
-            else { return new ArrowImpl(server, (PersistentProjectileEntity) entity); }
+            else { return new CraftAbstractArrow(server, (PersistentProjectileEntity) entity); }
         }
         //else if (entity instanceof BoatEntity) { return new CraftBoat(server, (BoatEntity) entity); }
         else if (entity instanceof ThrownEntity) {
             if (entity instanceof EggEntity) { return new EggImpl(server, (EggEntity) entity); }
-            else if (entity instanceof SnowballEntity) { return new SnowballImpl(server, (SnowballEntity) entity); }
+            else if (entity instanceof SnowballEntity) { return new CraftSnowball(server, (SnowballEntity) entity); }
             else if (entity instanceof PotionEntity) { return new CardboardThrownPotion(server, (PotionEntity) entity); }
             else if (entity instanceof EnderPearlEntity) { return new CardboardEnderPearl(server, (EnderPearlEntity) entity); }
             else if (entity instanceof ExperienceBottleEntity) { return new CardboardThrownExpBottle(server, (ExperienceBottleEntity) entity); }
@@ -1278,7 +1260,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
             //else { return new CraftHanging(server, (AbstractDecorationEntity) entity); }
             return new CardboardHanging(server, (AbstractDecorationEntity) entity);
         }
-        else if (entity instanceof TntEntity) { return new TntImpl(server, (TntEntity) entity); }
+        else if (entity instanceof TntEntity) { return new CraftTNTPrimed(server, (TntEntity) entity); }
         else if (entity instanceof FireworkRocketEntity) {return new CardboardFirework(server, (FireworkRocketEntity) entity); }
         //else if (entity instanceof ShulkerBulletEntity) { return new CraftShulkerBullet(server, (ShulkerBulletEntity) entity); }
         //else if (entity instanceof AreaEffectCloudEntity) { return new CraftAreaEffectCloud(server, (AreaEffectCloudEntity) entity); }
