@@ -73,6 +73,7 @@ public class Commodore {
         
         // EssentialsX
         getAndRemove.put("com/earth2me/essentials/utils/VersionUtil", "org/cardboardpowered/util/VersionUtil");
+        getAndRemove.put("net/ess3/provider/providers/LegacyPotionMetaProvider", "net/ess3/provider/providers/ModernPotionMetaProvider");
 
         return getAndRemove;
     }
@@ -114,6 +115,12 @@ public class Commodore {
         
         if (original.contains("org/spigotmc/event/entity/EntityDismountEvent")) {
         	return original.replace("org/spigotmc/event/entity/EntityDismountEvent", "org/bukkit/event/entity/EntityDismountEvent");
+        }
+        
+        // TODO: Why
+        if (original.contains("LegacyPotionMetaProvider")) {
+        	System.out.println(original);
+        	return original.replace("LegacyPotionMetaProvider", "Disable Legacy Potion Meta Provider");
         }
         
 

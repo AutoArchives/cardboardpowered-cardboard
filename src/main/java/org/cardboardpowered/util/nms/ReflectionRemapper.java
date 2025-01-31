@@ -40,10 +40,16 @@ import java.util.regex.Pattern;
  */
 public class ReflectionRemapper {
 
-    public static final String NMS_VERSION = "v1_20_R4";
+    public static final String NMS_VERSION = "v1_21_R3";
     public static JavaPlugin plugin;
 
     public static String mapClassName(String className) {
+    	
+    	// TODO check why Essentials
+    	if (className.startsWith("net.ess3.provider.providers.LegacyPotionMetaProvider")) {
+    		return "net.ess3.provider.providers.ModernPotionMetaProvider";
+    	}
+    	
         if (className.startsWith("org.bukkit.craftbukkit." + NMS_VERSION + "."))
             return MappingsReader.getIntermedClass("org.bukkit.craftbukkit." + className.substring(23 + NMS_VERSION.length() + 1));
 
@@ -66,6 +72,12 @@ public class ReflectionRemapper {
     }
 
     public static Class<?> getClassForName(String className) throws ClassNotFoundException {
+    	
+    	if (className.contains("LegacyPotionMetaProvider")) {
+    		System.out.println("Change: " + className);
+    		className = className.replace("LegacyPotionMetaProvider", "ModernPotionMetaProvider"); // "net.ess3.provider.providers.ModernPotionMetaProvider";
+    	}
+    	
         return getClassFromJPL(className);
     }
 

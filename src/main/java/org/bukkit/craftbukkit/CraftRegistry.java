@@ -34,12 +34,18 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
     private static net.minecraft.registry.DynamicRegistryManager registry;
 
     public static void setMinecraftRegistry(final net.minecraft.registry.DynamicRegistryManager registry) {
-        Preconditions.checkState(CraftRegistry.registry == null, "Registry already set");
+        // Preconditions.checkState(CraftRegistry.registry == null, "Registry already set");
         CraftRegistry.registry = registry;
     }
 
     public static net.minecraft.registry.DynamicRegistryManager getMinecraftRegistry() {
-        return CraftRegistry.registry;
+        
+    	if (null == CraftRegistry.registry) {
+    		System.out.println("Setting Registry..");
+    		CraftRegistry.registry = CraftServer.console.getRegistryManager();
+    	}
+    	
+    	return CraftRegistry.registry;
     }
 
     public static <E> net.minecraft.registry.Registry<E> getMinecraftRegistry(net.minecraft.registry.RegistryKey<? extends net.minecraft.registry.Registry<E>> key) {

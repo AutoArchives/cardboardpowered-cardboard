@@ -60,6 +60,9 @@ public class ReflectionMethodVisitor extends MethodVisitor {
     public ReflectionMethodVisitor(int api, MethodVisitor visitMethod, String pln) {
         super(api, visitMethod);
         this.pln = pln;
+        
+
+        
       //  net.fabricmc.loader.impl.FabricLoaderImpl l;
         this.mr = FabricLoader.getInstance().getMappingResolver();
         // this.mr2 = new Testing("official");
@@ -197,6 +200,7 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         	if (mapped.equalsIgnoreCase("field_41199")) {
         		mapped = "field_41197";
         	}
+        	
         	
         	
         	 super.visitFieldInsn( opcode, owner, mapped, desc );
@@ -397,6 +401,11 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         		BukkitFabricMod.LOGGER.info(owner + " / " + name);
         	}
         }
+        
+        if (owner.contains("LegacyPotionMetaProvider")) {
+        	System.out.println(owner + " " + name + " " + desc);
+        	owner = owner.replace("LegacyPotionMetaProvider", "ModernPotionMetaProvider");
+        }
     	
     	if (name.equals("getCraftServer")) {
         	//System.out.println(owner + " " + name + " " + desc);
@@ -404,7 +413,9 @@ public class ReflectionMethodVisitor extends MethodVisitor {
             // return;
         }
         
-        if (owner.contains("net/ess3") && owner.contains("com/earth2me/")) {
+    	boolean DEBUG = false;
+    	
+        if (DEBUG && (owner.contains("net/ess3") || owner.contains("com/earth2me/"))) {
         	System.out.println(owner + " / " + name);
         }
         

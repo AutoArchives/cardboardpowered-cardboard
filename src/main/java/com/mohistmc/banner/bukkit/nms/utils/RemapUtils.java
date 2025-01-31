@@ -47,8 +47,10 @@ public class RemapUtils {
     public static BannerJarMapping jarMapping;
     public static BannerJarRemapper jarRemapper;
     private static final List<Remapper> remappers = new ArrayList<>();
+    
+    public static boolean DEBUG_VERBOSE_CALLS = true;
 
-    public static String NMS_VERSION = "v1_20_R4";
+    public static String NMS_VERSION = "v1_21_R3"; // "v1_20_R4";
     
     public static File exportResource(String res, File folder) {
         try (InputStream stream = MappingsReader.class.getClassLoader().getResourceAsStream("mappings/" + res)) {
@@ -78,6 +80,8 @@ public class RemapUtils {
         
         jarMapping.classes.put("org/spigotmc/event/entity/EntityMountEvent", "org/bukkit/event/entity/EntityMountEvent");
         jarMapping.classes.put("org/spigotmc/event/entity/EntityDismountEvent", "org/bukkit/event/entity/EntityDismountEvent");
+        
+    	// jarMapping.classes.put("net/ess3/provider/providers/LegacyPotionMetaProvider", "net/ess3/provider/providers/ModernPotionMetaProvider");
 
         
         jarMapping.setInheritanceMap(new BannerInheritanceMap());
@@ -211,6 +215,10 @@ public class RemapUtils {
 
     public static String mapMethodName(Class<?> type, String name, Class<?>... parameterTypes) {
     	
+    	if (DEBUG_VERBOSE_CALLS) {
+    		System.out.println("Reflection: " + type.getName() + " / " + name);
+    	}
+    	
     	// ReflectionMethodVisitor.do_map(type.getName(), name, parameterTypes);
     	
     	String mm = "";
@@ -237,6 +245,10 @@ public class RemapUtils {
     }
 
     public static String mapFieldName(Class<?> type, String fieldName) {
+    	if (DEBUG_VERBOSE_CALLS) {
+    		System.out.println("Reflection: " + type.getName() + " / " + fieldName);
+    	}
+    	
         String key = reverseMap(type) + "/" + fieldName;
         String mapped = jarMapping.fields.get(key);
         if (mapped == null) {
