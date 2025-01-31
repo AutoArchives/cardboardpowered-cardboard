@@ -106,6 +106,7 @@ import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.attribute.CraftAttribute;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey.Specific;
@@ -138,7 +139,6 @@ import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.tag.DamageTypeTags;
 import org.cardboardpowered.adventure.CardboardAdventure;
-import org.cardboardpowered.impl.CardboardAttributable;
 import org.cardboardpowered.impl.CardboardAttributeInstance;
 import org.cardboardpowered.impl.CardboardEnchantment;
 import org.jetbrains.annotations.NotNull;
@@ -1283,7 +1283,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                 continue;
             }
 
-            Attribute attribute = CardboardAttributable.stringToBukkit(attributeName);
+            Attribute attribute = CraftAttribute.stringToBukkit(attributeName);
             if (attribute == null) {
                 continue;
             }
@@ -1354,7 +1354,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
             AttributeModifier attribMod = CardboardAttributeInstance.convert(nmsModifier);
 
-            Attribute attribute = CardboardAttributable.minecraftHolderToBukkit(entry.attribute());
+            Attribute attribute = CraftAttribute.minecraftHolderToBukkit(entry.attribute());
             if (attribute == null) {
                 continue;
             }
@@ -1411,7 +1411,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                     continue;
                 }
                 AttributeModifier modifier = (AttributeModifier) o;
-                Attribute attribute = CardboardAttributable.stringToBukkit(attributeName);
+                Attribute attribute = CraftAttribute.stringToBukkit(attributeName);
                 if (attribute == null) {
                     continue;
                 }
@@ -1671,7 +1671,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             }
             net.minecraft.entity.attribute.EntityAttributeModifier nmsModifier = CardboardAttributeInstance.convert(entry.getValue());
 
-            RegistryEntry<net.minecraft.entity.attribute.EntityAttribute> name = CardboardAttributable.bukkitToMinecraftHolder(entry.getKey());
+            RegistryEntry<net.minecraft.entity.attribute.EntityAttribute> name = CraftAttribute.bukkitToMinecraftHolder(entry.getKey());
             if (name == null) {
                 continue;
             }

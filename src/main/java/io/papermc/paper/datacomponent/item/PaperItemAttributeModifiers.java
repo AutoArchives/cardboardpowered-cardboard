@@ -7,11 +7,11 @@ import java.util.List;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
+import org.bukkit.craftbukkit.attribute.CraftAttribute;
+import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.inventory.EquipmentSlotGroup;
-import org.cardboardpowered.impl.CardboardAttributable;
-import org.cardboardpowered.impl.CardboardAttributeInstance;
 import org.jetbrains.annotations.Unmodifiable;
 
 public record PaperItemAttributeModifiers(
@@ -20,8 +20,8 @@ public record PaperItemAttributeModifiers(
 
     private static List<Entry> convert(final net.minecraft.component.type.AttributeModifiersComponent nmsModifiers) {
         return MCUtil.transformUnmodifiable(nmsModifiers.modifiers(), nms -> new PaperEntry(
-            CardboardAttributable.minecraftHolderToBukkit(nms.attribute()),
-            CardboardAttributeInstance.convert(nms.modifier(), nms.slot())
+        		CraftAttribute.minecraftHolderToBukkit(nms.attribute()),
+        		CraftAttributeInstance.convert(nms.modifier(), nms.slot())
         ));
     }
 
@@ -69,8 +69,8 @@ public record PaperItemAttributeModifiers(
             );
 
             this.entries.add(new net.minecraft.component.type.AttributeModifiersComponent.Entry(
-            	CardboardAttributable.bukkitToMinecraftHolder(attribute),
-                CardboardAttributeInstance.convert(modifier),
+            		CraftAttribute.bukkitToMinecraftHolder(attribute),
+                CraftAttributeInstance.convert(modifier),
                 CraftEquipmentSlot.getNMSGroup(equipmentSlotGroup)
             ));
             return this;

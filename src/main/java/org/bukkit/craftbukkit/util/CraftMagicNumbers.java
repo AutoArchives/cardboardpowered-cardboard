@@ -36,6 +36,7 @@ import org.bukkit.craftbukkit.CraftFeatureFlag;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftStatistic;
+import org.bukkit.craftbukkit.attribute.CraftAttribute;
 import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -58,7 +59,6 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionType.InternalPotionData;
 import org.cardboardpowered.adventure.CardboardAdventure;
-import org.cardboardpowered.impl.CardboardAttributable;
 import org.cardboardpowered.impl.CardboardModdedBlock;
 import org.cardboardpowered.impl.CardboardModdedItem;
 import org.cardboardpowered.impl.entity.PlayerImpl;
@@ -875,7 +875,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 
 	@Override
 	public String getTranslationKey(Attribute attribute) {
-        return CardboardAttributable.bukkitToMinecraft(attribute).getTranslationKey();
+        return CraftAttribute.bukkitToMinecraft(attribute).getTranslationKey();
 	}
 
 	// @Override

@@ -42,6 +42,7 @@ import org.bukkit.craftbukkit.CraftGameEvent;
 import org.bukkit.craftbukkit.CraftJukeboxSong;
 import org.bukkit.craftbukkit.CraftMusicInstrument;
 import org.bukkit.craftbukkit.CraftSound;
+import org.bukkit.craftbukkit.attribute.CraftAttribute;
 import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.banner.CraftPatternType;
@@ -71,7 +72,6 @@ import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.bukkit.map.MapCursor;
 import org.bukkit.potion.PotionEffectType;
 import org.cardboardpowered.adventure.CardboardAdventure;
-import org.cardboardpowered.impl.CardboardAttributable;
 import org.cardboardpowered.impl.CardboardEnchantment;
 import org.cardboardpowered.impl.entity.CardboardCat;
 import org.cardboardpowered.impl.entity.VillagerImpl;
@@ -139,7 +139,7 @@ public final class PaperRegistries {
 			//RegistryEntry.apiOnly(RegistryKeys.SOUND_EVENT, RegistryKey.SOUND_EVENT, () -> org.bukkit.Registry.SOUNDS),
 			// RegistryEntry.apiOnly(RegistryKeys.FLUID, RegistryKey.FLUID, () -> org.bukkit.Registry.FLUID),
 			
-			start(RegistryKeys.ATTRIBUTE, io.papermc.paper.registry.RegistryKey.ATTRIBUTE).craft(Attribute.class, CardboardAttributable::new).build(),
+			start(RegistryKeys.ATTRIBUTE, io.papermc.paper.registry.RegistryKey.ATTRIBUTE).craft(Attribute.class, CraftAttribute::new).build(),
             start(RegistryKeys.FLUID, io.papermc.paper.registry.RegistryKey.FLUID).craft(Fluid.class, CraftFluid::new).build(),
             start(RegistryKeys.SOUND_EVENT, io.papermc.paper.registry.RegistryKey.SOUND_EVENT).craft(Sound.class, CraftSound::new, true).build(),
 	        

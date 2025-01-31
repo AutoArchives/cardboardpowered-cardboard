@@ -6,17 +6,13 @@
 Cardboard is an implementation of the popular Bukkit/Spigot/Paper Modding API for FabricMC. This mod lets you use plugins that are made for Bukkit and it's derivatives (Spigot & Paper) on a Fabric modded server.
 
 Fabric version chart:
-| Supported| Minecraft      | Git Branch | Download     |
+| Support | Minecraft      | Git Branch | Dev Status     |
 |----------|----------------|------------|----------------------|
-| Soon     | Fabric 1.21.1  | ver/1.21   | [View Downloads](https://cardboardpowered.org/download/)
-| &#x2705; | Fabric 1.20.6  | ver/1.20.6 | [View Downloads](https://cardboardpowered.org/download/)
-| &#x274C; | Fabric 1.20.4  | ver/1.20.4 | [View Downloads](https://cardboardpowered.org/download/)
-| &#x2705; | Fabric 1.20.1  | ver/1.20   | [View Downloads](https://cardboardpowered.org/download/)     |
-| &#x274C; | Fabric 1.19.4  | ver/1.19.4 | [View Downloads](https://cardboardpowered.org/download/)     |
-| &#x2705; | Fabric 1.19.2  | ver/1.19.2 | [View Downloads](https://cardboardpowered.org/download/)     |
-| &#x274C; | Fabric 1.18.2  | ver/1.18.2 | [View Downloads](https://cardboardpowered.org/download/)     |
-| &#x274C; | 1.17 / 1.18.1  | N/A        | [View Downloads](https://cardboardpowered.org/download/)     |
-| &#x274C; | <= 1.16.5      | ver/1.16.5 | [View Downloads](https://cardboardpowered.org/download#1.16) |
+| &#x2705; | Fabric 1.21.4  | ver/1.21.4   | Active
+| &#x2705; | Fabric 1.21.1  | ver/1.21   | Low
+| &#x274C; | <= 1.20      |  | |
+
+See [Supported Versions](https://github.com/CardboardPowered/cardboard/wiki/Supported-Versions) for more details. & [View Downloads](https://cardboardpowered.org/download/)
 
 ## License
 We inherit the license from Paper. See [Paper's License](https://github.com/PaperMC/Paper/blob/master/LICENSE.md) for full details.

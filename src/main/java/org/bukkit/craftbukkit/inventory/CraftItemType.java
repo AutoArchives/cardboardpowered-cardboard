@@ -2,11 +2,12 @@ package org.bukkit.craftbukkit.inventory;
 
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.attribute.CraftAttribute;
+import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.cardboardpowered.impl.CardboardAttributable;
 import org.cardboardpowered.impl.CardboardAttributeInstance;
 import org.cardboardpowered.impl.world.WorldImpl;
 import org.jetbrains.annotations.NotNull;
@@ -268,8 +269,8 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
         // Paper start - improve/fix item default attribute API
         for (final net.minecraft.component.type.AttributeModifiersComponent.Entry entry : nmsDefaultAttributes.modifiers()) {
             if (!slotPredicate.test(entry.slot())) continue;
-            final Attribute attribute = CardboardAttributable.minecraftHolderToBukkit(entry.attribute());
-            final AttributeModifier modifier = CardboardAttributeInstance.convert(entry.modifier(), entry.slot());
+            final Attribute attribute = CraftAttribute.minecraftHolderToBukkit(entry.attribute());
+            final AttributeModifier modifier = CraftAttributeInstance.convert(entry.modifier(), entry.slot());
             defaultAttributes.put(attribute, modifier);
         }
         // Paper end - improve/fix item default attribute API
