@@ -16,7 +16,7 @@ import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 
-final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer {
+public final class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer {
     public static final NBTLegacyHoverEventSerializer INSTANCE = new NBTLegacyHoverEventSerializer();
     private static Codec<NbtCompound, String, CommandSyntaxException, RuntimeException>  SNBT_CODEC = Codec.of(StringNbtReader::parse, NbtElement::toString);
 

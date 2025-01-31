@@ -21,7 +21,7 @@ import java.util.List;
 
 public final class CardboardAdventureComponent implements Text {
 
-    final Component adventure;
+    public final Component adventure;
     private @MonotonicNonNull Text vanilla;
 
     public CardboardAdventureComponent(Component adventure) {
