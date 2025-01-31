@@ -5,8 +5,6 @@ import net.minecraft.entity.attribute.AttributeContainer;
 import org.bukkit.attribute.Attributable;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
-import org.cardboardpowered.impl.CardboardAttributable;
-import org.cardboardpowered.impl.CardboardAttributeInstance;
 
 public class CraftAttributeMap implements Attributable {
 
@@ -33,15 +31,15 @@ public class CraftAttributeMap implements Attributable {
     @Override
     public AttributeInstance getAttribute(Attribute attribute) {
         Preconditions.checkArgument(attribute != null, "attribute");
-        net.minecraft.entity.attribute.EntityAttributeInstance nms = this.handle.getCustomInstance(CardboardAttributable.bukkitToMinecraftHolder(attribute));
+        net.minecraft.entity.attribute.EntityAttributeInstance nms = this.handle.getCustomInstance(CraftAttribute.bukkitToMinecraftHolder(attribute));
 
-        return (nms == null) ? null : new CardboardAttributeInstance(nms, attribute);
+        return (nms == null) ? null : new CraftAttributeInstance(nms, attribute);
     }
     // Paper start - living entity allow attribute registration
     @Override
     public void registerAttribute(Attribute attribute) {
         Preconditions.checkArgument(attribute != null, "attribute");
-        // handle.registerAttribute(CardboardAttributable.bukkitToMinecraftHolder(attribute));
+        // handle.registerAttribute(CraftAttribute.bukkitToMinecraftHolder(attribute));
     }
     // Paper end - living entity allow attribute registration
 }

@@ -324,6 +324,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
         return;
     }
     
+    @Override
     public void internalTeleport(PlayerPosition positionmoverotation, Set<PositionFlag> set) {
         // AsyncCatcher.catchOp("teleport");
         if (this.player.isRemoved()) {
@@ -423,8 +424,8 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
      * @reason Bukkit just adds too much for us to not do an Overwrite.
      *         Luckly we can set our priority so other mods will still work  
      */
-    @Overwrite
-    public void onPlayerMove(PlayerMoveC2SPacket packet) {
+    /// @Overwrite
+    public void onPlayerMove_old(PlayerMoveC2SPacket packet) {
         NetworkThreadUtils.forceMainThread(packet, (ServerPlayNetworkHandler)(Object)this, (ServerWorld)this.player.getWorld());
         boolean sfly = false;
         if (sfly/*validateVehicleMove(packet.a(0.0D), packet.isOnGround(0.0D), packet.c(0.0D), packet.a(0.0F), packet.isOnGround(0.0F))*/) {

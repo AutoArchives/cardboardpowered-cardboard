@@ -520,3 +520,16 @@ accessible field net/minecraft/screen/AnvilScreenHandler newItemName Ljava/lang/
 accessible field net/minecraft/screen/AnvilScreenHandler repairItemUsage I
 accessible field net/minecraft/screen/BrewingStandScreenHandler propertyDelegate Lnet/minecraft/screen/PropertyDelegate;
 accessible field net/minecraft/block/ChestBlock NAME_RETRIEVER Lnet/minecraft/block/DoubleBlockProperties$PropertyRetriever;
+accessible field net/minecraft/network/packet/c2s/play/PlayerMoveC2SPacket x D
+accessible field net/minecraft/network/packet/c2s/play/PlayerMoveC2SPacket y D
+accessible field net/minecraft/network/packet/c2s/play/PlayerMoveC2SPacket z D
+accessible field net/minecraft/network/packet/c2s/play/PlayerMoveC2SPacket changePosition Z
+accessible field net/minecraft/network/packet/c2s/play/PlayerMoveC2SPacket changeLook Z
+accessible field net/minecraft/network/packet/c2s/play/PlayerMoveC2SPacket yaw F
+accessible field net/minecraft/network/packet/c2s/play/PlayerMoveC2SPacket pitch F
+accessible field net/minecraft/entity/Entity onGround Z
+accessible field net/minecraft/entity/player/PlayerAbilities walkSpeed F
+accessible field net/minecraft/entity/player/PlayerAbilities flySpeed F
+accessible method net/minecraft/server/network/ServerPlayNetworkHandler clampHorizontal (D)D
+accessible method net/minecraft/server/network/ServerPlayNetworkHandler clampVertical (D)D
+accessible method net/minecraft/entity/LivingEntity isImmobile ()Z

@@ -151,6 +151,7 @@
     "network.MixinServerNetworkIo",
     "network.MixinServerPlayNetworkHandler",
     "network.MixinServerPlayNetworkHandler_ChatEvent",
+    "network.MixinServerPlayNetworkHandler_PlayerMove",
     "network.MixinServerQueryNetworkHandler",
     "network.MixinServerConfigurationNetworkHandler",
     "network.MixinChunkDeltaUpdateS2CPacket",

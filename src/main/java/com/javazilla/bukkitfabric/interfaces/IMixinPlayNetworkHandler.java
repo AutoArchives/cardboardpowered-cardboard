@@ -18,9 +18,13 @@
  */
 package com.javazilla.bukkitfabric.interfaces;
 
+import java.util.Set;
+
 import org.bukkit.Location;
 
+import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.network.ClientConnection;
+import net.minecraft.network.packet.s2c.play.PositionFlag;
 
 public interface IMixinPlayNetworkHandler {
 
@@ -31,5 +35,7 @@ public interface IMixinPlayNetworkHandler {
     boolean isDisconnected();
 
 	ClientConnection cb_get_connection();
+
+	void internalTeleport(PlayerPosition positionmoverotation, Set<PositionFlag> set);
 
 }
