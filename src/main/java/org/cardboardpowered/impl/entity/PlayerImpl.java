@@ -167,6 +167,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.advancement.PlayerAdvancementTracker;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.entity.Entity.RemovalReason;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
@@ -541,7 +542,6 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 
     @Override
     public float getFlySpeed() {
-        // return nms.airStrafingSpeed;
         return (float) getHandle().getAbilities().getFlySpeed() * 2f;
     }
 
@@ -624,7 +624,7 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
 
     @Override
     public float getWalkSpeed() {
-        return nms.forwardSpeed;
+    	return this.getHandle().getAbilities().walkSpeed * 2f;
     }
 
     @Override
@@ -1145,9 +1145,24 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
         nms.totalExperience = arg0;
     }
 
+    /*
     @Override
     public void setWalkSpeed(float arg0) throws IllegalArgumentException {
         nms.getAbilities().setWalkSpeed(arg0);
+    }
+    */
+    
+    private void validateSpeed(float value) {
+        Preconditions.checkArgument(value <= 1f && value >= -1f, "Speed value (%s) need to be between -1f and 1f", value);
+    }
+    
+    @Override
+    public void setWalkSpeed(float value) {
+        this.validateSpeed(value);
+        ServerPlayerEntity player = this.getHandle();
+        player.getAbilities().walkSpeed = value / 2f;
+        player.sendAbilitiesUpdate();
+        this.getHandle().getAttributeInstance(EntityAttributes.MOVEMENT_SPEED).setBaseValue(player.getAbilities().walkSpeed); // SPIGOT-5833: combination of the two in 1.16+
     }
 
     @Override
