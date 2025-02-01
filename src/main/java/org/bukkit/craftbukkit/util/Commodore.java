@@ -117,9 +117,8 @@ public class Commodore {
         	return original.replace("org/spigotmc/event/entity/EntityDismountEvent", "org/bukkit/event/entity/EntityDismountEvent");
         }
         
-        // TODO: Why
+        // TODO: Why do we need this
         if (original.contains("LegacyPotionMetaProvider")) {
-        	System.out.println(original);
         	return original.replace("LegacyPotionMetaProvider", "Disable Legacy Potion Meta Provider");
         }
         

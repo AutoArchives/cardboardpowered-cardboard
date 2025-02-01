@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 import com.javazilla.bukkitfabric.interfaces.IMixinPlayNetworkHandler;
+import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
 
 import io.papermc.paper.event.player.PlayerFailMoveEvent;
 import net.minecraft.entity.MovementType;
@@ -324,7 +325,7 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                                         return;
                                     }
                                     if (!oldTo.equals((Object)event6.getTo()) && !event6.isCancelled()) {
-                                        this.player.getBukkitEntity().teleport(event6.getTo(), PlayerTeleportEvent.TeleportCause.PLUGIN);
+                                        ((IMixinServerEntityPlayer)this.player).getBukkitEntity().teleport(event6.getTo(), PlayerTeleportEvent.TeleportCause.PLUGIN);
                                         return;
                                     }
                                     if (!from.equals((Object)this.getCraftPlayer().getLocation()) && this.justTeleported) {
