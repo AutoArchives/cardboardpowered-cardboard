@@ -293,8 +293,10 @@ CL: net/minecraft/core/EnumDirection$EnumDirectionLimit net/minecraft/class_2350
 CL: net/minecraft/core/EnumDirection8 net/minecraft/class_2355
 CL: net/minecraft/core/GlobalPos net/minecraft/class_4208
 CL: net/minecraft/core/Holder net/minecraft/class_6880
+CL: net/minecraft/core/Holder$c net/minecraft/class_6880$class_6883
 CL: net/minecraft/core/HolderGetter net/minecraft/class_7871
 CL: net/minecraft/core/HolderLookup net/minecraft/class_7225
+CL: net/minecraft/core/HolderLookup$a net/minecraft/class_7225$class_7874
 CL: net/minecraft/core/HolderOwner net/minecraft/class_7876
 CL: net/minecraft/core/HolderSet net/minecraft/class_6885
 CL: net/minecraft/core/HolderSet$Named net/minecraft/class_6885$class_6888
@@ -25521,7 +25523,7 @@ MD: net/minecraft/core/IRegistry/a (Lnet/minecraft/core/Holder;)Lcom/mojang/seri
 MD: net/minecraft/core/IRegistry/a (Lnet/minecraft/core/IRegistry;Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object; net/minecraft/class_2378/method_10226 (Lnet/minecraft/class_2378;Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;
 MD: net/minecraft/core/IRegistry/a (Lnet/minecraft/core/IRegistry;Lnet/minecraft/resources/MinecraftKey;Ljava/lang/Object;)Ljava/lang/Object; net/minecraft/class_2378/method_10230 (Lnet/minecraft/class_2378;Lnet/minecraft/class_2960;Ljava/lang/Object;)Ljava/lang/Object;
 MD: net/minecraft/core/IRegistry/a (Lnet/minecraft/core/IRegistry;Lnet/minecraft/resources/ResourceKey;Ljava/lang/Object;)Ljava/lang/Object; net/minecraft/class_2378/method_39197 (Lnet/minecraft/class_2378;Lnet/minecraft/class_5321;Ljava/lang/Object;)Ljava/lang/Object;
-MD: net/minecraft/core/IRegistry/a (Lnet/minecraft/resources/MinecraftKey;)Ljava/lang/Object; net/minecraft/class_2378/method_10223 (Lnet/minecraft/class_2960;)Ljava/lang/Object;
+MD: net/minecraft/core/IRegistry/a (Lnet/minecraft/resources/MinecraftKey;)Ljava/util/Optional; net/minecraft/class_2378/method_10223 (Lnet/minecraft/class_2960;)Ljava/util/Optional;
 MD: net/minecraft/core/IRegistry/a (Lnet/minecraft/resources/ResourceKey;)Ljava/lang/Object; net/minecraft/class_2378/method_29107 (Lnet/minecraft/class_5321;)Ljava/lang/Object;
 MD: net/minecraft/core/IRegistry/a (Lnet/minecraft/tags/TagKey;)Lnet/minecraft/core/HolderSet$Named; net/minecraft/class_2378/method_40260 (Lnet/minecraft/class_6862;)Lnet/minecraft/class_6885$class_6888;
 MD: net/minecraft/core/IRegistry/a (Lnet/minecraft/util/RandomSource;)Ljava/util/Optional; net/minecraft/class_2378/method_10240 (Lnet/minecraft/class_5819;)Ljava/util/Optional;
@@ -27779,6 +27781,7 @@ MD: net/minecraft/resources/MinecraftKey/b (Ljava/lang/String;C)[Ljava/lang/Stri
 MD: net/minecraft/resources/MinecraftKey/b (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; net/minecraft/class_2960/method_48747 (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 MD: net/minecraft/resources/MinecraftKey/c ()Ljava/lang/String; net/minecraft/class_2960/method_36181 ()Ljava/lang/String;
 MD: net/minecraft/resources/MinecraftKey/c (C)Z net/minecraft/class_2960/method_29185 (C)Z
+MD: net/minecraft/resources/MinecraftKey/c (Ljava/lang/String;)Lnet/minecraft/resources/MinecraftKey; net/minecraft/class_2960/method_12829 (Ljava/lang/String;)Lnet/minecraft/class_2960;
 MD: net/minecraft/resources/MinecraftKey/c (Ljava/lang/String;)Lnet/minecraft/resources/MinecraftKey; net/minecraft/class_2960/method_45136 (Ljava/lang/String;)Lnet/minecraft/class_2960;
 MD: net/minecraft/resources/MinecraftKey/c (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; net/minecraft/class_2960/method_45135 (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 MD: net/minecraft/resources/MinecraftKey/d ()Ljava/lang/String; net/minecraft/class_2960/method_42094 ()Ljava/lang/String;

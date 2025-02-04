@@ -55,7 +55,76 @@ import net.minecraft.registry.entry.RegistryEntryList;
 @DelegateDeserialization(ItemStack.class)
 public final class CraftItemStack extends ItemStack {
 
+	// Paper start - delegate api-ItemStack to CraftItemStack
+    private static final java.lang.invoke.VarHandle API_ITEM_STACK_CRAFT_DELEGATE_FIELD;
+    static {
+        try {
+            API_ITEM_STACK_CRAFT_DELEGATE_FIELD = java.lang.invoke.MethodHandles.privateLookupIn(
+                ItemStack.class,
+                java.lang.invoke.MethodHandles.lookup()
+            ).findVarHandle(ItemStack.class, "craftDelegate", ItemStack.class);
+        } catch (final IllegalAccessException | NoSuchFieldException exception) {
+            throw new RuntimeException(exception);
+        }
+    }
+
+    private static CraftItemStack getCraftStack(final ItemStack bukkit) {
+        if (bukkit instanceof final CraftItemStack craftItemStack) {
+            return craftItemStack;
+        } else {
+            return  (CraftItemStack) API_ITEM_STACK_CRAFT_DELEGATE_FIELD.get(bukkit);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        if (this.handle == null || this.handle.isEmpty()) {
+            return net.minecraft.item.ItemStack.EMPTY.hashCode();
+        } else {
+            int hash = net.minecraft.item.ItemStack.hashCode(this.handle);
+            hash = hash * 31 + this.handle.getCount();
+            return hash;
+        }
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (!(obj instanceof final org.bukkit.inventory.ItemStack bukkit)) return false;
+        final CraftItemStack craftStack = getCraftStack(bukkit);
+        if (this.handle == craftStack.handle) return true;
+        else if (this.handle == null || craftStack.handle == null) return false;
+        else if (this.handle.isEmpty() && craftStack.handle.isEmpty()) return true;
+        else return net.minecraft.item.ItemStack.areEqual(this.handle, craftStack.handle);
+    }
+    // Paper end
+    
+ // Paper start - MC Utils
+
+    public static net.minecraft.item.ItemStack getOrCloneOnMutation(ItemStack old, ItemStack newInstance) {
+        return old == newInstance ? unwrap(old) : asNMSCopy(newInstance);
+    }
+    // Paper end - MC Utils
+    
+ // Paper start - override isEmpty to use vanilla's impl
+    @Override
+    public boolean isEmpty() {
+        return handle == null || handle.isEmpty();
+    }
+    // Paper end - override isEmpty to use vanilla's impl
+    
     public static net.minecraft.item.ItemStack asNMSCopy(ItemStack original) {
+        // Paper start - re-implement after delegating all api ItemStack calls to CraftItemStack
+        if (original == null || original.isEmpty()) {
+            return net.minecraft.item.ItemStack.EMPTY;
+        }
+        final CraftItemStack stack = getCraftStack(original);
+        return stack.handle == null ? net.minecraft.item.ItemStack.EMPTY : stack.handle.copy();
+        // Paper end - re-implement after delegating all api ItemStack calls to CraftItemStack
+    }
+	
+    /*
+    public static net.minecraft.item.ItemStack asNMSCopy(ItemStack original) {
+
         if (original instanceof CraftItemStack) {
             CraftItemStack stack = (CraftItemStack) original;
             return stack.handle == null ? net.minecraft.item.ItemStack.EMPTY : stack.handle.copy();
@@ -74,6 +143,7 @@ public final class CraftItemStack extends ItemStack {
 
         return stack;
     }
+    */
     
     public static List<net.minecraft.item.ItemStack> asNMSCopy(List<? extends ItemStack> originals) {
         ArrayList<net.minecraft.item.ItemStack> items = new ArrayList<net.minecraft.item.ItemStack>(originals.size());
@@ -93,18 +163,16 @@ public final class CraftItemStack extends ItemStack {
      * Copies the NMS stack to return as a strictly-Bukkit stack
      */
     public static ItemStack asBukkitCopy(net.minecraft.item.ItemStack original) {
-        if (original.isEmpty())
-            return new ItemStack(Material.AIR);
-
-        // TODO 1.17ify
-        Material mat = CraftMagicNumbers.getMaterial(original.getItem());
+    	CraftItemStack stack = asCraftMirror(original.copy());
+    	
+        /*Material mat = CraftMagicNumbers.getMaterial(original.getItem());
         if (null == mat) {
             System.out.println("Unknown Bukkit Material (possible 1.17 material?): " + Registries.ITEM.getId(original.getItem()).getPath().toUpperCase());
         }
 
         ItemStack stack = new ItemStack(mat);
         if (hasItemMeta(original))
-            stack.setItemMeta(getItemMeta(original));
+            stack.setItemMeta(getItemMeta(original));*/
         return stack;
     }
 
@@ -372,10 +440,13 @@ public final class CraftItemStack extends ItemStack {
 
     @Override
     public CraftItemStack clone() {
-        CraftItemStack itemStack = (CraftItemStack) super.clone();
+        return new org.bukkit.craftbukkit.inventory.CraftItemStack(this.handle != null ? this.handle.copy() : null); // Paper
+    	/*
+    	CraftItemStack itemStack = (CraftItemStack) super.clone();
         if (this.handle != null)
             itemStack.handle = this.handle.copy();
         return itemStack;
+        */
     }
 
     @Override
@@ -868,7 +939,7 @@ public final class CraftItemStack extends ItemStack {
         if (!(stack instanceof CraftItemStack)) {
             return stack.getClass() == ItemStack.class && stack.isSimilar((ItemStack)this);
         }
-        CraftItemStack that = (CraftItemStack)stack;
+        CraftItemStack that = getCraftStack(stack);// (CraftItemStack)stack;
         if (this.handle == that.handle) {
             return true;
         }
@@ -891,12 +962,21 @@ public final class CraftItemStack extends ItemStack {
         return item != null && !item.getComponentChanges().isEmpty();
     }
 
+    /*
     public static net.minecraft.item.ItemStack unwrap(ItemStack bukkit) {
         if (bukkit instanceof CraftItemStack) {
             CraftItemStack craftItemStack = (CraftItemStack)bukkit;
             return craftItemStack.handle != null ? craftItemStack.handle : net.minecraft.item.ItemStack.EMPTY;
         }
         return CraftItemStack.asNMSCopy(bukkit);
+    }
+    */
+    
+    public static net.minecraft.item.ItemStack unwrap(ItemStack bukkit) {
+        // Paper start - re-implement after delegating all api ItemStack calls to CraftItemStack
+        final CraftItemStack craftItemStack = getCraftStack(bukkit);
+        return craftItemStack.handle == null ? net.minecraft.item.ItemStack.EMPTY : craftItemStack.handle;
+        // Paper end - re-implement after delegating all api ItemStack calls to CraftItemStack
     }
 
     public static ItemPredicate asCriterionConditionItem(ItemStack original) {
@@ -909,5 +989,121 @@ public final class CraftItemStack extends ItemStack {
     /*static boolean hasItemMeta(net.minecraft.item.ItemStack item) {
         return !(item == null || item.getNbt() == null || item.getNbt().isEmpty());
     }*/
+    
+ // Paper start - data component API
+    @Override
+    public <T> T getData(final io.papermc.paper.datacomponent.DataComponentType.Valued<T> type) {
+        if (this.isEmpty()) {
+            return null;
+        }
+        return io.papermc.paper.datacomponent.PaperDataComponentType.convertDataComponentValue(this.handle.getComponents(), (io.papermc.paper.datacomponent.PaperDataComponentType.ValuedImpl<T, ?>) type);
+    }
+
+    @Override
+    public boolean hasData(final io.papermc.paper.datacomponent.DataComponentType type) {
+        if (this.isEmpty()) {
+            return false;
+        }
+        return this.handle.contains(io.papermc.paper.datacomponent.PaperDataComponentType.bukkitToMinecraft(type));
+    }
+
+    @Override
+    public java.util.Set<io.papermc.paper.datacomponent.DataComponentType> getDataTypes() {
+        if (this.isEmpty()) {
+            return java.util.Collections.emptySet();
+        }
+        return io.papermc.paper.datacomponent.PaperDataComponentType.minecraftToBukkit(this.handle.getComponents().getTypes());
+    }
+
+    @Override
+    public <T> void setData(final io.papermc.paper.datacomponent.DataComponentType.Valued<T> type, final T value) {
+        // Preconditions.checkArgument(value != null, "value cannot be null");
+        if (this.isEmpty()) {
+            return;
+        }
+        this.setDataInternal((io.papermc.paper.datacomponent.PaperDataComponentType.ValuedImpl<T, ?>) type, value);
+    }
+
+    @Override
+    public void setData(final io.papermc.paper.datacomponent.DataComponentType.NonValued type) {
+        if (this.isEmpty()) {
+            return;
+        }
+        this.setDataInternal((io.papermc.paper.datacomponent.PaperDataComponentType.NonValuedImpl<?, ?>) type, null);
+    }
+
+    private <A, V> void setDataInternal(final io.papermc.paper.datacomponent.PaperDataComponentType<A, V> type, final A value) {
+        this.handle.set(type.getHandle(), type.getAdapter().toVanilla(value));
+    }
+
+    @Override
+    public void unsetData(final io.papermc.paper.datacomponent.DataComponentType type) {
+        if (this.isEmpty()) {
+            return;
+        }
+        this.handle.remove(io.papermc.paper.datacomponent.PaperDataComponentType.bukkitToMinecraft(type));
+    }
+
+    @Override
+    public void resetData(final io.papermc.paper.datacomponent.DataComponentType type) {
+        if (this.isEmpty()) {
+            return;
+        }
+        this.resetData((io.papermc.paper.datacomponent.PaperDataComponentType<?, ?>) type);
+    }
+
+    private <M> void resetData(final io.papermc.paper.datacomponent.PaperDataComponentType<?, M> type) {
+        final net.minecraft.component.ComponentType<M> nms = io.papermc.paper.datacomponent.PaperDataComponentType.bukkitToMinecraft(type);
+        final M nmsValue = this.handle.getItem().getComponents().get(nms);
+        // if nmsValue is null, it will clear any set patch
+        // if nmsValue is not null, it will still clear any set patch because it will equal the default value
+        this.handle.set(nms, nmsValue);
+    }
+
+    @Override
+    public boolean isDataOverridden(final io.papermc.paper.datacomponent.DataComponentType type) {
+        if (this.isEmpty()) {
+            return false;
+        }
+        final net.minecraft.component.ComponentType<?> nms = io.papermc.paper.datacomponent.PaperDataComponentType.bukkitToMinecraft(type);
+        // maybe a more efficient way is to expose the "patch" map in PatchedDataComponentMap and just check if the type exists as a key
+        return !java.util.Objects.equals(this.handle.get(nms), this.handle.getDefaultComponents().get(nms));
+    }
+
+    @Override
+    public boolean matchesWithoutData(final ItemStack item, final java.util.Set<io.papermc.paper.datacomponent.DataComponentType> exclude, final boolean ignoreCount) {
+        // Extracted from base equals
+        final CraftItemStack craftStack = getCraftStack(item);
+        if (this.handle == craftStack.handle) return true;
+        if (this.handle == null || craftStack.handle == null) return false;
+        if (this.handle.isEmpty() && craftStack.handle.isEmpty()) return true;
+
+        net.minecraft.item.ItemStack left = this.handle;
+        net.minecraft.item.ItemStack right = craftStack.handle;
+        if (!ignoreCount && left.getCount() != right.getCount()) {
+            return false;
+        }
+        if (!left.isOf(right.getItem())) {
+            return false;
+        }
+
+        // It can be assumed that the prototype is equal since the type is the same. This way all we need to check is the patch
+
+        // Fast path when excluded types is empty
+        if (exclude.isEmpty()) {
+            return left.getComponentChanges().equals(right.getComponentChanges());
+        }
+
+        // Collect all the NMS types into a set
+        java.util.Set<net.minecraft.component.ComponentType<?>> skippingTypes = new java.util.HashSet<>(exclude.size());
+        for (io.papermc.paper.datacomponent.DataComponentType api : exclude) {
+            skippingTypes.add(io.papermc.paper.datacomponent.PaperDataComponentType.bukkitToMinecraft(api));
+        }
+
+        // Check the patch by first stripping excluded types and then compare the trimmed patches
+        return left.getComponentChanges().withRemovedIf(skippingTypes::contains).equals(right.getComponentChanges().withRemovedIf(skippingTypes::contains));
+    }
+
+    // Paper end - data component API
 
 }

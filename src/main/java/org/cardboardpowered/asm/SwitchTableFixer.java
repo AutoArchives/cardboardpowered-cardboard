@@ -2,6 +2,7 @@ package org.cardboardpowered.asm;
 
 import com.google.common.collect.ImmutableSet;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -47,6 +48,7 @@ public class SwitchTableFixer {
         }
         return success;
     }
+   
 
     private boolean inject1(ClassNode node, MethodNode method) {
         if (Modifier.isStatic(method.access) && (method.access & Opcodes.ACC_SYNTHETIC) != 0 && method.desc.equals("()[I")) {

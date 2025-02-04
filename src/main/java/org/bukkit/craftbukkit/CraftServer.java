@@ -368,6 +368,8 @@ public class CraftServer implements Server {
    // public final PaperPluginManagerImpl paperPluginManager;
 
     
+    public Set<String> activeCompatibilities = Collections.emptySet();
+    
     private final CraftMagicNumbers unsafe = (CraftMagicNumbers) CraftMagicNumbers.INSTANCE;
     private final ServicesManager servicesManager = new SimpleServicesManager();
     private final BukkitSchedulerImpl scheduler = new BukkitSchedulerImpl();
@@ -436,10 +438,17 @@ public class CraftServer implements Server {
         
         loadIcon();
         
+        loadCompatibilities();
+        ((CraftMagicNumbers) CraftMagicNumbers.INSTANCE).getCommodore().updateReroute(activeCompatibilities::contains);
+        
         this.playerList = server.getPlayerManager();
         
         // Register PotionEffectType
         BukkitFabricMod.registerPotionEffectType();
+    }
+    
+    private void loadCompatibilities() {
+    	// Paper - Big nope
     }
     
     @Override

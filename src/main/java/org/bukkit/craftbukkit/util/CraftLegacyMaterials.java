@@ -47,18 +47,18 @@ import net.minecraft.registry.Registries;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @Deprecated
-public final class CraftLegacyMaterials {
+public class CraftLegacyMaterials {
 
-    private static final Map<Byte, Material> SPAWN_EGGS = new HashMap<>();
-    private static final Set<String> whitelistedStates = new HashSet<>(Arrays.asList("explode", "check_decay", "decayable", "facing"));
-    private static final Map<MaterialData, Item> materialToItem = new HashMap<>(16384);
-    private static final Map<Item, MaterialData> itemToMaterial = new HashMap<>(1024);
-    private static final Map<MaterialData, BlockState> materialToData = new HashMap<>(4096);
-    private static final Map<BlockState, MaterialData> dataToMaterial = new HashMap<>(4096);
-    private static final Map<MaterialData, Block> materialToBlock = new HashMap<>(4096);
-    private static final Map<Block, MaterialData> blockToMaterial = new HashMap<>(1024);
+	public static final Map<Byte, Material> SPAWN_EGGS = new HashMap<>();
+    public static final Set<String> whitelistedStates = new HashSet<>(Arrays.asList("explode", "check_decay", "decayable", "facing"));
+    public static final Map<MaterialData, Item> materialToItem = new HashMap<>(16384);
+    public static final Map<Item, MaterialData> itemToMaterial = new HashMap<>(1024);
+    public static final Map<MaterialData, BlockState> materialToData = new HashMap<>(4096);
+    public static final Map<BlockState, MaterialData> dataToMaterial = new HashMap<>(4096);
+    public static final Map<MaterialData, Block> materialToBlock = new HashMap<>(4096);
+    public static final Map<Block, MaterialData> blockToMaterial = new HashMap<>(1024);
 
-    private CraftLegacyMaterials() {
+    public CraftLegacyMaterials() {
         //
     }
 
@@ -87,6 +87,8 @@ public final class CraftLegacyMaterials {
 
         return (mappedData == null) ? new MaterialData(Material.LEGACY_AIR) : mappedData;
     }
+    
+    
 
     public static BlockState fromLegacyData(Material material, byte data) {
         Preconditions.checkArgument(material.isLegacy(), "fromLegacyData on modern Material");

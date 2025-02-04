@@ -240,7 +240,7 @@ public class ReflectionMethodVisitor extends MethodVisitor {
     	String owner_official = mr.unmapClassName("official", owner.replace('/', '.'));
     	
     	MethodSignature sig = MethodSignature.fromDescriptor(desc);
-    	
+
     	List<JavaType> jts = sig.getParameterTypes();
     	
     	String sigg = "(";
@@ -436,6 +436,14 @@ public class ReflectionMethodVisitor extends MethodVisitor {
             return;
         }
         
+        if (name.contains("method_45136")) {
+        	// System.out.println("DEBUG OPCODE: " + opcode + " / " + name);
+        	if (opcode == Opcodes.INVOKESTATIC) {
+        		// Give us the static method
+        		name = "method_12829";
+        	}
+        }
+        
         if (name.contains("getWorld")) {
         	//System.out.println(owner + " " + name + " " + desc);
         }
@@ -494,7 +502,7 @@ public class ReflectionMethodVisitor extends MethodVisitor {
 
         	String mapped = mr.mapMethodName("official", owner_official, name, sigg);
         	
-        	if (!mapped.startsWith("method_")) {
+        	if (!mapped.startsWith("method_") && (name.equalsIgnoreCase(mapped))) {
         		
         		String res = mapped;
 
@@ -651,6 +659,13 @@ public class ReflectionMethodVisitor extends MethodVisitor {
                 super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/WorldGuardMaterialHelper", name, desc, false );
                 return;
             }
+        }
+        
+        if (owner.startsWith("net/minecraft") && name.startsWith("method_")) {
+        	String namespace = mr.getCurrentRuntimeNamespace();
+        	if (namespace.equalsIgnoreCase("named")) {
+        		name = mr.mapMethodName("intermediary", owner.replace('/', '.'), name, desc);
+        	}
         }
 
         for (String str : SKIP) {

@@ -133,6 +133,10 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         	//libraries.add( new Library("org.cardboardpowered", "intermediary-adapter", "7.3", SHA1, "", null) );
             libraries.add( new Library("org.jline", "jline", "3.19.0", SHA1, "27edf6497c4fac20b63ca4cd8788581ca86cb83e", null) );
         }
+        
+        // Set WorldEdit adapter class name here
+        // as this provides more verbose stacktraces.
+        System.setProperty("worldedit.bukkit.adapter", "com.sk89q.worldedit.bukkit.adapter.impl.v1_21_4.PaperweightAdapter");
 
         new LibraryManager(repository, "lib", true, 2, libraries).run();
     }

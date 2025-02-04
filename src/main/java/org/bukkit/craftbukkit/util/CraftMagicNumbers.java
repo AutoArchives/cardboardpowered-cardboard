@@ -4,6 +4,7 @@ package org.bukkit.craftbukkit.util;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -598,14 +599,35 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     public static boolean isLegacy(PluginDescriptionFile pdf) {
         return pdf.getAPIVersion() == null;
     }
+    
+    private final Commodore commodore = new Commodore();
 
+    public Commodore getCommodore() {
+        return this.commodore;
+    }
+    
     @Override
     public byte[] processClass(PluginDescriptionFile pdf, String path, byte[] clazz) {
-        try {
+        /*
+    	try {
             clazz = Commodore.convert(clazz, !isLegacy(pdf), pdf.getName());
         } catch (Exception ex) {
             Bukkit.getLogger().log(Level.SEVERE, "Fatal error trying to convert " + pdf.getFullName() + ":" + path, ex);
         }
+        */
+
+        try {
+            clazz = this.commodore.convert(
+            		clazz,
+            		pdf.getName(),
+            		ApiVersion.getOrCreateVersion(pdf.getAPIVersion()),
+            		//((CraftServer) Bukkit.getServer()).activeCompatibilities
+            		Collections.emptySet()
+            		);
+        } catch (Exception ex) {
+            Bukkit.getLogger().log(Level.SEVERE, "Fatal error trying to convert " + pdf.getFullName() + ":" + path, ex);
+        }
+        
         return clazz;
     }
 

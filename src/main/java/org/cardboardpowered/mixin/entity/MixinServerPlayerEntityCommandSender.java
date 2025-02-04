@@ -17,7 +17,7 @@ public class MixinServerPlayerEntityCommandSender implements IMixinCommandOutput
 	 */
 	@Override
     public CommandSender getBukkitSender(ServerCommandSource source) {
-		System.out.println("DEBUG: getBukkitSender!");
+		// System.out.println("DEBUG: getBukkitSender!");
 		
 		if (source.isExecutedByPlayer()) {
 			ServerPlayerEntity plr = source.getPlayer();
