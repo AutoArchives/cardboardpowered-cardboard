@@ -1,18 +1,26 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
 import com.javazilla.bukkitfabric.interfaces.IMixinPersistentProjectileEntity;
 
 import net.kyori.adventure.text.Component;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.Items;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.world.BlockCollisionSpliterator;
+
+import java.util.List;
+
 import org.apache.commons.lang.Validate;
 import org.bukkit.Chunk;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.AbstractArrow;
@@ -24,6 +32,7 @@ import org.bukkit.projectiles.ProjectileSource;
 import org.cardboardpowered.impl.entity.AbstractProjectile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 public class CraftAbstractArrow extends AbstractProjectile implements AbstractArrow {
 
@@ -281,6 +290,24 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
             this.getHandle().setOwner(null);
         }
         this.getHandle().setProjectileSourceBukkit(shooter);
+	}
+
+	@Override
+	public @NotNull @Unmodifiable List<Block> getAttachedBlocks() {
+		if (!this.isInBlock()) {
+            return ImmutableList.of();
+        }
+
+        return ImmutableList.copyOf(
+        		new BlockCollisionSpliterator<>(
+        				this.getHandle().getWorld(), (net.minecraft.entity.Entity) null,
+        				new Box(this.getHandle().getPos(), this.getHandle().getPos()).expand(0.06), false,
+        				(mutableBlockPos, voxelShape) -> CraftBlock.at((ServerWorld) this.getHandle().getWorld(), (BlockPos) mutableBlockPos)
+        		)
+        );
+		
+		// TODO Auto-generated method stub
+		// return null;
 	}
 
 }

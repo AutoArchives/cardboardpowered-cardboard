@@ -1,11 +1,11 @@
 import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
 
 plugins {
-    id 'fabric-loom' version '1.8-SNAPSHOT'
+    id 'fabric-loom' version '1.10-SNAPSHOT'
     id 'maven-publish'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'com.gradleup.shadow' version '8.3.6'
     id 'java-library'
-    id "com.peterabeles.gversion" version "1.10.2"
+    id "com.peterabeles.gversion" version "1.10.3"
     id "com.modrinth.minotaur" version "2+"
 }
 
@@ -117,7 +117,8 @@ dependencies {
 
 	// Paper-API libs
 	// compileOnly
-	modImplementation("io.papermc.paper:paper-api:1.21.4-R0.1-20250118.134032-116")
+	// modImplementation("io.papermc.paper:paper-api:1.21.4-R0.1-20250118.134032-116")
+	modImplementation("io.papermc.paper:paper-api:1.21.4-R0.1-20250303.170158-184")
 	modImplementation("net.md-5:bungeecord-chat:1.16-R0.4")
 	modImplementation("net.kyori:adventure-api:4.18.0")
 	modImplementation("net.kyori:adventure-text-serializer-gson:4.18.0")

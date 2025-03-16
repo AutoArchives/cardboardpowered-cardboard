@@ -117,6 +117,7 @@ import com.mojang.datafixers.util.Pair;
 
 import io.papermc.paper.block.fluid.FluidData;
 import io.papermc.paper.math.Position;
+import io.papermc.paper.raytracing.PositionedRayTraceConfigurationBuilder;
 import io.papermc.paper.world.MoonPhase;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import me.isaiah.common.cmixin.IMixinWorld;
@@ -2990,6 +2991,25 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 	@Override
 	public void getChunksAtAsync(int minX, int minZ, int maxX, int maxZ, boolean urgent, @NotNull Runnable cb) {
 		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public @Nullable RayTraceResult rayTrace(
+			java.util.function.@NotNull Consumer<PositionedRayTraceConfigurationBuilder> builderConsumer) {
+		// TODO Auto-generated method stub
+		
+		// PositionedRayTraceConfigurationBuilderImpl builder = new PositionedRayTraceConfigurationBuilderImpl();
+		/*
+		final double maxDistance = builder.maxDistance.getAsDouble();
+        if (builder.targets.contains(RayTraceTarget.ENTITY)) {
+            if (builder.targets.contains(RayTraceTarget.BLOCK)) {
+                return this.rayTrace(builder.start, builder.direction, maxDistance, builder.fluidCollisionMode, builder.ignorePassableBlocks, builder.raySize, builder.entityFilter, builder.blockFilter);
+            }
+            return this.rayTraceEntities(builder.start, builder.direction, maxDistance, builder.raySize, builder.entityFilter);
+        }
+        return this.rayTraceBlocks(builder.start, builder.direction, maxDistance, builder.fluidCollisionMode, builder.ignorePassableBlocks, builder.blockFilter);
+		*/
+		return null;
 	}
 	
 }

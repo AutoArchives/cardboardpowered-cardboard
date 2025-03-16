@@ -37,6 +37,7 @@ import net.minecraft.registry.SimpleRegistry;
 import net.minecraft.util.Identifier;
 import org.bukkit.Keyed;
 import org.cardboardpowered.Registries_Bridge;
+import org.cardboardpowered.interfaces.ISimpleRegistry;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class PaperRegistryListenerManager {
@@ -143,9 +144,11 @@ public class PaperRegistryListenerManager {
             // @SuppressWarnings("PatternValidation") final TypedKey<T> typedKey = TypedKey.create(entry.apiKey(), Key.key(beingAdded.getNamespace(), beingAdded.getPath()));
             // final RegistryEntryAddEventImpl<T, B> event = entry.createEntryAddEvent(typedKey, builder, conversions);
             // LifecycleEventRunner.INSTANCE.callEvent(this.valueAddEventTypes.getEventType(entry.apiKey()), event);
-            //if (oldNms != null) {
-            //    ((SimpleRegistry<M>) registry).clearIntrusiveHolder(oldNms);
-            //}
+        
+
+    	if (oldNms != null) {
+                ((ISimpleRegistry<M>) registry).clearIntrusiveHolder(oldNms);
+            }
             final M newNms = oldNms; // event.builder().build();
             /*
             if (oldNms != null && !newNms.equals(oldNms)) {

@@ -163,6 +163,7 @@
     "recipe.MixinRecipeManager",
     "registry.MixinRegistries",
     "registry.MixinRegistryLoader",
+    "registry.MixinRegistryLoader1",
     "registry.MixinReloadableRegistries",
     "registry.MixinSimpleRegistry",
     "screen.MixinAbstractFurnaceScreenHandler",

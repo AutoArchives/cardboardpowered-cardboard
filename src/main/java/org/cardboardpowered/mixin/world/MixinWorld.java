@@ -1,11 +1,20 @@
 package org.cardboardpowered.mixin.world;
 
+import com.javazilla.bukkitfabric.BukkitFabricMod;
 import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+
+import me.isaiah.common.fabric.FabricWorld;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.MutableWorldProperties;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.entity.EntityLookup;
 
 import org.cardboardpowered.impl.block.CapturedBlockState;
@@ -14,6 +23,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.HashMap;
@@ -46,6 +56,20 @@ public abstract class MixinWorld implements IMixinWorld {
     public boolean isCaptureBlockStates_BF() {
         return captureBlockStates;
     }
+    
+    @Inject(method = "<init>", at = @At("TAIL"))
+    public void init(MutableWorldProperties a, RegistryKey<?> b, DynamicRegistryManager rm, RegistryEntry<DimensionType> registryEntry, boolean f, boolean g, long h, int i, CallbackInfo ci) {
+
+        if (!(((World) (Object) this) instanceof ServerWorld)) {
+            System.out.println("CLIENT WORLD!");
+            return;
+        }
+
+        World thiz = (World) (Object) this;
+        ServerWorld nms = ((ServerWorld) thiz);
+    	BukkitFabricMod.on_world_init_mc(nms);
+    }
+
 
     // protected World(MutableWorldProperties properties, RegistryKey<World> registryRef, RegistryEntry<DimensionType> registryEntry, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed) {
 

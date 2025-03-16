@@ -235,6 +235,9 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
     @NotNull
     @Override
     public Stream<B> stream() {
+    	
+    	// this.minecraftRegistry.getKeys().str;
+    	
         return this.minecraftRegistry.getIds().stream().map(minecraftKey -> this.get(CraftNamespacedKey.fromMinecraft(minecraftKey)));
     }
 
@@ -285,4 +288,9 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
 
     final class InvalidHolderOwner implements RegistryEntryOwner<M> {
     }
+
+	@Override
+	public int size() {
+		return this.minecraftRegistry.size();
+	}
 }

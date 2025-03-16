@@ -43,7 +43,7 @@ public class MixinSimpleRegistry<T> implements ISimpleRegistry<T> {
 		}
 	}
 	
-	@Inject(at = @At("RETURN"), method = "freeze")
+	@Inject(at = @At("HEAD"), method = "freeze")
 	public void cb$paper_clear_unfrozen_map(CallbackInfoReturnable<net.minecraft.registry.Registry> ci) {
 		if (!this.frozen) {
 			 this.temporaryUnfrozenMap.clear(); // Paper - support pre-filling in registry mod API

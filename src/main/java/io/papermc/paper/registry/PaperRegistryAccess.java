@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import net.minecraft.registry.Registry;
 import net.minecraft.world.gen.structure.Structure;
 import org.bukkit.Keyed;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
@@ -117,6 +118,17 @@ implements RegistryAccess {
     @VisibleForTesting
     public static <T extends Keyed> RegistryKey<T> byType(Class<T> type) {
         return (RegistryKey<T>) LegacyRegistryIdentifiers.CLASS_TO_KEY_MAP.get(type);
+    }
+
+	public <M> void lockReferenceHolders(net.minecraft.registry.RegistryKey<? extends Registry<M>> resourceKey) {
+        RegistryEntryMeta.ServerSide serverSide;
+        RegistryEntryMeta registryEntryMeta;
+        RegistryEntry entry = PaperRegistries.getEntry(resourceKey);
+        if (entry == null || !((registryEntryMeta = entry.meta()) instanceof RegistryEntryMeta.ServerSide) || !(serverSide = (RegistryEntryMeta.ServerSide)registryEntryMeta).registryTypeMapper().constructorUsesHolder()) {
+            return;
+        }
+        CraftRegistry registry = (CraftRegistry)this.getRegistry(entry.apiKey());
+        registry.lockReferenceHolders();
     }
 }
 

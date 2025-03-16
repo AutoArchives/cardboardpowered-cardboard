@@ -2661,6 +2661,11 @@ public class CraftServer implements Server {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public void restart() {
+		// TODO Auto-generated method stub
+	}
     
     // public boolean isTickPaused() {
     //    return console.idleTickCount > 0 && console.idleTickCount >= console.getPauseWhenEmptySeconds() * 20;
