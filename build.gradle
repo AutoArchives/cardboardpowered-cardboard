@@ -118,7 +118,8 @@ dependencies {
 	// Paper-API libs
 	// compileOnly
 	// modImplementation("io.papermc.paper:paper-api:1.21.4-R0.1-20250118.134032-116")
-	modImplementation("io.papermc.paper:paper-api:1.21.4-R0.1-20250303.170158-184")
+	// modImplementation("io.papermc.paper:paper-api:1.21.4-R0.1-20250303.170158-184")
+	modImplementation("io.papermc.paper:paper-api:1.21.4-R0.1-20250313.115134-207")
 	modImplementation("net.md-5:bungeecord-chat:1.16-R0.4")
 	modImplementation("net.kyori:adventure-api:4.18.0")
 	modImplementation("net.kyori:adventure-text-serializer-gson:4.18.0")

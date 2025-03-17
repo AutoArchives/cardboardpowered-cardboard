@@ -2836,4 +2836,14 @@ public class PlayerImpl extends CraftHumanEntity implements Player {
         return new PaperPlayerGiveResult(leftovers.build(), drops.build());
 	}
 
+	@Override
+	public int getDeathScreenScore() {
+		return getHandle().getScore();
+	}
+
+	@Override
+	public void setDeathScreenScore(int score) {
+		getHandle().setScore(score);
+	}
+
 }
