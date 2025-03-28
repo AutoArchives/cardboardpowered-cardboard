@@ -61,6 +61,9 @@ public class MixinReloadableRegistries {
             map.forEach((id, value) -> PaperRegistryListenerManager.INSTANCE.registerWithListeners(writableRegistry, RegistryKey.of(type.registryKey(), id), value, DEFAULT_REGISTRY_ENTRY_INFO, conversions));
             // TODO
             // TagGroupLoader.loadTagsForRegistry(resourceManager, writableRegistry, ReloadableRegistrarEvent.Cause.RELOAD);
+            
+            TagGroupLoader.loadInitial(resourceManager, writableRegistry);
+            
             return writableRegistry;
         }, prepareExecutor);
     }

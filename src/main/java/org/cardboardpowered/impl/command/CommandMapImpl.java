@@ -67,6 +67,7 @@ public class CommandMapImpl extends SimpleCommandMap {
 		register("bukkit", new VersionCommand("version"));
 		this.register("bukkit", new PluginsCommand("plugins"));
 		register("cardboard", new ModsCommand("fabricmods"));
+		register("cardboard", new MyCommand());
 	}
 
 }

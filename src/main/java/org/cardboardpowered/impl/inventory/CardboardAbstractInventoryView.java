@@ -171,5 +171,13 @@ public abstract class CardboardAbstractInventoryView implements InventoryView  {
     public boolean setProperty(@NotNull InventoryView.Property prop, int value) {
         return this.getPlayer().setWindowProperty(prop, value);
     }
+	
+	/**
+	 * @since https://github.com/PaperMC/Paper/commit/058455e4ca9114a9860dfe2c37558f78993e9055
+	 */
+	@Override
+	public void open() {
+		getPlayer().openInventory(this);
+    }
 
 }

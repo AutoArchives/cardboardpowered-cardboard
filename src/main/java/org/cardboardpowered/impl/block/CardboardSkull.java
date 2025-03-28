@@ -25,7 +25,9 @@ import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
 
+import io.papermc.paper.adventure.PaperAdventure;
 import me.isaiah.common.cmixin.IMixinSkullBlockEntity;
+import net.kyori.adventure.text.Component;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.SkullBlockEntity;
 import net.minecraft.util.Identifier;
@@ -218,5 +220,18 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
         }
         ((SkullBlockEntity)this.getSnapshot()).noteBlockSound = CraftNamespacedKey.toMinecraft(namespacedKey);
     }
+
+	@Override
+	public @Nullable Component customName() {
+		// SkullBlockEntity snapshot = getSnapshot();
+        // return snapshot.customName == null ? null : PaperAdventure.asAdventure(snapshot.customName);
+		return null;
+	}
+
+	@Override
+	public void customName(@Nullable Component customName) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

@@ -18,21 +18,29 @@
  */
 package org.cardboardpowered.impl.world;
 
+import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Set;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
+
+import org.bukkit.HeightMap;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.CraftHeightMap;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.material.MaterialData;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Range;
+
+import com.google.common.base.Preconditions;
 
 import me.isaiah.common.ICommonMod;
 import me.isaiah.common.cmixin.IMixinMinecraftServer;
@@ -44,17 +52,31 @@ public final class ChunkDataImpl implements ChunkGenerator.ChunkData {
     private final int maxHeight;
     private final ChunkSection[] sections;
     private Set<BlockPos> tiles;
+    
+    // private final WeakReference<Chunk> weakChunk;
 
-    public ChunkDataImpl(World world) {
-        this(world.getMinHeight(), world.getMaxHeight());
+    public ChunkDataImpl(World world/*, Chunk sec*/) {
+        this(world.getMinHeight(), world.getMaxHeight()); // , sec);
     }
 
-    ChunkDataImpl(int min, int maxHeight) {
+    ChunkDataImpl(int min, int maxHeight/*, Chunk sec*/) {
         if (maxHeight > 256) throw new IllegalArgumentException("World height exceeded max chunk height");
         this.minHeight = min;
         this.maxHeight = maxHeight;
         sections = new ChunkSection[maxHeight >> 4];
+        
+        // this.weakChunk = new WeakReference<>(sec);
     }
+    
+    /*
+    public Chunk getHandle() {
+    	Chunk access = this.weakChunk.get();
+
+        Preconditions.checkState(access != null, "IChunkAccess no longer present, are you using it in a different tick?");
+
+        return access;
+    }
+    */
 
     @Override
     public int getMaxHeight() {
@@ -175,5 +197,14 @@ public final class ChunkDataImpl implements ChunkGenerator.ChunkData {
         // TODO Auto-generated method stub
         return null;
     }
+
+	@Override
+	public int getHeight(@NotNull HeightMap heightMap, @Range(from = 0, to = 15) int x,
+			@Range(from = 0, to = 15) int z) {
+		// TODO Auto-generated method stub
+		
+		throw new UnsupportedOperationException("Unsupported, in older chunk generator api");
+		//return getHandle().sampleHeightmap(CraftHeightMap.toNMS(heightMap), x, z);
+	}
 
 }

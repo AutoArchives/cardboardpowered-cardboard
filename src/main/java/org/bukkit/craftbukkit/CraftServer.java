@@ -181,6 +181,7 @@ import org.bukkit.scoreboard.Criteria;
 import org.bukkit.structure.StructureManager;
 import org.bukkit.util.StringUtil;
 import org.bukkit.util.permissions.DefaultPermissions;
+import org.cardboardpowered.RegistryUtil;
 import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.CardboardBossBar;
 import org.cardboardpowered.impl.CraftServerLinks;
@@ -445,6 +446,9 @@ public class CraftServer implements Server {
         
         // Register PotionEffectType
         BukkitFabricMod.registerPotionEffectType();
+        
+        // Register Registeries
+        RegistryUtil.inject_into_bukkit_registry(nms);
     }
     
     private void loadCompatibilities() {
@@ -802,6 +806,15 @@ public class CraftServer implements Server {
     public ChunkData createChunkData(World arg0) {
         return new ChunkDataImpl(arg0);
     }
+    
+    /*
+    @Override
+    public ChunkGenerator.ChunkData createChunkData(World world) {
+        Preconditions.checkArgument(world != null, "World cannot be null");
+        ServerWorld handle = ((WorldImpl) world).getHandle();
+        return new ChunkDataImpl(world.getMinHeight(), world.getMaxHeight(), handle.getRegistryManager().lookupOrThrow(Registries.BIOME), world);
+    }
+    */
 
     @Override
     public ItemStack createExplorerMap(World world, Location location, StructureType structureType) {

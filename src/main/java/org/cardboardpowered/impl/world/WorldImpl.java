@@ -1372,12 +1372,17 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 	public void removePluginChunkTickets(Plugin arg0) {
 		// TODO Auto-generated method stub
 	}
-
+	
 	@Override
 	public void save() {
+		save(false);
+	}
+
+	@Override
+	public void save(boolean flush) {
 		boolean oldSave = nms.savingDisabled;
 		nms.savingDisabled = false;
-		nms.save(null, false, false);
+		nms.save(null, flush, false);
 		nms.savingDisabled = oldSave;
 	}
 

@@ -39,8 +39,8 @@ repositories {
     maven { url = 'https://jitpack.io' }
     maven { url = 'https://repo.codemc.io/repository/maven-releases/' }
 	maven { url = 'https://repo.spongepowered.org/maven' }
-	maven { url = 'https://maven.izzel.io/releases' }
 	maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+	maven { url = 'https://maven.izzel.io/releases' }
     mavenCentral()
 }
 
@@ -48,6 +48,16 @@ configurations.all {
     // Check for updates every build
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
+
+// Paper-API
+def PAPER_VER_A = "1.21.4-R0.1-SNAPSHOT"
+// def PAPER_VER_B = "1.21.4-R0.1-20250313.115134-207"
+def PAPER_VER_B = "1.21.4-R0.1-20250327.133756-218"
+
+def PAPER_API_VER = "io.papermc.paper:paper-api:" + PAPER_VER_B
+
+// def jarUrl = String.format("%s%s/%s/%s/%s-%s.jar", url.toString(), dep.group.replace('.', '/'), dep.name, dep.version, dep.name, dep.version)
+// io/papermc/paper/paper-api/1.21.4-R0.1-SNAPSHOT/paper-api-1.21.4-R0.1-20250313.115134-207.jar
 
 dependencies {
     minecraft("com.mojang:minecraft:${project.minecraft_version}") {
@@ -119,7 +129,8 @@ dependencies {
 	// compileOnly
 	// modImplementation("io.papermc.paper:paper-api:1.21.4-R0.1-20250118.134032-116")
 	// modImplementation("io.papermc.paper:paper-api:1.21.4-R0.1-20250303.170158-184")
-	modImplementation("io.papermc.paper:paper-api:1.21.4-R0.1-20250313.115134-207")
+	// modImplementation("io.papermc.paper:paper-api:1.21.4-R0.1-20250313.115134-207")
+	modImplementation(PAPER_API_VER)
 	modImplementation("net.md-5:bungeecord-chat:1.16-R0.4")
 	modImplementation("net.kyori:adventure-api:4.18.0")
 	modImplementation("net.kyori:adventure-text-serializer-gson:4.18.0")
@@ -253,4 +264,66 @@ modrinth {
     uploadFile = remapJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
     gameVersions = ["1.21.4"] // Must be an array, even with only one version
     loaders = ["fabric"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
+}
+
+
+ext.getURLofDependencyArtifact = {
+	project.configurations.modImplementation.dependencies.each { dep ->
+		if (dep.name.contains('paper')) {
+			println(dep.name)
+			println(dep)
+			def urls = [
+				'https://repo.papermc.io/repository/maven-snapshots/',
+				'https://repo.codemc.io/repository/nms-local/',
+				'https://repo.codemc.io/repository/maven-releases/'
+			]
+
+			for (String url : urls) {
+				def jarUrl = String.format("%s%s/%s/%s/%s-%s.jar", url.toString(), dep.group.replace('.', '/'), dep.name, dep.version, dep.name, dep.version)
+				try {
+					def jarfile = new URL(jarUrl)
+					def inStream = jarfile.openStream();
+					if (inStream != null) {
+						println(String.format("%s:%s:%s", dep.group, dep.name, dep.version) + " -> " + jarUrl)
+						return jarUrl
+					}
+				} catch (Exception ignored) {
+				}
+			}
+		}
+	}
+}
+
+ext.downloadPaperFile = {
+    def fileURL = new URL("https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/" + PAPER_VER_A +"/paper-api-" + PAPER_VER_B + ".jar")
+    def localFile = file("repos/tempp/paper-api-" + PAPER_VER_B + ".jar")
+
+    localFile.getParentFile().mkdirs()
+    fileURL.withInputStream { i ->
+		localFile.withOutputStream { o ->
+			o << i
+		}
+    }
+}
+
+// Make sure paper-api on the repo is kept updated.
+publishing {
+	configurations.api.setCanBeResolved(true)
+	downloadPaperFile()
+    publications {
+        mavenJava(MavenPublication) {
+			groupId = 'io.papermc.paper'
+            artifactId = PAPER_VER_A
+			version = PAPER_VER_B
+			artifact file("repos/tempp/paper-api-" + PAPER_VER_B + ".jar")
+        }
+    }
+    repositories {
+        maven {
+            // change URLs to point to your repos, e.g. http://my.org/repo
+            def releasesRepoUrl = layout.buildDirectory.dir('repos/releases')
+            def snapshotsRepoUrl = layout.buildDirectory.dir('repos/snapshots')
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+        }
+    }
 }

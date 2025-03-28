@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -55,9 +56,14 @@ public final class LibraryManager {
 
     // private static final String PAPER_URL = "https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.20.1-R0.1-SNAPSHOT/paper-api-1.20.1-R0.1-20230921.165944-178.jar";
     // private static final String PAPER_URL = "https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.20.2-R0.1-SNAPSHOT/paper-api-1.20.2-R0.1-20231203.034718-122.jar";
-    private static final String PAPER_URL = "https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.20.3-R0.1-SNAPSHOT/paper-api-1.20.3-R0.1-20231207.043048-3.jar";
+    // private static final String PAPER_URL = "https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.20.3-R0.1-SNAPSHOT/paper-api-1.20.3-R0.1-20231207.043048-3.jar";
 
     private static final String PAPER_MAVEN = "https://repo.papermc.io/repository/maven-snapshots";
+
+    // Apparently, repo.papermc.io is not stable.
+    private static final String[] BACKUP = {
+    		"https://web.archive.org/web/20250328041701/https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.21.4-R0.1-SNAPSHOT/paper-api-1.21.4-R0.1-20250327.133756-218.jar"
+    };
     
     // private static final String PAPER_URL = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.18/paper-api-1.18.2-167.jar";
     // private static final String PAPER_URL_OLD = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.17/paper-api.jar";
@@ -153,9 +159,29 @@ public final class LibraryManager {
                     HttpsURLConnection connection = (HttpsURLConnection) downloadUrl.openConnection();
                     connection.setRequestProperty("User-Agent", "Mozilla/5.0 Chrome/90.0.4430.212");
 
-                    try (ReadableByteChannel input = Channels.newChannel(connection.getInputStream()); FileOutputStream output = new FileOutputStream(file)) {
+                    try (
+                    		ReadableByteChannel input = Channels.newChannel(connection.getInputStream());
+                    		FileOutputStream output = new FileOutputStream(file)
+                    	) {
                         output.getChannel().transferFrom(input, 0, Long.MAX_VALUE);
                         logger.info("Downloaded " + library.toString() + '.');
+                    } catch (FileNotFoundException ex) {
+
+                    	logger.info("Note: repo.papermc.io is misbehaving. Attempting backup URL..");
+
+                    	
+                    	for (String urll : BACKUP) {
+	                    	downloadUrl = new URL(urll);
+	                    	try (
+	                        		ReadableByteChannel input = Channels.newChannel(connection.getInputStream());
+	                        		FileOutputStream output = new FileOutputStream(file)
+	                        	) {
+	                            output.getChannel().transferFrom(input, 0, Long.MAX_VALUE);
+	                            logger.info("Downloaded " + library.toString() + '.');
+	                        } catch (FileNotFoundException ex2) {
+	                        	ex2.printStackTrace();
+	                        }
+                    	}
                     }
 
                     if (validateChecksum && library.checksumType != null && library.checksumValue != null && !checksum(file, library)) {

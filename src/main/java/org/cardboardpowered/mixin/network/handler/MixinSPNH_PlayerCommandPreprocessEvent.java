@@ -42,11 +42,46 @@ public abstract class MixinSPNH_PlayerCommandPreprocessEvent implements IMixinPl
 	/**
 	 * @reason PlayerCommandPreprocessEvent
 	 * @author Cardboard mod
+	 * @since 1.21.4
+	 */
+	@Overwrite
+	public void executeCommand(String command) {
+        String command1 = "/" + command;
+        //if (SpigotConfig.logCommands) {
+        	BukkitFabricMod.LOGGER.info(this.player.getNameForScoreboard() + " issued server command: " + command1);
+        //}
+        PlayerCommandPreprocessEvent event = new PlayerCommandPreprocessEvent(this.getPlayer(), command1, new LazyPlayerSet(CraftServer.server));
+        CraftServer.INSTANCE.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return;
+        }
+        command = event.getMessage().substring(1);
+        ParseResults<ServerCommandSource> parseresults = this.parse(command);
+        
+        if(CardboardConfig.REGISTRY_COMMAND_FIX) {
+			Bukkit.dispatchCommand(getPlayer(), command);
+			return;
+		}
+        
+        if (CraftServer.server.shouldEnforceSecureProfile() && SignedArgumentList.isNotEmpty(parseresults)) {
+        	// BukkitFabricMod.LOGGER.error("Received unsigned command packet from {}, but the command requires signable arguments: {}", (Object)this.player.getGameProfile().getName(), (Object)command);
+            // this.player.sendMessage(INVALID_COMMAND_SIGNATURE_TEXT);
+        } else {
+        	CraftServer.server.getCommandManager().execute(parseresults, command);
+        }
+    }
+	
+	/**
+	 * @reason PlayerCommandPreprocessEvent
+	 * @author Cardboard mod
 	 */
 	@SuppressWarnings("unused")
 	@Overwrite
 	// private void handleCommandExecution(CommandExecutionC2SPacket packet, LastSeenMessageList lastseenmessages) {
 	private void handleCommandExecution(ChatCommandSignedC2SPacket packet, LastSeenMessageList lastSeenMessages) {
+		
+		BukkitFabricMod.LOGGER.info("HANDLE COMMAND EXEC!");
+		
 		SignedMessage playerchatmessage;
 		String command = "/" + packet.command();
 		BukkitFabricMod.LOGGER.info(this.player.getGameProfile().getName() + " issued server command: " + command);
@@ -59,6 +94,7 @@ public abstract class MixinSPNH_PlayerCommandPreprocessEvent implements IMixinPl
 
 		command = event.getMessage().substring(1);
 
+		
 		if(CardboardConfig.REGISTRY_COMMAND_FIX) {
 			Bukkit.dispatchCommand(getPlayer(), command);
 			return;
