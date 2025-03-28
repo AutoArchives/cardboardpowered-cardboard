@@ -1,11 +1,5 @@
 package org.cardboardpowered.util.nms;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-
-import net.minecraft.server.world.ServerChunkManager;
-
 public class MappingGen {
 
 	/**
@@ -18,21 +12,5 @@ public class MappingGen {
 	reobf.tiny, bukkit.csrg, 1.20.6.tiny
 
 	 */
-	
-	public static void main(String[] args) {
-		Class<?> cll = ServerChunkManager.class;
-		
-		for (Method m : cll.getDeclaredMethods()) {
-			
-			String n = m.getName();
-			
-			if (n.contains("getChunkFuture")) {
 
-				
-				System.out.println( m.getGenericParameterTypes()[2].getTypeName() );
-			}
-		}
-		
-	}
-	
 }
