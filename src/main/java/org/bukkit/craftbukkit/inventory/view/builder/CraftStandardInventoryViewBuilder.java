@@ -6,7 +6,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.view.builder.InventoryViewBuilder;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 public class CraftStandardInventoryViewBuilder<V extends InventoryView> extends CraftAbstractInventoryViewBuilder<V> {
 

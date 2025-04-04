@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.recipe;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinRecipe;
+import org.cardboardpowered.interfaces.IMixinRecipe;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.BlastingRecipe;

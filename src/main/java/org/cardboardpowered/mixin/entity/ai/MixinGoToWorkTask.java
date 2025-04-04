@@ -2,11 +2,11 @@ package org.cardboardpowered.mixin.entity.ai;
 
 import net.minecraft.village.VillagerData;
 import org.bukkit.event.entity.VillagerCareerChangeEvent;
-import org.cardboardpowered.impl.entity.VillagerImpl;
+import org.cardboardpowered.impl.entity.CraftVillager;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.entity.ai.brain.task.UpdateJobSiteTask;
@@ -32,12 +32,12 @@ public class MixinGoToWorkTask {
             target = "Lnet/minecraft/entity/passive/VillagerEntity;setVillagerData(Lnet/minecraft/village/VillagerData;)V"), cancellable = true)
     private static void banner$jobChange(VillagerEntity villagerEntity, ServerWorld serverLevel, VillagerProfession profession, CallbackInfo ci) {
         // CraftBukkit start - Fire VillagerCareerChangeEvent where Villager gets employed
-        VillagerCareerChangeEvent event = BukkitEventFactory.callVillagerCareerChangeEvent(villagerEntity, VillagerImpl.nmsToBukkitProfession(profession), VillagerCareerChangeEvent.ChangeReason.EMPLOYED);
+        VillagerCareerChangeEvent event = CraftEventFactory.callVillagerCareerChangeEvent(villagerEntity, CraftVillager.nmsToBukkitProfession(profession), VillagerCareerChangeEvent.ChangeReason.EMPLOYED);
         if (event.isCancelled()) {
             ci.cancel();
         }
 
-        villagerEntity.setVillagerData(villagerEntity.getVillagerData().withProfession(VillagerImpl.bukkitToNmsProfession(event.getProfession())));
+        villagerEntity.setVillagerData(villagerEntity.getVillagerData().withProfession(CraftVillager.bukkitToNmsProfession(event.getProfession())));
         // CraftBukkit end
     }
     

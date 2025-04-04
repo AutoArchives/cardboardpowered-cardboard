@@ -5,7 +5,7 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.EntityType;
 
-public class CardboardBlaze extends MonsterImpl implements Blaze {
+public class CardboardBlaze extends CraftMonster implements Blaze {
 
     public CardboardBlaze(CraftServer server, BlazeEntity entity) {
         super(server, entity);

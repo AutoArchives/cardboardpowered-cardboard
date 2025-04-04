@@ -6,11 +6,11 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Tameable;
-import org.cardboardpowered.impl.entity.AnimalsImpl;
+import org.cardboardpowered.impl.entity.CraftAnimals;
 
 import me.isaiah.common.cmixin.IMixinTameableEntity;
 
-public class CraftTameableAnimal extends AnimalsImpl implements Tameable, Creature {
+public class CraftTameableAnimal extends CraftAnimals implements Tameable, Creature {
 
     public CraftTameableAnimal(CraftServer server, TameableEntity entity) {
         super(server, entity);

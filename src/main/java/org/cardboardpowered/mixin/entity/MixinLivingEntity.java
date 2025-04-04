@@ -1,9 +1,9 @@
 package org.cardboardpowered.mixin.entity;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinLivingEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinLivingEntity;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -23,7 +23,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -68,7 +68,7 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
 
             if (event.isCancelled()) {
                 ((Player)((IMixinServerEntityPlayer)((ServerPlayerEntity) get())).getBukkitEntity()).updateInventory();
-                ((PlayerImpl)((IMixinServerEntityPlayer)((ServerPlayerEntity) get())).getBukkitEntity()).updateScaledHealth();
+                ((CraftPlayer)((IMixinServerEntityPlayer)((ServerPlayerEntity) get())).getBukkitEntity()).updateScaledHealth();
                 PICE_canceled = true;
                 return null;
             }
@@ -101,7 +101,7 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
             this.dropEquipment((ServerWorld) world, damagesource, flag);
         }
 
-        BukkitEventFactory.callEntityDeathEvent(get(), damagesource, ((IMixinEntity)this).cardboard_getDrops());
+        CraftEventFactory.callEntityDeathEvent(get(), damagesource, ((IMixinEntity)this).cardboard_getDrops());
         ((IMixinEntity)this).cardboard_setDrops(new ArrayList<>());
         this.dropExperience(world, damagesource.getAttacker());
         ci.cancel();

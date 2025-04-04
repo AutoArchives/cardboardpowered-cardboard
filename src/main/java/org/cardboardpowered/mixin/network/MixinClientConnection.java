@@ -4,7 +4,7 @@ import java.net.SocketAddress;
 import java.util.UUID;
 
 import org.spongepowered.asm.mixin.Mixin;
-import com.javazilla.bukkitfabric.interfaces.IMixinClientConnection;
+import org.cardboardpowered.interfaces.IMixinClientConnection;
 import com.mojang.authlib.properties.Property;
 
 import net.minecraft.network.ClientConnection;

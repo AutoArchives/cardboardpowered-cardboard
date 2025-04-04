@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.stat.Stat;
@@ -40,7 +40,7 @@ public class MixinStatHandler {
     public void increaseStat(PlayerEntity player, Stat<?> statistic, int i) {
         int j = (int) Math.min((long) this.getStat(statistic) + (long) i, 2147483647L);
 
-        Cancellable cancellable = BukkitEventFactory.handleStatisticsIncrease(player, statistic, this.getStat(statistic), j);
+        Cancellable cancellable = CraftEventFactory.handleStatisticsIncrease(player, statistic, this.getStat(statistic), j);
         if (cancellable != null && cancellable.isCancelled()) return;
         this.setStat(player, statistic, j);
     }

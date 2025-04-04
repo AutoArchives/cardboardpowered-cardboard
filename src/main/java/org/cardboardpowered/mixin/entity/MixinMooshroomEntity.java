@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 import net.minecraft.entity.passive.MooshroomEntity;
 import net.minecraft.entity.passive.SheepEntity;
@@ -22,7 +22,7 @@ public class MixinMooshroomEntity {
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/passive/MooshroomEntity;sheared(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/sound/SoundCategory;Lnet/minecraft/item/ItemStack;)V"), method = "interactMob", cancellable = true)
     public void doBukkitEvent_PlayerShearEntityEvent(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> ci) {
         ItemStack itemstack = player.getStackInHand(hand);
-        if (!BukkitEventFactory.handlePlayerShearEntityEvent(player, (SheepEntity)(Object)this, itemstack, hand)) {
+        if (!CraftEventFactory.handlePlayerShearEntityEvent(player, (SheepEntity)(Object)this, itemstack, hand)) {
             ci.setReturnValue(ActionResult.PASS);
             return;
         }

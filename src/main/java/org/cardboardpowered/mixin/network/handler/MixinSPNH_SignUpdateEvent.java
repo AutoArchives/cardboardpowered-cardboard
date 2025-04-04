@@ -1,14 +1,13 @@
 package org.cardboardpowered.mixin.network.handler;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
-import com.javazilla.bukkitfabric.interfaces.IMixinSignBlockEntity;
+import org.cardboardpowered.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinSignBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.network.packet.c2s.play.UpdateSignC2SPacket;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.PlainTextContent.Literal;
 import net.minecraft.util.Formatting;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Player;

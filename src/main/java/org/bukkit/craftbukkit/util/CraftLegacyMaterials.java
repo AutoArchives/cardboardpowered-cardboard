@@ -14,7 +14,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.material.MaterialData;
 
 import com.google.common.base.Preconditions;
-import com.javazilla.bukkitfabric.BukkitFabricMod;
+import org.cardboardpowered.CardboardMod;
 import com.mojang.serialization.Dynamic;
 
 import net.minecraft.Bootstrap;
@@ -233,7 +233,7 @@ public class CraftLegacyMaterials {
     }
 
     static {
-        BukkitFabricMod.LOGGER.warning("Initializing Legacy Material Support. Unless you have legacy plugins and/or data this is a bug!");
+        CardboardMod.LOGGER.warning("Initializing Legacy Material Support. Unless you have legacy plugins and/or data this is a bug!");
         if (((CraftServer)Bukkit.getServer()).getServer() != null && ((CraftServer)Bukkit.getServer()).getServer().isDebugRunning())
             new Exception().printStackTrace();
 

@@ -2,7 +2,7 @@ package org.cardboardpowered.mixin.entity;
 
 import org.spongepowered.asm.mixin.Mixin;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinDamageSource;
+import org.cardboardpowered.interfaces.IMixinDamageSource;
 
 import net.minecraft.entity.damage.DamageSource;
 

@@ -2,10 +2,10 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinScreenHandler;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinScreenHandler;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.kyori.adventure.text.Component;
 import net.minecraft.block.BedBlock;
@@ -45,7 +45,7 @@ import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
 import org.cardboardpowered.impl.block.CardboardSign;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.inventory.CardboardDoubleChestInventory;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.impl.inventory.CardboardPlayerInventory;
@@ -98,10 +98,10 @@ import java.util.function.Consumer;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinScreenHandler;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinScreenHandler;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.kyori.adventure.text.Component;
@@ -131,7 +131,7 @@ import net.minecraft.util.math.BlockPos;
 public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
     public void openSign(Sign sign, Side side) {
-        CardboardSign.openSign(sign, (PlayerImpl)this, side);
+        CardboardSign.openSign(sign, (CraftPlayer)this, side);
     }
 	
     private CardboardPlayerInventory inventory;
@@ -348,7 +348,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
         Preconditions.checkArgument(windowType != null, "Unknown windowType");
         ScreenHandler container = new CraftContainer(inventory, this.getHandle(), ((IMixinServerEntityPlayer)player).nextContainerCounter());
 
-        container = BukkitEventFactory.callInventoryOpenEvent(player, container);
+        container = CraftEventFactory.callInventoryOpenEvent(player, container);
         if (container == null) return;
 
         String title = ((IMixinScreenHandler)container).getBukkitView().getTitle();
@@ -380,7 +380,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
         } else container = new CraftContainer(inventory, this.getHandle(), ((IMixinServerEntityPlayer)player).nextContainerCounter());
 
         // Trigger an INVENTORY_OPEN event
-        container = BukkitEventFactory.callInventoryOpenEvent(player, container);
+        container = CraftEventFactory.callInventoryOpenEvent(player, container);
         if (container == null)
             return;
 
@@ -445,7 +445,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
     public void setItemOnCursor(ItemStack item) {
         net.minecraft.item.ItemStack stack = CraftItemStack.asNMSCopy(item);
       //  getHandle().getInventory().setCursorStack(stack);
-      //  if (this instanceof PlayerImpl)
+      //  if (this instanceof CraftPlayer)
      //       ((ServerPlayerEntity) getHandle()).updateCursorStack();
     }
 
@@ -518,7 +518,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
         boolean b = perm.hasPermission(name);
         if (!b && FabricLoader.getInstance().isModLoaded("cyber-permissions")) {
             if (nms instanceof ServerPlayerEntity)
-                return org.cardboardpowered.impl.hooks.PermissionHook.hasPermission((ServerPlayerEntity) nms, name);
+                return org.cardboardpowered.util.PermissionHook.hasPermission((ServerPlayerEntity) nms, name);
         }
         return b;
     }
@@ -528,7 +528,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
         boolean b = this.perm.hasPermission(perm);
         if (!b && FabricLoader.getInstance().isModLoaded("cyber-permissions")) {
             if (nms instanceof ServerPlayerEntity)
-                return org.cardboardpowered.impl.hooks.PermissionHook.hasPermission((ServerPlayerEntity) nms, perm.getName());
+                return org.cardboardpowered.util.PermissionHook.hasPermission((ServerPlayerEntity) nms, perm.getName());
         }
         return b;
     }

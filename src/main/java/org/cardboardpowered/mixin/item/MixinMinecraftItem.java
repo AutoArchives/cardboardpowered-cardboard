@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.item;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.RailShape;
 import net.minecraft.entity.Entity;
@@ -42,7 +42,7 @@ public class MixinMinecraftItem {
                                     RailShape railShape, double d, Vec3d vec,
                                     AbstractMinecartEntity abstractMinecart, ServerWorld serverLevel) {
         // CraftBukkit start
-        if (BukkitEventFactory.callEntityPlaceEvent(useOnContext, abstractMinecart).isCancelled()) {
+        if (CraftEventFactory.callEntityPlaceEvent(useOnContext, abstractMinecart).isCancelled()) {
             cir.setReturnValue(ActionResult.FAIL);
         }
         // CraftBukkit end
@@ -73,7 +73,7 @@ public class MixinMinecraftItem {
                 if (itemStack.hasCustomName()) {
                     abstractMinecartEntity.setCustomName(itemStack.getName());
                 }
-                if (BukkitEventFactory.callEntityPlaceEvent(context, abstractMinecartEntity).isCancelled()) {
+                if (CraftEventFactory.callEntityPlaceEvent(context, abstractMinecartEntity).isCancelled()) {
                     return ActionResult.FAIL;
                 }
                 if (!world.spawnEntity(abstractMinecartEntity)) {

@@ -5,7 +5,7 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Silverfish;
 
-public class CardboardSilverfish extends MonsterImpl implements Silverfish {
+public class CardboardSilverfish extends CraftMonster implements Silverfish {
 
     public CardboardSilverfish(CraftServer server, SilverfishEntity entity) {
         super(server, entity);

@@ -14,9 +14,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.javazilla.bukkitfabric.BukkitFabricMod;
+import org.cardboardpowered.CardboardMod;
 import com.javazilla.bukkitfabric.Utils;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IMixinWorld;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.registry.RegistryKey;
@@ -60,7 +60,7 @@ public class MixinServerWorld extends MixinWorld implements IServerWorld {
     	) {
 		
 		if (CardboardConfig.DEBUG_OTHER) {
-			BukkitFabricMod.LOGGER.info("Debug: getting world uuid");
+			CardboardMod.LOGGER.info("Debug: getting world uuid");
 		}
 
         this.cardboard$session = convertable_conversionsession;

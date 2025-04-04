@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.inventory;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinScreenHandler;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinScreenHandler;
 
 import net.kyori.adventure.text.Component;
 
@@ -13,7 +13,7 @@ import net.minecraft.screen.*;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
 
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.inventory.CardboardAbstractInventoryView;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +22,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 
 public class CraftContainer extends ScreenHandler {
 
@@ -97,8 +97,8 @@ public class CraftContainer extends ScreenHandler {
         boolean typeChanged = (cachedType != view.getType());
         cachedType = view.getType();
         cachedTitle = view.getTitle();
-        if (view.getPlayer() instanceof PlayerImpl) {
-            PlayerImpl player = (PlayerImpl) view.getPlayer();
+        if (view.getPlayer() instanceof CraftPlayer) {
+            CraftPlayer player = (CraftPlayer) view.getPlayer();
             ScreenHandlerType<?> type = getNotchInventoryType(view.getTopInventory());
             net.minecraft.inventory.Inventory top = ((CraftInventory) view.getTopInventory()).getInventory();
             PlayerInventory bottom = (PlayerInventory) ((CraftInventory) view.getBottomInventory()).getInventory();

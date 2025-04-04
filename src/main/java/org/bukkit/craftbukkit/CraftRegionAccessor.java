@@ -1,8 +1,8 @@
 package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinWorld;
 
 // import io.papermc.paper.block.fluid.FluidData;
 // import io.papermc.paper.block.fluid.PaperFluidData;

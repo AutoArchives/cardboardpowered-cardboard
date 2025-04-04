@@ -9,8 +9,8 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.InventoryHolder;
 import org.spongepowered.asm.mixin.Mixin;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinInventory;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.interfaces.IMixinWorld;
 
 import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.block.entity.BlockEntity;

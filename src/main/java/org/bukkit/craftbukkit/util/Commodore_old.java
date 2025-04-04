@@ -15,7 +15,7 @@ import org.bukkit.craftbukkit.legacy.MaterialRerouting;
 import org.bukkit.craftbukkit.legacy.reroute.Reroute;
 import org.bukkit.craftbukkit.legacy.reroute.RerouteBuilder;
 import org.bukkit.plugin.AuthorNagException;
-import org.cardboardpowered.asm.SwitchTableFixer;
+import org.cardboardpowered.util.SwitchTableFixer;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;

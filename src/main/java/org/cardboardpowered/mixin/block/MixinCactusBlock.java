@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.block;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.CactusBlock;
 import net.minecraft.server.world.ServerWorld;
@@ -14,7 +14,7 @@ public class MixinCactusBlock {
 
     @Redirect(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Z"))
     private boolean blockGrow(ServerWorld instance, BlockPos blockPos, BlockState blockState) {
-        return BukkitEventFactory.handleBlockGrowEvent(instance, blockPos, blockState);
+        return CraftEventFactory.handleBlockGrowEvent(instance, blockPos, blockState);
     }
 }
 

@@ -3,7 +3,7 @@ package org.cardboardpowered.mixin.world;
 import org.bukkit.command.CommandSender;
 import org.spongepowered.asm.mixin.Mixin;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinCommandOutput;
+import org.cardboardpowered.interfaces.IMixinCommandOutput;
 
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.world.CommandBlockExecutor;

@@ -9,7 +9,7 @@ import org.bukkit.entity.Mob;
 import org.bukkit.entity.Vex;
 import org.jetbrains.annotations.Nullable;
 
-public class CardboardVex extends MonsterImpl implements Vex {
+public class CardboardVex extends CraftMonster implements Vex {
 
     public CardboardVex(CraftServer server, VexEntity entity) {
         super(server, entity);

@@ -74,7 +74,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.CardboardEnchantment;
 import org.cardboardpowered.impl.entity.CardboardCat;
-import org.cardboardpowered.impl.entity.VillagerImpl;
+import org.cardboardpowered.impl.entity.CraftVillager;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
@@ -95,8 +95,8 @@ public final class PaperRegistries {
 			RegistryEntry.entry(RegistryKeys.ITEM, RegistryKey.ITEM, ItemType.class, CraftItemType::new),
 			RegistryEntry.entry(RegistryKeys.CAT_VARIANT, RegistryKey.CAT_VARIANT, Cat.Type.class, CardboardCat.CraftType::new),
 			RegistryEntry.entry(RegistryKeys.FROG_VARIANT, RegistryKey.FROG_VARIANT, Frog.Variant.class, CraftFrog.CraftVariant::new),
-			RegistryEntry.entry(RegistryKeys.VILLAGER_PROFESSION, RegistryKey.VILLAGER_PROFESSION, Villager.Profession.class, VillagerImpl.CraftProfession::new),
-			RegistryEntry.entry(RegistryKeys.VILLAGER_TYPE, RegistryKey.VILLAGER_TYPE, Villager.Type.class, VillagerImpl.CraftType::new),
+			RegistryEntry.entry(RegistryKeys.VILLAGER_PROFESSION, RegistryKey.VILLAGER_PROFESSION, Villager.Profession.class, CraftVillager.CraftProfession::new),
+			RegistryEntry.entry(RegistryKeys.VILLAGER_TYPE, RegistryKey.VILLAGER_TYPE, Villager.Type.class, CraftVillager.CraftType::new),
 			RegistryEntry.entry(RegistryKeys.MAP_DECORATION_TYPE, RegistryKey.MAP_DECORATION_TYPE, MapCursor.Type.class, CraftMapCursor.CraftType::new),
 	        RegistryEntryBuilder.start(RegistryKeys.SCREEN_HANDLER, RegistryKey.MENU).craft(MenuType.class, CraftMenuType::new).build(),
 			RegistryEntryBuilder.start(RegistryKeys.STRUCTURE, RegistryKey.STRUCTURE).craft(Structure.class, CraftStructure::new).build().delayed(),
@@ -129,8 +129,8 @@ public final class PaperRegistries {
 	        RegistryEntryBuilder.start(RegistryKeys.ITEM, RegistryKey.ITEM).craft(ItemType.class, CraftItemType::new).build(),
 	        RegistryEntryBuilder.start(RegistryKeys.CAT_VARIANT, RegistryKey.CAT_VARIANT).craft(Cat.Type.class, CardboardCat.CraftType::new).build(),
 	        RegistryEntryBuilder.start(RegistryKeys.FROG_VARIANT, RegistryKey.FROG_VARIANT).craft(Frog.Variant.class, CraftFrog.CraftVariant::new).build(),
-	        RegistryEntryBuilder.start(RegistryKeys.VILLAGER_PROFESSION, RegistryKey.VILLAGER_PROFESSION).craft(Villager.Profession.class, VillagerImpl.CraftProfession::new).build(),
-	        RegistryEntryBuilder.start(RegistryKeys.VILLAGER_TYPE, RegistryKey.VILLAGER_TYPE).craft(Villager.Type.class, VillagerImpl.CraftType::new).build(),
+	        RegistryEntryBuilder.start(RegistryKeys.VILLAGER_PROFESSION, RegistryKey.VILLAGER_PROFESSION).craft(Villager.Profession.class, CraftVillager.CraftProfession::new).build(),
+	        RegistryEntryBuilder.start(RegistryKeys.VILLAGER_TYPE, RegistryKey.VILLAGER_TYPE).craft(Villager.Type.class, CraftVillager.CraftType::new).build(),
 	        RegistryEntryBuilder.start(RegistryKeys.MAP_DECORATION_TYPE, RegistryKey.MAP_DECORATION_TYPE).craft(MapCursor.Type.class, CraftMapCursor.CraftType::new).build(),
 	        RegistryEntryBuilder.start(RegistryKeys.SCREEN_HANDLER, RegistryKey.MENU).craft(MenuType.class, CraftMenuType::new).build(),
 	        

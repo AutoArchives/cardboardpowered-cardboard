@@ -5,7 +5,7 @@ import org.bukkit.block.DecoratedPot;
 import org.bukkit.inventory.DecoratedPotInventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinInventory;
+import org.cardboardpowered.interfaces.IMixinInventory;
 
 public class CraftInventoryDecoratedPot extends CraftInventory implements DecoratedPotInventory {
 

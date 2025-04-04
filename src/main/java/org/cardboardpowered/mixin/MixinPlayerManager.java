@@ -20,12 +20,12 @@ package org.cardboardpowered.mixin;
 
 //<<<<<<< HEAD
 import com.google.common.collect.Lists;
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinPlayNetworkHandler;
-import com.javazilla.bukkitfabric.interfaces.IMixinPlayerManager;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerLoginNetworkHandler;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
+import org.cardboardpowered.interfaces.IMixinPlayerManager;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinServerLoginNetworkHandler;
+import org.cardboardpowered.interfaces.IMixinWorld;
 import com.mojang.authlib.GameProfile;
 import me.isaiah.common.ICommonMod;
 import me.isaiah.common.cmixin.IMixinMinecraftServer;
@@ -74,7 +74,7 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerRespawnEvent.RespawnFlag;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.world.WorldImpl;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
@@ -184,16 +184,16 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         return player;
     }
 
-    @Unique private PlayerImpl plr;
+    @Unique private CraftPlayer plr;
 
     @Inject(method = "onPlayerConnect", at = @At("HEAD"))
     public void onConnect(ClientConnection connection, ServerPlayerEntity player, ConnectedClientData clientData, CallbackInfo ci) {
-        this.plr = (PlayerImpl) CraftServer.INSTANCE.getPlayer(player);
+        this.plr = (CraftPlayer) CraftServer.INSTANCE.getPlayer(player);
     }
 
     @Redirect(method = "onPlayerConnect", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;broadcast(Lnet/minecraft/text/Text;Z)V"))
     public void firePlayerJoinEvent(PlayerManager instance, Text message, boolean overlay) {
-        PlayerImpl plr;
+        CraftPlayer plr;
 
         if(this.plr == null) {
             instance.broadcast(message, overlay);
@@ -209,7 +209,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         String joinMessage = Formatting.YELLOW + Text.translatable(key, name).getString();
 
         PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(plr, joinMessage);
-        BukkitEventFactory.callEvent(playerJoinEvent);
+        CraftEventFactory.callEvent(playerJoinEvent);
         IMixinPlayNetworkHandler ims = (IMixinPlayNetworkHandler)plr.nms.networkHandler;
 
         if (!ims.cb_get_connection().isOpen()) {
@@ -291,7 +291,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
                 event.disallow(PlayerLoginEvent.Result.KICK_FULL, "Server is full");
         }
 
-        BukkitEventFactory.callEvent(event);
+        CraftEventFactory.callEvent(event);
         if (event.getResult() != PlayerLoginEvent.Result.ALLOWED) {
             nethand.disconnect(Text.of(event.getKickMessage()));
             return null;

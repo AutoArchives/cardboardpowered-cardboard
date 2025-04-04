@@ -8,9 +8,9 @@ import org.bukkit.entity.HumanEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import org.cardboardpowered.impl.entity.AbstractVillagerImpl;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinInventory;
+import org.cardboardpowered.impl.entity.CraftAbstractVillager;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinInventory;
 
 import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.entity.passive.VillagerEntity;
@@ -65,7 +65,7 @@ public class MixinTraderInventory implements IMixinInventory {
 
     @Override
     public org.bukkit.inventory.InventoryHolder getOwner() {
-        return (merchant instanceof MerchantEntity) ? (AbstractVillagerImpl) ((IMixinEntity)((MerchantEntity) this.merchant)).getBukkitEntity() : null;
+        return (merchant instanceof MerchantEntity) ? (CraftAbstractVillager) ((IMixinEntity)((MerchantEntity) this.merchant)).getBukkitEntity() : null;
     }
 
     @Override

@@ -1,6 +1,6 @@
 package org.bukkit.craftbukkit.scoreboard;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinPlayerManager;
+import org.cardboardpowered.interfaces.IMixinPlayerManager;
 import net.minecraft.network.packet.s2c.play.ScoreboardObjectiveUpdateS2CPacket;
 import net.minecraft.scoreboard.ScoreAccess;
 import net.minecraft.scoreboard.ScoreHolder;
@@ -14,7 +14,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import org.apache.commons.lang.Validate;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.ScoreboardManager;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.util.WeakCollection;
 
 import java.util.Collection;
@@ -29,7 +29,7 @@ public final class CardboardScoreboardManager implements ScoreboardManager {
     private final CardboardScoreboard mainScoreboard;
     private final MinecraftServer server;
     private final Collection<CardboardScoreboard> scoreboards = new WeakCollection<CardboardScoreboard>();
-    private final Map<PlayerImpl, CardboardScoreboard> playerBoards = new HashMap<PlayerImpl, CardboardScoreboard>();
+    private final Map<CraftPlayer, CardboardScoreboard> playerBoards = new HashMap<CraftPlayer, CardboardScoreboard>();
 
     public CardboardScoreboardManager(MinecraftServer minecraftserver, net.minecraft.scoreboard.Scoreboard scoreboardServer) {
         mainScoreboard = new CardboardScoreboard(scoreboardServer);
@@ -50,13 +50,13 @@ public final class CardboardScoreboardManager implements ScoreboardManager {
     }
 
     // CardboardBukkit method
-    public CardboardScoreboard getPlayerBoard(PlayerImpl player) {
+    public CardboardScoreboard getPlayerBoard(CraftPlayer player) {
         CardboardScoreboard board = playerBoards.get(player);
         return (CardboardScoreboard) (board == null ? getMainScoreboard() : board);
     }
 
     // CardboardBukkit method
-    public void setPlayerBoard(PlayerImpl player, org.bukkit.scoreboard.Scoreboard bukkitScoreboard) throws IllegalArgumentException {
+    public void setPlayerBoard(CraftPlayer player, org.bukkit.scoreboard.Scoreboard bukkitScoreboard) throws IllegalArgumentException {
         Validate.isTrue(bukkitScoreboard instanceof CardboardScoreboard, "Cannot set player scoreboard to an unregistered Scoreboard");
 
         CardboardScoreboard scoreboard = (CardboardScoreboard) bukkitScoreboard;

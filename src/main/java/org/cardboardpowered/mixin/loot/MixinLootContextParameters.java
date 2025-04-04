@@ -2,7 +2,7 @@ package org.cardboardpowered.mixin.loot;
 
 import org.spongepowered.asm.mixin.Mixin;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinLootContextParameters;
+import org.cardboardpowered.interfaces.IMixinLootContextParameters;
 
 import net.minecraft.loot.context.LootContextParameters;
 

@@ -62,7 +62,7 @@ import org.bukkit.potion.PotionType.InternalPotionData;
 import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.CardboardModdedBlock;
 import org.cardboardpowered.impl.CardboardModdedItem;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.util.GameVersion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -72,10 +72,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.javazilla.bukkitfabric.BukkitFabricMod;
-import com.javazilla.bukkitfabric.BukkitLogger;
-import com.javazilla.bukkitfabric.interfaces.IMixinMaterial;
-import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.CardboardMod;
+import org.cardboardpowered.BukkitLogger;
+import org.cardboardpowered.interfaces.IMixinMaterial;
+import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
@@ -271,7 +271,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     public static void test() {
         // TODO: This needs to be kept updated when Spigot updates
         // It is the value of Material.values().length
-    	BukkitFabricMod.LOGGER.info("DEB: " + Material.values().length);
+    	CardboardMod.LOGGER.info("DEB: " + Material.values().length);
         int MATERIAL_LENGTH = 1837; //1525;
         int i = MATERIAL_LENGTH - 1;
 
@@ -302,7 +302,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
             if (null == material && !names.contains(name)) {
                 material = EnumHelper.makeEnum(Material.class, name, i, MAT_CTOR, ImmutableList.of(i));
                 if (!has_mixin_interface(material)) {
-                    BukkitFabricMod.LOGGER.warning("Material not instanceof IMixinMaterial");
+                    CardboardMod.LOGGER.warning("Material not instanceof IMixinMaterial");
                     return;
                 }
 
@@ -313,7 +313,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
                 MODDED_MATERIALS.put(name, material);
                 
                 if (!(lastMod.equalsIgnoreCase(id.namespace)))
-                    BukkitFabricMod.LOGGER.info("Registering modded blocks from mod '" + (lastMod = id.namespace) + "'..");
+                    CardboardMod.LOGGER.info("Registering modded blocks from mod '" + (lastMod = id.namespace) + "'..");
             }
             Material m = Material.getMaterial(nam);
             BLOCK_MATERIAL.put(block, m);
@@ -343,7 +343,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
             if (null == material && !names.contains(name)) {
                 material = EnumHelper.makeEnum(Material.class, name, i, MAT_CTOR, ImmutableList.of(i));
                 if (!has_mixin_interface(material)) {
-                    BukkitFabricMod.LOGGER.warning("Material not instanceof IMixinMaterial");
+                    CardboardMod.LOGGER.warning("Material not instanceof IMixinMaterial");
                     return;
                 }
 
@@ -354,7 +354,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
                 MODDED_MATERIALS.put(name, material);
 
                 if (!(lastMod.equalsIgnoreCase(id.namespace)))
-                    BukkitFabricMod.LOGGER.info("Registering modded items from mod '" + (lastMod = id.namespace) + "'..");
+                    CardboardMod.LOGGER.info("Registering modded items from mod '" + (lastMod = id.namespace) + "'..");
             }
             Material m = Material.getMaterial(nam);
             ITEM_MATERIAL.put(item, m);
@@ -937,9 +937,9 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         List<Text> lines = CraftItemStack.asNMSCopy(itemStack).getTooltip(
         		Item.TooltipContext.create(
         			player == null ? CraftServer.server.getRegistryManager() :
-        						((PlayerImpl)player).getHandle().getWorld().getRegistryManager()
+        						((CraftPlayer)player).getHandle().getWorld().getRegistryManager()
         		),
-        		player == null ? null : ((PlayerImpl)player).getHandle(), default_type
+        		player == null ? null : ((CraftPlayer)player).getHandle(), default_type
         );
         return lines.stream().map(CardboardAdventure::asAdventure).toList();
     }

@@ -28,21 +28,18 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
-import com.javazilla.bukkitfabric.BukkitFabricMod;
-import com.javazilla.bukkitfabric.BukkitLogger;
+import org.cardboardpowered.BukkitLogger;
 import com.javazilla.bukkitfabric.Utils;
-import com.javazilla.bukkitfabric.impl.MetaDataStoreBase;
-import com.javazilla.bukkitfabric.impl.MetadataStoreImpl;
-import com.javazilla.bukkitfabric.impl.scheduler.BukkitSchedulerImpl;
-import com.javazilla.bukkitfabric.interfaces.IMixinAdvancement;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinMapState;
-import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
-import com.javazilla.bukkitfabric.interfaces.IMixinRecipe;
-import com.javazilla.bukkitfabric.interfaces.IMixinRecipeManager;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
-import com.javazilla.bukkitfabric.interfaces.IUserCache;
+import org.cardboardpowered.impl.MetadataStoreImpl;
+import org.bukkit.craftbukkit.scheduler.CraftScheduler;
+import org.cardboardpowered.interfaces.IMixinAdvancement;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.interfaces.IMixinRecipe;
+import org.cardboardpowered.interfaces.IMixinRecipeManager;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IUserCache;
 import com.mohistmc.banner.bukkit.nms.utils.RemapUtils;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.StringReader;
@@ -71,8 +68,6 @@ import net.minecraft.entity.boss.CommandBossBar;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.inventory.CraftingResultInventory;
-import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -86,10 +81,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
-import net.minecraft.resource.DataPackSettings;
-import net.minecraft.resource.ResourcePackManager;
 import net.minecraft.resource.featuretoggle.FeatureSet;
-import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.BannedIpEntry;
@@ -191,7 +183,7 @@ import org.cardboardpowered.impl.command.BukkitCommandWrapper;
 import org.cardboardpowered.impl.command.CardboardConsoleCommandSender;
 import org.cardboardpowered.impl.command.CommandMapImpl;
 import org.cardboardpowered.impl.command.MinecraftCommandWrapper;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.impl.inventory.InventoryCreator;
 import org.cardboardpowered.impl.inventory.recipe.CardboardBlastingRecipe;
@@ -216,6 +208,7 @@ import org.cardboardpowered.impl.util.SimpleHelpMap;
 import org.cardboardpowered.impl.world.ChunkDataImpl;
 import org.cardboardpowered.impl.world.WorldImpl;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.cardboardpowered.interfaces.IMixinMapState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spigotmc.SpigotConfig;
@@ -245,112 +238,9 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.destroystokyo.paper.entity.ai.MobGoals;
-import com.destroystokyo.paper.profile.CraftPlayerProfile;
-import com.google.common.base.Charsets;
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
-import com.google.common.collect.MapMaker;
-import com.google.common.collect.Sets;
-import com.javazilla.bukkitfabric.BukkitLogger;
-import com.javazilla.bukkitfabric.PaperMetrics;
-import com.javazilla.bukkitfabric.Utils;
-import com.javazilla.bukkitfabric.impl.MetaDataStoreBase;
-import com.javazilla.bukkitfabric.impl.MetadataStoreImpl;
-import com.javazilla.bukkitfabric.impl.scheduler.BukkitSchedulerImpl;
-import com.javazilla.bukkitfabric.interfaces.IMixinAdvancement;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinMapState;
-import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
-import com.javazilla.bukkitfabric.interfaces.IMixinRecipe;
-import com.javazilla.bukkitfabric.interfaces.IMixinRecipeManager;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
-import com.javazilla.bukkitfabric.interfaces.IUserCache;
-import com.mohistmc.banner.bukkit.nms.utils.RemapUtils;
-import com.mojang.authlib.GameProfile;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.tree.CommandNode;
-import com.mojang.brigadier.tree.LiteralCommandNode;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.Lifecycle;
-
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
-import io.netty.buffer.Unpooled;
-import io.papermc.paper.datapack.DatapackManager;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.Component;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.minecraft.block.Block;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.boss.CommandBossBar;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.item.FilledMapItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.item.map.MapState;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
-import net.minecraft.recipe.CraftingRecipe;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.resource.DataPackSettings;
-import net.minecraft.resource.ResourcePackManager;
-import net.minecraft.resource.featuretoggle.FeatureSet;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.BannedIpEntry;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.CommandManager.RegistrationEnvironment;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.dedicated.MinecraftDedicatedServer;
-import net.minecraft.server.dedicated.PendingServerCommand;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.registry.tag.EntityTypeTags;
-import net.minecraft.registry.tag.FluidTags;
-import net.minecraft.registry.tag.ItemTags;
-//import net.minecraft.tag.TagGroup;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.registry.DefaultedRegistry;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.SimpleRegistry;
-import net.minecraft.village.ZombieSiegeManager;
-import net.minecraft.world.Difficulty;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.PlayerSaveHandler;
-import net.minecraft.world.WanderingTraderManager;
-import net.minecraft.world.biome.source.BiomeAccess;
-import net.minecraft.world.dimension.DimensionOptions;
-import net.minecraft.world.dimension.DimensionType;
-import net.minecraft.world.event.GameEvent;
-//import net.minecraft.world.gen.CatSpawner;
-import net.minecraft.world.gen.GeneratorOptions;
-//import net.minecraft.world.gen.PhantomSpawner;
-//import net.minecraft.world.gen.PillagerSpawner;
-//import net.minecraft.world.gen.Spawner;
-import net.minecraft.world.level.LevelInfo;
-import net.minecraft.world.level.LevelProperties;
-import net.minecraft.world.level.storage.LevelStorage;
-//import io.papermc.paper.plugin.manager.PaperPluginManagerImpl;
 
 
 @SuppressWarnings("deprecation")
@@ -373,14 +263,14 @@ public class CraftServer implements Server {
     
     private final CraftMagicNumbers unsafe = (CraftMagicNumbers) CraftMagicNumbers.INSTANCE;
     private final ServicesManager servicesManager = new SimpleServicesManager();
-    private final BukkitSchedulerImpl scheduler = new BukkitSchedulerImpl();
+    private final CraftScheduler scheduler = new CraftScheduler();
     private final ConsoleCommandSender consoleCommandSender = new CardboardConsoleCommandSender();
     private final Map<UUID, OfflinePlayer> offlinePlayers = new MapMaker().weakValues().makeMap();
 
-    // public final List<PlayerImpl> playerView;
+    // public final List<CraftPlayer> playerView;
     // public final Map<String, World> worlds = new LinkedHashMap<>();
 
-    public List<PlayerImpl> playerView;
+    public List<CraftPlayer> playerView;
     private WarningState warningState = WarningState.DEFAULT;
     public final Map<String, World> worlds = new LinkedHashMap<String, World>();
 
@@ -397,8 +287,8 @@ public class CraftServer implements Server {
     public CardboardScoreboardManager scoreboardManager;
 
     private final MetadataStoreBase<Entity> entityMetadata = MetadataStoreImpl.newEntityMetadataStore();
-    private final MetaDataStoreBase<OfflinePlayer> playerMetadata = MetadataStoreImpl.newPlayerMetadataStore();
-    private final MetaDataStoreBase<World> worldMetadata = MetadataStoreImpl.newWorldMetadataStore();
+    private final MetadataStoreBase<OfflinePlayer> playerMetadata = MetadataStoreImpl.newPlayerMetadataStore();
+    private final MetadataStoreBase<World> worldMetadata = MetadataStoreImpl.newWorldMetadataStore();
     
     private final Map<Class<?>, org.bukkit.Registry<?>> registries = new HashMap<>();
 
@@ -426,9 +316,9 @@ public class CraftServer implements Server {
         configuration.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(getClass().getClassLoader().getResourceAsStream("configurations/bukkit.yml"), Charsets.UTF_8)));
         saveConfig();
 
-        this.playerView = Collections.unmodifiableList(Lists.transform(server.playerManager.players, new Function<ServerPlayerEntity, PlayerImpl>() {
+        this.playerView = Collections.unmodifiableList(Lists.transform(server.playerManager.players, new Function<ServerPlayerEntity, CraftPlayer>() {
             @Override
-            public PlayerImpl apply(ServerPlayerEntity player) {
+            public CraftPlayer apply(ServerPlayerEntity player) {
                 return ((IMixinServerEntityPlayer)player).getBukkit();
             }
         }));
@@ -445,7 +335,7 @@ public class CraftServer implements Server {
         this.playerList = server.getPlayerManager();
         
         // Register PotionEffectType
-        BukkitFabricMod.registerPotionEffectType();
+        // CardboardMod.registerPotionEffectType();
         
         // Register Registeries
         RegistryUtil.inject_into_bukkit_registry(nms);
@@ -1341,9 +1231,9 @@ public class CraftServer implements Server {
     @Override
     public Collection<? extends Player> getOnlinePlayers() {
         //return this.playerView;
-        this.playerView = Collections.unmodifiableList(Lists.transform(server.playerManager.players, new Function<ServerPlayerEntity, PlayerImpl>() {
+        this.playerView = Collections.unmodifiableList(Lists.transform(server.playerManager.players, new Function<ServerPlayerEntity, CraftPlayer>() {
             @Override
-            public PlayerImpl apply(ServerPlayerEntity player) {
+            public CraftPlayer apply(ServerPlayerEntity player) {
                 return ((IMixinServerEntityPlayer)player).getBukkit();
             }
         }));
@@ -1413,7 +1303,7 @@ public class CraftServer implements Server {
     }
 
     @Override
-    public BukkitSchedulerImpl getScheduler() {
+    public CraftScheduler getScheduler() {
         return scheduler;
     }
 
@@ -2069,7 +1959,7 @@ public class CraftServer implements Server {
     @Override
     public com.destroystokyo.paper.profile.PlayerProfile createProfile(UUID uuid, String name) {
         Player player = uuid != null ? Bukkit.getPlayer(uuid) : (name != null ? Bukkit.getPlayerExact(name) : null);
-        return (player != null) ? new CraftPlayerProfile((PlayerImpl) player) : new CraftPlayerProfile(uuid, name);
+        return (player != null) ? new CraftPlayerProfile((CraftPlayer) player) : new CraftPlayerProfile(uuid, name);
     }
 
 
@@ -2549,7 +2439,7 @@ public class CraftServer implements Server {
     public ItemCraftResult craftItemResult(ItemStack[] craftingMatrix, World world, Player player) {
         /*
 		WorldImpl craftWorld = (WorldImpl)world;
-        PlayerImpl craftPlayer = (PlayerImpl)player;
+        CraftPlayer craftPlayer = (CraftPlayer)player;
         CraftingScreenHandler container = new CraftingScreenHandler(-1, craftPlayer.getHandle().getInventory());
         CraftingInventory inventoryCrafting = container.craftSlots;
         CraftingResultInventory craftResult = container.result;

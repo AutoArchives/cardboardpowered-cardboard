@@ -1,12 +1,10 @@
 package org.cardboardpowered.impl.command;
 
 import com.google.common.collect.ImmutableList;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.cardboardpowered.CardboardConfig;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 

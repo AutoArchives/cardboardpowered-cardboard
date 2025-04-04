@@ -17,7 +17,7 @@ public class MixinCrossbowItem {
     /*
     @Inject(method = "shoot", cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;damage(ILnet/minecraft/entity/LivingEntity;Ljava/util/function/Consumer;)V"))
     private static void bukkitShoot(World world, LivingEntity shooter, Hand hand, ItemStack crossbow, ItemStack projectile, float soundPitch, boolean creative, float speed, float divergence, float simulated, CallbackInfo ci, boolean bl, ProjectileEntity projectileEntity) {
-        EntityShootBowEvent event = BukkitEventFactory.callEntityShootBowEvent(shooter, crossbow, projectile, projectileEntity, shooter.getActiveHand(), soundPitch, true);
+        EntityShootBowEvent event = CraftEventFactory.callEntityShootBowEvent(shooter, crossbow, projectile, projectileEntity, shooter.getActiveHand(), soundPitch, true);
         if (event.isCancelled()) {
             event.getProjectile().remove();
             ci.cancel();

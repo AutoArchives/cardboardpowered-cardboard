@@ -48,7 +48,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
-import com.javazilla.bukkitfabric.BukkitFabricMod;
+import org.cardboardpowered.CardboardMod;
 
 import io.papermc.paper.plugin.PermissionManager;
 import io.papermc.paper.plugin.configuration.PluginMeta;
@@ -100,7 +100,7 @@ public class MixinSimplePluginManager {
 				return;
 			}
 
-			BukkitFabricMod.LOGGER.info("debug: callEvent: " + event.getEventName());
+			CardboardMod.LOGGER.info("debug: callEvent: " + event.getEventName());
 		}
 	}
 

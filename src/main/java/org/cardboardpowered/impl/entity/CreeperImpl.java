@@ -2,7 +2,7 @@ package org.cardboardpowered.impl.entity;
 
 import com.google.common.base.Preconditions;
 import org.cardboardpowered.interfaces.ICreeperEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinEntity;
 
 import net.minecraft.entity.mob.CreeperEntity;
 
@@ -15,7 +15,7 @@ import org.bukkit.event.entity.CreeperPowerEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class CreeperImpl extends MonsterImpl implements Creeper {
+public class CreeperImpl extends CraftMonster implements Creeper {
 
     public CreeperImpl(CraftServer server, CreeperEntity entity) {
         super(server, entity);

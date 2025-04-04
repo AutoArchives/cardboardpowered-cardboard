@@ -1,8 +1,9 @@
 package org.cardboardpowered.mixin.network;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinDataTracker;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
+
+import org.cardboardpowered.interfaces.IMixinDataTracker;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 

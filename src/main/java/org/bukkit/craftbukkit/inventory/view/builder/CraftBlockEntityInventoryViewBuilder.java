@@ -13,7 +13,7 @@ import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.view.builder.LocationInventoryViewBuilder;
 import org.jspecify.annotations.Nullable;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 public class CraftBlockEntityInventoryViewBuilder<V extends InventoryView> extends CraftAbstractLocationInventoryViewBuilder<V> {
 

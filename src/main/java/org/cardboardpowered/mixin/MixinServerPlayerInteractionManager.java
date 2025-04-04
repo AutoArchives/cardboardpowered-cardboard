@@ -14,9 +14,9 @@
  */
 package org.cardboardpowered.mixin;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerPlayerInteractionManager;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinServerPlayerInteractionManager;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.block.BlockState;
@@ -49,7 +49,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -84,7 +84,7 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
             method = "processBlockBreakingAction", cancellable = true)
     public void processBlockBreakkingAction_cb1(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, int sequence, CallbackInfo ci) {
     	cb_stat = 0;
-    	PlayerInteractEvent event = BukkitEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_BLOCK, pos, direction, this.player.getInventory().getMainHandStack(), Hand.MAIN_HAND);
+    	PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_BLOCK, pos, direction, this.player.getInventory().getMainHandStack(), Hand.MAIN_HAND);
         this.cb_ev = event;
     	// System.out.println("PlayerInteractEvent! " + pos.toString());
         if (event.isCancelled()) {
@@ -120,7 +120,7 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
                 }
                 return;
             }
-            BlockDamageEvent blockEvent = BukkitEventFactory.callBlockDamageEvent(this.player, cb_pos.getX(), cb_pos.getY(), cb_pos.getZ(), this.player.getInventory().getMainHandStack(), cb_f2 >= 1.0f);
+            BlockDamageEvent blockEvent = CraftEventFactory.callBlockDamageEvent(this.player, cb_pos.getX(), cb_pos.getY(), cb_pos.getZ(), this.player.getInventory().getMainHandStack(), cb_f2 >= 1.0f);
             if (blockEvent.isCancelled()) {
                 this.player.networkHandler.sendPacket(new BlockUpdateS2CPacket(this.world, cb_pos));
                 ci.cancel();
@@ -155,7 +155,7 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
     @SuppressWarnings("unused")
 	private void block_damage_abort_event(ServerPlayerInteractionManager instance, BlockPos pos, boolean success, int sequence, String reason) {
     	// TODO: Update our Paper-API
-    	// BukkitEventFactory.callBlockDamageAbortEvent(this.player, pos, this.player.getInventory().getMainHandStack());
+    	// CraftEventFactory.callBlockDamageAbortEvent(this.player, pos, this.player.getInventory().getMainHandStack());
     	// instance.method_41250(pos, success, sequence, reason);
     }
 
@@ -239,7 +239,7 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
         if (entityplayer.getItemCooldownManager().isCoolingDown(itemstack))
             cancelledBlock = true;
 
-        PlayerInteractEvent event = BukkitEventFactory.callPlayerInteractEvent(entityplayer, Action.RIGHT_CLICK_BLOCK, blockposition, movingobjectpositionblock.getSide(), itemstack, cancelledBlock, enumhand);
+        PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(entityplayer, Action.RIGHT_CLICK_BLOCK, blockposition, movingobjectpositionblock.getSide(), itemstack, cancelledBlock, enumhand);
         firedInteract = true;
         interactResult = event.useItemInHand() == Event.Result.DENY;
 
@@ -249,9 +249,9 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
                 boolean bottom = iblockdata.get(DoorBlock.HALF) == DoubleBlockHalf.LOWER;
                 entityplayer.networkHandler.sendPacket(new BlockUpdateS2CPacket(world, bottom ? blockposition.up() : blockposition.down()));
             } else if (iblockdata.getBlock() instanceof CakeBlock) {
-                // TODO ((PlayerImpl)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).sendHealthUpdate();
+                // TODO ((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).sendHealthUpdate();
             }
-            ((PlayerImpl)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).updateInventory();
+            ((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).updateInventory();
             enuminteractionresult = (event.useItemInHand() != Event.Result.ALLOW) ? ActionResult.SUCCESS : ActionResult.PASS;
         } else if (this.gameMode == GameMode.SPECTATOR) {
             NamedScreenHandlerFactory itileinventory = iblockdata.createScreenHandlerFactory(world, blockposition);

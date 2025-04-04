@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.block;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import net.minecraft.block.BellBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.world.ServerWorld;
@@ -18,7 +18,7 @@ public class MixinBellBlock {
     @Inject(method = "ring(Lnet/minecraft/entity/Entity;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;)Z",
             cancellable = true, at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/BellBlockEntity;activate(Lnet/minecraft/util/math/Direction;)V"))
     private void bellRing(Entity entity, World world, BlockPos pos, Direction direction, CallbackInfoReturnable<Boolean> cir) {
-        if (!BukkitEventFactory.handleBellRingEvent((ServerWorld) world, pos, direction, entity)) {
+        if (!CraftEventFactory.handleBellRingEvent((ServerWorld) world, pos, direction, entity)) {
             cir.setReturnValue(false);
         }
     }

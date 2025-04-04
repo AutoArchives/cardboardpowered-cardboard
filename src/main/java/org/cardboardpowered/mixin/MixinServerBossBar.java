@@ -1,9 +1,8 @@
 package org.cardboardpowered.mixin;
 
+import org.cardboardpowered.interfaces.IMixinServerBossBar;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-
-import com.javazilla.bukkitfabric.interfaces.IMixinServerBossBar;
 
 import net.minecraft.entity.boss.ServerBossBar;
 

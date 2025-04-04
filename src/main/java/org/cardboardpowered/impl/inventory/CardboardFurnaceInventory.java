@@ -7,7 +7,7 @@ import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinInventory;
+import org.cardboardpowered.interfaces.IMixinInventory;
 
 public class CardboardFurnaceInventory extends CraftInventory implements FurnaceInventory {
 

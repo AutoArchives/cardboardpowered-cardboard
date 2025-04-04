@@ -4,7 +4,7 @@ import net.minecraft.entity.mob.FlyingEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Flying;
 
-public class CardboardFlyingEntity extends MobImpl implements Flying {
+public class CardboardFlyingEntity extends CraftMob implements Flying {
 
     public CardboardFlyingEntity(CraftServer server, FlyingEntity entity) {
         super(server, entity);

@@ -3,7 +3,7 @@ package org.cardboardpowered.impl.entity;
 import com.destroystokyo.paper.entity.Pathfinder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinEntity;
 
 import java.util.Set;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;

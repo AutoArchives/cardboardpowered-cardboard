@@ -1,8 +1,8 @@
 package org.cardboardpowered.mixin.network;
 
-import com.javazilla.bukkitfabric.BukkitFabricMod;
-import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.CardboardMod;
+import org.cardboardpowered.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SentMessage;
 import net.minecraft.network.message.SignedMessage;
@@ -17,7 +17,7 @@ import org.bukkit.craftbukkit.util.Waitable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerChatEvent;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.util.LazyPlayerSet;
 import org.cardboardpowered.impl.util.WaitableImpl;
 import org.spongepowered.asm.mixin.Final;
@@ -45,14 +45,14 @@ public class MixinPlayerManager_ChatEvent {
     private MinecraftServer server;
     
     
-    public PlayerImpl getPlayer_0(ServerPlayerEntity e) {
-        return (PlayerImpl) ((IMixinServerEntityPlayer)(Object)e).getBukkitEntity();
+    public CraftPlayer getPlayer_0(ServerPlayerEntity e) {
+        return (CraftPlayer) ((IMixinServerEntityPlayer)(Object)e).getBukkitEntity();
     }
     
     @Inject(method = "broadcast(Lnet/minecraft/network/message/SignedMessage;Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/network/message/MessageType$Parameters;)V", at = @At("HEAD"), cancellable = true)
 	private void onSendChatMessage(SignedMessage message, ServerPlayerEntity sender, MessageType.Parameters params, CallbackInfo ci) {
     	
-		 // BukkitFabricMod.LOGGER.info("onSendChatMessage: " + message.getContent().getString());
+		 // CardboardMod.LOGGER.info("onSendChatMessage: " + message.getContent().getString());
 	}
     
     //     private void broadcast(SignedMessage message, Predicate<ServerPlayerEntity> shouldSendFiltered, @Nullable ServerPlayerEntity sender, MessageType.Parameters params) {
@@ -64,7 +64,7 @@ public class MixinPlayerManager_ChatEvent {
      */
     @Overwrite
     public void broadcast(SignedMessage message, Predicate<ServerPlayerEntity> shouldSendFiltered, ServerPlayerEntity sender/*, MessageSourceProfile sourceProfile*/, MessageType.Parameters params) {
-        BukkitFabricMod.LOGGER.info("BROADCAST DEBUG: " + message.getContent().getString());
+        CardboardMod.LOGGER.info("BROADCAST DEBUG: " + message.getContent().getString());
         
     	boolean bl = this.verify(message);
         this.server.logChatMessage(message.getContent(), params, null);
@@ -89,7 +89,7 @@ public class MixinPlayerManager_ChatEvent {
         AsyncPlayerChatEvent event = new AsyncPlayerChatEvent(async, player, s, new LazyPlayerSet(CraftServer.server));
         Bukkit.getServer().getPluginManager().callEvent(event);
 
-        BukkitFabricMod.LOGGER.info("Reg: " + PlayerChatEvent.getHandlerList().getRegisteredListeners().length);
+        CardboardMod.LOGGER.info("Reg: " + PlayerChatEvent.getHandlerList().getRegisteredListeners().length);
         if (PlayerChatEvent.getHandlerList().getRegisteredListeners().length != 0) {
             // Evil plugins still listening to deprecated event
             final PlayerChatEvent queueEvent = new PlayerChatEvent(player, event.getMessage(), event.getFormat(), event.getRecipients());

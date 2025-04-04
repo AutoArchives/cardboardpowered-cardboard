@@ -1,7 +1,7 @@
 package io.papermc.paper.registry;
 
 import com.google.common.base.Preconditions;
-import com.javazilla.bukkitfabric.BukkitFabricMod;
+import org.cardboardpowered.CardboardMod;
 import com.mojang.serialization.Lifecycle;
 import io.papermc.paper.plugin.bootstrap.BootstrapContext;
 // import io.papermc.paper.plugin.entrypoint.Entrypoint;
@@ -190,7 +190,7 @@ public class PaperRegistryListenerManager {
             throw new IllegalArgumentException(String.valueOf(type.registryKey()) + " does not support RegistryFreezeEvent");
         }
   
-        BukkitFabricMod.LOGGER.info("Debug: Crap.");
+        CardboardMod.LOGGER.info("Debug: Crap.");
         return null;
         // return this.freezeEventTypes.getOrCreate(type.registryKey(), RegistryLifecycleEventType::new);
     }
@@ -201,7 +201,7 @@ public class PaperRegistryListenerManager {
         if (entry == null || !entry.meta().modificationApiSupport().canAdd()) {
             throw new IllegalArgumentException(type.registryKey() + " does not support RegistryFreezeEvent");
         }
-        BukkitFabricMod.LOGGER.info("Debug: Crap.");
+        CardboardMod.LOGGER.info("Debug: Crap.");
         return null;
         //return this.freezeEventTypes.getOrCreate(type.registryKey(), RegistryLifecycleEventType::new);
     }

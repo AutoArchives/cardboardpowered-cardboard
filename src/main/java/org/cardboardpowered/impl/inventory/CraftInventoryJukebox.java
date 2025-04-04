@@ -6,7 +6,7 @@ import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.JukeboxInventory;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinInventory;
+import org.cardboardpowered.interfaces.IMixinInventory;
 
 public class CraftInventoryJukebox
 extends CraftInventory

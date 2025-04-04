@@ -8,7 +8,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.jetbrains.annotations.Nullable;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinEntity;
 
 import net.kyori.adventure.text.Component;
 import net.minecraft.entity.boss.dragon.EnderDragonPart;

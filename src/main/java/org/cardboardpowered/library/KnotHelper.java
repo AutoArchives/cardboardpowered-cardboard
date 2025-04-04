@@ -4,51 +4,28 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Path;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.cardboardpowered.CardboardConfig;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.Version;
-import net.fabricmc.loader.impl.launch.FabricLauncherBase;
 
 public class KnotHelper {
 
     public static boolean PAPER_API_LOADED = false;
-    private static final Logger logger = LogManager.getLogger("KnotHelper");
-
-    public static void outdated_fabric_warning(double ver) {
-    	logger.error("======== ERROR: FABRIC OUTDATED ========");
-        logger.error("| Your version of Fabric is outdated!!");
-        logger.error("| You version is: " + ver);
-        logger.error("| Lowest Required: 0.13 or higher");
-        logger.error("| Update at: https://fabricmc.dev/use/");
-        logger.error("=======================================");
-    }
-
-    /**
-     * Add to class path in Fabric 0.11
-     */
-    public static void fabric_0_11_load(File file) {
-    	try {
-            Class<?> l = Class.forName("net.fabricmc.loader.launch.knot.Knot");
-            Method m = l.getMethod("getLauncher");
-            Object lb = m.invoke(null, null);
-            Method m2 = lb.getClass().getMethod("propose", URL.class);
-            m2.invoke(lb, file.toURI().toURL());
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.info("ERROR: Got " + e.getClass().getSimpleName() + " while accessing Fabric Loader.");
-        }
-    }
+    public static final Logger LOGGER = LogManager.getLogger("KnotHelper");
+    public static int loaded = 0;
     
+    public static int loaded_adventure = 0;
+    public static String ver_adventure = "";
+
     /**
      * Add to class path in Fabric 0.12 or higher
      */
     public static void fabric_modern_load(File file) {
-    	
         try {
             Class<?> l = Class.forName("net.fabricmc.loader.impl.launch.FabricLauncherBase");
             Field instance = l.getDeclaredField("launcher");
@@ -57,43 +34,41 @@ public class KnotHelper {
             Class<?> lbc = lb.getClass();
             Method m = lbc.getMethod("addToClassPath", Path.class, String[].class);
 
-            if (!FabricLoader.getInstance().isDevelopmentEnvironment())
+            if (!FabricLoader.getInstance().isDevelopmentEnvironment()) {
                 m.invoke(lb, file.toPath(), getPackages());
-            logger.info("Debug: Loading library " + file.getName());
+            }
+
+            if (CardboardConfig.DEBUG_VERBOSE_CALLS) {
+            	LOGGER.info("Debug: Loading library " + file.getName());
+            	loaded += 1;
+            	return;
+            }
+            String nam = file.getName();
+            	
+            if (nam.contains("paper-api") || nam.contains("bungeecord-chat")) {
+            	LOGGER.info("Loaded library: " + file.getName());
+            }
+
+            if (nam.contains("adventure-")) {
+            	loaded_adventure += 1;
+            }
+
+            if (nam.contains("adventure-api-")) {
+            	ver_adventure = nam.split("adventure-api-")[1].split(".jar")[0];
+            }
+            loaded += 1;
         } catch (Exception e) {
             e.printStackTrace();
-            logger.info("ERROR: Got " + e.getClass().getSimpleName() + " while accessing Fabric Loader.");
+            LOGGER.info("ERROR: Got " + e.getClass().getSimpleName() + " while accessing Fabric Loader.");
         }
     }
 
     public static void propose(File file) throws MalformedURLException {
-        Version loaderVersion = FabricLoader.getInstance().getModContainer("fabricloader").get().getMetadata().getVersion();
-        String verString = loaderVersion.getFriendlyString();
-        verString = verString.substring(0, verString.lastIndexOf('.'));
-        double ver = Double.valueOf( verString );
-
-        propose_file(file, ver);
+    	fabric_modern_load(file);
 
         if (file.getName().contains("paper")) {
             PAPER_API_LOADED = true;
         }
-    }
-    
-    public static void propose_file(File file, double ver) {
-    	 if (ver < 0.11) {
-         	 outdated_fabric_warning(ver);
-             return;
-         }
-
-         if (ver < 0.12) {
-        	 outdated_fabric_warning(ver);
-        	 fabric_0_11_load(file);
-        	 return;
-         }
-
-         if (ver >= 0.12) {
-         	fabric_modern_load(file);
-         }
     }
 
     /**

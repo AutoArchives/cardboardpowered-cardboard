@@ -1,8 +1,8 @@
 package org.cardboardpowered.mixin.item;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import net.minecraft.entity.decoration.LeashKnotEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -65,7 +65,7 @@ public class MixinLeadItem extends Item {
                     }
                     leashKnotEntity.onPlace();
                 }
-                if (BukkitEventFactory.callPlayerLeashEntityEvent(mobEntity, leashKnotEntity, player).isCancelled()) {
+                if (CraftEventFactory.callPlayerLeashEntityEvent(mobEntity, leashKnotEntity, player).isCancelled()) {
                     continue;
                 }
                 mobEntity.attachLeash(leashKnotEntity, true);

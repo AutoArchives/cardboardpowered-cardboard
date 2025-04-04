@@ -8,18 +8,18 @@ import net.minecraft.registry.RegistryKey;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftServer;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 
 import org.cardboardpowered.impl.world.WorldImpl;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IMixinWorld;
 
 public final class MapViewImpl implements MapView {
 
-    private final Map<PlayerImpl, RenderData> renderCache = new HashMap<>();
+    private final Map<CraftPlayer, RenderData> renderCache = new HashMap<>();
     private final List<MapRenderer> renderers = new ArrayList<>();
-    private final Map<MapRenderer, Map<PlayerImpl, MapCanvasImpl>> canvases = new HashMap<>();
+    private final Map<MapRenderer, Map<CraftPlayer, MapCanvasImpl>> canvases = new HashMap<>();
     protected final MapState worldMap;
 
     public MapViewImpl(MapState worldMap) {
@@ -106,7 +106,7 @@ public final class MapViewImpl implements MapView {
     public boolean removeRenderer(MapRenderer renderer) {
         if (renderers.contains(renderer)) {
             renderers.remove(renderer);
-            for (Map.Entry<PlayerImpl, MapCanvasImpl> entry : canvases.get(renderer).entrySet())
+            for (Map.Entry<CraftPlayer, MapCanvasImpl> entry : canvases.get(renderer).entrySet())
                 for (int x = 0; x < 128; ++x)
                     for (int y = 0; y < 128; ++y)
                         entry.getValue().setPixel(x, y, (byte) -1);
@@ -121,7 +121,7 @@ public final class MapViewImpl implements MapView {
         return false;
     }
 
-    public RenderData render(PlayerImpl player) {
+    public RenderData render(CraftPlayer player) {
         boolean context = isContextual();
         RenderData render = renderCache.get(context ? player : null);
 

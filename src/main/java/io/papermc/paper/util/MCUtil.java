@@ -3,7 +3,7 @@ package io.papermc.paper.util;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 
 import io.papermc.paper.math.BlockPosition;
 import io.papermc.paper.math.FinePosition;

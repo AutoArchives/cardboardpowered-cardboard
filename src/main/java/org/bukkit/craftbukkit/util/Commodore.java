@@ -37,7 +37,7 @@ import org.bukkit.craftbukkit.legacy.reroute.RerouteArgument;
 import org.bukkit.craftbukkit.legacy.reroute.RerouteBuilder;
 import org.bukkit.craftbukkit.legacy.reroute.RerouteMethodData;
 import org.bukkit.plugin.AuthorNagException;
-import org.cardboardpowered.asm.SwitchTableFixer;
+import org.cardboardpowered.util.SwitchTableFixer;
 import org.cardboardpowered.util.nms.ReflectionMethodVisitor;
 import org.cardboardpowered.util.nms.ReflectionRemapper;
 import org.jetbrains.annotations.VisibleForTesting;

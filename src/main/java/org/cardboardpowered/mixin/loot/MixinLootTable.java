@@ -11,7 +11,7 @@ import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
@@ -32,7 +32,7 @@ public class MixinLootTable {
     public void fillInventory(Inventory iinventory, LootContext loottableinfo, boolean plugin) {
         List<ItemStack> list = this.generateLoot(loottableinfo);
         Random random = loottableinfo.getRandom();
-        LootGenerateEvent event = BukkitEventFactory.callLootGenerateEvent(iinventory, (LootTable)(Object)this, loottableinfo, list, plugin);
+        LootGenerateEvent event = CraftEventFactory.callLootGenerateEvent(iinventory, (LootTable)(Object)this, loottableinfo, list, plugin);
         if (event.isCancelled()) return;
         list = event.getLoot().stream().map(CraftItemStack::asNMSCopy).collect(Collectors.toList());
 

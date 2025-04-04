@@ -34,7 +34,7 @@ import org.bukkit.craftbukkit.inventory.CraftMetaItem;
 import org.bukkit.craftbukkit.inventory.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.jetbrains.annotations.Nullable;
 
 @DelegateDeserialization(value=SerializableMeta.class)
@@ -202,8 +202,8 @@ implements SkullMeta {
     public boolean setOwningPlayer(OfflinePlayer owner) {
         if (owner == null) {
             this.setProfile(null);
-        } else if (owner instanceof PlayerImpl) {
-            this.setProfile(((PlayerImpl)owner).getProfile());
+        } else if (owner instanceof CraftPlayer) {
+            this.setProfile(((CraftPlayer)owner).getProfile());
         } else {
             this.setProfile(new GameProfile(owner.getUniqueId(), owner.getName()));
         }

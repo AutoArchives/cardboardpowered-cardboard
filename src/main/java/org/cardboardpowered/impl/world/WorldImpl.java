@@ -18,10 +18,7 @@
  */
 package org.cardboardpowered.impl.world;
 
-//<<<<<<< HEAD
-//=======
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,12 +55,9 @@ import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.generator.structure.CraftGeneratedStructure;
 import org.bukkit.craftbukkit.generator.structure.CraftStructure;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.util.BlockStateListPopulator;
 import org.bukkit.craftbukkit.util.CraftBiomeSearchResult;
-import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
-import org.bukkit.craftbukkit.util.RandomSourceWrapper;
 import org.bukkit.entity.*;
 import org.bukkit.entity.minecart.CommandMinecart;
 import org.bukkit.entity.minecart.ExplosiveMinecart;
@@ -72,7 +66,6 @@ import org.bukkit.entity.minecart.PoweredMinecart;
 import org.bukkit.entity.minecart.SpawnerMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
-import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.world.SpawnChangeEvent;
 import org.bukkit.event.world.TimeSkipEvent;
 import org.bukkit.generator.BiomeProvider;
@@ -95,24 +88,20 @@ import org.bukkit.util.NumberConversions;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.StructureSearchResult;
 import org.bukkit.util.Vector;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.util.CardboardFluidRaytraceMode;
 import org.cardboardpowered.impl.util.CardboardRayTraceResult;
 import org.cardboardpowered.interfaces.IServerWorld;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-//>>>>>>> upstream/ver/1.20
-// import com.destroystokyo.paper.HeightmapType;
 import com.google.common.base.Preconditions;
-import com.javazilla.bukkitfabric.Utils;
-import com.javazilla.bukkitfabric.impl.MetaDataStoreBase;
-import com.javazilla.bukkitfabric.impl.MetadataStoreImpl;
-import com.javazilla.bukkitfabric.interfaces.IMixinArrowEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinChunkHolder;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
-import com.javazilla.bukkitfabric.interfaces.IMixinThreadedAnvilChunkStorage;
+import org.cardboardpowered.impl.MetadataStoreImpl;
+import org.cardboardpowered.interfaces.IMixinArrowEntity;
+import org.cardboardpowered.interfaces.IMixinChunkHolder;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinThreadedAnvilChunkStorage;
 import com.mojang.datafixers.util.Pair;
 
 import io.papermc.paper.block.fluid.FluidData;
@@ -137,10 +126,7 @@ import net.minecraft.entity.mob.EvokerFangsEntity;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.entity.projectile.thrown.EggEntity;
 import net.minecraft.entity.projectile.thrown.PotionEntity;
-import net.minecraft.entity.projectile.thrown.SnowballEntity;
-import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.entity.vehicle.ChestMinecartEntity;
 import net.minecraft.entity.vehicle.CommandBlockMinecartEntity;
 import net.minecraft.entity.vehicle.FurnaceMinecartEntity;
@@ -174,80 +160,18 @@ import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.WrapperProtoChunk;
 import net.minecraft.world.dimension.DimensionTypes;
-import net.minecraft.world.explosion.Explosion;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
 import net.minecraft.world.level.LevelProperties;
 import net.minecraft.world.level.ServerWorldProperties;
-import org.apache.commons.lang.Validate;
 import org.bukkit.*;
-import org.bukkit.block.Biome;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.boss.DragonBattle;
-import org.bukkit.craftbukkit.CraftParticle;
-import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.CraftSound;
-import org.bukkit.craftbukkit.block.CraftBlock;
-import org.bukkit.craftbukkit.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.entity.CraftEntity;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
-import org.bukkit.entity.*;
-import org.bukkit.entity.minecart.CommandMinecart;
-import org.bukkit.entity.minecart.ExplosiveMinecart;
-import org.bukkit.entity.minecart.HopperMinecart;
-import org.bukkit.entity.minecart.PoweredMinecart;
-import org.bukkit.entity.minecart.SpawnerMinecart;
-import org.bukkit.entity.minecart.StorageMinecart;
-import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
-import org.bukkit.event.world.SpawnChangeEvent;
-import org.bukkit.event.world.TimeSkipEvent;
-import org.bukkit.generator.BiomeProvider;
-import org.bukkit.generator.BlockPopulator;
-import org.bukkit.generator.ChunkGenerator;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.MaterialData;
-import org.bukkit.metadata.MetadataStoreBase;
-import org.bukkit.metadata.MetadataValue;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.potion.PotionData;
-import org.bukkit.potion.PotionType;
-import org.bukkit.util.BoundingBox;
-import org.bukkit.util.Consumer;
-import org.bukkit.util.RayTraceResult;
-import org.bukkit.util.Vector;
 import org.cardboardpowered.impl.CardboardPotionUtil;
-import org.cardboardpowered.impl.entity.PlayerImpl;
-import org.cardboardpowered.impl.util.CardboardFluidRaytraceMode;
-import org.cardboardpowered.impl.util.CardboardRayTraceResult;
-import org.cardboardpowered.interfaces.IServerWorld;
 import org.cardboardpowered.interfaces.IWorldChunk;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Predicate;
 
 @SuppressWarnings("deprecation")
 public class WorldImpl extends CraftRegionAccessor implements World {
 
 	public static final int CUSTOM_DIMENSION_OFFSET = 10;
-	private final MetaDataStoreBase<Block> blockMetadata = MetadataStoreImpl.newBlockMetadataStore(this);
+	private final MetadataStoreBase<Block> blockMetadata = MetadataStoreImpl.newBlockMetadataStore(this);
 
 	private ServerWorld nms;
 	private String name;
@@ -1054,7 +978,7 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 	@Override
 	public WorldBorder getWorldBorder() {
 		if(this.worldBorder == null)
-			this.worldBorder = new WorldBorderImpl(this);
+			this.worldBorder = new CraftWorldBorder(this);
 
 		return this.worldBorder;
 	}
@@ -1200,10 +1124,10 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 		WorldEventS2CPacket packet = new WorldEventS2CPacket(packetData, new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()), data, false);
 		radius *= radius;
 		for(Player player : this.getPlayers()) {
-			if(((PlayerImpl) player).getHandle().networkHandler == null || !location.getWorld()
+			if(((CraftPlayer) player).getHandle().networkHandler == null || !location.getWorld()
 					.equals(player.getWorld()) || (int) player.getLocation()
 					.distanceSquared(location) > radius) continue;
-			((PlayerImpl) player).getHandle().networkHandler.sendPacket(packet);
+			((CraftPlayer) player).getHandle().networkHandler.sendPacket(packet);
 		}
 	}
 
@@ -1433,7 +1357,7 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 		nms.setTimeOfDay(nms.getTimeOfDay() + event.getSkipAmount());
 
 		for(Player p : getPlayers()) {
-			PlayerImpl cp = (PlayerImpl) p;
+			CraftPlayer cp = (CraftPlayer) p;
 			if(cp.getHandle().networkHandler == null) continue;
 
 			cp.getHandle().networkHandler.sendPacket(new WorldTimeUpdateS2CPacket(cp.getHandle()
@@ -2821,7 +2745,7 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 	@Override
 	public Iterable<net.minecraft.entity.Entity> getNMSEntities() {
 		
-		return ((com.javazilla.bukkitfabric.interfaces.IMixinWorld)this.getHandle()).cb$get_entity_lookup().iterate();
+		return ((org.cardboardpowered.interfaces.IMixinWorld)this.getHandle()).cb$get_entity_lookup().iterate();
 	}
 
 	@Override

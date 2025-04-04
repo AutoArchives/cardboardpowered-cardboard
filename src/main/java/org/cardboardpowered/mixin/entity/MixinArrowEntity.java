@@ -6,7 +6,7 @@ import java.util.Set;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinArrowEntity;
+import org.cardboardpowered.interfaces.IMixinArrowEntity;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.data.TrackedData;

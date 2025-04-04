@@ -7,7 +7,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.SculkShrieker;
 import org.bukkit.entity.Player;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 
 public class CraftSculkShrieker extends CardboardBlockEntityState<SculkShriekerBlockEntity> implements SculkShrieker {
 
@@ -30,7 +30,7 @@ public class CraftSculkShrieker extends CardboardBlockEntityState<SculkShriekerB
 
     public void tryShriek(Player player) {
         this.requirePlaced();
-        ServerPlayerEntity entityPlayer = player == null ? null : ((PlayerImpl)player).getHandle();
+        ServerPlayerEntity entityPlayer = player == null ? null : ((CraftPlayer)player).getHandle();
         ((SculkShriekerBlockEntity)this.getTileEntity()).shriek(this.world.getHandle(), entityPlayer);
     }
 

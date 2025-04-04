@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 import net.minecraft.entity.ai.goal.BreakDoorGoal;
 import net.minecraft.entity.ai.goal.DoorInteractGoal;
@@ -29,13 +29,13 @@ public class MixinBreakDoorGoal extends DoorInteractGoal {
     /**
      * Implements EntityBreakDoorEvent
      * 
-     * @see {@link BukkitEventFactory#callEntityBreakDoorEvent(Entity, BlockPos)}
+     * @see {@link CraftEventFactory#callEntityBreakDoorEvent(Entity, BlockPos)}
      */
     @Inject(at = @At(value = "INVOKE", 
                      target = "Lnet/minecraft/world/World;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z"), 
             method = "tick", cancellable = true)
     public void cardboard_doEntityBreakDoorEvent(CallbackInfo ci) {
-        if (BukkitEventFactory.callEntityBreakDoorEvent(this.mob, this.doorPos).isCancelled()) {
+        if (CraftEventFactory.callEntityBreakDoorEvent(this.mob, this.doorPos).isCancelled()) {
             this.start();
             ci.cancel();
             return;

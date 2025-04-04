@@ -15,9 +15,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinBrewingStandBlockEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinInventory;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IMixinBrewingStandBlockEntity;
+import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.interfaces.IMixinWorld;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BrewingStandBlockEntity;

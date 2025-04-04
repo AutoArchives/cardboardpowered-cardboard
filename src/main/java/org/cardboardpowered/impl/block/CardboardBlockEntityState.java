@@ -185,7 +185,7 @@ public abstract class CardboardBlockEntityState<T extends BlockEntity> extends C
 
     @Override
     public PersistentDataContainer getPersistentDataContainer() {
-        return ((com.javazilla.bukkitfabric.interfaces.IMixinBlockEntity)(Object)getSnapshot()).getPersistentDataContainer();
+        return ((org.cardboardpowered.interfaces.IMixinBlockEntity)(Object)getSnapshot()).getPersistentDataContainer();
     }
     
     // @Override

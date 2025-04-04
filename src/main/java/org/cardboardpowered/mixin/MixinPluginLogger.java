@@ -19,7 +19,7 @@
 package org.cardboardpowered.mixin;
 
 import com.destroystokyo.paper.utils.PaperPluginLogger;
-import com.javazilla.bukkitfabric.BukkitLogger;
+import org.cardboardpowered.BukkitLogger;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;

@@ -1,10 +1,10 @@
 package org.cardboardpowered.mixin.network;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinPlayNetworkHandler;
-import com.javazilla.bukkitfabric.interfaces.IMixinScreenHandler;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerPlayerInteractionManager;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
+import org.cardboardpowered.interfaces.IMixinScreenHandler;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinServerPlayerInteractionManager;
 import me.isaiah.common.cmixin.IMixinEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MovementType;
@@ -61,7 +61,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -162,8 +162,8 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
         CraftServer.server.submitAndJoin(im.cb_get_connection()::handleDisconnection);
     }
 
-    public PlayerImpl getPlayer() {
-        return (PlayerImpl) ((IMixinServerEntityPlayer)(Object)this.player).getBukkitEntity();
+    public CraftPlayer getPlayer() {
+        return (CraftPlayer) ((IMixinServerEntityPlayer)(Object)this.player).getBukkitEntity();
     }
 
     // TODO: 1.19
@@ -583,7 +583,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
                                         }
 
                                         if (!oldTo.equals(event.getTo()) && !event.isCancelled()) {
-                                            ((Player)((com.javazilla.bukkitfabric.interfaces.IMixinEntity)this.player).getBukkitEntity()).
+                                            ((Player)((org.cardboardpowered.interfaces.IMixinEntity)this.player).getBukkitEntity()).
                                                     teleport(event.getTo(), PlayerTeleportEvent.TeleportCause.PLUGIN);
                                             return;
                                         }
@@ -667,7 +667,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
         HitResult movingobjectposition = ((ServerWorld)this.player.getServerWorld()).raycast(new RaycastContext(vec3d, vec3d1, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, player));
 
         if (movingobjectposition == null || movingobjectposition.getType() != HitResult.Type.BLOCK)
-            BukkitEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_AIR, this.player.inventory.getMainHandStack(), Hand.MAIN_HAND);
+            CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_AIR, this.player.inventory.getMainHandStack(), Hand.MAIN_HAND);
 
         // Arm swing animation
         PlayerAnimationEvent event = new PlayerAnimationEvent(this.getPlayer());
@@ -708,7 +708,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
 
             boolean cancelled;
             if (movingobjectposition == null || movingobjectposition.getType() != HitResult.Type.BLOCK) {
-                org.bukkit.event.player.PlayerInteractEvent event = BukkitEventFactory.callPlayerInteractEvent(this.player, Action.RIGHT_CLICK_AIR, itemstack, enumhand);
+                org.bukkit.event.player.PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.player, Action.RIGHT_CLICK_AIR, itemstack, enumhand);
                 cancelled = event.useItemInHand() == org.bukkit.event.Event.Result.DENY;
             } else {
                 if (((IMixinServerPlayerInteractionManager)player.interactionManager).getFiredInteractBF()) {
@@ -716,7 +716,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
                     cancelled = ((IMixinServerPlayerInteractionManager)player.interactionManager).getInteractResultBF();
                 } else {
                     BlockHitResult movingobjectpositionblock = (BlockHitResult) movingobjectposition;
-                    org.bukkit.event.player.PlayerInteractEvent event = BukkitEventFactory.callPlayerInteractEvent(player, Action.RIGHT_CLICK_BLOCK, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), itemstack, true, enumhand);
+                    org.bukkit.event.player.PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(player, Action.RIGHT_CLICK_BLOCK, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), itemstack, true, enumhand);
                     cancelled = (event.useItemInHand() == org.bukkit.event.Event.Result.DENY);
                 }
             }

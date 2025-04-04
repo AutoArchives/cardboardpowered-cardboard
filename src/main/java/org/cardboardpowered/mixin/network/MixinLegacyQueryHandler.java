@@ -1,7 +1,7 @@
 package org.cardboardpowered.mixin.network;
 
-import com.javazilla.bukkitfabric.BukkitFabricMod;
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.cardboardpowered.CardboardMod;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
@@ -41,11 +41,11 @@ public class MixinLegacyQueryHandler {
             MinecraftServer minecraftserver = CraftServer.server;
             int i = bytebuf.readableBytes();
             String s;
-            org.bukkit.event.server.ServerListPingEvent event = BukkitEventFactory.callServerListPingEvent(CraftServer.INSTANCE, inetsocketaddress.getAddress(), minecraftserver.getServerMotd(), minecraftserver.getCurrentPlayerCount(), minecraftserver.getMaxPlayerCount()); // CraftBukkit
+            org.bukkit.event.server.ServerListPingEvent event = CraftEventFactory.callServerListPingEvent(CraftServer.INSTANCE, inetsocketaddress.getAddress(), minecraftserver.getServerMotd(), minecraftserver.getCurrentPlayerCount(), minecraftserver.getMaxPlayerCount()); // CraftBukkit
 
             switch (i) {
                 case 0:
-                    BukkitFabricMod.LOGGER.config("Ping: (<1.3.x) from " + inetsocketaddress.getAddress() + ":" + inetsocketaddress.getPort());
+                    CardboardMod.LOGGER.config("Ping: (<1.3.x) from " + inetsocketaddress.getAddress() + ":" + inetsocketaddress.getPort());
                     s = String.format("%s\u00a7%d\u00a7%d", event.getMotd(), event.getNumPlayers(), event.getMaxPlayers()); // CraftBukkit
                     reply(ctx, createBuf(ctx.alloc(), s));
                     break;
@@ -53,7 +53,7 @@ public class MixinLegacyQueryHandler {
                     if (bytebuf.readUnsignedByte() != 1)
                         return;
 
-                    BukkitFabricMod.LOGGER.config("Ping: (1.4-1.5.x) from " + inetsocketaddress.getAddress() + ":" + inetsocketaddress.getPort());
+                    CardboardMod.LOGGER.config("Ping: (1.4-1.5.x) from " + inetsocketaddress.getAddress() + ":" + inetsocketaddress.getPort());
                     s = String.format("\u00a71\u0000%d\u0000%s\u0000%s\u0000%d\u0000%d", 127, minecraftserver.getVersion(), event.getMotd(), event.getNumPlayers(), event.getMaxPlayers()); // CraftBukkit
                     reply(ctx, createBuf(ctx.alloc(), s));
                     break;
@@ -70,7 +70,7 @@ public class MixinLegacyQueryHandler {
                     flag1 &= bytebuf.readableBytes() == 0;
                     if (!flag1)
                         return;
-                    BukkitFabricMod.LOGGER.config("Ping: (1.6) from " + inetsocketaddress.getAddress() + ":" + inetsocketaddress.getPort());
+                    CardboardMod.LOGGER.config("Ping: (1.6) from " + inetsocketaddress.getAddress() + ":" + inetsocketaddress.getPort());
                     String s1 = String.format("\u00a71\u0000%d\u0000%s\u0000%s\u0000%d\u0000%d", 127, minecraftserver.getVersion(), event.getMotd(), event.getNumPlayers(), event.getMaxPlayers()); // CraftBukkit
                     System.out.println("DEBUG: " + s1);
                     ByteBuf bytebuf1 = createBuf(ctx.alloc(), s1);

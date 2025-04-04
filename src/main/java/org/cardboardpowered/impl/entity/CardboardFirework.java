@@ -3,7 +3,6 @@ package org.cardboardpowered.impl.entity;
 import java.util.Random;
 import java.util.UUID;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinDataTracker;
 import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -15,6 +14,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.cardboardpowered.interfaces.IMixinDataTracker;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

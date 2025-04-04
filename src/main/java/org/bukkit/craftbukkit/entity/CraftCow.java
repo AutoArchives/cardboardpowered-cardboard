@@ -4,9 +4,9 @@ import net.minecraft.entity.passive.CowEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Cow;
 import org.bukkit.entity.EntityType;
-import org.cardboardpowered.impl.entity.AnimalsImpl;
+import org.cardboardpowered.impl.entity.CraftAnimals;
 
-public class CraftCow extends AnimalsImpl implements Cow {
+public class CraftCow extends CraftAnimals implements Cow {
 
     public CraftCow(CraftServer server, CowEntity entity) {
         super(server, entity);

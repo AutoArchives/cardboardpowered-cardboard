@@ -11,7 +11,7 @@ import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.impl.world.WorldImpl;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IMixinWorld;
 
 import me.isaiah.common.cmixin.IMixinGlobalPos;
 

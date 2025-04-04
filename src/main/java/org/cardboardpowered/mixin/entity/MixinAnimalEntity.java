@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -38,7 +38,7 @@ public class MixinAnimalEntity {
 
     @Inject(at = @At("HEAD"), method = "lovePlayer", cancellable = true)
     public void callEnterLoveModeEvent(PlayerEntity entityhuman, CallbackInfo ci) {
-        EntityEnterLoveModeEvent entityEnterLoveModeEvent = BukkitEventFactory.callEntityEnterLoveModeEvent(entityhuman, (AnimalEntity)(Object)this, 600);
+        EntityEnterLoveModeEvent entityEnterLoveModeEvent = CraftEventFactory.callEntityEnterLoveModeEvent(entityhuman, (AnimalEntity)(Object)this, 600);
         if (entityEnterLoveModeEvent.isCancelled())
             ci.cancel();
         this.loveTicks = entityEnterLoveModeEvent.getTicksInLove();

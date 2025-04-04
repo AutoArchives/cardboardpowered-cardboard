@@ -18,7 +18,7 @@
  */
 package org.cardboardpowered.mixin;
 
-import com.javazilla.bukkitfabric.BukkitLogger;
+import org.cardboardpowered.BukkitLogger;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.dedicated.DedicatedPlayerManager;

@@ -29,7 +29,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.impl.world.WorldImpl;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -50,12 +50,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 //>>>>>>> upstream/ver/1.20
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinCommandOutput;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinScreenHandler;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinCommandOutput;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinScreenHandler;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinWorld;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.fabricmc.fabric.impl.screenhandler.Networking;
@@ -104,7 +104,7 @@ import org.bukkit.event.player.PlayerChangedMainHandEvent;
 import org.bukkit.event.player.PlayerLocaleChangeEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.MainHand;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -168,7 +168,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
 		
 	}
 	
-    private PlayerImpl bukkit;
+    private CraftPlayer bukkit;
 
     public ClientConnection connectionBF;
 
@@ -176,12 +176,12 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     public int screenHandlerSyncId;
 
     @Override
-    public void setBukkit(PlayerImpl plr) {
+    public void setBukkit(CraftPlayer plr) {
         this.bukkit = plr;
     }
 
     @Override
-    public PlayerImpl getBukkit() {
+    public CraftPlayer getBukkit() {
         return bukkit;
     }
 
@@ -191,9 +191,9 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     }
 
     @Override
-    public PlayerImpl getBukkitEntity() {
+    public CraftPlayer getBukkitEntity() {
     	if (bukkit == null) {
-    		bukkit = (PlayerImpl) CraftEntity.getEntity(CraftServer.INSTANCE, ((ServerPlayerEntity) (Object) this));
+    		bukkit = (CraftPlayer) CraftEntity.getEntity(CraftServer.INSTANCE, ((ServerPlayerEntity) (Object) this));
     	}
         return bukkit;
     }
@@ -369,7 +369,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
                 ((IMixinScreenHandler)container).setTitle(factory.getDisplayName());
 
                 boolean cancelled = false;
-                container = BukkitEventFactory.callInventoryOpenEvent((ServerPlayerEntity)(Object)this, container, cancelled);
+                container = CraftEventFactory.callInventoryOpenEvent((ServerPlayerEntity)(Object)this, container, cancelled);
                 if (container == null && !cancelled) {
                     if (factory instanceof Inventory) {
                         ((Inventory) factory).onClose((ServerPlayerEntity)(Object)this);
@@ -438,7 +438,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         Text defaultMessage = ((ServerPlayerEntity)(Object)this).getDamageTracker().getDeathMessage();
 
         String deathmessage = defaultMessage.getString();
-        org.bukkit.event.entity.PlayerDeathEvent event = BukkitEventFactory.callPlayerDeathEvent(((ServerPlayerEntity)(Object)this), loot, deathmessage, keepInventory);
+        org.bukkit.event.entity.PlayerDeathEvent event = CraftEventFactory.callPlayerDeathEvent(((ServerPlayerEntity)(Object)this), loot, deathmessage, keepInventory);
 
         // SPIGOT-943 - only call if they have an inventory open
         if (((ServerPlayerEntity)(Object)this).currentScreenHandler != ((ServerPlayerEntity)(Object)this).playerScreenHandler) this.closeHandledScreen();
@@ -545,7 +545,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         try {
             if (this.oldLevel == -1) this.oldLevel = ((ServerPlayerEntity)(Object)this).experienceLevel;
             if (this.oldLevel != ((ServerPlayerEntity)(Object)this).experienceLevel) {
-                BukkitEventFactory.callPlayerLevelChangeEvent(getBukkitEntity(), this.oldLevel, ((ServerPlayerEntity)(Object)this).experienceLevel);
+                CraftEventFactory.callPlayerLevelChangeEvent(getBukkitEntity(), this.oldLevel, ((ServerPlayerEntity)(Object)this).experienceLevel);
                 this.oldLevel = ((ServerPlayerEntity)(Object)this).experienceLevel;
             }
         } catch (Throwable throwable) {}

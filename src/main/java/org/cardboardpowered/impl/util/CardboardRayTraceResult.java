@@ -14,7 +14,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinEntity;
 
 public final class CardboardRayTraceResult {
 

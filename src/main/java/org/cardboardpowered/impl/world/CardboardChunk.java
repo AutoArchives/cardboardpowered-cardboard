@@ -44,8 +44,8 @@ import org.jetbrains.annotations.NotNull;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
-import com.javazilla.bukkitfabric.interfaces.IMixinChunk;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IMixinChunk;
+import org.cardboardpowered.interfaces.IMixinWorld;
 import com.mojang.serialization.Codec;
 
 import io.papermc.paper.util.CoordinateUtils;

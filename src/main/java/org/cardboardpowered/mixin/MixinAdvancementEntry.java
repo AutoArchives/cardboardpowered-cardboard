@@ -18,7 +18,7 @@
  */
 package org.cardboardpowered.mixin;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinAdvancement;
+import org.cardboardpowered.interfaces.IMixinAdvancement;
 import net.minecraft.advancement.AdvancementEntry;
 import org.cardboardpowered.impl.AdvancementImpl;
 import org.spongepowered.asm.mixin.Mixin;

@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.block;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.TntBlock;
@@ -24,7 +24,7 @@ public class MixinTntBlock {
                     "Lnet/minecraft/entity/LivingEntity;)V"),
             cancellable = true)
     private void bukkit_entityChangeBlockEvent(World world, BlockState state, BlockHitResult hit, ProjectileEntity projectile, CallbackInfo ci) {
-        if (BukkitEventFactory.callEntityChangeBlockEvent(projectile, hit.getBlockPos(), Blocks.AIR.getDefaultState())
+        if (CraftEventFactory.callEntityChangeBlockEvent(projectile, hit.getBlockPos(), Blocks.AIR.getDefaultState())
                 .isCancelled()) { ci.cancel(); }
     }
 }

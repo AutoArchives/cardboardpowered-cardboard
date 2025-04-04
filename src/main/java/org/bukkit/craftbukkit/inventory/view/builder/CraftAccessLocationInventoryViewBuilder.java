@@ -8,7 +8,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.view.builder.LocationInventoryViewBuilder;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 public class CraftAccessLocationInventoryViewBuilder<V extends InventoryView> extends CraftAbstractLocationInventoryViewBuilder<V> {
 

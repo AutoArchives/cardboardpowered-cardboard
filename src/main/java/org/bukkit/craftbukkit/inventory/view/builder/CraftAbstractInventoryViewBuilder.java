@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.inventory.view.builder;
 
 import com.google.common.base.Preconditions;
-import com.javazilla.bukkitfabric.interfaces.IMixinScreenHandler;
+import org.cardboardpowered.interfaces.IMixinScreenHandler;
 
 import io.papermc.paper.adventure.PaperAdventure;
 import net.kyori.adventure.text.Component;

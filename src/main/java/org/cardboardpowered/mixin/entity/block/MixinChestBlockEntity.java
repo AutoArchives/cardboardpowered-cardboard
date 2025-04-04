@@ -12,9 +12,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinInventory;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.interfaces.IMixinWorld;
 
 import me.isaiah.common.cmixin.IMixinChestBlockEntity;
 import net.minecraft.block.Blocks;
@@ -92,7 +92,7 @@ public class MixinChestBlockEntity implements IMixinInventory {
         if (((ChestBlockEntity)(Object)this).getCachedState().getBlock() == Blocks.TRAPPED_CHEST) {
             int newPower = Math.max(0, Math.min(15, ((IMixinChestBlockEntity)this).I_getViewCount()));
             if (oldPower_B != newPower)
-                BukkitEventFactory.callRedstoneChange(((ChestBlockEntity)(Object)this).world, ((ChestBlockEntity)(Object)this).pos, oldPower_B, newPower);
+                CraftEventFactory.callRedstoneChange(((ChestBlockEntity)(Object)this).world, ((ChestBlockEntity)(Object)this).pos, oldPower_B, newPower);
         }
     }
 

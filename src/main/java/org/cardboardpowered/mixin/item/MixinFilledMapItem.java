@@ -5,7 +5,6 @@ import org.bukkit.event.server.MapInitializeEvent;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
-import com.javazilla.bukkitfabric.interfaces.IMixinMapState;
 
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;

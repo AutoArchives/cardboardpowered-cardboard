@@ -8,7 +8,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.WanderingTrader;
 import org.jetbrains.annotations.Nullable;
 
-public class WanderingTraderImpl extends AbstractVillagerImpl implements WanderingTrader {
+public class WanderingTraderImpl extends CraftAbstractVillager implements WanderingTrader {
 
     public WanderingTraderImpl(CraftServer server, WanderingTraderEntity entity) {
         super(server, entity);

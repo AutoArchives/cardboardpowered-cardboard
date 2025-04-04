@@ -8,7 +8,7 @@ import org.bukkit.entity.LlamaSpit;
 import org.bukkit.projectiles.ProjectileSource;
 import org.jetbrains.annotations.Nullable;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinEntity;
 
 public class CardboardLlamaSpit extends AbstractProjectile implements LlamaSpit {
 

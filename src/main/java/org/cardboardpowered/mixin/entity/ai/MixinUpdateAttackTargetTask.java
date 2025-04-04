@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.entity.ai;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.brain.MemoryQueryResult;
 import net.minecraft.entity.ai.brain.task.UpdateAttackTargetTask;
@@ -39,7 +39,7 @@ public class MixinUpdateAttackTargetTask {
                                            ServerWorld serverLevel, MobEntity mob, long l, CallbackInfoReturnable<Boolean> cir,
                                            Optional optional, LivingEntity livingEntity) {
         // CraftBukkit start
-        EntityTargetEvent event = BukkitEventFactory.callEntityTargetLivingEvent(mob, livingEntity, (livingEntity instanceof ServerPlayerEntity) ? EntityTargetEvent.TargetReason.CLOSEST_PLAYER : EntityTargetEvent.TargetReason.CLOSEST_ENTITY);
+        EntityTargetEvent event = CraftEventFactory.callEntityTargetLivingEvent(mob, livingEntity, (livingEntity instanceof ServerPlayerEntity) ? EntityTargetEvent.TargetReason.CLOSEST_PLAYER : EntityTargetEvent.TargetReason.CLOSEST_ENTITY);
         if (event.isCancelled()) {
             cir.setReturnValue(false);
         }

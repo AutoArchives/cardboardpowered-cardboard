@@ -1,8 +1,8 @@
 package org.cardboardpowered.mixin.screen;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinScreenHandler;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinScreenHandler;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.CraftingResultInventory;
@@ -77,7 +77,7 @@ public class MixinCraftingScreenHandler extends MixinScreenHandler {
                 if (inventorycraftresult.shouldCraftRecipe(entityplayer, recipecrafting))
                     itemstack = recipecrafting.value().craft(craftinginput, world.getRegistryManager());
             }
-            itemstack = BukkitEventFactory.callPreCraftEvent(inventorycrafting, inventorycraftresult, itemstack, ((IMixinScreenHandler)container).getBukkitView(), false);
+            itemstack = CraftEventFactory.callPreCraftEvent(inventorycrafting, inventorycraftresult, itemstack, ((IMixinScreenHandler)container).getBukkitView(), false);
             inventorycraftresult.setStack(0, itemstack);
             entityplayer.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(i, container.nextRevision(), 0, itemstack));
         }

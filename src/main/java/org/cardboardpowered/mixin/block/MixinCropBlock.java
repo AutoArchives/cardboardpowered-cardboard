@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.block;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -34,7 +34,7 @@ public abstract class MixinCropBlock extends PlantBlock {
                     "(Lnet/minecraft/util/math/BlockPos;" +
                     "Lnet/minecraft/block/BlockState;I)Z"))
     private boolean bukkit_growEvent0(ServerWorld world, BlockPos pos, BlockState state, int flags) {
-        return BukkitEventFactory.handleBlockGrowEvent(world, pos, state, flags);
+        return CraftEventFactory.handleBlockGrowEvent(world, pos, state, flags);
     }
 
     @Redirect (method = "applyGrowth", at = @At (value = "INVOKE",
@@ -42,7 +42,7 @@ public abstract class MixinCropBlock extends PlantBlock {
                     "(Lnet/minecraft/util/math/BlockPos;" +
                     "Lnet/minecraft/block/BlockState;I)Z"))
     private boolean bukkit_growEvent1(World world, BlockPos pos, BlockState state, int flags) {
-        return BukkitEventFactory.handleBlockGrowEvent(world, pos, state, flags);
+        return CraftEventFactory.handleBlockGrowEvent(world, pos, state, flags);
     }
 
     @Redirect (method = "onEntityCollision", at = @At (value = "INVOKE",
@@ -60,7 +60,7 @@ public abstract class MixinCropBlock extends PlantBlock {
                                                CallbackInfo ci) {
     	if (world instanceof ServerWorld) {
             ServerWorld sworld = (ServerWorld)world;
-	    	if (BukkitEventFactory
+	    	if (CraftEventFactory
 	                .callEntityChangeBlockEvent(entity, pos, Blocks.AIR.getDefaultState(), !sworld.getGameRules()
 	                        .getBoolean(GameRules.DO_MOB_GRIEFING))
 	                .isCancelled()) {

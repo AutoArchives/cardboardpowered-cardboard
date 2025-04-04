@@ -4,9 +4,9 @@ import net.minecraft.entity.mob.EndermiteEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Endermite;
 import org.bukkit.entity.EntityType;
-import org.cardboardpowered.impl.entity.MonsterImpl;
+import org.cardboardpowered.impl.entity.CraftMonster;
 
-public class CraftEndermite extends MonsterImpl implements Endermite {
+public class CraftEndermite extends CraftMonster implements Endermite {
 
     public CraftEndermite(CraftServer server, EndermiteEntity entity) {
         super(server, entity);

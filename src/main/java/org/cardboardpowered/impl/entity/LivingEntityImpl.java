@@ -71,9 +71,9 @@ import com.destroystokyo.paper.block.TargetBlockInfo.FluidMode;
 import com.destroystokyo.paper.entity.TargetEntityInfo;
 import com.google.common.collect.Sets;
 import com.javazilla.bukkitfabric.Utils;
-import com.javazilla.bukkitfabric.interfaces.IMixinArrowEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinLivingEntity;
+import org.cardboardpowered.interfaces.IMixinArrowEntity;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinLivingEntity;
 
 import me.isaiah.common.ICommonMod;
 import me.isaiah.common.cmixin.IMixinMinecraftServer;
@@ -999,7 +999,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 			return;
 		}
 		EntityStatusS2CPacket packet = new EntityStatusS2CPacket(this.getHandle(), net.minecraft.entity.LivingEntity.getEquipmentBreakStatus( Utils.getNMS(slot)));
-		players.forEach(player -> ((PlayerImpl)player).getHandle().networkHandler.sendPacket(packet));
+		players.forEach(player -> ((CraftPlayer)player).getHandle().networkHandler.sendPacket(packet));
 	}
 
 	@Override
@@ -1283,7 +1283,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 	@Override
 	public void broadcastHurtAnimation(@NotNull Collection<Player> players) {
 		 for (Player player : players) {
-			 ((PlayerImpl)player).sendHurtAnimation(0.0f, this);
+			 ((CraftPlayer)player).sendHurtAnimation(0.0f, this);
 		 }
 	}
 

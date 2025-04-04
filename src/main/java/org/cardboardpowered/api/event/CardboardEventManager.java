@@ -1,7 +1,7 @@
 package org.cardboardpowered.api.event;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ActionResult;
 import org.bukkit.Bukkit;
@@ -22,7 +22,7 @@ public class CardboardEventManager {
 
     private void callCardboardFireworkExplodeEvent() {
         CardboardFireworkExplodeEvent.EVENT.register((firework) -> {
-            if (BukkitEventFactory.callFireworkExplodeEvent(firework).isCancelled()) {
+            if (CraftEventFactory.callFireworkExplodeEvent(firework).isCancelled()) {
                 return ActionResult.FAIL;
             }else {
                 return ActionResult.PASS;

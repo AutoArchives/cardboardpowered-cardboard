@@ -8,7 +8,7 @@ import org.bukkit.entity.Dolphin;
 import org.bukkit.entity.EntityType;
 import org.jetbrains.annotations.NotNull;
 
-public class CardboardDolphin extends AgeableImpl implements Dolphin {
+public class CardboardDolphin extends CraftAgeable implements Dolphin {
 
     public CardboardDolphin(CraftServer server, DolphinEntity entity) {
         super(server, entity);

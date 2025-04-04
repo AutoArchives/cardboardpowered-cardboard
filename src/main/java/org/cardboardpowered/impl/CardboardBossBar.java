@@ -1,20 +1,10 @@
 package org.cardboardpowered.impl;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerBossBar;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import net.minecraft.entity.boss.CommandBossBar;
-import net.minecraft.entity.boss.ServerBossBar;
-import net.minecraft.network.packet.s2c.play.BossBarS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.boss.BarColor;
@@ -22,10 +12,18 @@ import org.bukkit.boss.BarFlag;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.boss.KeyedBossBar;
-import org.cardboardpowered.impl.entity.PlayerImpl;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.Player;
+import org.cardboardpowered.impl.entity.CraftPlayer;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import org.cardboardpowered.interfaces.IMixinEntity;
+
+import net.minecraft.entity.boss.CommandBossBar;
+import net.minecraft.entity.boss.ServerBossBar;
+import net.minecraft.server.network.ServerPlayerEntity;
 
 public class CardboardBossBar implements BossBar, KeyedBossBar {
 
@@ -174,14 +172,14 @@ public class CardboardBossBar implements BossBar, KeyedBossBar {
     @Override
     public void addPlayer(Player player) {
         Preconditions.checkArgument(player != null, "player == null");
-        Preconditions.checkArgument(((PlayerImpl) player).getHandle().networkHandler != null, "player is not fully connected (wait for PlayerJoinEvent)");
-        handle.addPlayer(((PlayerImpl) player).getHandle());
+        Preconditions.checkArgument(((CraftPlayer) player).getHandle().networkHandler != null, "player is not fully connected (wait for PlayerJoinEvent)");
+        handle.addPlayer(((CraftPlayer) player).getHandle());
     }
 
     @Override
     public void removePlayer(Player player) {
         Preconditions.checkArgument(player != null, "player == null");
-        handle.removePlayer(((PlayerImpl) player).getHandle());
+        handle.removePlayer(((CraftPlayer) player).getHandle());
     }
 
     @Override

@@ -1,7 +1,7 @@
 package org.cardboardpowered.mixin.network;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinClientConnection;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerLoginNetworkHandler;
+import org.cardboardpowered.interfaces.IMixinClientConnection;
+import org.cardboardpowered.interfaces.IMixinServerLoginNetworkHandler;
 
 import me.isaiah.common.ConnectionState;
 import me.isaiah.common.GameVersion;

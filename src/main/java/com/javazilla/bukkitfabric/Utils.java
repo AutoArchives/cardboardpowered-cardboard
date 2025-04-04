@@ -32,8 +32,9 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.memory.MemoryKey;
 import org.bukkit.inventory.EquipmentSlot;
+import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.impl.world.WorldImpl;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IMixinWorld;
 
 import me.isaiah.common.cmixin.IMixinGlobalPos;
 import net.minecraft.component.type.AttributeModifierSlot;
@@ -68,7 +69,7 @@ public class Utils {
                 dis = new DataInputStream(new FileInputStream(file1));
                 return new UUID(dis.readLong(), dis.readLong());
             } catch (IOException ex) {
-                BukkitFabricMod.LOGGER.warning("Failed to read " + file1 + ", generating new random UUID. " + ex.getMessage());
+                CardboardMod.LOGGER.warning("Failed to read " + file1 + ", generating new random UUID. " + ex.getMessage());
             } finally { if (dis != null) try { dis.close(); } catch (IOException ex) {/*NOOP*/} }
         }
         UUID uuid = UUID.randomUUID();
@@ -78,7 +79,7 @@ public class Utils {
             dos.writeLong(uuid.getMostSignificantBits());
             dos.writeLong(uuid.getLeastSignificantBits());
         } catch (IOException ex) {
-            BukkitFabricMod.LOGGER.warning("Failed to write " + file1.getAbsolutePath() + ", " + ex.getMessage());
+            CardboardMod.LOGGER.warning("Failed to write " + file1.getAbsolutePath() + ", " + ex.getMessage());
         } finally { if (dos != null) try {dos.close();} catch (IOException ex) {/*NOOP*/} }
         return uuid;
     }

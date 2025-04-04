@@ -12,11 +12,11 @@ import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.material.MaterialData;
-import org.cardboardpowered.impl.entity.MonsterImpl;
+import org.cardboardpowered.impl.entity.CraftMonster;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("deprecation")
-public class CraftEnderman extends MonsterImpl implements Enderman {
+public class CraftEnderman extends CraftMonster implements Enderman {
 
     public CraftEnderman(CraftServer server, EndermanEntity entity) {
         super(server, entity);

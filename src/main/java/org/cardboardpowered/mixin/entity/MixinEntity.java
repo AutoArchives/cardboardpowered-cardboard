@@ -17,8 +17,8 @@
  */
 package org.cardboardpowered.mixin.entity;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinCommandOutput;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinCommandOutput;
+import org.cardboardpowered.interfaces.IMixinEntity;
 import com.llamalad7.mixinextras.sugar.Local;
 
 import me.isaiah.common.entity.IRemoveReason;
@@ -250,7 +250,7 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
         if (entity instanceof LivingEntity) {
             // Players
             if (entity instanceof PlayerEntity) {
-                if (entity instanceof ServerPlayerEntity) { return new PlayerImpl((ServerPlayerEntity) entity); }
+                if (entity instanceof ServerPlayerEntity) { return new CraftPlayer((ServerPlayerEntity) entity); }
                 else { return new CraftHumanEntity((PlayerEntity) entity); }
             }
             // Water Animals
@@ -300,7 +300,7 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
                     //else if (entity instanceof BeeEntity) { return new CraftBee(server, (BeeEntity) entity); }
                     //else if (entity instanceof HoglinEntity) { return new CraftHoglin(server, (HoglinEntity) entity); }
                     //else if (entity instanceof StriderEntity) { return new CraftStrider(server, (StriderEntity) entity); }
-                    else  { return new AnimalsImpl(server, (AnimalEntity) entity); }
+                    else  { return new CraftAnimals(server, (AnimalEntity) entity); }
                 }
                 // Monsters
                 else if (entity instanceof HostileEntity) {
@@ -351,7 +351,7 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
                     //}
                     //else if (entity instanceof ZoglinEntity) { return new CraftZoglin(server, (ZoglinEntity) entity); }
 
-                    else  { return new MonsterImpl(server, (HostileEntity) entity); }
+                    else  { return new CraftMonster(server, (HostileEntity) entity); }
                 }
                 else if (entity instanceof GolemEntity) {
                     if (entity instanceof SnowGolemEntity) { return new CardboardSnowman(server, (SnowGolemEntity) entity); }
@@ -359,16 +359,16 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
                     else if (entity instanceof ShulkerEntity) { return new CardboardShulker(server, (ShulkerEntity) entity); }
                 }
                 else if (entity instanceof MerchantEntity) {
-                    if (entity instanceof VillagerEntity) { return new VillagerImpl(server, (VillagerEntity) entity); }
+                    if (entity instanceof VillagerEntity) { return new CraftVillager(server, (VillagerEntity) entity); }
                     else if (entity instanceof WanderingTraderEntity) { return new WanderingTraderImpl(server, (WanderingTraderEntity) entity); }
-                    else { return new AbstractVillagerImpl(server, (MerchantEntity) entity); }
+                    else { return new CraftAbstractVillager(server, (MerchantEntity) entity); }
                 }
-                else { return new CreatureImpl(server, (PathAwareEntity) entity); }
+                else { return new CraftCreature(server, (PathAwareEntity) entity); }
             }
             // Slimes are a special (and broken) case
             else if (entity instanceof SlimeEntity) {
                 if (entity instanceof MagmaCubeEntity) { return new CardboardMagmaCube(server, (MagmaCubeEntity) entity); }
-                else { return new SlimeImpl(server, (SlimeEntity) entity); }
+                else { return new CraftSlime(server, (SlimeEntity) entity); }
             }
             // Flying
             else if (entity instanceof FlyingEntity) {
@@ -384,7 +384,7 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
                 if (entity instanceof BatEntity) { return new CardboardBat(server, (BatEntity) entity); }
                 else { return new CardboardAmbient(server, (AmbientEntity) entity); }
             }
-            else if (entity instanceof ArmorStandEntity) { return new ArmorStandImpl(server, (ArmorStandEntity) entity); }
+            else if (entity instanceof ArmorStandEntity) { return new CraftArmorStand(server, (ArmorStandEntity) entity); }
             else  { return new LivingEntityImpl(server, (LivingEntity) entity); }
         }
         else if (entity instanceof EnderDragonPart) {
@@ -408,7 +408,7 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
             else if (entity instanceof ExperienceBottleEntity) { return new CardboardThrownExpBottle(server, (ExperienceBottleEntity) entity); }
             
         }
-        else if (entity instanceof FallingBlockEntity) { return new FallingBlockImpl(server, (FallingBlockEntity) entity); }
+        else if (entity instanceof FallingBlockEntity) { return new CraftFallingBlock(server, (FallingBlockEntity) entity); }
         else if (entity instanceof ExplosiveProjectileEntity) {
             //if (entity instanceof SmallFireballEntity) { return new CraftSmallFireball(server, (SmallFireballEntity) entity); }
             //else if (entity instanceof FireballEntity) { return new CraftLargeFireball(server, (FireballEntity) entity); }

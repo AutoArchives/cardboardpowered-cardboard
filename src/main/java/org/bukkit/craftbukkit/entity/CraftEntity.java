@@ -4,10 +4,10 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import com.javazilla.bukkitfabric.interfaces.IMixinCommandOutput;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IMixinCommandOutput;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinWorld;
 import com.mojang.brigadier.LiteralMessage;
 
 import ca.spottedleaf.concurrentutil.executor.standard.PrioritisedExecutor;
@@ -76,16 +76,16 @@ import java.util.concurrent.CompletableFuture;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import com.javazilla.bukkitfabric.BukkitFabricMod;
-import com.javazilla.bukkitfabric.interfaces.IMixinCommandOutput;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.CardboardMod;
+import org.cardboardpowered.interfaces.IMixinCommandOutput;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinWorld;
 
 import org.cardboardpowered.CardboardConfig;
 import org.cardboardpowered.adventure.CardboardAdventure;
-import org.cardboardpowered.impl.entity.AbstractVillagerImpl;
-import org.cardboardpowered.impl.entity.AnimalsImpl;
-import org.cardboardpowered.impl.entity.ArmorStandImpl;
+import org.cardboardpowered.impl.entity.CraftAbstractVillager;
+import org.cardboardpowered.impl.entity.CraftAnimals;
+import org.cardboardpowered.impl.entity.CraftArmorStand;
 import org.cardboardpowered.impl.entity.CardboardAmbient;
 import org.cardboardpowered.impl.entity.CardboardBat;
 import org.cardboardpowered.impl.entity.CardboardBlaze;
@@ -143,21 +143,21 @@ import org.cardboardpowered.impl.entity.CardboardWaterMob;
 import org.cardboardpowered.impl.entity.CardboardWitch;
 import org.cardboardpowered.impl.entity.CardboardWither;
 import org.cardboardpowered.impl.entity.CraftParrot;
-import org.cardboardpowered.impl.entity.CreatureImpl;
+import org.cardboardpowered.impl.entity.CraftCreature;
 import org.cardboardpowered.impl.entity.CreeperImpl;
 import org.cardboardpowered.impl.entity.EggImpl;
 import org.cardboardpowered.impl.entity.ExperienceOrbImpl;
-import org.cardboardpowered.impl.entity.FallingBlockImpl;
+import org.cardboardpowered.impl.entity.CraftFallingBlock;
 import org.cardboardpowered.impl.entity.ItemEntityImpl;
 import org.cardboardpowered.impl.entity.LightningStrikeImpl;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
-import org.cardboardpowered.impl.entity.MonsterImpl;
-import org.cardboardpowered.impl.entity.PlayerImpl;
-import org.cardboardpowered.impl.entity.SlimeImpl;
+import org.cardboardpowered.impl.entity.CraftMonster;
+import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.cardboardpowered.impl.entity.CraftSlime;
 import org.cardboardpowered.impl.entity.StrayImpl;
 import org.cardboardpowered.impl.entity.TridentImpl;
 import org.cardboardpowered.impl.entity.UnknownEntity;
-import org.cardboardpowered.impl.entity.VillagerImpl;
+import org.cardboardpowered.impl.entity.CraftVillager;
 import org.cardboardpowered.impl.entity.WanderingTraderImpl;
 import org.cardboardpowered.impl.entity.WitherSkeletonImpl;
 import org.cardboardpowered.impl.world.WorldImpl;
@@ -1073,7 +1073,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         if (entity instanceof LivingEntity) {
             // Players
             if (entity instanceof PlayerEntity) {
-                if (entity instanceof ServerPlayerEntity) { return new PlayerImpl((ServerPlayerEntity) entity); }
+                if (entity instanceof ServerPlayerEntity) { return new CraftPlayer((ServerPlayerEntity) entity); }
                 else { return new CraftHumanEntity((PlayerEntity) entity); }
             }
             // Water Animals
@@ -1123,7 +1123,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
                     //else if (entity instanceof BeeEntity) { return new CraftBee(server, (BeeEntity) entity); }
                     //else if (entity instanceof HoglinEntity) { return new CraftHoglin(server, (HoglinEntity) entity); }
                     //else if (entity instanceof StriderEntity) { return new CraftStrider(server, (StriderEntity) entity); }
-                    else  { return new AnimalsImpl(server, (AnimalEntity) entity); }
+                    else  { return new CraftAnimals(server, (AnimalEntity) entity); }
                 }
                 // Monsters
                 else if (entity instanceof HostileEntity) {
@@ -1174,7 +1174,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
                     //}
                     //else if (entity instanceof ZoglinEntity) { return new CraftZoglin(server, (ZoglinEntity) entity); }
 
-                    else  { return new MonsterImpl(server, (HostileEntity) entity); }
+                    else  { return new CraftMonster(server, (HostileEntity) entity); }
                 }
                 else if (entity instanceof GolemEntity) {
                     if (entity instanceof SnowGolemEntity) { return new CardboardSnowman(server, (SnowGolemEntity) entity); }
@@ -1182,16 +1182,16 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
                     else if (entity instanceof ShulkerEntity) { return new CardboardShulker(server, (ShulkerEntity) entity); }
                 }
                 else if (entity instanceof MerchantEntity) {
-                    if (entity instanceof VillagerEntity) { return new VillagerImpl(server, (VillagerEntity) entity); }
+                    if (entity instanceof VillagerEntity) { return new CraftVillager(server, (VillagerEntity) entity); }
                     else if (entity instanceof WanderingTraderEntity) { return new WanderingTraderImpl(server, (WanderingTraderEntity) entity); }
-                    else { return new AbstractVillagerImpl(server, (MerchantEntity) entity); }
+                    else { return new CraftAbstractVillager(server, (MerchantEntity) entity); }
                 }
-                else { return new CreatureImpl(server, (PathAwareEntity) entity); }
+                else { return new CraftCreature(server, (PathAwareEntity) entity); }
             }
             // Slimes are a special (and broken) case
             else if (entity instanceof SlimeEntity) {
                 if (entity instanceof MagmaCubeEntity) { return new CardboardMagmaCube(server, (MagmaCubeEntity) entity); }
-                else { return new SlimeImpl(server, (SlimeEntity) entity); }
+                else { return new CraftSlime(server, (SlimeEntity) entity); }
             }
             // Flying
             else if (entity instanceof FlyingEntity) {
@@ -1207,7 +1207,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
                 if (entity instanceof BatEntity) { return new CardboardBat(server, (BatEntity) entity); }
                 else { return new CardboardAmbient(server, (AmbientEntity) entity); }
             }
-            else if (entity instanceof ArmorStandEntity) { return new ArmorStandImpl(server, (ArmorStandEntity) entity); }
+            else if (entity instanceof ArmorStandEntity) { return new CraftArmorStand(server, (ArmorStandEntity) entity); }
             else  { return new LivingEntityImpl(server, (LivingEntity) entity); }
         }
         else if (entity instanceof EnderDragonPart) {
@@ -1231,7 +1231,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
             else if (entity instanceof ExperienceBottleEntity) { return new CardboardThrownExpBottle(server, (ExperienceBottleEntity) entity); }
             
         }
-        else if (entity instanceof FallingBlockEntity) { return new FallingBlockImpl(server, (FallingBlockEntity) entity); }
+        else if (entity instanceof FallingBlockEntity) { return new CraftFallingBlock(server, (FallingBlockEntity) entity); }
         else if (entity instanceof ExplosiveProjectileEntity) {
             //if (entity instanceof SmallFireballEntity) { return new CraftSmallFireball(server, (SmallFireballEntity) entity); }
             //else if (entity instanceof FireballEntity) { return new CraftLargeFireball(server, (FireballEntity) entity); }
@@ -1444,7 +1444,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         
         /*
         
-        world.loadChunksForMoveAsync(box, this instanceof PlayerImpl ? PrioritisedExecutor.Priority.HIGHER : PrioritisedExecutor.Priority.NORMAL, list -> {
+        world.loadChunksForMoveAsync(box, this instanceof CraftPlayer ? PrioritisedExecutor.Priority.HIGHER : PrioritisedExecutor.Priority.NORMAL, list -> {
             ServerChunkManager chunkProviderServer = world.getChunkManager();
             for (Chunk chunk : list) {
                 chunkProviderServer.addTicketAtLevel(ChunkTicketType.POST_TELEPORT, chunk.getPos(), 33, this.getEntityId());
@@ -1504,7 +1504,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     public void broadcastHurtAnimation(Collection<Player> players) {
         Preconditions.checkArgument((!players.contains(this) ? 1 : 0) != 0, (Object)"Cannot broadcast hurt animation to self without a yaw");
         for (Player player : players) {
-            ((PlayerImpl)player).sendHurtAnimation(0.0f, this);
+            ((CraftPlayer)player).sendHurtAnimation(0.0f, this);
         }
     }
     

@@ -3,8 +3,8 @@ package org.cardboardpowered.mixin.entity.block;
 import org.bukkit.Location;
 import org.spongepowered.asm.mixin.Mixin;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinLockableContainerBlockEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IMixinLockableContainerBlockEntity;
+import org.cardboardpowered.interfaces.IMixinWorld;
 
 import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.util.math.BlockPos;

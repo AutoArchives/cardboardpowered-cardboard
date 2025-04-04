@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.item;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.util.ActionResult;
 import org.cardboardpowered.util.MixinInfo;
@@ -26,7 +26,7 @@ public class MixinArmorStandItem {
 
     @Inject(method = "useOnBlock", cancellable = true, at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;spawnEntityAndPassengers(Lnet/minecraft/entity/Entity;)V"))
     public void bukkitEntityPlace(ItemUsageContext context, CallbackInfoReturnable<ActionResult> cir) {
-        if (BukkitEventFactory.callEntityPlaceEvent(context, bukkitEntity).isCancelled()) {
+        if (CraftEventFactory.callEntityPlaceEvent(context, bukkitEntity).isCancelled()) {
             cir.setReturnValue(ActionResult.FAIL);
         }
         bukkitEntity = null;
@@ -63,7 +63,7 @@ public class MixinArmorStandItem {
 
                     entityarmorstand.refreshPositionAndAngles(entityarmorstand.getX(), entityarmorstand.getY(), entityarmorstand.getZ(), f, 0.0F);
                     this.setRotations(entityarmorstand, world.random);
-                    if (BukkitEventFactory.callEntityPlaceEvent(itemactioncontext, entityarmorstand).isCancelled()) return ActionResult.FAIL; // Bukkit
+                    if (CraftEventFactory.callEntityPlaceEvent(itemactioncontext, entityarmorstand).isCancelled()) return ActionResult.FAIL; // Bukkit
 
                     world.spawnEntity(entityarmorstand);
                     world.playSound((PlayerEntity) null, entityarmorstand.getX(), entityarmorstand.getY(), entityarmorstand.getZ(), SoundEvents.ENTITY_ARMOR_STAND_PLACE, SoundCategory.BLOCKS, 0.75F, 0.8F);

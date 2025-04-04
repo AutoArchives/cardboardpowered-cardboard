@@ -17,7 +17,7 @@ import org.bukkit.material.MaterialData;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
-public class CardboardMinecart extends VehicleImpl implements Minecart {
+public class CardboardMinecart extends CraftVehicle implements Minecart {
 
     public CardboardMinecart(CraftServer server, AbstractMinecartEntity entity) {
         super(server, entity);

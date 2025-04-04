@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.network.handler;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinScreenHandler;
+import org.cardboardpowered.interfaces.IMixinScreenHandler;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -54,7 +54,7 @@ public class MixinSPNH_InventoryClickEvent {
 
         this.doCl = false;
         CardboardInventoryView inventory = ((IMixinScreenHandler) player.currentScreenHandler).getBukkitView();
-        inventory.setPlayerIfNotSet((HumanEntity) ((com.javazilla.bukkitfabric.interfaces.IMixinEntity)this.player).getBukkitEntity());
+        inventory.setPlayerIfNotSet((HumanEntity) ((org.cardboardpowered.interfaces.IMixinEntity)this.player).getBukkitEntity());
 
         InventoryType.SlotType type = inventory.getSlotType(packet.getSlot());
 

@@ -19,7 +19,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.javazilla.bukkitfabric.Utils;
-import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.datacomponent.DataComponentType.Valued;

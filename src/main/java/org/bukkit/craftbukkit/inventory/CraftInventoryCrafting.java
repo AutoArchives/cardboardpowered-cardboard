@@ -7,8 +7,8 @@ import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinInventory;
-import com.javazilla.bukkitfabric.interfaces.IMixinRecipe;
+import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.interfaces.IMixinRecipe;
 
 public class CraftInventoryCrafting extends CraftInventory implements CraftingInventory {
     private final Inventory resultInventory;

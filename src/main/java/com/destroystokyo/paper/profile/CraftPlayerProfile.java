@@ -4,7 +4,7 @@ package com.destroystokyo.paper.profile;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Multimap;
-import com.javazilla.bukkitfabric.interfaces.IUserCache;
+import org.cardboardpowered.interfaces.IUserCache;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
@@ -14,7 +14,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.profile.PlayerTextures;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spigotmc.SpigotConfig;
@@ -37,7 +37,7 @@ public class CraftPlayerProfile implements PlayerProfile {
     private GameProfile profile;
     private final PropertySet properties = new PropertySet();
  
-    public CraftPlayerProfile(PlayerImpl player) {
+    public CraftPlayerProfile(CraftPlayer player) {
         this.profile = player.getHandle().getGameProfile();
     }
 

@@ -9,9 +9,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinInventory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinInventory;
 
 import net.minecraft.entity.passive.AbstractHorseEntity;
 import net.minecraft.inventory.SimpleInventory;
@@ -26,7 +26,7 @@ public class MixinHorseBaseEntity implements IHorseBaseEntity {
     public void callJumpEvent(int i, CallbackInfo ci) {
         float power = (i >= 90) ? 1.0F : (0.4F + 0.4F * (float) i / 90.0F);
 
-        HorseJumpEvent event = BukkitEventFactory.callHorseJumpEvent((AbstractHorseEntity )(Object)this, power);
+        HorseJumpEvent event = CraftEventFactory.callHorseJumpEvent((AbstractHorseEntity )(Object)this, power);
         if (event.isCancelled()) {
             ci.cancel();
             return;

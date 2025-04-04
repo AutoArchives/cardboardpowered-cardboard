@@ -17,7 +17,7 @@ import org.bukkit.inventory.StonecuttingRecipe;
 import org.bukkit.inventory.view.StonecutterView;
 import org.jetbrains.annotations.NotNull;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinRecipe;
+import org.cardboardpowered.interfaces.IMixinRecipe;
 
 public class CraftStonecutterView extends CraftInventoryView<StonecutterScreenHandler, StonecutterInventory> implements StonecutterView {
 

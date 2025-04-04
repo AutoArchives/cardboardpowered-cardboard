@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.item;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.AbstractBoatEntity;
@@ -44,7 +44,7 @@ public abstract class MixinBoatItem extends Item {
     public void bukkitize(World world, PlayerEntity player, Hand hand, CallbackInfoReturnable<TypedActionResult> ci) {
         ItemStack itemstack = player.getStackInHand(hand);
         BlockHitResult movingobjectpositionblock = raycast(world, player, RaycastContext.FluidHandling.ANY);
-        org.bukkit.event.player.PlayerInteractEvent event = BukkitEventFactory.callPlayerInteractEvent((ServerPlayerEntity) player, org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), itemstack, hand);
+        org.bukkit.event.player.PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent((ServerPlayerEntity) player, org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), itemstack, hand);
 
         if (event.isCancelled()) {
             ci.setReturnValue(new TypedActionResult(ActionResult.PASS, itemstack));
@@ -98,7 +98,7 @@ public abstract class MixinBoatItem extends Item {
             }
         }
         if (movingobjectpositionblock.getType() == HitResult.Type.BLOCK) {
-            PlayerInteractEvent event = BukkitEventFactory.callPlayerInteractEvent((ServerPlayerEntity)user, Action.RIGHT_CLICK_BLOCK, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), itemstack, false, hand/*, movingobjectpositionblock.getPos()*/);
+            PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent((ServerPlayerEntity)user, Action.RIGHT_CLICK_BLOCK, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), itemstack, false, hand/*, movingobjectpositionblock.getPos()*/);
             if (event.isCancelled()) {
                 return ActionResult.PASS;
             }
@@ -111,7 +111,7 @@ public abstract class MixinBoatItem extends Item {
                 return ActionResult.FAIL;
             }
             if (!world.isClient) {
-                if (BukkitEventFactory.callEntityPlaceEvent(world, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), user, abstractboat, hand).isCancelled()) {
+                if (CraftEventFactory.callEntityPlaceEvent(world, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), user, abstractboat, hand).isCancelled()) {
                     return ActionResult.FAIL;
                 }
                 if (!world.spawnEntity(abstractboat)) {
@@ -149,7 +149,7 @@ public abstract class MixinBoatItem extends Item {
 
             if (result.getType() == HitResult.Type.BLOCK) {
                 if (isValid(worldIn)) {
-                    PlayerInteractEvent event = BukkitEventFactory.callPlayerInteractEvent((ServerPlayerEntity)playerIn, Action.RIGHT_CLICK_BLOCK, result.getBlockPos(), result.getSide(), itemstack, handIn);
+                    PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent((ServerPlayerEntity)playerIn, Action.RIGHT_CLICK_BLOCK, result.getBlockPos(), result.getSide(), itemstack, handIn);
 
                     if (event.isCancelled()) {
                         return new TypedActionResult<>(ActionResult.PASS, itemstack);
@@ -163,7 +163,7 @@ public abstract class MixinBoatItem extends Item {
                     return new TypedActionResult<>(ActionResult.FAIL, itemstack);
                 } else {
                     if (!worldIn.isClient) {
-                        if (isValid(worldIn) && BukkitEventFactory.callEntityPlaceEvent(worldIn, result.getBlockPos(), result.getSide(), playerIn, boatentity, handIn).isCancelled()) {
+                        if (isValid(worldIn) && CraftEventFactory.callEntityPlaceEvent(worldIn, result.getBlockPos(), result.getSide(), playerIn, boatentity, handIn).isCancelled()) {
                             return new TypedActionResult<>(ActionResult.FAIL, itemstack);
                         }
                         if (!worldIn.spawnEntity(boatentity)) {
@@ -215,7 +215,7 @@ public abstract class MixinBoatItem extends Item {
 
             if (hitResult.getType() == HitResult.Type.BLOCK) {
                 BlockHitResult movingobjectpositionblock = raycast(world, user, RaycastContext.FluidHandling.ANY);
-                org.bukkit.event.player.PlayerInteractEvent event = BukkitEventFactory.callPlayerInteractEvent((ServerPlayerEntity) user, org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), itemStack, hand);
+                org.bukkit.event.player.PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent((ServerPlayerEntity) user, org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), itemStack, hand);
                 if (event.isCancelled()) {
                     return new TypedActionResult(ActionResult.PASS, itemStack);
                 }
@@ -227,7 +227,7 @@ public abstract class MixinBoatItem extends Item {
                     return TypedActionResult.fail(itemStack);
                 } else {
                     if (!world.isClient) {
-                        if (BukkitEventFactory.callEntityPlaceEvent(world, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), user, boatEntity).isCancelled()) {
+                        if (CraftEventFactory.callEntityPlaceEvent(world, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), user, boatEntity).isCancelled()) {
                             return TypedActionResult.fail(itemStack);
                         }
 

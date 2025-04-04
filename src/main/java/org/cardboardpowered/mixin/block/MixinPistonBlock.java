@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.block;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IMixinWorld;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.PistonBlock;
 import net.minecraft.block.piston.PistonHandler;

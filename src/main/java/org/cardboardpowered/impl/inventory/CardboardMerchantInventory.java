@@ -6,8 +6,8 @@ import net.minecraft.village.MerchantInventory;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.MerchantRecipe;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinTradeOffer;
-import com.javazilla.bukkitfabric.interfaces.IMixinTrader;
+import org.cardboardpowered.interfaces.IMixinTradeOffer;
+import org.cardboardpowered.interfaces.IMixinTrader;
 
 public class CardboardMerchantInventory extends CraftInventory implements org.bukkit.inventory.MerchantInventory {
 

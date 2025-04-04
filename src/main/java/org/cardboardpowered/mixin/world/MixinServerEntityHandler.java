@@ -20,8 +20,8 @@ package org.cardboardpowered.mixin.world;
 
 import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.world.ServerWorld.ServerEntityHandler;
 import org.spongepowered.asm.mixin.Mixin;
@@ -36,7 +36,7 @@ public class MixinServerEntityHandler {
     public void unvalidateEntityBF(Entity entity, CallbackInfo ci) {
         IMixinEntity bf = (IMixinEntity) entity;
         bf.setValid(false);
-        BukkitEventFactory.callEvent( new EntityRemoveFromWorldEvent(bf.getBukkitEntity(), entity.getWorld().getWorldImpl()) );
+        CraftEventFactory.callEvent( new EntityRemoveFromWorldEvent(bf.getBukkitEntity(), entity.getWorld().getWorldImpl()) );
     }
 
     @Inject(at = @At("TAIL"), method = "startTicking(Lnet/minecraft/entity/Entity;)V")
@@ -48,7 +48,7 @@ public class MixinServerEntityHandler {
         if (null == bf.getOriginBF() && bf.getBukkitEntity() != null)
             bf.setOriginBF(bf.getBukkitEntity().getLocation()); // Paper Entity Origin API
 
-        BukkitEventFactory.callEvent( new EntityAddToWorldEvent(bf.getBukkitEntity(), entity.getWorld().getWorldImpl()) );
+        CraftEventFactory.callEvent( new EntityAddToWorldEvent(bf.getBukkitEntity(), entity.getWorld().getWorldImpl()) );
     } 
 
 }

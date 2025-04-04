@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.brain.MemoryModuleType;
@@ -24,7 +24,7 @@ public class MixinForgetAttackTargetTask<E extends MobEntity> {
 	/*@Inject(at = @At("HEAD"), method = "forgetAttackTarget", cancellable = true)
     public void callTargetEvent(E e0, CallbackInfo ci) {
         LivingEntity old = e0.getBrain().getOptionalMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
-        EntityTargetEvent event = BukkitEventFactory.callEntityTargetLivingEvent(e0, old, (old != null && !old.isAlive()) ? EntityTargetEvent.TargetReason.TARGET_DIED : EntityTargetEvent.TargetReason.FORGOT_TARGET);
+        EntityTargetEvent event = CraftEventFactory.callEntityTargetLivingEvent(e0, old, (old != null && !old.isAlive()) ? EntityTargetEvent.TargetReason.TARGET_DIED : EntityTargetEvent.TargetReason.FORGOT_TARGET);
         if (event.isCancelled()) return;
 
         if (event.getTarget() != null) {

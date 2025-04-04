@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.inventory;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinInventory;
+import org.cardboardpowered.interfaces.IMixinInventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.collection.DefaultedList;

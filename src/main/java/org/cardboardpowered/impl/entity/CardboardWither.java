@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.boss.WitherEntity;
 
-public class CardboardWither extends MonsterImpl implements Wither {
+public class CardboardWither extends CraftMonster implements Wither {
 
     private BossBar bossBar;
 

@@ -1,9 +1,9 @@
 package org.cardboardpowered.mixin.network;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinClientConnection;
-import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
-import com.javazilla.bukkitfabric.interfaces.IMixinPlayerManager;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerLoginNetworkHandler;
+import org.cardboardpowered.interfaces.IMixinClientConnection;
+import org.cardboardpowered.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.interfaces.IMixinPlayerManager;
+import org.cardboardpowered.interfaces.IMixinServerLoginNetworkHandler;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.exceptions.AuthenticationUnavailableException;
 import io.netty.channel.local.LocalAddress;
@@ -94,7 +94,7 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 	
 	//@Inject(at = @At("TAIL"), method = "<init>*")
 	//public void setBF(MinecraftServer minecraftserver, ClientConnection networkmanager, boolean something, CallbackInfo ci) {
-	//	BukkitFabricMod.NETWORK_CACHE.add((ServerLoginNetworkHandler) (Object) this);
+	//	CardboardMod.NETWORK_CACHE.add((ServerLoginNetworkHandler) (Object) this);
 	//}
 
 	@Override
@@ -245,7 +245,7 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
     /*@Overwrite
     private static PlayerPublicKey getVerifiedPublicKey(@Nullable PlayerPublicKey.PublicKeyData publicKeyData, UUID playerUuid, SignatureVerifier servicesSignatureVerifier, boolean shouldThrowOnMissingKey) throws PlayerPublicKey.PublicKeyException {
         if (publicKeyData == null) {
-        	BukkitFabricMod.LOGGER.info("PUBLIC KEY DATA IS NULL!!");
+        	CardboardMod.LOGGER.info("PUBLIC KEY DATA IS NULL!!");
             if (shouldThrowOnMissingKey) {
                 throw new PlayerPublicKey.PublicKeyException(PlayerPublicKey.EXPIRED_PUBLIC_KEY_TEXT);
             }
@@ -376,12 +376,12 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
                     //callPlayerPreLoginEvents(gameprofile);
                     fireEvents();
                     
-                    BukkitFabricMod.LOGGER.info("UUID of player " + gameprofile.getName() + " is " + gameprofile.getId());
+                    CardboardMod.LOGGER.info("UUID of player " + gameprofile.getName() + " is " + gameprofile.getId());
 
                     startVerify(gameprofile);
                 } catch (Exception ex) {
                     disconnect("Failed to verify username!");
-                    BukkitFabricMod.LOGGER.log(java.util.logging.Level.WARNING, "Exception verifying " + profileName, ex);
+                    CardboardMod.LOGGER.log(java.util.logging.Level.WARNING, "Exception verifying " + profileName, ex);
                 }
             }
         }

@@ -5,7 +5,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IMixinWorld;
 
 import net.minecraft.block.entity.EnderChestBlockEntity;
 import net.minecraft.inventory.EnderChestInventory;

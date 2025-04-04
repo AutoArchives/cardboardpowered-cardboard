@@ -5,7 +5,7 @@ import java.util.List;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -49,7 +49,7 @@ public class MixinEndCrystalItem {
             EndCrystalEntity entityendercrystal = new EndCrystalEntity(world, x + 0.5D, y, z + 0.5D);
 
             entityendercrystal.setShowBottom(false);
-            if (BukkitEventFactory.callEntityPlaceEvent(itemactioncontext, entityendercrystal).isCancelled()) return ActionResult.FAIL;
+            if (CraftEventFactory.callEntityPlaceEvent(itemactioncontext, entityendercrystal).isCancelled()) return ActionResult.FAIL;
             world.spawnEntity(entityendercrystal);
             EnderDragonFight enderdragonbattle = ((ServerWorld) world).getEnderDragonFight();
             if (enderdragonbattle != null) enderdragonbattle.respawnDragon();

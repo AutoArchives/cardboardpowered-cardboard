@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.item;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinLivingEntity;
+import org.cardboardpowered.interfaces.IMixinLivingEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.PotionItem;

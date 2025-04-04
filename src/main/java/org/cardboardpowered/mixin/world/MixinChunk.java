@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.google.common.collect.Maps;
-import com.javazilla.bukkitfabric.interfaces.IMixinChunk;
+import org.cardboardpowered.interfaces.IMixinChunk;
 
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.registry.Registry;

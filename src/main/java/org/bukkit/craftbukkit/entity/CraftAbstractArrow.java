@@ -2,8 +2,8 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinPersistentProjectileEntity;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinPersistentProjectileEntity;
 
 import net.kyori.adventure.text.Component;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;

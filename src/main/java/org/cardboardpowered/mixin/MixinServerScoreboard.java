@@ -1,13 +1,13 @@
 package org.cardboardpowered.mixin;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.bukkit.craftbukkit.CraftServer;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -29,7 +29,7 @@ public class MixinServerScoreboard extends Scoreboard {
 
         while (iterator.hasNext()) {
             ServerPlayerEntity entityplayer = (ServerPlayerEntity) iterator.next();
-            if (((PlayerImpl)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue; // Bukkit - Only players on this board
+            if (((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue; // Bukkit - Only players on this board
             Iterator iterator1 = list.iterator();
 
             while (iterator1.hasNext()) {
@@ -47,7 +47,7 @@ public class MixinServerScoreboard extends Scoreboard {
 
         while (iterator.hasNext()) {
             ServerPlayerEntity entityplayer = (ServerPlayerEntity) iterator.next();
-            if (((PlayerImpl)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue; // Bukkit - Only players on this board
+            if (((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue; // Bukkit - Only players on this board
             Iterator iterator1 = list.iterator();
 
             while (iterator1.hasNext()) {
@@ -61,7 +61,7 @@ public class MixinServerScoreboard extends Scoreboard {
 
     private void sendAll(Packet packet) {
         for (ServerPlayerEntity entityplayer : CraftServer.server.getPlayerManager().players)
-            if (((PlayerImpl)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() == (ServerScoreboard)(Object)this)
+            if (((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() == (ServerScoreboard)(Object)this)
                 entityplayer.networkHandler.sendPacket(packet);
     }
     */
@@ -74,7 +74,7 @@ public class MixinServerScoreboard extends Scoreboard {
     public void startSyncing(ScoreboardObjective objective) {
         List<Packet<?>> list = ((ServerScoreboard)(Object)this).createChangePackets(objective);
         for (ServerPlayerEntity entityplayer : CraftServer.INSTANCE.getHandle().getPlayerManager().getPlayerList()) {
-            if (((PlayerImpl)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue;
+            if (((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue;
             for (Packet<?> packet : list) {
                 entityplayer.networkHandler.sendPacket(packet);
             }
@@ -90,7 +90,7 @@ public class MixinServerScoreboard extends Scoreboard {
     public void stopSyncing(ScoreboardObjective objective) {
         List<Packet<?>> list = ((ServerScoreboard)(Object)this).createRemovePackets(objective);
         for (ServerPlayerEntity entityplayer : CraftServer.INSTANCE.getHandle().getPlayerManager().getPlayerList()) {
-            if (((PlayerImpl)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue;
+            if (((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue;
             for (Packet<?> packet : list) {
                 entityplayer.networkHandler.sendPacket(packet);
             }
@@ -104,7 +104,7 @@ public class MixinServerScoreboard extends Scoreboard {
      */
     private void broadcastAll(Packet packet) {
         for (ServerPlayerEntity entityplayer : CraftServer.INSTANCE.getHandle().getPlayerManager().players) {
-            if (((PlayerImpl)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != this) continue;
+            if (((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != this) continue;
             entityplayer.networkHandler.sendPacket(packet);
         }
     }

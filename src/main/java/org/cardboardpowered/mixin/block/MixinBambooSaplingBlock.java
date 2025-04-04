@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.block;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import net.minecraft.block.BambooShootBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
@@ -11,6 +11,6 @@ import org.spongepowered.asm.mixin.Mixin;
 public class MixinBambooSaplingBlock {
 
     public boolean bukkitSpreadEvent(World world, BlockPos pos, BlockState newState, int flags) {
-        return BukkitEventFactory.handleBlockSpreadEvent(world, pos.down(), pos, newState, flags);
+        return CraftEventFactory.handleBlockSpreadEvent(world, pos.down(), pos, newState, flags);
     }
 }

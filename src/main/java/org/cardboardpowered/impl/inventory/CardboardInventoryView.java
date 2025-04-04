@@ -14,7 +14,7 @@ import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinScreenHandler;
+import org.cardboardpowered.interfaces.IMixinScreenHandler;
 
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;

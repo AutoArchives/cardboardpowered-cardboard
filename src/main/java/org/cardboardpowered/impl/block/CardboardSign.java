@@ -15,12 +15,12 @@ import org.bukkit.block.sign.SignSide;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerSignOpenEvent;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.cardboardpowered.interfaces.IMixinSignBlockEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinSignBlockEntity;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 import io.papermc.paper.event.player.PlayerOpenSignEvent;
 import net.kyori.adventure.text.Component;
@@ -193,12 +193,12 @@ public class CardboardSign<T extends SignBlockEntity> extends CardboardBlockEnti
         if (!event.callEvent()) {
             return;
         }
-        if (PlayerSignOpenEvent.getHandlerList().getRegisteredListeners().length > 0 && !BukkitEventFactory.callPlayerSignOpenEvent(player, sign, side, PlayerSignOpenEvent.Cause.PLUGIN)) {
+        if (PlayerSignOpenEvent.getHandlerList().getRegisteredListeners().length > 0 && !CraftEventFactory.callPlayerSignOpenEvent(player, sign, side, PlayerSignOpenEvent.Cause.PLUGIN)) {
             return;
         }
         SignBlockEntity handle = (SignBlockEntity)((CardboardSign)sign).getTileEntity();
         handle.setEditor(player.getUniqueId());
-        ((PlayerImpl)player).getHandle().openEditSignScreen(handle, Side.FRONT == side);
+        ((CraftPlayer)player).getHandle().openEditSignScreen(handle, Side.FRONT == side);
 	}
     
     // 1.20.4 API:
@@ -207,7 +207,7 @@ public class CardboardSign<T extends SignBlockEntity> extends CardboardBlockEnti
 	public @NotNull SignSide getTargetSide(@NotNull Player player) {
         /*
 		Preconditions.checkArgument((player != null ? 1 : 0) != 0, (Object)"player cannot be null");
-        if (((SignBlockEntity)this.getSnapshot()).isPlayerFacingFront(((PlayerImpl)player).getHandle())) {
+        if (((SignBlockEntity)this.getSnapshot()).isPlayerFacingFront(((CraftPlayer)player).getHandle())) {
             return this.front;
         }
         return this.back;

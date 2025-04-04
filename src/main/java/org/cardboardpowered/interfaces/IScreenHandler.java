@@ -10,7 +10,7 @@ import org.cardboardpowered.impl.inventory.CardboardInventoryView;
  * 
  * @author Cardboard Mod
  * @see {@link net.minecraft.screen.ScreenHandler}
- * @see {@link com.javazilla.bukkitfabric.interfaces.IMixinScreenHandler}
+ * @see {@link org.cardboardpowered.interfaces.IMixinScreenHandler}
  */
 public interface IScreenHandler {
 

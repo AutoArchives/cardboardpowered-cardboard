@@ -8,7 +8,7 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.ThrowableProjectile;
 import org.bukkit.inventory.ItemStack;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinThrownItemEntity;
+import org.cardboardpowered.interfaces.IMixinThrownItemEntity;
 
 public class ThrowableProjectileImpl extends CraftProjectile implements ThrowableProjectile {
 

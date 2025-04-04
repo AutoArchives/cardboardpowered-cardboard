@@ -1,7 +1,7 @@
 package org.cardboardpowered.mixin.loot;
 
 import com.google.common.collect.ImmutableMap;
-import com.javazilla.bukkitfabric.interfaces.IMixinLootManager;
+import org.cardboardpowered.interfaces.IMixinLootManager;
 // import net.minecraft.loot.LootDataKey;
 import net.minecraft.loot.LootDataType;
 // import net.minecraft.loot.LootManager;

@@ -7,7 +7,7 @@ import org.bukkit.entity.Pig;
 
 import net.minecraft.entity.passive.PigEntity;
 
-public class CardboardPig extends AnimalsImpl implements Pig {
+public class CardboardPig extends CraftAnimals implements Pig {
 
     public CardboardPig(CraftServer server, PigEntity entity) {
         super(server, entity);

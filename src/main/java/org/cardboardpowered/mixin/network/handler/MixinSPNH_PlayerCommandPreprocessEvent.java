@@ -1,8 +1,8 @@
 package org.cardboardpowered.mixin.network.handler;
 
-import com.javazilla.bukkitfabric.BukkitFabricMod;
-import com.javazilla.bukkitfabric.interfaces.IMixinPlayNetworkHandler;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.CardboardMod;
+import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import com.mojang.brigadier.ParseResults;
 import net.minecraft.command.argument.SignedArgumentList;
 import net.minecraft.network.message.LastSeenMessageList;
@@ -21,7 +21,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.cardboardpowered.CardboardConfig;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.util.LazyPlayerSet;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -48,7 +48,7 @@ public abstract class MixinSPNH_PlayerCommandPreprocessEvent implements IMixinPl
 	public void executeCommand(String command) {
         String command1 = "/" + command;
         //if (SpigotConfig.logCommands) {
-        	BukkitFabricMod.LOGGER.info(this.player.getNameForScoreboard() + " issued server command: " + command1);
+        	CardboardMod.LOGGER.info(this.player.getNameForScoreboard() + " issued server command: " + command1);
         //}
         PlayerCommandPreprocessEvent event = new PlayerCommandPreprocessEvent(this.getPlayer(), command1, new LazyPlayerSet(CraftServer.server));
         CraftServer.INSTANCE.getPluginManager().callEvent(event);
@@ -64,7 +64,7 @@ public abstract class MixinSPNH_PlayerCommandPreprocessEvent implements IMixinPl
 		}
         
         if (CraftServer.server.shouldEnforceSecureProfile() && SignedArgumentList.isNotEmpty(parseresults)) {
-        	// BukkitFabricMod.LOGGER.error("Received unsigned command packet from {}, but the command requires signable arguments: {}", (Object)this.player.getGameProfile().getName(), (Object)command);
+        	// CardboardMod.LOGGER.error("Received unsigned command packet from {}, but the command requires signable arguments: {}", (Object)this.player.getGameProfile().getName(), (Object)command);
             // this.player.sendMessage(INVALID_COMMAND_SIGNATURE_TEXT);
         } else {
         	CraftServer.server.getCommandManager().execute(parseresults, command);
@@ -80,11 +80,11 @@ public abstract class MixinSPNH_PlayerCommandPreprocessEvent implements IMixinPl
 	// private void handleCommandExecution(CommandExecutionC2SPacket packet, LastSeenMessageList lastseenmessages) {
 	private void handleCommandExecution(ChatCommandSignedC2SPacket packet, LastSeenMessageList lastSeenMessages) {
 		
-		BukkitFabricMod.LOGGER.info("HANDLE COMMAND EXEC!");
+		CardboardMod.LOGGER.info("HANDLE COMMAND EXEC!");
 		
 		SignedMessage playerchatmessage;
 		String command = "/" + packet.command();
-		BukkitFabricMod.LOGGER.info(this.player.getGameProfile().getName() + " issued server command: " + command);
+		CardboardMod.LOGGER.info(this.player.getGameProfile().getName() + " issued server command: " + command);
 		PlayerCommandPreprocessEvent event = new PlayerCommandPreprocessEvent(this.getPlayer(), command, new LazyPlayerSet(CraftServer.server));
 		CraftServer.INSTANCE.getPluginManager().callEvent(event);
 
@@ -132,8 +132,8 @@ public abstract class MixinSPNH_PlayerCommandPreprocessEvent implements IMixinPl
 	}
 
 	@Shadow @Final private MessageChainTaskQueue messageChainTaskQueue;
-	public PlayerImpl getPlayer() {
-		return (PlayerImpl) ((IMixinServerEntityPlayer) (Object) this.player).getBukkitEntity();
+	public CraftPlayer getPlayer() {
+		return (CraftPlayer) ((IMixinServerEntityPlayer) (Object) this.player).getBukkitEntity();
 	}
 
 }

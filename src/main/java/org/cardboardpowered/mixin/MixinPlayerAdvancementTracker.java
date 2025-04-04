@@ -18,8 +18,8 @@
  */
 package org.cardboardpowered.mixin;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinAdvancement;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinAdvancement;
+import org.cardboardpowered.interfaces.IMixinEntity;
 import net.minecraft.advancement.AdvancementEntry;
 import net.minecraft.advancement.PlayerAdvancementTracker;
 import net.minecraft.server.network.ServerPlayerEntity;

@@ -17,8 +17,6 @@ import org.cardboardpowered.library.Library;
 import org.cardboardpowered.library.LibraryManager;
 import org.cardboardpowered.util.GameVersion;
 import org.cardboardpowered.util.JarReader;
-import org.cardboardpowered.util.MappTest;
-import org.cardboardpowered.util.TestCl;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -157,7 +155,7 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         return JarReader.found.contains(event);
     }
     
-    private static final TestCl dummy = new TestCl();
+    // private static final TestCl dummy = new TestCl();
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {

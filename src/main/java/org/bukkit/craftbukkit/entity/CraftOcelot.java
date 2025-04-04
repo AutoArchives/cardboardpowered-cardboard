@@ -4,9 +4,9 @@ import net.minecraft.entity.passive.OcelotEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Ocelot;
-import org.cardboardpowered.impl.entity.AnimalsImpl;
+import org.cardboardpowered.impl.entity.CraftAnimals;
 
-public class CraftOcelot extends AnimalsImpl implements Ocelot {
+public class CraftOcelot extends CraftAnimals implements Ocelot {
  
     public CraftOcelot(CraftServer server, OcelotEntity ocelot) {
         super(server, ocelot);

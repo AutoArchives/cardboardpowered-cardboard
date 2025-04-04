@@ -4,9 +4,9 @@ import net.minecraft.entity.mob.SpiderEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Spider;
-import org.cardboardpowered.impl.entity.MonsterImpl;
+import org.cardboardpowered.impl.entity.CraftMonster;
 
-public class CraftSpider extends MonsterImpl implements Spider {
+public class CraftSpider extends CraftMonster implements Spider {
 
     public CraftSpider(CraftServer server, SpiderEntity entity) {
         super(server, entity);

@@ -30,8 +30,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.Entity;
@@ -91,7 +91,7 @@ public class MixinBlockItem implements IBlockItem {
             World world = context.getWorld();
             PlayerEntity entityhuman = context.getPlayer();
 
-            BlockPlaceEvent placeEvent = BukkitEventFactory.callBlockPlaceEvent((ServerWorld) world, entityhuman, context.getHand(), bukkit_state, pos.getX(), pos.getY(), pos.getZ());
+            BlockPlaceEvent placeEvent = CraftEventFactory.callBlockPlaceEvent((ServerWorld) world, entityhuman, context.getHand(), bukkit_state, pos.getX(), pos.getY(), pos.getZ());
             if (placeEvent.isCancelled() || !placeEvent.canBuild()) {
                 bukkit_state.update(true, false);
                 ci.setReturnValue(ActionResult.FAIL);

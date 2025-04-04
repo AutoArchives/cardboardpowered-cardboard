@@ -19,8 +19,8 @@
 package org.cardboardpowered.mixin;
 
 import com.google.common.collect.Maps;
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
 import net.minecraft.command.CommandSource;
@@ -71,7 +71,7 @@ public class MixinCommandManager {
             bukkit.add(node.getName());
 
         PlayerCommandSendEvent event = new PlayerCommandSendEvent((Player) ((IMixinServerEntityPlayer)entityplayer).getBukkitEntity(), new LinkedHashSet<>(bukkit));
-        BukkitEventFactory.callEvent(event);
+        CraftEventFactory.callEvent(event);
 
         // Remove labels that were removed during the event
         //for (String orig : bukkit)

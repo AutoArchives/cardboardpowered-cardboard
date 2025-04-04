@@ -1,7 +1,7 @@
 package org.cardboardpowered.impl.inventory;
 
 import com.google.common.base.Preconditions;
-import com.javazilla.bukkitfabric.interfaces.IMixinInventory;
+import org.cardboardpowered.interfaces.IMixinInventory;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.UpdateSelectedSlotS2CPacket;
@@ -14,7 +14,7 @@ import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -71,7 +71,7 @@ public class CardboardPlayerInventory extends CraftInventory implements org.bukk
     public void setItem(int index, ItemStack item) {
         super.setItem(index, item);
         if (this.getHolder() == null) return;
-        ServerPlayerEntity player = ((PlayerImpl) this.getHolder()).getHandle();
+        ServerPlayerEntity player = ((CraftPlayer) this.getHolder()).getHandle();
         if (player.networkHandler == null) return;
 
         if (index < PlayerInventory.getHotbarSize())
@@ -143,7 +143,7 @@ public class CardboardPlayerInventory extends CraftInventory implements org.bukk
     public void setHeldItemSlot(int slot) {
         Validate.isTrue(slot >= 0 && slot < PlayerInventory.getHotbarSize(), "Slot is not between 0 and 8 inclusive");
         this.getInventory().selectedSlot = slot;
-        ((PlayerImpl) this.getHolder()).getHandle().networkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(slot));
+        ((CraftPlayer) this.getHolder()).getHandle().networkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(slot));
     }
 
     @Override

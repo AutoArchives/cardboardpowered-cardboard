@@ -1,6 +1,6 @@
 package com.destroystokyo.paper.loottable;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IMixinWorld;
 
 import java.util.UUID;
 import net.minecraft.world.World;

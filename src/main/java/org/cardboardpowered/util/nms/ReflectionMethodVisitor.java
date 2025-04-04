@@ -1,6 +1,6 @@
 /**
  * Cardboard - Bukkit/Spigot/Paper API for Fabric
- * Copyright (C) 2023, CardboardPowered.org
+ * Copyright (C) 2023-2025, CardboardPowered.org
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,7 +17,6 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.cardboardpowered.util.nms;
-// package com.javazilla.bukkitfabric.nms;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.MappingResolver;
@@ -31,15 +30,10 @@ import org.cardboardpowered.CardboardConfig;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-import com.javazilla.bukkitfabric.BukkitFabricMod;
+import org.cardboardpowered.CardboardMod;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class ReflectionMethodVisitor extends MethodVisitor {
@@ -50,60 +44,22 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         SKIP.add("worldguard");
         //SKIP.add("worldedit");
     }
+
     private String pln;
     private MappingResolver mr;
-    // private MappingResolver mr2;
-    
-    public static HashMap<String,String> spigot2obf;
-    public static HashMap<String,String> cbm;
 
     public ReflectionMethodVisitor(int api, MethodVisitor visitMethod, String pln) {
         super(api, visitMethod);
         this.pln = pln;
-        
 
-        
-      //  net.fabricmc.loader.impl.FabricLoaderImpl l;
         this.mr = FabricLoader.getInstance().getMappingResolver();
-        // this.mr2 = new Testing("official");
-        if (null == spigot2obf) {
-            spigot2obf = new HashMap<>();
-            cbm = new HashMap<>();
-            try {
-                if (new File("builddata.txt").isFile()) {
-                    for (String s : Files.readAllLines(new File("builddata.txt").toPath())) {
-                        if (s.indexOf('#') != -1) continue;
-                        
-                        String[] spl = s.split(" ");
-                        spigot2obf.put(spl[1], spl[0]);
-                     //   System.out.println("MAP: " + spl[1] + " | " + spl[0]);
-                    }
-                    System.out.println("Loaded 1.17 Obf Class Map: " + spigot2obf.size());
-                    for (String s : Files.readAllLines(new File("bd-m.txt").toPath())) {
-                        if (s.indexOf('#') != -1) continue;
-        
-                        String[] spl = s.split(" ");
-                        spigot2obf.put(spl[0] + "#" + spl[3], spl[1]);
-                    }
-                    for (String s : Files.readAllLines(new File("cbm.txt").toPath())) {
-                        if (s.indexOf('!') != -1) continue;
-
-                        String[] spl = s.split("=");
-                        System.out.println("SPLIT: " + spl[0] + "," + spl[1]);
-                        cbm.put(spl[0].trim(), spl[1].trim());
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     @Override
     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
         if (CardboardConfig.DEBUG_VERBOSE_CALLS) {
         	if (!owner.startsWith("java/")) {
-        		BukkitFabricMod.LOGGER.info(owner + " / " + name);
+        		CardboardMod.LOGGER.info(owner + " / " + name);
         	}
         }
     	
@@ -181,13 +137,12 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         	    	}
         			
         		} catch (ClassNotFoundException e) {
-        			BukkitFabricMod.LOGGER.finest("MISSING CLASS MAPPING FOR: " + owner);
+        			CardboardMod.LOGGER.finest("MISSING CLASS MAPPING FOR: " + owner);
         			System.out.println(e.getMessage());
         		} catch (Exception e) {
         			// Oh no!
         			e.printStackTrace();
         		}
-        		
 
         		// System.out.println("\tFIELD:: " + owner + " " + name + " " + desc + " (" + sigg + ") " + " === " + mapped);
         	}
@@ -196,15 +151,13 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         		// Note: Find out why this is being mapped wrong in the worldedit adaptor
         		mapped = "field_41254";
         	}
-        	
+
         	if (mapped.equalsIgnoreCase("field_41199")) {
         		mapped = "field_41197";
         	}
-        	
-        	
-        	
-        	 super.visitFieldInsn( opcode, owner, mapped, desc );
-             return;
+
+        	super.visitFieldInsn( opcode, owner, mapped, desc );
+        	return;
         }
         
     	if (name.equalsIgnoreCase("field_41255")) {
@@ -212,13 +165,11 @@ public class ReflectionMethodVisitor extends MethodVisitor {
     		name = "field_41254";
     	}
 
-    	
     	if (name.equalsIgnoreCase("field_41199")) {
     		// Note: Find out why this is being mapped wrong in the worldedit adaptor
     		name = "field_41197";
     	}
 
-    	
         super.visitFieldInsn( opcode, owner, name, desc );
     }
 
@@ -230,10 +181,6 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         }
     }
 
-    public static int fixed = 0; // max so far: 484
-    public static int lastF = 484;
-
-    
     public static String do_map(String owner, String name, String desc) {
     	MappingResolver mr = FabricLoader.getInstance().getMappingResolver(); 
 
@@ -300,24 +247,22 @@ public class ReflectionMethodVisitor extends MethodVisitor {
     	    	}
     			
     		} catch (ClassNotFoundException e) {
-    			BukkitFabricMod.LOGGER.finest("MISSING CLASS MAPPING FOR: " + owner);
+    			CardboardMod.LOGGER.finest("MISSING CLASS MAPPING FOR: " + owner);
     			System.out.println("ClassNotFound: " + e.getMessage());
     		} catch (Exception e) {
     			// Oh no!
     			e.printStackTrace();
     		}
     		
+    		/*
     		if (!res.startsWith("method_")) {
-    		//	System.out.println("TESTING: " + owner + " " + name + " " + desc + " (" + sigg + ") " + " === " + mapped + " (" + res + ")");
-    			
-    			
-    			
+    			//	System.out.println("TESTING: " + owner + " " + name + " " + desc + " (" + sigg + ") " + " === " + mapped + " (" + res + ")");
     		}
+    		*/
     		mapped = res;
     		
     	}
-    	
-    	
+
     	//if (!mapped.startsWith("method_")) {
     	//	System.out.println("TESTING: " + owner + " " + name + " " + desc + " (" + sigg + ") " + " === " + mapped);
     	//}
@@ -325,11 +270,6 @@ public class ReflectionMethodVisitor extends MethodVisitor {
     }
     
     public static String find_in_inheritance(Class<?> clazz, String obf_name, String desc, String sigg) {
-    	//System.out.println(clazz.getName());
-    	
-    	// for (Method m : clazz.getMethods()){
-    	// }
-    	
     	MappingResolver mr = FabricLoader.getInstance().getMappingResolver(); 
     	
 		String owner_official = mr.unmapClassName("official", clazz.getName().replace('/', '.'));
@@ -358,11 +298,6 @@ public class ReflectionMethodVisitor extends MethodVisitor {
     }
     
     public static String find_in_inheritance_f(Class<?> clazz, String obf_name, String desc, String sigg) {
-    	//System.out.println(clazz.getName());
-    	
-    	// for (Method m : clazz.getMethods()){
-    	// }
-    	
     	MappingResolver mr = FabricLoader.getInstance().getMappingResolver(); 
     	
 		String owner_official = mr.unmapClassName("official", clazz.getName().replace('/', '.'));
@@ -389,35 +324,39 @@ public class ReflectionMethodVisitor extends MethodVisitor {
     	}
     	return obf_name;
     }
-   
-    public void debug(Object o) {
-    	// System.out.println(o);
+
+    private void debug(String o) {
+    	if (CardboardConfig.DEBUG_VERBOSE_CALLS) {
+    		CardboardMod.LOGGER.info(o);
+    	}
     }
     
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
         if (CardboardConfig.DEBUG_VERBOSE_CALLS) {
         	if (!owner.startsWith("java/")) {
-        		BukkitFabricMod.LOGGER.info(owner + " / " + name);
+        		CardboardMod.LOGGER.info(owner + " / " + name);
         	}
         }
         
         if (owner.contains("LegacyPotionMetaProvider")) {
-        	System.out.println(owner + " " + name + " " + desc);
+        	debug(owner + " " + name + " " + desc);
         	owner = owner.replace("LegacyPotionMetaProvider", "ModernPotionMetaProvider");
         }
     	
+        /*
     	if (name.equals("getCraftServer")) {
         	//System.out.println(owner + " " + name + " " + desc);
             // super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/ReflectionRemapper", name, desc, false );
             // return;
         }
-        
+
     	boolean DEBUG = false;
     	
         if (DEBUG && (owner.contains("net/ess3") || owner.contains("com/earth2me/"))) {
         	System.out.println(owner + " / " + name);
         }
+        */
         
         if (owner.startsWith("org/bukkit/craftbukkit") && owner.contains(ReflectionRemapper.NMS_VERSION)) {
         	System.out.println("Stripping version package (" + ReflectionRemapper.NMS_VERSION + ") from org/bukkit/craftbukkit reference.");
@@ -426,47 +365,27 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         
         if (owner.startsWith("net/minecraft") && name.equals("getMinecraftServer")) {
             super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/ReflectionRemapper", "getNmsServer", desc, false );
-            //System.out.println(owner + " " + name + " " + desc);
             return;
         }
 
         if (owner.startsWith("net/minecraft") && name.equals("getServer")) {
             super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/ReflectionRemapper", "getNmsServer", desc, false );
-            //System.out.println(owner + " " + name + " " + desc);
             return;
         }
         
         if (name.contains("method_45136")) {
-        	// System.out.println("DEBUG OPCODE: " + opcode + " / " + name);
         	if (opcode == Opcodes.INVOKESTATIC) {
         		// Give us the static method
         		name = "method_12829";
         	}
         }
         
+        /*
         if (name.contains("getWorld")) {
         	//System.out.println(owner + " " + name + " " + desc);
         }
+        */
 
-        
-        //  net/minecraft/class_3218 getWorld ()Lorg/cardboardpowered/impl/world/WorldImpl;
-        
-        /*if (owner.contains("class_3218") && name.equals("getWorld") && desc.contains("WorldImpl")) {
-        	System.out.println("Casting ServerWorld to IServerWorld.");
-        	String iw = "org/cardboardpowered/interfaces/IServerWorld";
-        	
-        	super.visitVarInsn(Opcodes.ILOAD, 1); // Load the 'level' parameter
-            super.visitTypeInsn(Opcodes.CHECKCAST, iw); // Cast the 'level' parameter to 'ILevel'
-            super.visitMethodInsn(opcode, iw, "getWorld", desc, itf);
-            return;
-        }
-        
-        
-        if (name.equals("getWorld") && (desc.contains("org/bukkit/craftbukkit") || desc.contains("WorldImpl"))) {
-            name = "getWorldImpl";
-            desc = desc.replace("/v1_17_R1", "");
-        }*/
-        
         if (owner.startsWith("net/minecraft") && name.length() <= 2) {
         	MappingResolver mr = FabricLoader.getInstance().getMappingResolver(); 
 
@@ -509,8 +428,7 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         		// Check super class:
         		try {
         			Class<?> up = Class.forName(owner.replace('/', '.'));
-        			
-        			
+
         	    	String in = find_in_inheritance(up, res, desc, sigg);
         	    	if (in.startsWith("method_")) {
         	    		res = in;
@@ -519,7 +437,7 @@ public class ReflectionMethodVisitor extends MethodVisitor {
 	        			res = do_map(supn, name, desc);
         			}
         		} catch (ClassNotFoundException e) {
-        			BukkitFabricMod.LOGGER.finest("MISSING CLASS MAPPING FOR: " + owner);
+        			CardboardMod.LOGGER.finest("MISSING CLASS MAPPING FOR: " + owner);
         			System.out.println(e.getMessage());
         		} catch (Exception e) {
         			// Oh no!
@@ -541,78 +459,16 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         		mapped = res;
         		
         	}
-        	
-        	
-        	
-        	
-        	 super.visitMethodInsn( opcode, owner, mapped, desc, itf );
-             return;
+
+        	super.visitMethodInsn( opcode, owner, mapped, desc, itf );
+        	return;
         }
 
+        /*
         if (owner.startsWith("net/minecraft") && spigot2obf.size() > 1) {
-            String own = spigot2obf.getOrDefault(owner, owner);
-            String cl = mr.mapClassName("official", own.replace('/','.'));
-            String d = desc;
-            String d2 = desc;
-            for (String s : spigot2obf.keySet()) {
-                d = d.replace("L" + s + ";", "L" + spigot2obf.getOrDefault(s, s) + ";");
-                d2 = d2.replace("L" + s + ";", "L" + mr.mapClassName("official", spigot2obf.getOrDefault(s, s).replace('/','.')) + ";").replace('.', '/');
-            }
-
-            if (!own.contains("v1_1")) {
-                String name2 = mr.mapMethodName("official", own.replace('/', '.'), 
-                        spigot2obf.getOrDefault(owner + "#" + name, name).replace('/', '.'), d);
-
-                if (!own.contains("net.minecraft.server.v1_1") && !name2.equals(name)) {
-                    fixed++;
-                   // if (fixed > lastF) System.out.println(fixed);
-                    //System.out.println(cl + "/=/" + name + d + " /=/ " + name2);
-                } else if (!own.contains("net.minecraft.server.v1_1") && !name.contains("<init>")) {
-                    String key = cl.substring(cl.lastIndexOf('.')+1) + "#" + name + d2;
-                    name2 = cbm.getOrDefault(key, name2);
-                    if (!cbm.containsKey(key) && name.length() < 3) {
-                        //System.out.println(cl.substring(cl.lastIndexOf('.')+1) + "#" + name + d2 + " |  " + name2);
-                       
-                        //System.out.println(own + " / " + mr.unmapClassName("official", own.replace('/','.')) + " / " + mr.unmapClassName("official", own.replace('/','.')));
-                        //System.out.println(mr.mapMethodName("official", own.replace('/', '.'), name2, desc));
-                        //System.out.println(mr.mapMethodName("official", own.replace('/', '.'), name2, d2));
-
-                        try {
-                            Class<?> cz = Class.forName(cl);
-                            for (Method m : cz.getDeclaredMethods()) {
-
-                                //if (cl.contains("NbtList")) {
-                                    String tt = "";
-                                    for (Class<?> zz : m.getParameterTypes()) {
-                                        tt += (fixName(zz.getName()) + ";");
-                                    }
-                                    tt = tt.replace("int;","I");
-                                    tt = "(" + tt + ")" + fixName(m.getReturnType().getName() + ";");
-                                    if (tt.equalsIgnoreCase(d2)) {
-                                        //System.out.println( "\tPossible Match?: " + m.getName() + tt + "");
-                                        
-//<<<<<<< HEAD:src/main/java/com/javazilla/bukkitfabric/nms/ReflectionMethodVisitor.java
-                                        // String obfn = mr2.mapMethodName("named", mr2.mapClassName("named", cz.getName()), m.getName(), tt);
-//=======
-                                       //  String obfn = mr2.mapMethodName("named", mr2.mapClassName("named", cz.getName()), m.getName(), tt);
-//>>>>>>> upstream/ver/1.20:src/main/java/org/cardboardpowered/util/nms/ReflectionMethodVisitor.java
-                                        //System.out.println("OBFN: " + obfn);
-                                    }
-                                    
-                                //}
-                            }
-                        } catch (Exception e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                    }
-                }
-
-                System.out.println("NAM2!: " + name2);
-                super.visitMethodInsn( opcode, cl.replace('.', '/'), name2, d2.replace('.', '/'), itf );
-                return;
-            }
         }
+        */
+
         if (owner.contains("NbtCompound") || owner.contains("class_2487")) {
             if (name.startsWith("setString")) {
                 String cl = mr.unmapClassName("intermediary", owner.replace('/','.'));
@@ -628,14 +484,6 @@ public class ReflectionMethodVisitor extends MethodVisitor {
                 super.visitFieldInsn( opcode, "org/cardboardpowered/util/nms/ReflectionMethodVisitor", "Material_getField", desc );
                 return;
             }
-        }
-        
-        if (owner.equals("protocolsupport/utils/reflection/ReflectionUtils")) {
-            owner = "org/cardboardpowered/util/nms/Ref";
-        }
-        
-        if (owner.equals("protocolsupport/utils/reflection/FieldWriter")) {
-            owner = "org/cardboardpowered/util/nms/FieldWriter";
         }
 
         if (owner.equalsIgnoreCase("com/comphenix/protocol/utility/MinecraftReflection")) {
@@ -679,7 +527,6 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         //if (owner.equalsIgnoreCase("java/lang/Class") && name.equalsIgnoreCase("forName") && desc.equalsIgnoreCase("(Ljava/lang/String;)Ljava/lang/Class;"))
         //    super.visitMethodInsn(Opcodes.INVOKESTATIC, "com/comphenix/protocol/reflect/FuzzyReflection", "getMethod", "(Ljava/lang/String;)Ljava/lang/String;", false);
 
-        
         if (owner.equalsIgnoreCase("java/lang/Class") && name.equalsIgnoreCase("forName") && desc.equalsIgnoreCase("(Ljava/lang/String;)Ljava/lang/Class;"))
             super.visitMethodInsn(Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/ReflectionRemapper", "mapClassName", "(Ljava/lang/String;)Ljava/lang/String;", false);
         
@@ -687,52 +534,6 @@ public class ReflectionMethodVisitor extends MethodVisitor {
             super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/ReflectionRemapper", "getMethods", "(Ljava/lang/Class;)[Ljava/lang/reflect/Method;", false );
             return;
         }
-        /*
-        if (owner.equalsIgnoreCase("java/lang/Class") && name.equalsIgnoreCase("getField") && desc.equalsIgnoreCase("(Ljava/lang/String;)Ljava/lang/reflect/Field;")) {
-            super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/ReflectionRemapper", "getFieldByName", "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/reflect/Field;", false );
-            return;
-        }
-
-        if (owner.equalsIgnoreCase("java/lang/Class") && name.equalsIgnoreCase("getDeclaredField") && desc.equalsIgnoreCase("(Ljava/lang/String;)Ljava/lang/reflect/Field;")) {
-            super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/ReflectionRemapper", "getDeclaredFieldByName", "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/reflect/Field;", false );
-            return;
-        }
-
-        if (owner.equalsIgnoreCase("java/lang/Class") && name.equalsIgnoreCase("getMethod") && desc.equalsIgnoreCase("(Ljava/lang/String;)Ljava/lang/reflect/Method;")) {
-            super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/ReflectionRemapper", "getMethodByName", "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/reflect/Method;", false );
-            return;
-        }
-
-        if (owner.equalsIgnoreCase("java/lang/Class") && name.equalsIgnoreCase("getDeclaredMethod") && desc.equalsIgnoreCase("(Ljava/lang/String;)Ljava/lang/reflect/Method;")) {
-            super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/ReflectionRemapper", "getDeclaredMethodByName", "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/reflect/Method;", false );
-            return;
-        }
-
-        //this.getClass().getCanonicalName();
-        if (owner.equalsIgnoreCase("java/lang/Package") && name.equalsIgnoreCase("getName") && desc.equalsIgnoreCase("()Ljava/lang/String;")) {
-            super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/ReflectionRemapper", "getPackageName", "(Ljava/lang/Package;)Ljava/lang/String;", false);
-            return;
-        }
-
-        if (owner.equalsIgnoreCase("java/lang/Class") && name.equalsIgnoreCase("getName") && desc.equalsIgnoreCase("()Ljava/lang/String;")) {
-            super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/ReflectionRemapper", "getClassName", "(Ljava/lang/Class;)Ljava/lang/String;", false);
-            return;
-        }
-
-        if (owner.equalsIgnoreCase("java/lang/Class") && name.equalsIgnoreCase("getCanonicalName") && desc.equalsIgnoreCase("()Ljava/lang/String;")) {
-            super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/ReflectionRemapper", "getCanonicalName", "(Ljava/lang/Class;)Ljava/lang/String;", false);
-            return;
-        }
- 
-        /*if (owner.equalsIgnoreCase("java/lang/Class") && name.equalsIgnoreCase("getMethod") && desc.equalsIgnoreCase("(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;")) {
-            super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/ReflectionRemapper", "getMethodByName", "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;", false );
-            return;
-        }
-
-        if (owner.equalsIgnoreCase("java/lang/Class") && name.equalsIgnoreCase("getDeclaredMethod") && desc.equalsIgnoreCase("(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;")) {
-            super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/ReflectionRemapper", "getDeclaredMethodByName", "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;", false );
-            return;
-        }*/
 
         if (owner.startsWith("net/minecraft/class_")) {
             // if (!name.startsWith("method_"))
@@ -748,15 +549,6 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         owner = Commodore.getOriginalOrRewrite(owner);
 
         super.visitMethodInsn( opcode, owner, name, desc, itf );
-    }
-
-    private String fixName(String name) {
-        String r = name.replace("boolean;", "Z").replace("byte;", "B").replace("double;", "D").replace("float;", "F").replace("int;", "I")
-                .replace("long;", "J").replace("short;", "S").replace('.','/').replace("Lvoid","");
-
-        if (r.length() > 3)
-            r = "L" + r;
-        return r;
     }
 
 }

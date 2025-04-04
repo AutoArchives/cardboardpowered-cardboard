@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -36,7 +36,7 @@ public abstract class MixinCreeperEntity extends Entity implements ICreeperEntit
     @Inject(at = @At("HEAD"), method="onStruckByLightning", cancellable = true)
     public void invokeCreeperPowerEvent(ServerWorld worldserver, LightningEntity lightning, CallbackInfo ci) {
         super.onStruckByLightning(worldserver, lightning);
-        if (BukkitEventFactory.callCreeperPowerEvent((CreeperEntity)(Object)this, lightning, org.bukkit.event.entity.CreeperPowerEvent.PowerCause.LIGHTNING).isCancelled()) {
+        if (CraftEventFactory.callCreeperPowerEvent((CreeperEntity)(Object)this, lightning, org.bukkit.event.entity.CreeperPowerEvent.PowerCause.LIGHTNING).isCancelled()) {
             ci.cancel();
             return;
         }

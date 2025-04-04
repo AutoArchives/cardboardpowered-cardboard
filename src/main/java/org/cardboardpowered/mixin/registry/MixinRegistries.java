@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.javazilla.bukkitfabric.BukkitFabricMod;
+import org.cardboardpowered.CardboardMod;
 import com.mojang.serialization.Lifecycle;
 
 import io.papermc.paper.registry.PaperRegistryAccess;
@@ -79,7 +79,7 @@ public class MixinRegistries {
     	
     	DEFAULT_ENTRIES.forEach((id, initializer) -> {
             if (initializer.get() == null) {
-                BukkitFabricMod.LOGGER.warning("Unable to bootstrap registry: " + id);
+                CardboardMod.LOGGER.warning("Unable to bootstrap registry: " + id);
             }
             
             io.papermc.paper.registry.PaperRegistryAccess.instance().lockReferenceHolders(

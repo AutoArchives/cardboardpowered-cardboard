@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.block;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.CoralWallFanBlock;
@@ -28,7 +28,7 @@ public class MixinCoralWallFanBlock {
                     "(Lnet/minecraft/util/math/BlockPos;" +
                     "Lnet/minecraft/block/BlockState;I)Z"))
     private void bukkit_fadeEvent(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
-        if (BukkitEventFactory.callBlockFadeEvent(world, pos, this.deadCoralBlock.getDefaultState()
+        if (CraftEventFactory.callBlockFadeEvent(world, pos, this.deadCoralBlock.getDefaultState()
                         .with(CoralWallFanBlock.WATERLOGGED, false)
                         .with(CoralWallFanBlock.FACING, state
                                 .get(CoralWallFanBlock.FACING)))

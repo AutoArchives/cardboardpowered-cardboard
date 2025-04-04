@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 import me.isaiah.common.cmixin.IMixinItemStack;
 import net.minecraft.entity.player.PlayerEntity;
@@ -26,7 +26,7 @@ public class MixinFlintAndSteelItem {
         World world = context.getWorld();
         BlockPos blockposition = context.getBlockPos().offset(context.getSide());
 
-        if (BukkitEventFactory.callBlockIgniteEvent(world, blockposition, org.bukkit.event.block.BlockIgniteEvent.IgniteCause.FLINT_AND_STEEL, plr).isCancelled()) {
+        if (CraftEventFactory.callBlockIgniteEvent(world, blockposition, org.bukkit.event.block.BlockIgniteEvent.IgniteCause.FLINT_AND_STEEL, plr).isCancelled()) {
             ((IMixinItemStack)context.getStack()).IC$damage(1, plr, context.getHand());
             
             // context.getStack().damage(1, plr, (plr1) -> plr1.sendToolBreakStatus(context.getHand()));

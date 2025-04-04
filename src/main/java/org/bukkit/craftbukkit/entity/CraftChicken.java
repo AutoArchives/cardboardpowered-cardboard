@@ -3,11 +3,11 @@ package org.bukkit.craftbukkit.entity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Chicken;
 import org.bukkit.entity.EntityType;
-import org.cardboardpowered.impl.entity.AnimalsImpl;
+import org.cardboardpowered.impl.entity.CraftAnimals;
 
 import net.minecraft.entity.passive.ChickenEntity;
 
-public class CraftChicken extends AnimalsImpl implements Chicken {
+public class CraftChicken extends CraftAnimals implements Chicken {
 
     public CraftChicken(CraftServer server, ChickenEntity entity) {
         super(server, entity);

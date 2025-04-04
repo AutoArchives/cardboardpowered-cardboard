@@ -1,8 +1,8 @@
 package org.cardboardpowered.mixin.entity.block;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinPlayNetworkHandler;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
+import org.cardboardpowered.interfaces.IMixinWorld;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.EndGatewayBlockEntity;
 import net.minecraft.entity.Entity;
@@ -11,7 +11,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.bukkit.Location;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -64,7 +64,7 @@ public class MixinEndGatewayBlockEntity {
 
 	@Unique
 	private static Location callEvent(IMixinWorld world, IMixinEntity teleported, double x, double y, double z) {
-		PlayerImpl player = (PlayerImpl) teleported.getBukkitEntity();
+		CraftPlayer player = (CraftPlayer) teleported.getBukkitEntity();
 		Location location = new Location(world.getWorldImpl(), x, y, z);
 		location.setPitch(player.getLocation().getPitch());
 		location.setYaw(player.getLocation().getYaw());

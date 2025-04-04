@@ -7,9 +7,9 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.Zombie;
-import org.cardboardpowered.impl.entity.MonsterImpl;
+import org.cardboardpowered.impl.entity.CraftMonster;
 
-public class CraftZombie extends MonsterImpl implements Zombie {
+public class CraftZombie extends CraftMonster implements Zombie {
 
     public CraftZombie(CraftServer server, ZombieEntity entity) {
         super(server, entity);

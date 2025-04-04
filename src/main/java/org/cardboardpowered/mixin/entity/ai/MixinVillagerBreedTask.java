@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.entity.ai;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import net.minecraft.entity.ai.brain.task.VillagerBreedTask;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -32,7 +32,7 @@ public class MixinVillagerBreedTask {
                             VillagerEntity partner, CallbackInfoReturnable<Optional<VillagerEntity>> cir,
                             VillagerEntity villagerEntity) {
         // CraftBukkit start - call EntityBreedEvent
-        if (BukkitEventFactory.callEntityBreedEvent((LivingEntity) villagerEntity, (LivingEntity) parent, (LivingEntity) partner, null, null, 0).isCancelled()) {
+        if (CraftEventFactory.callEntityBreedEvent((LivingEntity) villagerEntity, (LivingEntity) parent, (LivingEntity) partner, null, null, 0).isCancelled()) {
             cir.setReturnValue(Optional.empty());
         }
         // CraftBukkit end

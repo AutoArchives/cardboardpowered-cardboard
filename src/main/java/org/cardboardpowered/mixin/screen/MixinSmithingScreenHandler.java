@@ -5,7 +5,7 @@ import org.cardboardpowered.impl.inventory.CardboardSmithingInventory;
 import org.bukkit.entity.Player;
 import org.spongepowered.asm.mixin.Mixin;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 import net.minecraft.screen.SmithingScreenHandler;
 

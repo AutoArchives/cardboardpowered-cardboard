@@ -6,9 +6,9 @@ import org.cardboardpowered.impl.inventory.CardboardAnvilInventory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinAnvilScreenHandler;
-import com.javazilla.bukkitfabric.interfaces.IMixinScreenHandlerContext;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinAnvilScreenHandler;
+import org.cardboardpowered.interfaces.IMixinScreenHandlerContext;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 import net.minecraft.screen.AnvilScreenHandler;
 import net.minecraft.screen.Property;

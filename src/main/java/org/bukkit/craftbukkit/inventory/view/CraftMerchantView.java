@@ -7,10 +7,10 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.MerchantInventory;
 import org.bukkit.inventory.view.MerchantView;
-import org.cardboardpowered.impl.entity.AbstractVillagerImpl;
+import org.cardboardpowered.impl.entity.CraftAbstractVillager;
 import org.jetbrains.annotations.NotNull;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinEntity;
 
 public class CraftMerchantView extends CraftInventoryView<MerchantScreenHandler, MerchantInventory> implements MerchantView {
 
@@ -26,7 +26,7 @@ public class CraftMerchantView extends CraftInventoryView<MerchantScreenHandler,
     public Merchant getMerchant() {
     	
     	if (this.trader instanceof MerchantEntity) {
-    		return (AbstractVillagerImpl) (((IMixinEntity)this.trader).getBukkitEntity());
+    		return (CraftAbstractVillager) (((IMixinEntity)this.trader).getBukkitEntity());
     	}
     	
     	return null; // TODO

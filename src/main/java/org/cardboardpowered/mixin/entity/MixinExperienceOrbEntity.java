@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 import net.minecraft.component.EnchantmentEffectComponentTypes;
 import net.minecraft.enchantment.EnchantmentEffectContext;
@@ -37,7 +37,7 @@ public class MixinExperienceOrbEntity extends MixinEntity {
         EquipmentSlot slot = optional.get().slot();
 
         int i = Math.min(a, b);
-        PlayerItemMendEvent event = BukkitEventFactory.callPlayerItemMendEvent(entityhuman, (ExperienceOrbEntity)(Object)this, itemstack, i);
+        PlayerItemMendEvent event = CraftEventFactory.callPlayerItemMendEvent(entityhuman, (ExperienceOrbEntity)(Object)this, itemstack, i);
         i = event.getRepairAmount();
         if (!event.isCancelled()) {
             return i;
@@ -46,7 +46,7 @@ public class MixinExperienceOrbEntity extends MixinEntity {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ExperienceOrbEntity;repairPlayerGears(Lnet/minecraft/server/network/ServerPlayerEntity;I)I"), method = "onPlayerCollision")
     public int doBukkitEvent_PlayerExpChangeEvent(ExperienceOrbEntity e, ServerPlayerEntity plr, int a) {
-        return repairPlayerGears((ServerPlayerEntity) plr, BukkitEventFactory.callPlayerExpChangeEvent(plr, this.amount).getAmount());
+        return repairPlayerGears((ServerPlayerEntity) plr, CraftEventFactory.callPlayerExpChangeEvent(plr, this.amount).getAmount());
     }
 
     @Shadow

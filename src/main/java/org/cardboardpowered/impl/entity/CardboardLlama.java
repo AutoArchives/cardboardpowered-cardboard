@@ -1,7 +1,7 @@
 package org.cardboardpowered.impl.entity;
 
 import com.google.common.base.Preconditions;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinEntity;
 
 import net.minecraft.entity.passive.LlamaEntity;
 import org.bukkit.craftbukkit.CraftServer;

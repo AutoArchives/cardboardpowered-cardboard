@@ -1,8 +1,8 @@
 package org.cardboardpowered.mixin.world;
 
-import com.javazilla.bukkitfabric.BukkitFabricMod;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorldSaveHandler;
+import org.cardboardpowered.CardboardMod;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinWorldSaveHandler;
 import com.mojang.datafixers.DataFixer;
 import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.entity.player.PlayerEntity;
@@ -12,7 +12,7 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtSizeTracker;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.PlayerSaveHandler;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -80,12 +80,12 @@ public class MixinWorldSaveHandler implements IMixinWorldSaveHandler {
                 lv = NbtIo.readCompressed(file.toPath(), NbtSizeTracker.ofUnlimitedBytes());
             }
         } catch (Exception exception) {
-        	BukkitFabricMod.LOGGER.warning("Failed to load player data for " + player.getName().getString());
+        	CardboardMod.LOGGER.warning("Failed to load player data for " + player.getName().getString());
         }
         if (lv != null) {
         	// Cardboard Start
         	if (player instanceof ServerPlayerEntity) {
-                PlayerImpl craftPlayer = (PlayerImpl) ((IMixinServerEntityPlayer)player).getBukkitEntity();
+                CraftPlayer craftPlayer = (CraftPlayer) ((IMixinServerEntityPlayer)player).getBukkitEntity();
                 // Only update first played if it is older than the one we have
                 long modified = new File(this.playerDataDir, player.getUuid() + ".dat").lastModified();
                 if (modified < craftPlayer.getFirstPlayed()) {
@@ -125,13 +125,13 @@ public class MixinWorldSaveHandler implements IMixinWorldSaveHandler {
             if (usingWrongFile) // Spigot
                 file.renameTo(new File(file.getPath() + ".offline-read")); // Spigot
         } catch (Exception exception) {
-            BukkitFabricMod.LOGGER.warning("Failed to load player data for " + entityhuman.getName().getString());
+            CardboardMod.LOGGER.warning("Failed to load player data for " + entityhuman.getName().getString());
         }
 
         if (nbttagcompound != null) {
             // CraftBukkit start
             if (entityhuman instanceof ServerPlayerEntity) {
-                PlayerImpl player = (PlayerImpl) ((IMixinServerEntityPlayer)entityhuman).getBukkitEntity();
+                CraftPlayer player = (CraftPlayer) ((IMixinServerEntityPlayer)entityhuman).getBukkitEntity();
                 // Only update first played if it is older than the one we have
                 long modified = new File(this.playerDataDir, entityhuman.getUuid().toString() + ".dat").lastModified();
                 if (modified < player.getFirstPlayed()) {
@@ -156,7 +156,7 @@ public class MixinWorldSaveHandler implements IMixinWorldSaveHandler {
                 return NbtIo.readCompressed(new FileInputStream(file1), NbtSizeTracker.ofUnlimitedBytes());
             }
         } catch (Exception exception) {
-            BukkitFabricMod.LOGGER.warning("Failed to load player data for " + s);
+            CardboardMod.LOGGER.warning("Failed to load player data for " + s);
         }
 
         return null;

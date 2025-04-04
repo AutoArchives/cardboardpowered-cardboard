@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.block;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.CocoaBlock;
 import net.minecraft.server.world.ServerWorld;
@@ -19,7 +19,7 @@ public class MixinCocoaBlock {
                     "(Lnet/minecraft/util/math/BlockPos;" +
                     "Lnet/minecraft/block/BlockState;I)Z"))
     private boolean bukkit_grow0(ServerWorld world, BlockPos pos, BlockState state, int flags) {
-        return BukkitEventFactory.handleBlockGrowEvent(world, pos, state, flags);
+        return CraftEventFactory.handleBlockGrowEvent(world, pos, state, flags);
     }
 
     @Redirect (method = "grow", at = @At (value = "INVOKE",
@@ -27,6 +27,6 @@ public class MixinCocoaBlock {
                     "(Lnet/minecraft/util/math/BlockPos;" +
                     "Lnet/minecraft/block/BlockState;I)Z"))
     private boolean bukkit_grow1(ServerWorld world, BlockPos pos, BlockState state, int flags) {
-        return BukkitEventFactory.handleBlockGrowEvent(world, pos, state, flags);
+        return CraftEventFactory.handleBlockGrowEvent(world, pos, state, flags);
     }
 }

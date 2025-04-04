@@ -26,7 +26,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 
 import com.google.common.base.Charsets;
-import com.javazilla.bukkitfabric.BukkitLogger;
+import org.cardboardpowered.BukkitLogger;
 
 /**
  * Represents a Java plugin

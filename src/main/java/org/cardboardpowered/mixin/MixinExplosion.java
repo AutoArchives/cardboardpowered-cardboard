@@ -158,7 +158,7 @@ public interface MixinExplosion {
             while (iterator1.hasNext()) {
                 BlockPos blockposition2 = (BlockPos) iterator1.next();
                 if (this.random.nextInt(3) == 0 && this.world.getBlockState(blockposition2).isAir() && this.world.getBlockState(blockposition2.down()).isOpaqueFullCube(this.world, blockposition2.down()))
-                    if (!BukkitEventFactory.callBlockIgniteEvent(this.world, blockposition2.getX(), blockposition2.getY(), blockposition2.getZ(), (Explosion)(Object)this).isCancelled())
+                    if (!CraftEventFactory.callBlockIgniteEvent(this.world, blockposition2.getX(), blockposition2.getY(), blockposition2.getZ(), (Explosion)(Object)this).isCancelled())
                         this.world.setBlockState(blockposition2, AbstractFireBlock.getState((BlockView) this.world, blockposition2));
             }
         }
@@ -242,9 +242,9 @@ public interface MixinExplosion {
                         double d12 = (double) Explosion.getExposure(vec3d, entity);
                         double d13 = (1.0D - d7) * d12;
 
-                        BukkitEventFactory.entityDamage = entity;
+                        CraftEventFactory.entityDamage = entity;
                         boolean wasDamaged = entity.damage(this.getDamageSource(), (float) ((int) ((d13 * d13 + d13) / 2.0D * 7.0D * (double) f2 + 1.0D)));
-                        BukkitEventFactory.entityDamage = null;
+                        CraftEventFactory.entityDamage = null;
                         if (!wasDamaged && !(entity instanceof TntEntity || entity instanceof FallingBlockEntity))
                             continue;
                         double d14 = d13;

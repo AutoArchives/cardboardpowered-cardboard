@@ -1,7 +1,7 @@
 package org.cardboardpowered.impl.inventory;
 
 import com.google.common.base.Preconditions;
-import com.javazilla.bukkitfabric.interfaces.IMixinAnvilScreenHandler;
+import org.cardboardpowered.interfaces.IMixinAnvilScreenHandler;
 
 import net.minecraft.inventory.Inventory;
 import net.minecraft.screen.AnvilScreenHandler;

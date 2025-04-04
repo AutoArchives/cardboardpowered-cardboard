@@ -14,7 +14,7 @@ import java.util.Iterator;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -36,7 +36,7 @@ import net.minecraft.world.World;
 public class MixinFrostWalkerEnchantment {
 
     /**
-     * @reason BlockFormEvent - Add call to {@link BukkitEventFactory#handleBlockFormEvent}
+     * @reason BlockFormEvent - Add call to {@link CraftEventFactory#handleBlockFormEvent}
      * @author .
      * 
      * @param entity - The entity/player
@@ -59,7 +59,7 @@ public class MixinFrostWalkerEnchantment {
                         BlockState blockstate2 = worldIn.getBlockState(blockpos);
                         boolean isFull = blockstate2.getBlock() == Blocks.WATER && blockstate2.get(FluidBlock.LEVEL) == 0;
                         if (blockstate2.isLiquid() && isFull && blockstate.canPlaceAt(worldIn, blockpos) && worldIn.canPlace(blockstate, blockpos, ShapeContext.absent())) {
-                            if (BukkitEventFactory.handleBlockFormEvent(worldIn, blockpos, blockstate, living)) {
+                            if (CraftEventFactory.handleBlockFormEvent(worldIn, blockpos, blockstate, living)) {
                                 worldIn.scheduleBlockTick(blockpos, Blocks.FROSTED_ICE, MathHelper.nextInt(living.getRandom(), 60, 120));
                             }
                         }

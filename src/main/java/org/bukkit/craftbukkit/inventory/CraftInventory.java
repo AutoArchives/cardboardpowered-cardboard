@@ -34,7 +34,7 @@ import org.cardboardpowered.impl.inventory.CardboardGrindstoneInventory;
 import org.cardboardpowered.impl.inventory.CardboardLoomInventory;
 import org.cardboardpowered.impl.inventory.CardboardStonecutterInventory;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinInventory;
+import org.cardboardpowered.interfaces.IMixinInventory;
 
 @SuppressWarnings("deprecation")
 public class CraftInventory implements Inventory {

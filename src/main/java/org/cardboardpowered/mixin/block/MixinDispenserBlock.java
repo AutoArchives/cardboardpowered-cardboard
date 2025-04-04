@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.block;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinDispenserBlock;
+import org.cardboardpowered.interfaces.IMixinDispenserBlock;
 import net.minecraft.block.DispenserBlock;
 import org.cardboardpowered.impl.block.DispenserBlockHelper;
 import org.spongepowered.asm.mixin.Mixin;

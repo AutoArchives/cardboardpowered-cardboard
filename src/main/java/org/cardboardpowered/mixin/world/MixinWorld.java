@@ -1,7 +1,7 @@
 package org.cardboardpowered.mixin.world;
 
-import com.javazilla.bukkitfabric.BukkitFabricMod;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.CardboardMod;
+import org.cardboardpowered.interfaces.IMixinWorld;
 
 import me.isaiah.common.fabric.FabricWorld;
 import net.minecraft.block.BlockState;
@@ -67,7 +67,7 @@ public abstract class MixinWorld implements IMixinWorld {
 
         World thiz = (World) (Object) this;
         ServerWorld nms = ((ServerWorld) thiz);
-    	BukkitFabricMod.on_world_init_mc(nms);
+    	CardboardMod.on_world_init_mc(nms);
     }
 
 

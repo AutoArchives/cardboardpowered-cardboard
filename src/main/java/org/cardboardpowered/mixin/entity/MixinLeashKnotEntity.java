@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.entity;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import net.minecraft.entity.Entity.RemovalReason;
 import net.minecraft.entity.decoration.LeashKnotEntity;
 import net.minecraft.entity.mob.MobEntity;
@@ -40,7 +40,7 @@ public class MixinLeashKnotEntity {
         while (iterator.hasNext()) {
             entityinsentient = (MobEntity) iterator.next();
             if (entityinsentient.getLeashHolder() == entityhuman) {
-                if (BukkitEventFactory.callPlayerLeashEntityEvent(entityinsentient, ((LeashKnotEntity)(Object)this), entityhuman).isCancelled()) {
+                if (CraftEventFactory.callPlayerLeashEntityEvent(entityinsentient, ((LeashKnotEntity)(Object)this), entityhuman).isCancelled()) {
                     ((ServerPlayerEntity) entityhuman).networkHandler.sendPacket(new EntityAttachS2CPacket(entityinsentient, entityinsentient.getLeashHolder()));
                     continue;
                 }
@@ -54,7 +54,7 @@ public class MixinLeashKnotEntity {
         while (iterator.hasNext()) {
             entityinsentient = (MobEntity) iterator.next();
             if (entityinsentient.isLeashed() && entityinsentient.getLeashHolder() == getBF()) {
-                if (BukkitEventFactory.callPlayerUnleashEntityEvent(entityinsentient, entityhuman).isCancelled()) {
+                if (CraftEventFactory.callPlayerUnleashEntityEvent(entityinsentient, entityhuman).isCancelled()) {
                     die = false;
                     continue;
                 }

@@ -4,9 +4,9 @@ import net.minecraft.entity.passive.PolarBearEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.PolarBear;
-import org.cardboardpowered.impl.entity.AnimalsImpl;
+import org.cardboardpowered.impl.entity.CraftAnimals;
 
-public class CraftPolarBear extends AnimalsImpl implements PolarBear {
+public class CraftPolarBear extends CraftAnimals implements PolarBear {
 
     public CraftPolarBear(CraftServer server, PolarBearEntity entity) {
         super(server, entity);

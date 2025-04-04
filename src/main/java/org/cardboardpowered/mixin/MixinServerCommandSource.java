@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinCommandOutput;
+import org.cardboardpowered.interfaces.IMixinCommandOutput;
 
 @Mixin(ServerCommandSource.class)
 public class MixinServerCommandSource implements IServerCommandSource {

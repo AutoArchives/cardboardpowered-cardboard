@@ -17,7 +17,7 @@ import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.Rotatable;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.jetbrains.annotations.Nullable;
 
 import com.destroystokyo.paper.profile.CraftPlayerProfile;
@@ -116,7 +116,7 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
     @Override
     public void setOwningPlayer(OfflinePlayer player) {
         Preconditions.checkNotNull(player, "player");
-        this.profile = (player instanceof PlayerImpl) ? ((PlayerImpl) player).nms.getGameProfile() : new GameProfile(player.getUniqueId(), player.getName());
+        this.profile = (player instanceof CraftPlayer) ? ((CraftPlayer) player).nms.getGameProfile() : new GameProfile(player.getUniqueId(), player.getName());
     }
 
     @Override

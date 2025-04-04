@@ -8,9 +8,9 @@ import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
-import com.javazilla.bukkitfabric.interfaces.IMixinPlayerManager;
-import com.javazilla.bukkitfabric.interfaces.IMixinRecipeManager;
+import org.cardboardpowered.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.interfaces.IMixinPlayerManager;
+import org.cardboardpowered.interfaces.IMixinRecipeManager;
 import com.mojang.serialization.JsonOps;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;

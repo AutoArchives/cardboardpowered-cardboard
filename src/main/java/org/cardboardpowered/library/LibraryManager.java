@@ -53,22 +53,12 @@ public final class LibraryManager {
     private final Collection<Library> libraries;
 
     // URL to download Paper API
-
-    // private static final String PAPER_URL = "https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.20.1-R0.1-SNAPSHOT/paper-api-1.20.1-R0.1-20230921.165944-178.jar";
-    // private static final String PAPER_URL = "https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.20.2-R0.1-SNAPSHOT/paper-api-1.20.2-R0.1-20231203.034718-122.jar";
-    // private static final String PAPER_URL = "https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.20.3-R0.1-SNAPSHOT/paper-api-1.20.3-R0.1-20231207.043048-3.jar";
-
     private static final String PAPER_MAVEN = "https://repo.papermc.io/repository/maven-snapshots";
 
     // Apparently, repo.papermc.io is not stable.
     private static final String[] BACKUP = {
     		"https://web.archive.org/web/20250328041701/https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.21.4-R0.1-SNAPSHOT/paper-api-1.21.4-R0.1-20250327.133756-218.jar"
     };
-    
-    // private static final String PAPER_URL = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.18/paper-api-1.18.2-167.jar";
-    // private static final String PAPER_URL_OLD = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.17/paper-api.jar";
-    // private static final String PAPER_URL = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.19/paper-api-1.19.2-307.jar";
-    // private static final String PAPER_URL = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/1.19.4/paper-api-1.19.4-550.jar";
 
     /**
      * Creates the instance.
@@ -87,22 +77,27 @@ public final class LibraryManager {
      * Downloads the libraries.
      */
     public void run() {
-        if (!directory.isDirectory() && !directory.mkdirs())
+        if (!directory.isDirectory() && !directory.mkdirs()) {
             logger.error("Could not create libraries directory: " + directory);
-
-        for (Library lib : libraries) {
-            String fn = lib.libraryKey.artifactId + "-" + lib.version + ".jar";
-            File f = new File(directory, fn);
-            if (f.isFile() && !(fn.contains("intermediary-adapter")) ) {
-                try {
-                    KnotHelper.propose(f);
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                download(lib);
-           }
         }
+
+        // Load all libraries
+        for (Library lib : libraries) {
+        	String fn = lib.libraryKey.artifactId + "-" + lib.version + ".jar";
+        	File f = new File(directory, fn);
+        	if (f.isFile() && !(fn.contains("intermediary-adapter")) ) {
+        		try {
+        			KnotHelper.propose(f);
+        		} catch (MalformedURLException e) {
+        			e.printStackTrace();
+        		}
+        	} else {
+        		download(lib);
+        	}
+        }
+
+        KnotHelper.LOGGER.info("Loaded Adventure: " + KnotHelper.ver_adventure + " (" + KnotHelper.loaded_adventure + ")");
+        KnotHelper.LOGGER.info("Loaded " + KnotHelper.loaded + " libraries.");
     }
     
     private String read_central_checksum(String repository, Library library) throws IOException {

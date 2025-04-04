@@ -9,9 +9,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 
-import com.javazilla.bukkitfabric.BukkitFabricMod;
-import com.javazilla.bukkitfabric.interfaces.IMixinInventory;
-import com.javazilla.bukkitfabric.interfaces.IMixinScreenHandler;
+import org.cardboardpowered.CardboardMod;
+import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.interfaces.IMixinScreenHandler;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.inventory.Inventory;
@@ -74,7 +74,7 @@ public abstract class MixinScreenHandler implements IMixinScreenHandler {
             }
         } else {
             if (FabricLoader.getInstance().isDevelopmentEnvironment())
-                BukkitFabricMod.LOGGER.info("Debug: " + in + " is not of type IMixinInventory");
+                CardboardMod.LOGGER.info("Debug: " + in + " is not of type IMixinInventory");
         }
     }
 

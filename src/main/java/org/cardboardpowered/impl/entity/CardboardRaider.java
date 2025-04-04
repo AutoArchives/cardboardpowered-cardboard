@@ -15,7 +15,7 @@ import org.bukkit.entity.Raider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class CardboardRaider extends MonsterImpl implements Raider {
+public class CardboardRaider extends CraftMonster implements Raider {
 
     public CardboardRaider(CraftServer server, RaiderEntity entity) {
         super(server, entity);

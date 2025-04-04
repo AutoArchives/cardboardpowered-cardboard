@@ -15,7 +15,7 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.passive.AbstractHorseEntity;
 
 public abstract class CardboardAbstractHorse
-extends AnimalsImpl
+extends CraftAnimals
 implements AbstractHorse {
 
     public CardboardAbstractHorse(CraftServer server, AbstractHorseEntity  entity) {

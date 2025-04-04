@@ -1,8 +1,8 @@
 package org.cardboardpowered.mixin.item;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidDrainable;
@@ -53,7 +53,7 @@ public class MixinBucketItem extends Item {
 
         if (iblockdata.getBlock() instanceof FluidDrainable) {
             ItemStack dummyFluid = ((FluidDrainable) iblockdata.getBlock()).tryDrainFluid(player, FakeWorldAccess.INSTANCE, blockposition, iblockdata);
-            PlayerBucketFillEvent event = BukkitEventFactory.callPlayerBucketFillEvent((ServerWorld) world, player, blockposition, blockposition, movingobjectpositionblock.getSide(), player.getStackInHand(enumhand), dummyFluid.getItem(), enumhand); // Paper - add enumhand
+            PlayerBucketFillEvent event = CraftEventFactory.callPlayerBucketFillEvent((ServerWorld) world, player, blockposition, blockposition, movingobjectpositionblock.getSide(), player.getStackInHand(enumhand), dummyFluid.getItem(), enumhand); // Paper - add enumhand
     
             if (event.isCancelled()) {
                 ((ServerPlayerEntity) player).networkHandler.sendPacket(new BlockUpdateS2CPacket(world, blockposition)); // SPIGOT-5163 (see PlayerInteractManager)
@@ -75,7 +75,7 @@ public class MixinBucketItem extends Item {
     
             // CraftBukkit start
             if (flag1 && player != null) {
-                PlayerBucketEmptyEvent event = BukkitEventFactory.callPlayerBucketEmptyEvent(world, player, blockposition, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), player.getStackInHand(player.getActiveHand()), player.getActiveHand());
+                PlayerBucketEmptyEvent event = CraftEventFactory.callPlayerBucketEmptyEvent(world, player, blockposition, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), player.getStackInHand(player.getActiveHand()), player.getActiveHand());
                 if (event.isCancelled()) {
                     ((ServerPlayerEntity) player).networkHandler.sendPacket(new BlockUpdateS2CPacket(world, blockposition));
                     ((Player)((IMixinEntity) player).getBukkitEntity()).updateInventory();

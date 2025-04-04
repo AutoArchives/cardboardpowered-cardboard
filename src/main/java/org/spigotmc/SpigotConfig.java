@@ -1,7 +1,6 @@
 package org.spigotmc;
 
 import com.google.common.base.Throwables;
-import com.javazilla.bukkitfabric.PaperMetrics;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +25,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.cardboardpowered.PaperMetrics;
 
 public class SpigotConfig {
 

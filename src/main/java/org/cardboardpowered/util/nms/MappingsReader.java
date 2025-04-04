@@ -1,20 +1,6 @@
 /**
  * The Bukkit for Fabric Project
  * Copyright (C) 2020-2023
- * 
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.cardboardpowered.util.nms;
 
@@ -160,9 +146,6 @@ public class MappingsReader {
 
     @Deprecated
     public static String getIntermedMethod_old(String name, String spigot) {
-        // TODO This very bad. It doesn't use the method descriptor.
-        // TODO There are 44 spigot-named methods that will have duplicates.
-
         if (METHODS.containsKey((name + "=" + spigot)))
             return METHODS.getOrDefault(name + "=" + spigot, obf(spigot));
         try {
@@ -175,5 +158,16 @@ public class MappingsReader {
             } else return obf(spigot);
         } catch (Exception e) { return obf(spigot); }
     }
+    
+	/**
+	 * "C:\Program Files\Eclipse Adoptium\jdk-21.0.3+9\bin\java.exe" -jar tiny-remapper-0.9.0-fat.jar paper-1.20.6.jar paper-1.20.6-reobf.jar reobf.tiny yarn+mojang spigot
+"C:\Program Files\Eclipse Adoptium\jdk-21.0.3+9\bin\java.exe" -jar SpecialSource-1.11.5-SNAPSHOT-shaded.jar -i paper-1.20.6-reobf.jar -o paper-1.20.6-bukkit.jar -m bukkit.csrg -r
+"C:\Program Files\Eclipse Adoptium\jdk-21.0.3+9\bin\java.exe" -jar tiny-remapper-0.9.0-fat.jar paper-1.20.6-bukkit.jar paper-1.20.6-intermed.jar 1.20.6.tiny official intermediary --ignoreConflicts
+"C:\Program Files\Eclipse Adoptium\jdk-21.0.3+9\bin\java.exe" -jar tiny-remapper-0.9.0-fat.jar paper-1.20.6-intermed.jar paper-1.20.6-yarn.jar mappings.tiny intermediary named --ignoreConflicts
+
+
+	reobf.tiny, bukkit.csrg, 1.20.6.tiny
+
+	 */
 
 }

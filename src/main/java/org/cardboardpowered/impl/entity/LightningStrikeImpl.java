@@ -12,7 +12,7 @@ import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinEntity;
 
 public class LightningStrikeImpl extends CraftEntity implements LightningStrike {
 

@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.server.ServerListPingEvent;
 import org.cardboardpowered.impl.util.IconCacheImpl;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 import net.minecraft.network.ClientConnection;
 import net.minecraft.server.MinecraftServer;

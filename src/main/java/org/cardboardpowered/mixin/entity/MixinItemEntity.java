@@ -12,10 +12,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.impl.entity.ItemEntityImpl;
-import com.javazilla.bukkitfabric.interfaces.IMixinPlayerInventory;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinPlayerInventory;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -39,7 +39,7 @@ public class MixinItemEntity extends MixinEntity {
 
     @Inject(at = @At("HEAD"), method = "merge(Lnet/minecraft/entity/ItemEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/ItemEntity;Lnet/minecraft/item/ItemStack;)V", cancellable = true)
     private static void fireMergeEvent(ItemEntity entityitem, ItemStack itemstack, ItemEntity entityitem1, ItemStack itemstack1, CallbackInfo ci) {
-        if (BukkitEventFactory.callItemMergeEvent(entityitem1, entityitem).isCancelled()) {
+        if (CraftEventFactory.callItemMergeEvent(entityitem1, entityitem).isCancelled()) {
             ci.cancel();
             return;
         }

@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ExperienceOrbEntity;
@@ -27,7 +27,7 @@ public class MixinExperienceBottleEntity extends MixinProjectileEntity {
         } else if (type == HitResult.Type.BLOCK) this.onBlockHit((BlockHitResult)movingobjectposition);
 
         int i = 3 + this.mc_world().random.nextInt(5) + this.mc_world().random.nextInt(5);
-        org.bukkit.event.entity.ExpBottleEvent event = BukkitEventFactory.callExpBottleEvent((ExperienceBottleEntity)(Object)this, i);
+        org.bukkit.event.entity.ExpBottleEvent event = CraftEventFactory.callExpBottleEvent((ExperienceBottleEntity)(Object)this, i);
         i = event.getExperience();
 
         while (i > 0) {

@@ -1,6 +1,6 @@
 package com.mohistmc.banner.bukkit.nms.utils;
 
-import com.javazilla.bukkitfabric.BukkitFabricMod;
+import org.cardboardpowered.CardboardMod;
 import com.mohistmc.banner.bukkit.nms.model.ClassMapping;
 import com.mohistmc.banner.bukkit.nms.remappers.BannerInheritanceMap;
 import com.mohistmc.banner.bukkit.nms.remappers.BannerInheritanceProvider;
@@ -19,6 +19,7 @@ import net.minecraft.util.Identifier;
 import net.techcable.srglib.JavaType;
 import net.techcable.srglib.MethodSignature;
 
+import org.cardboardpowered.CardboardConfig;
 import org.cardboardpowered.impl.world.WorldImpl;
 import org.cardboardpowered.util.nms.MappingsReader;
 import org.cardboardpowered.util.nms.ReflectionMethodVisitor;
@@ -73,7 +74,7 @@ public class RemapUtils {
     }
     
     public static void LOG(String msg) {
-    	BukkitFabricMod.LOGGER.info("RemapUtils: " + msg);
+    	CardboardMod.LOGGER.info("RemapUtils: " + msg);
     }
     
     public static void init() {
@@ -133,7 +134,7 @@ public class RemapUtils {
         jarMapping.classes.put("net/minecraft/nbt/ListTag", "net/minecraft/class_2499");
         jarMapping.classes.put("net/minecraft/class_7225$a", "net/minecraft/class_7225$class_7874");
         
-        HashMap<String, String> cm = new HashMap<>();
+        // HashMap<String, String> cm = new HashMap<>();
         
         String namespace = mr.getCurrentRuntimeNamespace();
         
@@ -219,10 +220,6 @@ public class RemapUtils {
         	e.printStackTrace();
         }
 
-        // bukkit-1.20.4-cl-intermed.csrg
-        
-        
-        
         JointProvider provider = new JointProvider();
         provider.add(new BannerInheritanceProvider());
         //jarMapping.setInheritanceMap(new InheritanceMap());
@@ -241,6 +238,8 @@ public class RemapUtils {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+        
+        DEBUG_VERBOSE_CALLS = CardboardConfig.DEBUG_VERBOSE_CALLS;
     }
 
 
@@ -273,9 +272,9 @@ public class RemapUtils {
         typeName = mapPackage(typeName);
         String res = jarMapping.classes.getOrDefault(typeName, typeName);
         
-        if (res.contains("class_7225")) {
+        //if (res.contains("class_7225")) {
         	// System.out.println("MIS: " + typeName + " / " + res);
-        }
+        //}
         
         if (typeName.contains("$") && (typeName.contains("net") && typeName.contains("minecraft"))) {
         	
@@ -303,11 +302,13 @@ public class RemapUtils {
         	return namm;
         }
         
+        /*
         if (typeName.contains("net") && typeName.contains("minecraft")) {
         	if (!res.contains("class_")) {
         		// System.out.println("RemapUtils.map: NAME: " + typeName + " = " + res);
         	}
         }
+        */
         
         return res; // jarMapping.classes.getOrDefault(typeName, typeName);
     }
@@ -437,7 +438,9 @@ public class RemapUtils {
         
         String res = mapped != null ? mapped : fieldName;
 
-        System.out.println("DEBUG: FIELD: " + type.getName() + " / " + fieldName + " = " + (mapped != null ? mapped : fieldName));
+        if (DEBUG_VERBOSE_CALLS) {
+        	System.out.println("DEBUG: FIELD: " + type.getName() + " / " + fieldName + " = " + (mapped != null ? mapped : fieldName));
+        }
         
         return mapped != null ? mapped : fieldName;
     }

@@ -1,9 +1,8 @@
 package org.cardboardpowered.mixin.entity.block;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinSignBlockEntity;
+import org.cardboardpowered.interfaces.IMixinSignBlockEntity;
 
 import net.minecraft.block.AbstractSignBlock;
 import net.minecraft.block.Block;
@@ -12,6 +11,9 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
+/**
+ * @implSpec https://github.com/PaperMC/Paper/blob/main/paper-server/patches/sources/net/minecraft/world/level/block/entity/SignBlockEntity.java.patch
+ */
 @Mixin(SignBlockEntity.class)
 public class MixinSignBlockEntity implements IMixinSignBlockEntity {
 

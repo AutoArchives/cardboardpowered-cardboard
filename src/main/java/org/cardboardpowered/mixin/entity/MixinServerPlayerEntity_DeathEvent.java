@@ -13,9 +13,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinInventory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinInventory;
 import com.mojang.authlib.GameProfile;
 
 import net.minecraft.component.EnchantmentEffectComponentTypes;
@@ -88,7 +88,7 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
         String deathmessage = defaultMessage.getString();
         cardboard$deathMsg.set(deathmessage);
         keepLevel = keepInventory; // SPIGOT-2222: pre-set keepLevel
-        org.bukkit.event.entity.PlayerDeathEvent event = BukkitEventFactory.callPlayerDeathEvent(((ServerPlayerEntity) (Object) this), damageSource, loot, deathmessage, keepInventory);
+        org.bukkit.event.entity.PlayerDeathEvent event = CraftEventFactory.callPlayerDeathEvent(((ServerPlayerEntity) (Object) this), damageSource, loot, deathmessage, keepInventory);
         cardboard$deathEvent.set(event);
 
         // SPIGOT-943 - only call if they have an inventory open

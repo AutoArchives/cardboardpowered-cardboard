@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin;
 
-import com.javazilla.bukkitfabric.interfaces.IUserCache;
+import org.cardboardpowered.interfaces.IUserCache;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.GameProfileRepository;
 import com.mojang.authlib.ProfileLookupCallback;

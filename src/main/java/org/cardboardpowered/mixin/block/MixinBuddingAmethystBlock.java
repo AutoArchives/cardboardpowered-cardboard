@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.block;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BuddingAmethystBlock;
 import net.minecraft.server.world.ServerWorld;
@@ -25,6 +25,6 @@ public class MixinBuddingAmethystBlock {
     }
     @Redirect(method = "randomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Z"))
     private boolean blockSpread(ServerWorld instance, BlockPos blockPos, BlockState blockState) {
-        return BukkitEventFactory.handleBlockSpreadEvent(instance,fromPos.get(), blockPos, blockState, 3);
+        return CraftEventFactory.handleBlockSpreadEvent(instance,fromPos.get(), blockPos, blockState, 3);
     }
 }

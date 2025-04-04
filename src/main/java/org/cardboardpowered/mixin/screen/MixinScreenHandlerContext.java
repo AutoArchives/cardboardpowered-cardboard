@@ -6,8 +6,8 @@ import java.util.function.BiFunction;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinScreenHandlerContext;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IMixinScreenHandlerContext;
+import org.cardboardpowered.interfaces.IMixinWorld;
 
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.util.math.BlockPos;

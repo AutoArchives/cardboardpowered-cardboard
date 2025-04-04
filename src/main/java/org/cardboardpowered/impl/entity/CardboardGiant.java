@@ -5,7 +5,7 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Giant;
 
-public class CardboardGiant extends MonsterImpl implements Giant {
+public class CardboardGiant extends CraftMonster implements Giant {
 
     public CardboardGiant(CraftServer server, GiantEntity entity) {
         super(server, entity);

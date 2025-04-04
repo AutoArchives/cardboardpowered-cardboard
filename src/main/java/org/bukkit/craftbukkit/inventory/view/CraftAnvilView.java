@@ -8,7 +8,7 @@ import org.bukkit.inventory.view.AnvilView;
 import org.cardboardpowered.impl.inventory.CardboardAnvilInventory;
 import org.jetbrains.annotations.Nullable;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinScreenHandler;
+import org.cardboardpowered.interfaces.IMixinScreenHandler;
 
 import io.papermc.paper.adventure.PaperAdventure;
 

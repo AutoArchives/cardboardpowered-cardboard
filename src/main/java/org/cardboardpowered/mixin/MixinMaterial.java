@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinMaterial;
+import org.cardboardpowered.interfaces.IMixinMaterial;
 
 @Mixin(value = Material.class, remap = false)
 public class MixinMaterial implements IMixinMaterial {

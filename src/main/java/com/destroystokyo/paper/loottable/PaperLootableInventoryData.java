@@ -2,8 +2,8 @@ package com.destroystokyo.paper.loottable;
 
 import com.destroystokyo.paper.loottable.LootableInventoryReplenishEvent;
 import com.destroystokyo.paper.loottable.PaperLootableInventory;
-import com.javazilla.bukkitfabric.BukkitFabricMod;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import org.cardboardpowered.CardboardMod;
+import org.cardboardpowered.interfaces.IMixinEntity;
 
 //import io.papermc.paper.configuration.WorldConfiguration;
 //import io.papermc.paper.configuration.type.DurationOrDisabled;
@@ -76,7 +76,7 @@ public class PaperLootableInventoryData {
 
     public void processRefill(@Nullable PlayerEntity player) {
         this.lastFill = System.currentTimeMillis();
-        BukkitFabricMod.LOGGER.info("processRefil: TODO stub");
+        CardboardMod.LOGGER.info("processRefil: TODO stub");
         
         //WorldConfiguration paperConfig = this.lootable.getNMSWorld().paperConfig();
         /*if (paperConfig.lootables.autoReplenish) {

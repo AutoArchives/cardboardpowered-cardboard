@@ -1,8 +1,8 @@
 package org.bukkit.craftbukkit;
 
-import com.javazilla.bukkitfabric.BukkitFabricMod;
-import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorldSaveHandler;
+import org.cardboardpowered.CardboardMod;
+import org.cardboardpowered.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.interfaces.IMixinWorldSaveHandler;
 import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
@@ -528,7 +528,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
                 DataResult< RegistryKey<net.minecraft.world.World> > result =
                 		net.minecraft.world.World.CODEC.parse((DynamicOps)NbtOps.INSTANCE, data.get("SpawnDimension"));
                 RegistryKey<net.minecraft.world.World> levelKey =
-                		result.resultOrPartial(arg_0 -> (BukkitFabricMod.LOGGER).log(Level.FINE, "", arg_0)).orElse(net.minecraft.world.World.OVERWORLD);
+                		result.resultOrPartial(arg_0 -> (CardboardMod.LOGGER).log(Level.FINE, "", arg_0)).orElse(net.minecraft.world.World.OVERWORLD);
                 ServerWorld level = this.server.console.getWorld(levelKey);
                 World world = spawnWorld = level != null ? level.getWorld() : spawnWorld;
             }

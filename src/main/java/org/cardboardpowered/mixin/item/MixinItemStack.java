@@ -2,9 +2,9 @@ package org.cardboardpowered.mixin.item;
 
 // import java.util.Random;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinWorld;
 
 import me.isaiah.common.cmixin.IMixinItemStack;
 import net.minecraft.advancement.criterion.Criteria;
@@ -129,7 +129,7 @@ public class MixinItemStack implements IItemStack {
         	Item item = ((ItemStack)(Object)this).getItem();
             if (this.count == 1 && player instanceof ServerPlayerEntity) {
                 ServerPlayerEntity serverPlayer = (ServerPlayerEntity)player;
-                BukkitEventFactory.callPlayerItemBreakEvent(serverPlayer, ((ItemStack)(Object)this));
+                CraftEventFactory.callPlayerItemBreakEvent(serverPlayer, ((ItemStack)(Object)this));
             }
             ((ItemStack)(Object)this).decrement(1);
             breakCallback.accept(item);
@@ -163,7 +163,7 @@ public class MixinItemStack implements IItemStack {
             if (((IMixinWorld)context.getWorld()).getCapturedBlockStates_BF().size() > 0) {
                 List<BlockState> blocks = new java.util.ArrayList<>(((IMixinWorld)context.getWorld()).getCapturedBlockStates_BF().values());
                 ((IMixinWorld)context.getWorld()).getCapturedBlockStates_BF().clear();
-                BlockPlaceEvent placeEvent = BukkitEventFactory.callBlockPlaceEvent((ServerWorld)context.getWorld(), playerEntity, Hand.MAIN_HAND, blocks.get(0), blockPos.getX(), blockPos.getY(), blockPos.getZ()); 
+                BlockPlaceEvent placeEvent = CraftEventFactory.callBlockPlaceEvent((ServerWorld)context.getWorld(), playerEntity, Hand.MAIN_HAND, blocks.get(0), blockPos.getX(), blockPos.getY(), blockPos.getZ()); 
                 if ((placeEvent.isCancelled() || !placeEvent.canBuild())) {
                     ((IMixinWorld)context.getWorld()).setCaptureBlockStates_BF(false);
     
@@ -196,7 +196,7 @@ public class MixinItemStack implements IItemStack {
     )
     private void arclight$itemBreak(int amount, ServerWorld level, ServerPlayerEntity serverPlayer, Consumer<Item> onBroken, CallbackInfo ci) {
         if (this.count == 1 && serverPlayer != null) {
-        	BukkitEventFactory.callPlayerItemBreakEvent(serverPlayer, (ItemStack) (Object) this);
+        	CraftEventFactory.callPlayerItemBreakEvent(serverPlayer, (ItemStack) (Object) this);
         }
     }
 
@@ -210,7 +210,7 @@ public class MixinItemStack implements IItemStack {
     	)
     private <T extends LivingEntity> void cardboard$call_player_item_break_event(LivingEntity entityIn, EquipmentSlot equipmentSlot, Item item, CallbackInfo ci) {
         if (this.count == 1 && entityIn instanceof PlayerEntity) {
-        	BukkitEventFactory.callPlayerItemBreakEvent((PlayerEntity) entityIn, ((ItemStack)(Object)this));
+        	CraftEventFactory.callPlayerItemBreakEvent((PlayerEntity) entityIn, ((ItemStack)(Object)this));
       }
     }
     */
@@ -226,7 +226,7 @@ public class MixinItemStack implements IItemStack {
                     consumer.accept(t0);
                     Item item = ((ItemStack)(Object)this).getItem();
                     if (((ItemStack)(Object)this).count == 1 && t0 instanceof PlayerEntity)
-                        BukkitEventFactory.callPlayerItemBreakEvent((PlayerEntity) t0, ((ItemStack)(Object)this));
+                        CraftEventFactory.callPlayerItemBreakEvent((PlayerEntity) t0, ((ItemStack)(Object)this));
 
                     ((ItemStack)(Object)this).decrement(1);
                     if (t0 instanceof PlayerEntity)

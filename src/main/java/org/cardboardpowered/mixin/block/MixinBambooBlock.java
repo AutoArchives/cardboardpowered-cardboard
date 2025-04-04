@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.block;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import net.minecraft.block.BambooBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -67,7 +67,7 @@ public class MixinBambooBlock extends Block {
         }
         int i = (Integer)state.get(AGE) != 1 && !blockState2.isOf(Blocks.BAMBOO) ? 0 : 1;
         int j = (height < 11 || !(random.nextFloat() < 0.25F)) && height != 15 ? 0 : 1;
-        if (BukkitEventFactory.handleBlockSpreadEvent(world, pos, pos.up(), this.getDefaultState().with(AGE, i).with(LEAVES, bambooLeaves).with(STAGE, j), 3)) {
+        if (CraftEventFactory.handleBlockSpreadEvent(world, pos, pos.up(), this.getDefaultState().with(AGE, i).with(LEAVES, bambooLeaves).with(STAGE, j), 3)) {
             if (shouldUpdateOthers) {
                 world.setBlockState(pos.down(), blockState.with(BambooBlock.LEAVES, BambooLeaves.SMALL), 3);
                 world.setBlockState(blockPos, blockState2.with(BambooBlock.LEAVES, BambooLeaves.NONE), 3);

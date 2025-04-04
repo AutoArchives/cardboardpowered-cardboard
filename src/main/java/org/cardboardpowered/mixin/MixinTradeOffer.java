@@ -3,7 +3,7 @@ package org.cardboardpowered.mixin;
 import org.bukkit.craftbukkit.inventory.CraftMerchantRecipe;
 import org.spongepowered.asm.mixin.Mixin;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinTradeOffer;
+import org.cardboardpowered.interfaces.IMixinTradeOffer;
 
 import net.minecraft.village.TradeOffer;
 

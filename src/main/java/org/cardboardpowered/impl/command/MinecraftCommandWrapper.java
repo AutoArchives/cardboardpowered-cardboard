@@ -13,7 +13,7 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftEntity;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,8 +60,8 @@ public final class MinecraftCommandWrapper extends BukkitCommand {
     }
 
     public static ServerCommandSource getCommandSource(CommandSender s) {
-        if (s instanceof PlayerImpl)
-            return ((PlayerImpl)s).getHandle().getCommandSource();
+        if (s instanceof CraftPlayer)
+            return ((CraftPlayer)s).getHandle().getCommandSource();
         if (s instanceof CraftEntity)
             return ((CraftEntity)s).getHandle().getCommandSource( (ServerWorld) ((CraftEntity)s).getWorld() );
         if (s instanceof ConsoleCommandSender)

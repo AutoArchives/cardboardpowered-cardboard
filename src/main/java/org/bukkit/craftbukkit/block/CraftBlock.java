@@ -35,11 +35,11 @@ import com.destroystokyo.paper.block.BlockSoundGroup;
 import com.google.common.base.Preconditions;
 
 import org.cardboardpowered.impl.block.*;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.world.WorldImpl;
 import org.jetbrains.annotations.NotNull;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IMixinWorld;
 
 import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.BlockState;
@@ -754,7 +754,7 @@ public class CraftBlock implements Block {
 
     @Override
     public float getBreakSpeed(@NotNull Player arg0) {
-        return getNMS().calcBlockBreakingDelta( ((PlayerImpl)arg0).getHandle() , world, position);
+        return getNMS().calcBlockBreakingDelta( ((CraftPlayer)arg0).getHandle() , world, position);
     }
 
     @Override

@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.ISlimeEntity;
 
 
@@ -75,7 +75,7 @@ public class MixinSlimeEntity extends MixinEntity implements ISlimeEntity {
      *
     @Inject(at = @At(value = "TAIL"), method = "remove", cancellable = true)
     public void doBukkitEvent_RedirectSpawnEntity_2(CallbackInfo ci) {
-        EntityTransformEvent ev = BukkitEventFactory.callEntityTransformEvent((SlimeEntity)(Object)this, slimes_B, EntityTransformEvent.TransformReason.SPLIT);
+        EntityTransformEvent ev = CraftEventFactory.callEntityTransformEvent((SlimeEntity)(Object)this, slimes_B, EntityTransformEvent.TransformReason.SPLIT);
         if (ev != null && ev.isCancelled()) {
             ci.cancel();
             return;

@@ -8,7 +8,7 @@ import org.cardboardpowered.impl.entity.LivingEntityImpl;
 import org.bukkit.entity.Projectile;
 import org.bukkit.projectiles.ProjectileSource;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinEntity;
 
 public abstract class CraftProjectile extends AbstractProjectile implements Projectile {
 

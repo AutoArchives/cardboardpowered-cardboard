@@ -8,8 +8,8 @@ import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
@@ -20,7 +20,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinEntity;
 
 @MixinInfo(events = {"EntityShootBowEvent"})
 // @Mixin(BowItem.class)
@@ -67,7 +67,7 @@ public class MixinBowItem {
             i = -i;
             ProjectileEntity projectileEntity = this.createArrowEntity(world, shooter, stack, itemStack, critical);
             this.shoot(shooter, projectileEntity, j, speed, divergence, k, target);
-            EntityShootBowEvent event = BukkitEventFactory.callEntityShootBowEvent(shooter, stack, itemStack, projectileEntity, hand, speed, true);
+            EntityShootBowEvent event = CraftEventFactory.callEntityShootBowEvent(shooter, stack, itemStack, projectileEntity, hand, speed, true);
             if (event.isCancelled()) {
                 event.getProjectile().remove();
                 return;
@@ -87,7 +87,7 @@ public class MixinBowItem {
     		World world, LivingEntity shooter, Hand hand, ItemStack stack,
     		List<ItemStack> projectiles, float speed, float divergence, boolean critical, LivingEntity target) {
     	
-    	EntityShootBowEvent event = BukkitEventFactory.callEntityShootBowEvent(shooter, stack, itemStack, projectileEntity, hand, speed, true);
+    	EntityShootBowEvent event = CraftEventFactory.callEntityShootBowEvent(shooter, stack, itemStack, projectileEntity, hand, speed, true);
         if (event.isCancelled()) {
             event.getProjectile().remove();
             return;
@@ -142,7 +142,7 @@ public class MixinBowItem {
         if (l > 0) entityarrow.setPunch(l);
         if (EnchantmentHelper.getLevel(Enchantments.FLAME, itemstack) > 0) entityarrow.setOnFireFor(100);
 
-        org.bukkit.event.entity.EntityShootBowEvent event = BukkitEventFactory.callEntityShootBowEvent(entityhuman, itemstack, itemstack1, entityarrow, entityhuman.getActiveHand(), 0f, !flag1);
+        org.bukkit.event.entity.EntityShootBowEvent event = CraftEventFactory.callEntityShootBowEvent(entityhuman, itemstack, itemstack1, entityarrow, entityhuman.getActiveHand(), 0f, !flag1);
         if (event.isCancelled()) 
             cancel_BF = true;
         return entityarrow;

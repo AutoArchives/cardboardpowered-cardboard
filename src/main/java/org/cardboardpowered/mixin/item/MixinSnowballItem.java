@@ -1,7 +1,7 @@
 package org.cardboardpowered.mixin.item;
 
 import com.destroystokyo.paper.event.player.PlayerLaunchProjectileEvent;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;

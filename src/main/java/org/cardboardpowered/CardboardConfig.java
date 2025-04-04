@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 import org.cardboardpowered.library.KnotHelper;
 
-import com.javazilla.bukkitfabric.BukkitFabricMod;
+import org.cardboardpowered.CardboardMod;
 
 public class CardboardConfig {
 

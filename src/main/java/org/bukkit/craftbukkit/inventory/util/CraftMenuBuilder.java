@@ -1,6 +1,6 @@
 package org.bukkit.craftbukkit.inventory.util;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;

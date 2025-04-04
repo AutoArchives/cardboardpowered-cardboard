@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.cardboardpowered.impl.map.MapViewImpl;
-import com.javazilla.bukkitfabric.interfaces.IMixinMapState;
+import org.cardboardpowered.interfaces.IMixinMapState;
 
 import net.minecraft.item.map.MapState;
 import net.minecraft.registry.RegistryKey;

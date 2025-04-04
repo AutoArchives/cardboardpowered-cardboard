@@ -6,7 +6,7 @@ import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinInventory;
+import org.cardboardpowered.interfaces.IMixinInventory;
 
 public class CardboardBrewerInventory extends CraftInventory implements BrewerInventory {
 

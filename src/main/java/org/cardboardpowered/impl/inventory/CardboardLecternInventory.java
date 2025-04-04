@@ -5,7 +5,7 @@ import org.bukkit.block.Lectern;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.LecternInventory;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinInventory;
+import org.cardboardpowered.interfaces.IMixinInventory;
 
 public class CardboardLecternInventory extends CraftInventory implements LecternInventory {
 

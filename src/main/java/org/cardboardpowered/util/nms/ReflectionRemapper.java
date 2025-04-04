@@ -18,7 +18,7 @@
  */
 package org.cardboardpowered.util.nms;
 
-import com.javazilla.bukkitfabric.BukkitFabricMod;
+import org.cardboardpowered.CardboardMod;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerNetworkIo;
@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- * Very unsafe re-mapping of Reflection.
+ * Re-mapping of Reflection.
  */
 public class ReflectionRemapper {
 
@@ -44,12 +44,11 @@ public class ReflectionRemapper {
     public static JavaPlugin plugin;
 
     public static String mapClassName(String className) {
-    	
     	// TODO check why Essentials
     	if (className.startsWith("net.ess3.provider.providers.LegacyPotionMetaProvider")) {
     		return "net.ess3.provider.providers.ModernPotionMetaProvider";
     	}
-    	
+
         if (className.startsWith("org.bukkit.craftbukkit." + NMS_VERSION + "."))
             return MappingsReader.getIntermedClass("org.bukkit.craftbukkit." + className.substring(23 + NMS_VERSION.length() + 1));
 
@@ -101,7 +100,6 @@ public class ReflectionRemapper {
                     if (f.contains("B_STATS_VERSION")) {
                         return getBstatsVersionField();
                     }
-                    //System.out.println("DeBug:" + calling.getName() + " / " + getCallerClassName());
                     e2.printStackTrace();
                 }
                 return null;
@@ -144,11 +142,6 @@ public class ReflectionRemapper {
                         a.setAccessible(true);
                         return a;
                     }
-                    if (null != whyIsAsmBroken && whyIsAsmBroken.getName().equals("protocolsupport.zplatform.impl.spigot.injector.network.SpigotNettyInjector") && f.contains("f")) {
-                        Field a = ServerNetworkIo.class.getDeclaredField("channels");
-                        a.setAccessible(true);
-                        return a;
-                    }
                     if (null == whyIsAsmBroken) {
                         System.out.println("CALLING: " + calling.getName() + ", F: " + f);
                         return null;
@@ -165,12 +158,6 @@ public class ReflectionRemapper {
         }
     }
 
-    /*public static Method getMethodByName(Class<?> calling, String f) throws ClassNotFoundException, NoSuchMethodException {
-        Method m = getDeclaredMethodByName(calling, f);
-        m.setAccessible(true);
-        return m;
-    }*/
-    
     public static CraftServer getCraftServer() {
         return CraftServer.INSTANCE;
     }
@@ -196,67 +183,13 @@ public class ReflectionRemapper {
         return r;
     }
 
-    /*@Deprecated
-    public static Method getDeclaredMethodByName(Class<?> calling, String f) throws ClassNotFoundException, NoSuchMethodException {
-        if (calling.getName().endsWith("MinecraftServer") && f.equalsIgnoreCase("getServer")) {
-            return BukkitFabricMod.GET_SERVER;
-        }
-
-        try {
-            return calling.getMethod(MappingsReader.getIntermedMethod(calling.getName(), f));
-        } catch (NoSuchMethodException | SecurityException e) {
-            try {
-                Method a = calling.getDeclaredMethod(MappingsReader.getIntermedMethod(calling.getName(), f));
-                a.setAccessible(true);
-                return a;
-            } catch (NoSuchMethodException | SecurityException e1) {
-                Class<?> whyIsAsmBroken = getClassFromJPL(getCallerClassName());
-                try {
-                    Method a = whyIsAsmBroken.getDeclaredMethod(MappingsReader.getIntermedMethod(whyIsAsmBroken.getName(), f));
-                    a.setAccessible(true);
-                    return a;
-                } catch (NoSuchMethodException | SecurityException e2) {
-                    throw e2;
-                    //e1.printStackTrace();
-                }
-                //return null;
-            }
-        }
-    }
-
-    @Deprecated
-    public static Method getDeclaredMethodByName(Class<?> calling, String f, Class<?>[] parms) throws ClassNotFoundException, NoSuchMethodException {
-        if (calling.getName().endsWith("MinecraftServer") && f.equalsIgnoreCase("getServer")) {
-            return BukkitFabricMod.GET_SERVER;
-        }
-            
-        try {
-            return calling.getMethod(MappingsReader.getIntermedMethod(calling.getName(), f, parms), parms);
-        } catch (NoSuchMethodException | SecurityException e) {
-            try {
-                Method a = calling.getDeclaredMethod(MappingsReader.getIntermedMethod(calling.getName(), f, parms), parms);
-                a.setAccessible(true);
-                return a;
-            } catch (NoSuchMethodException | SecurityException e1) {
-                Class<?> whyIsAsmBroken = getClassFromJPL(getCallerClassName());
-                try {
-                    Method a = whyIsAsmBroken.getDeclaredMethod(MappingsReader.getIntermedMethod(whyIsAsmBroken.getName(), f), parms);
-                    a.setAccessible(true);
-                    return a;
-                } catch (NoSuchMethodException | SecurityException e2) {
-                    e1.printStackTrace();
-                }
-                return getDeclaredMethodByName(calling, f);
-            }
-        }
-    }*/
-
     /**
      * Retrieve a class that is from a plugin
      * 
      * @author Isaiah
      */
     @SuppressWarnings("unchecked")
+    @Deprecated
     public static Class<?> getClassFromJPL(String name) {
         try {
             SimplePluginManager pm = (SimplePluginManager) Bukkit.getPluginManager();
@@ -275,13 +208,14 @@ public class ReflectionRemapper {
             fc.setAccessible(true);
             return (Class<?>) fc.invoke(jpl, name);
         } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            BukkitFabricMod.LOGGER.warning("SOMETHING EVERY WRONG! PLEASE REPORT THE EXCEPTION BELOW TO BUKKIT4FABRIC:");
+            CardboardMod.LOGGER.warning("SOMETHING EVERY WRONG! PLEASE REPORT THE EXCEPTION BELOW TO BUKKIT4FABRIC:");
             e.printStackTrace();
             return null;
         }
     }
 
     @SuppressWarnings("unchecked")
+    @Deprecated
     public static JavaPluginLoader getFirstJPL() {
         try {
             SimplePluginManager pm = (SimplePluginManager) Bukkit.getPluginManager();
@@ -298,7 +232,7 @@ public class ReflectionRemapper {
             }
             return jpl;
         } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-            BukkitFabricMod.LOGGER.warning("SOMETHING EVERY WRONG! PLEASE REPORT THE EXCEPTION BELOW TO CARDBOARD:");
+            CardboardMod.LOGGER.warning("SOMETHING EVERY WRONG! PLEASE REPORT THE EXCEPTION BELOW TO CARDBOARD:");
             e.printStackTrace();
             return null;
         }
@@ -348,11 +282,5 @@ public class ReflectionRemapper {
     public static String getMinecraftServerVersion() {
         return SharedConstants.getGameVersion().getName();
     }
-
-    /*public static Method getMethodByName(Class<?> calling, String f, Class<?>[] p) throws ClassNotFoundException, NoSuchMethodException {
-        Method m = getDeclaredMethodByName(calling, f, p);
-        m.setAccessible(true);
-        return m;
-    }*/
 
 }

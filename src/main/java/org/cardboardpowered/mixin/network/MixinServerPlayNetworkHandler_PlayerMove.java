@@ -9,16 +9,16 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.*;
-import org.cardboardpowered.impl.entity.PlayerImpl;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.spigotmc.SpigotConfig;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinPlayNetworkHandler;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 import io.papermc.paper.event.player.PlayerFailMoveEvent;
 import net.minecraft.entity.MovementType;
@@ -104,13 +104,13 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
 	@Shadow
     public Vec3d requestedTeleportPos;
 	
-	public PlayerImpl getCraftPlayer() {
-        return this.player == null ? null : (PlayerImpl) ((IMixinEntity)this.player).getBukkitEntity();
+	public CraftPlayer getCraftPlayer() {
+        return this.player == null ? null : (CraftPlayer) ((IMixinEntity)this.player).getBukkitEntity();
     }
 	
 	// Cardboard - Paper start
 	private PlayerFailMoveEvent fireFailMove(PlayerFailMoveEvent.FailReason failReason, double toX, double toY, double toZ, float toYaw, float toPitch, boolean logWarning) {
-        PlayerImpl player = this.getCraftPlayer();
+        CraftPlayer player = this.getCraftPlayer();
         Location from = new Location(player.getWorld(), this.lastPosX, this.lastPosY, this.lastPosZ, this.lastYaw, this.lastPitch);
         Location to = new Location(player.getWorld(), toX, toY, toZ, toYaw, toPitch);
         PlayerFailMoveEvent event = new PlayerFailMoveEvent(player, failReason, false, logWarning, from, to);
@@ -222,7 +222,7 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                             boolean bl = flag1 = d7 > 0.0;
                             if (this.player.isOnGround() && !packet.isOnGround() && flag1) {
                                 PlayerJumpEvent event5;
-                                PlayerImpl player = this.getCraftPlayer();
+                                CraftPlayer player = this.getCraftPlayer();
                                 Location from = new Location(player.getWorld(), this.lastPosX, this.lastPosY, this.lastPosZ, this.lastYaw, this.lastPitch);
                                 Location to = player.getLocation().clone();
                                 if (packet.changesPosition()) {
@@ -289,7 +289,7 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                                 this.player.handleFall(this.player.getX() - d3, this.player.getY() - d4, this.player.getZ() - d5, packet.isOnGround());
                             } else {
                                 this.player.updatePositionAndAngles(prevX, prevY, prevZ, prevYaw, prevPitch);
-                                PlayerImpl player = this.getCraftPlayer();
+                                CraftPlayer player = this.getCraftPlayer();
                                 if (!this.hasMoved) {
                                     this.lastPosX = prevX;
                                     this.lastPosY = prevY;

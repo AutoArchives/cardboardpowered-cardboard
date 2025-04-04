@@ -18,10 +18,10 @@
  */
 package org.cardboardpowered.mixin;
 
-import com.javazilla.bukkitfabric.BukkitFabricMod;
-import com.javazilla.bukkitfabric.impl.scheduler.BukkitSchedulerImpl;
-import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.CardboardMod;
+import org.bukkit.craftbukkit.scheduler.CraftScheduler;
+import org.cardboardpowered.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.interfaces.IMixinWorld;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import me.isaiah.common.cmixin.IMixinPersistentStateManager;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
@@ -204,7 +204,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
 
         CraftMagicNumbers.setupUnknownModdedMaterials();
         fixBukkitWorldEdit();
-        BukkitFabricMod.isAfterWorldLoad = true;
+        CardboardMod.isAfterWorldLoad = true;
     }
 
     @Redirect(method = "createWorlds", at = @At(value = "NEW", args = "class=net/minecraft/server/world/ServerWorld", ordinal = 1))
@@ -297,7 +297,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
             HashMap<String, Material> moddedMaterials = CraftMagicNumbers.getModdedMaterials();
 
             if (moddedMaterials.size() > 0)
-                BukkitFabricMod.LOGGER.info("Adding Modded blocks/items to WorldEdit registry...");
+                CardboardMod.LOGGER.info("Adding Modded blocks/items to WorldEdit registry...");
             for (String mid : moddedMaterials.keySet()) {
                 try {
                     REGISTER_ITEM.invoke(REGISTRY_ITEM, "minecraft:" + mid.toLowerCase(), ITEM_TYPE.getConstructor(String.class).newInstance(mid));
@@ -306,7 +306,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
                 }
             }
             if (moddedMaterials.size() > 0)
-                BukkitFabricMod.LOGGER.info("Added Modded blocks/items to WorldEdit registry.");
+                CardboardMod.LOGGER.info("Added Modded blocks/items to WorldEdit registry.");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -316,7 +316,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     public void loadSpawn(WorldGenerationProgressListener worldloadlistener, ServerWorld worldserver) {
         this.forceTicks = true;
 
-        BukkitFabricMod.LOGGER.info("Preparing start region for world " + worldserver.getRegistryKey().getValue());
+        CardboardMod.LOGGER.info("Preparing start region for world " + worldserver.getRegistryKey().getValue());
         BlockPos blockposition = worldserver.getSpawnPos();
 
         worldloadlistener.start(new ChunkPos(blockposition));
@@ -387,7 +387,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
 
     @Inject(at = @At("HEAD"), method = "tickWorlds")
     public void doBukkitRunnables(BooleanSupplier b, CallbackInfo ci) {
-        ((BukkitSchedulerImpl)CraftServer.INSTANCE.getScheduler()).mainThreadHeartbeat(ticks);
+        ((CraftScheduler)CraftServer.INSTANCE.getScheduler()).mainThreadHeartbeat(ticks);
         while (!processQueue.isEmpty())
             processQueue.remove().run();
     }

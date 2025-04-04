@@ -1,8 +1,8 @@
 package org.cardboardpowered.impl.inventory.recipe;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinMinecraftServer;
-import com.javazilla.bukkitfabric.interfaces.IMixinRecipe;
-import com.javazilla.bukkitfabric.interfaces.IMixinRecipeManager;
+import org.cardboardpowered.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.interfaces.IMixinRecipe;
+import org.cardboardpowered.interfaces.IMixinRecipeManager;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.util.Identifier;

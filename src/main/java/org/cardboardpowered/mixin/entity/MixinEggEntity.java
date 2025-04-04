@@ -17,8 +17,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.destroystokyo.paper.event.entity.ThrownEggHatchEvent;
-import com.javazilla.bukkitfabric.interfaces.IMixinEntity;
-import com.javazilla.bukkitfabric.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.thrown.EggEntity;
 import net.minecraft.server.network.ServerPlayerEntity;

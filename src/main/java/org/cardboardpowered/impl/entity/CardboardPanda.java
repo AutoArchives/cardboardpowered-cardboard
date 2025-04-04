@@ -7,7 +7,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Panda;
 import org.jetbrains.annotations.NotNull;
 
-public class CardboardPanda extends AnimalsImpl implements Panda {
+public class CardboardPanda extends CraftAnimals implements Panda {
 
     public CardboardPanda(CraftServer server, PandaEntity entity) {
         super(server, entity);

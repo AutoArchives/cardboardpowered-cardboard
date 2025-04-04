@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 import net.minecraft.entity.Entity.RemovalReason;
 import net.minecraft.entity.ItemEntity;
@@ -44,11 +44,11 @@ public class MixinPiglinBrain {
         stopWalking(entitypiglin);
         ItemStack itemstack;
 
-        if (entityitem.getStack().getItem() == Items.GOLD_NUGGET && !BukkitEventFactory.callEntityPickupItemEvent(entitypiglin, entityitem, 0, false).isCancelled()) {
+        if (entityitem.getStack().getItem() == Items.GOLD_NUGGET && !CraftEventFactory.callEntityPickupItemEvent(entitypiglin, entityitem, 0, false).isCancelled()) {
             entitypiglin.sendPickup(entityitem, entityitem.getStack().getCount());
             itemstack = entityitem.getStack();
             entityitem.remove(RemovalReason.DISCARDED);
-        } else if (!BukkitEventFactory.callEntityPickupItemEvent(entitypiglin, entityitem, entityitem.getStack().getCount() - 1, false).isCancelled()) {
+        } else if (!CraftEventFactory.callEntityPickupItemEvent(entitypiglin, entityitem, entityitem.getStack().getCount() - 1, false).isCancelled()) {
             entitypiglin.sendPickup(entityitem, 1);
             itemstack = getItemFromStack(entityitem);
         } else return;

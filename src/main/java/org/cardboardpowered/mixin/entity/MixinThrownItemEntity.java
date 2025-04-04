@@ -3,7 +3,7 @@ package org.cardboardpowered.mixin.entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinThrownItemEntity;
+import org.cardboardpowered.interfaces.IMixinThrownItemEntity;
 
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
 import net.minecraft.item.Item;

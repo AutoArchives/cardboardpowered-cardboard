@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.loot;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinLootContextParameters;
+import org.cardboardpowered.interfaces.IMixinLootContextParameters;
 import net.minecraft.loot.condition.RandomChanceWithEnchantedBonusLootCondition;
 import net.minecraft.loot.context.LootContext;
 import org.spongepowered.asm.mixin.Final;

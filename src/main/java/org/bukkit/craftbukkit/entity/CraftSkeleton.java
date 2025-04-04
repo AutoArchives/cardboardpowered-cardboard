@@ -5,10 +5,10 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Skeleton;
-import org.cardboardpowered.impl.entity.MonsterImpl;
+import org.cardboardpowered.impl.entity.CraftMonster;
 
 @SuppressWarnings("deprecation")
-public class CraftSkeleton extends MonsterImpl implements Skeleton {
+public class CraftSkeleton extends CraftMonster implements Skeleton {
 
     public CraftSkeleton(CraftServer server, AbstractSkeletonEntity entity) {
         super(server, entity);

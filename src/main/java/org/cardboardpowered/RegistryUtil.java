@@ -8,7 +8,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.potion.PotionType;
 
-import com.javazilla.bukkitfabric.BukkitFabricMod;
+import org.cardboardpowered.CardboardMod;
 
 import io.izzel.arclight.api.EnumHelper;
 import net.minecraft.registry.Registries;
@@ -47,7 +47,7 @@ public class RegistryUtil {
 			String name = normalizeName(location.toString());
 			try {
 				PotionType.valueOf(name);
-				BukkitFabricMod.LOGGER.info("FOUND POT for " + name);
+				CardboardMod.LOGGER.info("FOUND POT for " + name);
 			} catch (Exception e) {
 				NamespacedKey namespacedKey = CraftNamespacedKey.fromMinecraft(location);
 				
@@ -59,7 +59,7 @@ public class RegistryUtil {
 					);
 				newTypes.add(potionType);
 				if (CardboardConfig.DEBUG_VERBOSE_CALLS) {
-					BukkitFabricMod.LOGGER.info("Registered " + location + " as potion type " + potionType);
+					CardboardMod.LOGGER.info("Registered " + location + " as potion type " + potionType);
 				}
 			}
 		}

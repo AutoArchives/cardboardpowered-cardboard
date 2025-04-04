@@ -8,8 +8,8 @@ import org.bukkit.event.entity.VillagerCareerChangeEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
-import org.cardboardpowered.impl.entity.VillagerImpl;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.impl.entity.CraftVillager;
 import org.cardboardpowered.util.MixinInfo;
 
 import net.minecraft.entity.ai.brain.MemoryModuleType;
@@ -35,11 +35,11 @@ public class MixinLoseJobOnSiteLossTask {
             VillagerData lv = entity.getVillagerData();
             if (lv.getProfession() != VillagerProfession.NONE && lv.getProfession() != VillagerProfession.NITWIT && entity.getExperience() == 0 && lv.getLevel() <= 1) {
                 // CraftBukkit start
-                VillagerCareerChangeEvent event = BukkitEventFactory.callVillagerCareerChangeEvent(entity, VillagerImpl.nmsToBukkitProfession(VillagerProfession.NONE), VillagerCareerChangeEvent.ChangeReason.LOSING_JOB);
+                VillagerCareerChangeEvent event = CraftEventFactory.callVillagerCareerChangeEvent(entity, CraftVillager.nmsToBukkitProfession(VillagerProfession.NONE), VillagerCareerChangeEvent.ChangeReason.LOSING_JOB);
                 if (event.isCancelled()) {
                     return false;
                 }
-                entity.setVillagerData(entity.getVillagerData().withProfession(VillagerImpl.bukkitToNmsProfession(event.getProfession())));
+                entity.setVillagerData(entity.getVillagerData().withProfession(CraftVillager.bukkitToNmsProfession(event.getProfession())));
                 // CraftBukkit end
                 entity.reinitializeBrain(world);
                 return true;

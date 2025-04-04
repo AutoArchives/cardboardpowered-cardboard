@@ -14,9 +14,9 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.entity.Frog;
-import org.cardboardpowered.impl.entity.AnimalsImpl;
+import org.cardboardpowered.impl.entity.CraftAnimals;
 
-public class CraftFrog extends AnimalsImpl implements Frog {
+public class CraftFrog extends CraftAnimals implements Frog {
 
     public CraftFrog(CraftServer server, FrogEntity entity) {
         super(server, entity);

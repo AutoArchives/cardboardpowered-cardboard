@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.entity;
 
-import com.javazilla.bukkitfabric.impl.BukkitEventFactory;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
@@ -26,11 +26,11 @@ public class MixinFireworkRocketEntity extends MixinEntity{
 
     @Inject(method = "explode", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;damage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;F)Z"))
     private void bukkitDamageSource(ServerWorld world, CallbackInfo ci) {
-        BukkitEventFactory.entityDamage = (FireworkRocketEntity) (Object) this;
+        CraftEventFactory.entityDamage = (FireworkRocketEntity) (Object) this;
     }
 
     @Inject(method = "explode", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/entity/LivingEntity;damage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;F)Z"))
     private void bukkitDamageSourceReset(ServerWorld world, CallbackInfo ci) {
-        BukkitEventFactory.entityDamage = null;
+        CraftEventFactory.entityDamage = null;
     }
 }

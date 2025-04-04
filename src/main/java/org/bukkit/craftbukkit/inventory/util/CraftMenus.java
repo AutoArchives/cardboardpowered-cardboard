@@ -23,8 +23,8 @@ import org.bukkit.inventory.view.StonecutterView;
 import org.bukkit.inventory.view.builder.InventoryViewBuilder;
 import org.jspecify.annotations.NullMarked;
 
-import com.javazilla.bukkitfabric.interfaces.IMixinScreenHandler;
-import com.javazilla.bukkitfabric.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.interfaces.IMixinScreenHandler;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 import java.util.function.Supplier;
 import net.minecraft.block.Blocks;
