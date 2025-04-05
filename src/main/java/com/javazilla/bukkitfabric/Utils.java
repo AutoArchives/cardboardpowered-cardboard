@@ -47,15 +47,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 
 public class Utils {
-
-    public static String getGitHash() {
-        try {
-            Class<?> version = Class.forName("com.javazilla.bukkitfabric.GitVersion");
-            return (String) version.getField("GIT_SHA").get(null);
-        } catch (ClassNotFoundException | NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-            return "-unknown-";
-        }
-    }
     
     public static EquipmentSlot getHand(Hand enumhand) {
         return (enumhand == Hand.MAIN_HAND) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;

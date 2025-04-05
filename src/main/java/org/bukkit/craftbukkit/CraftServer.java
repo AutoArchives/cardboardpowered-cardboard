@@ -183,6 +183,7 @@ import org.cardboardpowered.impl.command.BukkitCommandWrapper;
 import org.cardboardpowered.impl.command.CardboardConsoleCommandSender;
 import org.cardboardpowered.impl.command.CommandMapImpl;
 import org.cardboardpowered.impl.command.MinecraftCommandWrapper;
+import org.cardboardpowered.impl.command.VersionCommand;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.impl.inventory.InventoryCreator;
@@ -301,8 +302,9 @@ public class CraftServer implements Server {
     	
     	
         INSTANCE = this;
-        serverVersion = "git-Cardboard-" + Utils.getGitHash().substring(0,7); // use short hash
-        shortVersion = "git-" + Utils.getGitHash().substring(0,7);
+        String hash = VersionCommand.getGitHash().substring(0,7); // use short hash
+        serverVersion = "git-Cardboard-" + hash;
+        shortVersion = "git-" + hash;
         server = nms;
         console = nms;
         commandMap = new CommandMapImpl(this);

@@ -187,10 +187,28 @@ public class VersionCommand extends Command {
             versionLock.unlock();
         }
     }
+    
+    public static String getGitHash() {
+        try {
+            Class<?> version = Class.forName("org.cardboardpowered.GitVersion");
+            return (String) version.getField("GIT_SHA").get(null);
+        } catch (ClassNotFoundException | NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            return "-unknown-";
+        }
+    }
+    
+    public static boolean isDirty() {
+        try {
+            Class<?> version = Class.forName("org.cardboardpowered.GitVersion");
+            return ( (Integer) version.getField("DIRTY").get(null) ) == 1;
+        } catch (ClassNotFoundException | NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            return false;
+        }
+    }
 
     public static int check() {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL("https://api.github.com/repos/CardboardPowered/cardboard/compare/" + BRANCH + "..." + Utils.getGitHash()).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL("https://api.github.com/repos/CardboardPowered/cardboard/compare/" + BRANCH + "..." + getGitHash()).openConnection();
             connection.connect();
 
             if (connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) return -2; // Unknown commit

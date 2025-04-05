@@ -11,7 +11,7 @@ plugins {
 
 gversion {
   srcDir = "src/main/java/"
-  classPackage = "com.javazilla.bukkitfabric"
+  classPackage = "org.cardboardpowered"
   className = "GitVersion"
 }
 project.compileJava.dependsOn(createVersionFile)
