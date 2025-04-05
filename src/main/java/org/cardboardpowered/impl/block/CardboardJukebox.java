@@ -15,7 +15,7 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.JukeboxInventory;
 import org.cardboardpowered.impl.inventory.CraftInventoryJukebox;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 
 public class CardboardJukebox extends CardboardBlockEntityState<JukeboxBlockEntity> implements Jukebox {
@@ -43,7 +43,7 @@ public class CardboardJukebox extends CardboardBlockEntityState<JukeboxBlockEnti
     public boolean update(boolean force, boolean applyPhysics) {
         boolean result = super.update(force, applyPhysics);
         if (result && this.isPlaced() && this.getType() == Material.JUKEBOX) {
-            WorldImpl world = (WorldImpl) this.getWorld();
+            CraftWorld world = (CraftWorld) this.getWorld();
             Material record = this.getPlaying();
             world.getHandle().setBlockState(this.getPosition(), Blocks.JUKEBOX.getDefaultState().with(JukeboxBlock.HAS_RECORD, !(record == Material.AIR)), 3);
             world.playEffect(this.getLocation(), Effect.RECORD_PLAY, record);

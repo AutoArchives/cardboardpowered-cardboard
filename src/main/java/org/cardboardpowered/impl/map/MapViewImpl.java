@@ -12,7 +12,7 @@ import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
 public final class MapViewImpl implements MapView {
@@ -60,12 +60,12 @@ public final class MapViewImpl implements MapView {
     public World getWorld() {
         RegistryKey<net.minecraft.world.World> dimension = worldMap.dimension;
         ServerWorld world = CraftServer.server.getWorld(dimension);
-        return (world == null) ? null : ((IMixinWorld)world).getWorldImpl();
+        return (world == null) ? null : ((IMixinWorld)world).getCraftWorld();
     }
 
     @Override
     public void setWorld(World world) {
-        //worldMap.dimension = ((WorldImpl) world).getHandle().getRegistryKey();
+        //worldMap.dimension = ((CraftWorld) world).getHandle().getRegistryKey();
     }
 
     @Override

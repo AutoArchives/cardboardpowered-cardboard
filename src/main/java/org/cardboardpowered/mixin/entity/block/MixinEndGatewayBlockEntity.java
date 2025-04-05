@@ -65,7 +65,7 @@ public class MixinEndGatewayBlockEntity {
 	@Unique
 	private static Location callEvent(IMixinWorld world, IMixinEntity teleported, double x, double y, double z) {
 		CraftPlayer player = (CraftPlayer) teleported.getBukkitEntity();
-		Location location = new Location(world.getWorldImpl(), x, y, z);
+		Location location = new Location(world.getCraftWorld(), x, y, z);
 		location.setPitch(player.getLocation().getPitch());
 		location.setYaw(player.getLocation().getYaw());
 

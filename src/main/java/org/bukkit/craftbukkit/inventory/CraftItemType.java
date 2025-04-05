@@ -9,7 +9,7 @@ import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.cardboardpowered.impl.CardboardAttributeInstance;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.item.Item;
@@ -285,7 +285,7 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
 
     public boolean isEnabledByFeature(@NotNull World world) {
         Preconditions.checkNotNull(world, "World cannot be null");
-        return this.getHandle().isEnabled(((WorldImpl)world).getHandle().getEnabledFeatures());
+        return this.getHandle().isEnabled(((CraftWorld)world).getHandle().getEnabledFeatures());
     }
 
     @NotNull

@@ -8,7 +8,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.player.PlayerEggThrowEvent;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -65,7 +65,7 @@ public abstract class MixinEggEntity {
             // Paper end
             if (hatching) {
                 for (int i = 0; i < b0; ++i) {
-                    WorldImpl cw = ((IMixinWorld)world).getWorldImpl();
+                    CraftWorld cw = ((IMixinWorld)world).getCraftWorld();
                     Entity entity = cw.createEntity_Old(new org.bukkit.Location(cw, egg.getX(), egg.getY(), egg.getZ(), egg.getYaw(), 0.0F), hatchingType.getEntityClass());
                     if (((IMixinEntity)entity).getBukkitEntity() instanceof Ageable)
                         ((Ageable) ((IMixinEntity)entity).getBukkitEntity()).setBaby();

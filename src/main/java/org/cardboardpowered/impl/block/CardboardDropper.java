@@ -13,7 +13,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Dropper;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.Inventory;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -53,7 +53,7 @@ public class CardboardDropper extends CardboardLootableBlock<DropperBlockEntity>
         Block block = getBlock();
 
         if (block.getType() == Material.DROPPER) {
-            WorldImpl world = (WorldImpl) this.getWorld();
+            CraftWorld world = (CraftWorld) this.getWorld();
             DropperBlock drop = (DropperBlock) Blocks.DROPPER;
             BlockState state = world.getHandle().getBlockState(getPosition());
             drop.dispense(world.getHandle(), state, this.getPosition());

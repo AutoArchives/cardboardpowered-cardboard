@@ -112,12 +112,12 @@ public class CardboardChunk implements Chunk {
     }
 
 	@Override
-    public WorldImpl getWorld() {
-        return ((IMixinWorld)worldServer.toServerWorld()).getWorldImpl();
+    public CraftWorld getWorld() {
+        return ((IMixinWorld)worldServer.toServerWorld()).getCraftWorld();
     }
 
-    public WorldImpl getCraftWorld() {
-        return (WorldImpl)this.getWorld();
+    public CraftWorld getCraftWorld() {
+        return (CraftWorld)this.getWorld();
     }
 
     public net.minecraft.world.chunk.WorldChunk getHandle() {
@@ -192,7 +192,7 @@ public class CardboardChunk implements Chunk {
             if (!(obj instanceof BlockPos)) continue;
 
             BlockPos position = (BlockPos) obj;
-            entities[index++] = ((IMixinWorld)(Object)worldServer).getWorldImpl().getBlockAt(position.getX(), position.getY(), position.getZ()).getState();
+            entities[index++] = ((IMixinWorld)(Object)worldServer).getCraftWorld().getBlockAt(position.getX(), position.getY(), position.getZ()).getState();
         }
 
         return entities;
@@ -405,7 +405,7 @@ public class CardboardChunk implements Chunk {
         return new CardboardChunkSnapshot(getX(), getZ(), chunk.getBottomY(), chunk.getTopYInclusive(), world.getSeaLevel(), world.getName(), world.getFullTime(), sectionBlockIDs, sectionSkyLights, sectionEmitLights, sectionEmpty, hmap, iregistry, biome);
     }
     
-    public static ChunkSnapshot getEmptyChunkSnapshot(int x, int z, WorldImpl world, boolean includeBiome, boolean includeBiomeTempRain) {
+    public static ChunkSnapshot getEmptyChunkSnapshot(int x, int z, CraftWorld world, boolean includeBiome, boolean includeBiomeTempRain) {
         net.minecraft.world.chunk.Chunk actual = world.getHandle().getChunk(x, z, (includeBiome || includeBiomeTempRain) ? ChunkStatus.BIOMES : ChunkStatus.EMPTY);
 
         /* Fill with empty data */
@@ -486,7 +486,7 @@ public class CardboardChunk implements Chunk {
         ArrayList<BlockState> entities = new ArrayList<BlockState>();
 
         for (BlockPos position : ((IMixinChunk)chunk).cardboard_getBlockEntities().keySet()) {
-            Block block = ((IMixinWorld)this.worldServer).getWorldImpl().getBlockAt(position.getX(), position.getY(), position.getZ());
+            Block block = ((IMixinWorld)this.worldServer).getCraftWorld().getBlockAt(position.getX(), position.getY(), position.getZ());
             if (!blockPredicate.test(block)) continue;
             entities.add(block.getState(useSnapshot));
         }

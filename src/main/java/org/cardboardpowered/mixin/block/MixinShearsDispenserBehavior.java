@@ -38,7 +38,7 @@ public class MixinShearsDispenserBehavior {
 
     @Inject(at = @At("HEAD"), method = "dispenseSilently")
     protected void cardboard_dispenseSilently(BlockPointer pointer, ItemStack stack, CallbackInfoReturnable<ItemStack> ci) {
-        cardboard_block = ((IMixinWorld)pointer.world()).getWorldImpl().getBlockAt(pointer.pos().getX(), pointer.pos().getY(), pointer.pos().getZ());
+        cardboard_block = ((IMixinWorld)pointer.world()).getCraftWorld().getBlockAt(pointer.pos().getX(), pointer.pos().getY(), pointer.pos().getZ());
         cardboard_saved = CraftItemStack.asCraftMirror(stack);
 
         BlockDispenseEvent event = new BlockDispenseEvent(cardboard_block, cardboard_saved.clone(), new org.bukkit.util.Vector(0, 0, 0));

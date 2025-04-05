@@ -143,7 +143,7 @@ import org.cardboardpowered.impl.entity.LivingEntityImpl;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.entity.UnknownEntity;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.InetAddress;
@@ -178,12 +178,12 @@ public class CraftEventFactory {
     }
 
     public static BlockPlaceEvent callBlockPlaceEvent(ServerWorld world, PlayerEntity who, Hand hand, BlockState replacedBlockState, int x, int y, int z) {
-        WorldImpl worldImpl = ((IMixinWorld)world).getWorldImpl();
+        CraftWorld CraftWorld = ((IMixinWorld)world).getCraftWorld();
         CraftServer craftServer = CraftServer.INSTANCE;
 
         Player player = (Player) ((IMixinServerEntityPlayer) who).getBukkitEntity();
 
-        Block blockClicked = worldImpl.getBlockAt(x, y, z);
+        Block blockClicked = CraftWorld.getBlockAt(x, y, z);
         Block placedBlock = replacedBlockState.getBlock();
 
         boolean canBuild = canBuild(world, player, placedBlock.getX(), placedBlock.getZ());
@@ -202,7 +202,7 @@ public class CraftEventFactory {
     }
 
     public static BlockBurnEvent callBlockBurnEvent(World world, BlockPos pos, @Nullable Block ignitingBlock){
-        BlockBurnEvent event = new BlockBurnEvent(((IMixinWorld)world).getWorldImpl().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), ignitingBlock);
+        BlockBurnEvent event = new BlockBurnEvent(((IMixinWorld)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), ignitingBlock);
         CraftServer.INSTANCE.getPluginManager().callEvent(event);
         return event;
     }
@@ -222,7 +222,7 @@ public class CraftEventFactory {
     }
 
     public static BlockIgniteEvent callBlockIgniteEvent(World world, int x, int y, int z, Explosion explosion) {
-        org.bukkit.World bukkitWorld = ((IMixinWorld) world).getWorldImpl();
+        org.bukkit.World bukkitWorld = ((IMixinWorld) world).getCraftWorld();
         // org.bukkit.entity.Entity igniter = explosion.entity == null ? null : ((IMixinEntity)explosion.entity).getBukkitEntity();
         org.bukkit.entity.Entity igniter = explosion.getEntity() == null ? null : explosion.getEntity().getBukkitEntity();
 
@@ -246,12 +246,12 @@ public class CraftEventFactory {
         CraftItemStack itemInHand = CraftItemStack.asCraftMirror(itemstack);
 
         assert player != null;
-        WorldImpl WorldImpl = (WorldImpl) player.getWorld();
+        CraftWorld CraftWorld = (CraftWorld) player.getWorld();
         CraftServer craftServer = (CraftServer) player.getServer();
 
         Block blockClicked = null;
         if (position != null) {
-            blockClicked = WorldImpl.getBlockAt(position.getX(), position.getY(), position.getZ());
+            blockClicked = CraftWorld.getBlockAt(position.getX(), position.getY(), position.getZ());
         } else {
             switch (action) {
                 case LEFT_CLICK_BLOCK:
@@ -281,10 +281,10 @@ public class CraftEventFactory {
         CraftItemStack itemInHand = CraftItemStack.asCraftMirror(itemstack);
 
         assert player != null;
-        WorldImpl WorldImpl = (WorldImpl) player.getWorld();
+        CraftWorld CraftWorld = (CraftWorld) player.getWorld();
         CraftServer craftServer = (CraftServer) player.getServer();
 
-        Block blockClicked = WorldImpl.getBlockAt(x, y, z);
+        Block blockClicked = CraftWorld.getBlockAt(x, y, z);
 
         BlockDamageEvent event = new BlockDamageEvent(player, blockClicked, itemInHand, instaBreak);
         craftServer.getPluginManager().callEvent(event);
@@ -293,7 +293,7 @@ public class CraftEventFactory {
     }
 
     public static BlockRedstoneEvent callRedstoneChange(World world, BlockPos pos, int oldCurrent, int newCurrent) {
-        BlockRedstoneEvent event = new BlockRedstoneEvent(((IMixinWorld)world).getWorldImpl().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), oldCurrent, newCurrent);
+        BlockRedstoneEvent event = new BlockRedstoneEvent(((IMixinWorld)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), oldCurrent, newCurrent);
         CraftServer.INSTANCE.getPluginManager().callEvent(event);
         return event;
     }
@@ -564,7 +564,7 @@ public class CraftEventFactory {
     }
 
     public static LootGenerateEvent callLootGenerateEvent(Inventory inventory, LootTable lootTable, LootContext lootInfo, List<ItemStack> loot, boolean plugin) {
-        WorldImpl world = ((IMixinWorld)lootInfo.getWorld()).getWorldImpl();
+        CraftWorld world = ((IMixinWorld)lootInfo.getWorld()).getCraftWorld();
         Entity entity = lootInfo.get(LootContextParameters.THIS_ENTITY);
 
         NamespacedKey key = null; // CraftNamespacedKey.fromMinecraft(((IMixinLootManager)world.getHandle().getServer().getLootManager()).getLootTableToKeyMapBF().get(lootTable));
@@ -600,7 +600,7 @@ public class CraftEventFactory {
             return event;
         }
 
-        WorldImpl world = (WorldImpl) entity.getWorld();
+        CraftWorld world = (CraftWorld) entity.getWorld();
         Bukkit.getServer().getPluginManager().callEvent(event);
 
         for (org.bukkit.inventory.ItemStack stack : event.getDrops()) {
@@ -698,7 +698,7 @@ public class CraftEventFactory {
     }
 
     public static BlockIgniteEvent callBlockIgniteEvent(World world, BlockPos pos, IgniteCause cause, Entity igniter) {
-        BlockIgniteEvent event = new BlockIgniteEvent(((IMixinWorld)world).getWorldImpl().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), cause, ((IMixinEntity)igniter).getBukkitEntity());
+        BlockIgniteEvent event = new BlockIgniteEvent(((IMixinWorld)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), cause, ((IMixinEntity)igniter).getBukkitEntity());
         Bukkit.getPluginManager().callEvent(event);
         return event;
     }
@@ -785,7 +785,7 @@ public class CraftEventFactory {
         CraftBlockState state = CraftBlockState.getBlockState(world, target, flag);
         state.setData(block);
 
-        BlockSpreadEvent event = new BlockSpreadEvent(((IMixinWorld) world).getWorldImpl().getBlockAt(target.getX(), target.getY(), target.getZ()), ((IMixinWorld) world).getWorldImpl().getBlockAt(source.getX(), source.getY(), source.getZ()), state);
+        BlockSpreadEvent event = new BlockSpreadEvent(((IMixinWorld) world).getCraftWorld().getBlockAt(target.getX(), target.getY(), target.getZ()), ((IMixinWorld) world).getCraftWorld().getBlockAt(source.getX(), source.getY(), source.getZ()), state);
         Bukkit.getPluginManager().callEvent(event);
 
         if (!event.isCancelled()) {
@@ -799,7 +799,7 @@ public class CraftEventFactory {
     }
 
     public static EntityChangeBlockEvent callEntityChangeBlockEvent(Entity entity, BlockPos position, net.minecraft.block.BlockState newBlock, boolean cancelled) {
-        Block block = ((IMixinWorld) entity).getWorldImpl().getBlockAt(position.getX(), position.getY(), position.getZ());
+        Block block = ((IMixinWorld) entity).getCraftWorld().getBlockAt(position.getX(), position.getY(), position.getZ());
 
         EntityChangeBlockEvent event = new EntityChangeBlockEvent(((IMixinEntity) entity).getBukkitEntity(), block, CraftBlockData.fromData(newBlock));
         event.setCancelled(cancelled);
@@ -812,7 +812,7 @@ public class CraftEventFactory {
     }
 
     public static boolean handleBlockGrowEvent(World world, BlockPos pos, net.minecraft.block.BlockState newData, int flag) {
-        Block block = ((IMixinWorld) world).getWorldImpl().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
+        Block block = ((IMixinWorld) world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
         CraftBlockState state = (CraftBlockState) block.getState();
         state.setData(newData);
 

@@ -14,7 +14,7 @@ import org.bukkit.block.Dispenser;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.projectiles.BlockProjectileSource;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -61,7 +61,7 @@ public class CardboardDispenser extends CardboardLootableBlock<DispenserBlockEnt
 		if(block.getType() != Material.DISPENSER) return false;
 
 		BlockState state = world.getHandle().getBlockState(getPosition());
-		((DispenserBlock) Blocks.DISPENSER).dispense(((WorldImpl) this.getWorld()).getHandle(), state, this.getPosition());
+		((DispenserBlock) Blocks.DISPENSER).dispense(((CraftWorld) this.getWorld()).getHandle(), state, this.getPosition());
 		return true;
 	}
 

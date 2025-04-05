@@ -178,7 +178,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         Collection<ServerWorld> worldz = this.worlds.values();
 
         for (ServerWorld world : worldz) {
-            CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldInitEvent(((IMixinWorld)world).getWorldImpl()));
+            CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldInitEvent(((IMixinWorld)world).getCraftWorld()));
         }
     }
 
@@ -194,7 +194,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         for (ServerWorld worldserver : ((MinecraftServer)(Object)this).getWorlds()) {
             if (worldserver != getOverworld()) {
                 this.loadSpawn(worldserver.getChunkManager().chunkLoadingManager.worldGenerationProgressListener, worldserver);
-                CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldLoadEvent(((IMixinWorld)worldserver).getWorldImpl()));
+                CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldLoadEvent(((IMixinWorld)worldserver).getCraftWorld()));
             }
         }
 
@@ -426,7 +426,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         if (((CraftServer) Bukkit.getServer()).scoreboardManager == null) {
             ((CraftServer) Bukkit.getServer()).scoreboardManager = new CardboardScoreboardManager((MinecraftServer) (Object) this, serverWorld.getScoreboard());
         }
-        Bukkit.getPluginManager().callEvent(new WorldInitEvent(((IMixinWorld) serverWorld).getWorldImpl()));
+        Bukkit.getPluginManager().callEvent(new WorldInitEvent(((IMixinWorld) serverWorld).getCraftWorld()));
     }
 
     private void cardboard$initializedLevel(ServerWorld worldserver, ServerWorldProperties worldProperties, SaveProperties saveData, GeneratorOptions generatorsettings) {

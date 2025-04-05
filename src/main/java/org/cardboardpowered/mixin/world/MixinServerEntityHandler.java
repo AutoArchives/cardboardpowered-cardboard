@@ -36,7 +36,7 @@ public class MixinServerEntityHandler {
     public void unvalidateEntityBF(Entity entity, CallbackInfo ci) {
         IMixinEntity bf = (IMixinEntity) entity;
         bf.setValid(false);
-        CraftEventFactory.callEvent( new EntityRemoveFromWorldEvent(bf.getBukkitEntity(), entity.getWorld().getWorldImpl()) );
+        CraftEventFactory.callEvent( new EntityRemoveFromWorldEvent(bf.getBukkitEntity(), entity.getWorld().getCraftWorld()) );
     }
 
     @Inject(at = @At("TAIL"), method = "startTicking(Lnet/minecraft/entity/Entity;)V")
@@ -48,7 +48,7 @@ public class MixinServerEntityHandler {
         if (null == bf.getOriginBF() && bf.getBukkitEntity() != null)
             bf.setOriginBF(bf.getBukkitEntity().getLocation()); // Paper Entity Origin API
 
-        CraftEventFactory.callEvent( new EntityAddToWorldEvent(bf.getBukkitEntity(), entity.getWorld().getWorldImpl()) );
+        CraftEventFactory.callEvent( new EntityAddToWorldEvent(bf.getBukkitEntity(), entity.getWorld().getCraftWorld()) );
     } 
 
 }

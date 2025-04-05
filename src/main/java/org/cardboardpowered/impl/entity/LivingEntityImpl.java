@@ -142,7 +142,7 @@ import org.bukkit.util.Vector;
 import org.cardboardpowered.impl.CardboardPotionEffectType;
 import org.cardboardpowered.impl.CardboardPotionUtil;
 import org.cardboardpowered.impl.inventory.CardboardEntityEquipment;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
@@ -872,7 +872,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 	
 	// @Override
 	public <T extends Projectile> T launchProjectile(Class<? extends T> projectile, Vector velocity, java.util.function.Consumer<? super T> function) {
-		ServerWorld world = ((WorldImpl)this.getWorld()).getHandle();
+		ServerWorld world = ((CraftWorld)this.getWorld()).getHandle();
         ProjectileEntity launch = null;
         if (Snowball.class.isAssignableFrom(projectile)) {
             launch = new SnowballEntity(world, this.getHandle(), new net.minecraft.item.ItemStack(Items.SNOWBALL));

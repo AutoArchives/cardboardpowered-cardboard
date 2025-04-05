@@ -34,7 +34,7 @@ public class CraftWorldBorder implements WorldBorder {
     private final World world;
     private final net.minecraft.world.border.WorldBorder handle;
 
-    public CraftWorldBorder(WorldImpl world) {
+    public CraftWorldBorder(CraftWorld world) {
         this.world = world;
         this.handle = world.getHandle().getWorldBorder();
     }

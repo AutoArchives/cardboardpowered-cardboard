@@ -33,7 +33,7 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.memory.MemoryKey;
 import org.bukkit.inventory.EquipmentSlot;
 import org.cardboardpowered.CardboardMod;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
 import me.isaiah.common.cmixin.IMixinGlobalPos;
@@ -116,11 +116,11 @@ public class Utils {
     	
     	IMixinGlobalPos ipos = (IMixinGlobalPos) (Object) globalPos;
     	
-        return new org.bukkit.Location(((IMixinWorld) Objects.requireNonNull(CraftServer.INSTANCE.getServer().getWorld((RegistryKey<World>) ipos.IC$get_dimension()))).getWorldImpl(), ipos.IC$get_pos().getX(), ipos.IC$get_pos().getY(), ipos.IC$get_pos().getZ());
+        return new org.bukkit.Location(((IMixinWorld) Objects.requireNonNull(CraftServer.INSTANCE.getServer().getWorld((RegistryKey<World>) ipos.IC$get_dimension()))).getCraftWorld(), ipos.IC$get_pos().getX(), ipos.IC$get_pos().getY(), ipos.IC$get_pos().getZ());
     }
 
     public static GlobalPos toNmsGlobalPos(Location location) {
-        return GlobalPos.create(((WorldImpl) Objects.requireNonNull(location.getWorld())).getHandle().getRegistryKey(), BlockPos.ofFloored(location.getX(), location.getY(), location.getZ()));
+        return GlobalPos.create(((CraftWorld) Objects.requireNonNull(location.getWorld())).getHandle().getRegistryKey(), BlockPos.ofFloored(location.getX(), location.getY(), location.getZ()));
     }
 
     private static final net.minecraft.entity.EquipmentSlot[] slots = new net.minecraft.entity.EquipmentSlot[EquipmentSlot.values().length];

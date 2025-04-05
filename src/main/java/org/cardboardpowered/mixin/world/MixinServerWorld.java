@@ -6,7 +6,7 @@ import java.util.concurrent.Executor;
 
 import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.CardboardConfig;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.interfaces.IServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -42,7 +42,7 @@ public class MixinServerWorld extends MixinWorld implements IServerWorld {
 
     /*@Inject(at = @At("TAIL"), method = "<init>")
     public void addToBukkit( ... ,  CallbackInfo ci){
-        // ((CraftServer)Bukkit.getServer()).addWorldToMap(getWorldImpl());
+        // ((CraftServer)Bukkit.getServer()).addWorldToMap(getCraftWorld());
     }*/
 
 	private LevelStorage.Session cardboard$session;
@@ -71,7 +71,7 @@ public class MixinServerWorld extends MixinWorld implements IServerWorld {
     @Inject(at = @At("HEAD"), method = "save")
     public void doWorldSaveEvent(ProgressListener aa, boolean bb, boolean cc, CallbackInfo ci) {
         if (!cc) {
-            org.bukkit.Bukkit.getPluginManager().callEvent(new org.bukkit.event.world.WorldSaveEvent(getWorldImpl())); // WorldSaveEvent
+            org.bukkit.Bukkit.getPluginManager().callEvent(new org.bukkit.event.world.WorldSaveEvent(getCraftWorld())); // WorldSaveEvent
         }
     }
     
@@ -84,8 +84,8 @@ public class MixinServerWorld extends MixinWorld implements IServerWorld {
     }
     
     @Override
-    public WorldImpl getWorld() {
-        return ((IMixinWorld)(Object)this).getWorldImpl();
+    public CraftWorld getWorld() {
+        return ((IMixinWorld)(Object)this).getCraftWorld();
     }
 
 	@Override

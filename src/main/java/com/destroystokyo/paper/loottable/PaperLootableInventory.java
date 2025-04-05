@@ -16,7 +16,7 @@ Lootable {
     public World getNMSWorld();
 
     default public org.bukkit.World getBukkitWorld() {
-        return ((IMixinWorld)this.getNMSWorld()).getWorldImpl();
+        return ((IMixinWorld)this.getNMSWorld()).getCraftWorld();
     }
 
     default public boolean isRefillEnabled() {

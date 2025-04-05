@@ -9,7 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftServer;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 
 import org.cardboardpowered.interfaces.IMixinWorld;
 
@@ -63,11 +63,11 @@ public final class CraftMemoryMapper {
     @SuppressWarnings("unchecked")
 	public static Location fromNms(GlobalPos globalPos) {
     	IMixinGlobalPos ipos = (IMixinGlobalPos) (Object) globalPos;
-        return new Location((World) ((IMixinWorld)((CraftServer)Bukkit.getServer()).getServer().getWorld((RegistryKey<net.minecraft.world.World>) ipos.IC$get_dimension())).getWorldImpl(), (double)ipos.IC$get_pos().getX(), (double)ipos.IC$get_pos().getY(), (double)ipos.IC$get_pos().getZ());
+        return new Location((World) ((IMixinWorld)((CraftServer)Bukkit.getServer()).getServer().getWorld((RegistryKey<net.minecraft.world.World>) ipos.IC$get_dimension())).getCraftWorld(), (double)ipos.IC$get_pos().getX(), (double)ipos.IC$get_pos().getY(), (double)ipos.IC$get_pos().getZ());
     }
 
    // public static GlobalPos toNms(Location location) {
-   //     return GlobalPos.create(((WorldImpl)location.getWorld()).getHandle().getRegistryKey(), BlockPos.ofFloored(location.getX(), location.getY(), location.getZ()));
+   //     return GlobalPos.create(((CraftWorld)location.getWorld()).getHandle().getRegistryKey(), BlockPos.ofFloored(location.getX(), location.getY(), location.getZ()));
    // }
 }
 

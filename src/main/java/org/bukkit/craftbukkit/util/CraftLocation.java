@@ -6,7 +6,7 @@ import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.math.Vec3d;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinWorld;
@@ -33,7 +33,7 @@ public final class CraftLocation {
     }
 
     public static Location toBukkit(BlockPos blockPosition, net.minecraft.world.World world) {
-        return toBukkit(blockPosition, ((IMixinWorld) world).getWorldImpl(), 0.0F, 0.0F);
+        return toBukkit(blockPosition, ((IMixinWorld) world).getCraftWorld(), 0.0F, 0.0F);
     }
 
     public static Location toBukkit(BlockPos BlockPos, World world) {
@@ -69,7 +69,7 @@ public final class CraftLocation {
     //}
     
     public static GlobalPos toGlobalPos(Location location) {
-        return GlobalPos.create(((WorldImpl)location.getWorld()).getHandle().getRegistryKey(), CraftLocation.toBlockPosition(location));
+        return GlobalPos.create(((CraftWorld)location.getWorld()).getHandle().getRegistryKey(), CraftLocation.toBlockPosition(location));
     }
 
     public static Location fromGlobalPos(GlobalPos globalPos) {

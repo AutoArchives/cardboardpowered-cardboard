@@ -78,7 +78,7 @@ public class MixinBrewingStandBlockEntity implements IMixinInventory, IMixinBrew
         ItemStack itemstack = (ItemStack) ((IMixinBrewingStandBlockEntity)be).cardboard_getInventory().get(4);
 
         if (be.fuel <= 0 && itemstack.getItem() == Items.BLAZE_POWDER) {
-            BrewingStandFuelEvent event = new BrewingStandFuelEvent(((IMixinWorld)be.world).getWorldImpl().getBlockAt(be.pos.getX(), be.pos.getY(), be.pos.getZ()), CraftItemStack.asCraftMirror(itemstack), 20);
+            BrewingStandFuelEvent event = new BrewingStandFuelEvent(((IMixinWorld)be.world).getCraftWorld().getBlockAt(be.pos.getX(), be.pos.getY(), be.pos.getZ()), CraftItemStack.asCraftMirror(itemstack), 20);
             CraftServer.INSTANCE.getPluginManager().callEvent(event);
 
             if (event.isCancelled()) {
@@ -97,7 +97,7 @@ public class MixinBrewingStandBlockEntity implements IMixinInventory, IMixinBrew
         InventoryHolder owner = this.getOwner();
         if (owner != null) {
             BlockPos pos = ((BrewingStandBlockEntity)(Object)this).getPos();
-            BrewEvent event = new BrewEvent(((IMixinWorld)((BrewingStandBlockEntity)(Object)this).getWorld()).getWorldImpl().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), (org.bukkit.inventory.BrewerInventory) owner.getInventory(), this.fuel);
+            BrewEvent event = new BrewEvent(((IMixinWorld)((BrewingStandBlockEntity)(Object)this).getWorld()).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), (org.bukkit.inventory.BrewerInventory) owner.getInventory(), this.fuel);
             org.bukkit.Bukkit.getPluginManager().callEvent(event);
             if (event.isCancelled()) {
                 ci.cancel();

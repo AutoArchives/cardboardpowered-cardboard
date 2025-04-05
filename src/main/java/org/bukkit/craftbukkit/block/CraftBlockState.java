@@ -26,7 +26,7 @@ import org.bukkit.plugin.Plugin;
 import org.cardboardpowered.impl.world.CardboardChunk;
 
 import com.google.common.base.Preconditions;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -40,7 +40,7 @@ import net.minecraft.world.WorldAccess;
 @SuppressWarnings("deprecation")
 public class CraftBlockState implements BlockState {
 
-    protected final WorldImpl world;
+    protected final CraftWorld world;
     
     @Deprecated
     private CardboardChunk chunk;
@@ -53,7 +53,7 @@ public class CraftBlockState implements BlockState {
     private WeakReference<WorldAccess> weakWorld;
 
     public CraftBlockState(final Block block) {
-        this.world = (WorldImpl) block.getWorld();
+        this.world = (CraftWorld) block.getWorld();
         this.position = ((CraftBlock) block).getPosition();
         this.data = ((CraftBlock) block).getNMS();
         this.chunk = (CardboardChunk) block.getChunk();
@@ -75,7 +75,7 @@ public class CraftBlockState implements BlockState {
     */
 
     protected CraftBlockState(@Nullable World world, BlockPos blockPosition, net.minecraft.block.BlockState blockData) {
-        this.world = (WorldImpl) world;
+        this.world = (CraftWorld) world;
         this.position = blockPosition;
         this.data = blockData;
     }
@@ -85,7 +85,7 @@ public class CraftBlockState implements BlockState {
             this.world = null;
             this.position = state.getPosition().toImmutable();
         } else {
-            this.world = (WorldImpl)location.getWorld();
+            this.world = (CraftWorld)location.getWorld();
             this.position = CraftLocation.toBlockPosition(location);
         }
         this.data = state.data;
@@ -119,7 +119,7 @@ public class CraftBlockState implements BlockState {
     }
 
     public static CraftBlockState getBlockState(net.minecraft.world.World world, net.minecraft.util.math.BlockPos pos, int flag) {
-        return new CraftBlockState(((IMixinWorld)(Object)world).getWorldImpl().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), flag);
+        return new CraftBlockState(((IMixinWorld)(Object)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), flag);
     }
     
     /*

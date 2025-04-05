@@ -15,7 +15,7 @@ import org.bukkit.craftbukkit.entity.CraftEntitySnapshot;
 import org.bukkit.entity.EntitySnapshot;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,7 +51,7 @@ public class CardboardMobspawner extends CardboardBlockEntityState<MobSpawnerBlo
 
     @Override
     public EntityType getSpawnedType() {
-        //Identifier key = this.getSnapshot().getLogic().getEntityId(((WorldImpl)this.getWorld()).getHandle(), 
+        //Identifier key = this.getSnapshot().getLogic().getEntityId(((CraftWorld)this.getWorld()).getHandle(), 
        //         new BlockPos(this.getBlock().getPosition().x, this.getBlock().getPosition().y, this.getBlock().getPosition().z));
         Identifier key = null;
         return (key == null) ? EntityType.PIG : EntityType.fromName(key.getPath());
@@ -63,7 +63,7 @@ public class CardboardMobspawner extends CardboardBlockEntityState<MobSpawnerBlo
             throw new IllegalArgumentException("Can't spawn EntityType " + entityType + " from mobspawners!");
         // this.getSnapshot().getLogic().setEntityId(net.minecraft.entity.EntityType.get(entityType.getName()).get());
         
-        Random rand = (this.isPlaced()) ? ((WorldImpl)this.getWorld()).getHandle().getRandom() : Random.create();
+        Random rand = (this.isPlaced()) ? ((CraftWorld)this.getWorld()).getHandle().getRandom() : Random.create();
         this.getSnapshot().setEntityType(net.minecraft.entity.EntityType.get(entityType.getName()).get(), rand);
     }
 

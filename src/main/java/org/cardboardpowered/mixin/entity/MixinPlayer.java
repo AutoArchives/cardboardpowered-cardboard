@@ -31,7 +31,7 @@ import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftLocation;
@@ -243,10 +243,10 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         }
         
         if (!newExit.equals(exit)) {
-            // worldserver = ((WorldImpl)newExit.getWorld()).getHandle();
+            // worldserver = ((CraftWorld)newExit.getWorld()).getHandle();
         	
         	// Set our new TeleportTarget
-        	target.world = ((WorldImpl)newExit.getWorld()).getHandle();
+        	target.world = ((CraftWorld)newExit.getWorld()).getHandle();
         	target.position = CraftLocation.toVec3D(newExit);
         	target.velocity = Vec3d.ZERO;
         	target.yaw = newExit.getYaw();
@@ -254,7 +254,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         	
         	/*
             target = new TeleportTarget(
-            		((WorldImpl)newExit.getWorld()).getHandle(),
+            		((CraftWorld)newExit.getWorld()).getHandle(),
             		CraftLocation.toVec3D(newExit),
             		Vec3d.ZERO,
             		newExit.getYaw(),
@@ -293,7 +293,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     /*
     @Inject(at = @At("HEAD"), method = "teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V", cancellable = true)
     public void teleport1(ServerWorld worldserver, double x, double y, double z, float f, float f1, CallbackInfo ci) {
-        PlayerTeleportEvent event = new PlayerTeleportEvent(this.getBukkitEntity(), this.getBukkitEntity().getLocation(), new Location(((IMixinWorld)worldserver).getWorldImpl(), x,y,z,f,f1), PlayerTeleportEvent.TeleportCause.UNKNOWN);
+        PlayerTeleportEvent event = new PlayerTeleportEvent(this.getBukkitEntity(), this.getBukkitEntity().getLocation(), new Location(((IMixinWorld)worldserver).getCraftWorld(), x,y,z,f,f1), PlayerTeleportEvent.TeleportCause.UNKNOWN);
         Bukkit.getPluginManager().callEvent(event);
 
         if (event.isCancelled()) {
@@ -603,7 +603,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
                 position = PlayerEntity.findRespawnPosition((ServerWorld)world, this.getSpawnPointPosition(), this.getSpawnAngle(), false, false).orElse(null);
             }
             if (world == null || position == null) {
-                world = ((WorldImpl)Bukkit.getServer().getWorlds().get(0)).getHandle();
+                world = ((CraftWorld)Bukkit.getServer().getWorlds().get(0)).getHandle();
                 position = Vec3d.ofCenter(world.getSpawnPos());
             }
             this.setWorld(world);
@@ -625,7 +625,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
                 		.map(RespawnPos::pos).orElse(null);
             }
             if (world == null || position == null) {
-                world = ((WorldImpl)Bukkit.getServer().getWorlds().get(0)).getHandle();
+                world = ((CraftWorld)Bukkit.getServer().getWorlds().get(0)).getHandle();
                 position = Vec3d.ofCenter(world.getSpawnPos());
             }
             plr.setServerWorld(world);

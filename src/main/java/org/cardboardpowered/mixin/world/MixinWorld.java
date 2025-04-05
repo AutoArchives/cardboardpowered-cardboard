@@ -18,7 +18,7 @@ import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.entity.EntityLookup;
 
 import org.cardboardpowered.impl.block.CapturedBlockState;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -33,7 +33,7 @@ import java.util.Map;
 public abstract class MixinWorld implements IMixinWorld {
 
     @Shadow public WorldChunk getWorldChunk(BlockPos pos) {return null;}
-    private WorldImpl bukkit;
+    private CraftWorld bukkit;
 
     public boolean captureBlockStates = false;
     public boolean captureTreeGeneration = false;
@@ -82,12 +82,12 @@ public abstract class MixinWorld implements IMixinWorld {
     // }
 
     @Override
-    public WorldImpl getWorldImpl() {
+    public CraftWorld getCraftWorld() {
         return bukkit;
     }
 
     @Override
-    public void set_bukkit_world(WorldImpl world) {
+    public void set_bukkit_world(CraftWorld world) {
         this.bukkit = world;
     }
 

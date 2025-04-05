@@ -35,7 +35,7 @@ import org.bukkit.World;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.inventory.ItemType;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.interfaces.IBlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
@@ -174,7 +174,7 @@ public class CraftBlockType<B extends BlockData> implements BlockType.Typed<B>, 
 
     public boolean isEnabledByFeature(@NotNull World world) {
         Preconditions.checkNotNull((Object)world, (Object)"World cannot be null");
-        return this.getHandle().isEnabled(((WorldImpl)world).getHandle().getEnabledFeatures());
+        return this.getHandle().isEnabled(((CraftWorld)world).getHandle().getEnabledFeatures());
     }
 
     public boolean isFlammable() {

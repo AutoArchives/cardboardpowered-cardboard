@@ -75,7 +75,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerRespawnEvent.RespawnFlag;
 import org.cardboardpowered.impl.entity.CraftPlayer;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -152,7 +152,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
                     player.setSpawnPoint(worldserver1.getRegistryKey(), blockposition, f, flag1, false);
                     flag2 = !flag && flag3;
                     isBedSpawn = true;
-                    location = new Location(((IMixinWorld)worldserver1).getWorldImpl(), vec3d.x, vec3d.y, vec3d.z);
+                    location = new Location(((IMixinWorld)worldserver1).getCraftWorld(), vec3d.x, vec3d.y, vec3d.z);
                 } else if (blockposition != null)
                     player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.NO_RESPAWN_BLOCK, 0.0F));
             }
@@ -160,7 +160,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
             if (location == null) {
                 worldserver1 = CraftServer.server.getWorld(World.OVERWORLD);
                 blockposition = player.getSpawnPointPosition();
-                location = new Location(((IMixinWorld)worldserver1).getWorldImpl(), (double) ((float) blockposition.getX() + 0.5F), (double) ((float) blockposition.getY() + 0.1F), (double) ((float) blockposition.getZ() + 0.5F));
+                location = new Location(((IMixinWorld)worldserver1).getCraftWorld(), (double) ((float) blockposition.getX() + 0.5F), (double) ((float) blockposition.getY() + 0.1F), (double) ((float) blockposition.getZ() + 0.5F));
             }
 
             Player respawnPlayer = CraftServer.INSTANCE.getPlayer(player);
@@ -170,15 +170,15 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
             if (player.isDisconnected()) return player;
 
             location = respawnEvent.getRespawnLocation();
-        } else location.setWorld(((IMixinWorld)worldserver).getWorldImpl());
-        ServerWorld worldserver1 = ((WorldImpl) location.getWorld()).getHandle();
+        } else location.setWorld(((IMixinWorld)worldserver).getCraftWorld());
+        ServerWorld worldserver1 = ((CraftWorld) location.getWorld()).getHandle();
         World fromWorld = player.getWorld();
         
         // TODO: 1.21.4: Check this
         player.teleport(worldserver1, location.getX(), location.getY(), location.getZ(), null, 0, 0, false);
 
-        if (fromWorld != ((WorldImpl) location.getWorld()).getHandle()) {
-            PlayerChangedWorldEvent event = new PlayerChangedWorldEvent((Player) ((IMixinServerEntityPlayer)player).getBukkitEntity(), ((IMixinWorld)fromWorld).getWorldImpl());
+        if (fromWorld != ((CraftWorld) location.getWorld()).getHandle()) {
+            PlayerChangedWorldEvent event = new PlayerChangedWorldEvent((Player) ((IMixinServerEntityPlayer)player).getBukkitEntity(), ((IMixinWorld)fromWorld).getCraftWorld());
             CraftServer.INSTANCE.getPluginManager().callEvent(event);
         }
         return player;
@@ -384,7 +384,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
                     // Banner end
                     flag2 = !conqueredEnd && flag3;
                     isBedSpawn = true;
-                    banner$loc = CraftLocation.toBukkit(vec3d, ((IMixinWorld)worldserver1).getWorldImpl(), f1, 0.0F);
+                    banner$loc = CraftLocation.toBukkit(vec3d, ((IMixinWorld)worldserver1).getCraftWorld(), f1, 0.0F);
                 } else if (blockposition != null) {
                     entityplayer1.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.NO_RESPAWN_BLOCK, 0.0F));
                     // entityplayer1.pushChangeSpawnCause(PlayerSpawnChangeEvent.Cause.RESET);
@@ -400,7 +400,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
                 	blockposition = worldserver1.getSpawnPos();
                 }
                 
-                banner$loc = CraftLocation.toBukkit(blockposition, ((IMixinWorld)worldserver1).getWorldImpl()).add(0.5F, 0.1F, 0.5F);
+                banner$loc = CraftLocation.toBukkit(blockposition, ((IMixinWorld)worldserver1).getCraftWorld()).add(0.5F, 0.1F, 0.5F);
             }
 
             Player respawnPlayer = (Player) ((IMixinServerEntityPlayer)entityplayer1).getBukkitEntity();
@@ -420,9 +420,9 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
             }
         } else {
             if (banner$worldserver == null) banner$worldserver = this.server.getWorld(playerIn.getSpawnPointDimension());
-            banner$loc.setWorld(((IMixinWorld)banner$worldserver).getWorldImpl());
+            banner$loc.setWorld(((IMixinWorld)banner$worldserver).getCraftWorld());
         }
-        worldserver1 = ((WorldImpl) banner$loc.getWorld()).getHandle();
+        worldserver1 = ((CraftWorld) banner$loc.getWorld()).getHandle();
         
         entityplayer1.setPos(banner$loc.getX(), banner$loc.getY(), banner$loc.getZ());
         entityplayer1.setRotation(banner$loc.getYaw(), banner$loc.getPitch());
@@ -450,7 +450,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         entityplayer1.networkHandler.sendPacket(new SimulationDistanceS2CPacket(sim));
         ((IMixinServerEntityPlayer)entityplayer1).spawnIn(worldserver1);
         entityplayer1.unsetRemoved();
-        ((IMixinPlayNetworkHandler)entityplayer1.networkHandler).teleport(CraftLocation.toBukkit(entityplayer1.getPos(), ((IMixinWorld)worldserver1).getWorldImpl(), entityplayer1.getYaw(), entityplayer1.getPitch()));
+        ((IMixinPlayNetworkHandler)entityplayer1.networkHandler).teleport(CraftLocation.toBukkit(entityplayer1.getPos(), ((IMixinWorld)worldserver1).getCraftWorld(), entityplayer1.getYaw(), entityplayer1.getPitch()));
         entityplayer1.setSneaking(false);
         entityplayer1.networkHandler.sendPacket(new PlayerSpawnPositionS2CPacket(worldserver1.getSpawnPos(), worldserver1.getSpawnAngle()));
         entityplayer1.networkHandler.sendPacket(new DifficultyS2CPacket(worlddata.getDifficulty(), worlddata.isDifficultyLocked()));
@@ -480,7 +480,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         }
 
         // Fire advancement trigger
-        playerIn.worldChanged(((WorldImpl) fromWorld).getHandle());
+        playerIn.worldChanged(((CraftWorld) fromWorld).getHandle());
 
         // Don't fire on respawn
         if (fromWorld != banner$loc.getWorld()) {

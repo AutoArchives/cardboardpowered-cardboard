@@ -36,7 +36,7 @@ import com.google.common.base.Preconditions;
 
 import org.cardboardpowered.impl.block.*;
 import org.cardboardpowered.impl.entity.CraftPlayer;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 
 import org.cardboardpowered.interfaces.IMixinWorld;
@@ -89,11 +89,11 @@ public class CraftBlock implements Block {
 
     @Override
     public World getWorld() {
-        return ((IMixinWorld)world).getWorldImpl();
+        return ((IMixinWorld)world).getCraftWorld();
     }
 
-    public WorldImpl getWorldImpl() {
-        return (WorldImpl) getWorld();
+    public CraftWorld getCraftWorld() {
+        return (CraftWorld) getWorld();
     }
 
     @Override
@@ -814,9 +814,9 @@ public class CraftBlock implements Block {
 		
 	}
 
-	public WorldImpl getCraftWorld() {
-		// TODO Auto-generated method stub
-		return this.getWorldImpl();
+	@Deprecated
+	public CraftWorld getWorldImpl() { 
+		return this.getCraftWorld();
 	}
 
 	// @Override

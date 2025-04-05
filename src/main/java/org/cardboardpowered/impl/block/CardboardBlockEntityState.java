@@ -1,6 +1,6 @@
 package org.cardboardpowered.impl.block;
 
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 
 import com.google.common.base.Preconditions;
 
@@ -67,7 +67,7 @@ public abstract class CardboardBlockEntityState<T extends BlockEntity> extends C
         super(block);
         this.tileEntityClass = tileEntityClass;
 
-        WorldImpl world = (WorldImpl) this.getWorld();
+        CraftWorld world = (CraftWorld) this.getWorld();
         this.tileEntity = tileEntityClass.cast(world.getHandle().getBlockEntity(this.getPosition()));
         Preconditions.checkState(this.tileEntity != null, "BlockEntity = null. async access? " + block);
         //this.snapshot = this.createSnapshot(tileEntity);
@@ -144,7 +144,7 @@ public abstract class CardboardBlockEntityState<T extends BlockEntity> extends C
 
     protected BlockEntity getTileEntityFromWorld() {
         requirePlaced();
-        return ((WorldImpl) getWorld()).getHandle().getBlockEntity(getPosition());
+        return ((CraftWorld) getWorld()).getHandle().getBlockEntity(getPosition());
     }
 
     public NbtCompound getSnapshotNBT() {

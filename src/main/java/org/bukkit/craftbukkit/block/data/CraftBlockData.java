@@ -57,7 +57,7 @@ import org.bukkit.craftbukkit.util.CraftVoxelShape;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.VoxelShape;
 import org.cardboardpowered.BlockImplUtil;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -704,7 +704,7 @@ public class CraftBlockData implements BlockData {
 	    public boolean isSupported(Location location) {
 	        Preconditions.checkArgument(location != null, "location must not be null");
 
-	        WorldImpl world = (WorldImpl) location.getWorld();
+	        CraftWorld world = (CraftWorld) location.getWorld();
 	        Preconditions.checkArgument(world != null, "location must not have a null world");
 
 
@@ -788,7 +788,7 @@ public class CraftBlockData implements BlockData {
 		@Override
 		public org.bukkit.util.VoxelShape getCollisionShape(Location location) {
 			Preconditions.checkArgument((location != null ? 1 : 0) != 0, "location must not be null");
-			WorldImpl world = (WorldImpl)location.getWorld();
+			CraftWorld world = (CraftWorld)location.getWorld();
 			Preconditions.checkArgument((world != null ? 1 : 0) != 0, "location must not have a null world");
 			BlockPos position = CraftLocation.toBlockPosition(location);
 			net.minecraft.util.shape.VoxelShape shape = this.state.getCollisionShape(world.getHandle(), position);

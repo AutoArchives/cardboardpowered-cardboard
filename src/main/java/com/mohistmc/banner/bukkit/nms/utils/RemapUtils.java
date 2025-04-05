@@ -20,7 +20,7 @@ import net.techcable.srglib.JavaType;
 import net.techcable.srglib.MethodSignature;
 
 import org.cardboardpowered.CardboardConfig;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.util.nms.MappingsReader;
 import org.cardboardpowered.util.nms.ReflectionMethodVisitor;
 import org.cardboardpowered.util.nms.ReflectionRemapper;
@@ -92,7 +92,7 @@ public class RemapUtils {
         
         
         //jarMapping.classes.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/CraftServer", "org/bukkit/craftbukkit/CraftServer");
-        //jarMapping.classes.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/CraftWorld", "org/cardboardpowered/impl/world/WorldImpl");
+        //jarMapping.classes.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/CraftWorld", "org/cardboardpowered/impl/world/CraftWorld");
         
         jarMapping.classes.put("org/spigotmc/event/entity/EntityMountEvent", "org/bukkit/event/entity/EntityMountEvent");
         jarMapping.classes.put("org/spigotmc/event/entity/EntityDismountEvent", "org/bukkit/event/entity/EntityDismountEvent");
@@ -128,7 +128,7 @@ public class RemapUtils {
         String bukkit_cl_srg = "bukkit-1.21.4-cl.csrg";
         File bukkit_class_mappings_file = exportResource(bukkit_cl_srg, dir);
         
-        jarMapping.classes.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/CraftWorld", "org/cardboardpowered/impl/world/WorldImpl");
+        jarMapping.classes.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/CraftWorld", "org/cardboardpowered/impl/world/CraftWorld");
 
         // some missing
         jarMapping.classes.put("net/minecraft/nbt/ListTag", "net/minecraft/class_2499");

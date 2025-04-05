@@ -10,7 +10,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.Inventory;
 import org.cardboardpowered.impl.inventory.CardboardDoubleChestInventory;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.Nullable;
 
 import net.kyori.adventure.text.Component;
@@ -65,7 +65,7 @@ public class CardboardChest extends CardboardLootableBlock<ChestBlockEntity> imp
         CraftInventory inventory = (CraftInventory) this.getBlockInventory();
         if (!isPlaced()) return inventory;
 
-        WorldImpl world = (WorldImpl) this.getWorld();
+        CraftWorld world = (CraftWorld) this.getWorld();
 
         ChestBlock blockChest = (ChestBlock) (this.getType() == Material.CHEST ? Blocks.CHEST : Blocks.TRAPPED_CHEST);
         NamedScreenHandlerFactory nms = blockChest.createScreenHandlerFactory(data, world.getHandle(), this.getPosition());

@@ -7,14 +7,14 @@ package org.cardboardpowered.interfaces;
 import java.util.Map;
 
 import org.cardboardpowered.impl.block.CapturedBlockState;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.entity.EntityLookup;
 
 public interface IMixinWorld {
 
-    WorldImpl getWorldImpl();
+    CraftWorld getCraftWorld();
 
     Map<BlockPos, CapturedBlockState> getCapturedBlockStates_BF();
 
@@ -22,7 +22,7 @@ public interface IMixinWorld {
 
     void setCaptureBlockStates_BF(boolean b);
 
-    void set_bukkit_world(WorldImpl world);
+    void set_bukkit_world(CraftWorld world);
 
 	EntityLookup cb$get_entity_lookup();
 

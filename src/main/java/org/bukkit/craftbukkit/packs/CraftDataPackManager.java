@@ -22,7 +22,7 @@ import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.packs.DataPack;
 import org.bukkit.packs.DataPackManager;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 
 public class CraftDataPackManager
@@ -50,7 +50,7 @@ implements DataPackManager {
 
     public Collection<DataPack> getEnabledDataPacks(World world) {
         Preconditions.checkArgument((world != null ? 1 : 0) != 0, (Object)"world cannot be null");
-        WorldImpl craftWorld = (WorldImpl)world;
+        CraftWorld craftWorld = (CraftWorld)world;
         return ((LevelProperties)craftWorld.getHandle().worldProperties).getDataConfiguration().dataPacks().getEnabled().stream().map(packName -> {
             ResourcePackProfile resourcePackLoader = this.getHandle().getProfile((String)packName);
             if (resourcePackLoader != null) {
@@ -62,7 +62,7 @@ implements DataPackManager {
 
     public Collection<DataPack> getDisabledDataPacks(World world) {
         Preconditions.checkArgument((world != null ? 1 : 0) != 0, (Object)"world cannot be null");
-        WorldImpl craftWorld = (WorldImpl)world;
+        CraftWorld craftWorld = (CraftWorld)world;
 
         return ((LevelProperties)craftWorld.getHandle().worldProperties).getDataConfiguration().dataPacks().getDisabled().stream().map(packName -> {
             ResourcePackProfile resourcePackLoader = this.getHandle().getProfile((String)packName);
@@ -77,7 +77,7 @@ implements DataPackManager {
         Preconditions.checkArgument((material != null ? 1 : 0) != 0, (Object)"material cannot be null");
         Preconditions.checkArgument((material.isItem() || material.isBlock() ? 1 : 0) != 0, (Object)"material need to be a item or block");
         Preconditions.checkArgument((world != null ? 1 : 0) != 0, (Object)"world cannot be null");
-        WorldImpl craftWorld = (WorldImpl)world;
+        CraftWorld craftWorld = (CraftWorld)world;
         if (material.isItem()) {
             return CraftMagicNumbers.getItem(material).isEnabled(craftWorld.getHandle().getEnabledFeatures());
         }
@@ -91,7 +91,7 @@ implements DataPackManager {
         Preconditions.checkArgument((entityType != null ? 1 : 0) != 0, (Object)"entityType cannot be null");
         Preconditions.checkArgument((world != null ? 1 : 0) != 0, (Object)"world cannot be null");
         Preconditions.checkArgument((entityType != org.bukkit.entity.EntityType.UNKNOWN ? 1 : 0) != 0, (Object)"EntityType.UNKNOWN its not allowed here");
-        WorldImpl craftWorld = (WorldImpl)world;
+        CraftWorld craftWorld = (CraftWorld)world;
         EntityType<?> nmsEntity = Registries.ENTITY_TYPE.get(Identifier.of(entityType.getKey().getKey()));
         return nmsEntity.isEnabled(craftWorld.getHandle().getEnabledFeatures());
     }
@@ -101,12 +101,12 @@ implements DataPackManager {
 	@Override
 	public boolean isEnabledByFeature(@NotNull ItemType itemType, @NotNull World world) {
 		// TODO Auto-generated method stub
-        return CraftItemType.bukkitToMinecraftNew((ItemType)itemType.typed()).isEnabled( ((WorldImpl)world) .getHandle().getEnabledFeatures());
+        return CraftItemType.bukkitToMinecraftNew((ItemType)itemType.typed()).isEnabled( ((CraftWorld)world) .getHandle().getEnabledFeatures());
 	}
 
 	@Override
 	public boolean isEnabledByFeature(@NotNull BlockType blockType, @NotNull World world) {
-		WorldImpl craftWorld = (WorldImpl)world;
+		CraftWorld craftWorld = (CraftWorld)world;
 		return CraftBlockType.bukkitToMinecraftNew((BlockType)blockType.typed()).isEnabled(craftWorld.getHandle().getEnabledFeatures());
 	}
 }

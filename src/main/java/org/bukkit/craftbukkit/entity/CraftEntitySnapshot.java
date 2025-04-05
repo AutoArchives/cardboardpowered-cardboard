@@ -10,7 +10,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntitySnapshot;
 import org.bukkit.entity.EntityType;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 
 public class CraftEntitySnapshot implements EntitySnapshot {
 
@@ -50,7 +50,7 @@ public class CraftEntitySnapshot implements EntitySnapshot {
     }
 
     private net.minecraft.entity.Entity createInternal(World world) {
-        net.minecraft.world.World nms = ((WorldImpl) world).getHandle();
+        net.minecraft.world.World nms = ((CraftWorld) world).getHandle();
         net.minecraft.entity.Entity internal = net.minecraft.entity.EntityType.loadEntityWithPassengers(this.data, nms, net.minecraft.entity.SpawnReason.LOAD, Function.identity());
         if (internal == null) { // Try creating by type
             internal = CraftEntityType.bukkitToMinecraft(this.type).create(nms, net.minecraft.entity.SpawnReason.LOAD);

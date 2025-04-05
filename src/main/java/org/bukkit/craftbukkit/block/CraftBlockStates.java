@@ -22,7 +22,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.CraftBlockType;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.*;
 import org.cardboardpowered.impl.block.*;
@@ -115,7 +115,7 @@ public final class CraftBlockStates {
     public static BlockState getBlockState(Block block, boolean useSnapshot) {
         Preconditions.checkNotNull((Object)block, (Object)"block is null");
         CraftBlock craftBlock = (CraftBlock)block;
-        WorldImpl world = (WorldImpl)block.getWorld();
+        CraftWorld world = (CraftWorld)block.getWorld();
         BlockPos blockPosition = craftBlock.getPosition();
         net.minecraft.block.BlockState blockData = craftBlock.getNMS();
         BlockEntity tileEntity = craftBlock.getHandle().getBlockEntity(blockPosition);
@@ -260,7 +260,7 @@ public final class CraftBlockStates {
         @Override
         public final B createBlockState(World world, BlockPos blockPosition, net.minecraft.block.BlockState blockData, BlockEntity tileEntity) {
             if (world != null) {
-                Preconditions.checkState((tileEntity != null ? 1 : 0) != 0, (String)"Tile is null, asynchronous access? %s", (Object)CraftBlock.at(((WorldImpl)world).getHandle(), blockPosition));
+                Preconditions.checkState((tileEntity != null ? 1 : 0) != 0, (String)"Tile is null, asynchronous access? %s", (Object)CraftBlock.at(((CraftWorld)world).getHandle(), blockPosition));
             } else if (tileEntity == null) {
                 tileEntity = this.createTileEntity(blockPosition, blockData);
             }

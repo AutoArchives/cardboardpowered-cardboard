@@ -61,7 +61,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.interfaces.IWorldChunk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -160,7 +160,7 @@ import org.cardboardpowered.impl.entity.UnknownEntity;
 import org.cardboardpowered.impl.entity.CraftVillager;
 import org.cardboardpowered.impl.entity.WanderingTraderImpl;
 import org.cardboardpowered.impl.entity.WitherSkeletonImpl;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.interfaces.IWorldChunk;
 
 import io.papermc.paper.entity.LookAnchor;
@@ -574,7 +574,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public World getWorld() {
-        return ((IMixinWorld)nms.getEntityWorld()).getWorldImpl();
+        return ((IMixinWorld)nms.getEntityWorld()).getCraftWorld();
     }
 
     @Override
@@ -774,7 +774,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
             nms.setHeadYaw(loc.getYaw());
         } else {
             nms.teleport(
-		            ((WorldImpl) loc.getWorld()).getHandle(),
+		            ((CraftWorld) loc.getWorld()).getHandle(),
                     loc.getX(), loc.getY(), loc.getZ(),
                     EnumSet.allOf(PositionFlag.class),
                     loc.getYaw(), loc.getPitch(), true);
@@ -1296,7 +1296,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         if (location.getWorld() != null && !location.getWorld().equals(this.getWorld())) {
             // Preconditions.checkState((!this.nms.generation ? 1 : 0) != 0, (Object)"Cannot teleport entity to an other world during world generation");
             // TODO
-        	// this.nms.teleportTo(((WorldImpl)location.getWorld()).getHandle(), CraftLocation.toPosition(location));
+        	// this.nms.teleportTo(((CraftWorld)location.getWorld()).getHandle(), CraftLocation.toPosition(location));
             return true;
         }
         this.nms.refreshPositionAndAngles(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
@@ -1371,7 +1371,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 	public @NotNull Set<Player> getTrackedBy() {
         // Preconditions.checkState((!this.entity.generation ? 1 : 0) != 0, (Object)"Cannot get tracking players during world generation");
         ImmutableSet.Builder<Player> players = ImmutableSet.builder();
-        ServerWorld world = ((WorldImpl)this.getWorld()).getHandle();
+        ServerWorld world = ((CraftWorld)this.getWorld()).getHandle();
         ServerChunkLoadingManager.EntityTracker entityTracker = (ServerChunkLoadingManager.EntityTracker)world.getChunkManager().chunkLoadingManager.entityTrackers.get(this.getEntityId());
         if (entityTracker != null) {
             for (PlayerAssociatedNetworkHandler connection : entityTracker.listeners) {
@@ -1397,10 +1397,10 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     public Entity copy(Location location) {
         Preconditions.checkArgument((location.getWorld() != null ? 1 : 0) != 0, (Object)"Location has no world");
-        net.minecraft.entity.Entity copy = this.copy(((WorldImpl)location.getWorld()).getHandle());
+        net.minecraft.entity.Entity copy = this.copy(((CraftWorld)location.getWorld()).getHandle());
         Preconditions.checkArgument((copy != null ? 1 : 0) != 0, (Object)"Error creating new entity.");
         copy.setPosition(location.getX(), location.getY(), location.getZ());
-        return ((WorldImpl)location.getWorld()).addEntity( (Entity)((IMixinEntity)copy).getBukkitEntity() );
+        return ((CraftWorld)location.getWorld()).addEntity( (Entity)((IMixinEntity)copy).getBukkitEntity() );
     }
 
     private net.minecraft.entity.Entity copy(net.minecraft.world.World level) {
@@ -1430,7 +1430,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 			@NotNull TeleportFlag @NotNull... teleportFlags) {
 		loc.checkFinite();
         Location locationClone = loc.clone();
-        ServerWorld world = ((WorldImpl)locationClone.getWorld()).getHandle();
+        ServerWorld world = ((CraftWorld)locationClone.getWorld()).getHandle();
         CompletableFuture<Boolean> ret = new CompletableFuture<Boolean>();
         
         Box box = this.getHandle().getDimensions(this.getHandle().getPose())

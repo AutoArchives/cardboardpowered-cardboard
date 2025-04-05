@@ -69,7 +69,7 @@ public class MixinHopperBlockEntity implements IMixinInventory {
     public InventoryHolder getOwner() {
         HopperBlockEntity b = (HopperBlockEntity) (Object)this;
         if (b.world == null) return null;
-        org.bukkit.block.Block block = ((IMixinWorld)b.world).getWorldImpl().getBlockAt(b.pos.getX(), b.pos.getY(), b.pos.getZ());
+        org.bukkit.block.Block block = ((IMixinWorld)b.world).getCraftWorld().getBlockAt(b.pos.getX(), b.pos.getY(), b.pos.getZ());
         if (block == null) {
             org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING, "No block for owner at %s %d %d %d", new Object[]{b.world, b.pos.getX(), b.pos.getY(), b.pos.getZ()});
             return null;
@@ -81,7 +81,7 @@ public class MixinHopperBlockEntity implements IMixinInventory {
     @Override
     public Location getLocation() {
         HopperBlockEntity b = (HopperBlockEntity) (Object)this;
-        return new Location(((IMixinWorld)b.world).getWorldImpl(), b.pos.getX(), b.pos.getY(), b.pos.getZ());
+        return new Location(((IMixinWorld)b.world).getCraftWorld(), b.pos.getX(), b.pos.getY(), b.pos.getZ());
     }
 
     @Inject(at = @At("HEAD"), method = "extract(Lnet/minecraft/inventory/Inventory;Lnet/minecraft/entity/ItemEntity;)Z", cancellable = true)

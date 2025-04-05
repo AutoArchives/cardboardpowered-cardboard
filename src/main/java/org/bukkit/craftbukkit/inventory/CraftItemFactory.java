@@ -40,7 +40,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
@@ -435,7 +435,7 @@ public final class CraftItemFactory implements ItemFactory {
 
     @Override
     public ItemStack enchantItem(final World world, final ItemStack itemStack, final int level, final boolean allowTreasures) {
-        return CraftItemFactory.enchantItem(((WorldImpl) world).getHandle().random, itemStack, level, allowTreasures);
+        return CraftItemFactory.enchantItem(((CraftWorld) world).getHandle().random, itemStack, level, allowTreasures);
     }
 
     @Override

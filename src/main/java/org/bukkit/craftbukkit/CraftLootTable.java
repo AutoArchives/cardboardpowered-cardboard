@@ -29,7 +29,7 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.loot.LootContext;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 
 public class CraftLootTable implements org.bukkit.loot.LootTable {
 
@@ -104,7 +104,7 @@ public class CraftLootTable implements org.bukkit.loot.LootTable {
         Preconditions.checkArgument(context != null, "LootContext cannot be null");
         Location loc = context.getLocation();
         Preconditions.checkArgument(loc.getWorld() != null, "LootContext.getLocation#getWorld cannot be null");
-        ServerWorld handle = ((WorldImpl) loc.getWorld()).getHandle();
+        ServerWorld handle = ((CraftWorld) loc.getWorld()).getHandle();
 
         LootWorldContext.Builder builder = new LootWorldContext.Builder(handle);
         if (random != null) {

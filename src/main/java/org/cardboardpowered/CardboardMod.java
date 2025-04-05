@@ -35,7 +35,7 @@ import org.bukkit.event.block.BlockCookEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.cardboardpowered.api.event.CardboardEventManager;
 import org.cardboardpowered.impl.entity.CraftPlayer;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 
 import org.cardboardpowered.interfaces.IMixinBlockEntity;
 import org.cardboardpowered.interfaces.IMixinEntity;
@@ -105,7 +105,7 @@ public class CardboardMod implements ModInitializer {
 
     @EventHandler
     public void on_leaves_decay(LeavesDecayEvent ev) {
-    	WorldImpl w = ((IMixinWorld)ev.world).getWorldImpl();
+    	CraftWorld w = ((IMixinWorld)ev.world).getCraftWorld();
     	org.bukkit.event.block.LeavesDecayEvent event = 
 				new org.bukkit.event.block.LeavesDecayEvent(w.getBlockAt(ev.pos.getX(), ev.pos.getY(), ev.pos.getZ()));
         Bukkit.getPluginManager().callEvent(event);
@@ -184,18 +184,18 @@ public class CardboardMod implements ModInitializer {
             }
             
 
-            ((IMixinWorld)nms).set_bukkit_world( new WorldImpl(name, nms) );
-            CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldInitEvent(((IMixinWorld)nms).getWorldImpl()));
+            ((IMixinWorld)nms).set_bukkit_world( new CraftWorld(name, nms) );
+            CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldInitEvent(((IMixinWorld)nms).getCraftWorld()));
         } else {
-            ((IMixinWorld)nms).set_bukkit_world( new WorldImpl(name, nms) );
+            ((IMixinWorld)nms).set_bukkit_world( new CraftWorld(name, nms) );
         }
         
         // Object o = nms.convertable;
 
         // this.uuid = WorldUUID.getUUID(levelStorageAccess.getDimensionPath(nms.getDimension()).toFile());
-        // nms.cardboard$set_uuid(Utils.getWorldUUID(((IMixinWorld)nms).getWorldImpl().getWorldFolder())); 
+        // nms.cardboard$set_uuid(Utils.getWorldUUID(((IMixinWorld)nms).getCraftWorld().getWorldFolder())); 
         
-        ((CraftServer)Bukkit.getServer()).addWorldToMap( ((IMixinWorld)nms).getWorldImpl() );
+        ((CraftServer)Bukkit.getServer()).addWorldToMap( ((IMixinWorld)nms).getCraftWorld() );
     }
     
     // TODO

@@ -77,7 +77,7 @@ public interface MixinExplosion {
             Iterator<BlockPos> iterator = this.affectedBlocks.iterator();
 
             // CraftBukkit start
-            org.bukkit.World bworld = ((IMixinWorld)(ServerWorld)this.world).getWorldImpl();
+            org.bukkit.World bworld = ((IMixinWorld)(ServerWorld)this.world).getCraftWorld();
             org.bukkit.entity.Entity explode = this.entity == null ? null : ((IMixinEntity)this.entity).getBukkitEntity();
             Location location = new Location(bworld, this.x, this.y, this.z);
 

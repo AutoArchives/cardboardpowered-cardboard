@@ -40,7 +40,7 @@ public class MixinPistonBlock {
     public void cardboard_doPistonEvents(World world, BlockPos pos, Direction dir, boolean retract, CallbackInfoReturnable<Boolean> ci,
     		BlockPos blockPos, PistonHandler helper) {
 
-        final org.bukkit.block.Block bblock = ((IMixinWorld)world).getWorldImpl().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
+        final org.bukkit.block.Block bblock = ((IMixinWorld)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
 
 		// TODO: Fix null
 		//if (null == cardboard_ph) {

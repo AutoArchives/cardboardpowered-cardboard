@@ -1,4 +1,4 @@
-CL: org/bukkit/craftbukkit/CraftWorld org/cardboardpowered/impl/world/WorldImpl
+CL: org/bukkit/craftbukkit/CraftWorld org/cardboardpowered/impl/world/CraftWorld
 CL: org/bukkit/craftbukkit/CraftWorldBorder org/cardboardpowered/impl/world/CraftWorldBorder
 CL: org/bukkit/craftbukkit/entity/CraftAnimals org/cardboardpowered/impl/entity/CraftAnimals
 CL: org/bukkit/craftbukkit/entity/CraftSlime org/cardboardpowered/impl/entity/CraftSlime
@@ -17,7 +17,7 @@ CL: org/bukkit/craftbukkit/CraftChunk org/cardboardpowered/impl/world/CardboardC
 CL: org/bukkit/craftbukkit/CraftChunkSnapshot org/cardboardpowered/impl/world/CardboardChunkSnapshot
 CL: org/bukkit/craftbukkit/scoreboard/CraftScoreboardManager org/bukkit/craftbukkit/scoreboard/CardboardScoreboardManager
 CL: a net/minecraft/class_7833
-CL: org/bukkit/craftbukkit/v1_21_R3/CraftWorld org/cardboardpowered/impl/world/WorldImpl
+CL: org/bukkit/craftbukkit/v1_21_R3/CraftWorld org/cardboardpowered/impl/world/CraftWorld
 CL: org/bukkit/craftbukkit/v1_21_R3/CraftWorldBorder org/cardboardpowered/impl/world/CraftWorldBorder
 CL: org/bukkit/craftbukkit/v1_21_R3/entity/CraftAnimals org/cardboardpowered/impl/entity/CraftAnimals
 CL: org/bukkit/craftbukkit/v1_21_R3/entity/CraftSlime org/cardboardpowered/impl/entity/CraftSlime

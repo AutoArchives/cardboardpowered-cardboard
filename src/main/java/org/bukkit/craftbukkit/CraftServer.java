@@ -206,7 +206,7 @@ import org.cardboardpowered.impl.util.CommandPermissions;
 import org.cardboardpowered.impl.util.IconCacheImpl;
 import org.cardboardpowered.impl.util.SimpleHelpMap;
 import org.cardboardpowered.impl.world.ChunkDataImpl;
-import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.impl.world.CraftWorld;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.cardboardpowered.interfaces.IMixinMapState;
 import org.jetbrains.annotations.NotNull;
@@ -405,7 +405,7 @@ public class CraftServer implements Server {
         return new IconCacheImpl(bytebuf.toByteArray());
     }
 
-    public void addWorldToMap(WorldImpl world) {
+    public void addWorldToMap(CraftWorld world) {
         worlds.put(world.getName(), world);
     }
 
@@ -701,7 +701,7 @@ public class CraftServer implements Server {
     @Override
     public ChunkGenerator.ChunkData createChunkData(World world) {
         Preconditions.checkArgument(world != null, "World cannot be null");
-        ServerWorld handle = ((WorldImpl) world).getHandle();
+        ServerWorld handle = ((CraftWorld) world).getHandle();
         return new ChunkDataImpl(world.getMinHeight(), world.getMaxHeight(), handle.getRegistryManager().lookupOrThrow(Registries.BIOME), world);
     }
     */
@@ -718,7 +718,7 @@ public class CraftServer implements Server {
         Validate.notNull(structureType, "StructureType cannot be null");
         Validate.notNull(structureType.getMapIcon(), "Cannot create explorer maps for StructureType " + structureType.getName());
 
-        ServerWorld worldServer = ((WorldImpl) world).getHandle();
+        ServerWorld worldServer = ((CraftWorld) world).getHandle();
         Location structureLocation = world.locateNearestStructure(location, structureType, radius, findUnexplored);
         BlockPos structurePosition = new BlockPos(structureLocation.getBlockX(), structureLocation.getBlockY(), structureLocation.getBlockZ());
 
@@ -761,8 +761,8 @@ public class CraftServer implements Server {
         Validate.notNull(world, "World cannot be null");
 
         net.minecraft.item.ItemStack stack = new net.minecraft.item.ItemStack(Items.MAP, 1);
-        // MapState worldmap = FilledMapItem.getOrCreateMapState(stack, ((WorldImpl) world).getHandle());
-        MapState worldmap = FilledMapItem.getMapState(stack, ((WorldImpl) world).getHandle());
+        // MapState worldmap = FilledMapItem.getOrCreateMapState(stack, ((CraftWorld) world).getHandle());
+        MapState worldmap = FilledMapItem.getMapState(stack, ((CraftWorld) world).getHandle());
         return ((IMixinMapState)worldmap).getMapViewBF();
     }
 
@@ -881,12 +881,12 @@ public class CraftServer implements Server {
         internal.setMobSpawnOptions(true, true);
         server.worlds.put(internal.getRegistryKey(), internal);
 
-        pluginManager.callEvent(new WorldInitEvent(((IMixinWorld)internal).getWorldImpl()));
+        pluginManager.callEvent(new WorldInitEvent(((IMixinWorld)internal).getCraftWorld()));
 
         ((IMixinMinecraftServer)getServer()).loadSpawn(internal.getChunkManager().threadedAnvilChunkStorage.worldGenerationProgressListener, internal);
 
-        pluginManager.callEvent(new WorldLoadEvent(((IMixinWorld)internal).getWorldImpl()));
-        return ((IMixinWorld)internal).getWorldImpl();*/
+        pluginManager.callEvent(new WorldLoadEvent(((IMixinWorld)internal).getCraftWorld()));
+        return ((IMixinWorld)internal).getCraftWorld();*/
         return null;
     }
 
@@ -1700,7 +1700,7 @@ public class CraftServer implements Server {
     public boolean unloadWorld(World world, boolean save) {
         if (world == null) return false;
 
-        ServerWorld handle = (ServerWorld) ((WorldImpl) world).getHandle();
+        ServerWorld handle = (ServerWorld) ((CraftWorld) world).getHandle();
 
         if (!(((IMixinMinecraftServer)(Object)getServer()).getWorldMap().containsKey(handle.toServerWorld().getRegistryKey())))
             return false;
@@ -1794,7 +1794,7 @@ public class CraftServer implements Server {
                 message = message.substring(1);
 
             completions = (pos == null) ? getCommandMap().tabComplete(player, message) :
-                    getCommandMap().tabComplete(player, message, new Location(((IMixinWorld)(Object)world).getWorldImpl(), pos.x, pos.y, pos.z));
+                    getCommandMap().tabComplete(player, message, new Location(((IMixinWorld)(Object)world).getCraftWorld(), pos.x, pos.y, pos.z));
         } catch (CommandException ex) {
             player.sendMessage(ChatColor.RED + "An internal error occurred while attempting to tab-complete this command");
             getLogger().log(Level.SEVERE, "Exception when " + player.getName() + " attempted to tab complete " + message, ex);
@@ -2092,7 +2092,7 @@ public class CraftServer implements Server {
         for (ServerWorld world : server.worlds.values()) {
             Identifier name = world.getRegistryKey().getValue();
             if (name.equals(id))
-                return ((IMixinWorld)world).getWorldImpl();
+                return ((IMixinWorld)world).getCraftWorld();
         }
 
         return null;
@@ -2142,13 +2142,13 @@ public class CraftServer implements Server {
 			}
         };
         CraftingInventory inventoryCrafting = new CraftingInventory(container, 3, 3);
-        Optional<RecipeEntry<CraftingRecipe>> opt = this.getNMSRecipe(craftingMatrix, inventoryCrafting, (WorldImpl)world);
+        Optional<RecipeEntry<CraftingRecipe>> opt = this.getNMSRecipe(craftingMatrix, inventoryCrafting, (CraftWorld)world);
         if (opt.isEmpty()) { return null; }
 
         return ((IMixinRecipe)(Object) opt.get()).toBukkitRecipe();
     }
 
-    private Optional<RecipeEntry<CraftingRecipe>> getNMSRecipe(ItemStack[] craftingMatrix, CraftingInventory inventoryCrafting, WorldImpl world) {
+    private Optional<RecipeEntry<CraftingRecipe>> getNMSRecipe(ItemStack[] craftingMatrix, CraftingInventory inventoryCrafting, CraftWorld world) {
         Preconditions.checkArgument(craftingMatrix != null, "craftingMatrix must not be null");
         Preconditions.checkArgument(craftingMatrix.length == 9, "craftingMatrix must be an array of length 9");
         Preconditions.checkArgument(world != null, "world must not be null");
@@ -2438,7 +2438,7 @@ public class CraftServer implements Server {
 	@Override
     public ItemCraftResult craftItemResult(ItemStack[] craftingMatrix, World world, Player player) {
         /*
-		WorldImpl craftWorld = (WorldImpl)world;
+		CraftWorld craftWorld = (CraftWorld)world;
         CraftPlayer craftPlayer = (CraftPlayer)player;
         CraftingScreenHandler container = new CraftingScreenHandler(-1, craftPlayer.getHandle().getInventory());
         CraftingInventory inventoryCrafting = container.craftSlots;
@@ -2461,7 +2461,7 @@ public class CraftServer implements Server {
     public ItemCraftResult craftItemResult(ItemStack[] craftingMatrix, World world) {
         /*
 		Preconditions.checkArgument((world != null ? 1 : 0) != 0, (Object)"world must not be null");
-        WorldImpl craftWorld = (WorldImpl)world;
+        CraftWorld craftWorld = (CraftWorld)world;
 
         RecipeInputInventory inventoryCrafting = this.createInventoryCrafting();
         Optional<RecipeEntry<CraftingRecipe>> recipe = this.getNMSRecipe(craftingMatrix, inventoryCrafting, craftWorld);

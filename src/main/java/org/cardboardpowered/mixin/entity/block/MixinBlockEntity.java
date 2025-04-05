@@ -34,7 +34,7 @@ public class MixinBlockEntity implements IMixinBlockEntity {
     public InventoryHolder getOwner(boolean useSnapshot) {
         if (world == null) return null;
 
-        org.bukkit.block.Block block = ((IMixinWorld)this.world).getWorldImpl().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
+        org.bukkit.block.Block block = ((IMixinWorld)this.world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
         if (block == null) {
             org.bukkit.Bukkit.getLogger().warning("No block for owner at " + world + ", pos: " + pos);
             return null;

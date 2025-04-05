@@ -168,7 +168,7 @@ import org.cardboardpowered.impl.CardboardPotionUtil;
 import org.cardboardpowered.interfaces.IWorldChunk;
 
 @SuppressWarnings("deprecation")
-public class WorldImpl extends CraftRegionAccessor implements World {
+public class CraftWorld extends CraftRegionAccessor implements World {
 
 	public static final int CUSTOM_DIMENSION_OFFSET = 10;
 	private final MetadataStoreBase<Block> blockMetadata = MetadataStoreImpl.newBlockMetadataStore(this);
@@ -180,12 +180,12 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 
 	private static final Random rand = new Random();
 
-	public WorldImpl(String name, ServerWorld world) {
+	public CraftWorld(String name, ServerWorld world) {
 		this.nms = world;
 		this.name = name;
 	}
 
-	public WorldImpl(ServerWorld world) {
+	public CraftWorld(ServerWorld world) {
 		this(((ServerWorldProperties) world.getLevelProperties()).getLevelName(), world);
 	}
 
@@ -639,10 +639,10 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 	private static Map<String, GameRules.Key<?>> gamerules;
 
 	public synchronized Map<String, GameRules.Key<?>> getGameRulesNMS() {
-		if (WorldImpl.gamerules != null) {
-			return WorldImpl.gamerules;
+		if (CraftWorld.gamerules != null) {
+			return CraftWorld.gamerules;
 		}
-		return WorldImpl.gamerules = getGameRulesNMS(this.getHandle().getGameRules());
+		return CraftWorld.gamerules = getGameRulesNMS(this.getHandle().getGameRules());
 	}
 	
 	public static Map<String, GameRules.Key<?>> getGameRulesNMS(GameRules gameRules) {
@@ -671,7 +671,7 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 	private static Map<String, GameRules.Type<?>> gameruleDefinitions;
 	public synchronized Map<String, GameRules.Type<?>> getGameRuleDefinitions() {
         if (gameruleDefinitions != null) {
-            return WorldImpl.gameruleDefinitions;
+            return CraftWorld.gameruleDefinitions;
         }
 
         Map<String, GameRules.Type<?>> gameruleDefinitions = new HashMap<>();
@@ -682,7 +682,7 @@ public class WorldImpl extends CraftRegionAccessor implements World {
             }
         });
 
-        return WorldImpl.gameruleDefinitions = gameruleDefinitions;
+        return CraftWorld.gameruleDefinitions = gameruleDefinitions;
     }
 
 	@Override
@@ -796,7 +796,7 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 				.stream()
 				.map(IMixinChunkHolder::getFullChunkNow)
 				.filter(Objects::nonNull)
-				.map(WorldImpl::getBukkitChunkForChunk)
+				.map(CraftWorld::getBukkitChunkForChunk)
 				.toArray(Chunk[]::new);
 	}
 
@@ -959,7 +959,7 @@ public class WorldImpl extends CraftRegionAccessor implements World {
 	@Override
 	public boolean equals(Object obj) {
 		return obj != null && this.getClass() == obj.getClass() &&
-				this.getName().equals(((WorldImpl) obj).getName());
+				this.getName().equals(((CraftWorld) obj).getName());
 	}
 
 	@Override
