@@ -2012,11 +2012,6 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	}
 
 	@Override
-	public boolean unloadChunk(Chunk chunk) {
-		return unloadChunk(chunk.getX(), chunk.getZ());
-	}
-
-	@Override
 	public boolean unloadChunk(int x, int z) {
 		return unloadChunk(x, z, true);
 	}
