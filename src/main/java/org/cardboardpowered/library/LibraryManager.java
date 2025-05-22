@@ -57,7 +57,7 @@ public final class LibraryManager {
 
     // Apparently, repo.papermc.io is not stable.
     private static final String[] BACKUP = {
-    		"https://web.archive.org/web/20250328041701/https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.21.4-R0.1-SNAPSHOT/paper-api-1.21.4-R0.1-20250327.133756-218.jar"
+    		"https://web.archive.org/web/20250518123011/https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.21.4-R0.1-SNAPSHOT/paper-api-1.21.4-R0.1-20250511.205801-225.jar"
     };
 
     /**
@@ -105,9 +105,21 @@ public final class LibraryManager {
     	if (library.libraryKey.artifactId.contains("paper-api")) {
     		return "paper";
     	}
-    	
-    	URL url = new URL(repository + library.libraryKey.groupId.replace('.', '/') + '/' + library.libraryKey.artifactId + '/' + library.version
-                + '/' + library.libraryKey.artifactId + '-' + library.version + ".jar.sha1");
+
+        URL url = null;
+
+        try {
+            url = new URL(repository + library.libraryKey.groupId.replace('.', '/') + '/' + library.libraryKey.artifactId + '/' + library.version
+                    + '/' + library.libraryKey.artifactId + '-' + library.version + ".jar.sha1");
+        } catch (MalformedURLException e) {
+            try {
+                // fallback
+                url = new URL("https://web.archive.org/web/20250518125104/https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.21.4-R0.1-SNAPSHOT/paper-api-1.21.4-R0.1-20250511.205801-225.jar.sha1");
+            } catch (MalformedURLException e2) {
+                logger.error("Failed to create URL for checksum: " + e2.getMessage());
+                return null;
+            }
+        }
     	
         URLConnection urlc = url.openConnection();
         BufferedReader in = new BufferedReader(new InputStreamReader(urlc.getInputStream(), "UTF-8"));
@@ -167,6 +179,7 @@ public final class LibraryManager {
                     	
                     	for (String urll : BACKUP) {
 	                    	downloadUrl = new URL(urll);
+                            connection = (HttpsURLConnection) downloadUrl.openConnection();
 	                    	try (
 	                        		ReadableByteChannel input = Channels.newChannel(connection.getInputStream());
 	                        		FileOutputStream output = new FileOutputStream(file)
