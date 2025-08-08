@@ -1,7 +1,7 @@
 import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
 
 plugins {
-    id 'fabric-loom' version '1.10-SNAPSHOT'
+    id 'fabric-loom' version '1.11-SNAPSHOT'
     id 'maven-publish'
     id 'com.gradleup.shadow' version '8.3.6'
     id 'java-library'
@@ -77,6 +77,9 @@ dependencies {
 
     // include(modImplementation(ic))
     modImplementation(ic)
+	
+	// TODO: Maven repo this
+	compileOnly fileTree(dir: 'libs', include: 'icommon-configuration-1.0.jar')
     
     //modImplementation( project(':iCommon-API') )
     //include( project(':iCommon-API') )
