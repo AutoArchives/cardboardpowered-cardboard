@@ -125,11 +125,11 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
 	 */
 	@Overwrite
 	public void onPlayerMove(PlayerMoveC2SPacket packet) {
-        NetworkThreadUtils.forceMainThread(packet, (ServerPlayNetworkHandler)(Object)this, this.player.getServerWorld());
+        NetworkThreadUtils.forceMainThread(packet, (ServerPlayNetworkHandler)(Object)this, this.player.getWorld());
         if (isMovementInvalid(packet.getX(0.0), packet.getY(0.0), packet.getZ(0.0), packet.getYaw(0.0f), packet.getPitch(0.0f))) {
             // this.disconnect(Text.translatable("multiplayer.disconnect.invalid_player_movement"), PlayerKickEvent.Cause.INVALID_PLAYER_MOVEMENT);
         } else {
-            ServerWorld worldserver = this.player.getServerWorld();
+            ServerWorld worldserver = this.player.getWorld();
             if (!this.player.notInAnyWorld /*&& !this.player.isImmobile()*/) {
                 if (this.ticks == 0) {
                     this.syncWithPlayerPosition();
@@ -147,7 +147,7 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                     float toPitch = f1 = MathHelper.wrapDegrees(packet.getPitch(this.player.getPitch()));
                     if (this.player.hasVehicle()) {
                         this.player.updatePositionAndAngles(this.player.getX(), this.player.getY(), this.player.getZ(), f, f1);
-                        this.player.getServerWorld().getChunkManager().updatePosition(this.player);
+                        this.player.getWorld().getChunkManager().updatePosition(this.player);
                         this.allowedPlayerTicks = 20;
                     } else {
                         double prevX = this.player.getX();
@@ -341,7 +341,7 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                                 		!this.player.getAbilities().allowFlying &&
                                 		!this.player.hasStatusEffect(StatusEffects.LEVITATION) &&
                                 		!flag && !flag4 && this.isEntityOnAir(this.player);
-                                this.player.getServerWorld().getChunkManager().updatePosition(this.player);
+                                this.player.getWorld().getChunkManager().updatePosition(this.player);
                                 Vec3d vec3d = new Vec3d(this.player.getX() - d3, this.player.getY() - d4, this.player.getZ() - d5);
                                 this.player.setMovement(packet.isOnGround(), packet.horizontalCollision(), vec3d);
                                 this.player.handleFall(vec3d.x, vec3d.y, vec3d.z, packet.isOnGround());

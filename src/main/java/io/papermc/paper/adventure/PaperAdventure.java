@@ -117,7 +117,7 @@ public class PaperAdventure {
         @Override
         public @NonNull NbtCompound decode(final @NonNull String encoded) throws IOException {
             try {
-                return StringNbtReader.parse(encoded);
+                return StringNbtReader.readCompound(encoded);
             } catch (final CommandSyntaxException e) {
                 throw new IOException(e);
             }

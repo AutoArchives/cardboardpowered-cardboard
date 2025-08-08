@@ -37,12 +37,12 @@ public class MixinDyeItem {
         SheepEntity entitysheep = (SheepEntity) entityliving;
         if (entitysheep.isAlive() && !entitysheep.isSheared() && entitysheep.getColor() != this.color) {
             if (!entityhuman.getWorld().isClient) {
-                byte bColor = (byte) this.color.getId();
+                byte bColor = (byte) this.color.getIndex();
                 SheepDyeWoolEvent event = new SheepDyeWoolEvent((org.bukkit.entity.Sheep) ((IMixinEntity)entitysheep).getBukkitEntity(), org.bukkit.DyeColor.getByWoolData(bColor));
                 Bukkit.getServer().getPluginManager().callEvent(event);
                 if (event.isCancelled()) return ActionResult.PASS;
 
-                entitysheep.setColor(DyeColor.byId((byte) event.getColor().getWoolData()));
+                entitysheep.setColor(DyeColor.byIndex((byte) event.getColor().getWoolData()));
                 itemstack.decrement(1);
             }
             return ActionResult.SUCCESS; // ActionResult.success(entityhuman.getWorld().isClient);

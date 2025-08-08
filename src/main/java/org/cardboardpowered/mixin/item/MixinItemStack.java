@@ -93,7 +93,7 @@ public class MixinItemStack implements IItemStack {
 
         if (i > 0) {
             
-        	j = EnchantmentHelper.getItemDamage(player.getServerWorld(), ((ItemStack)(Object)this), i);
+        	j = EnchantmentHelper.getItemDamage(player.getWorld(), ((ItemStack)(Object)this), i);
         	// j = EnchantmentHelper.getLevel(Enchantments.UNBREAKING, ((ItemStack)(Object)this));
             // for (int l = 0; j > 0 && l < i; ++l) if (UnbreakingEnchantment.shouldPreventDamage(((ItemStack)(Object)this), j, random)) i--;
 

@@ -48,13 +48,13 @@ public class CraftWolf extends CraftTameableAnimal implements Wolf {
     @SuppressWarnings("deprecation")
     @Override
     public DyeColor getCollarColor() {
-        return DyeColor.getByWoolData((byte) getHandle().getCollarColor().getId());
+        return DyeColor.getByWoolData((byte) getHandle().getCollarColor().getIndex());
     }
 
     @SuppressWarnings("deprecation")
     @Override
     public void setCollarColor(DyeColor color) {
-        getHandle().setCollarColor(net.minecraft.util.DyeColor.byId(color.getWoolData()));
+        getHandle().setCollarColor(net.minecraft.util.DyeColor.byIndex(color.getWoolData()));
     }
 
 	@Override
@@ -74,7 +74,7 @@ public class CraftWolf extends CraftTameableAnimal implements Wolf {
 
 	@Override
 	public boolean isWet() {
-		 return this.getHandle().isWet();
+		 return this.getHandle().furWet;
 	}
 
 	// 1.20.6 API

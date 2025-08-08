@@ -60,7 +60,7 @@ public class MixinServerQueryNetworkHandler {
             ServerMetadata ping = new ServerMetadata(
                     CraftChatMessage.fromString(event.getMotd(), true)[0],
                     Optional.of(samp),
-                    Optional.of(new ServerMetadata.Version(server.getServerModName() + " " + server.getVersion(), SharedConstants.getGameVersion().getProtocolVersion())),
+                    Optional.of(new ServerMetadata.Version(server.getServerModName() + " " + server.getVersion(), SharedConstants.getGameVersion().protocolVersion())),
                     (event.icon.value != null) ? Optional.of(new ServerMetadata.Favicon(event.icon.value)) : Optional.empty(),
                     server.shouldEnforceSecureProfile());
 

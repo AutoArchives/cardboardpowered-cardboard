@@ -57,7 +57,7 @@ public class MixinCommandManager {
         Map<CommandNode<ServerCommandSource>, CommandNode<CommandSource>> map = Maps.newIdentityHashMap();
         RootCommandNode vanillaRoot = new RootCommandNode();
 
-        RootCommandNode<ServerCommandSource> vanilla = entityplayer.server.getCommandManager().getDispatcher().getRoot();
+        RootCommandNode<ServerCommandSource> vanilla = entityplayer.getServer().getCommandManager().getDispatcher().getRoot();
         map.put(vanilla, vanillaRoot);
         this.makeTreeForSource(vanilla, vanillaRoot, entityplayer.getCommandSource(), (Map) map);
 

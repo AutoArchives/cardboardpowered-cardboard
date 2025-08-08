@@ -49,47 +49,47 @@ public class MixinSPNH_InventoryClickEvent {
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/ScreenHandler;onSlotClick(IILnet/minecraft/screen/slot/SlotActionType;Lnet/minecraft/entity/player/PlayerEntity;)V", 
             shift = At.Shift.BEFORE), method = "onClickSlot", cancellable = true)
     public void doBukkitEvent_InventoryClickedEvent(ClickSlotC2SPacket packet, CallbackInfo ci) {
-        if(packet.getSlot() < -1 && packet.getSlot() != -999)
+        if(packet.slot() < -1 && packet.slot() != -999)
             return;
 
         this.doCl = false;
         CardboardInventoryView inventory = ((IMixinScreenHandler) player.currentScreenHandler).getBukkitView();
         inventory.setPlayerIfNotSet((HumanEntity) ((org.cardboardpowered.interfaces.IMixinEntity)this.player).getBukkitEntity());
 
-        InventoryType.SlotType type = inventory.getSlotType(packet.getSlot());
+        InventoryType.SlotType type = inventory.getSlotType(packet.slot());
 
         InventoryClickEvent event;
         ClickType click = ClickType.UNKNOWN;
         InventoryAction action = InventoryAction.UNKNOWN;
 
-        switch (packet.getActionType()) {
+        switch (packet.actionType()) {
             case PICKUP:
-                click = packet.getButton() == 0 ? ClickType.LEFT : (packet.getButton() == 1 ? ClickType.RIGHT : ClickType.UNKNOWN);
+                click = packet.button() == 0 ? ClickType.LEFT : (packet.button() == 1 ? ClickType.RIGHT : ClickType.UNKNOWN);
 
-                if(packet.getButton() == 0 || packet.getButton() == 1) {
+                if(packet.button() == 0 || packet.button() == 1) {
                     action = InventoryAction.NOTHING; // Don't want to repeat ourselves
-                    if(packet.getSlot() == -999) {
+                    if(packet.slot() == -999) {
                         if(!player.currentScreenHandler.getCursorStack().isEmpty())
-                            action = packet.getButton() == 0 ? InventoryAction.DROP_ALL_CURSOR : InventoryAction.DROP_ONE_CURSOR;
-                    } else if(packet.getSlot() < 0) {
+                            action = packet.button() == 0 ? InventoryAction.DROP_ALL_CURSOR : InventoryAction.DROP_ONE_CURSOR;
+                    } else if(packet.slot() < 0) {
                         action = InventoryAction.NOTHING;
                     } else {
-                        Slot slot = this.player.currentScreenHandler.getSlot(packet.getSlot());
+                        Slot slot = this.player.currentScreenHandler.getSlot(packet.slot());
                         if(slot != null) {
                             ItemStack clickedItem = slot.getStack();
                             ItemStack cursor = player.currentScreenHandler.getCursorStack();
                             if(clickedItem.isEmpty()) {
                                 if(!cursor.isEmpty()) {
-                                    action = packet.getButton() == 0 ? InventoryAction.PLACE_ALL : InventoryAction.PLACE_ONE;
+                                    action = packet.button() == 0 ? InventoryAction.PLACE_ALL : InventoryAction.PLACE_ONE;
                                 }
                             } else if(slot.canTakeItems(player)) {
                                 if(cursor.isEmpty()) {
-                                    action = packet.getButton() == 0 ? InventoryAction.PICKUP_ALL : InventoryAction.PICKUP_HALF;
+                                    action = packet.button() == 0 ? InventoryAction.PICKUP_ALL : InventoryAction.PICKUP_HALF;
                                 } else if(slot.canInsert(cursor)) {
                                 	// 1.19.2: isItemEqualIgnoreDamage
                                 	// 1.19.4: isItemEqual
                                     if(clickedItem.areItemsEqual(clickedItem, cursor) && ItemStack.areEqual(clickedItem, cursor)) { // Banner TODO
-                                        int toPlace = packet.getButton() == 0 ? cursor.getCount() : 1;
+                                        int toPlace = packet.button() == 0 ? cursor.getCount() : 1;
                                         toPlace = Math.min(toPlace, clickedItem.getMaxCount() - clickedItem.getCount());
                                         toPlace = Math.min(toPlace, slot.inventory.getMaxCountPerStack() - clickedItem.getCount());
                                         if(toPlace == 1) {
@@ -114,16 +114,16 @@ public class MixinSPNH_InventoryClickEvent {
                 }
                 break;
             case QUICK_MOVE:
-                if(packet.getButton() == 0) {
+                if(packet.button() == 0) {
                     click = ClickType.LEFT;
-                } else if(packet.getButton() == 1) {
+                } else if(packet.button() == 1) {
                     click = ClickType.RIGHT;
                 }
-                if(packet.getButton() == 0 || packet.getButton() == 1) {
-                    if(packet.getSlot() < 0) {
+                if(packet.button() == 0 || packet.button() == 1) {
+                    if(packet.slot() < 0) {
                         action = InventoryAction.NOTHING;
                     } else {
-                        Slot slot = this.player.currentScreenHandler.getSlot(packet.getSlot());
+                        Slot slot = this.player.currentScreenHandler.getSlot(packet.slot());
                         if(slot != null && slot.canTakeItems(this.player) && slot.hasStack()) {
                             action = InventoryAction.MOVE_TO_OTHER_INVENTORY;
                         } else {
@@ -133,11 +133,11 @@ public class MixinSPNH_InventoryClickEvent {
                 }
                 break;
             case SWAP:
-                if((packet.getButton() >= 0 && packet.getButton() <= 9) || packet.getButton() == 40) {
-                    click = (packet.getButton() == 40) ? ClickType.SWAP_OFFHAND : ClickType.NUMBER_KEY;
-                    Slot clickedSlot = this.player.currentScreenHandler.getSlot(packet.getSlot());
+                if((packet.button() >= 0 && packet.button() <= 9) || packet.button() == 40) {
+                    click = (packet.button() == 40) ? ClickType.SWAP_OFFHAND : ClickType.NUMBER_KEY;
+                    Slot clickedSlot = this.player.currentScreenHandler.getSlot(packet.slot());
                     if(clickedSlot != null && clickedSlot.canTakeItems(player)) {
-                        ItemStack hotbar = this.player.inventory.getStack(packet.getButton());
+                        ItemStack hotbar = this.player.inventory.getStack(packet.button());
                         boolean canCleanSwap = hotbar.isEmpty() || (clickedSlot.inventory == player.inventory); // the slot will accept the hotbar item
                         if(clickedSlot.hasStack()) {
                             if(canCleanSwap) {
@@ -156,12 +156,12 @@ public class MixinSPNH_InventoryClickEvent {
                 }
                 break;
             case CLONE:
-                if(packet.getButton() == 2) {
+                if(packet.button() == 2) {
                     click = ClickType.MIDDLE;
-                    if(packet.getSlot() < 0) {
+                    if(packet.slot() < 0) {
                         action = InventoryAction.NOTHING;
                     } else {
-                        Slot slot = this.player.currentScreenHandler.getSlot(packet.getSlot());
+                        Slot slot = this.player.currentScreenHandler.getSlot(packet.slot());
                         if(slot != null && slot.hasStack() && player.abilities.creativeMode && player.currentScreenHandler.getCursorStack().isEmpty()) {
                             action = InventoryAction.CLONE_STACK;
                         } else {
@@ -174,18 +174,18 @@ public class MixinSPNH_InventoryClickEvent {
                 }
                 break;
             case THROW:
-                if(packet.getSlot() >= 0) {
-                    if(packet.getButton() == 0) {
+                if(packet.slot() >= 0) {
+                    if(packet.button() == 0) {
                         click = ClickType.DROP;
-                        Slot slot = this.player.currentScreenHandler.getSlot(packet.getSlot());
+                        Slot slot = this.player.currentScreenHandler.getSlot(packet.slot());
                         if(slot != null && slot.hasStack() && slot.canTakeItems(player) && !slot.getStack().isEmpty() && slot.getStack().getItem() != Item.fromBlock(Blocks.AIR)) {
                             action = InventoryAction.DROP_ONE_SLOT;
                         } else {
                             action = InventoryAction.NOTHING;
                         }
-                    } else if(packet.getButton() == 0) {
+                    } else if(packet.button() == 0) {
                         click = ClickType.DROP;
-                        Slot slot = this.player.currentScreenHandler.getSlot(packet.getSlot());
+                        Slot slot = this.player.currentScreenHandler.getSlot(packet.slot());
                         if(slot != null && slot.hasStack() && slot.canTakeItems(player) && !slot.getStack().isEmpty() && slot.getStack().getItem() != Item.fromBlock(Blocks.AIR)) {
                             action = InventoryAction.DROP_ALL_SLOT;
                         } else {
@@ -194,19 +194,19 @@ public class MixinSPNH_InventoryClickEvent {
                     }
                 } else {
                     click = ClickType.LEFT;
-                    if(packet.getButton() == 1) {
+                    if(packet.button() == 1) {
                         click = ClickType.RIGHT;
                     }
                     action = InventoryAction.NOTHING;
                 }
                 break;
             case QUICK_CRAFT:
-                this.player.currentScreenHandler.onSlotClick(packet.getSlot(), packet.getButton(), packet.getActionType(), this.player);
+                this.player.currentScreenHandler.onSlotClick(packet.slot(), packet.button(), packet.actionType(), this.player);
                 break;
             case PICKUP_ALL:
                 click = ClickType.DOUBLE_CLICK;
                 action = InventoryAction.NOTHING;
-                if(packet.getSlot() >= 0 && !this.player.currentScreenHandler.getCursorStack().isEmpty()) {
+                if(packet.slot() >= 0 && !this.player.currentScreenHandler.getCursorStack().isEmpty()) {
                     ItemStack cursor = this.player.currentScreenHandler.getCursorStack();
                     action = InventoryAction.NOTHING;
                     // Quick check for if we have any of the item
@@ -218,21 +218,21 @@ public class MixinSPNH_InventoryClickEvent {
             default:
                 break;
         }
-        if(packet.getActionType() != SlotActionType.QUICK_CRAFT) {
+        if(packet.actionType() != SlotActionType.QUICK_CRAFT) {
             if(click == ClickType.NUMBER_KEY) {
-                event = new InventoryClickEvent(inventory, type, packet.getSlot(), click, action, packet.getButton());
+                event = new InventoryClickEvent(inventory, type, packet.slot(), click, action, packet.button());
             } else {
-                event = new InventoryClickEvent(inventory, type, packet.getSlot(), click, action);
+                event = new InventoryClickEvent(inventory, type, packet.slot(), click, action);
             }
 
             Inventory top = inventory.getTopInventory();
-            if(packet.getSlot() == 0 && top instanceof org.bukkit.inventory.CraftingInventory) {
+            if(packet.slot() == 0 && top instanceof org.bukkit.inventory.CraftingInventory) {
                 org.bukkit.inventory.Recipe recipe = ((org.bukkit.inventory.CraftingInventory) top).getRecipe();
                 if(recipe != null) {
                     if(click == ClickType.NUMBER_KEY) {
-                        event = new CraftItemEvent(recipe, inventory, type, packet.getSlot(), click, action, packet.getButton());
+                        event = new CraftItemEvent(recipe, inventory, type, packet.slot(), click, action, packet.button());
                     } else {
-                        event = new CraftItemEvent(recipe, inventory, type, packet.getSlot(), click, action);
+                        event = new CraftItemEvent(recipe, inventory, type, packet.slot(), click, action);
                     }
                 }
             }
@@ -270,12 +270,12 @@ public class MixinSPNH_InventoryClickEvent {
                         case PLACE_SOME:
                         case PLACE_ONE:
                             this.player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-1, -1, this.player.playerScreenHandler.nextRevision(), this.player.currentScreenHandler.getCursorStack()));
-                            this.player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(this.player.currentScreenHandler.syncId, packet.getSlot(), this.player.playerScreenHandler.nextRevision(), this.player.currentScreenHandler.getSlot(packet.getSlot()).getStack()));
+                            this.player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(this.player.currentScreenHandler.syncId, packet.slot(), this.player.playerScreenHandler.nextRevision(), this.player.currentScreenHandler.getSlot(packet.slot()).getStack()));
                             break;
                         // Modified clicked only
                         case DROP_ALL_SLOT:
                         case DROP_ONE_SLOT:
-                            this.player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(this.player.currentScreenHandler.syncId, packet.getSlot(), this.player.playerScreenHandler.nextRevision(), this.player.currentScreenHandler.getSlot(packet.getSlot()).getStack()));
+                            this.player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(this.player.currentScreenHandler.syncId, packet.slot(), this.player.playerScreenHandler.nextRevision(), this.player.currentScreenHandler.getSlot(packet.slot()).getStack()));
                             break;
                         // Modified cursor only
                         case DROP_ALL_CURSOR:

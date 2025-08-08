@@ -3,8 +3,9 @@ package org.bukkit.craftbukkit.block;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.inventory.ContainerLock;
-import net.minecraft.predicate.ComponentPredicate;
 import net.minecraft.predicate.NumberRange;
+import net.minecraft.predicate.component.ComponentMapPredicate;
+import net.minecraft.predicate.component.ComponentsPredicate;
 import net.minecraft.predicate.item.ItemPredicate;
 import net.minecraft.text.Text;
 
@@ -54,7 +55,7 @@ public abstract class CraftContainer<T extends LockableContainerBlockEntity> ext
 
     @Override
     public String getLock() {
-    	Optional<? extends Text> customName = this.getSnapshot().lock.predicate().components().toChanges().get(DataComponentTypes.CUSTOM_NAME);
+    	Optional<? extends Text> customName = this.getSnapshot().lock.predicate().components().exact().toChanges().get(DataComponentTypes.CUSTOM_NAME);
 
         return (customName != null) ? customName.map(CraftChatMessage::fromComponent).orElse("") : "";
     }
@@ -64,8 +65,8 @@ public abstract class CraftContainer<T extends LockableContainerBlockEntity> ext
     	if (key == null) {
             this.getSnapshot().lock = ContainerLock.EMPTY;
         } else {
-            ComponentPredicate predicate = ComponentPredicate.builder().add(DataComponentTypes.CUSTOM_NAME, CraftChatMessage.fromStringOrNull(key)).build();
-            this.getSnapshot().lock = new ContainerLock(new ItemPredicate(Optional.empty(), NumberRange.IntRange.ANY, predicate, Collections.emptyMap()));
+        	ComponentMapPredicate predicate = ComponentMapPredicate.builder().add(DataComponentTypes.CUSTOM_NAME, CraftChatMessage.fromStringOrNull(key)).build();
+            this.getSnapshot().lock = new ContainerLock(new ItemPredicate(Optional.empty(), NumberRange.IntRange.ANY, new ComponentsPredicate(predicate, Collections.emptyMap())));
         }
     }
 

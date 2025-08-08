@@ -223,7 +223,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     	ServerPlayerEntity thiz = (ServerPlayerEntity) (Object) this;
     	//ServerWorld serverWorld = target.world();
     	// ServerWorld serverWorld2 = thiz.getServerWorld();
-    	cb$from = thiz.getServerWorld(); // Cardboard - store from world
+    	cb$from = thiz.getWorld(); // Cardboard - store from world
 
     	Location exit = CraftLocation.toBukkit(target.position(), target.world().getWorld());
 
@@ -564,7 +564,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
             ((ServerPlayerEntity)(Object)this).setScore(entityplayer.getScore());
             // TODO
             //((ServerPlayerEntity)(Object)this).lastNetherPortalPosition = entityplayer.lastNetherPortalPosition;
-        } else if (((ServerPlayerEntity)(Object)this).getServerWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || entityplayer.isSpectator()) {
+        } else if (((ServerPlayerEntity)(Object)this).getWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || entityplayer.isSpectator()) {
             ((ServerPlayerEntity)(Object)this).inventory.clone(entityplayer.inventory);
             ((ServerPlayerEntity)(Object)this).experienceLevel = entityplayer.experienceLevel;
             ((ServerPlayerEntity)(Object)this).totalExperience = entityplayer.totalExperience;
@@ -620,8 +620,11 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         if (world == null) {
         	plr.unsetRemoved();
             Vec3d position = null;
-            if (plr.getSpawnPointDimension() != null && (world = plr.server.getWorld(plr.getSpawnPointDimension())) != null && plr.getSpawnPointPosition() != null) {
-                position = ServerPlayerEntity.findRespawnPosition((ServerWorld)world, plr.getSpawnPointPosition(), plr.getSpawnAngle(), false, false)
+            
+            RegistryKey<World> rw = plr.getRespawn().dimension();
+
+            if (rw != null && (world = plr.getServer().getWorld(rw)) != null && plr.getRespawn().pos() != null) {
+                position = ServerPlayerEntity.findRespawnPosition((ServerWorld)world, plr.getRespawn(), false)
                 		.map(RespawnPos::pos).orElse(null);
             }
             if (world == null || position == null) {

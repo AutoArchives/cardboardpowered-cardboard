@@ -26,8 +26,11 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.WhitelistEntry;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.GlobalPos;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.PlayerSaveHandler;
 import org.bukkit.BanEntry;
 import org.bukkit.BanList;
@@ -41,6 +44,7 @@ import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.MetadataValue;
@@ -83,7 +87,12 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
             return profile.getName();
 
         NbtCompound data = getBukkitData();
-        return (data != null && data.contains("lastKnownName")) ? data.getString("lastKnownName") : null;
+        
+        if (data != null) {
+            return data.getString("lastKnownName").orElse(null);
+        }
+
+        return null;
     }
 
     @Override
@@ -194,9 +203,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         NbtCompound result = getData();
 
         if (result != null) {
-            if (!result.contains("bukkit"))
-                result.put("bukkit", new NbtCompound());
-            result = result.getCompound("bukkit");
+            result = result.getCompound("bukkit").orElse(null);
         }
 
         return result;
@@ -214,13 +221,13 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         NbtCompound data = getBukkitData();
 
         if (data != null) {
-            if (data.contains("firstPlayed")) {
-                return data.getLong("firstPlayed");
-            } else {
-                File file = getDataFile();
+            return data.getLong("firstPlayed").orElseGet(() -> {
+                File file = this.getDataFile();
                 return file.lastModified();
-            }
-        } else return 0;
+            });
+        } else {
+            return 0;
+        }
     }
 
     @Override
@@ -229,7 +236,14 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         if (player != null) return player.getLastPlayed();
 
         NbtCompound data = getBukkitData();
-        return data != null ? ((data.contains("lastPlayed")) ? data.getLong("lastPlayed") : getDataFile().lastModified()) : 0;
+        if (data != null) {
+            return data.getLong("lastPlayed").orElseGet(() -> {
+                File file = this.getDataFile();
+                return file.lastModified();
+            });
+        } else {
+            return 0;
+        }
     }
 
     @Override
@@ -243,10 +257,15 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         if (data == null) return null;
 
         if (data.contains("SpawnX") && data.contains("SpawnY") && data.contains("SpawnZ")) {
-            String spawnWorld = data.getString("SpawnWorld");
+            String spawnWorld = data.getString("SpawnWorld").orElse(null);
             if (spawnWorld.equals(""))
                 spawnWorld = server.getWorlds().get(0).getName();
-            return new Location(server.getWorld(spawnWorld), data.getInt("SpawnX"), data.getInt("SpawnY"), data.getInt("SpawnZ"));
+            
+            int x = data.getInt("SpawnX").orElse(null);
+            int y = data.getInt("SpawnY").orElse(null);
+            int z = data.getInt("SpawnZ").orElse(null);
+            
+            return new Location(server.getWorld(spawnWorld), x, y, z);
         }
         return null;
     }
@@ -436,13 +455,14 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         }
         NbtCompound data = this.getPaperData();
         if (data != null) {
-            if (data.contains("LastLogin")) {
-                return data.getLong("LastLogin");
-            }
-            File file = this.getDataFile();
-            return file.lastModified();
+            return data.getLong("LastLogin").orElseGet(() -> {
+                // if the player file cannot provide accurate data, this is probably the closest we can approximate
+                File file = getDataFile();
+                return file.lastModified();
+            });
+        } else {
+            return 0;
         }
-        return 0L;
     }
 
     @Override
@@ -453,23 +473,22 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         }
         NbtCompound data = this.getPaperData();
         if (data != null) {
-            if (data.contains("LastSeen")) {
-                return data.getLong("LastSeen");
-            }
-            File file = this.getDataFile();
-            return file.lastModified();
+            return data.getLong("LastSeen").orElseGet(() -> {
+                // if the player file cannot provide accurate data, this is probably the closest we can approximate
+                File file = getDataFile();
+                return file.lastModified();
+            });
+        } else {
+            return 0;
         }
-        return 0L;
     }
     
     private NbtCompound getPaperData() {
         NbtCompound result = this.getData();
         if (result != null) {
-            if (!result.contains("Paper")) {
-                result.put("Paper", new NbtCompound());
-            }
-            result = result.getCompound("Paper");
+            result = result.getCompound("Paper").orElse(null);
         }
+
         return result;
     }
 
@@ -481,10 +500,20 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
 	@Override
 	public @Nullable Location getLastDeathLocation() {
-        if (this.getData().contains("LastDeathLocation", 10)) {
+        /*
+		if (this.getData().contains("LastDeathLocation", 10)) {
             return GlobalPos.CODEC.parse(NbtOps.INSTANCE, this.getData().get("LastDeathLocation")).result().map(CraftMemoryMapper::fromNms).orElse(null);
         }
         return null;
+        */
+        
+        NbtCompound data = this.getData();
+        
+        if (data == null) {
+            return null;
+        }
+
+        return data.get("LastDeathLocation", GlobalPos.CODEC).map(CraftLocation::fromGlobalPos).orElse(null);
 	}
 
 	@Override
@@ -517,7 +546,8 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
 	@Override
 	public @Nullable Location getRespawnLocation() {
-        NbtCompound data = this.getData();
+        /*
+		NbtCompound data = this.getData();
         if (data == null) {
             return null;
         }
@@ -538,32 +568,54 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
             return new Location(spawnWorld, (double)data.getInt("SpawnX"), (double)data.getInt("SpawnY"), (double)data.getInt("SpawnZ"), respawnAngle, 0.0f);
         }
         return null;
+        */
+		return getRespawnLocation(false);
 	}
+	
+	public Location getRespawnLocation(final boolean loadLocationAdValidate) {
+        final NbtCompound data = this.getData();
+        if (data == null) return null;
+
+        final ServerPlayerEntity.Respawn respawnConfig = data.get("respawn", ServerPlayerEntity.Respawn.CODEC).orElse(null);
+        if (respawnConfig == null) return null;
+
+        final ServerWorld level = this.server.console.getWorld(respawnConfig.dimension());
+        if (level == null) return null;
+
+        //if (!loadLocationAndValidate) {
+            return CraftLocation.toBukkit(respawnConfig.pos(), level.getWorld(), respawnConfig.angle(), 0);
+        //}
+
+            /*
+        return ServerPlayerEntity.findRespawnPosition(level, respawnConfig, false)
+            .map(resolvedPos -> CraftLocation.toBukkit(resolvedPos.pos(), level.getWorld(), resolvedPos.yaw(), 0))
+            .orElse(null);
+        */
+    }
 
 	@Override
-	public @Nullable Location getLocation() {
+	public Location getLocation() {
         NbtCompound data = this.getData();
         if (data == null) {
             return null;
         }
 
-        if (data.contains("Pos") && data.contains("Rotation")) {
-            NbtList position = (NbtList) data.get("Pos");
-            NbtList rotation = (NbtList) data.get("Rotation");
+        Vec3d pos = data.get("Pos", Vec3d.CODEC).orElse(null);
+        Vec2f rot = data.get("Rotation", Vec2f.CODEC).orElse(null);
+        if (pos != null && rot != null) {
+            Long msb = data.getLong("WorldUUIDMost").orElse(null);
+            Long lsb = data.getLong("WorldUUIDLeast").orElse(null);
+            World world = msb != null && lsb != null ? this.server.getWorld(new UUID(msb, lsb)) : null;
 
-            UUID uuid = new UUID(data.getLong("WorldUUIDMost"), data.getLong("WorldUUIDLeast"));
-
-            return new Location(this.server.getWorld(uuid),
-                position.getDouble(0),
-                position.getDouble(1),
-                position.getDouble(2),
-                rotation.getFloat(0),
-                rotation.getFloat(1)
+            return new Location(
+                world,
+                pos.getX(), pos.getY(), pos.getZ(),
+                rot.x, rot.y
             );
         }
 
         return null;
-	}
+    }
 
 	@Override
 	public @NotNull PersistentDataContainerView getPersistentDataContainer() {

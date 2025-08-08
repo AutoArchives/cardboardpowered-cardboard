@@ -280,7 +280,7 @@ public class ReflectionRemapper {
     /**
      */
     public static String getMinecraftServerVersion() {
-        return SharedConstants.getGameVersion().getName();
+        return SharedConstants.getGameVersion().name();
     }
 
 }

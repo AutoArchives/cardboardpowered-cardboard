@@ -44,12 +44,12 @@ public record ServerBuildInfoImpl(
     	this(
     			Key.key("papermc:paper"),
     			"Paper",
-    			SharedConstants.getGameVersion().getId(),
-    			SharedConstants.getGameVersion().getName(),
-    			OptionalInt.of(150),
-    			Instant.parse("2024-09-16T19:18:19.744104606Z"),
-    			Optional.of("ver/1.20.6"),
-    			Optional.of("e61b73f")
+    			SharedConstants.getGameVersion().id(),
+    			SharedConstants.getGameVersion().name(),
+    			OptionalInt.of(15),
+    			Instant.parse("2025-07-01T22:53:44.086687487Z"),
+    			Optional.of("main"),
+    			Optional.of("0cadaef")
     	);
     }
 
