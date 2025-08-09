@@ -1,10 +1,11 @@
 package io.papermc.paper.datacomponent.item;
 
-import net.minecraft.registry.RegistryPair;
 import org.bukkit.JukeboxSong;
 import org.bukkit.craftbukkit.CraftJukeboxSong;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.Handleable;
+
+import net.minecraft.registry.entry.LazyRegistryEntryReference;
 
 public record PaperJukeboxPlayable(
     net.minecraft.component.type.JukeboxPlayableComponent impl
@@ -15,20 +16,25 @@ public record PaperJukeboxPlayable(
         return this.impl;
     }
 
-    @Override
+    // @Override
     public boolean showInTooltip() {
-        return this.impl.showInTooltip();
+        return false; // 1.21.8: removed
+    	// return this.impl.showInTooltip();
     }
 
     @Override
     public PaperJukeboxPlayable showInTooltip(final boolean showInTooltip) {
-        return new PaperJukeboxPlayable(this.impl.withShowInTooltip(showInTooltip));
+        // return new PaperJukeboxPlayable(this.impl.withShowInTooltip(showInTooltip));
+        
+        // TODO: 1.21.8: removed
+        
+        return new PaperJukeboxPlayable(this.impl);
     }
 
     @Override
     public JukeboxSong jukeboxSong() {
         return this.impl.song()
-            .getEntry(CraftRegistry.getMinecraftRegistry())
+            .resolveEntry(CraftRegistry.getMinecraftRegistry())
             .map(CraftJukeboxSong::minecraftHolderToBukkit)
             .orElseThrow();
     }
@@ -56,7 +62,7 @@ public record PaperJukeboxPlayable(
 
         @Override
         public JukeboxPlayable build() {
-            return new PaperJukeboxPlayable(new net.minecraft.component.type.JukeboxPlayableComponent(new RegistryPair<>(CraftJukeboxSong.bukkitToMinecraftHolder(this.song)), this.showInTooltip));
+            return new PaperJukeboxPlayable(new net.minecraft.component.type.JukeboxPlayableComponent(new LazyRegistryEntryReference<>(CraftJukeboxSong.bukkitToMinecraftHolder(this.song))));
         }
     }
 }

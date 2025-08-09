@@ -1,7 +1,11 @@
 package org.bukkit.craftbukkit.entity;
 
 import java.util.UUID;
+
+import net.minecraft.entity.LazyEntityReference;
 import net.minecraft.entity.passive.TameableEntity;
+import net.minecraft.util.Nullables;
+
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Creature;
@@ -22,15 +26,11 @@ public class CraftTameableAnimal extends CraftAnimals implements Tameable, Creat
     }
 
     public UUID getOwnerUUID() {
-        try {
-            return getHandle().getOwnerUuid();
-        } catch (IllegalArgumentException ex) {
-            return null;
-        }
+    	return Nullables.map(this.getHandle().getOwnerReference(), LazyEntityReference::getUuid);
     }
 
     public void setOwnerUUID(UUID uuid) {
-        getHandle().setOwnerUuid(uuid);
+        this.getHandle().setOwner(uuid == null ? null : new LazyEntityReference<>(uuid));
     }
 
     public UUID getOwnerUniqueId() {return getOwnerUUID();} // Paper

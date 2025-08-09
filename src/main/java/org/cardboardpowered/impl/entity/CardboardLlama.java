@@ -32,7 +32,7 @@ public class CardboardLlama extends CardboardChestedHorse implements Llama {
     @Override
     public void setColor(Llama.Color color) {
         Preconditions.checkArgument(color != null, "color");
-        this.getHandle().setVariant(LlamaEntity.Variant.byId(color.ordinal()));
+        this.getHandle().setVariant(LlamaEntity.Variant.byIndex(color.ordinal()));
     }
 
     @Override

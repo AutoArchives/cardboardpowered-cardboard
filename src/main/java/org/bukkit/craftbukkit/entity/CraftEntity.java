@@ -451,7 +451,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public float getFallDistance() {
-        return nms.fallDistance;
+        return (float) nms.fallDistance;
     }
 
     @Override
@@ -574,7 +574,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public World getWorld() {
-        return ((IMixinWorld)nms.getEntityWorld()).getCraftWorld();
+        return ((IMixinWorld)nms.getWorld()).getCraftWorld();
     }
 
     @Override
@@ -868,7 +868,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public Chunk getChunk() {
-        IWorldChunk wc = (IWorldChunk) nms.getEntityWorld().getWorldChunk(nms.getBlockPos());
+        IWorldChunk wc = (IWorldChunk) nms.getWorld().getWorldChunk(nms.getBlockPos());
         return wc.getBukkitChunk();
     }
 
@@ -881,13 +881,15 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     @Override
     public boolean isInBubbleColumn() {
         // TODO Auto-generated method stub
-        return nms.isInsideBubbleColumn();
+    	return false; // removed from paper
+    	//return nms.isInsideBubbleColumn();
     }
 
     @Override
     public boolean isInWaterOrBubbleColumn() {
         // TODO Auto-generated method stub
-        return nms.isInsideWaterOrBubbleColumn();
+        return false; // removed from paper
+    	// return nms.isInsideWaterOrBubbleColumn();
     }
 
     @Override
@@ -899,7 +901,12 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     @Override
     public boolean isInWaterOrRainOrBubbleColumn() {
         // TODO Auto-generated method stub
-        return nms.isInsideWaterOrBubbleColumn();
+        
+    	// 1.21.8: Removed from Paper
+    	
+    	return false;
+    	
+    	// return nms.isInsideWaterOrBubbleColumn();
     }
 
     @Override

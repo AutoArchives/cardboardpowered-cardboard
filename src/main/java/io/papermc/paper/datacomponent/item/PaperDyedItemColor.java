@@ -19,12 +19,13 @@ public record PaperDyedItemColor(
 
     @Override
     public boolean showInTooltip() {
-        return this.impl.showInTooltip();
+        return false; // this.impl.showInTooltip();
     }
 
     @Override
     public DyedItemColor showInTooltip(final boolean showInTooltip) {
-        return new PaperDyedItemColor(this.impl.withShowInTooltip(showInTooltip));
+        // return new PaperDyedItemColor(this.impl.withShowInTooltip(showInTooltip));
+    	return new PaperDyedItemColor(this.impl);
     }
 
     static final class BuilderImpl implements DyedItemColor.Builder {
@@ -46,7 +47,7 @@ public record PaperDyedItemColor(
 
         @Override
         public DyedItemColor build() {
-            return new PaperDyedItemColor(new net.minecraft.component.type.DyedColorComponent(this.color.asRGB(), this.showInToolTip));
+            return new PaperDyedItemColor(new net.minecraft.component.type.DyedColorComponent(this.color.asRGB()/*, this.showInToolTip*/));
         }
     }
 }

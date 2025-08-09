@@ -753,7 +753,7 @@ public class CraftEventFactory {
     
     public static EntityBreakDoorEvent callEntityBreakDoorEvent(Entity entity, BlockPos pos) {
         org.bukkit.entity.Entity entity1 = ((IMixinEntity)entity).getBukkitEntity();
-        CraftBlock block = CraftBlock.at((ServerWorld) entity.getEntityWorld(), pos);
+        CraftBlock block = CraftBlock.at((ServerWorld) entity.getWorld(), pos);
 
         
         CraftBlockData bd = CraftBlockData.createData(block.getNMS());
@@ -766,7 +766,7 @@ public class CraftEventFactory {
     // todo: check this
     public static EntityBreakDoorEvent callEntityBreakDoorEvent(net.minecraft.entity.Entity entity, BlockPos pos, BlockState newState) {
     	 org.bukkit.entity.Entity entity1 = ((IMixinEntity)entity).getBukkitEntity();
-        CraftBlock block = CraftBlock.at((ServerWorld) entity.getEntityWorld(), pos);
+        CraftBlock block = CraftBlock.at((ServerWorld) entity.getWorld(), pos);
         
         CraftBlockData bd = CraftBlockData.createData(block.getNMS());
         

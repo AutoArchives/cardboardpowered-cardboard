@@ -46,7 +46,7 @@ implements BannerMeta {
             List<BannerPatternsComponent.Layer> patterns = entityTag.layers();
             for (int i2 = 0; i2 < Math.min(patterns.size(), 20); ++i2) {
                 BannerPatternsComponent.Layer p = patterns.get(i2);
-                DyeColor color = DyeColor.getByWoolData((byte)((byte)p.color().getId()));
+                DyeColor color = DyeColor.getByWoolData((byte)((byte)p.color().getIndex()));
                 PatternType pattern = CraftPatternType.minecraftHolderToBukkit(p.pattern());
                 if (color == null || pattern == null) continue;
                 this.patterns.add(new Pattern(color, pattern));
@@ -74,7 +74,7 @@ implements BannerMeta {
         }
         ArrayList<BannerPatternsComponent.Layer> newPatterns = new ArrayList<BannerPatternsComponent.Layer>();
         for (Pattern p : this.patterns) {
-            newPatterns.add(new BannerPatternsComponent.Layer(CraftPatternType.bukkitToMinecraftHolder(p.getPattern()), net.minecraft.util.DyeColor.byId(p.getColor().getWoolData())));
+            newPatterns.add(new BannerPatternsComponent.Layer(CraftPatternType.bukkitToMinecraftHolder(p.getPattern()), net.minecraft.util.DyeColor.byIndex(p.getColor().getWoolData())));
         }
         tag.put(PATTERNS, new BannerPatternsComponent(newPatterns));
     }

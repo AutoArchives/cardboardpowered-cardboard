@@ -104,19 +104,22 @@ implements StructureWorldAccess {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public void playSound(PlayerEntity source, BlockPos pos, SoundEvent sound, SoundCategory category, float volume, float pitch) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+	@Override
+	public void addParticleClient(ParticleEffect parameters, double x, double y, double z, double velocityX,
+			double velocityY, double velocityZ) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
 
-    @Override
-    public void addParticle(ParticleEffect parameters, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+	@Override
+	public void playSound(Entity arg0, BlockPos arg1, SoundEvent arg2, SoundCategory arg3, float arg4, float arg5) {
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
 
-    @Override
-    public void syncWorldEvent(PlayerEntity player, int eventId, BlockPos pos, int data) {
-    }
+	@Override
+	public void syncWorldEvent(Entity arg0, int arg1, BlockPos arg2, int arg3) {
+		// TODO Auto-generated method stub
+		
+	}
 
     @Override
     public void emitGameEvent(RegistryEntry<GameEvent> event, Vec3d emitterPos, GameEvent.Emitter emitter) {

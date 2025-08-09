@@ -88,12 +88,12 @@ public class CardboardSign<T extends SignBlockEntity> extends CardboardBlockEnti
 
     @Override
     public DyeColor getColor() {
-        return DyeColor.getByWoolData((byte) getSnapshot().getFrontText().getColor().getId());
+        return DyeColor.getByWoolData((byte) getSnapshot().getFrontText().getColor().getIndex());
     }
 
     @Override
     public void setColor(DyeColor color) {
-        getSnapshot().getFrontText().withColor(net.minecraft.util.DyeColor.byId(color.getWoolData()));
+        getSnapshot().getFrontText().withColor(net.minecraft.util.DyeColor.byIndex(color.getWoolData()));
     }
 
     @Override

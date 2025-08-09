@@ -15,7 +15,7 @@ public class CardboardPig extends CraftAnimals implements Pig {
 
     @Override
     public boolean hasSaddle() {
-        return this.getHandle().isSaddled();
+        return this.getHandle().hasSaddleEquipped();
     }
 
     @Override

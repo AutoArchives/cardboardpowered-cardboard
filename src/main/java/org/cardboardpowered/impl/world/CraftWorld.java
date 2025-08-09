@@ -1363,7 +1363,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 			cp.getHandle().networkHandler.sendPacket(new WorldTimeUpdateS2CPacket(cp.getHandle()
 					.getWorld()
 					.getTime(), cp.getHandle().getWorld().getTime(), cp.getHandle()
-					.getServerWorld()
+					.getWorld()
 					.getGameRules()
 					.getBoolean(GameRules.DO_DAYLIGHT_CYCLE)));
 		}

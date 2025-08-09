@@ -7,33 +7,35 @@ import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import net.minecraft.component.type.BlockPredicatesComponent;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.cardboardpowered.Registries_Bridge;
 
 public record PaperItemAdventurePredicate(
-    net.minecraft.item.BlockPredicatesChecker impl
-) implements ItemAdventurePredicate, Handleable<net.minecraft.item.BlockPredicatesChecker> {
+		BlockPredicatesComponent impl
+) implements ItemAdventurePredicate, Handleable<BlockPredicatesComponent> {
 
-    private static List<BlockPredicate> convert(final net.minecraft.item.BlockPredicatesChecker nmsModifiers) {
+    private static List<BlockPredicate> convert(final BlockPredicatesComponent nmsModifiers) {
         return MCUtil.transformUnmodifiable(nmsModifiers.predicates, nms -> BlockPredicate.predicate()
             .blocks(nms.blocks().map(blocks -> PaperRegistrySets.convertToApi(RegistryKey.BLOCK, blocks)).orElse(null)).build());
     }
 
     @Override
-    public net.minecraft.item.BlockPredicatesChecker getHandle() {
+    public BlockPredicatesComponent getHandle() {
         return this.impl;
     }
 
     @Override
     public boolean showInTooltip() {
-        return this.impl.showInTooltip();
+        return false; // this.impl.showInTooltip();
     }
 
     @Override
     public PaperItemAdventurePredicate showInTooltip(final boolean showInTooltip) {
-        return new PaperItemAdventurePredicate(this.impl.withShowInTooltip(showInTooltip));
+        return new PaperItemAdventurePredicate(this.impl/*.withShowInTooltip(showInTooltip)*/);
     }
 
     @Override
@@ -70,7 +72,7 @@ public record PaperItemAdventurePredicate(
 
         @Override
         public ItemAdventurePredicate build() {
-            return new PaperItemAdventurePredicate(new net.minecraft.item.BlockPredicatesChecker(new ObjectArrayList<>(this.predicates), this.showInTooltip));
+            return new PaperItemAdventurePredicate(new BlockPredicatesComponent(new ObjectArrayList<>(this.predicates)/*, this.showInTooltip*/));
         }
     }
 }

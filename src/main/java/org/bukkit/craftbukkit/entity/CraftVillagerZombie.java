@@ -41,7 +41,7 @@ public class CraftVillagerZombie extends CraftZombie implements ZombieVillager {
 
     @Override
     public Villager.Profession getVillagerProfession() {
-        return Villager.Profession.valueOf(Registries.VILLAGER_PROFESSION.getId(getHandle().getVillagerData().getProfession()).getPath().toUpperCase(Locale.ROOT));
+        return Villager.Profession.valueOf(Registries.VILLAGER_PROFESSION.getId(getHandle().getVillagerData().profession().value()).getPath().toUpperCase(Locale.ROOT));
     }
 
     @Override
@@ -54,7 +54,7 @@ public class CraftVillagerZombie extends CraftZombie implements ZombieVillager {
 
     @Override
     public Villager.Type getVillagerType() {
-        return Villager.Type.valueOf(Registries.VILLAGER_TYPE.getId(getHandle().getVillagerData().getType()).getPath().toUpperCase(Locale.ROOT));
+        return Villager.Type.valueOf(Registries.VILLAGER_TYPE.getId(getHandle().getVillagerData().type().value()).getPath().toUpperCase(Locale.ROOT));
     }
 
     @Override

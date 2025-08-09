@@ -131,9 +131,11 @@ implements LeatherArmorMeta {
 
     static void readColor(LeatherArmorMeta meta, ComponentChanges tag) {
         CraftMetaLeatherArmor.getOrEmpty(tag, COLOR).ifPresent(dyedItemColor -> {
-            if (!dyedItemColor.showInTooltip()) {
+        	/*
+        	if (!dyedItemColor.showInTooltip()) {
                 meta.addItemFlags(new ItemFlag[]{ItemFlag.HIDE_DYE});
             }
+            */
             try {
                 meta.setColor(Color.fromRGB((int)dyedItemColor.rgb()));
             }
@@ -153,7 +155,7 @@ implements LeatherArmorMeta {
 
     static void applyColor(LeatherArmorMeta meta, CraftMetaItem.Applicator tag) {
         if (CraftMetaLeatherArmor.hasColor(meta)) {
-            tag.put(COLOR, new DyedColorComponent(meta.getColor().asRGB(), !meta.hasItemFlag(ItemFlag.HIDE_DYE)));
+            tag.put(COLOR, new DyedColorComponent(meta.getColor().asRGB()/*, !meta.hasItemFlag(ItemFlag.HIDE_DYE)*/));
         }
     }
 

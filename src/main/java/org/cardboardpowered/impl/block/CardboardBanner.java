@@ -70,7 +70,7 @@ public class CardboardBanner extends CardboardBlockEntityState<BannerBlockEntity
     public void load(BannerBlockEntity banner) {
         super.load(banner);
 
-        base = DyeColor.getByWoolData((byte) ((AbstractBannerBlock) this.data.getBlock()).getColor().getId());
+        base = DyeColor.getByWoolData((byte) ((AbstractBannerBlock) this.data.getBlock()).getColor().getIndex());
         patterns = new ArrayList<Pattern>();
 
         /*for (int i = 0; i < banner.getPatterns().size(); i++) {
@@ -82,7 +82,7 @@ public class CardboardBanner extends CardboardBlockEntityState<BannerBlockEntity
             for (int i = 0; i < banner.getPatterns().layers().size(); i++) {
             	BannerPatternsComponent.Layer p = banner.getPatterns().layers().get(i);
                 // TODO this.patterns.add(new Pattern(DyeColor.getByWoolData((byte) p.color().getId()), CraftPatternType.minecraftHolderToBukkit(p.pattern())));
-            	this.patterns.add(new Pattern(DyeColor.getByWoolData((byte) p.color().getId()), PatternType.getByIdentifier(p.pattern().getIdAsString()) ));
+            	this.patterns.add(new Pattern(DyeColor.getByWoolData((byte) p.color().getIndex()), PatternType.getByIdentifier(p.pattern().getIdAsString()) ));
             }
         }
 
@@ -138,7 +138,7 @@ public class CardboardBanner extends CardboardBlockEntityState<BannerBlockEntity
     public void applyTo(BannerBlockEntity banner) {
         super.applyTo(banner);
 
-        banner.baseColor = net.minecraft.util.DyeColor.byId(base.getWoolData());
+        banner.baseColor = net.minecraft.util.DyeColor.byIndex(base.getWoolData());
         NbtCompound bannerNbt = new NbtCompound();
         NbtList newPatterns = new NbtList();
 

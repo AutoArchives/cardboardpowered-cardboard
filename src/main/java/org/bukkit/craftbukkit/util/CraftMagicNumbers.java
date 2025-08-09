@@ -1036,7 +1036,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        int dataVersion = compound.getInt("DataVersion");
+        int dataVersion = compound.getInt("DataVersion", 0);
         Preconditions.checkArgument(dataVersion <= getDataVersion(), "Newer version! Server downgrades are not supported!");
         return compound;
     }

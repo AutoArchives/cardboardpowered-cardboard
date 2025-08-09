@@ -29,9 +29,11 @@ public class CraftMetaColorableArmor extends CraftMetaArmor implements Colorable
     CraftMetaColorableArmor(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaColorableArmor.getOrEmpty(tag, CraftMetaLeatherArmor.COLOR).ifPresent(dyedItemColor -> {
-            if (!dyedItemColor.showInTooltip()) {
+            /*
+        	if (!dyedItemColor.showInTooltip()) {
                 this.addItemFlags(new ItemFlag[]{ItemFlag.HIDE_DYE});
             }
+            */
             this.color = dyedItemColor.rgb();
         });
     }
@@ -45,7 +47,7 @@ public class CraftMetaColorableArmor extends CraftMetaArmor implements Colorable
     void applyToItem(CraftMetaItem.Applicator itemTag) {
         super.applyToItem(itemTag);
         if (this.hasColor()) {
-            itemTag.put(CraftMetaLeatherArmor.COLOR, new DyedColorComponent(this.color, !this.hasItemFlag(ItemFlag.HIDE_DYE)));
+            itemTag.put(CraftMetaLeatherArmor.COLOR, new DyedColorComponent(this.color/*, !this.hasItemFlag(ItemFlag.HIDE_DYE)*/));
         }
     }
 

@@ -33,7 +33,7 @@ public class MixinLoseJobOnSiteLossTask {
     public static Task<VillagerEntity> create() {
         return TaskTriggerer.task(context -> context.group(context.queryMemoryAbsent(MemoryModuleType.JOB_SITE)).apply(context, jobSite -> (world, entity, time) -> {
             VillagerData lv = entity.getVillagerData();
-            if (lv.getProfession() != VillagerProfession.NONE && lv.getProfession() != VillagerProfession.NITWIT && entity.getExperience() == 0 && lv.getLevel() <= 1) {
+            if (lv.profession() != VillagerProfession.NONE && lv.profession() != VillagerProfession.NITWIT && entity.getExperience() == 0 && lv.level() <= 1) {
                 // CraftBukkit start
                 VillagerCareerChangeEvent event = CraftEventFactory.callVillagerCareerChangeEvent(entity, CraftVillager.nmsToBukkitProfession(VillagerProfession.NONE), VillagerCareerChangeEvent.ChangeReason.LOSING_JOB);
                 if (event.isCancelled()) {

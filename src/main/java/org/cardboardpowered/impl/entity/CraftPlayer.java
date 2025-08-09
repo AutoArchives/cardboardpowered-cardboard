@@ -967,7 +967,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         Text[] components = CardboardSign.sanitizeLines(lines);
         SignBlockEntity sign = new SignBlockEntity(new BlockPos(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), null);
         //sign.setPos(new BlockPos(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
-        sign.getFrontText().withColor(net.minecraft.util.DyeColor.byId(dyeColor.getWoolData()));
+        sign.getFrontText().withColor(net.minecraft.util.DyeColor.byIndex(dyeColor.getWoolData()));
         System.arraycopy(components, 0, ((IMixinSignBlockEntity)sign).getTextBF(), 0, ((IMixinSignBlockEntity)sign).getTextBF().length);
 
         getHandle().networkHandler.sendPacket(sign.toUpdatePacket());
@@ -1281,7 +1281,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void updateCommands() {
         if (getHandle().networkHandler == null) return;
 
-        nms.server.getCommandManager().sendCommandTree(nms);
+        nms.getServer().getCommandManager().sendCommandTree(nms);
     }
 
     @Override
@@ -1292,7 +1292,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @SuppressWarnings("deprecation")
     @Override
     public GameMode getGameMode() {
-        return GameMode.getByValue(getHandle().interactionManager.getGameMode().getId());
+        return GameMode.getByValue(getHandle().interactionManager.getGameMode().getIndex());
     }
 
     @SuppressWarnings("deprecation")
@@ -1303,7 +1303,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (mode == null)
             throw new IllegalArgumentException("GameMode cannot be null");
 
-        getHandle().changeGameMode(net.minecraft.world.GameMode.byId(mode.getValue()));
+        getHandle().changeGameMode(net.minecraft.world.GameMode.byIndex(mode.getValue()));
     }
 
     public GameProfile getProfile() {
@@ -1332,8 +1332,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (value == isOp()) return;
 
         if (value)
-             nms.server.getPlayerManager().addToOperators(nms.getGameProfile());
-        else nms.server.getPlayerManager().removeFromOperators(nms.getGameProfile());
+             nms.getServer().getPlayerManager().addToOperators(nms.getGameProfile());
+        else nms.getServer().getPlayerManager().removeFromOperators(nms.getGameProfile());
 
         perm.recalculatePermissions();
     }
@@ -1505,7 +1505,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public Location getBedSpawnLocation() {
-        World world = ((IMixinWorld)getHandle().server.getWorld(getHandle().getSpawnPointDimension())).getCraftWorld();
+        World world = ((IMixinWorld)getHandle().getServer().getWorld(getHandle().getSpawnPointDimension())).getCraftWorld();
         BlockPos bed = getHandle().getSpawnPointPosition();
 
         if (world != null && bed != null) {
@@ -2018,7 +2018,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 	@Override
 	public @Nullable GameMode getPreviousGameMode() {
 		net.minecraft.world.GameMode previousGameMode = this.getHandle().interactionManager.getPreviousGameMode();
-        return previousGameMode == null ? null : GameMode.getByValue((int)previousGameMode.getId());
+        return previousGameMode == null ? null : GameMode.getByValue((int)previousGameMode.getIndex());
 	}
 
 	@Override
@@ -2566,7 +2566,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 	@Override
     public Location getRespawnLocation() {
         Optional<Vec3d> spawnLoc;
-        ServerWorld world = this.getHandle().server.getWorld(this.getHandle().getSpawnPointDimension());
+        ServerWorld world = this.getHandle().getServer().getWorld(this.getHandle().getSpawnPointDimension());
         BlockPos bed = this.getHandle().getSpawnPointPosition();
         if (world != null && bed != null && (spawnLoc = ServerPlayerEntity.findRespawnPosition(world, bed, this.getHandle().getSpawnAngle(), this.getHandle().isSpawnForced(), true).map(RespawnPos::pos)).isPresent()) {
             Vec3d vec = spawnLoc.get();

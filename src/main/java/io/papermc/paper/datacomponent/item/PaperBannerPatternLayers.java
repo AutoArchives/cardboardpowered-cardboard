@@ -20,7 +20,7 @@ public record PaperBannerPatternLayers(
     private static List<Pattern> convert(final net.minecraft.component.type.BannerPatternsComponent nmsPatterns) {
     	return MCUtil.transformUnmodifiable(nmsPatterns.layers(), input -> {
             final Optional<PatternType> type = CraftRegistry.unwrapAndConvertHolder(RegistryKey.BANNER_PATTERN, input.pattern());
-            return new Pattern(Objects.requireNonNull(DyeColor.getByWoolData((byte) input.color().getId())), type.orElseThrow(() -> new IllegalStateException("Inlined banner patterns are not supported yet in the API!")));
+            return new Pattern(Objects.requireNonNull(DyeColor.getByWoolData((byte) input.color().getIndex())), type.orElseThrow(() -> new IllegalStateException("Inlined banner patterns are not supported yet in the API!")));
         });
     }
 
@@ -42,7 +42,7 @@ public record PaperBannerPatternLayers(
         public BannerPatternLayers.Builder add(final Pattern pattern) {
             this.builder.add(
                 CraftPatternType.bukkitToMinecraftHolder(pattern.getPattern()),
-                net.minecraft.util.DyeColor.byId(pattern.getColor().getWoolData())
+                net.minecraft.util.DyeColor.byIndex(pattern.getColor().getWoolData())
             );
             return this;
         }

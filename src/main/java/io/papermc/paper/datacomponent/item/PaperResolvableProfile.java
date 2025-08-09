@@ -31,7 +31,7 @@ public record PaperResolvableProfile(
 
     @Override
     public @Nullable UUID uuid() {
-        return this.impl.id().orElse(null);
+        return this.impl.uuid().orElse(null);
     }
 
     @Override

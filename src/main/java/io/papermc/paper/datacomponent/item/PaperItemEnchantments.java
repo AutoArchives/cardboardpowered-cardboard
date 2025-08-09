@@ -39,7 +39,7 @@ public record PaperItemEnchantments(
 
     @Override
     public ItemEnchantments showInTooltip(final boolean showInTooltip) {
-        return new PaperItemEnchantments(this.impl.withShowInTooltip(showInTooltip), this.enchantments);
+        return new PaperItemEnchantments(this.impl/*.withShowInTooltip(showInTooltip)*/, this.enchantments);
     }
 
     @Override
@@ -78,7 +78,7 @@ public record PaperItemEnchantments(
 
         @Override
         public ItemEnchantments build() {
-            final net.minecraft.component.type.ItemEnchantmentsComponent initialEnchantments = net.minecraft.component.type.ItemEnchantmentsComponent.DEFAULT.withShowInTooltip(this.showInTooltip);
+            final net.minecraft.component.type.ItemEnchantmentsComponent initialEnchantments = net.minecraft.component.type.ItemEnchantmentsComponent.DEFAULT; // .withShowInTooltip(this.showInTooltip);
             if (this.enchantments.isEmpty()) {
                 return new PaperItemEnchantments(initialEnchantments);
             }

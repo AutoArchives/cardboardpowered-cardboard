@@ -14,14 +14,16 @@ public record PaperItemArmorTrim(
         return this.impl;
     }
 
-    @Override
+    // @Override
     public boolean showInTooltip() {
-        return this.impl.showInTooltip();
+        return false;
+    	//return this.impl.showInTooltip();
     }
 
     @Override
     public ItemArmorTrim showInTooltip(final boolean showInTooltip) {
-        return new PaperItemArmorTrim(this.impl.withShowInTooltip(showInTooltip));
+        // return new PaperItemArmorTrim(this.impl.withShowInTooltip(showInTooltip));
+    	return new PaperItemArmorTrim(this.impl);
     }
 
     @Override
@@ -54,8 +56,8 @@ public record PaperItemArmorTrim(
         public ItemArmorTrim build() {
             return new PaperItemArmorTrim(new net.minecraft.item.equipment.trim.ArmorTrim(
                 CraftTrimMaterial.bukkitToMinecraftHolder(this.armorTrim.getMaterial()),
-                CraftTrimPattern.bukkitToMinecraftHolder(this.armorTrim.getPattern()),
-                this.showInTooltip
+                CraftTrimPattern.bukkitToMinecraftHolder(this.armorTrim.getPattern())
+                // this.showInTooltip
             ));
         }
     }

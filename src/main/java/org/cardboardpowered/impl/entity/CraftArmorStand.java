@@ -210,9 +210,9 @@ public class CraftArmorStand extends LivingEntityImpl implements ArmorStand {
 
     private static EulerAngle fromNMS(net.minecraft.util.math.EulerAngle old) {
         return new EulerAngle(
-            Math.toRadians(old.getPitch()),
-            Math.toRadians(old.getYaw()),
-            Math.toRadians(old.getRoll())
+            Math.toRadians(old.pitch()),
+            Math.toRadians(old.yaw()),
+            Math.toRadians(old.roll())
         );
     }
 

@@ -877,7 +877,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
             return null;
         }
 
-        net.minecraft.server.world.ServerWorld worldServer = handle.server.getWorld(handle.getSpawnPointDimension());
+        net.minecraft.server.world.ServerWorld worldServer = handle.getServer().getWorld(handle.getSpawnPointDimension());
         if (worldServer == null) {
             return null;
         }

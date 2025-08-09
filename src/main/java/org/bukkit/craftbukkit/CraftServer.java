@@ -542,7 +542,7 @@ public class CraftServer implements Server {
 
     @Override
     public String toString() {
-        return "CraftServer{" + "serverName=" + serverName + ",serverVersion=" + serverVersion + ",minecraftVersion=" + SharedConstants.getGameVersion().getName() + '}';
+        return "CraftServer{" + "serverName=" + serverName + ",serverVersion=" + serverVersion + ",minecraftVersion=" + SharedConstants.getGameVersion().name() + '}';
     }
 
     @Override
@@ -1072,7 +1072,7 @@ public class CraftServer implements Server {
 
     @Override
     public GameMode getDefaultGameMode() {
-        return GameMode.getByValue(getServer().getDefaultGameMode().getId());
+        return GameMode.getByValue(getServer().getDefaultGameMode().getIndex());
     }
 
     @SuppressWarnings("resource")
@@ -1664,7 +1664,7 @@ public class CraftServer implements Server {
 
     @Override
     public void setDefaultGameMode(GameMode gm) {
-        server.setDefaultGameMode(net.minecraft.world.GameMode.byId(gm.getValue()));
+        server.setDefaultGameMode(net.minecraft.world.GameMode.byIndex(gm.getValue()));
     }
 
     @Override

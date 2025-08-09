@@ -182,7 +182,7 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
 
     @Override
     public Profession getProfession() {
-        return nmsToBukkitProfession(getHandle().getVillagerData().getProfession());
+        return nmsToBukkitProfession(getHandle().getVillagerData().profession());
     }
 
     @Override
@@ -193,7 +193,7 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
 
     @Override
     public Type getVillagerType() {
-        return Type.valueOf(Registries.VILLAGER_TYPE.getId(getHandle().getVillagerData().getType()).getPath().toUpperCase(Locale.ROOT));
+        return Type.valueOf(Registries.VILLAGER_TYPE.getId(getHandle().getVillagerData().type().value()).getPath().toUpperCase(Locale.ROOT));
     }
 
     @Override
@@ -204,7 +204,7 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
 
     @Override
     public int getVillagerLevel() {
-        return getHandle().getVillagerData().getLevel();
+        return getHandle().getVillagerData().level();
     }
 
     @Override
@@ -314,7 +314,7 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         Preconditions.checkArgument((amount > 0 ? 1 : 0) != 0, (Object)"Level earned must be positive");
         int supposedFinalLevel = this.getVillagerLevel() + amount;
         Preconditions.checkArgument((1 <= supposedFinalLevel && supposedFinalLevel <= 5 ? 1 : 0) != 0, (Object)"Final level reached after the donation (%d) must be between [%d, %d]".formatted(supposedFinalLevel, 1, 5));
-        Int2ObjectMap<TradeOffers.Factory[]> trades = TradeOffers.PROFESSION_TO_LEVELED_TRADE.get(this.getHandle().getVillagerData().getProfession());
+        Int2ObjectMap<TradeOffers.Factory[]> trades = TradeOffers.PROFESSION_TO_LEVELED_TRADE.get(this.getHandle().getVillagerData().profession());
         if (trades == null || trades.isEmpty()) {
             this.getHandle().setVillagerData(this.getHandle().getVillagerData().withLevel(supposedFinalLevel));
             return false;

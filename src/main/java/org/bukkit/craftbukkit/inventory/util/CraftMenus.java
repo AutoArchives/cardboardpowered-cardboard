@@ -70,7 +70,7 @@ public final class CraftMenus {
         // final Merchant minecraftMerchant = ((CraftMerchant) merchant.getBukkitView().getMerchant()).getMerchant();
         int level = 1;
         if (minecraftMerchant instanceof final VillagerEntity villager) {
-            level = villager.getVillagerData().getLevel();
+            level = villager.getVillagerData().level();
         }
 
         if (minecraftMerchant.getCustomer() != null) { // merchant's can only have one trader

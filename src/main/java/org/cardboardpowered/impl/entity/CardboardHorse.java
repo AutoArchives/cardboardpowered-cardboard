@@ -45,7 +45,7 @@ implements Horse {
 
     @Override
     public Horse.Style getStyle() {
-        return Horse.Style.values()[this.getHandle().getMarking().getId()];
+        return Horse.Style.values()[this.getHandle().getMarking().getIndex()];
     }
 
     @Override

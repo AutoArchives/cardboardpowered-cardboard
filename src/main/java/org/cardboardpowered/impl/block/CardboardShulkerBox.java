@@ -59,7 +59,7 @@ public class CardboardShulkerBox extends CardboardLootableBlock<ShulkerBoxBlockE
     @Override
     public DyeColor getColor() {
         net.minecraft.block.Block block = CraftMagicNumbers.getBlock(this.getType());
-        return DyeColor.getByWoolData((byte) ((ShulkerBoxBlock) block).getColor().getId());
+        return DyeColor.getByWoolData((byte) ((ShulkerBoxBlock) block).getColor().getIndex());
     }
 
     @Override

@@ -638,7 +638,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
     private boolean isEntityOnAir(Entity entity) {return false;}
 
     public ServerWorld get_server_world() {
-    	return (ServerWorld) this.player.getServerWorld();
+    	return (ServerWorld) this.player.getWorld();
     }
     
     /**
@@ -647,7 +647,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
      */
     @Inject(at = @At("HEAD"), method = "onHandSwing", cancellable = true)
     public void onHandSwingBF(HandSwingC2SPacket packet, CallbackInfo ci) {
-        NetworkThreadUtils.forceMainThread(packet, get(), this.player.getServerWorld());
+        NetworkThreadUtils.forceMainThread(packet, get(), this.player.getWorld());
         this.player.updateLastActionTime();
         float f1 = this.player.pitch;
         float f2 = this.player.yaw;
@@ -664,7 +664,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
         float f8 = f3 * f5;
         double d3 = player.interactionManager.getGameMode()== GameMode.CREATIVE ? 5.0D : 4.5D;
         Vec3d vec3d1 = vec3d.add((double) f7 * d3, (double) f6 * d3, (double) f8 * d3);
-        HitResult movingobjectposition = ((ServerWorld)this.player.getServerWorld()).raycast(new RaycastContext(vec3d, vec3d1, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, player));
+        HitResult movingobjectposition = ((ServerWorld)this.player.getWorld()).raycast(new RaycastContext(vec3d, vec3d1, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, player));
 
         if (movingobjectposition == null || movingobjectposition.getType() != HitResult.Type.BLOCK)
             CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_AIR, this.player.inventory.getMainHandStack(), Hand.MAIN_HAND);
@@ -683,7 +683,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
 
     @Inject(at = @At("HEAD"), method = "onPlayerInteractItem", cancellable = true)
     public void onPlayerInteractItemBF(PlayerInteractItemC2SPacket packetplayinblockplace, CallbackInfo ci) {
-        NetworkThreadUtils.forceMainThread(packetplayinblockplace, get(), this.player.getServerWorld());
+        NetworkThreadUtils.forceMainThread(packetplayinblockplace, get(), this.player.getWorld());
         Hand enumhand = packetplayinblockplace.getHand();
         ItemStack itemstack = this.player.getStackInHand(enumhand);
 
@@ -704,7 +704,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
             float f8 = f3 * f5;
             double d3 = player.interactionManager.getGameMode()== GameMode.CREATIVE ? 5.0D : 4.5D;
             Vec3d vec3d1 = vec3d.add((double) f7 * d3, (double) f6 * d3, (double) f8 * d3);
-            HitResult movingobjectposition = ((ServerWorld)this.player.getServerWorld()).raycast(new RaycastContext(vec3d, vec3d1, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, player));
+            HitResult movingobjectposition = ((ServerWorld)this.player.getWorld()).raycast(new RaycastContext(vec3d, vec3d1, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, player));
 
             boolean cancelled;
             if (movingobjectposition == null || movingobjectposition.getType() != HitResult.Type.BLOCK) {
@@ -735,7 +735,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
      */
     @Overwrite
     public void onUpdateSelectedSlot(UpdateSelectedSlotC2SPacket packetplayinhelditemslot) {
-        NetworkThreadUtils.forceMainThread(packetplayinhelditemslot, get(), this.player.getServerWorld());
+        NetworkThreadUtils.forceMainThread(packetplayinhelditemslot, get(), this.player.getWorld());
         if (packetplayinhelditemslot.getSelectedSlot() >= 0 && packetplayinhelditemslot.getSelectedSlot() < PlayerInventory.getHotbarSize()) {
             PlayerItemHeldEvent event = new PlayerItemHeldEvent(this.getPlayer(), this.player.inventory.selectedSlot, packetplayinhelditemslot.getSelectedSlot());
             CraftServer.INSTANCE.getPluginManager().callEvent(event);

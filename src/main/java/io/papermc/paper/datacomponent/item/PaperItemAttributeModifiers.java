@@ -32,12 +32,13 @@ public record PaperItemAttributeModifiers(
 
     @Override
     public boolean showInTooltip() {
-        return this.impl.showInTooltip();
+        return false; // return this.impl.showInTooltip();
     }
 
     @Override
     public ItemAttributeModifiers showInTooltip(final boolean showInTooltip) {
-        return new PaperItemAttributeModifiers(this.impl.withShowInTooltip(showInTooltip));
+    	return new PaperItemAttributeModifiers(this.impl);
+    	//return new PaperItemAttributeModifiers(this.impl.withShowInTooltip(showInTooltip));
     }
 
     @Override
@@ -51,7 +52,7 @@ public record PaperItemAttributeModifiers(
     static final class BuilderImpl implements ItemAttributeModifiers.Builder {
 
         private final List<net.minecraft.component.type.AttributeModifiersComponent.Entry> entries = new ObjectArrayList<>();
-        private boolean showInTooltip = net.minecraft.component.type.AttributeModifiersComponent.DEFAULT.showInTooltip();
+        private boolean showInTooltip = false; // net.minecraft.component.type.AttributeModifiersComponent.DEFAULT.showInTooltip();
 
         @Override
         public io.papermc.paper.datacomponent.item.ItemAttributeModifiers.Builder addModifier(final Attribute attribute, final AttributeModifier modifier) {
@@ -85,12 +86,12 @@ public record PaperItemAttributeModifiers(
         @Override
         public ItemAttributeModifiers build() {
             if (this.entries.isEmpty()) {
-                return new PaperItemAttributeModifiers(net.minecraft.component.type.AttributeModifiersComponent.DEFAULT.withShowInTooltip(this.showInTooltip));
+                return new PaperItemAttributeModifiers(net.minecraft.component.type.AttributeModifiersComponent.DEFAULT
+                		/*.withShowInTooltip(this.showInTooltip)*/);
             }
 
             return new PaperItemAttributeModifiers(new net.minecraft.component.type.AttributeModifiersComponent(
-                new ObjectArrayList<>(this.entries),
-                this.showInTooltip
+                new ObjectArrayList<>(this.entries) // , this.showInTooltip
             ));
         }
     }

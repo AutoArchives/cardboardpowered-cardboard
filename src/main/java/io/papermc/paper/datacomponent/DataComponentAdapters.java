@@ -120,7 +120,7 @@ public final class DataComponentAdapters {
         DataComponentAdapters.register(DataComponentTypes.PROFILE, PaperResolvableProfile::new);
         DataComponentAdapters.register(DataComponentTypes.NOTE_BLOCK_SOUND, CardboardAdventure::asAdventure, CardboardAdventure::asVanilla);
         DataComponentAdapters.register(DataComponentTypes.BANNER_PATTERNS, PaperBannerPatternLayers::new);
-        DataComponentAdapters.register(DataComponentTypes.BASE_COLOR, nms -> org.bukkit.DyeColor.getByWoolData((byte)((byte)nms.getId())), api -> DyeColor.byId(api.getWoolData()));
+        DataComponentAdapters.register(DataComponentTypes.BASE_COLOR, nms -> org.bukkit.DyeColor.getByWoolData((byte)((byte)nms.getIndex())), api -> DyeColor.byId(api.getWoolData()));
         DataComponentAdapters.register(DataComponentTypes.POT_DECORATIONS, PaperPotDecorations::new);
         DataComponentAdapters.register(DataComponentTypes.CONTAINER, PaperItemContainerContents::new);
         DataComponentAdapters.register(DataComponentTypes.BLOCK_STATE, PaperBlockItemDataProperties::new);
