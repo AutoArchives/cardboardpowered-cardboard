@@ -366,7 +366,7 @@ public class CardboardChunk implements Chunk {
             NbtCompound data = new NbtCompound();
 
             data.put("block_states", SerializedChunk.CODEC.encodeStart(NbtOps.INSTANCE, cs[i].getBlockStateContainer()).getOrThrow());
-            sectionBlockIDs[i] = SerializedChunk.CODEC.parse(NbtOps.INSTANCE, data.getCompound("block_states")).getOrThrow(SerializedChunk.ChunkLoadingException::new);
+            sectionBlockIDs[i] = SerializedChunk.CODEC.parse(NbtOps.INSTANCE, data.getCompoundOrEmpty("block_states")).getOrThrow(SerializedChunk.ChunkLoadingException::new);
 
             // data.put("block_states", SerializedChunk.CODEC.encodeStart(NbtOps.INSTANCE, cs[i].getBlockStateContainer()).get().left().get());
             // sectionBlockIDs[i] = SerializedChunk.CODEC.parse(NbtOps.INSTANCE, data.getCompound("block_states")).get().left().get();
@@ -389,7 +389,7 @@ public class CardboardChunk implements Chunk {
 
             if (biome != null) {
                 data.put("biomes", biomeCodec.encodeStart(NbtOps.INSTANCE, cs[i].getBiomeContainer()).getOrThrow());
-                biome[i] = biomeCodec.parse(NbtOps.INSTANCE, data.getCompound("biomes")).getOrThrow(ChunkLoadingException::new);
+                biome[i] = biomeCodec.parse(NbtOps.INSTANCE, data.getCompoundOrEmpty("biomes")).getOrThrow(ChunkLoadingException::new);
             }
         }
 
