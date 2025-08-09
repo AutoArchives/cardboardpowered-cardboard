@@ -4,6 +4,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.util.TriState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.LazyEntityReference;
+
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -76,12 +78,13 @@ public class ItemEntityImpl extends CraftEntity implements Item {
 
     // Spigot #758
     public void setThrower(UUID uuid) {
-        item.throwerUuid = uuid;
+        item.thrower = uuid != null ? new LazyEntityReference<Entity>(uuid) : null;;
     }
 
     // Spigot #758
     public UUID getThrower() {
-    	return item.throwerUuid;
+    	LazyEntityReference<Entity> thrower = item.thrower;
+    	return thrower != null ? thrower.getUuid() : null;
     }
 
     @Override

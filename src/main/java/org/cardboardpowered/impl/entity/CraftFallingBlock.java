@@ -143,8 +143,8 @@ public class CraftFallingBlock extends CraftEntity implements FallingBlock {
 	@Override
 	public void setBlockData(BlockData blockData) {
 		net.minecraft.block.BlockState newState;
-        net.minecraft.block.BlockState oldState = this.getHandle().block;
-        this.getHandle().block = newState = ((CraftBlockData)blockData).getState();
+        net.minecraft.block.BlockState oldState = this.getHandle().blockState;
+        this.getHandle().blockState = newState = ((CraftBlockData)blockData).getState();
         this.getHandle().blockEntityData = null;
         if (oldState != newState) {
             // this.update();
@@ -153,7 +153,7 @@ public class CraftFallingBlock extends CraftEntity implements FallingBlock {
 
 	@Override
 	public BlockState getBlockState() {
-        return CraftBlockStates.getBlockState(this.getHandle().block, this.getHandle().blockEntityData);
+        return CraftBlockStates.getBlockState(this.getHandle().blockState, this.getHandle().blockEntityData);
 	}
 
 	@Override

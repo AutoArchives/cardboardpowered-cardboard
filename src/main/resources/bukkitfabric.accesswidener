@@ -534,3 +534,7 @@ accessible method net/minecraft/server/network/ServerPlayNetworkHandler clampHor
 accessible method net/minecraft/server/network/ServerPlayNetworkHandler clampVertical (D)D
 accessible method net/minecraft/entity/LivingEntity isImmobile ()Z
 accessible field net/minecraft/entity/passive/AbstractHorseEntity ownerReference Lnet/minecraft/entity/LazyEntityReference;
+accessible field net/minecraft/entity/FallingBlockEntity blockState Lnet/minecraft/block/BlockState;
+accessible method net/minecraft/entity/passive/ParrotEntity setVariant (Lnet/minecraft/entity/passive/ParrotEntity$Variant;)V
+accessible field net/minecraft/entity/ItemEntity thrower Lnet/minecraft/entity/LazyEntityReference;
+accessible field net/minecraft/entity/player/PlayerInventory main Lnet/minecraft/util/collection/DefaultedList;
