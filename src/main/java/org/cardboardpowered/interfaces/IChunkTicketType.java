@@ -12,6 +12,6 @@ public interface IChunkTicketType {
 
 	/**
 	 */
-    ChunkTicketType<Unit> getBukkitPluginTicketType();
+    ChunkTicketType getBukkitPluginTicketType();
 
 }

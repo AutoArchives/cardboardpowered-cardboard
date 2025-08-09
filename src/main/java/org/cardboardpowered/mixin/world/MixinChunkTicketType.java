@@ -12,15 +12,15 @@ import net.minecraft.util.Unit;
 @Mixin(ChunkTicketType.class)
 public class MixinChunkTicketType implements IChunkTicketType {
 
-    private static final ChunkTicketType<Unit> PLUGIN = create("plugin", (a, b) -> 0);
+    private static final ChunkTicketType PLUGIN = create("plugin", (a, b) -> 0);
 
     @Override
-    public ChunkTicketType<Unit> getBukkitPluginTicketType() {
+    public ChunkTicketType getBukkitPluginTicketType() {
         return PLUGIN;
     }
 
     @Shadow
-    public static <T> ChunkTicketType<T> create(String s, Comparator<T> comparator) {
+    public static <T> ChunkTicketType create(String s, Comparator<T> comparator) {
         return null;
     }
 
