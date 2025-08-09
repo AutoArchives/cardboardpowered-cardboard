@@ -97,20 +97,21 @@ public class FakeWorldAccess implements WorldAccess {
         throw new UnsupportedOperationException("Not supported");
     }*/
 
-    @Override
-    public void playSound(PlayerEntity entityhuman, BlockPos blockposition, SoundEvent soundeffect, SoundCategory soundcategory, float f, float f1) {
-        throw new UnsupportedOperationException("Not supported");
-    }
+	@Override
+	public void addParticleClient(ParticleEffect parameters, double x, double y, double z, double velocityX,
+			double velocityY, double velocityZ) {
+		throw new UnsupportedOperationException("Not supported");
+	}
 
-    @Override
-    public void addParticle(ParticleEffect particleparam, double d0, double d1, double d2, double d3, double d4, double d5) {
-        throw new UnsupportedOperationException("Not supported");
-    }
+	@Override
+	public void playSound(Entity arg0, BlockPos arg1, SoundEvent arg2, SoundCategory arg3, float arg4, float arg5) {
+		throw new UnsupportedOperationException("Not supported");
+	}
 
-    @Override
-    public void syncWorldEvent(PlayerEntity entityhuman, int i, BlockPos blockposition, int j) {
-        throw new UnsupportedOperationException("Not supported");
-    }
+	@Override
+	public void syncWorldEvent(Entity arg0, int arg1, BlockPos arg2, int arg3) {
+		throw new UnsupportedOperationException("Not supported");
+	}
 
     @Override
     public DynamicRegistryManager getRegistryManager() {

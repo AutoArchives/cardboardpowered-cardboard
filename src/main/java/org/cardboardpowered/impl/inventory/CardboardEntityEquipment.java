@@ -250,21 +250,27 @@ public class CardboardEntityEquipment implements EntityEquipment {
     }
 
     private void setDropChance(net.minecraft.entity.EquipmentSlot slot, float chance) {
+    	/*
         if (slot == net.minecraft.entity.EquipmentSlot.MAINHAND || slot == net.minecraft.entity.EquipmentSlot.OFFHAND) {
             ((MobEntity) entity.getHandle()).handDropChances[slot.getEntitySlotId()] = chance;
         } else {
             ((MobEntity) entity.getHandle()).armorDropChances[slot.getEntitySlotId()] = chance;
         }
+        */
+    	((MobEntity) entity.getHandle()).setEquipmentDropChance(slot, chance);
     }
 
     private float getDropChance(net.minecraft.entity.EquipmentSlot slot) {
         if (!(entity.getHandle() instanceof MobEntity)) return 1;
 
+        /*
         if (slot == net.minecraft.entity.EquipmentSlot.MAINHAND || slot == net.minecraft.entity.EquipmentSlot.OFFHAND) {
             return ((MobEntity) entity.getHandle()).handDropChances[slot.getEntitySlotId()];
         } else {
             return ((MobEntity) entity.getHandle()).armorDropChances[slot.getEntitySlotId()];
         }
+        */
+        return ((MobEntity) entity.getHandle()).getEquipmentDropChances().get(slot);
     }
 
     @Override

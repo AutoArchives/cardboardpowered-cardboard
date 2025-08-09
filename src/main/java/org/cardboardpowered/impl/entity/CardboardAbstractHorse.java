@@ -11,6 +11,8 @@ import org.bukkit.inventory.AbstractHorseInventory;
 import org.cardboardpowered.impl.inventory.CardboardInventoryAbstractHorse;
 import org.cardboardpowered.interfaces.IHorseBaseEntity;
 
+import net.minecraft.entity.LazyEntityReference;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.passive.AbstractHorseEntity;
 
@@ -103,11 +105,13 @@ implements AbstractHorse {
     }
 
     public UUID getOwnerUUID() {
-        return this.getHandle().getOwnerUuid();
+    	LazyEntityReference<LivingEntity> owner = this.getHandle().getOwnerReference();
+        return owner != null ? owner.getUuid() : null;
     }
 
     public void setOwnerUUID(UUID uuid) {
-        this.getHandle().setOwnerUuid(uuid);
+        // this.getHandle().setOwnerUuid(uuid);
+        this.getHandle().ownerReference = uuid != null ? new LazyEntityReference(uuid) : null;
     }
 
     @Override

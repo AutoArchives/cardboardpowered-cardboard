@@ -533,3 +533,4 @@ accessible field net/minecraft/entity/player/PlayerAbilities flySpeed F
 accessible method net/minecraft/server/network/ServerPlayNetworkHandler clampHorizontal (D)D
 accessible method net/minecraft/server/network/ServerPlayNetworkHandler clampVertical (D)D
 accessible method net/minecraft/entity/LivingEntity isImmobile ()Z
+accessible field net/minecraft/entity/passive/AbstractHorseEntity ownerReference Lnet/minecraft/entity/LazyEntityReference;

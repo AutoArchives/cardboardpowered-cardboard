@@ -139,7 +139,7 @@ public class CardboardChunkSnapshot implements ChunkSnapshot {
         Preconditions.checkState(hmap != null, "ChunkSnapshot created without height map. Please call getSnapshot with includeMaxblocky=true");
         validateChunkCoordinates(x, 0, z);
 
-        return hmap.method_35334(x, z); // = getHighestTaken(x, z);
+        return hmap.getOneLower(x, z); // = getHighestTaken(x, z);
     }
 
     @Override
