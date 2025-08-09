@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit.inventory;
 import com.destroystokyo.paper.inventory.meta.ArmorStandMeta;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.ComponentType;
@@ -49,19 +50,19 @@ implements ArmorStandMeta {
         CraftMetaArmorStand.getOrEmpty(tag, ENTITY_TAG).ifPresent(nbt -> {
             this.entityTag = nbt.copyNbt();
             if (this.entityTag.contains(CraftMetaArmorStand.INVISIBLE.NBT)) {
-                this.invisible = this.entityTag.getBoolean(CraftMetaArmorStand.INVISIBLE.NBT);
+                this.invisible = this.entityTag.getBoolean(CraftMetaArmorStand.INVISIBLE.NBT).orElse(this.invisible);
             }
             if (this.entityTag.contains(CraftMetaArmorStand.NO_BASE_PLATE.NBT)) {
-                this.noBasePlate = this.entityTag.getBoolean(CraftMetaArmorStand.NO_BASE_PLATE.NBT);
+                this.noBasePlate = this.entityTag.getBoolean(CraftMetaArmorStand.NO_BASE_PLATE.NBT).orElse(this.noBasePlate);
             }
             if (this.entityTag.contains(CraftMetaArmorStand.SHOW_ARMS.NBT)) {
-                this.showArms = this.entityTag.getBoolean(CraftMetaArmorStand.SHOW_ARMS.NBT);
+                this.showArms = this.entityTag.getBoolean(CraftMetaArmorStand.SHOW_ARMS.NBT).orElse(this.showArms);
             }
             if (this.entityTag.contains(CraftMetaArmorStand.SMALL.NBT)) {
-                this.small = this.entityTag.getBoolean(CraftMetaArmorStand.SMALL.NBT);
+                this.small = this.entityTag.getBoolean(CraftMetaArmorStand.SMALL.NBT).orElse(this.small);
             }
             if (this.entityTag.contains(CraftMetaArmorStand.MARKER.NBT)) {
-                this.marker = this.entityTag.getBoolean(CraftMetaArmorStand.MARKER.NBT);
+                this.marker = this.entityTag.getBoolean(CraftMetaArmorStand.MARKER.NBT).orElse(this.marker);
             }
         });
     }
@@ -79,7 +80,10 @@ implements ArmorStandMeta {
     void deserializeInternal(NbtCompound tag, Object context) {
         super.deserializeInternal(tag, context);
         if (tag.contains(CraftMetaArmorStand.ENTITY_TAG.NBT)) {
-            this.entityTag = tag.getCompound(CraftMetaArmorStand.ENTITY_TAG.NBT);
+        	Optional<NbtCompound> opt = tag.getCompound(CraftMetaArmorStand.ENTITY_TAG.NBT);
+        	if (opt.isPresent()) {
+        		this.entityTag = opt.get();
+        	}
         }
     }
 
