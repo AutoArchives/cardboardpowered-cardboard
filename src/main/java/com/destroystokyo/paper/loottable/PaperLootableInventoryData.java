@@ -2,6 +2,11 @@ package com.destroystokyo.paper.loottable;
 
 import com.destroystokyo.paper.loottable.LootableInventoryReplenishEvent;
 import com.destroystokyo.paper.loottable.PaperLootableInventory;
+import com.mojang.datafixers.kinds.App;
+import com.mojang.datafixers.kinds.Applicative;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+
 import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.interfaces.IMixinEntity;
 
@@ -16,6 +21,10 @@ import javax.annotation.Nullable;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
+import net.minecraft.util.Uuids;
+
 import org.bukkit.entity.Player;
 import org.bukkit.loot.LootTable;
 
@@ -95,7 +104,36 @@ public class PaperLootableInventoryData {
         }
         */
     }
+    
+    private static final String ROOT = "Paper.LootableData";
+    private static final String LAST_FILL = "lastFill";
+    private static final String NEXT_REFILL = "nextRefill";
+    private static final String NUM_REFILLS = "numRefills";
+    private static final String LOOTED_PLAYERS = "lootedPlayers";
+    
+    public void loadNbt(ReadView input) {
+        ReadView data = input.getReadView(ROOT);
+        this.lastFill = data.getLong(LAST_FILL, -1L);
+        this.nextRefill = data.getLong(NEXT_REFILL, -1L);
+        this.numRefills = data.getInt(NUM_REFILLS, 0);
+        ReadView.TypedListReadView<SerializedLootedPlayerEntry> list = data.getTypedListView(LOOTED_PLAYERS, SerializedLootedPlayerEntry.CODEC);
+        if (!list.isEmpty()) {
+            this.lootedPlayers = new HashMap<UUID, Long>();
+            list.forEach(serializedLootedPlayerEntry -> this.lootedPlayers.put(serializedLootedPlayerEntry.uuid, serializedLootedPlayerEntry.time));
+        }
+    }
+    
+    record SerializedLootedPlayerEntry(UUID uuid, long time) {
+        public static final Codec<SerializedLootedPlayerEntry> CODEC =
+        		RecordCodecBuilder.create(instance -> 
+        			instance.group(
+        					Uuids.INT_STREAM_CODEC.fieldOf("UUID").forGetter(SerializedLootedPlayerEntry::uuid),
+        					Codec.LONG.optionalFieldOf("Time", 0L).forGetter(SerializedLootedPlayerEntry::time)
+        			)
+        			.apply(instance, SerializedLootedPlayerEntry::new));
+    }
 
+    /*
     public void loadNbt(NbtCompound base) {
         if (!base.contains("Paper.LootableData", 10)) {
             return;
@@ -122,7 +160,31 @@ public class PaperLootableInventoryData {
             }
         }
     }
+    */
+    
+    public void saveNbt(WriteView output) {
+        WriteView data = output.get(ROOT);
+        if (this.nextRefill != -1L) {
+            data.putLong(NEXT_REFILL, this.nextRefill);
+        }
+        if (this.lastFill != -1L) {
+            data.putLong(LAST_FILL, this.lastFill);
+        }
+        if (this.numRefills != 0) {
+            data.putInt(NUM_REFILLS, this.numRefills);
+        }
+        if (this.lootedPlayers != null && !this.lootedPlayers.isEmpty()) {
+            WriteView.ListAppender<SerializedLootedPlayerEntry> list = data.getListAppender(LOOTED_PLAYERS, SerializedLootedPlayerEntry.CODEC);
+            for (Map.Entry<UUID, Long> entry : this.lootedPlayers.entrySet()) {
+                list.add(new SerializedLootedPlayerEntry(entry.getKey(), entry.getValue()));
+            }
+        }
+        if (data.isEmpty()) {
+            output.remove(ROOT);
+        }
+    }
 
+    /*
     public void saveNbt(NbtCompound base) {
         NbtCompound comp = new NbtCompound();
         if (this.nextRefill != -1L) {
@@ -148,6 +210,7 @@ public class PaperLootableInventoryData {
             base.put("Paper.LootableData", comp);
         }
     }
+    */
 
     void setPlayerLootedState(UUID player, boolean looted) {
         if (looted && this.lootedPlayers == null) {
