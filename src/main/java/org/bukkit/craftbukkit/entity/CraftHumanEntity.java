@@ -2,6 +2,8 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+import com.mojang.logging.LogUtils;
+
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinScreenHandler;
@@ -16,6 +18,7 @@ import net.minecraft.block.EnchantingTableBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.ItemCooldownManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket;
@@ -28,7 +31,10 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerListener;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.NbtReadView;
 import net.minecraft.util.Arm;
+import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import org.bukkit.GameMode;
@@ -52,11 +58,12 @@ import org.cardboardpowered.impl.inventory.CardboardPlayerInventory;
 import org.cardboardpowered.impl.inventory.recipe.RecipeInterface;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
+import org.slf4j.Logger;
 import org.bukkit.craftbukkit.inventory.CraftContainer;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.Entity;
@@ -130,6 +137,8 @@ import net.minecraft.util.math.BlockPos;
 
 public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
+	private static final Logger LOGGER = LogUtils.getLogger();
+	
     public void openSign(Sign sign, Side side) {
         CardboardSign.openSign(sign, (CraftPlayer)this, side);
     }
@@ -242,19 +251,23 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
     }
 
     @Override
-    public org.bukkit.entity.Entity getShoulderEntityLeft() {
-        if (!getHandle().getShoulderEntityLeft().isEmpty()) {
-            Optional<net.minecraft.entity.Entity> shoulder = net.minecraft.entity.EntityType.getEntityFromNbt(getHandle().getShoulderEntityLeft(), getHandle().getWorld(), net.minecraft.entity.SpawnReason.LOAD);
-            return (!shoulder.isPresent()) ? null : ((IMixinEntity)shoulder.get()).getBukkitEntity();
+    public Entity getShoulderEntityLeft() {
+        if (!this.getHandle().getShoulderEntityLeft().isEmpty()) {
+            try (ErrorReporter.Logging scopedCollector = new ErrorReporter.Logging(this.getHandle().getErrorReporterContext(), LOGGER);){
+                Entity entity = net.minecraft.entity.EntityType.getEntityFromData(NbtReadView.create(scopedCollector.makeChild(() -> ".shoulder"), this.getHandle().getRegistryManager(), this.getHandle().getShoulderEntityLeft()), this.getHandle().getWorld(), SpawnReason.LOAD).map(net.minecraft.entity.Entity::getBukkitEntity).orElse(null);
+                return entity;
+            }
         }
         return null;
     }
 
     @Override
-    public org.bukkit.entity.Entity getShoulderEntityRight() {
-        if (!getHandle().getShoulderEntityRight().isEmpty()) {
-            Optional<net.minecraft.entity.Entity> shoulder = net.minecraft.entity.EntityType.getEntityFromNbt(getHandle().getShoulderEntityRight(), getHandle().getWorld(), net.minecraft.entity.SpawnReason.LOAD);
-            return (!shoulder.isPresent()) ? null : ((IMixinEntity)shoulder.get()).getBukkitEntity();
+    public Entity getShoulderEntityRight() {
+        if (!this.getHandle().getShoulderEntityRight().isEmpty()) {
+            try (ErrorReporter.Logging scopedCollector = new ErrorReporter.Logging(this.getHandle().getErrorReporterContext(), LOGGER);){
+                Entity entity = net.minecraft.entity.EntityType.getEntityFromData(NbtReadView.create(scopedCollector.makeChild(() -> ".shoulder"), this.getHandle().getRegistryManager(), this.getHandle().getShoulderEntityRight()), this.getHandle().getWorld(), SpawnReason.LOAD).map(net.minecraft.entity.Entity::getBukkitEntity).orElse(null);
+                return entity;
+            }
         }
         return null;
     }
@@ -871,17 +884,15 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 	// Paper start - Potential bed api
     @Override
     public Location getPotentialRespawnLocation() {
-        ServerPlayerEntity handle = (ServerPlayerEntity) getHandle();
-        BlockPos bed = handle.getSpawnPointPosition();
-        if (bed == null) {
+    	ServerPlayerEntity.Respawn respawnConfig = ((ServerPlayerEntity)this.getHandle()).getRespawn();
+        if (respawnConfig == null) {
             return null;
         }
-
-        net.minecraft.server.world.ServerWorld worldServer = handle.getServer().getWorld(handle.getSpawnPointDimension());
-        if (worldServer == null) {
+        ServerWorld level = ((ServerPlayerEntity)this.getHandle()).getServer().getWorld(respawnConfig.dimension());
+        if (level == null) {
             return null;
         }
-        return new Location(worldServer.getWorld(), bed.getX(), bed.getY(), bed.getZ());
+        return CraftLocation.toBukkit(respawnConfig.pos(), level.getWorld());
     }
     // Paper end
 

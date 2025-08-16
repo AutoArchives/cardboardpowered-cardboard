@@ -203,6 +203,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity.RespawnPos;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
@@ -693,7 +694,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void loadData() {
-        ((IMixinMinecraftServer)CraftServer.server).getSaveHandler_BF().loadPlayerData(nms);
+        ((IMixinMinecraftServer)CraftServer.server).getSaveHandler_BF().loadPlayerData(nms, ErrorReporter.EMPTY);
     }
 
     @Override
@@ -1505,7 +1506,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public Location getBedSpawnLocation() {
-        World world = ((IMixinWorld)getHandle().getServer().getWorld(getHandle().getSpawnPointDimension())).getCraftWorld();
+        /*
+    	World world = ((IMixinWorld)getHandle().getServer().getWorld(getHandle().getSpawnPointDimension())).getCraftWorld();
         BlockPos bed = getHandle().getSpawnPointPosition();
 
         if (world != null && bed != null) {
@@ -1515,7 +1517,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
                 return new Location(world, vec.x, vec.y, vec.z);
             }
         }
-        return null;
+        */
+    	// TODO: test this
+    	return getRespawnLocation(true);
+        //return null;
     }
 
     @Override
@@ -1524,10 +1529,27 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
+    public void setRespawnLocation(Location location) {
+        this.setRespawnLocation(location, false);
+    }
+
+    @Override
     public void setBedSpawnLocation(Location location, boolean override) {
+        this.setRespawnLocation(location, override);
+    }
+
+    @Override
+    public void setRespawnLocation(Location location, boolean override) {
         if (location == null) {
-            getHandle().setSpawnPoint(null, null, 0, override, false);
-        } else getHandle().setSpawnPoint(((CraftWorld) location.getWorld()).getHandle().getRegistryKey(), new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()), location.getYaw(), override, false);
+            this.getHandle().setSpawnPoint(null, false/*, PlayerSetSpawnEvent.Cause.PLUGIN*/);
+        } else {
+            this.getHandle().setSpawnPoint(
+            		new ServerPlayerEntity.Respawn(
+            				((CraftWorld)location.getWorld()).getHandle().getRegistryKey(),
+            				CraftLocation.toBlockPosition(location), location.getYaw(), override
+            		),
+            		false/*, PlayerSetSpawnEvent.Cause.PLUGIN*/);
+        }
     }
 
     public void setFirstPlayed(long modified) {
@@ -2565,16 +2587,25 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
 	@Override
     public Location getRespawnLocation() {
-        Optional<Vec3d> spawnLoc;
-        ServerWorld world = this.getHandle().getServer().getWorld(this.getHandle().getSpawnPointDimension());
-        BlockPos bed = this.getHandle().getSpawnPointPosition();
-        if (world != null && bed != null && (spawnLoc = ServerPlayerEntity.findRespawnPosition(world, bed, this.getHandle().getSpawnAngle(), this.getHandle().isSpawnForced(), true).map(RespawnPos::pos)).isPresent()) {
-            Vec3d vec = spawnLoc.get();
-            return CraftLocation.toBukkit(vec, (World)world.getWorld(), this.getHandle().getSpawnAngle(), 0.0f);
+        return getRespawnLocation(false);
+    }
+	
+	public Location getRespawnLocation(boolean loadLocationAndValidate) {
+        ServerPlayerEntity.Respawn respawnConfig = this.getHandle().getRespawn();
+        if (respawnConfig == null) {
+            return null;
         }
-        return null;
+        ServerWorld world = this.getHandle().getServer().getWorld(respawnConfig.dimension());
+        if (world == null) {
+            return null;
+        }
+        if (!loadLocationAndValidate) {
+            return CraftLocation.toBukkit(respawnConfig.pos(), (World)world.getWorld(), respawnConfig.angle(), 0.0f);
+        }
+        return ServerPlayerEntity.findRespawnPosition(world, respawnConfig, false).map(pos -> CraftLocation.toBukkit(pos.pos(), (World)world.getWorld(), pos.yaw(), 0.0f)).orElse(null);
     }
 
+	/*
 	@Override
 	public void setRespawnLocation(Location location) {
         this.setRespawnLocation(location, false);
@@ -2588,6 +2619,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             this.getHandle().setSpawnPoint(((CraftWorld)location.getWorld()).getHandle().getRegistryKey(), CraftLocation.toBlockPosition(location), location.getYaw(), override, false);
         }
     }
+    */
 
 	@Override
 	public void sendPotionEffectChange(@NotNull LivingEntity entity, @NotNull PotionEffect effect) {

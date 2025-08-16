@@ -37,7 +37,7 @@ public class CardboardPlayerInventory extends CraftInventory implements org.bukk
 
     @Override
     public ItemStack getItemInMainHand() {
-        return CraftItemStack.asCraftMirror(getInventory().getMainHandStack());
+        return CraftItemStack.asCraftMirror(getInventory().getSelectedStack());
     }
 
     @Override
@@ -47,7 +47,7 @@ public class CardboardPlayerInventory extends CraftInventory implements org.bukk
 
     @Override
     public ItemStack getItemInOffHand() {
-        return CraftItemStack.asCraftMirror(getInventory().offHand.get(0));
+        return CraftItemStack.asCraftMirror(this.getInventory().equipment.get(net.minecraft.entity.EquipmentSlot.OFFHAND));
     }
 
     @Override
@@ -136,13 +136,14 @@ public class CardboardPlayerInventory extends CraftInventory implements org.bukk
 
     @Override
     public int getHeldItemSlot() {
-        return getInventory().selectedSlot;
+        return getInventory().getSelectedSlot();
     }
 
     @Override
     public void setHeldItemSlot(int slot) {
         Validate.isTrue(slot >= 0 && slot < PlayerInventory.getHotbarSize(), "Slot is not between 0 and 8 inclusive");
-        this.getInventory().selectedSlot = slot;
+        // this.getInventory().selectedSlot = slot;
+        this.getInventory().setSelectedSlot(slot);
         ((CraftPlayer) this.getHolder()).getHandle().networkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(slot));
     }
 

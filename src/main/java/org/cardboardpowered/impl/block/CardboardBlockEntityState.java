@@ -1,8 +1,10 @@
 package org.cardboardpowered.impl.block;
 
 import org.cardboardpowered.impl.world.CraftWorld;
+import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
+import com.mojang.logging.LogUtils;
 
 import me.isaiah.common.ICommonMod;
 import me.isaiah.common.cmixin.IMixinBlockEntity;
@@ -11,19 +13,29 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.ComponentMap;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.storage.NbtReadView;
+import net.minecraft.storage.NbtWriteView;
+import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.WorldAccess;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.TileState;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.persistence.PersistentDataContainer;
 
 public abstract class CardboardBlockEntityState<T extends BlockEntity> extends CraftBlockState implements TileState {
 
+	private static final Logger LOGGER = LogUtils.getLogger();
+	
     // private final Class<T> tileEntityClass;
     private final T tileEntity;
     private final T snapshot;
@@ -55,10 +67,17 @@ public abstract class CardboardBlockEntityState<T extends BlockEntity> extends C
         this.snapshot = this.tileEntity;
         this.loadData(state.getSnapshotNBT());
     }
-    
-    public void loadData(NbtCompound nbtTagCompound) {
-        ((BlockEntity)this.snapshot).read(nbtTagCompound, ICommonMod.getIServer().getMinecraft().getRegistryManager());
+
+    public void loadData(NbtCompound tag) {
+        try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "CraftBlockEntityState@" + this.getPosition().toShortString(), LOGGER);){
+            ((BlockEntity)this.snapshot).read(NbtReadView.create(problemReporter, ICommonMod.getIServer().getMinecraft().getRegistryManager(), tag));
+        }
         this.load(this.snapshot);
+    }
+    
+    public DynamicRegistryManager getRegistryAccess() {
+        WorldAccess worldHandle = this.getWorldHandle();
+        return worldHandle != null ? worldHandle.getRegistryManager() : CraftRegistry.getMinecraftRegistry();
     }
     
     /*
@@ -118,6 +137,21 @@ public abstract class CardboardBlockEntityState<T extends BlockEntity> extends C
         return nbt;
     }
     
+    /*
+    public NbtCompound getSnapshotCustomNbtOnly() {
+        this.applyTo(this.snapshot);
+        try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "CraftBlockEntityState@" + this.getPosition().toShortString(), LOGGER);){
+            NbtWriteView output = NbtWriteView.createWrappingWithContext(problemReporter, this.getRegistryAccess(), ((BlockEntity)this.snapshot).createComponentlessNbt(this.getRegistryAccess()));
+            ((BlockEntity)this.snapshot).removeFromCopiedStackData(output);
+            if (!output.isEmpty()) {
+                ((BlockEntity)this.snapshot).writeId(output);
+            }
+            NbtCompound nbtCompound = output.getNbt();
+            return nbtCompound;
+        }
+    }
+    */
+
     public ComponentMap collectComponents() {
         return ((BlockEntity)this.snapshot).createComponentMap();
     }

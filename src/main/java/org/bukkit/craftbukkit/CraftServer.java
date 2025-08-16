@@ -962,9 +962,11 @@ public class CraftServer implements Server {
 					source.sendError(Texts.toText(e.getRawMessage()));
 					if (e.getInput() != null && e.getCursor() >= 0) {
 						int i = Math.min(e.getInput().length(), e.getCursor());
-						MutableText mutableText = Text.empty().formatted(Formatting.GRAY).styled((style) -> {
+						MutableText mutableText = Text.empty().formatted(Formatting.GRAY);
+								/*.styled((style) -> {
 							return style.withClickEvent(new ClickEvent(Action.SUGGEST_COMMAND, "/" + commandLine));
 						});
+						*/
 						if (i > 10) {
 							mutableText.append(ScreenTexts.ELLIPSIS);
 						}
