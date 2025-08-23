@@ -539,3 +539,4 @@ accessible method net/minecraft/entity/passive/ParrotEntity setVariant (Lnet/min
 accessible field net/minecraft/entity/ItemEntity thrower Lnet/minecraft/entity/LazyEntityReference;
 accessible field net/minecraft/entity/player/PlayerInventory main Lnet/minecraft/util/collection/DefaultedList;
 accessible method net/minecraft/server/network/ServerPlayerEntity findRespawnPosition (Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/server/network/ServerPlayerEntity$Respawn;Z)Ljava/util/Optional;
+accessible field net/minecraft/entity/projectile/PersistentProjectileEntity damage D
