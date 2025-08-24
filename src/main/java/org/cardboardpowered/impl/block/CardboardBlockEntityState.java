@@ -128,6 +128,7 @@ public abstract class CardboardBlockEntityState<T extends BlockEntity> extends C
         this.load(this.snapshot);
     }
     
+    /*
     public NbtCompound getSnapshotCustomNbtOnly() {
         this.applyTo(this.snapshot);
         
@@ -136,7 +137,34 @@ public abstract class CardboardBlockEntityState<T extends BlockEntity> extends C
         ((BlockEntity)this.snapshot).removeFromCopiedStackNbt(nbt);
         return nbt;
     }
-    
+    */
+
+    public NbtCompound getSnapshotCustomNbtOnly() {
+        this.applyTo(this.snapshot);
+        try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "CraftBlockEntityState@" + this.getPosition().toShortString(), LOGGER);){
+
+
+        	NbtWriteView output = /*NbtWriteView.*/createWrappingWithContext(problemReporter, this.getRegistryAccess(), ((BlockEntity)this.snapshot).createComponentlessNbt(this.getRegistryAccess()));
+            ((BlockEntity)this.snapshot).removeFromCopiedStackData(output);
+            if (!output.isEmpty()) {
+                ((BlockEntity)this.snapshot).writeId(output);
+            }
+            NbtCompound nbtCompound = output.getNbt();
+            return nbtCompound;
+        }
+    }
+
+    // ErrorReporter.Logging, DynamicRegistryManager, NbtCompound
+    // Paper start - utility methods
+	public static NbtWriteView createWrappingWithContext(
+			final ErrorReporter.Logging problemReporter,
+			final DynamicRegistryManager lookup,
+			final NbtCompound compoundTag
+		) {
+            return new NbtWriteView(problemReporter, lookup.getOps(NbtOps.INSTANCE), compoundTag);
+        }
+	// Paper end - utility methods
+
     /*
     public NbtCompound getSnapshotCustomNbtOnly() {
         this.applyTo(this.snapshot);

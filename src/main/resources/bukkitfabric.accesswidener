@@ -540,3 +540,11 @@ accessible field net/minecraft/entity/ItemEntity thrower Lnet/minecraft/entity/L
 accessible field net/minecraft/entity/player/PlayerInventory main Lnet/minecraft/util/collection/DefaultedList;
 accessible method net/minecraft/server/network/ServerPlayerEntity findRespawnPosition (Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/server/network/ServerPlayerEntity$Respawn;Z)Ljava/util/Optional;
 accessible field net/minecraft/entity/projectile/PersistentProjectileEntity damage D
+accessible method net/minecraft/storage/NbtWriteView <init> (Lnet/minecraft/util/ErrorReporter;Lcom/mojang/serialization/DynamicOps;Lnet/minecraft/nbt/NbtCompound;)V
+accessible method net/minecraft/block/entity/BlockEntity writeId (Lnet/minecraft/storage/WriteView;)V
+accessible field net/minecraft/entity/passive/WolfEntity furWet Z
+accessible method net/minecraft/entity/passive/WolfEntity getVariant ()Lnet/minecraft/registry/entry/RegistryEntry;
+accessible method net/minecraft/entity/passive/WolfEntity setVariant (Lnet/minecraft/registry/entry/RegistryEntry;)V
+accessible field net/minecraft/entity/player/PlayerInventory selectedSlot I
+accessible field net/minecraft/entity/LivingEntity attackingPlayer Lnet/minecraft/entity/LazyEntityReference;
+accessible field net/minecraft/component/type/BlockPredicatesComponent predicates Ljava/util/List;
