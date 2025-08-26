@@ -35,11 +35,11 @@ public class MixinLoseJobOnSiteLossTask {
             VillagerData lv = entity.getVillagerData();
             if (lv.profession() != VillagerProfession.NONE && lv.profession() != VillagerProfession.NITWIT && entity.getExperience() == 0 && lv.level() <= 1) {
                 // CraftBukkit start
-                VillagerCareerChangeEvent event = CraftEventFactory.callVillagerCareerChangeEvent(entity, CraftVillager.nmsToBukkitProfession(VillagerProfession.NONE), VillagerCareerChangeEvent.ChangeReason.LOSING_JOB);
+                VillagerCareerChangeEvent event = CraftEventFactory.callVillagerCareerChangeEvent(entity, CraftVillager.CraftProfession.minecraftHolderToBukkit(world.getRegistryManager().getEntryOrThrow(VillagerProfession.NONE)), VillagerCareerChangeEvent.ChangeReason.LOSING_JOB);
                 if (event.isCancelled()) {
                     return false;
                 }
-                entity.setVillagerData(entity.getVillagerData().withProfession(CraftVillager.bukkitToNmsProfession(event.getProfession())));
+                entity.setVillagerData(entity.getVillagerData().withProfession(CraftVillager.CraftProfession.bukkitToMinecraftHolder(event.getProfession())));
                 // CraftBukkit end
                 entity.reinitializeBrain(world);
                 return true;

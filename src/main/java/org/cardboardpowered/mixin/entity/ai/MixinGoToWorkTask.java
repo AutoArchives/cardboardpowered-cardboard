@@ -37,7 +37,7 @@ public class MixinGoToWorkTask {
             ci.cancel();
         }
 
-        villagerEntity.setVillagerData(villagerEntity.getVillagerData().withProfession(CraftVillager.bukkitToNmsProfession(event.getProfession())));
+        villagerEntity.setVillagerData(villagerEntity.getVillagerData().withProfession(CraftVillager.CraftProfession.bukkitToMinecraftHolder(event.getProfession())));
         // CraftBukkit end
     }
     
