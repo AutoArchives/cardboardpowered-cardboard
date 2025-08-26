@@ -32,25 +32,32 @@ public final class CraftPersistentDataContainer implements PersistentDataContain
         this.registry = registry;
         this.adapterContext = new CraftPersistentDataAdapterContext(this.registry);
     }
+    
+    public NbtElement getTag(String key) {
+        return this.customDataTags.get(key);
+    }
 
     @Override
     public <T, Z> void set(NamespacedKey key, PersistentDataType<T, Z> type, Z value) {
-        this.customDataTags.put(key.toString(), registry.wrap(type.getPrimitiveType(), type.toPrimitive(value, adapterContext)));
+        this.customDataTags.put(key.toString(), this.registry.wrap(type, type.toPrimitive(value, (PersistentDataAdapterContext)this.adapterContext)));
     }
 
     @Override
-    public <T, Z> boolean has(NamespacedKey key, PersistentDataType<T, Z> type) {
-        NbtElement value = this.customDataTags.get(key.toString());
-        if (value == null) return false;
-        return registry.isInstanceOf(type.getPrimitiveType(), value);
+    public <P, C> boolean has(NamespacedKey key, PersistentDataType<P, C> type) {
+        NbtElement value = this.getTag(key.toString());
+        if (value == null) {
+            return false;
+        }
+        return this.registry.isInstanceOf(type, value);
     }
 
     @Override
-    public <T, Z> Z get(NamespacedKey key, PersistentDataType<T, Z> type) {
-        NbtElement value = this.customDataTags.get(key.toString());
-        if (value == null) return null;
-
-        return type.fromPrimitive(registry.extract(type.getPrimitiveType(), value), adapterContext);
+    public <P, C> C get(NamespacedKey key, PersistentDataType<P, C> type) {
+        NbtElement value = this.getTag(key.toString());
+        if (value == null) {
+            return null;
+        }
+        return (C)type.fromPrimitive(this.registry.extract(type, value), (PersistentDataAdapterContext)this.adapterContext);
     }
 
     @Override
@@ -114,8 +121,8 @@ public final class CraftPersistentDataContainer implements PersistentDataContain
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String, Object> serialize() {
-        return (Map<String, Object>) CraftNBTTagConfigSerializer.serialize(toTagCompound());
+    public String serialize() {
+        return CraftNBTTagConfigSerializer.serialize(toTagCompound());
     }
 
     @SuppressWarnings("deprecation")

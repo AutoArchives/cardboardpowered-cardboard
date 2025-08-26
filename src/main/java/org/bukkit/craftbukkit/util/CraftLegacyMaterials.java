@@ -326,7 +326,13 @@ public class CraftLegacyMaterials {
                             }
 
                             Preconditions.checkState(!properties.getString(dataKey).isEmpty(), "Empty data string");
-                            Optional opt = state.parse(properties.getString(dataKey));
+                            
+                            Optional<String> optStr = properties.getString(dataKey);
+                            
+                            if (!optStr.isPresent())
+                                throw new IllegalStateException("No state value " + properties.getString(dataKey) + " for " + dataKey);
+                            
+                            Optional opt = state.parse( optStr.get() );
                             if (!opt.isPresent())
                                 throw new IllegalStateException("No state value " + properties.getString(dataKey) + " for " + dataKey);
                             blockData = blockData.with(state, (Comparable) opt.get());

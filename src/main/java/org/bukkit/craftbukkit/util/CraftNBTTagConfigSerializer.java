@@ -8,22 +8,103 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.nbt.AbstractNbtList;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtDouble;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtInt;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.nbt.visitor.NbtOrderedStringFormatter;
 
 public class CraftNBTTagConfigSerializer {
 
     private static final Pattern ARRAY = Pattern.compile("^\\[.*]");
     private static final Pattern INTEGER = Pattern.compile("[-+]?(?:0|[1-9][0-9]*)?i", Pattern.CASE_INSENSITIVE);
     private static final Pattern DOUBLE = Pattern.compile("[-+]?(?:[0-9]+[.]?|[0-9]*[.][0-9]+)(?:e[-+]?[0-9]+)?d", Pattern.CASE_INSENSITIVE);
-    private static final StringNbtReader MOJANGSON_PARSER = new StringNbtReader(new StringReader(""));
-
+    // private static final StringNbtReader MOJANGSON_PARSER = new StringNbtReader(new StringReader(""));
+    private static final StringNbtReader<NbtElement> MOJANGSON_PARSER = StringNbtReader.fromOps(NbtOps.INSTANCE);
+    
+    
+    public static String serialize(NbtElement tag) {
+        NbtOrderedStringFormatter snbtVisitor = new NbtOrderedStringFormatter();
+        return snbtVisitor.apply(tag);
+    }
+    
+    public static NbtElement deserialize(Object object) {
+        if (object instanceof String) {
+            String snbtString = (String)object;
+            try {
+                return StringNbtReader.readCompound(snbtString);
+            }
+            catch (CommandSyntaxException e2) {
+                throw new RuntimeException("Failed to deserialise nbt", e2);
+            }
+        }
+        return CraftNBTTagConfigSerializer.internalLegacyDeserialization(object);
+    }
+    
+    private static NbtElement internalLegacyDeserialization(@NotNull Object object) {
+        if (object instanceof Map) {
+            NbtCompound compound = new NbtCompound();
+            for (Map.Entry entry : ((Map<String, Object>)object).entrySet()) {
+                compound.put((String)entry.getKey(), CraftNBTTagConfigSerializer.internalLegacyDeserialization(entry.getValue()));
+            }
+            return compound;
+        }
+        if (object instanceof List) {
+            List list = (List)object;
+            if (list.isEmpty()) {
+                return new NbtList();
+            }
+            NbtList tagList = new NbtList();
+            for (Object tag : list) {
+                tagList.add(CraftNBTTagConfigSerializer.internalLegacyDeserialization(tag));
+            }
+            return tagList;
+        }
+        if (object instanceof String) {
+            String string = (String)object;
+            if (ARRAY.matcher(string).matches()) {
+                try {
+                    return MOJANGSON_PARSER.readAsArgument(new StringReader(string));
+                }
+                catch (CommandSyntaxException e2) {
+                    throw new RuntimeException("Could not deserialize found list ", e2);
+                }
+            }
+            if (INTEGER.matcher(string).matches()) {
+                return NbtInt.of(Integer.parseInt(string.substring(0, string.length() - 1)));
+            }
+            if (DOUBLE.matcher(string).matches()) {
+                return NbtDouble.of(Double.parseDouble(string.substring(0, string.length() - 1)));
+            }
+            try {
+                NbtElement tag = MOJANGSON_PARSER.readAsArgument(new StringReader(string));
+                if (tag instanceof NbtInt) {
+                    return NbtString.of(tag.toString());
+                }
+                if (tag instanceof NbtDouble) {
+                    return NbtString.of(String.valueOf(((NbtDouble)tag).doubleValue()));
+                }
+                if (tag instanceof NbtString) {
+                    return NbtString.of(string);
+                }
+                return tag;
+            }
+            catch (CommandSyntaxException commandSyntaxException) {
+                throw new RuntimeException("Could not deserialize found primitive ", commandSyntaxException);
+            }
+        }
+        throw new RuntimeException("Could not deserialize Tag");
+    }
+    
+    /*
     public static Object serialize(NbtElement base) {
         if (base instanceof NbtCompound) {
             Map<String, Object> innerMap = new HashMap<>();
@@ -71,6 +152,6 @@ public class CraftNBTTagConfigSerializer {
             }
         }
         throw new RuntimeException("Could not deserialize Tag");
-    }
+    }*/
 
 }

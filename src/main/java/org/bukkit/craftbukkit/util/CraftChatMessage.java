@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit.util;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.gson.JsonParseException;
+import com.mojang.serialization.JavaOps;
 
 import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.minecraft.text.ClickEvent;
@@ -14,6 +15,8 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.dynamic.Codecs;
+
 import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.CraftServer;
 import org.jetbrains.annotations.Nullable;
@@ -163,9 +166,13 @@ public final class CraftChatMessage {
                     break;
                 case 2:
                     if (!(match.startsWith("http://") || match.startsWith("https://"))) match = "http://" + match;
-                    modifier = modifier.withClickEvent(new ClickEvent(Action.OPEN_URL, match));
-                    appendNewComponent(matcher.end(groupId));
-                    modifier = modifier.withClickEvent((ClickEvent) null);
+                    // modifier = modifier.withClickEvent(new ClickEvent(Action.OPEN_URL, match));
+                    Codecs.URI.parse(JavaOps.INSTANCE, match).ifSuccess(uri -> {
+                        this.modifier = this.modifier.withClickEvent(new ClickEvent.OpenUrl(uri));
+                    });
+                    this.appendNewComponent(matcher.end(groupId));
+                    this.modifier = this.modifier.withClickEvent(null);
+                    
                     break;
                 case 3:
                     if (needsAdd) appendNewComponent(index);
@@ -286,8 +293,19 @@ public final class CraftChatMessage {
                 prev.setStyle(modifier);
                 extras.add(prev);
                 MutableText link = Text.literal(matcher.group());
-                Style linkModi = modifier.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, (String)match));
+                
+                
+                Style linkModi = modifier; // .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, (String)match));
+                
                 link.setStyle(linkModi);
+                
+                Codecs.URI.parse(JavaOps.INSTANCE, match).ifSuccess(uri -> {
+                	Style linkModi1 = modifier.withClickEvent(new ClickEvent.OpenUrl(uri));
+                	link.setStyle(linkModi1);
+                });
+                
+                
+                // link.setStyle(linkModi);
                 extras.add(link);
                 pos = matcher.end();
             }

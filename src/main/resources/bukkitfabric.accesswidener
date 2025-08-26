@@ -548,3 +548,5 @@ accessible method net/minecraft/entity/passive/WolfEntity setVariant (Lnet/minec
 accessible field net/minecraft/entity/player/PlayerInventory selectedSlot I
 accessible field net/minecraft/entity/LivingEntity attackingPlayer Lnet/minecraft/entity/LazyEntityReference;
 accessible field net/minecraft/component/type/BlockPredicatesComponent predicates Ljava/util/List;
+accessible method net/minecraft/nbt/NbtList getValueType ()B
+accessible method net/minecraft/nbt/NbtList <init> (Ljava/util/List;)V
