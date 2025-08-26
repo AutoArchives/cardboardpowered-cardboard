@@ -14,6 +14,7 @@ import org.cardboardpowered.interfaces.IMixinInventory;
 import org.cardboardpowered.interfaces.IMixinPlayerInventory;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -77,7 +78,8 @@ public class MixinPlayerInventory implements IMixinInventory, IMixinPlayerInvent
                 remains -= (itemstack1.getMaxCount() < getMaxStackSize() ? itemstack1.getMaxCount() : getMaxStackSize()) - itemstack1.getCount();
             if (remains <= 0) return itemstack.getCount();
         }
-        ItemStack offhandItemStack = get().getStack(get().main.size() + get().armor.size());
+
+        ItemStack offhandItemStack = get().equipment.get(EquipmentSlot.OFFHAND); // get().getStack(get().main.size() + get().armor.size());
         if (get().canStackAddMore(offhandItemStack, itemstack))
             remains -= (offhandItemStack.getMaxCount() < get().getMaxCountPerStack() ? offhandItemStack.getMaxCount() : get().getMaxCountPerStack()) - offhandItemStack.getCount();
         if (remains <= 0) return itemstack.getCount();

@@ -36,32 +36,32 @@ public class CardboardFishTropical extends CardboardFish implements TropicalFish
 
     @Override
     public DyeColor getPatternColor() {
-        return getPatternColor(getHandle().getVariant().getId());
+    	return getPatternColor(this.getHandle().getTropicalFishVariant());
     }
 
     @Override
     public void setPatternColor(DyeColor color) {
-        getHandle().setVariant(TropicalFishEntity.Variety.fromId(getData(color, getBodyColor(), getPattern())));
+    	this.getHandle().setTropicalFishVariant( getData(color, this.getBodyColor(), this.getPattern()));
     }
 
     @Override
     public DyeColor getBodyColor() {
-        return getBodyColor(getHandle().getVariant().getId());
+    	return getBodyColor(this.getHandle().getTropicalFishVariant());
     }
 
     @Override
     public void setBodyColor(DyeColor color) {
-        getHandle().setVariant(TropicalFishEntity.Variety.fromId(getData(getPatternColor(), color, getPattern())));
+    	 this.getHandle().setTropicalFishVariant( getData(this.getPatternColor(), color, this.getPattern()));
     }
 
     @Override
     public Pattern getPattern() {
-        return getPattern(getHandle().getVariant().getId());
+    	return getPattern(this.getHandle().getTropicalFishVariant());
     }
 
     @Override
     public void setPattern(Pattern pattern) {
-        getHandle().setVariant(TropicalFishEntity.Variety.fromId(getData(getPatternColor(), getBodyColor(), pattern)));
+    	this.getHandle().setTropicalFishVariant( getData(this.getPatternColor(), this.getBodyColor(), pattern));
     }
 
     public static enum CraftPattern {

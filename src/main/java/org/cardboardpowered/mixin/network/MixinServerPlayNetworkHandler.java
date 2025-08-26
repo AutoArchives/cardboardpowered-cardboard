@@ -667,7 +667,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
         HitResult movingobjectposition = ((ServerWorld)this.player.getWorld()).raycast(new RaycastContext(vec3d, vec3d1, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, player));
 
         if (movingobjectposition == null || movingobjectposition.getType() != HitResult.Type.BLOCK)
-            CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_AIR, this.player.inventory.getMainHandStack(), Hand.MAIN_HAND);
+            CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_AIR, this.player.inventory.getSelectedStack(), Hand.MAIN_HAND);
 
         // Arm swing animation
         PlayerAnimationEvent event = new PlayerAnimationEvent(this.getPlayer());

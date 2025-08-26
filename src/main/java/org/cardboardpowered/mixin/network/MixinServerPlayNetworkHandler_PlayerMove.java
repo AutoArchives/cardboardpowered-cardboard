@@ -345,7 +345,10 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                                 Vec3d vec3d = new Vec3d(this.player.getX() - d3, this.player.getY() - d4, this.player.getZ() - d5);
                                 this.player.setMovement(packet.isOnGround(), packet.horizontalCollision(), vec3d);
                                 this.player.handleFall(vec3d.x, vec3d.y, vec3d.z, packet.isOnGround());
-                                this.player.queueBlockCollisionCheck(new Vec3d(d3, d4, d5), this.player.getPos());
+                                
+                                // TODO: 1.21.8: Seems this is gone?
+                                // this.player.queueBlockCollisionCheck(new Vec3d(d3, d4, d5), this.player.getPos());
+                                
                                 this.handleMovement(vec3d);
                                 if (flag1) {
                                     this.player.onLanding();

@@ -18,6 +18,8 @@ import java.util.function.BiFunction;
 import java.util.stream.Stream;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryEntryOwner;
+import net.minecraft.village.VillagerType;
+
 import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
@@ -27,6 +29,7 @@ import org.bukkit.craftbukkit.util.ApiVersion;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Villager.Type;
 import org.jetbrains.annotations.NotNull;
 
 public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
@@ -293,4 +296,10 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
 	public int size() {
 		return this.minecraftRegistry.size();
 	}
+
+	public static <B extends Keyed, M> RegistryEntry<M> bukkitToMinecraftHolder(B bukkit) {
+        Preconditions.checkArgument((bukkit != null ? 1 : 0) != 0);
+        return ((Holderable)bukkit).getHolder();
+    }
+	
 }

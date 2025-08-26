@@ -550,3 +550,11 @@ accessible field net/minecraft/entity/LivingEntity attackingPlayer Lnet/minecraf
 accessible field net/minecraft/component/type/BlockPredicatesComponent predicates Ljava/util/List;
 accessible method net/minecraft/nbt/NbtList getValueType ()B
 accessible method net/minecraft/nbt/NbtList <init> (Ljava/util/List;)V
+accessible field net/minecraft/entity/player/PlayerInventory equipment Lnet/minecraft/entity/EntityEquipment;
+accessible field net/minecraft/entity/ExperienceOrbEntity pickingCount I
+mutable field net/minecraft/entity/ExperienceOrbEntity pickingCount I
+accessible method net/minecraft/entity/passive/LlamaEntity setVariant (Lnet/minecraft/entity/passive/LlamaEntity$Variant;)V
+accessible method net/minecraft/entity/passive/HorseEntity setHorseVariant (Lnet/minecraft/entity/passive/HorseColor;Lnet/minecraft/entity/passive/HorseMarking;)V
+accessible method net/minecraft/entity/passive/TropicalFishEntity getTropicalFishVariant ()I
+accessible method net/minecraft/entity/passive/TropicalFishEntity setTropicalFishVariant (I)V
+accessible method net/minecraft/entity/passive/SalmonEntity setVariant (Lnet/minecraft/entity/passive/SalmonEntity$Variant;)V

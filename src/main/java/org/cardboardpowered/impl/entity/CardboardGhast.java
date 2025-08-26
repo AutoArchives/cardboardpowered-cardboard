@@ -5,7 +5,7 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Ghast;
 
-public class CardboardGhast extends CardboardFlyingEntity implements Ghast {
+public class CardboardGhast extends CraftMob implements Ghast {
 
     public CardboardGhast(CraftServer server, GhastEntity entity) {
         super(server, entity);

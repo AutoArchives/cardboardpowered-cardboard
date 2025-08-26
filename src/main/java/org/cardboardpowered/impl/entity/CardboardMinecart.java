@@ -6,6 +6,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 
+import java.util.Optional;
+
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftServer;
@@ -80,26 +82,12 @@ public class CardboardMinecart extends CraftVehicle implements Minecart {
 
     @Override
     public void setDisplayBlock(MaterialData material) {
-        if (material != null) {
-            BlockState block = CraftMagicNumbers.getBlock(material);
-            this.getHandle().setCustomBlock(block);
-        } else {
-            // Set block to air (default) and set the flag to not have a display block.
-            this.getHandle().setCustomBlock(Blocks.AIR.getDefaultState());
-            this.getHandle().setCustomBlockPresent(false);
-        }
+        this.getHandle().setCustomBlockState(Optional.ofNullable(material).map(CraftMagicNumbers::getBlock));
     }
 
     @Override
     public void setDisplayBlockData(BlockData blockData) {
-        if (blockData != null) {
-            BlockState block = ((CraftBlockData) blockData).getState();
-            this.getHandle().setCustomBlock(block);
-        } else {
-            // Set block to air (default) and set the flag to not have a display block.
-            this.getHandle().setCustomBlock(Blocks.AIR.getDefaultState());
-            this.getHandle().setCustomBlockPresent(false);
-        }
+    	this.getHandle().setCustomBlockState(Optional.ofNullable(blockData).map(data -> ((CraftBlockData)data).getState()));
     }
 
     @Override
@@ -116,7 +104,7 @@ public class CardboardMinecart extends CraftVehicle implements Minecart {
 
     @Override
     public void setDisplayBlockOffset(int offset) {
-        getHandle().setCustomBlockOffset(offset);
+    	this.getHandle().setBlockOffset(offset);
     }
 
     @Override

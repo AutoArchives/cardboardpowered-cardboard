@@ -48,7 +48,7 @@ public class CardboardTntCart extends CardboardMinecart implements ExplosiveMine
 
 	@Override
 	public void ignite() {
-        this.getHandle().prime();
+        this.getHandle().prime(null);
 	}
 
 	@Override

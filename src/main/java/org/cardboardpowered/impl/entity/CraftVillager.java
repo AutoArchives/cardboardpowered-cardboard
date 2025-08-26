@@ -19,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import com.destroystokyo.paper.entity.villager.Reputation;
 import com.google.common.base.Preconditions;
 
+import io.papermc.paper.util.OldEnumHolderable;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.BlockState;
@@ -27,12 +28,40 @@ import net.minecraft.util.math.BlockPos;
 
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.village.TradeOffers;
 import net.minecraft.village.VillagerProfession;
 import net.minecraft.village.VillagerType;
 
 public class CraftVillager extends CraftAbstractVillager implements Villager {
 
+	public static class CraftProfession
+    extends OldEnumHolderable<Villager.Profession, VillagerProfession>
+    implements Villager.Profession {
+        private static int count = 0;
+
+        public static Villager.Profession minecraftHolderToBukkit(RegistryEntry<VillagerProfession> minecraft) {
+            return (Villager.Profession)CraftRegistry.minecraftHolderToBukkit(minecraft, RegistryKeys.VILLAGER_PROFESSION);
+        }
+
+        public static RegistryEntry<VillagerProfession> bukkitToMinecraftHolder(Villager.Profession bukkit) {
+            return CraftRegistry.bukkitToMinecraftHolder(bukkit);
+        }
+
+        public static Villager.Profession minecraftToBukkit(VillagerProfession minecraft) {
+            return (Villager.Profession)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.VILLAGER_PROFESSION);
+        }
+
+        public static VillagerProfession bukkitToMinecraft(Villager.Profession bukkit) {
+            return (VillagerProfession)CraftRegistry.bukkitToMinecraft(bukkit);
+        }
+
+        public CraftProfession(RegistryEntry<VillagerProfession> holder) {
+            super(holder, count++);
+        }
+    }
+	
+	/*
 	public static class CraftProfession
     implements Villager.Profession,
     Handleable<VillagerProfession> {
@@ -96,7 +125,9 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
             return this.getKey().hashCode();
         }
     }
+    */
 
+	/*
 	public static class CraftType
     implements Villager.Type,
     Handleable<VillagerType> {
@@ -160,6 +191,33 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
             return this.getKey().hashCode();
         }
     }
+    */
+	
+	public static class CraftType
+    extends OldEnumHolderable<Villager.Type, VillagerType>
+    implements Villager.Type {
+        private static int count = 0;
+
+        public static Villager.Type minecraftToBukkit(VillagerType minecraft) {
+            return (Villager.Type)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.VILLAGER_TYPE);
+        }
+
+        public static Villager.Type minecraftHolderToBukkit(RegistryEntry<VillagerType> minecraft) {
+            return (Villager.Type)CraftRegistry.minecraftHolderToBukkit(minecraft, RegistryKeys.VILLAGER_TYPE);
+        }
+
+        public static VillagerType bukkitToMinecraft(Villager.Type bukkit) {
+            return (VillagerType)CraftRegistry.bukkitToMinecraft(bukkit);
+        }
+
+        public static RegistryEntry<VillagerType> bukkitToMinecraftHolder(Villager.Type bukkit) {
+            return CraftRegistry.bukkitToMinecraftHolder(bukkit);
+        }
+
+        public CraftType(RegistryEntry<VillagerType> holder) {
+            super(holder, count++);
+        }
+    }
 
 	public CraftVillager(CraftServer server, VillagerEntity entity) {
         super(server, entity);
@@ -182,13 +240,13 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
 
     @Override
     public Profession getProfession() {
-        return nmsToBukkitProfession(getHandle().getVillagerData().profession());
+    	return CraftProfession.minecraftHolderToBukkit(this.getHandle().getVillagerData().profession());
     }
 
     @Override
     public void setProfession(Profession profession) {
         Validate.notNull(profession);
-        getHandle().setVillagerData(getHandle().getVillagerData().withProfession(bukkitToNmsProfession(profession)));
+        this.getHandle().setVillagerData(this.getHandle().getVillagerData().withProfession(CraftProfession.bukkitToMinecraftHolder(profession)));
     }
 
     @Override
@@ -199,7 +257,7 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
     @Override
     public void setVillagerType(Type type) {
         Validate.notNull(type);
-        getHandle().setVillagerData(getHandle().getVillagerData().withType(Registries.VILLAGER_TYPE.get(CraftNamespacedKey.toMinecraft(type.getKey()))));
+        this.getHandle().setVillagerData(this.getHandle().getVillagerData().withType(CraftType.bukkitToMinecraftHolder(type)));
     }
 
     @Override

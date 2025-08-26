@@ -74,14 +74,12 @@ public class ExperienceOrbImpl extends CraftEntity implements ExperienceOrb {
 
 	@Override
 	public int getCount() {
-		// TODO Auto-generated method stub
-		return getHandle().getExperienceAmount();
+		return getHandle().pickingCount;
 	}
 
 	@Override
 	public void setCount(int count) {
-		// TODO Auto-generated method stub
-
+		this.getHandle().pickingCount = count;
 	}
 
 }

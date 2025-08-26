@@ -11,7 +11,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Phantom;
 import org.jetbrains.annotations.NotNull;
 
-public class CardboardPhantom extends CardboardFlying implements Phantom {
+public class CardboardPhantom extends CraftMob implements Phantom {
 
     public CardboardPhantom(CraftServer server, PhantomEntity entity) {
         super(server, entity);
@@ -109,6 +109,7 @@ public class CardboardPhantom extends CardboardFlying implements Phantom {
 
 	@Override
 	public @NotNull Location getAnchorLocation() {
+		// return Nullables.map(this.getHandle().circlingCenter, pos -> CraftLocation.toBukkit(pos, this.getHandle().getWorld()));
 		// TODO Auto-generated method stub
 		return null;
 	}
