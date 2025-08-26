@@ -2,6 +2,8 @@ package org.cardboardpowered.impl.inventory;
 
 import com.google.common.base.Preconditions;
 import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.interfaces.IMixinPlayerInventory;
+
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.UpdateSelectedSlotS2CPacket;
@@ -28,6 +30,11 @@ public class CardboardPlayerInventory extends CraftInventory implements org.bukk
     @Override
     public PlayerInventory getInventory() {
         return (PlayerInventory) inventory;
+    }
+    
+    // Get cast to Cardboard Interface
+    private IMixinPlayerInventory IgetInventory() {
+        return (IMixinPlayerInventory) (PlayerInventory) inventory;
     }
 
     @Override
@@ -189,7 +196,7 @@ public class CardboardPlayerInventory extends CraftInventory implements org.bukk
 
     @Override
     public ItemStack[] getArmorContents() {
-        return asCraftMirror(getInventory().armor);
+        return this.asCraftMirror(this.IgetInventory().getArmorContents());
     }
 
     private void setSlots(ItemStack[] items, int baseSlot, int length) {
@@ -209,17 +216,17 @@ public class CardboardPlayerInventory extends CraftInventory implements org.bukk
 
     @Override
     public void setArmorContents(ItemStack[] items) {
-        setSlots(items, getInventory().main.size(), getInventory().armor.size());
+    	this.setSlots(items, this.getInventory().getMainStacks().size(), this.IgetInventory().getArmorContents().size());
     }
 
     @Override
     public ItemStack[] getExtraContents() {
-        return asCraftMirror(getInventory().offHand);
+    	return this.asCraftMirror(this.IgetInventory().getExtraContent());
     }
 
     @Override
     public void setExtraContents(ItemStack[] items) {
-        setSlots(items, getInventory().main.size() + getInventory().armor.size(), getInventory().offHand.size());
+    	this.setSlots(items, this.getInventory().getMainStacks().size() + this.IgetInventory().getArmorContents().size(), 3);
     }
 
     @Override

@@ -1,7 +1,10 @@
 package org.cardboardpowered.mixin.inventory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
@@ -9,6 +12,9 @@ import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.InventoryHolder;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
+
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 
 import org.cardboardpowered.interfaces.IMixinInventory;
 import org.cardboardpowered.interfaces.IMixinPlayerInventory;
@@ -22,6 +28,7 @@ import net.minecraft.item.ItemStack;
 @Mixin(PlayerInventory.class)
 public class MixinPlayerInventory implements IMixinInventory, IMixinPlayerInventory {
 
+	@Unique
     private PlayerInventory get() {
         return (PlayerInventory) (Object) this;
     }
@@ -85,6 +92,28 @@ public class MixinPlayerInventory implements IMixinInventory, IMixinPlayerInvent
         if (remains <= 0) return itemstack.getCount();
 
         return itemstack.getCount() - remains;
+    }
+    
+    private static final EquipmentSlot[] EQUIPMENT_SLOTS_SORTED_BY_INDEX = (EquipmentSlot[])PlayerInventory.EQUIPMENT_SLOTS.int2ObjectEntrySet().stream().sorted(Comparator.comparingInt(Int2ObjectMap.Entry::getIntKey)).map(Map.Entry::getValue).toArray(EquipmentSlot[]::new);
+    
+    @Override
+    public List<ItemStack> getArmorContents() {
+        ArrayList<ItemStack> items = new ArrayList<ItemStack>(4);
+        for (EquipmentSlot equipmentSlot : EQUIPMENT_SLOTS_SORTED_BY_INDEX) {
+            if (equipmentSlot.getType() != EquipmentSlot.Type.HUMANOID_ARMOR) continue;
+            items.add(get().equipment.get(equipmentSlot));
+        }
+        return items;
+    }
+
+    @Override
+    public List<ItemStack> getExtraContent() {
+        ArrayList<ItemStack> items = new ArrayList<ItemStack>();
+        for (EquipmentSlot equipmentSlot : EQUIPMENT_SLOTS_SORTED_BY_INDEX) {
+            if (equipmentSlot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) continue;
+            items.add(get().equipment.get(equipmentSlot));
+        }
+        return items;
     }
 
 }
