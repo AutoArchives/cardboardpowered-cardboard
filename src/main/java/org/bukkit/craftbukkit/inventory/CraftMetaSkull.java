@@ -24,6 +24,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
+import net.minecraft.util.Uuids;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -91,7 +93,25 @@ implements SkullMeta {
             this.setNoteBlockSound(NamespacedKey.fromString((String)object.toString()));
         }
     }
+    
+    @Override
+    void deserializeInternal(NbtCompound tag, Object context) {
+        super.deserializeInternal(tag, context);
+        tag.getCompound(CraftMetaSkull.SKULL_PROFILE.NBT).ifPresent(skullTag -> {
+            skullTag.get("Id", Uuids.STRING_CODEC).ifPresent(legacyId -> skullTag.put("Id", Uuids.INT_STREAM_CODEC, legacyId));
+            ProfileComponent.CODEC.parse(NbtOps.INSTANCE, skullTag).result().ifPresent(this::setProfile);
+        });
+        tag.getCompound(CraftMetaSkull.BLOCK_ENTITY_TAG.NBT).flatMap(blockEntityTag -> blockEntityTag.copy().getString(CraftMetaSkull.NOTE_BLOCK_SOUND.NBT)).ifPresent(noteBlockSound -> {
+            this.noteBlockSound = Identifier.tryParse(noteBlockSound);
+        });
+    }
+    
+    private void setProfile(ProfileComponent profile) {
+    	this.profile = profile.gameProfile();
+    	// this.profile = profile;
+    }
 
+    /*
     @Override
     void deserializeInternal(NbtCompound tag, Object context) {
         NbtCompound nbtTagCompound;
@@ -108,6 +128,7 @@ implements SkullMeta {
             this.noteBlockSound = Identifier.tryParse(nbtTagCompound.getString(CraftMetaSkull.NOTE_BLOCK_SOUND.NBT));
         }
     }
+    */
 
     private void setProfile(GameProfile profile) {
         this.profile = profile;
@@ -184,7 +205,7 @@ implements SkullMeta {
             return false;
         }
         if (name == null) {
-            this.setProfile(null);
+            this.setProfile((GameProfile) null);
         } else {
             GameProfile newProfile = null;
             ServerPlayerEntity player = ICommonMod.getIServer().getMinecraft().getPlayerManager().getPlayer(name);
@@ -201,7 +222,7 @@ implements SkullMeta {
 
     public boolean setOwningPlayer(OfflinePlayer owner) {
         if (owner == null) {
-            this.setProfile(null);
+            this.setProfile((GameProfile) null);
         } else if (owner instanceof CraftPlayer) {
             this.setProfile(((CraftPlayer)owner).getProfile());
         } else {
@@ -221,7 +242,7 @@ implements SkullMeta {
     @Deprecated
     public void setOwnerProfile(org.bukkit.profile.PlayerProfile profile) {
         if (profile == null) {
-            this.setProfile(null);
+            this.setProfile((GameProfile) null);
         } else {
         	
         	CraftPlayerProfile prof = (CraftPlayerProfile) profile;
