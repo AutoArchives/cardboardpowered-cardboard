@@ -3,11 +3,13 @@ package io.papermc.paper.datacomponent.item;
 import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.registry.PaperRegistries;
 import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.registry.data.util.Conversions;
 import io.papermc.paper.registry.set.PaperRegistrySets;
 import io.papermc.paper.registry.set.RegistryKeySet;
 import java.util.Optional;
 import java.util.function.Function;
 import net.kyori.adventure.key.Key;
+import net.minecraft.component.type.EquippableComponent;
 import net.minecraft.item.equipment.EquipmentAsset;
 import net.minecraft.item.equipment.EquipmentAssetKeys;
 import net.minecraft.registry.Registries;
@@ -79,21 +81,33 @@ public record PaperEquippable(
         return this.impl.damageOnHurt();
     }
 
-    @Override
-    public Builder toBuilder() {
-        return new BuilderImpl(this.slot())
-            .equipSound(this.equipSound())
-            .assetId(this.assetId())
-            .cameraOverlay(this.cameraOverlay())
-            .allowedEntities(this.allowedEntities())
-            .dispensable(this.dispensable())
-            .swappable(this.swappable())
-            .damageOnHurt(this.damageOnHurt());
+    public boolean equipOnInteract() {
+        return this.impl.equipOnInteract();
+    }
+
+    public boolean canBeSheared() {
+        return this.impl.canBeSheared();
+    }
+
+    public Key shearSound() {
+        return PaperAdventure.asAdventure(this.impl.shearingSound().value().id());
+    }
+
+    public Equippable.Builder toBuilder() {
+        return ((BuilderImpl) ((BuilderImpl) ((BuilderImpl) new BuilderImpl(this.slot())
+        		.equipSound(this.equipSound())
+        		.assetId(this.assetId())
+        		.cameraOverlay(this.cameraOverlay())
+        		.allowedEntities(this.allowedEntities())
+        		.dispensable(this.dispensable())
+        		.swappable(this.swappable())
+        		.damageOnHurt(this.damageOnHurt()))
+        		.equipOnInteract(this.equipOnInteract())).shearSound(this.shearSound())).canBeSheared(this.canBeSheared());
     }
 
 
-    static final class BuilderImpl implements Builder {
-
+    static final class BuilderImpl
+    implements Equippable.Builder {
         private final net.minecraft.entity.EquipmentSlot equipmentSlot;
         private RegistryEntry<SoundEvent> equipSound = SoundEvents.ITEM_ARMOR_EQUIP_GENERIC;
         private Optional<net.minecraft.registry.RegistryKey<EquipmentAsset>> assetId = Optional.empty();
@@ -102,72 +116,66 @@ public record PaperEquippable(
         private boolean dispensable = true;
         private boolean swappable = true;
         private boolean damageOnHurt = true;
+        private boolean equipOnInteract;
+        private boolean canBeSheared = false;
+        private RegistryEntry<SoundEvent> shearSound = Registries.SOUND_EVENT.getEntry(SoundEvents.ITEM_SHEARS_SNIP);
 
-        BuilderImpl(final EquipmentSlot equipmentSlot) {
+        BuilderImpl(org.bukkit.inventory.EquipmentSlot equipmentSlot) {
             this.equipmentSlot = CraftEquipmentSlot.getNMS(equipmentSlot);
         }
 
-        @Override
-        public Builder equipSound(final Key sound) {
+		public Equippable.Builder equipSound(Key sound) {
             this.equipSound = PaperAdventure.resolveSound(sound);
             return this;
         }
 
-        @Override
-        public Builder assetId(final @Nullable Key assetId) {
-            this.assetId = Optional.ofNullable(assetId)
-                .map(key -> PaperAdventure.asVanilla(EquipmentAssetKeys.REGISTRY_KEY, key));
-
+        public Equippable.Builder assetId(@Nullable Key assetId) {
+            this.assetId = Optional.ofNullable(assetId).map(key -> PaperAdventure.asVanilla(EquipmentAssetKeys.REGISTRY_KEY, key));
             return this;
         }
 
-        @Override
-        public Builder cameraOverlay(@Nullable final Key cameraOverlay) {
-            this.cameraOverlay = Optional.ofNullable(cameraOverlay)
-                .map(PaperAdventure::asVanilla);
-
+        public Equippable.Builder cameraOverlay(@Nullable Key cameraOverlay) {
+            this.cameraOverlay = Optional.ofNullable(cameraOverlay).map(PaperAdventure::asVanilla);
             return this;
         }
 
-        @Override
-        public Builder allowedEntities(final @Nullable RegistryKeySet<EntityType> allowedEntities) {
-            this.allowedEntities = Optional.ofNullable(allowedEntities)
-                .map((set) -> PaperRegistrySets.convertToNms(RegistryKeys.ENTITY_TYPE, Registries_Bridge.BUILT_IN_CONVERSIONS.lookup(), set));
+        public Equippable.Builder allowedEntities(@Nullable RegistryKeySet<EntityType> allowedEntities) {
+            this.allowedEntities = Optional.ofNullable(allowedEntities).map(set -> PaperRegistrySets.convertToNms(RegistryKeys.ENTITY_TYPE, Conversions.global().lookup(), set));
             return this;
         }
 
-        @Override
-        public Builder dispensable(final boolean dispensable) {
+        public Equippable.Builder dispensable(boolean dispensable) {
             this.dispensable = dispensable;
             return this;
         }
 
-        @Override
-        public Builder swappable(final boolean swappable) {
+        public Equippable.Builder swappable(boolean swappable) {
             this.swappable = swappable;
             return this;
         }
 
-        @Override
-        public Builder damageOnHurt(final boolean damageOnHurt) {
+        public Equippable.Builder damageOnHurt(boolean damageOnHurt) {
             this.damageOnHurt = damageOnHurt;
             return this;
         }
 
-        @Override
+        public Equippable.Builder equipOnInteract(boolean equipOnInteract) {
+            this.equipOnInteract = equipOnInteract;
+            return this;
+        }
+
+        public Equippable.Builder canBeSheared(boolean canBeSheared) {
+            this.canBeSheared = canBeSheared;
+            return this;
+        }
+
+        public Equippable.Builder shearSound(Key shearSound) {
+            this.shearSound = PaperAdventure.resolveSound(shearSound);
+            return this;
+        }
+
         public Equippable build() {
-            return new PaperEquippable(
-                new net.minecraft.component.type.EquippableComponent(
-                    this.equipmentSlot,
-                    this.equipSound,
-                    this.assetId,
-                    this.cameraOverlay,
-                    this.allowedEntities,
-                    this.dispensable,
-                    this.swappable,
-                    this.damageOnHurt
-                )
-            );
+            return new PaperEquippable(new EquippableComponent(this.equipmentSlot, this.equipSound, this.assetId, this.cameraOverlay, this.allowedEntities, this.dispensable, this.swappable, this.damageOnHurt, this.equipOnInteract, this.canBeSheared, this.shearSound));
         }
     }
 }

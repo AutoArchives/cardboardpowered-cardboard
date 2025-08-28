@@ -41,6 +41,7 @@ implements Horse {
     public void setColor(Horse.Color color) {
         Validate.notNull((Object)color, "Color cannot be null");
        // this.getHandle().setVariant(HorseColor.byIndex(color.ordinal()), this.getHandle().getMarking());
+        this.getHandle().setHorseVariant(HorseColor.byIndex(color.ordinal()), this.getHandle().getMarking());
     }
 
     @Override

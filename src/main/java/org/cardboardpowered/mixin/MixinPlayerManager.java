@@ -325,7 +325,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         playerIn.stopRiding(); // CraftBukkit
         this.players.remove(playerIn);
         
-        playerIn.getServerWorld().removePlayer(playerIn, Entity.RemovalReason.DISCARDED);
+        playerIn.getWorld().removePlayer(playerIn, Entity.RemovalReason.DISCARDED);
         BlockPos blockposition = playerIn.getSpawnPointPosition();
         float f = playerIn.getSpawnAngle();
         boolean flag1 = playerIn.isSpawnForced();
@@ -440,7 +440,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         int sim = CraftServer.INSTANCE.getSimulationDistance();
         int vd = CraftServer.INSTANCE.getViewDistance();
         
-        entityplayer1.networkHandler.sendPacket(new PlayerRespawnS2CPacket(entityplayer1.createCommonPlayerSpawnInfo(entityplayer1.getServerWorld()), (byte) (conqueredEnd ? 1 : 0)));
+        entityplayer1.networkHandler.sendPacket(new PlayerRespawnS2CPacket(entityplayer1.createCommonPlayerSpawnInfo(entityplayer1.getWorld()), (byte) (conqueredEnd ? 1 : 0)));
 
         
         //entityplayer1.networkHandler.sendPacket(new PlayerRespawnS2CPacket(worldserver1.getDimensionKey(), worldserver1.getRegistryKey(),

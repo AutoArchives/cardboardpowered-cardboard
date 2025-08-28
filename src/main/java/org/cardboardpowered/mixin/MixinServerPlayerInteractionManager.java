@@ -84,7 +84,7 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
             method = "processBlockBreakingAction", cancellable = true)
     public void processBlockBreakkingAction_cb1(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, int sequence, CallbackInfo ci) {
     	cb_stat = 0;
-    	PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_BLOCK, pos, direction, this.player.getInventory().getMainHandStack(), Hand.MAIN_HAND);
+    	PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_BLOCK, pos, direction, this.player.getInventory().getSelectedStack(), Hand.MAIN_HAND);
         this.cb_ev = event;
     	// System.out.println("PlayerInteractEvent! " + pos.toString());
         if (event.isCancelled()) {
@@ -120,7 +120,7 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
                 }
                 return;
             }
-            BlockDamageEvent blockEvent = CraftEventFactory.callBlockDamageEvent(this.player, cb_pos.getX(), cb_pos.getY(), cb_pos.getZ(), this.player.getInventory().getMainHandStack(), cb_f2 >= 1.0f);
+            BlockDamageEvent blockEvent = CraftEventFactory.callBlockDamageEvent(this.player, cb_pos.getX(), cb_pos.getY(), cb_pos.getZ(), this.player.getInventory().getSelectedStack(), cb_f2 >= 1.0f);
             if (blockEvent.isCancelled()) {
                 this.player.networkHandler.sendPacket(new BlockUpdateS2CPacket(this.world, cb_pos));
                 ci.cancel();
@@ -155,7 +155,7 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
     @SuppressWarnings("unused")
 	private void block_damage_abort_event(ServerPlayerInteractionManager instance, BlockPos pos, boolean success, int sequence, String reason) {
     	// TODO: Update our Paper-API
-    	// CraftEventFactory.callBlockDamageAbortEvent(this.player, pos, this.player.getInventory().getMainHandStack());
+    	// CraftEventFactory.callBlockDamageAbortEvent(this.player, pos, this.player.getInventory().getSelectedStack());
     	// instance.method_41250(pos, success, sequence, reason);
     }
 
