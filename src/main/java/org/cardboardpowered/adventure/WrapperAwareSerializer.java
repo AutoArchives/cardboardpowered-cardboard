@@ -5,13 +5,16 @@ import java.util.function.Supplier;
 import org.bukkit.craftbukkit.CraftServer;
 
 import com.google.common.base.Suppliers;
+import com.mojang.datafixers.util.Pair;
 
 import me.isaiah.common.ICommonMod;
 import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 
 public class WrapperAwareSerializer implements ComponentSerializer<Component, Component, Text> {
 
@@ -22,12 +25,36 @@ public class WrapperAwareSerializer implements ComponentSerializer<Component, Co
     }
 	
     @Override
+    /*
     public Component deserialize(final Text input) {
         if (input instanceof CardboardAdventureComponent) {
             return ((CardboardAdventureComponent) input).adventure;
         }
 
         return CardboardAdventure.GSON.serializer().fromJson(Text.Serialization.toJsonString(input, CraftServer.server.getRegistryManager()), Component.class);
+    }
+    */
+
+    public Component deserialize(Text input) {
+        if (input instanceof CardboardAdventureComponent) {
+            return ((CardboardAdventureComponent)input).adventure;
+        }
+        
+        return CardboardAdventureUtil.toAdventure(input);
+        
+        /*
+        net.minecraft.text.Text.CODEC a;
+        
+        RegistryOps<Object> ops = this.javaOps.get();
+        Object obj = TextCodecs.CODEC.encodeStart(ops, input).getOrThrow(s -> new RuntimeException("Failed to encode Minecraft Component: " + String.valueOf(input) + "; " + s));
+        
+        Text.st
+        
+        return net.kyori.adventure.text.
+        */
+        
+        //Pair converted = AdventureCodecs.COMPONENT_CODEC.decode(ops, obj).getOrThrow(s -> new RuntimeException("Failed to decode to adventure Component: " + String.valueOf(obj) + "; " + s));
+        // return (Component)converted.getFirst();
     }
     
     /*public Component deserialize_1(Text input) throws Throwable {

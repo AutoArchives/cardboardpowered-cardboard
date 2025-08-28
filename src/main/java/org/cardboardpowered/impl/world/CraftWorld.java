@@ -1067,7 +1067,8 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 			chunk = nms.getChunkManager().getChunk(x, z, ChunkStatus.FULL, true);
 
 		if(chunk instanceof net.minecraft.world.chunk.WorldChunk) {
-			nms.getChunkManager().addTicket(ChunkTicketType.START, new ChunkPos(x, z), 1, Unit.INSTANCE);
+			nms.getChunkManager().addTicket(ChunkTicketType.START, new ChunkPos(x, z), 1);
+			// nms.getChunkManager().addTicket(ChunkTicketType.START, new ChunkPos(x, z), 1, Unit.INSTANCE);
 			return true;
 		}
 
@@ -1544,6 +1545,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 				entity = net.minecraft.entity.EntityType.ENDER_PEARL.create(nms, net.minecraft.entity.SpawnReason.COMMAND);
 				entity.refreshPositionAndAngles(x, y, z, 0, 0);
 			} else if(ThrownPotion.class.isAssignableFrom(clazz)) {
+				/*
 				if(LingeringPotion.class.isAssignableFrom(clazz)) {
 					entity = new PotionEntity(nms, x, y, z, new net.minecraft.item.ItemStack(Items.LINGERING_POTION));
 					((PotionEntity) entity).setItem(CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.LINGERING_POTION, 1)));
@@ -1551,6 +1553,8 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 					entity = new PotionEntity(nms, x, y, z, new net.minecraft.item.ItemStack(Items.SPLASH_POTION));
 					((PotionEntity) entity).setItem(CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.SPLASH_POTION, 1)));
 				}
+				*/
+				// TODO 1.21.8
 			} else if(Fireball.class.isAssignableFrom(clazz)) {
 				// TODO Fireball
 			} else if(ShulkerBullet.class.isAssignableFrom(clazz)) {
@@ -1986,6 +1990,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 		if(data != null && !particle.getDataType().isInstance(data))
 			throw new IllegalArgumentException("data should be " + particle.getDataType() + " got " + data.getClass());
 		// TODO Bukkit4Fabric: method
+		/*
 		getHandle().addParticle(
 				// null, // Sender
 				CraftParticle.createParticleParam(particle, data), // Particle
@@ -1995,6 +2000,12 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 				// extra // Speed?
 				// force
 		);
+		*/
+		
+		// TODO: 1.21.8
+		
+        // this.getHandle().spawnParticles(this.getHandle().getPlayers(), null, CraftParticle.createParticleParam(particle, data), force, false, x, y, z, count, offsetX, offsetY, offsetZ);
+
 	}
 
 	@Override
