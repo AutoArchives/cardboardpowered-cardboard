@@ -53,7 +53,7 @@ public final class CraftToolComponent implements ToolComponent {
             }
         }
 
-        this.handle = new net.minecraft.component.type.ToolComponent(rules.build().stream().map(CraftToolRule::new).map(CraftToolRule::getHandle).toList(), speed, damage);
+        this.handle = new net.minecraft.component.type.ToolComponent(rules.build().stream().map(CraftToolRule::new).map(CraftToolRule::getHandle).toList(), speed.floatValue(), damage, true);
     }
 
     @Override
@@ -76,7 +76,7 @@ public final class CraftToolComponent implements ToolComponent {
 
     @Override
     public void setDefaultMiningSpeed(float speed) {
-        this.handle = new net.minecraft.component.type.ToolComponent(this.handle.rules(), speed, this.handle.damagePerBlock());
+        this.handle = new net.minecraft.component.type.ToolComponent(this.handle.rules(), speed, this.handle.damagePerBlock(), this.handle.canDestroyBlocksInCreative());
     }
 
     @Override
@@ -87,7 +87,7 @@ public final class CraftToolComponent implements ToolComponent {
     @Override
     public void setDamagePerBlock(int damage) {
         Preconditions.checkArgument(damage >= 0, "damage must be >= 0, was %d", damage);
-        this.handle = new net.minecraft.component.type.ToolComponent(this.handle.rules(), this.handle.defaultMiningSpeed(), damage);
+        this.handle = new net.minecraft.component.type.ToolComponent(this.handle.rules(), this.handle.defaultMiningSpeed(), damage, this.handle.canDestroyBlocksInCreative());
     }
 
     @Override
@@ -98,7 +98,7 @@ public final class CraftToolComponent implements ToolComponent {
     @Override
     public void setRules(List<ToolRule> rules) {
         Preconditions.checkArgument(rules != null, "rules must not be null");
-        this.handle = new net.minecraft.component.type.ToolComponent(rules.stream().map(CraftToolRule::new).map(CraftToolRule::getHandle).toList(), this.handle.defaultMiningSpeed(), this.handle.damagePerBlock());
+        this.handle = new net.minecraft.component.type.ToolComponent(rules.stream().map(CraftToolRule::new).map(CraftToolRule::getHandle).toList(), this.handle.defaultMiningSpeed(), this.handle.damagePerBlock(), this.handle.canDestroyBlocksInCreative());
     }
 
     @Override
@@ -138,7 +138,7 @@ public final class CraftToolComponent implements ToolComponent {
         rules.addAll(this.handle.rules());
         rules.add(rule);
 
-        this.handle = new net.minecraft.component.type.ToolComponent(rules, this.handle.defaultMiningSpeed(), this.handle.damagePerBlock());
+        this.handle = new net.minecraft.component.type.ToolComponent(rules, this.handle.defaultMiningSpeed(), this.handle.damagePerBlock(), this.handle.canDestroyBlocksInCreative());
         return new CraftToolRule(rule);
     }
 
@@ -148,7 +148,7 @@ public final class CraftToolComponent implements ToolComponent {
 
         List<net.minecraft.component.type.ToolComponent.Rule> rules = new ArrayList<>(this.handle.rules());
         boolean removed = rules.remove(((CraftToolRule) rule).handle);
-        this.handle = new net.minecraft.component.type.ToolComponent(rules, this.handle.defaultMiningSpeed(), this.handle.damagePerBlock());
+        this.handle = new net.minecraft.component.type.ToolComponent(rules, this.handle.defaultMiningSpeed(), this.handle.damagePerBlock(), this.handle.canDestroyBlocksInCreative());
 
         return removed;
     }
