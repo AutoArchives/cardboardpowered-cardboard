@@ -12,10 +12,12 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.entity.CraftEntitySnapshot;
+import org.bukkit.craftbukkit.entity.CraftEntityType;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem;
 import org.bukkit.craftbukkit.inventory.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftLegacy;
@@ -148,6 +150,11 @@ implements SpawnEggMeta {
     @Override
     void deserializeInternal(NbtCompound tag, Object context) {
         super.deserializeInternal(tag, context);
+        
+        
+        this.entityTag = tag.getCompound(CraftMetaSpawnEgg.ENTITY_TAG.NBT).orElse(this.entityTag);
+        
+        /*
         if (tag.contains(CraftMetaSpawnEgg.ENTITY_TAG.NBT)) {
             Map map;
             String entityType;
@@ -165,6 +172,7 @@ implements SpawnEggMeta {
                 this.spawnedType = EntityType.fromName((String)Identifier.of(this.entityTag.getString(CraftMetaSpawnEgg.ENTITY_ID.NBT)).getPath());
             }
         }
+        */
     }
 
     @Override
@@ -212,7 +220,9 @@ implements SpawnEggMeta {
     }
 
     public EntityType getCustomSpawnedType() {
-        return Optional.ofNullable(this.entityTag).map(tag -> tag.getString(CraftMetaSpawnEgg.ENTITY_ID.NBT)).flatMap(net.minecraft.entity.EntityType::get).map(CraftMagicNumbers::getEntityType).orElse(null);
+        return Optional.ofNullable(this.entityTag).flatMap(tag -> tag.get(CraftMetaSpawnEgg.ENTITY_ID.NBT, Registries.ENTITY_TYPE.getCodec())).map(CraftEntityType::minecraftToBukkit).orElse(null);
+
+    	// return Optional.ofNullable(this.entityTag).map(tag -> tag.getString(CraftMetaSpawnEgg.ENTITY_ID.NBT)).flatMap(net.minecraft.entity.EntityType::get).map(CraftMagicNumbers::getEntityType).orElse(null);
     }
 
     public void setCustomSpawnedType(EntityType type) {

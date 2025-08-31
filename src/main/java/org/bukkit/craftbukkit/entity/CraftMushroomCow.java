@@ -26,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
-public class CraftMushroomCow extends CraftCow implements MushroomCow {
+public class CraftMushroomCow extends CraftAbstractCow implements MushroomCow {
 
     public CraftMushroomCow(CraftServer server, MooshroomEntity entity) {
         super(server, entity);
@@ -45,7 +45,9 @@ public class CraftMushroomCow extends CraftCow implements MushroomCow {
     @Override
     public void setVariant(Variant variant) {
         Preconditions.checkArgument(variant != null, "variant");
-        getHandle().setVariant(MooshroomEntity.Type.values()[variant.ordinal()]);
+        // getHandle().setVariant(MooshroomEntity.Type.values()[variant.ordinal()]);
+        this.getHandle().setVariant(MooshroomEntity.Variant.values()[variant.ordinal()]);
+
     }
 
     @Override

@@ -558,3 +558,5 @@ accessible method net/minecraft/entity/passive/HorseEntity setHorseVariant (Lnet
 accessible method net/minecraft/entity/passive/TropicalFishEntity getTropicalFishVariant ()I
 accessible method net/minecraft/entity/passive/TropicalFishEntity setTropicalFishVariant (I)V
 accessible method net/minecraft/entity/passive/SalmonEntity setVariant (Lnet/minecraft/entity/passive/SalmonEntity$Variant;)V
+accessible method net/minecraft/entity/passive/MooshroomEntity setVariant (Lnet/minecraft/entity/passive/MooshroomEntity$Variant;)V
+accessible method net/minecraft/entity/passive/FrogEntity setVariant (Lnet/minecraft/registry/entry/RegistryEntry;)V

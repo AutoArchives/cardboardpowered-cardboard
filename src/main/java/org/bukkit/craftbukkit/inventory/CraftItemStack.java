@@ -44,8 +44,9 @@ import net.minecraft.item.Item;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.predicate.ComponentPredicate;
 import net.minecraft.predicate.NumberRange;
+import net.minecraft.predicate.component.ComponentMapPredicate;
+import net.minecraft.predicate.component.ComponentsPredicate;
 import net.minecraft.predicate.item.ItemPredicate;
 import net.minecraft.util.Identifier;
 import net.minecraft.registry.Registries;
@@ -981,9 +982,8 @@ public final class CraftItemStack extends ItemStack {
 
     public static ItemPredicate asCriterionConditionItem(ItemStack original) {
         net.minecraft.item.ItemStack nms = CraftItemStack.asNMSCopy(original);
-        ComponentPredicate predicate = ComponentPredicate.of(MergedComponentMap.create(ComponentMap.EMPTY, nms.getComponentChanges()));
-
-        return new ItemPredicate(Optional.of(RegistryEntryList.of(nms.getRegistryEntry())), NumberRange.IntRange.ANY, predicate, Collections.emptyMap());
+        ComponentMapPredicate predicate = ComponentMapPredicate.of(MergedComponentMap.create(ComponentMap.EMPTY, nms.getComponentChanges()));
+        return new ItemPredicate(Optional.of(RegistryEntryList.of(nms.getRegistryEntry())), NumberRange.IntRange.ANY, new ComponentsPredicate(predicate, Collections.emptyMap()));
     }
 
     /*static boolean hasItemMeta(net.minecraft.item.ItemStack item) {

@@ -17,6 +17,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.ZombieVillager;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
+import org.cardboardpowered.impl.entity.CraftVillager;
 
 public class CraftVillagerZombie extends CraftZombie implements ZombieVillager {
 
@@ -47,9 +48,11 @@ public class CraftVillagerZombie extends CraftZombie implements ZombieVillager {
     @Override
     public void setVillagerProfession(Villager.Profession profession) {
         Validate.notNull(profession);
-        Identifier id = Identifier.ofVanilla( profession.name().toLowerCase(Locale.ROOT) ); // new Identifier(profession.name().toLowerCase(Locale.ROOT));
-        VillagerProfession data = Registries.VILLAGER_PROFESSION.get(id);
-        getHandle().setVillagerData(getHandle().getVillagerData().withProfession(data));
+        //Identifier id = Identifier.ofVanilla( profession.name().toLowerCase(Locale.ROOT) ); // new Identifier(profession.name().toLowerCase(Locale.ROOT));
+        //VillagerProfession data = Registries.VILLAGER_PROFESSION.get(id);
+        //getHandle().setVillagerData(getHandle().getVillagerData().withProfession(data));
+        this.getHandle().setVillagerData(this.getHandle().getVillagerData().withProfession(CraftVillager.CraftProfession.bukkitToMinecraftHolder(profession)));
+
     }
 
     @Override
@@ -60,7 +63,7 @@ public class CraftVillagerZombie extends CraftZombie implements ZombieVillager {
     @Override
     public void setVillagerType(Villager.Type type) {
         Validate.notNull(type);
-        getHandle().setVillagerData(getHandle().getVillagerData().withType(Registries.VILLAGER_TYPE.get(CraftNamespacedKey.toMinecraft(type.getKey()))));
+        this.getHandle().setVillagerData(this.getHandle().getVillagerData().withType(CraftVillager.CraftType.bukkitToMinecraftHolder(type)));
     }
 
     @Override

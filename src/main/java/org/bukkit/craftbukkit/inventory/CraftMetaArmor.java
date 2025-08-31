@@ -79,7 +79,7 @@ implements ArmorMeta {
     void applyToItem(CraftMetaItem.Applicator itemTag) {
         super.applyToItem(itemTag);
         if (this.hasTrim()) {
-            itemTag.put(TRIM, new net.minecraft.item.equipment.trim.ArmorTrim(CraftTrimMaterial.bukkitToMinecraftHolder(this.trim.getMaterial()), CraftTrimPattern.bukkitToMinecraftHolder(this.trim.getPattern()), !this.hasItemFlag(ItemFlag.HIDE_ARMOR_TRIM)));
+        	itemTag.put(TRIM, new net.minecraft.item.equipment.trim.ArmorTrim(CraftTrimMaterial.bukkitToMinecraftHolder(this.trim.getMaterial()), CraftTrimPattern.bukkitToMinecraftHolder(this.trim.getPattern())));
         }
     }
 
