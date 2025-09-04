@@ -37,10 +37,15 @@ public abstract class MixinScreenHandler implements IMixinScreenHandler {
     @Mutable
     public DefaultedList<ItemStack> trackedStacks;
 
+    /**
+     * field_29206
+     * 1.21.4: previousTrackedStacks
+     * 1.21.8: trackedSlots
+     */
     @Shadow
     @Final
     @Mutable
-    public DefaultedList<ItemStack> previousTrackedStacks;
+    public DefaultedList<ItemStack> trackedSlots;
     
     @Shadow
     @Final

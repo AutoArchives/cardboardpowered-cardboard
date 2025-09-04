@@ -703,8 +703,26 @@ public class CraftEventFactory {
         return event;
     }
 
+    /**
+     * Replaced in 1.21.8
+     * 
+     * @deprecated Replaced
+     * @see {@link #callPlayerExpChangeEvent(PlayerEntity, ExperienceOrbEntity)}
+     */
+    @Deprecated
     public static PlayerExpChangeEvent callPlayerExpChangeEvent(PlayerEntity entity, int expAmount) {
         Player player = (Player) ((IMixinEntity)entity).getBukkitEntity();
+        PlayerExpChangeEvent event = new PlayerExpChangeEvent(player, expAmount);
+        Bukkit.getPluginManager().callEvent(event);
+        return event;
+    }
+    
+    public static PlayerExpChangeEvent callPlayerExpChangeEvent(PlayerEntity entity, ExperienceOrbEntity entityOrb) {
+        Player player = (Player)entity.getBukkitEntity();
+        ExperienceOrb source = (ExperienceOrb)entityOrb.getBukkitEntity();
+        int expAmount = source.getExperience();
+        
+        // TODO: 1.21.8 API: new PlayerExpChangeEvent(player, (Entity)source, expAmount);
         PlayerExpChangeEvent event = new PlayerExpChangeEvent(player, expAmount);
         Bukkit.getPluginManager().callEvent(event);
         return event;

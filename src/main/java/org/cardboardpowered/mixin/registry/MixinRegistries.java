@@ -39,6 +39,10 @@ public class MixinRegistries {
 		PaperRegistryAccess.instance().registerRegistry(registry.getKey(), registry);
 	}
 
+	/**
+	 * @author Cardboard Mod
+	 * @reason PaperRegistryAccess
+	 */
 	@Overwrite
 	public static void bootstrap() {
 		cardboard$bootStrap(() -> {});
@@ -68,6 +72,10 @@ public class MixinRegistries {
     }
     */
     
+	/**
+	 * @author Cardboard Mod
+	 * @reason PaperRegistryAccess
+	 */
     @Overwrite
     public static void init() {
     	try {

@@ -25,9 +25,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 @Mixin(ExperienceOrbEntity.class)
 public class MixinExperienceOrbEntity extends MixinEntity {
 
-    @Shadow
-    public int amount;
-
     @Redirect(at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(II)I"), method = "repairPlayerGears")
     public int doBukkitEvent_PlayerItemMendEvent(int a, int b, ServerPlayerEntity entityhuman) {
         
@@ -46,7 +43,7 @@ public class MixinExperienceOrbEntity extends MixinEntity {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ExperienceOrbEntity;repairPlayerGears(Lnet/minecraft/server/network/ServerPlayerEntity;I)I"), method = "onPlayerCollision")
     public int doBukkitEvent_PlayerExpChangeEvent(ExperienceOrbEntity e, ServerPlayerEntity plr, int a) {
-        return repairPlayerGears((ServerPlayerEntity) plr, CraftEventFactory.callPlayerExpChangeEvent(plr, this.amount).getAmount());
+        return repairPlayerGears((ServerPlayerEntity) plr, CraftEventFactory.callPlayerExpChangeEvent(plr, (ExperienceOrbEntity)(Object)this).getAmount());
     }
 
     @Shadow

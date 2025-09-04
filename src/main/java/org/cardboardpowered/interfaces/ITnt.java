@@ -4,6 +4,6 @@ import net.minecraft.entity.LivingEntity;
 
 public interface ITnt {
 
-    void setSourceBF(LivingEntity entity);
+    void cardboard$setSource(LivingEntity entity);
 
 }

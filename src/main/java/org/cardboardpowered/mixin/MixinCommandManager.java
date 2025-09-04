@@ -36,17 +36,27 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 
 @Mixin(CommandManager.class)
 public class MixinCommandManager {
 
+	// void makeTreeForSource( CommandNode tree, CommandNode result,  ServerCommandSource source, Map resultNodes) 
+	// void deepCopyNodes    ( CommandNode root, CommandNode newRoot, Object source,              Map nodes) 
+	
     @Shadow
     public com.mojang.brigadier.CommandDispatcher<ServerCommandSource> dispatcher;
 
+    /*
     @Shadow
     public void makeTreeForSource(CommandNode<ServerCommandSource>a, CommandNode<CommandSource> b, ServerCommandSource c, Map<CommandNode<ServerCommandSource>, CommandNode<CommandSource>> map) {
+    }
+    */
+    
+    @Shadow
+    private static <S> void deepCopyNodes(CommandNode<S> root, CommandNode<S> newRoot, S source, Map<CommandNode<S>, CommandNode<S>> nodes) {    	
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -54,17 +64,17 @@ public class MixinCommandManager {
     public void bukkitize(ServerPlayerEntity entityplayer, CallbackInfo ci) {
         //if ( SpigotConfig.tabComplete < 0 ) return; // Spigot
 
-        Map<CommandNode<ServerCommandSource>, CommandNode<CommandSource>> map = Maps.newIdentityHashMap();
+        Map<CommandNode<ServerCommandSource>, CommandNode<ServerCommandSource>> map = Maps.newIdentityHashMap();
         RootCommandNode vanillaRoot = new RootCommandNode();
 
         RootCommandNode<ServerCommandSource> vanilla = entityplayer.getServer().getCommandManager().getDispatcher().getRoot();
         map.put(vanilla, vanillaRoot);
-        this.makeTreeForSource(vanilla, vanillaRoot, entityplayer.getCommandSource(), (Map) map);
+        this.deepCopyNodes(vanilla, vanillaRoot, entityplayer.getCommandSource(), (Map) map);
 
-        RootCommandNode<CommandSource> rootcommandnode = new RootCommandNode();
+        RootCommandNode<ServerCommandSource> rootcommandnode = new RootCommandNode();
 
         map.put(this.dispatcher.getRoot(), rootcommandnode);
-        this.makeTreeForSource(this.dispatcher.getRoot(), rootcommandnode, entityplayer.getCommandSource(), (Map) map);
+        this.deepCopyNodes(this.dispatcher.getRoot(), rootcommandnode, entityplayer.getCommandSource(), (Map) map);
 
         Collection<String> bukkit = new LinkedHashSet<>();
         for (CommandNode node : rootcommandnode.getChildren())
@@ -77,5 +87,39 @@ public class MixinCommandManager {
         //for (String orig : bukkit)
         //    if (!event.getCommands().contains(orig)) rootcommandnode.removeCommand(orig);
     }
+
+    /*
+    public void sendCommandTree(ServerPlayerEntity player) {
+		Map<CommandNode<ServerCommandSource>, CommandNode<ServerCommandSource>> map = new HashMap();
+		RootCommandNode<ServerCommandSource> rootCommandNode = new RootCommandNode<>();
+		map.put(this.dispatcher.getRoot(), rootCommandNode);
+		deepCopyNodes(this.dispatcher.getRoot(), rootCommandNode, player.getCommandSource(), map);
+		player.networkHandler.sendPacket(new CommandTreeS2CPacket(rootCommandNode, INSPECTOR));
+	}
+    
+    rivate void sendAsync(ServerPlayerEntity player, Collection<CommandNode<ServerCommandSource>> dispatcherRootChildren) {
+        HashMap map = new HashMap();
+        RootCommandNode rootCommandNode = new RootCommandNode();
+        map.put((CommandNode)this.dispatcher.getRoot(), (CommandNode)rootCommandNode);
+        CommandManager.fillUsableCommands(dispatcherRootChildren, rootCommandNode, player.getCommandSource(), map);
+        LinkedHashSet<String> bukkit = new LinkedHashSet<String>();
+        for (CommandNode node : rootCommandNode.getChildren()) {
+            bukkit.add(node.getName());
+        }
+        new AsyncPlayerSendCommandsEvent((Player)player.getBukkitEntity(), rootCommandNode, false).callEvent();
+        MinecraftServer.getServer().execute(() -> this.runSync(player, bukkit, (RootCommandNode<ServerCommandSource>)rootCommandNode));
+    }
+
+    private void runSync(ServerPlayerEntity player, Collection<String> bukkit, RootCommandNode<ServerCommandSource> rootCommandNode) {
+        new AsyncPlayerSendCommandsEvent((Player)player.getBukkitEntity(), rootCommandNode, true).callEvent();
+        PlayerCommandSendEvent event = new PlayerCommandSendEvent((Player)player.getBukkitEntity(), new LinkedHashSet<String>(bukkit));
+        event.getPlayer().getServer().getPluginManager().callEvent((Event)event);
+        for (String orig : bukkit) {
+            if (event.getCommands().contains(orig)) continue;
+            rootCommandNode.removeCommand(orig);
+        }
+        player.networkHandler.method_14364_sendPacket(new CommandTreeS2CPacket(rootCommandNode, INSPECTOR));
+    }
+    */
 
 }

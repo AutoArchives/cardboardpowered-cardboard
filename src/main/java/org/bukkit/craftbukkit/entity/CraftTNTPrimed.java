@@ -78,8 +78,8 @@ public class CraftTNTPrimed extends CraftEntity implements TNTPrimed {
 
     public void setSource(Entity source) {
         if (source instanceof LivingEntity) {
-            ((ITnt)getHandle()).setSourceBF(((LivingEntityImpl) source).getHandle());
-        } else ((ITnt)getHandle()).setSourceBF(null);
+            ((ITnt)getHandle()).cardboard$setSource(((LivingEntityImpl) source).getHandle());
+        } else ((ITnt)getHandle()).cardboard$setSource(null);
     }
     
     // 1.20.4 API:
