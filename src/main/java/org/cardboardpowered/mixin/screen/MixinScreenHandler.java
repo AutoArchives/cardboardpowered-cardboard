@@ -104,12 +104,12 @@ public abstract class MixinScreenHandler implements IMixinScreenHandler {
     
     @Override
     public DefaultedList<ItemStack> cardboard_previousTrackedStacks() {
-        return previousTrackedStacks;
+        return trackedSlots;
     }
     
     @Override
     public void cardboard_previousTrackedStacks(DefaultedList<ItemStack> s) {
-        this.previousTrackedStacks = s;
+        this.trackedSlots = s;
     }
 
     @Override
