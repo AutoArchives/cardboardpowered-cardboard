@@ -3,6 +3,7 @@
  */
 package org.cardboardpowered.mixin.world;
 
+import org.cardboardpowered.ChunkTicketBridge;
 import org.cardboardpowered.interfaces.IChunkTicketType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -25,10 +26,10 @@ public class MixinChunkTicketType implements IChunkTicketType {
 	private static final ChunkTicketType PLUGIN = register("plugin", 0L, false, Use.LOADING_AND_SIMULATION);
     
 	// Paper - start
-    private static final ChunkTicketType POST_TELEPORT = register("post_teleport", 5L, false, Use.LOADING_AND_SIMULATION);
-    private static final ChunkTicketType PLUGIN_TICKET = register("plugin_ticket", 0L, false, Use.LOADING_AND_SIMULATION);
-    private static final ChunkTicketType FUTURE_AWAIT = register("future_await", 0L, false, Use.LOADING_AND_SIMULATION);
-    private static final ChunkTicketType CHUNK_LOAD = register("chunk_load", 0L, false, Use.LOADING);
+    private static final ChunkTicketType POST_TELEPORT = ChunkTicketBridge.POST_TELEPORT;
+    private static final ChunkTicketType PLUGIN_TICKET = ChunkTicketBridge.PLUGIN_TICKET;
+    private static final ChunkTicketType FUTURE_AWAIT = ChunkTicketBridge.FUTURE_AWAIT;
+    private static final ChunkTicketType CHUNK_LOAD = ChunkTicketBridge.CHUNK_LOAD;
     // Paper - end
 
     @Override

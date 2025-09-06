@@ -2,10 +2,17 @@ package io.papermc.paper.datacomponent.item;
 
 import org.bukkit.craftbukkit.util.Handleable;
 
+@Deprecated
+public record PaperUnbreakable() {
+	
+}
+
+/*
 public record PaperUnbreakable(
     net.minecraft.component.type.UnbreakableComponent impl
 ) implements Unbreakable, Handleable<net.minecraft.component.type.UnbreakableComponent> {
 
+	
     @Override
     public boolean showInTooltip() {
         return this.impl.showInTooltip();
@@ -36,4 +43,4 @@ public record PaperUnbreakable(
             return new PaperUnbreakable(new net.minecraft.component.type.UnbreakableComponent(this.showInTooltip));
         }
     }
-}
+}*/

@@ -560,3 +560,4 @@ accessible method net/minecraft/entity/passive/TropicalFishEntity setTropicalFis
 accessible method net/minecraft/entity/passive/SalmonEntity setVariant (Lnet/minecraft/entity/passive/SalmonEntity$Variant;)V
 accessible method net/minecraft/entity/passive/MooshroomEntity setVariant (Lnet/minecraft/entity/passive/MooshroomEntity$Variant;)V
 accessible method net/minecraft/entity/passive/FrogEntity setVariant (Lnet/minecraft/registry/entry/RegistryEntry;)V
+accessible method net/minecraft/server/world/ChunkTicketType register (Ljava/lang/String;JZLnet/minecraft/server/world/ChunkTicketType$Use;)Lnet/minecraft/server/world/ChunkTicketType;

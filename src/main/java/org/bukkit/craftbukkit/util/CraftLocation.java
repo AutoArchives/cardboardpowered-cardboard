@@ -81,4 +81,8 @@ public final class CraftLocation {
     public static Vec3d toVec3D(Location location) {
         return new Vec3d(location.getX(), location.getY(), location.getZ());
     }
+
+	public static Vec3d toVec3(Location loc) {
+		return toVec3D(loc);
+	}
 }

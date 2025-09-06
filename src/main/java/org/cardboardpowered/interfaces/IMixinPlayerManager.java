@@ -19,9 +19,11 @@
 package org.cardboardpowered.interfaces;
 
 import org.bukkit.Location;
+import org.bukkit.event.player.PlayerRespawnEvent.RespawnReason;
 
 import com.mojang.authlib.GameProfile;
 
+import net.minecraft.entity.Entity.RemovalReason;
 import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.network.ServerLoginNetworkHandler;
@@ -30,10 +32,21 @@ import net.minecraft.server.world.ServerWorld;
 
 public interface IMixinPlayerManager {
 
+	/**
+	 * Replaced by {@link #respawn(ServerPlayerEntity, boolean, RemovalReason, RespawnReason, Location)}
+	 * 
+	 * @deprecated Use respawn instead
+	 */
     ServerPlayerEntity moveToWorld(ServerPlayerEntity player, ServerWorld world, boolean flag, Location location, boolean avoidSuffocation);
 
     ServerPlayerEntity attemptLogin(ServerLoginNetworkHandler loginlistener, GameProfile gameprofile, PlayerPublicKey profilepublickey, String hostname);
 
     void sendScoreboardBF(ServerScoreboard newboard, ServerPlayerEntity handle);
+
+    /**
+     * Replaces {@link #moveToWorld(ServerPlayerEntity, ServerWorld, boolean, Location, boolean)}
+     */
+	ServerPlayerEntity respawn(ServerPlayerEntity player, boolean keepInventory, RemovalReason reason,
+			RespawnReason eventReason, Location location);
 
 }
