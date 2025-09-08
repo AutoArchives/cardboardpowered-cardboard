@@ -226,9 +226,8 @@ public class CardboardMod implements ModInitializer {
         mc.setCardboardPersistentDataContainer( new CraftPersistentDataContainer(mc.getCardboardDTR()) );
 
         NbtCompound tag = (NbtCompound) ev.getElement();
-        NbtCompound persistentDataTag = tag.getCompound("PublicBukkitValues");
-        if (persistentDataTag != null)
-            mc.getPersistentDataContainer().putAll(persistentDataTag);
+        CraftPersistentDataContainer pdc = mc.getPersistentDataContainer();
+        tag.getCompound("PublicBukkitValues").ifPresent(pdc::putAll);;
     }
     
     @EventHandler

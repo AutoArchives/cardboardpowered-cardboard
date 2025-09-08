@@ -1,5 +1,8 @@
 package org.cardboardpowered.mixin.entity.block;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry;
 import org.bukkit.inventory.InventoryHolder;
@@ -9,6 +12,9 @@ import org.cardboardpowered.interfaces.IMixinBlockEntity;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.component.ComponentChanges;
+import net.minecraft.component.ComponentMap;
+import net.minecraft.component.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -18,6 +24,9 @@ public class MixinBlockEntity implements IMixinBlockEntity {
     private static final CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new CraftPersistentDataTypeRegistry();
     public CraftPersistentDataContainer persistentDataContainer;
 
+    @Shadow
+    private ComponentMap components = ComponentMap.EMPTY;
+    
     @Shadow public World world;
     @Shadow public BlockPos pos;
 
@@ -54,5 +63,38 @@ public class MixinBlockEntity implements IMixinBlockEntity {
     public CraftPersistentDataTypeRegistry getCardboardDTR() {
         return DATA_TYPE_REGISTRY;
     }
+    
+    @Shadow
+    public void readComponents(ComponentsAccess components) {
+	}
+    
+    @Override
+    public Set<ComponentType<?>> applyComponentsSet(ComponentMap defaultComponents, ComponentChanges components) {
+		final Set<ComponentType<?>> set = new HashSet<>();
+		set.add(DataComponentTypes.BLOCK_ENTITY_DATA);
+		set.add(DataComponentTypes.BLOCK_STATE);
+		final ComponentMap componentMap = MergedComponentMap.create(defaultComponents, components);
+		this.readComponents(new ComponentsAccess() {
+
+			@Override
+			public <T> T get(ComponentType<? extends T> type) {
+				set.add(type);
+				return componentMap.get(type);
+			}
+
+			@Override
+			public <T> T getOrDefault(ComponentType<? extends T> type, T fallback) {
+				set.add(type);
+				return componentMap.getOrDefault(type, fallback);
+			}
+		});
+		ComponentChanges componentChanges = components.withRemovedIf(set::contains);
+		this.components = componentChanges.toAddedRemovedPair().added();
+		
+		// Paper - start
+		set.remove(DataComponentTypes.BLOCK_ENTITY_DATA); // Remove as never actually added by applyImplicitComponents
+		return set;
+		// Paper - end
+	}
 
 }

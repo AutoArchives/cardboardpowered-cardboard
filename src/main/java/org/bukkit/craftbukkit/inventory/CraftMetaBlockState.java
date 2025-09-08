@@ -1,14 +1,17 @@
 package org.bukkit.craftbukkit.inventory;
 
-import com.google.common.base.Objects;
+// import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.Component;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.ComponentMap;
@@ -18,16 +21,27 @@ import net.minecraft.component.MergedComponentMap;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.storage.NbtWriteView;
+import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.math.BlockPos;
+
+import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.CraftBlockStates;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem;
 import org.bukkit.craftbukkit.inventory.SerializableMeta;
 import org.bukkit.inventory.meta.BlockStateMeta;
+import org.bukkit.util.BlockVector;
 import org.cardboardpowered.impl.block.CardboardBlockEntityState;
+import org.cardboardpowered.interfaces.IComponentChanges;
+import org.cardboardpowered.interfaces.IMixinBlockEntity;
 
 @DelegateDeserialization(value=SerializableMeta.class)
 public class CraftMetaBlockState
@@ -59,24 +73,70 @@ implements BlockStateMeta {
     				
     		});
     static final CraftMetaItem.ItemMetaKeyType<NbtComponent> BLOCK_ENTITY_TAG;
+    
+    static final CraftMetaItem.ItemMetaKey BLOCK_ENTITY_TAG_CUSTOM_DATA = new CraftMetaItem.ItemMetaKey("block-entity-tag");
+    static final CraftMetaItem.ItemMetaKey BLOCK_ENTITY_COMPONENTS = new CraftMetaItem.ItemMetaKey("block-entity-components");
+    
     final Material material;
-    private CardboardBlockEntityState<?> blockEntityTag;
+    //private CardboardBlockEntityState<?> blockEntityTag;
+    NbtComponent blockEntityTag;
     private NbtCompound internalTag;
+    
+    ComponentMap components;
+    
+    private Material materialForBlockEntityType() {
+        return this.material;
+    }
 
     CraftMetaBlockState(CraftMetaItem meta, Material material) {
         super(meta);
         this.material = material;
         if (!(meta instanceof CraftMetaBlockState) || ((CraftMetaBlockState)meta).material != material) {
             this.blockEntityTag = null;
+            this.components = ComponentMap.EMPTY;
             return;
         }
         CraftMetaBlockState te = (CraftMetaBlockState)meta;
+        this.components = te.components;
         this.blockEntityTag = te.blockEntityTag;
     }
+    
+    CraftMetaBlockState(ComponentChanges tag, Material material, Set<ComponentType<?>> extraHandledDcts) {
+        super(tag, extraHandledDcts);
+        this.components = this.components != null ? this.components : ComponentMap.EMPTY;
+        this.blockEntityTag = this.blockEntityTag != null ? this.blockEntityTag : NbtComponent.DEFAULT;
+        this.material = material;
+        this.updateBlockState(tag);
+    }
+    
+    private void updateBlockState(ComponentChanges tag) {
+        CraftMetaBlockState.getOrEmpty(tag, BLOCK_ENTITY_TAG).ifPresent(nbt -> {
+            this.blockEntityTag = nbt;
+        });
+        if (!tag.isEmpty()) {
+            ComponentMap.Builder map = ComponentMap.builder();
+            BlockEntity dummyBlockEntity = Objects.requireNonNull(CraftBlockStates.createNewBlockEntity(this.materialForBlockEntityType()));
+            Set<ComponentType<?>> applied = ((IMixinBlockEntity)dummyBlockEntity).applyComponentsSet(ComponentMap.EMPTY, ComponentChanges.EMPTY);
+            for (ComponentType<?> seen : applied) {
+                ((IComponentChanges)this.unhandledTags).clear(seen);
+            }
+            if (!applied.isEmpty()) {
+                for (ComponentType type : applied) {
+                    if (CraftMetaItem.DEFAULT_HANDLED_DCTS.contains(type)) continue;
+                    CraftMetaBlockState.getOrEmpty(tag, type).ifPresent(value -> map.add(type, value));
+                }
+            }
+            this.components = map.build();
+        }
+    }
 
+    /*
     CraftMetaBlockState(ComponentChanges tag, Material material, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         this.material = material;
+        
+        this.components = this.components != null ? this.components : ComponentMap.EMPTY;
+        
         CraftMetaBlockState.getOrEmpty(tag, BLOCK_ENTITY_TAG).ifPresent(nbt -> {
             this.blockEntityTag = CraftMetaBlockState.getBlockState(material, nbt.copyNbt());
         });
@@ -94,16 +154,48 @@ implements BlockStateMeta {
             }
         }
     }
+    */
 
+    /*
     CraftMetaBlockState(Map<String, Object> map) {
         super(map);
         String matName = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getString(map, "blockMaterial", true);
         Material m = Material.getMaterial((String)matName);
         this.material = m != null ? m : Material.AIR;
         this.blockEntityTag = CraftMetaBlockState.getBlockState(this.material, this.internalTag);
+        this.components = this.components != null ? this.components : ComponentMap.EMPTY;
         this.internalTag = null;
     }
+    */
+    
+    CraftMetaBlockState(Map<String, Object> map) {
+        super(map);
+        BlockVector legacyPosition;
+        this.components = this.components != null ? this.components : ComponentMap.EMPTY;
+        this.blockEntityTag = this.blockEntityTag != null ? this.blockEntityTag : NbtComponent.DEFAULT;
+        String blockMaterial = SerializableMeta.getString(map, "blockMaterial", true);
+        Material material = Material.getMaterial((String)blockMaterial);
+        Material material2 = this.material = material != null ? material : Material.AIR;
+        if (this.internalTag != null) {
+            this.setBlockState(CraftMetaBlockState.getBlockState(this.material, this.internalTag));
+            this.internalTag = null;
+        }
+        if ((legacyPosition = SerializableMeta.getObject(BlockVector.class, map, "blockPosition", true)) != null) {
+            this.blockEntityTag = this.blockEntityTag.apply(blockEntityTag -> {
+                try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "blockEntityTag", CraftMetaItem.LOGGER);){
+                    NbtWriteView output = NbtWriteView_createWrappingWithContext(problemReporter, CraftRegistry.getMinecraftRegistry(), blockEntityTag);
+                    if (blockEntityTag.isEmpty()) {
+                        BlockEntity.writeId(output, Objects.requireNonNull(CraftBlockStates.getBlockEntityType(this.materialForBlockEntityType())));
+                    }
+                    output.putInt("x", legacyPosition.getBlockX());
+                    output.putInt("y", legacyPosition.getBlockY());
+                    output.putInt("z", legacyPosition.getBlockZ());
+                }
+            });
+        }
+    }
 
+    /*
     @Override
     void applyToItem(CraftMetaItem.Applicator tag) {
         super.applyToItem(tag);
@@ -119,7 +211,36 @@ implements BlockStateMeta {
             }
         }
     }
+    */
+    
+    @Override
+    void applyToItem(CraftMetaItem.Applicator tag) {
+        super.applyToItem(tag);
+        NbtCompound nbt = this.blockEntityTag.copyNbt();
+        if (!nbt.isEmpty()) {
+            if (nbt.getString("id").isEmpty()) {
+                try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "CraftMetaBlockState#apply", CraftMetaItem.LOGGER);){
+                    BlockEntity.writeId(NbtWriteView_createWrappingWithContext(problemReporter, CraftRegistry.getMinecraftRegistry(), nbt), Objects.requireNonNull(CraftBlockStates.getBlockEntityType(this.materialForBlockEntityType())));
+                    
+                }
+            }
+            tag.put(BLOCK_ENTITY_TAG, NbtComponent.of(nbt));
+        }
+        for (Component<?> component : this.components) {
+            if (CraftMetaItem.DEFAULT_HANDLED_DCTS.contains(component.type())) continue;
+            tag.builder.add(component);
+        }
+    }
+    
+    public static NbtWriteView NbtWriteView_createWrappingWithContext(
+			final ErrorReporter.Logging problemReporter,
+			final DynamicRegistryManager lookup,
+			final NbtCompound compoundTag
+		) {
+            return new NbtWriteView(problemReporter, lookup.getOps(NbtOps.INSTANCE), compoundTag);
+        }
 
+    /*
     @Override
     void deserializeInternal(NbtCompound tag, Object context) {
         super.deserializeInternal(tag, context);
@@ -127,11 +248,41 @@ implements BlockStateMeta {
             this.internalTag = tag.getCompound(CraftMetaBlockState.BLOCK_ENTITY_TAG.NBT);
         }
     }
+    */
+    
+    @Override
+    void deserializeInternal(NbtCompound tag, Object context) {
+        super.deserializeInternal(tag, context);
+        Optional<NbtCompound> blockEntityTag = tag.getCompound(CraftMetaBlockState.BLOCK_ENTITY_TAG.NBT);
+        if (blockEntityTag.isPresent()) {
+            this.internalTag = blockEntityTag.get();
+            return;
+        }
+        tag.getCompound(CraftMetaBlockState.BLOCK_ENTITY_TAG_CUSTOM_DATA.NBT).ifPresent(blockEntityCustomTag -> {
+            this.blockEntityTag = NbtComponent.of(blockEntityCustomTag);
+        });
+        tag.getCompound(CraftMetaBlockState.BLOCK_ENTITY_COMPONENTS.NBT).ifPresent(components -> {
+            this.components = (ComponentMap)ComponentMap.CODEC.parse(CraftRegistry.getMinecraftRegistry().getOps(NbtOps.INSTANCE), components).getOrThrow();
+        });
+    }
 
+    /*
     @Override
     void serializeInternal(Map<String, NbtElement> internalTags) {
         if (this.blockEntityTag != null) {
             internalTags.put(CraftMetaBlockState.BLOCK_ENTITY_TAG.NBT, this.blockEntityTag.getSnapshotNBT());
+        }
+    }
+    */
+    
+    @Override
+    void serializeInternal(Map<String, NbtElement> internalTags) {
+        if (!this.blockEntityTag.isEmpty()) {
+            internalTags.put(CraftMetaBlockState.BLOCK_ENTITY_TAG_CUSTOM_DATA.NBT, this.blockEntityTag.getNbt());
+        }
+        if (!this.components.isEmpty()) {
+            NbtElement componentsTag = ComponentMap.CODEC.encodeStart(CraftRegistry.getMinecraftRegistry().getOps(NbtOps.INSTANCE), this.components).getOrThrow();
+            internalTags.put(CraftMetaBlockState.BLOCK_ENTITY_COMPONENTS.NBT, componentsTag);
         }
     }
 
@@ -159,7 +310,7 @@ implements BlockStateMeta {
         }
         if (meta instanceof CraftMetaBlockState) {
             CraftMetaBlockState that = (CraftMetaBlockState)meta;
-            return Objects.equal(this.blockEntityTag, that.blockEntityTag);
+            return Objects.equals(this.blockEntityTag, that.blockEntityTag);
         }
         return true;
     }
@@ -182,9 +333,8 @@ implements BlockStateMeta {
     @Override
     public CraftMetaBlockState clone() {
         CraftMetaBlockState meta = (CraftMetaBlockState)super.clone();
-        if (this.blockEntityTag != null) {
-            meta.blockEntityTag = this.blockEntityTag.copy();
-        }
+        meta.blockEntityTag = this.blockEntityTag;
+        meta.components = this.components;
         return meta;
     }
 
@@ -196,10 +346,34 @@ implements BlockStateMeta {
         this.blockEntityTag = null;
     }
 
+    /*
     public BlockState getBlockState() {
         return this.blockEntityTag != null ? this.blockEntityTag.copy() : CraftMetaBlockState.getBlockState(this.material, null);
     }
+    */
+    
+    public CardboardBlockEntityState<?> getBlockState() {
+        BlockPos pos = BlockPos.ORIGIN;
+        Material stateMaterial = this.materialForBlockEntityType();
+        if (!this.blockEntityTag.isEmpty()) {
+            pos = BlockEntity.posFromNbt(null, this.blockEntityTag.getNbt());
+        }
+        BlockEntityType<?> type = Objects.requireNonNull(CraftBlockStates.getBlockEntityType(stateMaterial));
+        net.minecraft.block.BlockState nmsBlockState = ((CraftBlockData)this.getBlockData(stateMaterial)).getState();
+        BlockEntity blockEntity = (BlockEntity)Objects.requireNonNull(type.instantiate(pos, nmsBlockState));
+        if (!this.blockEntityTag.isEmpty()) {
+            this.blockEntityTag.applyToBlockEntity(blockEntity, CraftRegistry.getMinecraftRegistry());
+        }
+        MergedComponentMap patchedMap = new MergedComponentMap(nmsBlockState.getBlock().asItem().getComponents());
+        patchedMap.setAll(this.components);
+        Applicator applicator = new Applicator(){};
+        super.applyToItem(applicator);
+        patchedMap.applyChanges(applicator.build());
+        blockEntity.readComponents(nmsBlockState.getBlock().asItem().getComponents(), patchedMap.getChanges());
+        return (CardboardBlockEntityState)CraftBlockStates.getBlockState(null, pos, nmsBlockState, blockEntity);
+    }
 
+    /*
     private static CardboardBlockEntityState<?> getBlockState(Material material, NbtCompound blockEntityTag) {
         Material stateMaterial;
         BlockPos pos = BlockPos.ORIGIN;
@@ -218,7 +392,26 @@ implements BlockStateMeta {
         
         return (CardboardBlockEntityState)CraftBlockStates.getBlockState(pos, stateMaterial, blockEntityTag);
     }
+    */
+    
+    private static CardboardBlockEntityState<?> getBlockState(Material material, NbtCompound blockEntityTag) {
+        Material stateMaterial;
+        BlockPos pos = BlockPos.ORIGIN;
+        Material material2 = stateMaterial = material != Material.SHIELD ? material : CraftMetaBlockState.shieldToBannerHack(blockEntityTag);
+        if (blockEntityTag != null) {
+            if (material == Material.SHIELD) {
+                blockEntityTag.putString("id", "minecraft:banner");
+            } else if (material == Material.BEE_NEST || material == Material.BEEHIVE) {
+                blockEntityTag.putString("id", "minecraft:beehive");
+            } else if (SHULKER_BOX_MATERIALS.contains(material)) {
+                blockEntityTag.putString("id", "minecraft:shulker_box");
+            }
+            pos = BlockEntity.posFromNbt(null, blockEntityTag);
+        }
+        return (CardboardBlockEntityState)CraftBlockStates.getBlockState(CraftRegistry.getMinecraftRegistry(), pos, stateMaterial, blockEntityTag);
+    }
 
+    /*
     public void setBlockState(BlockState blockState) {
         Preconditions.checkArgument((blockState != null ? 1 : 0) != 0, (Object)"blockState must not be null");
         Material stateMaterial = this.material != Material.SHIELD ? this.material : CraftMetaBlockState.shieldToBannerHack();
@@ -226,8 +419,39 @@ implements BlockStateMeta {
         Preconditions.checkArgument((blockStateType == blockState.getClass() && blockState instanceof CardboardBlockEntityState ? 1 : 0) != 0, (Object)("Invalid blockState for " + String.valueOf(this.material)));
         this.blockEntityTag = (CardboardBlockEntityState)blockState;
     }
+    */
+    
+    public void setBlockState(BlockState blockState) {
+        Preconditions.checkArgument((blockState != null ? 1 : 0) != 0, (Object)"blockState must not be null");
+        Material stateMaterial = this.material != Material.SHIELD ? this.material : CraftMetaBlockState.shieldToBannerHack(null);
+        Class<? extends CraftBlockState> blockStateType = CraftBlockStates.getBlockStateType(stateMaterial);
+        Preconditions.checkArgument((blockStateType == blockState.getClass() && blockState instanceof CardboardBlockEntityState ? 1 : 0) != 0, (String)"Invalid blockState for %s", (Object)this.material);
+        CardboardBlockEntityState craftBlockState = (CardboardBlockEntityState)blockState;
+        NbtCompound data = craftBlockState.getSnapshotCustomNbtOnly();
+        MergedComponentMap patchedMap = new MergedComponentMap(craftBlockState.getHandle().getBlock().asItem().getComponents());
+        ComponentMap map = craftBlockState.collectComponents();
+        patchedMap.setAll(map);
+        if (!data.isEmpty()) {
+            patchedMap.set(CraftMetaBlockState.BLOCK_ENTITY_TAG.TYPE, NbtComponent.of(data));
+        }
+        ComponentChanges patch = patchedMap.getChanges();
+        this.updateFromPatch(patch, null);
+        this.blockEntityTag = NbtComponent.DEFAULT;
+        this.components = ComponentMap.EMPTY;
+        this.updateBlockState(patch);
+    }
 
+    @Deprecated
     private static Material shieldToBannerHack() {
+        return Material.WHITE_BANNER;
+    }
+    
+    private static Material shieldToBannerHack(NbtCompound tag) {
+        Optional baseColor;
+        if (tag != null && (baseColor = tag.getCompound("components").flatMap(components -> components.getString("minecraft:base_color"))).isPresent()) {
+            DyeColor color = DyeColor.getByWoolData((byte)((byte)net.minecraft.util.DyeColor.byId((String)baseColor.get(), net.minecraft.util.DyeColor.WHITE).getIndex()));
+            return CraftMetaShield.shieldToBannerHack(color);
+        }
         return Material.WHITE_BANNER;
     }
 

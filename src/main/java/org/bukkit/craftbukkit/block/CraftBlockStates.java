@@ -241,11 +241,14 @@ public final class CraftBlockStates {
 
         // protected BlockEntityStateFactory(Class<B> blockStateType, BiFunction<World, T, B> blockStateConstructor, BiFunction<BlockPos, net.minecraft.world.level.block.state.BlockState, T> tileEntityConstructor) {
         
+        private final BlockEntityType<? extends T> blockEntityType;
+        
         protected BlockEntityStateFactory(Class<B> blockStateType, BiFunction<World, T, B> blockStateConstructor, BlockEntityType<? extends T> tileEntityConstructor) {
         	// Paper
         	super(blockStateType);
             this.blockStateConstructor = blockStateConstructor;
             this.tileEntityConstructor = tileEntityConstructor;
+            this.blockEntityType = tileEntityConstructor;
         }
         
         /*
@@ -256,6 +259,10 @@ public final class CraftBlockStates {
             this.tileEntityConstructor = tileEntityConstructor;
         }
         */
+        
+        private T createBlockEntity(BlockPos pos, net.minecraft.block.BlockState state) {
+            return this.blockEntityType.instantiate(pos, state);
+        }
 
         @Override
         public final B createBlockState(World world, BlockPos blockPosition, net.minecraft.block.BlockState blockData, BlockEntity tileEntity) {
@@ -286,5 +293,27 @@ public final class CraftBlockStates {
 
         public abstract B createBlockState(World var1, BlockPos var2, net.minecraft.block.BlockState var3, BlockEntity var4);
     }
+
+    public static BlockEntity createNewBlockEntity(Material material) {
+        BlockStateFactory<?> factory = CraftBlockStates.getFactory(material);
+        if (factory instanceof BlockEntityStateFactory) {
+            return ((BlockEntityStateFactory)factory).createBlockEntity(BlockPos.ORIGIN, CraftBlockType.bukkitToMinecraft(material).getDefaultState());
+        }
+        return null;
+    }
+    
+    @Nullable
+    public static BlockEntityType<?> getBlockEntityType(Material material) {
+        BlockEntityType blockEntityType;
+        BlockStateFactory<?> factory = FACTORIES.get(material);
+        if (factory instanceof BlockEntityStateFactory) {
+            BlockEntityStateFactory blockEntityStateFactory = (BlockEntityStateFactory)factory;
+            blockEntityType = blockEntityStateFactory.blockEntityType;
+        } else {
+            blockEntityType = null;
+        }
+        return blockEntityType;
+    }
+
 }
 

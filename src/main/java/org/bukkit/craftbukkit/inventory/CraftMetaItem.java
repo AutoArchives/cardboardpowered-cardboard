@@ -15,6 +15,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.JsonParseException;
 import com.javazilla.bukkitfabric.Utils;
 import com.mojang.authlib.GameProfile;
+import com.mojang.logging.LogUtils;
 
 import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
 
@@ -148,6 +149,8 @@ import org.cardboardpowered.interfaces.IComponentChanges;
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
 class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
+	static final org.slf4j.Logger LOGGER = LogUtils.getLogger();
+	
 	 // private Set<Namespaced> destroyableKeys = Sets.newHashSet();
 	
 	    static class ItemMetaKey {
@@ -364,6 +367,9 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     		.buildOrThrow();
 
     
+    protected static final Set<ComponentType<?>> DEFAULT_HANDLED_DCTS = Set.of(CraftMetaItem.NAME.TYPE, CraftMetaItem.ITEM_NAME.TYPE, CraftMetaItem.LORE.TYPE, CraftMetaItem.CUSTOM_MODEL_DATA.TYPE, CraftMetaItem.ENCHANTABLE.TYPE, CraftMetaItem.BLOCK_DATA.TYPE, CraftMetaItem.REPAIR.TYPE, CraftMetaItem.ENCHANTMENTS.TYPE, CraftMetaItem.TOOLTIP_DISPLAY.TYPE, CraftMetaItem.TOOLTIP_STYLE.TYPE, CraftMetaItem.ITEM_MODEL.TYPE, CraftMetaItem.UNBREAKABLE.TYPE, CraftMetaItem.ENCHANTMENT_GLINT_OVERRIDE.TYPE, CraftMetaItem.GLIDER.TYPE, CraftMetaItem.DAMAGE_RESISTANT.TYPE, CraftMetaItem.MAX_STACK_SIZE.TYPE, CraftMetaItem.RARITY.TYPE, CraftMetaItem.USE_REMAINDER.TYPE, CraftMetaItem.USE_COOLDOWN.TYPE, CraftMetaItem.FOOD.TYPE, CraftMetaItem.TOOL.TYPE, CraftMetaItem.EQUIPPABLE.TYPE, CraftMetaItem.JUKEBOX_PLAYABLE.TYPE, CraftMetaItem.DAMAGE.TYPE, CraftMetaItem.MAX_DAMAGE.TYPE, CraftMetaItem.CUSTOM_DATA.TYPE, CraftMetaItem.ATTRIBUTES.TYPE, CraftMetaItem.CAN_PLACE_ON.TYPE, CraftMetaItem.CAN_BREAK.TYPE);
+
+    
     /*private Text displayName;
     private Text locName;
     private List<Text> lore;
@@ -547,7 +553,16 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         return result != null ? result : Optional.empty();
     }
     
+    protected static <T> Optional<? extends T> getOrEmpty(ComponentChanges tag, ComponentType<T> type) {
+        Optional<? extends T> result = tag.get(type);
+        return result != null ? result : Optional.empty();
+    }
+    
     CraftMetaItem(ComponentChanges tag, Set<ComponentType<?>> extraHandledTags) {
+    	this.updateFromPatch(tag, extraHandledTags);
+    }
+
+    protected final void updateFromPatch(ComponentChanges tag, Set<ComponentType<?>> extraHandledTags) {
         CraftMetaItem.getOrEmpty(tag, NAME).ifPresent(component -> {
             this.displayName = component;
         });

@@ -18,9 +18,15 @@
  */
 package org.cardboardpowered.interfaces;
 
+import java.util.Set;
+
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry;
 import org.bukkit.inventory.InventoryHolder;
+
+import net.minecraft.component.ComponentChanges;
+import net.minecraft.component.ComponentMap;
+import net.minecraft.component.ComponentType;
 
 public interface IMixinBlockEntity {
 
@@ -31,5 +37,7 @@ public interface IMixinBlockEntity {
     void setCardboardPersistentDataContainer(CraftPersistentDataContainer c);
 
     CraftPersistentDataTypeRegistry getCardboardDTR();
+
+	Set<ComponentType<?>> applyComponentsSet(ComponentMap defaultComponents, ComponentChanges components);
 
 }
