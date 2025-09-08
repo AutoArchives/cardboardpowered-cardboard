@@ -38,11 +38,13 @@ public class MixinWorldChunk implements IWorldChunk {
             this.bukkit = new CardboardChunk((WorldChunk)(Object)this);
         }
     }
-    
+
+    /*
     @Override
     public BlockState setBlockState(BlockPos blockposition, BlockState iblockdata, boolean moved, boolean doPlace) {
     	// TODO: support doPlace
     	return ((WorldChunk)(Object)this).setBlockState(blockposition, iblockdata, moved);
     }
+    */
 
 }

@@ -17,8 +17,10 @@ public interface IWorldChunk {
 
     Chunk getBukkitChunk();
 
+    /*
 	public default BlockState setBlockState(BlockPos blockposition, BlockState iblockdata, boolean moved, boolean doPlace) {
 		return null;
 	}
+	*/
 
 }

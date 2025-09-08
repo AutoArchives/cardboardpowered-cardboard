@@ -191,7 +191,7 @@ public class CraftInventoryCustom extends CraftInventory {
 
         @Override
         public boolean isEmpty() {
-            Iterator<ItemStack> iterator = this.items.iterator();
+            java.util.Iterator<ItemStack> iterator = this.items.iterator();
             ItemStack itemstack;
 
             do {

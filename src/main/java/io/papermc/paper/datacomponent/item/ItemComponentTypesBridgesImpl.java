@@ -38,7 +38,8 @@ public final class ItemComponentTypesBridgesImpl implements ItemComponentTypesBr
 
     @Override
     public Unbreakable.Builder unbreakable() {
-        return new PaperUnbreakable.BuilderImpl();
+        return null; // Removed in 1.21.8
+    	// return new PaperUnbreakable.BuilderImpl();
     }
 
     @Override

@@ -324,7 +324,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
 
         //chunkproviderserver.getLightingProvider().setTaskBatchSize(500);
         this.tickStartTimeNanos = Util.getMeasuringTimeMs();
-        chunkproviderserver.addTicket(ChunkTicketType.START, new ChunkPos(blockposition), 11, Unit.INSTANCE);
+        chunkproviderserver.addTicket(ChunkTicketType.START, new ChunkPos(blockposition), 11); // , Unit.INSTANCE);
 
         while (chunkproviderserver.getTotalChunksLoadedCount() != 441)
             this.executeModerately();

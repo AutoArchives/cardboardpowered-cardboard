@@ -2,6 +2,7 @@ package io.papermc.paper.datacomponent.item;
 
 import io.papermc.paper.block.BlockPredicate;
 import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.registry.data.util.Conversions;
 import io.papermc.paper.registry.set.PaperRegistrySets;
 import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 import net.minecraft.component.type.BlockPredicatesComponent;
+import net.minecraft.predicate.component.ComponentsPredicate;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import org.bukkit.craftbukkit.util.Handleable;
@@ -49,10 +51,8 @@ public record PaperItemAdventurePredicate(
         private boolean showInTooltip = true;
 
         @Override
-        public ItemAdventurePredicate.Builder addPredicate(final BlockPredicate predicate) {
-            this.predicates.add(new net.minecraft.predicate.BlockPredicate(Optional.ofNullable(predicate.blocks()).map(
-                blocks -> PaperRegistrySets.convertToNms(RegistryKeys.BLOCK, Registries_Bridge.BUILT_IN_CONVERSIONS.lookup(), blocks)
-            ), Optional.empty(), Optional.empty()));
+        public ItemAdventurePredicate.Builder addPredicate(BlockPredicate predicate) {
+            this.predicates.add(new net.minecraft.predicate.BlockPredicate(Optional.ofNullable(predicate.blocks()).map(blocks -> PaperRegistrySets.convertToNms(RegistryKeys.BLOCK, Conversions.global().lookup(), blocks)), Optional.empty(), Optional.empty(), ComponentsPredicate.EMPTY));
             return this;
         }
 
