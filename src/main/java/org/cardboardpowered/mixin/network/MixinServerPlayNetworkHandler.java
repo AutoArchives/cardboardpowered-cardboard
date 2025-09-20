@@ -95,7 +95,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
     private static final AtomicIntegerFieldUpdater<ServerPlayNetworkHandler> chatSpamField = AtomicIntegerFieldUpdater.newUpdater(ServerPlayNetworkHandler.class, "messageCooldownBukkit");
 
     @Shadow
-    public int prevTeleportCheckTicks;
+    public int lastTeleportCheckTicks;
 
     @Shadow
     public int ticks;
@@ -341,7 +341,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
             positionmoverotation = new PlayerPosition(positionmoverotation.position(), positionmoverotation.deltaMovement(), positionmoverotation.yaw(), 0.0f);
         }
         this.justTeleported = true;
-        this.prevTeleportCheckTicks = this.ticks;
+        this.lastTeleportCheckTicks = this.ticks;
         if (++this.requestedTeleportId == Integer.MAX_VALUE) {
             this.requestedTeleportId = 0;
         }
@@ -372,7 +372,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
         if (++this.requestedTeleportId == Integer.MAX_VALUE)
             this.requestedTeleportId = 0;
 
-        this.prevTeleportCheckTicks = this.ticks;
+        this.lastTeleportCheckTicks = this.ticks;
         this.player.updatePositionAndAngles(d0, d1, d2, f, f1);
 
         this.player.networkHandler.sendPacket(PlayerPositionLookS2CPacket.of(this.requestedTeleportId, positionmoverotation, set));
@@ -445,13 +445,13 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
                 if (this.ticks == 0) ((ServerPlayNetworkHandler)(Object)this).syncWithPlayerPosition();
 
                 if (this.requestedTeleportPos != null) {
-                    if (this.ticks - this.prevTeleportCheckTicks > 20) {
-                        this.prevTeleportCheckTicks = this.ticks;
+                    if (this.ticks - this.lastTeleportCheckTicks > 20) {
+                        this.lastTeleportCheckTicks = this.ticks;
                         this.requestTeleport(this.requestedTeleportPos.x, this.requestedTeleportPos.y, this.requestedTeleportPos.z, this.player.getYaw(), this.player.getPitch());
                     }
                     this.allowedPlayerTicks = 20; // Bukkit
                 } else {
-                    this.prevTeleportCheckTicks = this.ticks;
+                    this.lastTeleportCheckTicks = this.ticks;
                     double d0 = packet.getX(this.player.getX()); // clamp
                     double d1 = packet.getY(this.player.getY());
                     double d2 = packet.getZ(this.player.getZ());
@@ -555,7 +555,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
                             }
 
                             this.player.updatePositionAndAngles(d0, d1, d2, f, f1);
-                            if (!this.player.noClip && !this.player.isSleeping() && (flag1 && worldserver.isSpaceEmpty(this.player, axisalignedbb) || this.isPlayerNotCollidingWithBlocks(worldserver, axisalignedbb, d0, d1, d2))) {
+                            if (!this.player.noClip && !this.player.isSleeping() && (flag1 && worldserver.isSpaceEmpty(this.player, axisalignedbb) || this.isEntityNotCollidingWithBlocks(worldserver, axisalignedbb, d0, d1, d2))) {
                                 this.requestTeleport(d3, d4, d5, f, f1);
                             } else {
                                 this.player.updatePositionAndAngles(prevX, prevY, prevZ, prevYaw, prevPitch);
@@ -634,7 +634,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
     }
 
     @Shadow
-    private boolean isPlayerNotCollidingWithBlocks(WorldView world, Box box, double d0, double d1, double d2) {
+    private boolean isEntityNotCollidingWithBlocks(WorldView world, Box box, double d0, double d1, double d2) {
         return false;
     }
 
