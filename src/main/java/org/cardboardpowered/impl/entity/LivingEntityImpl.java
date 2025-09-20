@@ -104,8 +104,10 @@ import net.minecraft.entity.projectile.WitherSkullEntity;
 import net.minecraft.entity.projectile.thrown.EggEntity;
 import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
 import net.minecraft.entity.projectile.thrown.ExperienceBottleEntity;
+import net.minecraft.entity.projectile.thrown.LingeringPotionEntity;
 import net.minecraft.entity.projectile.thrown.PotionEntity;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;
+import net.minecraft.entity.projectile.thrown.SplashPotionEntity;
 import net.minecraft.entity.projectile.thrown.ThrownEntity;
 import net.minecraft.item.Items;
 //<<<<<<< HEAD
@@ -113,6 +115,8 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Nullables;
+
 import org.apache.commons.lang.Validate;
 import org.bukkit.Chunk;
 import org.bukkit.FluidCollisionMode;
@@ -341,8 +345,9 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public Player getKiller() {
-        return nms.attackingPlayer == null ? null : (Player) ((IMixinEntity)nms.attackingPlayer).getBukkitEntity();
+        return Nullables.map(this.getHandle().getAttackingPlayer(), player -> (Player) ((IMixinEntity)player).getBukkitEntity());
     }
+
 
     @Override
     public double getLastDamage() {
@@ -892,13 +897,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
             }
             ((PersistentProjectileEntity)launch).setVelocity(this.getHandle(), this.getHandle().getPitch(), this.getHandle().getYaw(), 0.0f, Trident.class.isAssignableFrom(projectile) ? 2.5f : 3.0f, 1.0f);
         } else if (ThrownPotion.class.isAssignableFrom(projectile)) {
-            if (LingeringPotion.class.isAssignableFrom(projectile)) {
-                launch = new PotionEntity(world, this.getHandle(), new net.minecraft.item.ItemStack(Items.LINGERING_POTION));
-                ((PotionEntity)launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(Material.LINGERING_POTION, 1)));
-            } else {
-                launch = new PotionEntity(world, this.getHandle(), new net.minecraft.item.ItemStack(Items.SPLASH_POTION));
-                ((PotionEntity)launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(Material.SPLASH_POTION, 1)));
-            }
+        	launch = LingeringPotion.class.isAssignableFrom(projectile) ? new LingeringPotionEntity(world, this.getHandle(), new net.minecraft.item.ItemStack(Items.LINGERING_POTION)) : new SplashPotionEntity(world, this.getHandle(), new net.minecraft.item.ItemStack(Items.SPLASH_POTION));
             ((ThrownEntity)launch).setVelocity(this.getHandle(), this.getHandle().getPitch(), this.getHandle().getYaw(), -20.0f, 0.5f, 1.0f);
         } else if (ThrownExpBottle.class.isAssignableFrom(projectile)) {
             launch = new ExperienceBottleEntity(world, this.getHandle(), new net.minecraft.item.ItemStack(Items.EXPERIENCE_BOTTLE));

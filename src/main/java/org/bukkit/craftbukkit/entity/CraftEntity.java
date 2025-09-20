@@ -9,6 +9,7 @@ import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import org.cardboardpowered.interfaces.IMixinWorld;
 import com.mojang.brigadier.LiteralMessage;
+import com.mojang.logging.LogUtils;
 
 import ca.spottedleaf.concurrentutil.executor.standard.PrioritisedExecutor;
 import me.isaiah.common.entity.IRemoveReason;
@@ -22,8 +23,10 @@ import net.minecraft.server.network.PlayerAssociatedNetworkHandler;
 import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.server.world.ServerChunkLoadingManager.EntityTracker;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.NbtWriteView;
 import net.minecraft.text.Text;
 import net.minecraft.text.Texts;
+import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import org.bukkit.Bukkit;
@@ -65,6 +68,7 @@ import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.interfaces.IWorldChunk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -280,6 +284,9 @@ import net.minecraft.util.math.Vec3d;
 
 public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
+	
+	private static final Logger LOGGER = LogUtils.getLogger();
+	
     protected static PermissibleBase perm;
     private static final CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new CraftPersistentDataTypeRegistry();
 
@@ -724,14 +731,13 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public void setRotation(float yaw, float pitch) {
-        yaw = Location.normalizeYaw(yaw);
-        pitch = Location.normalizePitch(pitch);
-
-        nms.setYaw(yaw);
-        nms.setPitch(pitch);
-        nms.prevYaw = yaw;
-        nms.prevPitch = pitch;
-        nms.setHeadYaw(yaw);
+        yaw = Location.normalizeYaw((float)yaw);
+        pitch = Location.normalizePitch((float)pitch);
+        this.nms.setYaw(yaw);
+        this.nms.setPitch(pitch);
+        this.nms.lastYaw = yaw;
+        this.nms.lastPitch = pitch;
+        this.nms.setHeadYaw(yaw);
     }
 
     @Override
@@ -825,13 +831,17 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         return spigot;
     }
 
-    public NbtCompound save() {
-        NbtCompound nbttagcompound = new NbtCompound();
-
-        nbttagcompound.putString("id", getHandle().getSavedEntityId());
-        getHandle().writeNbt(nbttagcompound);
-
-        return nbttagcompound;
+    protected NbtCompound save() {
+        try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "Entity#save", LOGGER);){
+            NbtWriteView tagValueOutput = NbtWriteView.create(problemReporter, this.getHandle().getRegistryManager());
+            
+            // TODO: Check getSavedEntityId/getEncodeId(true)
+           
+            tagValueOutput.putString("id", this.getHandle().getSavedEntityId());
+            this.getHandle().writeData(tagValueOutput);
+            NbtCompound nbtCompound = tagValueOutput.getNbt();
+            return nbtCompound;
+        }
     }
 
     // SPIGOT-759
@@ -1411,9 +1421,12 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     }
 
     private net.minecraft.entity.Entity copy(net.minecraft.world.World level) {
-        NbtCompound compoundTag = new NbtCompound();
-        this.getHandle().saveSelfNbt(compoundTag);
-        return net.minecraft.entity.EntityType.loadEntityWithPassengers(compoundTag, level, net.minecraft.entity.SpawnReason.LOAD, java.util.function.Function.identity());
+        try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "Entity#copy", LOGGER);){
+            NbtWriteView output = NbtWriteView.create(problemReporter, level.getRegistryManager());
+            this.getHandle().saveSelfData(output);
+            net.minecraft.entity.Entity entity = net.minecraft.entity.EntityType.loadEntityWithPassengers(output.getNbt(), level, net.minecraft.entity.SpawnReason.LOAD, java.util.function.Function.identity());
+            return entity;
+        }
     }
     
     /*
@@ -1500,12 +1513,17 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
 	@Override
 	public String getAsString() {
-		NbtCompound tag = new NbtCompound();
-		if (!this.getHandle().saveSelfNbt(tag)) {
-			return null;
-		}
-		return tag.asString();
-	}
+        try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "Entity#toString", LOGGER);){
+            NbtWriteView output = NbtWriteView.create(problemReporter, this.getHandle().getRegistryManager());
+            // .saveAsPassenger(output, false, true, true)
+            if (!this.getHandle().saveSelfData(output)) {
+                String string = null;
+                return string;
+            }
+            String string = output.getNbt().toString();
+            return string;
+        }
+    }
 
 	// 1.21
     public void broadcastHurtAnimation(Collection<Player> players) {

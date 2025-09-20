@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.function.Function;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.InstrumentComponent;
 import net.minecraft.component.type.MapPostProcessingComponent;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
@@ -54,6 +55,7 @@ import net.minecraft.util.DyeColor;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.Unit;
 import org.bukkit.craftbukkit.CraftMusicInstrument;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.inventory.CraftMetaFirework;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.inventory.ItemRarity;
@@ -69,7 +71,8 @@ public final class DataComponentAdapters {
         DataComponentAdapters.registerIdentity(DataComponentTypes.MAX_STACK_SIZE);
         DataComponentAdapters.registerIdentity(DataComponentTypes.MAX_DAMAGE);
         DataComponentAdapters.registerIdentity(DataComponentTypes.DAMAGE);
-        DataComponentAdapters.register(DataComponentTypes.UNBREAKABLE, PaperUnbreakable::new);
+        DataComponentAdapters.registerUntyped(DataComponentTypes.UNBREAKABLE);
+        //DataComponentAdapters.register(DataComponentTypes.UNBREAKABLE, PaperUnbreakable::new);
         DataComponentAdapters.register(DataComponentTypes.CUSTOM_NAME, CardboardAdventure::asAdventure, CardboardAdventure::asVanilla);
         DataComponentAdapters.register(DataComponentTypes.ITEM_NAME, CardboardAdventure::asAdventure, CardboardAdventure::asVanilla);
         DataComponentAdapters.register(DataComponentTypes.ITEM_MODEL, CardboardAdventure::asAdventure, CardboardAdventure::asVanilla);
@@ -80,8 +83,12 @@ public final class DataComponentAdapters {
         DataComponentAdapters.register(DataComponentTypes.CAN_BREAK, PaperItemAdventurePredicate::new);
         DataComponentAdapters.register(DataComponentTypes.ATTRIBUTE_MODIFIERS, PaperItemAttributeModifiers::new);
         DataComponentAdapters.register(DataComponentTypes.CUSTOM_MODEL_DATA, PaperCustomModelData::new);
-        DataComponentAdapters.registerUntyped(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP);
-        DataComponentAdapters.registerUntyped(DataComponentTypes.HIDE_TOOLTIP);
+        // DataComponentAdapters.registerUntyped(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP);
+        // DataComponentAdapters.registerUntyped(DataComponentTypes.HIDE_TOOLTIP);
+        
+        // TODO
+        // DataComponentAdapters.register(DataComponentTypes.TOOLTIP_DISPLAY, PaperTooltipDisplay::new);
+        
         DataComponentAdapters.registerIdentity(DataComponentTypes.REPAIR_COST);
         DataComponentAdapters.registerIdentity(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
         DataComponentAdapters.registerUntyped(DataComponentTypes.INTANGIBLE_PROJECTILE);
@@ -110,7 +117,8 @@ public final class DataComponentAdapters {
         DataComponentAdapters.register(DataComponentTypes.WRITTEN_BOOK_CONTENT, PaperWrittenBookContent::new);
         DataComponentAdapters.register(DataComponentTypes.WRITABLE_BOOK_CONTENT, PaperWritableBookContent::new);
         DataComponentAdapters.register(DataComponentTypes.TRIM, PaperItemArmorTrim::new);
-        DataComponentAdapters.register(DataComponentTypes.INSTRUMENT, CraftMusicInstrument::minecraftHolderToBukkit, CraftMusicInstrument::bukkitToMinecraftHolder);
+        //DataComponentAdapters.register(DataComponentTypes.INSTRUMENT, CraftMusicInstrument::minecraftHolderToBukkit, CraftMusicInstrument::bukkitToMinecraftHolder);
+        DataComponentAdapters.register(DataComponentTypes.INSTRUMENT, nms -> CraftMusicInstrument.minecraftHolderToBukkit(nms.instrument().resolveEntry(CraftRegistry.getMinecraftRegistry()).orElseThrow()), api -> new InstrumentComponent(CraftMusicInstrument.bukkitToMinecraftHolder(api)));
         DataComponentAdapters.register(DataComponentTypes.OMINOUS_BOTTLE_AMPLIFIER, PaperOminousBottleAmplifier::new);
         DataComponentAdapters.register(DataComponentTypes.JUKEBOX_PLAYABLE, PaperJukeboxPlayable::new);
         DataComponentAdapters.register(DataComponentTypes.RECIPES, nms -> MCUtil.transformUnmodifiable(nms, CardboardAdventure::asAdventureKey), api -> MCUtil.transformUnmodifiable(api, key -> PaperAdventure.asVanilla(RegistryKeys.RECIPE, key)));
@@ -120,7 +128,7 @@ public final class DataComponentAdapters {
         DataComponentAdapters.register(DataComponentTypes.PROFILE, PaperResolvableProfile::new);
         DataComponentAdapters.register(DataComponentTypes.NOTE_BLOCK_SOUND, CardboardAdventure::asAdventure, CardboardAdventure::asVanilla);
         DataComponentAdapters.register(DataComponentTypes.BANNER_PATTERNS, PaperBannerPatternLayers::new);
-        DataComponentAdapters.register(DataComponentTypes.BASE_COLOR, nms -> org.bukkit.DyeColor.getByWoolData((byte)((byte)nms.getIndex())), api -> DyeColor.byId(api.getWoolData()));
+        DataComponentAdapters.register(DataComponentTypes.BASE_COLOR, nms -> org.bukkit.DyeColor.getByWoolData((byte)((byte)nms.getIndex())), api -> DyeColor.byIndex(api.getWoolData()));
         DataComponentAdapters.register(DataComponentTypes.POT_DECORATIONS, PaperPotDecorations::new);
         DataComponentAdapters.register(DataComponentTypes.CONTAINER, PaperItemContainerContents::new);
         DataComponentAdapters.register(DataComponentTypes.BLOCK_STATE, PaperBlockItemDataProperties::new);
