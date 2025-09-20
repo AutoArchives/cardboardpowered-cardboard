@@ -382,7 +382,13 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
         this.player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(d0 - d3, d1 - d4, d2 - d5, f - f2, f1 - f3, set, this.requestedTeleportId));
     }
     */
+    
+    
 
+    /**
+     * NOTE:
+     * TODO: Move PlayerToggleSneakEvent to onPlayerInput
+     */
     @Inject(at = @At("HEAD"), method = "onClientCommand", cancellable = true)
     public void onClientCommand(ClientCommandC2SPacket packetplayinentityaction, CallbackInfo ci) {
         NetworkThreadUtils.forceMainThread(packetplayinentityaction, get(), (ServerWorld) this.player.getWorld());
@@ -391,12 +397,14 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
 
         if (e.ic_isRemoved()) return;
         switch (packetplayinentityaction.getMode()) {
-            case PRESS_SHIFT_KEY:
+            /*
+        	case PRESS_SHIFT_KEY:
             case RELEASE_SHIFT_KEY:
                 PlayerToggleSneakEvent event = new PlayerToggleSneakEvent(this.getPlayer(), packetplayinentityaction.getMode() == ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY);
                 CraftServer.INSTANCE.getPluginManager().callEvent(event);
                 if (event.isCancelled()) ci.cancel();
                 break;
+            */
             case START_SPRINTING:
             case STOP_SPRINTING:
                 PlayerToggleSprintEvent e2 = new PlayerToggleSprintEvent(this.getPlayer(), packetplayinentityaction.getMode() == ClientCommandC2SPacket.Mode.START_SPRINTING);

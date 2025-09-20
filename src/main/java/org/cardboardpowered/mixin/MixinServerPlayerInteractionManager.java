@@ -163,7 +163,7 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
     public void blockBreak(BlockPos blockposition, CallbackInfoReturnable<Boolean> ci) {
         org.bukkit.block.Block bblock = CraftBlock.at(world, blockposition);
 
-        boolean isSwordNoBreak = !this.player.getMainHandStack().getItem().canMine(this.world.getBlockState(blockposition), this.world, blockposition, this.player);
+        boolean isSwordNoBreak = !this.player.getMainHandStack().canMine(this.world.getBlockState(blockposition), this.world, blockposition, this.player);
         if (world.getBlockEntity(blockposition) == null && !isSwordNoBreak) {
             BlockUpdateS2CPacket packet = new BlockUpdateS2CPacket(this.world, blockposition);
             // TODO 1.17ify packet.state = Blocks.AIR.getDefaultState();

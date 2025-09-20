@@ -196,7 +196,7 @@ import net.minecraft.entity.mob.ElderGuardianEntity;
 import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.entity.mob.EndermiteEntity;
 import net.minecraft.entity.mob.EvokerEntity;
-import net.minecraft.entity.mob.FlyingEntity;
+// import net.minecraft.entity.mob.FlyingEntity;
 import net.minecraft.entity.mob.GhastEntity;
 import net.minecraft.entity.mob.GiantEntity;
 import net.minecraft.entity.mob.GuardianEntity;
@@ -1211,11 +1211,13 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
                 else { return new CraftSlime(server, (SlimeEntity) entity); }
             }
             // Flying
-            else if (entity instanceof FlyingEntity) {
+            
+            // TODO: check 1.21.8:
+            //else if (entity instanceof FlyingEntity) {
                 if (entity instanceof GhastEntity) { return new CardboardGhast(server, (GhastEntity) entity); }
                 else if (entity instanceof PhantomEntity) { return new CardboardPhantom(server, (PhantomEntity) entity); }
-                else { return new CardboardFlying(server, (FlyingEntity) entity); }
-            }
+                // else { return new CardboardFlying(server, (FlyingEntity) entity); }
+            //}
             else if (entity instanceof EnderDragonEntity) {
                 return new CardboardEnderdragon(server, (EnderDragonEntity) entity);
             }

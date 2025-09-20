@@ -19,7 +19,7 @@ package org.cardboardpowered.mixin.entity;
 
 import org.cardboardpowered.interfaces.IMixinCommandOutput;
 import org.cardboardpowered.interfaces.IMixinEntity;
-import com.llamalad7.mixinextras.sugar.Local;
+// import com.llamalad7.mixinextras.sugar.Local;
 
 import me.isaiah.common.entity.IRemoveReason;
 import net.minecraft.entity.Entity;
@@ -371,11 +371,11 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
                 else { return new CraftSlime(server, (SlimeEntity) entity); }
             }
             // Flying
-            else if (entity instanceof FlyingEntity) {
+            // else if (entity instanceof FlyingEntity) {
                 if (entity instanceof GhastEntity) { return new CardboardGhast(server, (GhastEntity) entity); }
                 else if (entity instanceof PhantomEntity) { return new CardboardPhantom(server, (PhantomEntity) entity); }
-                else { return new CardboardFlying(server, (FlyingEntity) entity); }
-            }
+            //    else { return new CardboardFlying(server, (FlyingEntity) entity); }
+            // }
             else if (entity instanceof EnderDragonEntity) {
                 return new CardboardEnderdragon(server, (EnderDragonEntity) entity);
             }

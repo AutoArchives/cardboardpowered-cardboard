@@ -7,7 +7,7 @@ import net.minecraft.block.dispenser.DispenserBehavior;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.item.ArmorItem;
+// import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.util.math.BlockPointer;
@@ -26,6 +26,13 @@ import org.spongepowered.asm.mixin.Overwrite;
 
 import java.util.List;
 
+@Mixin(value = net.minecraft.server.dedicated.MinecraftDedicatedServer.class, priority = 900)
+@Deprecated
+public class MixinArmorItem {
+	
+}
+
+/*
 @MixinInfo(events = {"BlockDispenseArmorEvent"})
 @Mixin(value = ArmorItem.class, priority = 900)
 public class MixinArmorItem {
@@ -82,6 +89,6 @@ public class MixinArmorItem {
             return true;
         }
     }
-    */
+    
 
-}
+}*/

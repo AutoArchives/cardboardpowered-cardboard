@@ -34,6 +34,8 @@ import net.minecraft.server.WorldGenerationProgressListener;
 import net.minecraft.server.WorldGenerationProgressListenerFactory;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.dedicated.DedicatedServer;
+import net.minecraft.server.dedicated.MinecraftDedicatedServer;
+import net.minecraft.server.world.ChunkTicketManager;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
@@ -43,9 +45,12 @@ import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.random.RandomSequencesState;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
-import net.minecraft.world.ForcedChunkState;
+import net.minecraft.world.Difficulty;
+// import net.minecraft.world.ForcedChunkState;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.PlayerSaveHandler;
 import net.minecraft.world.SaveProperties;
@@ -312,6 +317,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         }
     }
 
+    /*
     @Override
     public void loadSpawn(WorldGenerationProgressListener worldloadlistener, ServerWorld worldserver) {
         this.forceTicks = true;
@@ -351,6 +357,33 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         //chunkproviderserver.getLightingProvider().setTaskBatchSize(5);
         this.updateMobSpawnOptions();
 
+        this.forceTicks = false;
+    }*/
+    
+    public void prepareLevels(WorldGenerationProgressListener listener, ServerWorld serverLevel) {
+        int i2;
+        this.forceTicks = true;
+        CardboardMod.LOGGER.info("Preparing start region for dim: serverLevel.getRegistryKey().getValue()");
+        BlockPos sharedSpawnPos = serverLevel.getSpawnPos();
+        listener.start(new ChunkPos(sharedSpawnPos));
+        ServerChunkManager chunkSource = serverLevel.getChunkManager();
+        this.tickStartTimeNanos = Util.getMeasuringTimeNano();
+        serverLevel.setSpawnPos(sharedSpawnPos, serverLevel.getSpawnAngle());
+        int _int = serverLevel.getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
+        int n = i2 = _int > 0 ? MathHelper.square(WorldGenerationProgressListener.getStartRegionSize(_int)) : 0;
+        while (chunkSource.getTotalChunksLoadedCount() < i2) {
+            this.executeModerately();
+        }
+        this.executeModerately();
+        ServerWorld serverLevel1 = serverLevel;
+        ChunkTicketManager ticketStorage = serverLevel1.getPersistentStateManager().get(ChunkTicketManager.STATE_TYPE);
+        if (ticketStorage != null) {
+            ticketStorage.promoteToRealTickets();
+        }
+        this.executeModerately();
+        listener.stop();
+        this.updateMobSpawnOptions();
+        // serverLevel.setMobSpawnOptions(serverLevel.getDifficulty() != Difficulty.PEACEFUL && ((MinecraftDedicatedServer)(Object)this).propertiesLoader.getPropertiesHandler().spawnMonsters);
         this.forceTicks = false;
     }
     
