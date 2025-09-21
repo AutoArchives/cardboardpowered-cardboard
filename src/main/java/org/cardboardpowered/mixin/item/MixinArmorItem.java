@@ -16,6 +16,8 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.bukkit.Bukkit;
+import org.bukkit.Keyed;
+import org.bukkit.Registry;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.event.block.BlockDispenseArmorEvent;
 import org.cardboardpowered.impl.block.DispenserBlockHelper;
@@ -24,13 +26,33 @@ import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
-import java.util.List;
+import io.papermc.paper.registry.RegistryAccess;
 
+import java.util.List;
+import java.util.Objects;
+
+
+/**
+ * Test
+ */
+@Mixin(value = Registry.class, remap = false)
+public interface MixinArmorItem {
+	
+	@Overwrite(remap = false)
+    private static <A extends Keyed> Registry<A> legacyRegistryFor(final Class<A> clazz) {
+        return Objects.requireNonNull(RegistryAccess.registryAccess().getRegistry(clazz),
+        		() -> "No registry present for class name: " + clazz.getName() + ". This is a bug.");
+    }
+	
+}
+
+/*
 @Mixin(value = net.minecraft.server.dedicated.MinecraftDedicatedServer.class, priority = 900)
 @Deprecated
 public class MixinArmorItem {
 	
 }
+*/
 
 /*
 @MixinInfo(events = {"BlockDispenseArmorEvent"})

@@ -1,6 +1,9 @@
 package io.papermc.paper.registry.data.util;
 
 import com.mojang.serialization.JavaOps;
+
+import io.papermc.paper.adventure.PaperAdventure;
+import io.papermc.paper.registry.data.client.ClientTextureAsset;
 // import io.papermc.paper.adventure.WrapperAwareSerializer;
 import net.kyori.adventure.text.Component;
 import net.minecraft.registry.DynamicRegistryManager;
@@ -8,6 +11,8 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.text.Text;
+import net.minecraft.util.AssetInfo;
+
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
@@ -62,5 +67,14 @@ public class Conversions {
     public Component asAdventure(@Nullable Text vanilla) {
         return vanilla == null ? Component.empty() : this.serializer.deserialize(vanilla);
     }
+    
+    public ClientTextureAsset asBukkit(@Nullable AssetInfo clientTextureAsset) {
+        return clientTextureAsset == null ? null : ClientTextureAsset.clientTextureAsset(PaperAdventure.asAdventure(clientTextureAsset.id()), PaperAdventure.asAdventure(clientTextureAsset.texturePath()));
+    }
+
+    public AssetInfo asVanilla(@Nullable ClientTextureAsset clientTextureAsset) {
+        return clientTextureAsset == null ? null : new AssetInfo(PaperAdventure.asVanilla(clientTextureAsset.identifier()), PaperAdventure.asVanilla(clientTextureAsset.texturePath()));
+    }
+
 
 }

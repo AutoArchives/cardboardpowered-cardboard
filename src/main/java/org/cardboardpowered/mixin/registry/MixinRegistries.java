@@ -84,16 +84,19 @@ public class MixinRegistries {
 			// TODO Auto-generated catch block
 			throw new RuntimeException(e);
 		}
-    	
+
     	DEFAULT_ENTRIES.forEach((id, initializer) -> {
+    		System.out.println("REG: B0");
             if (initializer.get() == null) {
                 CardboardMod.LOGGER.warning("Unable to bootstrap registry: " + id);
             }
-            
+
             io.papermc.paper.registry.PaperRegistryAccess.instance().lockReferenceHolders(
             		RegistryKey.ofRegistry(id)
             	); // Paper - lock reference holder creation
+            
         });
+    	
     }
     
     @Shadow
