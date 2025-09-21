@@ -32,17 +32,6 @@ public record PaperItemEnchantments(
     }
 
     @Override
-    public boolean showInTooltip() {
-        return true; // TODO
-    	// return this.impl.showInTooltip;
-    }
-
-    @Override
-    public ItemEnchantments showInTooltip(final boolean showInTooltip) {
-        return new PaperItemEnchantments(this.impl/*.withShowInTooltip(showInTooltip)*/, this.enchantments);
-    }
-
-    @Override
     public net.minecraft.component.type.ItemEnchantmentsComponent getHandle() {
         return this.impl;
     }
@@ -50,7 +39,6 @@ public record PaperItemEnchantments(
     static final class BuilderImpl implements ItemEnchantments.Builder {
 
         private final Map<Enchantment, Integer> enchantments = new Object2ObjectOpenHashMap<>();
-        private boolean showInTooltip = true;
 
         @Override
         public ItemEnchantments.Builder add(final Enchantment enchantment, final int level) {
@@ -67,12 +55,6 @@ public record PaperItemEnchantments(
         @Override
         public ItemEnchantments.Builder addAll(final Map<Enchantment, Integer> enchantments) {
             enchantments.forEach(this::add);
-            return this;
-        }
-
-        @Override
-        public ItemEnchantments.Builder showInTooltip(final boolean showInTooltip) {
-            this.showInTooltip = showInTooltip;
             return this;
         }
 

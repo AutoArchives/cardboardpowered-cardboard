@@ -1,15 +1,21 @@
 package org.cardboardpowered.impl.entity;
 
 import net.kyori.adventure.text.Component;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FishingBobberEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang.Validate;
+import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftProjectile;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FishHook;
+import org.bukkit.inventory.EquipmentSlot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
@@ -257,5 +263,14 @@ public class CardboardFishHook extends CraftProjectile implements FishHook {
         // hook.resetTimeUntilLured();
         // hook.fishTravelCountdown = 0;
 	}
+
+	@Override
+	public int retrieve(EquipmentSlot slot) {
+        FishingBobberEntity fishingHook = this.getHandle();
+        PlayerEntity playerOwner = fishingHook.getPlayerOwner();
+        Hand hand = CraftEquipmentSlot.getHand(slot);
+        ItemStack itemInHand = playerOwner.getStackInHand(hand);
+        return fishingHook.use(itemInHand); // .retrieve(itemInHand, hand);
+    }
 
 }

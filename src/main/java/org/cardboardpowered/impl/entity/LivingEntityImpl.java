@@ -71,6 +71,9 @@ import com.destroystokyo.paper.block.TargetBlockInfo.FluidMode;
 import com.destroystokyo.paper.entity.TargetEntityInfo;
 import com.google.common.collect.Sets;
 import com.javazilla.bukkitfabric.Utils;
+
+import io.papermc.paper.world.damagesource.CombatTracker;
+
 import org.cardboardpowered.interfaces.IMixinArrowEntity;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinLivingEntity;
@@ -1289,6 +1292,13 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 	@Override
 	public void setRiptiding(boolean riptiding) {
 		// this.getHandle().setLivingFlag(4, riptiding);
+	}
+
+	@Override
+	public @NotNull CombatTracker getCombatTracker() {
+		// TODO Auto-generated method stub
+		// TODO: return this.getHandle().getDamageTracker().paperCombatTracker;
+		return null;
 	}
 
 }

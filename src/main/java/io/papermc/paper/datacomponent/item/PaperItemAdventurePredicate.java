@@ -31,16 +31,6 @@ public record PaperItemAdventurePredicate(
     }
 
     @Override
-    public boolean showInTooltip() {
-        return false; // this.impl.showInTooltip();
-    }
-
-    @Override
-    public PaperItemAdventurePredicate showInTooltip(final boolean showInTooltip) {
-        return new PaperItemAdventurePredicate(this.impl/*.withShowInTooltip(showInTooltip)*/);
-    }
-
-    @Override
     public List<BlockPredicate> predicates() {
         return convert(this.impl);
     }
@@ -61,12 +51,6 @@ public record PaperItemAdventurePredicate(
             for (final BlockPredicate predicate : predicates) {
                 this.addPredicate(predicate);
             }
-            return this;
-        }
-
-        @Override
-        public ItemAdventurePredicate.Builder showInTooltip(final boolean showInTooltip) {
-            this.showInTooltip = showInTooltip;
             return this;
         }
 

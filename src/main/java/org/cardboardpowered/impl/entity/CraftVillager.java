@@ -384,4 +384,15 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         return true;
     }
 
+	@Override
+	public void updateDemand() {
+		// TODO: Access widen
+		// this.getHandle().updateDemandBonus();
+	}
+
+	@Override
+	public void restock() {
+		this.getHandle().restock();
+	}
+
 }

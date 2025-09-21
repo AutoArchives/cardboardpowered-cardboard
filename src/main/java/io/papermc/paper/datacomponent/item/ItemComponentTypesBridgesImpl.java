@@ -2,6 +2,8 @@ package io.papermc.paper.datacomponent.item;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.base.Preconditions;
+
+import io.papermc.paper.datacomponent.item.BlocksAttacks.Builder;
 import io.papermc.paper.registry.PaperRegistries;
 import io.papermc.paper.registry.set.PaperRegistrySets;
 import io.papermc.paper.registry.set.RegistryKeySet;
@@ -36,11 +38,12 @@ public final class ItemComponentTypesBridgesImpl implements ItemComponentTypesBr
         return new PaperPotDecorations.BuilderImpl();
     }
 
+    /*
     @Override
     public Unbreakable.Builder unbreakable() {
-        return null; // Removed in 1.21.8
-    	// return new PaperUnbreakable.BuilderImpl();
+        return null; // Removed in 1.21.8: return new PaperUnbreakable.BuilderImpl();
     }
+    */
 
     @Override
     public ItemLore.Builder lore() {
@@ -238,4 +241,19 @@ public final class ItemComponentTypesBridgesImpl implements ItemComponentTypesBr
             new OminousBottleAmplifierComponent(amplifier)
         );
     }
+
+	@Override
+	public Builder blocksAttacks() {
+		return new PaperBlocksAttacks.BuilderImpl();
+	}
+
+	@Override
+	public io.papermc.paper.datacomponent.item.TooltipDisplay.Builder tooltipDisplay() {
+		return new PaperTooltipDisplay.BuilderImpl();
+	}
+
+	@Override
+	public io.papermc.paper.datacomponent.item.Weapon.Builder weapon() {
+		return new PaperWeapon.BuilderImpl();
+	}
 }

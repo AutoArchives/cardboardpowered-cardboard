@@ -5,6 +5,9 @@ import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import net.minecraft.entity.effect.StatusEffectInstance;
 import org.bukkit.Color;
 import org.bukkit.craftbukkit.potion.CraftPotionType;
@@ -100,4 +103,15 @@ public record PaperPotionContents(
             ));
         }
     }
+
+	@Override
+	public @Unmodifiable List<PotionEffect> allEffects() {
+		return StreamSupport.stream(this.impl.getEffects().spliterator(), false).map(CardboardPotionUtil::toBukkit).collect(Collectors.toUnmodifiableList());
+	}
+
+	@Override
+	public Color computeEffectiveColor() {
+		return Color.fromARGB((int)this.impl.getColor());
+	}
+
 }

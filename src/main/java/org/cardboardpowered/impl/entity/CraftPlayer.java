@@ -159,6 +159,7 @@ import io.papermc.paper.entity.LookAnchor;
 import io.papermc.paper.entity.PaperPlayerGiveResult;
 import io.papermc.paper.entity.PlayerGiveResult;
 import io.papermc.paper.math.Position;
+import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import it.unimi.dsi.fastutil.shorts.ShortArraySet;
@@ -2879,5 +2880,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 	public void setDeathScreenScore(int score) {
 		getHandle().setScore(score);
 	}
+
+	@Override
+	public void openVirtualSign(Position block, Side side) {
+        if (this.getHandle().networkHandler == null) {
+            return;
+        }
+        this.getHandle().networkHandler.sendPacket(new net.minecraft.network.packet.s2c.play.SignEditorOpenS2CPacket(MCUtil.toBlockPos(block), side == Side.FRONT));
+    }
 
 }

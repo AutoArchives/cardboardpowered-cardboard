@@ -8,12 +8,15 @@ import io.papermc.paper.registry.RegistryBuilderFactory;
 import io.papermc.paper.registry.data.util.Conversions;
 import io.papermc.paper.registry.entry.RegistryEntryMeta;
 import java.util.function.Consumer;
+
+import net.minecraft.dialog.type.Dialog;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import org.bukkit.Art;
 import org.bukkit.Keyed;
+import org.bukkit.MusicInstrument;
 import org.bukkit.craftbukkit.CraftRegistry;
 
 @SuppressWarnings("BoundedWildcard")
@@ -27,10 +30,19 @@ public final class InlinedRegistryBuilderProviderImpl implements InlinedRegistry
         return buildableMeta.registryTypeMapper().createBukkit(RegistryEntry.of(builderFactory.requireBuilder().build()));
     }
 
-    @Override
+    // @Override
     public Art createPaintingVariant(final Consumer<RegistryBuilderFactory<Art, ? extends PaintingVariantRegistryEntry.Builder>> value) {
         return create(RegistryKeys.PAINTING_VARIANT, value::accept);
     }
     
+    /*
+    public MusicInstrument createInstrument(Consumer<RegistryBuilderFactory<MusicInstrument, ? extends InstrumentRegistryEntry.Builder>> value) {
+        return (MusicInstrument)Conversions.global().createApiInstanceFromBuilder(RegistryKey.INSTRUMENT, value);
+    }
+
+    public Dialog createDialog(Consumer<RegistryBuilderFactory<Dialog, ? extends DialogRegistryEntry.Builder>> value) {
+        return (Dialog)Conversions.global().createApiInstanceFromBuilder(io.papermc.paper.registry.RegistryKey.DIALOG, value);
+    }
+    */
     
 }

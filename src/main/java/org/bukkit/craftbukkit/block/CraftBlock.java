@@ -877,6 +877,11 @@ public class CraftBlock implements Block {
         this.getNMSFluid().onScheduledTick(getHandle(), this.position, this.getNMS());
 	}
 
+	@Override
+	public boolean isSuffocating() {
+		return this.getNMS().shouldSuffocate(this.world, this.position);
+	}
+
     //
 
 }

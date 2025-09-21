@@ -1,6 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.entity.passive.WolfEntity;
+import net.minecraft.entity.passive.WolfSoundVariant;
 import net.minecraft.entity.passive.WolfVariant;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -14,8 +15,11 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Wolf;
+import org.jetbrains.annotations.NotNull;
 
 import com.google.common.base.Preconditions;
+
+import io.papermc.paper.registry.HolderableBase;
 
 public class CraftWolf extends CraftTameableAnimal implements Wolf {
 
@@ -157,6 +161,40 @@ public class CraftWolf extends CraftTameableAnimal implements Wolf {
         @Override
         public int hashCode() {
             return this.getKey().hashCode();
+        }
+    }
+
+	@Override
+	public @NotNull SoundVariant getSoundVariant() {
+		return null; // TODO
+		// return CraftSoundVariant.minecraftHolderToBukkit(this.getHandle().getSoundVariant());
+	}
+
+	@Override
+	public void setSoundVariant(@NotNull SoundVariant soundVariant) {
+		// TODO Auto-generated method stub
+		// this.getHandle().setSoundVariant(CraftSoundVariant.bukkitToMinecraftHolder(soundVariant));
+	}
+	
+	public static class CraftSoundVariant extends HolderableBase<WolfSoundVariant> implements Wolf.SoundVariant {
+        public static Wolf.SoundVariant minecraftToBukkit(WolfSoundVariant minecraft) {
+            return (Wolf.SoundVariant)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.WOLF_SOUND_VARIANT);
+        }
+
+        public static Wolf.SoundVariant minecraftHolderToBukkit(RegistryEntry<WolfSoundVariant> minecraft) {
+            return (Wolf.SoundVariant)CraftRegistry.minecraftHolderToBukkit(minecraft, RegistryKeys.WOLF_SOUND_VARIANT);
+        }
+
+        public static WolfSoundVariant bukkitToMinecraft(Wolf.SoundVariant bukkit) {
+            return (WolfSoundVariant)CraftRegistry.bukkitToMinecraft(bukkit);
+        }
+
+        public static RegistryEntry<WolfSoundVariant> bukkitToMinecraftHolder(Wolf.SoundVariant bukkit) {
+            return CraftRegistry.bukkitToMinecraftHolder(bukkit);
+        }
+
+        public CraftSoundVariant(RegistryEntry<WolfSoundVariant> holder) {
+            super(holder);
         }
     }
 

@@ -4,11 +4,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.logging.LogUtils;
 
+import io.papermc.paper.adventure.PaperAdventure;
+
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinScreenHandler;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import net.fabricmc.loader.api.FabricLoader;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.BlockState;
@@ -895,6 +898,18 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
         return CraftLocation.toBukkit(respawnConfig.pos(), level.getWorld());
     }
     // Paper end
+
+    // 1.21.6:
+	@Override
+	public int getCooldown(Key key) {
+        ItemCooldownManager.Entry cooldown = this.getHandle().getItemCooldownManager().entries.get(PaperAdventure.asVanilla(key));
+        return cooldown == null ? 0 : Math.max(0, cooldown.endTick() - this.getHandle().getItemCooldownManager().tick);
+    }
+
+	@Override
+    public void setCooldown(Key key, int ticks) {
+        this.getHandle().getItemCooldownManager().set(PaperAdventure.asVanilla(key), ticks);
+    }
 
 }
 

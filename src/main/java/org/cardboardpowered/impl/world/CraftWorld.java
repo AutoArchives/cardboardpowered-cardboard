@@ -2963,5 +2963,10 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 		*/
 		return null;
 	}
+
+	@Override
+	public boolean hasBonusChest() {
+		return true; // this.nms.option.getGeneratorOptions().hasBonusChest();
+	}
 	
 }

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -33,6 +34,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Biome;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.craftbukkit.CraftFeatureFlag;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
@@ -77,6 +79,8 @@ import org.cardboardpowered.BukkitLogger;
 import org.cardboardpowered.interfaces.IMixinMaterial;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.DSL.TypeReference;
+import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 
@@ -108,6 +112,7 @@ import net.minecraft.item.SpawnEggItem;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.nbt.StringNbtReader;
@@ -204,6 +209,8 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     private static final Map<Material, net.minecraft.fluid.Fluid> MATERIAL_FLUID = new HashMap<>();
     private static final Map<org.bukkit.entity.EntityType, net.minecraft.entity.EntityType<?>> ENTITY_TYPE_ENTITY_TYPES = new HashMap();
     private static final Map<net.minecraft.entity.EntityType<?>, org.bukkit.entity.EntityType> ENTITY_TYPES_ENTITY_TYPE = new HashMap();
+    
+    private static final StringNbtReader<NbtElement> SNBT_REGISTRY_UNAWARE_PARSER;
 
     static {
         BlockImplUtil.setMN((IMagicNumbers)INSTANCE);
@@ -240,6 +247,8 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
             Registries.BLOCK.getOptionalValue(key).ifPresent((block) -> MATERIAL_BLOCK.put(material, block));
             Registries.FLUID.getOptionalValue(key).ifPresent((fluid) -> MATERIAL_FLUID.put(material, fluid));
         }
+        
+        SNBT_REGISTRY_UNAWARE_PARSER = StringNbtReader.fromOps(NbtOps.INSTANCE);
     }
 
     public static final Map<String, Material> BY_NAME = Unsafe.getStatic(Material.class, "BY_NAME");
@@ -1042,7 +1051,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     }
 	
 	 private Biome customBiome;
-	    @Override
+	    // @Override
 	    public Biome getCustomBiome() {
 	        if (this.customBiome == null) {
 	            this.customBiome = new org.bukkit.craftbukkit.block.CraftBiome(NamespacedKey.minecraft("custom"), null);
@@ -1117,6 +1126,135 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 				boolean preservePassengers) {
 			// TODO Auto-generated method stub
 			return null;
+		}
+		@Override
+		public @NotNull Map<String, Object> serializeStack(ItemStack itemStack) {
+	        if (itemStack.isEmpty()) {
+	            return Map.of("id", "minecraft:air", "DataVersion", this.getDataVersion(), "schema_version", 1);
+	        }
+	        NbtCompound tag = (NbtCompound)net.minecraft.item.ItemStack.CODEC.encodeStart(CraftRegistry.getMinecraftRegistry().getOps(NbtOps.INSTANCE), CraftItemStack.asNMSCopy(itemStack)).getOrThrow();
+	        NbtHelper.putDataVersion(tag);
+	        LinkedHashMap<String, Object> ret = new LinkedHashMap<String, Object>();
+	        tag.asCompound().get().forEach((key, value) -> {
+	            switch (key) {
+	                case "id": {
+	                    ret.put("id", value.asString().get());
+	                    break;
+	                }
+	                case "count": {
+	                    ret.put("count", value.asInt().get());
+	                    break;
+	                }
+	                case "components": {
+	                    LinkedHashMap components = new LinkedHashMap();
+	                    value.asCompound().ifPresent(compoundTag -> compoundTag.forEach((componentKey, componentTag) -> {
+	                        String serializedComponent = componentTag.toString();
+	                        components.put(componentKey, serializedComponent);
+	                    }));
+	                    ret.put("components", components);
+	                    break;
+	                }
+	                case "DataVersion": {
+	                    ret.put("DataVersion", value.asInt().get());
+	                    break;
+	                }
+	                default: {
+	                    throw new IllegalStateException("Unexpected value: " + key);
+	                }
+	            }
+	        });
+	        ret.put("schema_version", 1);
+	        return ret;
+		}
+
+		@NotNull
+	    public ItemStack deserializeStack(@NotNull Map<String, Object> args) {
+	        int n;
+	        Object object = args.getOrDefault("schema_version", 1);
+	        if (object instanceof Number) {
+	            Number val = (Number)object;
+	            n = val.intValue();
+	        } else {
+	            n = -1;
+	        }
+	        int version = n;
+	        NbtCompound tag = new NbtCompound();
+	        args.forEach((key, value) -> {
+	            switch (key) {
+	                case "id": {
+	                    tag.putString("id", (String)value);
+	                    break;
+	                }
+	                case "count": {
+	                    tag.putInt("count", ((Number)value).intValue());
+	                    break;
+	                }
+	                case "components": {
+	                    if (version == 1) {
+	                        HashMap<String, String> componentMap;
+	                        if (value instanceof Map) {
+	                            componentMap = (HashMap<String, String>)value;
+	                        } else if (value instanceof MemorySection) {
+	                            MemorySection memory = (MemorySection)value;
+	                            componentMap = new HashMap<String, String>();
+	                            for (String memoryKey : memory.getKeys(false)) {
+	                                componentMap.put(memoryKey, memory.getString(memoryKey));
+	                            }
+	                        } else {
+	                            throw new IllegalArgumentException("components must be a Map");
+	                        }
+	                        NbtCompound componentsTag = new NbtCompound();
+	                        componentMap.forEach((componentKey, componentString) -> {
+	                            NbtElement componentTag;
+	                            try {
+	                                componentTag = SNBT_REGISTRY_UNAWARE_PARSER.read((String)componentString);
+	                            }
+	                            catch (CommandSyntaxException e2) {
+	                                throw new RuntimeException("Error parsing item stack data components", e2);
+	                            }
+	                            componentsTag.put((String)componentKey, componentTag);
+	                        });
+	                        tag.put("components", componentsTag);
+	                        break;
+	                    }
+	                    throw new IllegalStateException("Unexpected version: " + version);
+	                }
+	                case "DataVersion": {
+	                    tag.putInt("DataVersion", ((Number)value).intValue());
+	                    break;
+	                }
+	                case "==": 
+	                case "schema_version": {
+	                    break;
+	                }
+	                default: {
+	                    throw new IllegalStateException("Unexpected value: " + key);
+	                }
+	            }
+	        });
+	        return this.deserializeItem(tag);
+	    }
+		
+		private ItemStack deserializeItem(NbtCompound compound) {
+	        int dataVersion = compound.getInt("DataVersion", 0);
+	        
+	        // compound = PlatformHooks.get().convertNBT(TypeReferences.ITEM_STACK, Schemas.getFixer(), compound, dataVersion, this.getDataVersion());
+	        compound = platformhooks$convertNBT(TypeReferences.ITEM_STACK, Schemas.getFixer(), compound, dataVersion, this.getDataVersion());
+
+	        
+	        if (compound.getString("id", "minecraft:air").equals("minecraft:air")) {
+	            return CraftItemStack.asCraftMirror(net.minecraft.item.ItemStack.EMPTY);
+	        }
+	        return CraftItemStack.asCraftMirror((net.minecraft.item.ItemStack)net.minecraft.item.ItemStack.CODEC.parse(CraftRegistry.getMinecraftRegistry().getOps(NbtOps.INSTANCE), compound).getOrThrow());
+	    }
+		
+		/**
+		 * Cardboard
+		 * 
+		 * @see {@link ca.spottedleaf.moonrise.paper.PaperHooks}
+		 */
+		public NbtCompound platformhooks$convertNBT(TypeReference type, DataFixer dataFixer, NbtCompound nbt, int fromVersion, int toVersion) {
+			return (NbtCompound)dataFixer.update(type, new Dynamic<>(NbtOps.INSTANCE, nbt), fromVersion, toVersion).getValue();
 		}
 
 

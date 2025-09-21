@@ -200,6 +200,11 @@ public class MixinItemStack implements IItemStack {
         }
     }
 
+	@Override
+	public org.bukkit.inventory.ItemStack asBukkitCopy() {
+        return CraftItemStack.asCraftMirror( ((ItemStack)(Object)this).copy());
+    }
+	
     /*
     @Inject(
     		method = "method_56097",

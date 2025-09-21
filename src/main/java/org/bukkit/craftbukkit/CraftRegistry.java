@@ -301,5 +301,10 @@ public class CraftRegistry<B extends Keyed, M> implements Registry<B> {
         Preconditions.checkArgument((bukkit != null ? 1 : 0) != 0);
         return ((Holderable)bukkit).getHolder();
     }
+
+	@Override
+	public Stream<NamespacedKey> keyStream() {
+        return this.minecraftRegistry.getIds().stream().map(CraftNamespacedKey::fromMinecraft);
+    }
 	
 }

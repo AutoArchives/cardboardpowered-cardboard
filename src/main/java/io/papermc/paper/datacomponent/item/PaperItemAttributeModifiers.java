@@ -1,8 +1,13 @@
 package io.papermc.paper.datacomponent.item;
 
 import com.google.common.base.Preconditions;
+
+import io.papermc.paper.datacomponent.item.attribute.AttributeModifierDisplay;
+import io.papermc.paper.datacomponent.item.attribute.PaperAttributeModifierDisplay;
 import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.component.type.AttributeModifiersComponent;
+
 import java.util.List;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -21,7 +26,8 @@ public record PaperItemAttributeModifiers(
     private static List<Entry> convert(final net.minecraft.component.type.AttributeModifiersComponent nmsModifiers) {
         return MCUtil.transformUnmodifiable(nmsModifiers.modifiers(), nms -> new PaperEntry(
         		CraftAttribute.minecraftHolderToBukkit(nms.attribute()),
-        		CraftAttributeInstance.convert(nms.modifier(), nms.slot())
+        		CraftAttributeInstance.convert(nms.modifier(), nms.slot()),
+        		PaperAttributeModifierDisplay.fromNms(nms.display())
         ));
     }
 
@@ -31,28 +37,16 @@ public record PaperItemAttributeModifiers(
     }
 
     @Override
-    public boolean showInTooltip() {
-        return false; // return this.impl.showInTooltip();
-    }
-
-    @Override
-    public ItemAttributeModifiers showInTooltip(final boolean showInTooltip) {
-    	return new PaperItemAttributeModifiers(this.impl);
-    	//return new PaperItemAttributeModifiers(this.impl.withShowInTooltip(showInTooltip));
-    }
-
-    @Override
     public @Unmodifiable List<Entry> modifiers() {
         return convert(this.impl);
     }
 
-    public record PaperEntry(Attribute attribute, AttributeModifier modifier) implements ItemAttributeModifiers.Entry {
+    public record PaperEntry(Attribute attribute, AttributeModifier modifier, AttributeModifierDisplay display) implements ItemAttributeModifiers.Entry {
     }
 
     static final class BuilderImpl implements ItemAttributeModifiers.Builder {
 
         private final List<net.minecraft.component.type.AttributeModifiersComponent.Entry> entries = new ObjectArrayList<>();
-        private boolean showInTooltip = false; // net.minecraft.component.type.AttributeModifiersComponent.DEFAULT.showInTooltip();
 
         @Override
         public io.papermc.paper.datacomponent.item.ItemAttributeModifiers.Builder addModifier(final Attribute attribute, final AttributeModifier modifier) {
@@ -76,10 +70,10 @@ public record PaperItemAttributeModifiers(
             ));
             return this;
         }
-
-        @Override
-        public ItemAttributeModifiers.Builder showInTooltip(final boolean showInTooltip) {
-            this.showInTooltip = showInTooltip;
+        
+        public ItemAttributeModifiers.Builder addModifier(Attribute attribute, AttributeModifier modifier, EquipmentSlotGroup equipmentSlotGroup, AttributeModifierDisplay display) {
+            Preconditions.checkArgument((boolean)this.entries.stream().noneMatch(e2 -> e2.modifier().id().equals(CraftNamespacedKey.toMinecraft(modifier.getKey())) && e2.attribute().matchesId(CraftNamespacedKey.toMinecraft(attribute.getKey()))), (String)"Cannot add 2 modifiers with identical keys on the same attribute (modifier %s for attribute %s)", (Object)modifier.getKey(), (Object)attribute.getKey());
+            this.entries.add(new AttributeModifiersComponent.Entry(CraftAttribute.bukkitToMinecraftHolder(attribute), CraftAttributeInstance.convert(modifier), CraftEquipmentSlot.getNMSGroup(equipmentSlotGroup), PaperAttributeModifierDisplay.toNms(display)));
             return this;
         }
 

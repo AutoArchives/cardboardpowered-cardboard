@@ -48,6 +48,8 @@ import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import io.papermc.paper.ban.BanListType;
+import io.papermc.paper.configuration.PaperServerConfiguration;
+import io.papermc.paper.configuration.ServerConfiguration;
 import io.papermc.paper.datapack.DatapackManager;
 import io.papermc.paper.math.Position;
 import io.papermc.paper.registry.RegistryAccess;
@@ -297,6 +299,8 @@ public class CraftServer implements Server {
     
     private CraftServerTickManager serverTickManager;
     private CraftServerLinks serverLinks;
+    
+    private final ServerConfiguration serverConfig = new PaperServerConfiguration();
     
     public CraftServer(MinecraftDedicatedServer nms) {
     	
@@ -2572,6 +2576,16 @@ public class CraftServer implements Server {
 	@Override
 	public void restart() {
 		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public @NotNull ServerConfiguration getServerConfig() {
+		return this.serverConfig;
+	}
+
+	@Override
+	public boolean forcesDefaultGameMode() {
+		return CraftServer.console.getProperties().forceGameMode;
 	}
     
     // public boolean isTickPaused() {

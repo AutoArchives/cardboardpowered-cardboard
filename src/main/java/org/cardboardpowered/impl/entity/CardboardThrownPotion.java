@@ -63,7 +63,7 @@ public class CardboardThrownPotion extends CraftProjectile implements ThrownPoti
 
     @Override
     public EntityType getType() {
-        return EntityType.POTION;
+        return EntityType.SPLASH_POTION;
     }
 
     @Override

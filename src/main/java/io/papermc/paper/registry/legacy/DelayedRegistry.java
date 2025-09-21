@@ -73,4 +73,9 @@ public final class DelayedRegistry<T extends Keyed, R extends Registry<T>> imple
 	public int size() {
 		return this.delegate().size();
 	}
+
+	@Override
+	public Stream<NamespacedKey> keyStream() {
+		return this.delegate().keyStream();
+	}
 }

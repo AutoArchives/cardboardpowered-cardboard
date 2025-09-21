@@ -1,12 +1,16 @@
 package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
+
+import io.papermc.paper.adventure.PaperAdventure;
+import net.kyori.adventure.text.Component;
 import net.minecraft.item.Instrument;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import org.bukkit.MusicInstrument;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
+import org.bukkit.Sound;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.jetbrains.annotations.NotNull;
 
@@ -86,5 +90,26 @@ public class CraftMusicInstrument extends MusicInstrument implements Handleable<
         }
         return translatableContents.getKey();
     }
+
+	@Override
+	public float getDuration() {
+		return ((Instrument)this.getHandle()).useDuration();
+	}
+
+	@Override
+	public float getRange() {
+		return ((Instrument)this.getHandle()).range();
+	}
+
+	@Override
+	public Component description() {
+		return PaperAdventure.asAdventure(((Instrument)this.getHandle()).description());
+	}
+
+	@Override
+	public Sound getSound() {
+		return CraftSound.MUSIC_DISC_11;
+		// return CraftSound.minecraftHolderToBukkit(((Instrument)this.getHandle()).soundEvent());
+	}
 
 }

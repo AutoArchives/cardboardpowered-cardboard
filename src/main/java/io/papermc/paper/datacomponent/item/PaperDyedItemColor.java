@@ -17,17 +17,6 @@ public record PaperDyedItemColor(
         return Color.fromRGB(this.impl.rgb() & 0x00FFFFFF); // skip alpha channel
     }
 
-    @Override
-    public boolean showInTooltip() {
-        return false; // this.impl.showInTooltip();
-    }
-
-    @Override
-    public DyedItemColor showInTooltip(final boolean showInTooltip) {
-        // return new PaperDyedItemColor(this.impl.withShowInTooltip(showInTooltip));
-    	return new PaperDyedItemColor(this.impl);
-    }
-
     static final class BuilderImpl implements DyedItemColor.Builder {
 
         private Color color = Color.WHITE;
@@ -36,12 +25,6 @@ public record PaperDyedItemColor(
         @Override
         public DyedItemColor.Builder color(final Color color) {
             this.color = color;
-            return this;
-        }
-
-        @Override
-        public DyedItemColor.Builder showInTooltip(final boolean showInTooltip) {
-            this.showInToolTip = showInTooltip;
             return this;
         }
 

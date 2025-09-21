@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.inventory;
 
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.attribute.CraftAttribute;
 import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -13,6 +14,7 @@ import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemConvertible;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
@@ -38,6 +40,7 @@ import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.FuelRegistry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Rarity;
 
@@ -344,5 +347,15 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
         }
         return Collections.unmodifiableSet(types);
     }
+
+	@Override
+	public int getBurnDuration() {
+		net.minecraft.item.ItemStack stack;
+        FuelRegistry fuelValues = CraftServer.server.getFuelRegistry();
+        if (!fuelValues.isFuel(stack = new net.minecraft.item.ItemStack((ItemConvertible)this.getHandle()))) {
+            return 0;
+        }
+        return fuelValues.getFuelTicks(stack);
+	}
 	
 }

@@ -383,4 +383,10 @@ public class CraftBlockState implements BlockState {
 		return new CraftBlockState(this, location);
 	}
 
+	@Override
+	public boolean isSuffocating() {
+		this.requirePlaced();
+        return this.data.shouldSuffocate(this.getWorldHandle(), this.position);
+	}
+
 }

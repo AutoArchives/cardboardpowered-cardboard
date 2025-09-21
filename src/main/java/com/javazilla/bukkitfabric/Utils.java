@@ -35,6 +35,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.interfaces.IMixinWorld;
+import org.jetbrains.annotations.Nullable;
 
 import me.isaiah.common.cmixin.IMixinGlobalPos;
 import net.minecraft.component.type.AttributeModifierSlot;
@@ -80,8 +81,7 @@ public class Utils {
         return (MemoryModuleType<U>) Registries.MEMORY_MODULE_TYPE.get(CraftNamespacedKey.toMinecraft(memoryKey.getKey()));
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T, U> MemoryKey<U> toMemoryKey(MemoryModuleType<T> memoryModuleType) {
+    public static <T, U> MemoryKey<?> toMemoryKey(MemoryModuleType<T> memoryModuleType) {
         return MemoryKey.getByKey(CraftNamespacedKey.fromMinecraft(Registries.MEMORY_MODULE_TYPE.getId(memoryModuleType)));
     }
 

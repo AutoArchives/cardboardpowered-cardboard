@@ -17,11 +17,12 @@ import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.inventory.CardboardAbstractInventoryView;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.jetbrains.annotations.NotNull;
-
+import org.jetbrains.annotations.Nullable;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.MenuType;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 
 public class CraftContainer extends ScreenHandler {
@@ -79,6 +80,11 @@ public class CraftContainer extends ScreenHandler {
                 CardboardInventoryView.sendInventoryTitleChange(this, title);
                 this.title = title;
             }
+
+			@Override
+			public @Nullable MenuType getMenuType() {
+				return CraftMenuType.minecraftToBukkit(CraftContainer.getNotchInventoryType(inventory));
+			}
         }, player, id);
     }
 

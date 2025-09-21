@@ -16,21 +16,6 @@ public record PaperJukeboxPlayable(
         return this.impl;
     }
 
-    // @Override
-    public boolean showInTooltip() {
-        return false; // 1.21.8: removed
-    	// return this.impl.showInTooltip();
-    }
-
-    @Override
-    public PaperJukeboxPlayable showInTooltip(final boolean showInTooltip) {
-        // return new PaperJukeboxPlayable(this.impl.withShowInTooltip(showInTooltip));
-        
-        // TODO: 1.21.8: removed
-        
-        return new PaperJukeboxPlayable(this.impl);
-    }
-
     @Override
     public JukeboxSong jukeboxSong() {
         return this.impl.song()
@@ -42,16 +27,9 @@ public record PaperJukeboxPlayable(
     static final class BuilderImpl implements JukeboxPlayable.Builder {
 
         private JukeboxSong song;
-        private boolean showInTooltip = true;
 
         BuilderImpl(final JukeboxSong song) {
             this.song = song;
-        }
-
-        @Override
-        public JukeboxPlayable.Builder showInTooltip(final boolean showInTooltip) {
-            this.showInTooltip = showInTooltip;
-            return this;
         }
 
         @Override

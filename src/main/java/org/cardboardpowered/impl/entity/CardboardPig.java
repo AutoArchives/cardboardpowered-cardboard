@@ -1,11 +1,16 @@
 package org.cardboardpowered.impl.entity;
 
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Pig;
 
+import io.papermc.paper.registry.HolderableBase;
 import net.minecraft.entity.passive.PigEntity;
+import net.minecraft.entity.passive.PigVariant;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 
 public class CardboardPig extends CraftAnimals implements Pig {
 
@@ -63,6 +68,39 @@ public class CardboardPig extends CraftAnimals implements Pig {
     @Override
     public EntityType getType() {
         return EntityType.PIG;
+    }
+    
+    public Pig.Variant getVariant() {
+        return CraftVariant.minecraftHolderToBukkit(this.getHandle().getVariant());
+    }
+
+    public void setVariant(Pig.Variant variant) {
+        // TODO: set vis.
+        // this.getHandle().setVariant(CraftVariant.bukkitToMinecraftHolder(variant));
+    }
+
+    public static class CraftVariant
+    extends HolderableBase<PigVariant>
+    implements Pig.Variant {
+        public static Pig.Variant minecraftToBukkit(PigVariant minecraft) {
+            return (Pig.Variant)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.PIG_VARIANT);
+        }
+
+        public static Pig.Variant minecraftHolderToBukkit(RegistryEntry<PigVariant> minecraft) {
+            return (Pig.Variant)CraftRegistry.minecraftHolderToBukkit(minecraft, RegistryKeys.PIG_VARIANT);
+        }
+
+        public static PigVariant bukkitToMinecraft(Pig.Variant bukkit) {
+            return (PigVariant)CraftRegistry.bukkitToMinecraft(bukkit);
+        }
+
+        public static RegistryEntry<PigVariant> bukkitToMinecraftHolder(Pig.Variant bukkit) {
+            return CraftRegistry.bukkitToMinecraftHolder(bukkit);
+        }
+
+        public CraftVariant(RegistryEntry<PigVariant> holder) {
+            super(holder);
+        }
     }
 
 }

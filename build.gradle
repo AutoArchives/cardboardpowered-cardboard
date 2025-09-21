@@ -50,10 +50,12 @@ configurations.all {
 }
 
 // Paper-API
-def PAPER_VER_A = "1.21.4-R0.1-SNAPSHOT"
+// def PAPER_VER_A = "1.21.4-R0.1-SNAPSHOT"
 // def PAPER_VER_B = "1.21.4-R0.1-20250313.115134-207"
 //paper-api-1.21.4-R0.1-20250511.205801-225
-def PAPER_VER_B = "1.21.4-R0.1-20250511.205801-225"
+// def PAPER_VER_B = "1.21.4-R0.1-20250511.205801-225"
+def PAPER_VER_A = "1.21.6-R0.1-SNAPSHOT"
+def PAPER_VER_B = "1.21.6-R0.1-20250630.094942-50"
 
 def PAPER_API_VER = "io.papermc.paper:paper-api:" + PAPER_VER_B
 
@@ -72,7 +74,7 @@ dependencies {
     	"fabric-screen-handler-api-v1"
     ]
 
-    DefaultExternalModuleDependency ic = new DefaultExternalModuleDependency("com.javazilla.mods", "icommon-fabric-1.21.4", "1.21.4", null)
+    DefaultExternalModuleDependency ic = new DefaultExternalModuleDependency("com.javazilla.mods", "icommon-fabric-1.21.7", "1.21.7", null)
     ic.setChanging(true) // Make sure we get the latest version of iCommon
 
     // include(modImplementation(ic))

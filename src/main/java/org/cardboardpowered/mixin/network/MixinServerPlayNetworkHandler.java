@@ -555,7 +555,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
                             }
 
                             this.player.updatePositionAndAngles(d0, d1, d2, f, f1);
-                            if (!this.player.noClip && !this.player.isSleeping() && (flag1 && worldserver.isSpaceEmpty(this.player, axisalignedbb) || this.isEntityNotCollidingWithBlocks(worldserver, axisalignedbb, d0, d1, d2))) {
+                            if (!this.player.noClip && !this.player.isSleeping() && (flag1 && worldserver.isSpaceEmpty(this.player, axisalignedbb) || this.isEntityNotCollidingWithBlocks(worldserver, this.player, axisalignedbb, d0, d1, d2))) {
                                 this.requestTeleport(d3, d4, d5, f, f1);
                             } else {
                                 this.player.updatePositionAndAngles(prevX, prevY, prevZ, prevYaw, prevPitch);
@@ -634,7 +634,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
     }
 
     @Shadow
-    private boolean isEntityNotCollidingWithBlocks(WorldView world, Box box, double d0, double d1, double d2) {
+    private boolean isEntityNotCollidingWithBlocks(WorldView world, Entity e, Box box, double d0, double d1, double d2) {
         return false;
     }
 

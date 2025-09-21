@@ -5,6 +5,7 @@ import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.inventory.CraftContainer;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.inventory.CraftMenuType;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -12,8 +13,9 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MenuType;
 import org.jetbrains.annotations.NotNull;
-
+import org.jetbrains.annotations.Nullable;
 import org.cardboardpowered.interfaces.IMixinScreenHandler;
 
 import net.minecraft.screen.ScreenHandler;
@@ -118,6 +120,12 @@ public class CardboardInventoryView<T extends ScreenHandler, I extends Inventory
 	public I getTopInventorya() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public @Nullable MenuType getMenuType() {
+		ScreenHandlerType<?> menuType = ((ScreenHandler)this.container).getType();
+        return menuType != null ? CraftMenuType.minecraftToBukkit(menuType) : null;
 	}
 
 }

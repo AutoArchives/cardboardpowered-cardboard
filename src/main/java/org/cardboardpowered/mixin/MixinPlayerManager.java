@@ -242,7 +242,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         }
         if (isRespawn) {
         	// TODO
-            // new PlayerPostRespawnEvent((Player)player.getBukkitEntity(), location, isBedSpawn, isAnchorSpawn, teleportTransition.missingRespawnBlock(), eventReason).callEvent();
+            new PlayerPostRespawnEvent((Player)((IMixinServerEntityPlayer)player).getBukkitEntity(), location, isBedSpawn, isAnchorSpawn, teleportTransition.missingRespawnBlock(), eventReason).callEvent();
         }
         return serverPlayer;
     }
@@ -750,7 +750,8 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         }
         if (isRespawn) {
         	// TODO
-            new PlayerPostRespawnEvent((Player)((IMixinServerEntityPlayer)player).getBukkitEntity(), location, isBedSpawn).callEvent();
+            new PlayerPostRespawnEvent((Player)((IMixinServerEntityPlayer)player).getBukkitEntity(), location, isBedSpawn, isAnchorSpawn, teleportTransition.missingRespawnBlock(), PlayerRespawnEvent.RespawnReason.DEATH).callEvent();
+            // new PlayerPostRespawnEvent((Player)((IMixinServerEntityPlayer)player).getBukkitEntity(), location, isBedSpawn).callEvent();
         }
         return serverPlayer;
     }

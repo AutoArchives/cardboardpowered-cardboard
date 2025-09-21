@@ -1,6 +1,7 @@
 package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -30,7 +31,9 @@ import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
+import org.cardboardpowered.impl.CardboardPotionUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 
 @DelegateDeserialization(value=SerializableMeta.class)
 class CraftMetaPotion
@@ -360,9 +363,29 @@ implements PotionMeta {
 	}
 
 	@Override
-	public void setBasePotionData(@NotNull PotionData arg0) {
+	public void setBasePotionData(@NotNull PotionData data) {
 		// TODO Auto-generated method stub
-		
+		// this.setBasePotionType(CardboardPotionUtil.fromBukkit(data));
 	}
+
+	@Override
+	public @NotNull @Unmodifiable List<PotionEffect> getAllEffects() {
+		ImmutableList.Builder<PotionEffect> builder = ImmutableList.builder();
+        if (this.hasBasePotionType()) {
+            builder.addAll(this.getBasePotionType().getPotionEffects());
+        }
+        if (this.hasCustomEffects()) {
+            builder.addAll(this.customEffects);
+        }
+        return builder.build();
+	}
+
+	@Override
+	public Color computeEffectiveColor() {
+        if (this.hasColor()) {
+            return this.getColor();
+        }
+        return Color.fromRGB((int)(PotionContentsComponent.mixColors(Collections2.transform(this.getAllEffects(), CardboardPotionUtil::fromBukkit)).orElse(-13083194) & 0xFFFFFF));
+    }
 }
 

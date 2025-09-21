@@ -54,4 +54,9 @@ public final class CraftLectern extends org.bukkit.craftbukkit.block.data.CraftB
     public void setPowered(boolean powered) {
         set(POWERED, powered);
     }
+
+	@Override
+	public void setHasBook(boolean hasBook) {
+		this.set(HAS_BOOK, hasBook);
+	}
 }

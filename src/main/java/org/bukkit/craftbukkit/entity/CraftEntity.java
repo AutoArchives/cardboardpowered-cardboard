@@ -4,6 +4,8 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+
+import org.cardboardpowered.interfaces.IItemStack;
 import org.cardboardpowered.interfaces.IMixinCommandOutput;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
@@ -15,6 +17,7 @@ import ca.spottedleaf.concurrentutil.executor.standard.PrioritisedExecutor;
 import me.isaiah.common.entity.IRemoveReason;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.util.TriState;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
@@ -54,6 +57,7 @@ import org.bukkit.entity.SpawnCategory;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.permissions.PermissibleBase;
 import org.bukkit.permissions.Permission;
@@ -167,6 +171,9 @@ import org.cardboardpowered.impl.entity.WitherSkeletonImpl;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.interfaces.IWorldChunk;
 
+import io.papermc.paper.datacomponent.DataComponentType;
+import io.papermc.paper.datacomponent.DataComponentType.Valued;
+import io.papermc.paper.datacomponent.PaperDataComponentType;
 import io.papermc.paper.entity.LookAnchor;
 import io.papermc.paper.entity.TeleportFlag;
 import io.papermc.paper.threadedregions.scheduler.EntityScheduler;
@@ -1541,6 +1548,51 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 	public void lookAt(double arg0, double arg1, double arg2, @NotNull LookAnchor arg3) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	// 1.21.6:
+
+	@Override
+	public <T> T getData(@NotNull DataComponentType.Valued<T> type) {
+        return this.nms.get(PaperDataComponentType.bukkitToMinecraft(type));
+    }
+
+	@Override
+	public <T> T getDataOrDefault(@NotNull DataComponentType.Valued<? extends T> type, @Nullable T fallback) {
+        return this.nms.getOrDefault(PaperDataComponentType.bukkitToMinecraft(type), fallback);
+    }
+
+	@Override
+	public boolean hasData(DataComponentType type) {
+		return this.nms.get(PaperDataComponentType.bukkitToMinecraft(type)) != null;
+	}
+
+	@Override
+	public void setVisualFire(@NotNull TriState fire) {
+		// TODO Auto-generated method stub
+		// this.getHandle().visualFire = fire;
+	}
+
+	@Override
+	public @NotNull TriState getVisualFire() {
+		// TODO Auto-generated method stub
+		return TriState.NOT_SET;
+	}
+
+	@Override
+	public @NotNull ItemStack getPickItemStack() {
+		net.minecraft.item.ItemStack stack = this.getHandle().getPickBlockStack();
+        return stack == null ? ItemStack.empty() : ((IItemStack) stack).asBukkitCopy();
+	}
+
+	@Override
+	public boolean isTrackedBy(@NotNull Player player) {
+		ServerWorld world = ((CraftWorld)this.getWorld()).getHandle();
+		ServerChunkLoadingManager.EntityTracker entityTracker = (ServerChunkLoadingManager.EntityTracker)world.getChunkManager().chunkLoadingManager.entityTrackers.get(this.getEntityId());
+		if (entityTracker == null) {
+			return false;
+		}
+		return entityTracker.listeners.contains(((CraftPlayer)player).getHandle().networkHandler);
 	}
 
 }

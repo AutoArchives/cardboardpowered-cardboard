@@ -1,6 +1,7 @@
 package org.cardboardpowered.interfaces;
 
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.item.Item;
@@ -12,5 +13,7 @@ public interface IItemStack {
 	public ItemStack getBukkitStack();
 
 	void cb$setItem(Item item);
+
+	ItemStack asBukkitCopy();
 
 }
