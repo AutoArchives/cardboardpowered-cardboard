@@ -1,6 +1,7 @@
 package org.cardboardpowered.mixin;
 
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemType;
 import org.cardboardpowered.impl.CardboardModdedMaterial;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -37,12 +38,17 @@ public class MixinMaterial implements IMixinMaterial {
     //private static final Map<String, Material> BY_NAME;
     //private final int maxStack;
     
-	@Shadow
-	private short durability;
+	// @Shadow
+	// private short durability;
     //public final Class<?> data;
     //private final boolean legacy;
     //private final NamespacedKey key;
     //private boolean isBlock;
+	
+	@Shadow
+	public ItemType asItemType() {
+        return null; // Shadowed
+    }
 	
 	private org.cardboardpowered.impl.CardboardModdedMaterial moddedData;
 
@@ -73,7 +79,10 @@ public class MixinMaterial implements IMixinMaterial {
 	@Overwrite
     public short getMaxDurability() {
 		if (isModded()) return moddedData.getDamage(); // CARDBOARD
-        return this.durability;
+        // return this.durability;
+        
+        ItemType type = asItemType();
+        return type == null ? 0 : type.getMaxDurability();
     }
 	
 	/**

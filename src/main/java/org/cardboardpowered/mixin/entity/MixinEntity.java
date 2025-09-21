@@ -198,8 +198,9 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
     
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;spawnEntity(Lnet/minecraft/entity/Entity;)Z"),
-    		method = "dropStack(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/item/ItemStack;F)Lnet/minecraft/entity/ItemEntity;")
-    public boolean dropStackEvent1(ServerWorld world, Entity entity, ServerWorld sworld, ItemStack itemstack, float f) {
+    		method = "Lnet/minecraft/entity/Entity;dropStack(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/entity/ItemEntity;")
+    		// method = "dropStack(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/item/ItemStack;F)Lnet/minecraft/entity/ItemEntity;")
+    public boolean cardboard$mixinEntity_dropStack_EntityDropItemEvent(ServerWorld world, Entity entity, ServerWorld sworld, ItemStack itemstack, Vec3d offset) {
         if (itemstack.isEmpty())
             return false;
 
@@ -210,7 +211,10 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
                 return false;
             }
         }
-        ItemEntity entityitem = new ItemEntity(this.world, ((Entity) (Object) this).getX(), ((Entity) (Object) this).getY() + (double) f, ((Entity) (Object) this).getZ(), itemstack);
+        ItemEntity entityitem = new ItemEntity(this.world,
+        		((Entity) (Object) this).getX() + offset.x,
+        		((Entity) (Object) this).getY() + offset.y,
+        		((Entity) (Object) this).getZ() + offset.z, itemstack);
 
         entityitem.setToDefaultPickupDelay();
 
