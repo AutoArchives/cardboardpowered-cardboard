@@ -21,7 +21,7 @@ public class MixinTntBlock {
             target = "Lnet/minecraft/block/TntBlock;primeTnt" +
                     "(Lnet/minecraft/world/World;" +
                     "Lnet/minecraft/util/math/BlockPos;" +
-                    "Lnet/minecraft/entity/LivingEntity;)V"),
+                    "Lnet/minecraft/entity/LivingEntity;)Z"),
             cancellable = true)
     private void bukkit_entityChangeBlockEvent(World world, BlockState state, BlockHitResult hit, ProjectileEntity projectile, CallbackInfo ci) {
         if (CraftEventFactory.callEntityChangeBlockEvent(projectile, hit.getBlockPos(), Blocks.AIR.getDefaultState())
