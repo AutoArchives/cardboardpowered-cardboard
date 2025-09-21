@@ -535,8 +535,8 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
      * @author Arclight
      * @author Cardboard
      */
-    @Redirect(method = "setOnFireFromLava", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;setOnFireFor(F)V"))
-    public void arclight_setOnFireFromLava_bukkitEvent(Entity entity, float seconds) {
+    @Redirect(method = "igniteByLava", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;setOnFireFor(F)V"))
+    public void cardboard$mixinEntity_igniteByLava_EntityCombustByBlockEvent(Entity entity, float seconds) {
         if ((Object) this instanceof LivingEntity && ((Entity) (Object) this).fireTicks <= 0) {
             org.bukkit.block.Block damager = null;
             org.bukkit.entity.Entity damagee = this.getBukkitEntity();
