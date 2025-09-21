@@ -6,6 +6,7 @@ import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.RegistryKeyImpl;
 import io.papermc.paper.registry.data.PaperCatTypeRegistryEntry;
 import io.papermc.paper.registry.data.PaperEnchantmentRegistryEntry;
+import io.papermc.paper.registry.data.PaperFrogVariantRegistryEntry;
 import io.papermc.paper.registry.data.PaperGameEventRegistryEntry;
 import io.papermc.paper.registry.data.PaperPaintingVariantRegistryEntry;
 import io.papermc.paper.registry.entry.RegistryEntry;
@@ -129,7 +130,8 @@ public final class PaperRegistries {
 	        RegistryEntryBuilder.start(RegistryKeys.BLOCK, RegistryKey.BLOCK).craft(BlockType.class, CraftBlockType::new).build(),
 	        RegistryEntryBuilder.start(RegistryKeys.ITEM, RegistryKey.ITEM).craft(ItemType.class, CraftItemType::new).build(),
 	        RegistryEntryBuilder.start(RegistryKeys.CAT_VARIANT, RegistryKey.CAT_VARIANT).craft(Cat.Type.class, CardboardCat.CraftType::new).writable(PaperCatTypeRegistryEntry.PaperBuilder::new).delayed(), //.build(),
-	        RegistryEntryBuilder.start(RegistryKeys.FROG_VARIANT, RegistryKey.FROG_VARIANT).craft(Frog.Variant.class, CraftFrog.CraftVariant::new).build(),
+	        RegistryEntryBuilder.start(RegistryKeys.FROG_VARIANT, RegistryKey.FROG_VARIANT).craft(Frog.Variant.class, CraftFrog.CraftVariant::new).writable(PaperFrogVariantRegistryEntry.PaperBuilder::new).delayed(),
+
 	        RegistryEntryBuilder.start(RegistryKeys.VILLAGER_PROFESSION, RegistryKey.VILLAGER_PROFESSION).craft(Villager.Profession.class, CraftVillager.CraftProfession::new).build(),
 	        RegistryEntryBuilder.start(RegistryKeys.VILLAGER_TYPE, RegistryKey.VILLAGER_TYPE).craft(Villager.Type.class, CraftVillager.CraftType::new).build(),
 	        RegistryEntryBuilder.start(RegistryKeys.MAP_DECORATION_TYPE, RegistryKey.MAP_DECORATION_TYPE).craft(MapCursor.Type.class, CraftMapCursor.CraftType::new).build(),

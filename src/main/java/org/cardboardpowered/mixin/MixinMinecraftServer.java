@@ -360,10 +360,15 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         this.forceTicks = false;
     }*/
     
+    @Override
+    public void loadSpawn(WorldGenerationProgressListener a, ServerWorld b) {
+    	prepareLevels(a, b);
+    }
+    
     public void prepareLevels(WorldGenerationProgressListener listener, ServerWorld serverLevel) {
         int i2;
         this.forceTicks = true;
-        CardboardMod.LOGGER.info("Preparing start region for dim: serverLevel.getRegistryKey().getValue()");
+        CardboardMod.LOGGER.info("Preparing start region for dim: " + serverLevel.getRegistryKey().getValue());
         BlockPos sharedSpawnPos = serverLevel.getSpawnPos();
         listener.start(new ChunkPos(sharedSpawnPos));
         ServerChunkManager chunkSource = serverLevel.getChunkManager();

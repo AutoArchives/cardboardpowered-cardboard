@@ -86,7 +86,6 @@ public class MixinRegistries {
 		}
 
     	DEFAULT_ENTRIES.forEach((id, initializer) -> {
-    		System.out.println("REG: B0");
             if (initializer.get() == null) {
                 CardboardMod.LOGGER.warning("Unable to bootstrap registry: " + id);
             }
