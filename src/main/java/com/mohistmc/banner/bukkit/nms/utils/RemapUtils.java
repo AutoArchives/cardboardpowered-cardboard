@@ -61,7 +61,7 @@ public class RemapUtils {
     
     public static boolean DEBUG_VERBOSE_CALLS = true;
 
-    public static String NMS_VERSION = "v1_21_R3"; // "v1_20_R4";
+    public static String NMS_VERSION = "v1_21_R5"; // "v1_21_R3"; // "v1_20_R4";
     
     public static File exportResource(String res, File folder) {
         try (InputStream stream = MappingsReader.class.getClassLoader().getResourceAsStream("mappings/" + res)) {
