@@ -7,6 +7,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidDrainable;
 import net.minecraft.block.FluidFillable;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
@@ -43,9 +44,11 @@ public class MixinBucketItem extends Item {
     @Shadow
     public Fluid fluid;
 
+    // TODO
+    /*
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Inject(method = "use", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/FluidDrainable;tryDrainFluid(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/WorldAccess;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/item/ItemStack;"))
-    public void use_BF(World world, PlayerEntity player, Hand enumhand, CallbackInfoReturnable<ActionResult> ci) {
+    public void use_BF(World world, PlayerEntity player, Hand enumhand, CallbackInfoReturnable<ActionResultHolder<ItemStack>> ci) {
         BlockHitResult movingobjectpositionblock = raycast(world, player, this.fluid == Fluids.EMPTY ? RaycastContext.FluidHandling.NONE : RaycastContext.FluidHandling.ANY);
         BlockHitResult movingobjectpositionblock1 = (BlockHitResult) movingobjectpositionblock;
         BlockPos blockposition = movingobjectpositionblock1.getBlockPos();
@@ -64,9 +67,10 @@ public class MixinBucketItem extends Item {
             }
         }
     }
+    */
 
     @Inject(method = "placeFluid", at = @At("HEAD"), cancellable = true)
-    public void placeFluid_BF(PlayerEntity player, World world, BlockPos blockposition, BlockHitResult movingobjectpositionblock, CallbackInfoReturnable<Boolean> ci) {
+    public void placeFluid_BF(LivingEntity player, World world, BlockPos blockposition, BlockHitResult movingobjectpositionblock, CallbackInfoReturnable<Boolean> ci) {
         if (this.fluid instanceof FlowableFluid) {
             BlockState iblockdata = world.getBlockState(blockposition);
             Block block = iblockdata.getBlock();
@@ -75,13 +79,15 @@ public class MixinBucketItem extends Item {
     
             // CraftBukkit start
             if (flag1 && player != null) {
-                PlayerBucketEmptyEvent event = CraftEventFactory.callPlayerBucketEmptyEvent(world, player, blockposition, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), player.getStackInHand(player.getActiveHand()), player.getActiveHand());
-                if (event.isCancelled()) {
-                    ((ServerPlayerEntity) player).networkHandler.sendPacket(new BlockUpdateS2CPacket(world, blockposition));
-                    ((Player)((IMixinEntity) player).getBukkitEntity()).updateInventory();
-                    ci.setReturnValue(false);
-                    return;
-                }
+            	if (player instanceof PlayerEntity) {
+	                PlayerBucketEmptyEvent event = CraftEventFactory.callPlayerBucketEmptyEvent(world, (PlayerEntity) player, blockposition, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), player.getStackInHand(player.getActiveHand()), player.getActiveHand());
+	                if (event.isCancelled()) {
+	                    ((ServerPlayerEntity) player).networkHandler.sendPacket(new BlockUpdateS2CPacket(world, blockposition));
+	                    ((Player)((IMixinEntity) player).getBukkitEntity()).updateInventory();
+	                    ci.setReturnValue(false);
+	                    return;
+	                }
+            	}
             }
         }
     }
