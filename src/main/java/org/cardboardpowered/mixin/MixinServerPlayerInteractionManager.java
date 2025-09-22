@@ -80,12 +80,13 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
     private BlockPos cb_pos;
     
     @Inject(
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerInteractionManager;isCreative()Z"),
+            at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerAbilities;creativeMode:Z"),
             method = "processBlockBreakingAction", cancellable = true)
     public void processBlockBreakkingAction_cb1(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, int sequence, CallbackInfo ci) {
     	cb_stat = 0;
     	PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_BLOCK, pos, direction, this.player.getInventory().getSelectedStack(), Hand.MAIN_HAND);
-        this.cb_ev = event;
+
+    	this.cb_ev = event;
     	// System.out.println("PlayerInteractEvent! " + pos.toString());
         if (event.isCancelled()) {
             for (Direction dir : Direction.values()) {
