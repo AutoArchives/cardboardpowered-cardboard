@@ -14,6 +14,7 @@ import org.cardboardpowered.interfaces.IMixinWorld;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.EndPortalBlock;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityCollisionHandler;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.function.BooleanBiFunction;
 import net.minecraft.util.math.BlockPos;
@@ -25,7 +26,7 @@ import net.minecraft.world.World;
 public class MixinEndPortalBlock {
 
     @Inject(at = @At("HEAD"), method = "onEntityCollision")
-    public void callBukkitEvent_EntityPortalEnterEvent(BlockState state, World world, BlockPos pos, Entity entity, CallbackInfo ci) {
+    public void callBukkitEvent_EntityPortalEnterEvent(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler ech, CallbackInfo ci) {
         if (world instanceof ServerWorld && !entity.hasVehicle() && !entity.hasPassengers() && entity.canUsePortals(true) && VoxelShapes.matchesAnywhere(VoxelShapes.cuboid(entity.getBoundingBox().offset(-pos.getX(), -pos.getY(), -pos.getZ())), state.getOutlineShape(world, pos), BooleanBiFunction.AND)) {
             EntityPortalEnterEvent event = new EntityPortalEnterEvent(((IMixinEntity)entity).getBukkitEntity(), new org.bukkit.Location(((IMixinWorld)world).getCraftWorld(), pos.getX(), pos.getY(), pos.getZ()));
             Bukkit.getPluginManager().callEvent(event);

@@ -14,6 +14,7 @@ import org.cardboardpowered.interfaces.IMixinWorld;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.NetherPortalBlock;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityCollisionHandler;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -22,7 +23,7 @@ import net.minecraft.world.World;
 public class MixinNetherPortalBlock {
 
     @Inject(at = @At("HEAD"), method = "onEntityCollision")
-    public void callBukkitEvent(BlockState state, World world, BlockPos pos, Entity entity, CallbackInfo ci) {
+    public void callBukkitEvent(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler ech, CallbackInfo ci) {
         if (!entity.hasVehicle() && !entity.hasPassengers() && entity.canUsePortals(true)) {
             EntityPortalEnterEvent event = new EntityPortalEnterEvent(((IMixinEntity)entity).getBukkitEntity(), new org.bukkit.Location(((IMixinWorld)world).getCraftWorld(), pos.getX(), pos.getY(), pos.getZ()));
             Bukkit.getPluginManager().callEvent(event);
