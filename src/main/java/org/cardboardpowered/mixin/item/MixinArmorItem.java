@@ -1,36 +1,13 @@
 package org.cardboardpowered.mixin.item;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinWorld;
-import net.minecraft.block.DispenserBlock;
-import net.minecraft.block.dispenser.DispenserBehavior;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.MobEntity;
-// import net.minecraft.item.ArmorItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.predicate.entity.EntityPredicates;
-import net.minecraft.util.math.BlockPointer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
-import org.bukkit.Bukkit;
 import org.bukkit.Keyed;
 import org.bukkit.Registry;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.event.block.BlockDispenseArmorEvent;
-import org.cardboardpowered.impl.block.DispenserBlockHelper;
-import org.cardboardpowered.impl.entity.LivingEntityImpl;
-import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
 import io.papermc.paper.registry.RegistryAccess;
 
-import java.util.List;
 import java.util.Objects;
-
 
 /**
  * Test
