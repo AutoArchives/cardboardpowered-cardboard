@@ -6,6 +6,8 @@ import com.google.common.collect.ImmutableSet.Builder;
 import org.cardboardpowered.interfaces.IMixinEntity;
 
 import java.util.Set;
+
+import net.kyori.adventure.util.TriState;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonPart;
 import net.minecraft.entity.boss.dragon.phase.PhaseType;
@@ -238,6 +240,26 @@ public class CardboardEnderdragon extends CardboardComplexEntity implements Ende
 	@Override
 	public void setAggressive(boolean aggressive) {
         this.getHandle().setAttacking(aggressive);
+	}
+	
+	// TODO Check extend CraftMob:
+	
+	@Override
+	public boolean shouldDespawnInPeaceful() {
+		return this.getHandle().isDisallowedInPeaceful();
+		// return this.getHandle().shouldActuallyDespawnInPeaceful();
+	}
+
+	@Override
+	public void setDespawnInPeacefulOverride(TriState state) {
+		// TODO
+		// this.getHandle().despawnInPeacefulOverride = state;
+	}
+
+	@Override
+	public TriState getDespawnInPeacefulOverride() {
+		return TriState.NOT_SET;
+		// TODO return this.getHandle().despawnInPeacefulOverride;
 	}
 	
 }

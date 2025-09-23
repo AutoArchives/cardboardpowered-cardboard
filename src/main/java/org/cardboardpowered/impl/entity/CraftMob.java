@@ -1,5 +1,6 @@
 package org.cardboardpowered.impl.entity;
 
+import net.kyori.adventure.util.TriState;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -194,6 +195,24 @@ public class CraftMob extends LivingEntityImpl implements Mob {
     public void setAggressive(boolean aggressive) {
         this.getHandle().setAttacking(aggressive);
     }
+
+	@Override
+	public boolean shouldDespawnInPeaceful() {
+		return this.getHandle().isDisallowedInPeaceful();
+		// return this.getHandle().shouldActuallyDespawnInPeaceful();
+	}
+
+	@Override
+	public void setDespawnInPeacefulOverride(TriState state) {
+		// TODO
+		// this.getHandle().despawnInPeacefulOverride = state;
+	}
+
+	@Override
+	public TriState getDespawnInPeacefulOverride() {
+		return TriState.NOT_SET;
+		// TODO return this.getHandle().despawnInPeacefulOverride;
+	}
 	
 
 

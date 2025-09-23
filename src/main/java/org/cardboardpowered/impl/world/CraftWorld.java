@@ -19,6 +19,7 @@
 package org.cardboardpowered.impl.world;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -2967,6 +2968,12 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	@Override
 	public boolean hasBonusChest() {
 		return true; // this.nms.option.getGeneratorOptions().hasBonusChest();
+	}
+
+	@Override
+	public @NotNull Path getWorldPath() {
+		// TODO Auto-generated method stub
+		return this.getWorldFolder().toPath();
 	}
 	
 }

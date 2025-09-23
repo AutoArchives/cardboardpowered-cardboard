@@ -83,9 +83,8 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         // libraries.add( new Library("io.papermc", "paper-api", "1.21.4-R0.1-20250511.205801-225", SHA1, "664d0e9471c4a71af483734af88d6e57bbbd226c", "paper"));
         
         // libraries.add( new Library("io.papermc", "paper-api", "1.21.6-R0.1-20250630.094942-50", SHA1, "72c1661b05fb67a0e1e31c95b67aef24986ad1c8", "paper"));
-        libraries.add( new Library("io.papermc", "paper-api", "1.21.7-R0.1-20250716.201120-28", SHA1, "46443b00829ecb9c76747057366b57da985b09ea", "paper"));
+        libraries.add( new Library("io.papermc", "paper-api", "1.21.8-R0.1-20250906.215025-55", SHA1, "1afdc21a255229fa86b344c8c324fd8d57c8eb3e", "paper"));
 
-        
         // Paper API Libraries
         libraries.add( new Library("org.xerial", "sqlite-jdbc", "3.41.0.0", MD5, "0d63ee5b583e9a75ea1717ffce63fed8", null));
         libraries.add( new Library("com.mysql", "mysql-connector-j", "8.0.32", MD5, "25bf3b3cd262065283962078dc82e99c", null));

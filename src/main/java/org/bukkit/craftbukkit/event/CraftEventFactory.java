@@ -299,7 +299,7 @@ public class CraftEventFactory {
     }
 
     public static boolean handlePlayerRecipeListUpdateEvent(PlayerEntity who, Identifier recipe) {
-        PlayerRecipeDiscoverEvent event = new PlayerRecipeDiscoverEvent((Player) ((IMixinServerEntityPlayer)who).getBukkitEntity(), CraftNamespacedKey.fromMinecraft(recipe));
+        PlayerRecipeDiscoverEvent event = new PlayerRecipeDiscoverEvent((Player) ((IMixinServerEntityPlayer)who).getBukkitEntity(), CraftNamespacedKey.fromMinecraft(recipe), true);
         Bukkit.getPluginManager().callEvent(event);
         return !event.isCancelled();
     }

@@ -882,6 +882,13 @@ public class CraftBlock implements Block {
 		return this.getNMS().shouldSuffocate(this.world, this.position);
 	}
 
+	@Override
+	public boolean breakNaturally(@NotNull ItemStack tool, boolean triggerEffect, boolean dropExperience,
+			boolean forceEffect) {
+		// TODO Auto-generated method stub
+		return breakNaturally(tool, triggerEffect, dropExperience);
+	}
+
     //
 
 }

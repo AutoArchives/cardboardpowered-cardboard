@@ -60,7 +60,7 @@ public final class LibraryManager {
 
     // Apparently, repo.papermc.io is not stable.
     private static final String[] BACKUP = {
-    		"https://web.archive.org/web/20250518123011/https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.21.4-R0.1-SNAPSHOT/paper-api-1.21.4-R0.1-20250511.205801-225.jar"
+    		"https://web.archive.org/web/20250923053753/https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.21.8-R0.1-SNAPSHOT/paper-api-1.21.8-R0.1-20250906.215025-55.jar"
     };
 
     /**

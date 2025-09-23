@@ -2,6 +2,8 @@ package org.bukkit.craftbukkit.attribute;
 
 import com.google.common.base.Preconditions;
 import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.util.OldEnumHolderable;
+
 import java.util.Locale;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -13,7 +15,7 @@ import org.bukkit.craftbukkit.util.ApiVersion;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftAttribute implements Attribute, Handleable<net.minecraft.entity.attribute.EntityAttribute> {
+public class CraftAttribute /*extends OldEnumHolderable<Attribute, net.minecraft.entity.attribute.EntityAttribute>*/ implements Attribute, Handleable<net.minecraft.entity.attribute.EntityAttribute> {
 
     private static int count = 0;
 
@@ -143,4 +145,9 @@ public class CraftAttribute implements Attribute, Handleable<net.minecraft.entit
     public int hashCode() {
         return this.getKey().hashCode();
     }
+
+	@Override
+	public @NotNull Sentiment getSentiment() {
+		return Sentiment.valueOf(this.getHandle().category.name());
+	}
 }

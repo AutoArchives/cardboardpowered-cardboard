@@ -122,5 +122,11 @@ public record PaperConsumable(
                 )
             );
         }
+
+		@Override
+		public Builder effects(List<ConsumeEffect> effects) {
+			this.effects.clear();
+            return this.addEffects(effects);
+		}
     }
 }
