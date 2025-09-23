@@ -2,19 +2,36 @@ package io.papermc.paper.registry;
 
 import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.registry.data.util.Conversions;
+
+import java.util.Optional;
 import java.util.function.Function;
+
+import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import org.bukkit.Keyed;
 import org.jspecify.annotations.Nullable;
 
 public class PaperRegistryBuilderFactory<M, A extends Keyed, B extends PaperRegistryBuilder<M, A>> implements RegistryBuilderFactory<A, B> { // TODO remove Keyed
 
+	private final net.minecraft.registry.RegistryKey<? extends Registry<M>> registryKey;
+	
     private final Conversions conversions;
     private final PaperRegistryBuilder.Filler<M, A, B> builderFiller;
-    private final Function<? super Identifier, ? extends @Nullable M> existingValueGetter;
+    // private final Function<? super Identifier, ? extends @Nullable M> existingValueGetter;
+    private final Function<net.minecraft.registry.RegistryKey<M>, Optional<M>> existingValueGetter;
+    
     private @Nullable B builder;
 
+    /*
     public PaperRegistryBuilderFactory(final Conversions conversions, final PaperRegistryBuilder.Filler<M, A, B> builderFiller, final Function<? super Identifier, ? extends @Nullable M> existingValueGetter) {
+        this.conversions = conversions;
+        this.builderFiller = builderFiller;
+        this.existingValueGetter = existingValueGetter;
+    }
+    */
+    
+    public PaperRegistryBuilderFactory(net.minecraft.registry.RegistryKey<? extends Registry<M>> registryKey, Conversions conversions, PaperRegistryBuilder.Filler<M, A, B> builderFiller, Function<net.minecraft.registry.RegistryKey<M>, Optional<M>> existingValueGetter) {
+        this.registryKey = registryKey;
         this.conversions = conversions;
         this.builderFiller = builderFiller;
         this.existingValueGetter = existingValueGetter;
@@ -40,6 +57,7 @@ public class PaperRegistryBuilderFactory<M, A extends Keyed, B extends PaperRegi
     }
 
     @Override
+    /*
     public B copyFrom(final TypedKey<A> key) {
         this.validate();
         final M existing = this.existingValueGetter.apply(PaperAdventure.asVanilla(key));
@@ -47,5 +65,16 @@ public class PaperRegistryBuilderFactory<M, A extends Keyed, B extends PaperRegi
             throw new IllegalArgumentException("Key " + key + " doesn't exist");
         }
         return this.builder = this.builderFiller.fill(this.conversions, existing);
+    }
+    */
+    
+    public B copyFrom(TypedKey<A> key) {
+        this.validate();
+        Optional<M> existing = this.existingValueGetter.apply(PaperAdventure.asVanilla(this.registryKey, key));
+        if (existing.isEmpty()) {
+            throw new IllegalArgumentException("Key " + String.valueOf(key) + " doesn't exist");
+        }
+        this.builder = this.builderFiller.fill(this.conversions, existing.get());
+        return this.builder;
     }
 }

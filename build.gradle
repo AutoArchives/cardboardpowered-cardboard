@@ -55,11 +55,11 @@ configurations.all {
 //paper-api-1.21.4-R0.1-20250511.205801-225
 // def PAPER_VER_B = "1.21.4-R0.1-20250511.205801-225"
 
-def PAPER_VER_A = "1.21.6-R0.1-SNAPSHOT"
-def PAPER_VER_B = "1.21.6-R0.1-20250630.094942-50"
+// def PAPER_VER_A = "1.21.6-R0.1-SNAPSHOT"
+// def PAPER_VER_B = "1.21.6-R0.1-20250630.094942-50"
 
-// def PAPER_VER_A = "1.21.7-R0.1-SNAPSHOT"
-// def PAPER_VER_B = "1.21.7-R0.1-20250716.201120-28"
+def PAPER_VER_A = "1.21.7-R0.1-SNAPSHOT"
+def PAPER_VER_B = "1.21.7-R0.1-20250716.201120-28"
 
 def PAPER_API_VER = "io.papermc.paper:paper-api:" + PAPER_VER_B
 
@@ -107,11 +107,11 @@ dependencies {
 	// Paper-API libs
 	modImplementation(PAPER_API_VER)
 	modImplementation("net.md-5:bungeecord-chat:1.16-R0.4")
-	modImplementation("net.kyori:adventure-api:4.18.0")
-	modImplementation("net.kyori:adventure-text-serializer-gson:4.18.0")
-	modImplementation("net.kyori:adventure-text-serializer-legacy:4.18.0")
-	modImplementation("net.kyori:adventure-text-serializer-plain:4.18.0")
-	modImplementation("net.kyori:adventure-text-minimessage:4.18.0")
+	modImplementation("net.kyori:adventure-api:4.23.0")
+	modImplementation("net.kyori:adventure-text-serializer-gson:4.23.0")
+	modImplementation("net.kyori:adventure-text-serializer-legacy:4.23.0")
+	modImplementation("net.kyori:adventure-text-serializer-plain:4.23.0")
+	modImplementation("net.kyori:adventure-text-minimessage:4.23.0")
 
     compileOnly fileTree(dir: 'libs', include: 'commons-lang-2.6.jar')
     compileOnly group: "org.jetbrains", name: "annotations", version: "18.0.0"

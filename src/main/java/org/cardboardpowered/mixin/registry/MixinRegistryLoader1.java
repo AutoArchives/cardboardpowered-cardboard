@@ -1,10 +1,12 @@
 package org.cardboardpowered.mixin.registry;
 
+import java.util.*;
 import java.util.Map;
-
-
+import java.util.stream.Stream;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -38,6 +40,44 @@ public class MixinRegistryLoader1 {
 
     	 PaperRegistryAccess.instance().lockReferenceHolders(registry.getKey());
          // PaperRegistryListenerManager.INSTANCE.runFreezeListeners(registry.getKey(), conversions);
+    }
+    
+    /**
+     * @author Cardboard
+     * @reason Paper: add method to get the value for pre-filling builders in the reg mod API
+     */
+    @Overwrite
+    private static RegistryOps.RegistryInfoGetter createInfoGetter(List<RegistryWrapper.Impl<?>> registries, List<Loader<?>> additionalRegistries) {
+        final HashMap<RegistryKey<? extends Registry<?>>, RegistryOps.RegistryInfo<?>> map = new HashMap<>();
+        registries.forEach(registry -> map.put(registry.getKey(), createInfo(registry)));
+        additionalRegistries.forEach(loader -> map.put(loader.registry().getKey(), createInfo(loader.registry())));
+        
+        // Cardboard: Paper: providerForBuilders
+        RegistryWrapper.WrapperLookup providerForBuilders = RegistryWrapper.WrapperLookup.of(Stream.concat(registries.stream(), additionalRegistries.stream().map(Loader::registry)));
+        
+        return new RegistryOps.RegistryInfoGetter(){
+
+            @Override
+            public <T> Optional<RegistryOps.RegistryInfo<T>> getRegistryInfo(RegistryKey<? extends Registry<? extends T>> registryRef) {
+                return Optional.ofNullable((RegistryOps.RegistryInfo<T>)map.get(registryRef));
+            }
+            
+            // @Override
+            public RegistryWrapper.WrapperLookup lookupForValueCopyViaBuilders() {
+                return providerForBuilders;
+            }
+            
+        };
+    }
+    
+    @Shadow
+    private static <T> RegistryOps.RegistryInfo<T> createInfo(MutableRegistry<T> registry) {
+        return new RegistryOps.RegistryInfo<T>(registry, registry.createMutableRegistryLookup(), registry.getLifecycle());
+    }
+
+    @Shadow
+    private static <T> RegistryOps.RegistryInfo<T> createInfo(RegistryWrapper.Impl<T> registry) {
+        return new RegistryOps.RegistryInfo<T>(registry, registry, registry.getLifecycle());
     }
     
 }

@@ -5,6 +5,7 @@ import io.papermc.paper.registry.PaperRegistries;
 import io.papermc.paper.registry.PaperRegistryBuilder;
 import io.papermc.paper.registry.PaperRegistryBuilderFactory;
 import io.papermc.paper.registry.RegistryBuilderFactory;
+import io.papermc.paper.registry.data.dialog.DialogRegistryEntry.Builder;
 import io.papermc.paper.registry.data.util.Conversions;
 import io.papermc.paper.registry.entry.RegistryEntryMeta;
 import java.util.function.Consumer;
@@ -22,6 +23,7 @@ import org.bukkit.craftbukkit.CraftRegistry;
 @SuppressWarnings("BoundedWildcard")
 public final class InlinedRegistryBuilderProviderImpl implements InlinedRegistryBuilderProvider {
 
+	/*
     private static <M, A extends Keyed, B extends PaperRegistryBuilder<M, A>> A create(final RegistryKey<? extends Registry<M>> registryKey, final Consumer<PaperRegistryBuilderFactory<M, A, B>> value) {
         final RegistryEntryMeta.Buildable<M, A, B> buildableMeta = PaperRegistries.getBuildableMeta(registryKey);
         Preconditions.checkArgument(buildableMeta.registryTypeMapper().supportsDirectHolders(), "Registry type mapper must support direct holders");
@@ -35,14 +37,18 @@ public final class InlinedRegistryBuilderProviderImpl implements InlinedRegistry
         return create(RegistryKeys.PAINTING_VARIANT, value::accept);
     }
     
-    /*
+    */
+    
+    
     public MusicInstrument createInstrument(Consumer<RegistryBuilderFactory<MusicInstrument, ? extends InstrumentRegistryEntry.Builder>> value) {
-        return (MusicInstrument)Conversions.global().createApiInstanceFromBuilder(RegistryKey.INSTRUMENT, value);
+        return (MusicInstrument)Conversions.global().createApiInstanceFromBuilder(io.papermc.paper.registry.RegistryKey.INSTRUMENT, value);
     }
 
-    public Dialog createDialog(Consumer<RegistryBuilderFactory<Dialog, ? extends DialogRegistryEntry.Builder>> value) {
-        return (Dialog)Conversions.global().createApiInstanceFromBuilder(io.papermc.paper.registry.RegistryKey.DIALOG, value);
-    }
-    */
+	@Override
+	public io.papermc.paper.dialog.Dialog createDialog(
+			Consumer<RegistryBuilderFactory<io.papermc.paper.dialog.Dialog, ? extends Builder>> value) {
+		return Conversions.global().createApiInstanceFromBuilder(io.papermc.paper.registry.RegistryKey.DIALOG, value);
+	}
+
     
 }

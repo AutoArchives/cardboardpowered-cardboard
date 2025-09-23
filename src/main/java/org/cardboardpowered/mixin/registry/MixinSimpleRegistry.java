@@ -2,6 +2,7 @@ package org.cardboardpowered.mixin.registry;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.cardboardpowered.interfaces.ISimpleRegistry;
 import org.spongepowered.asm.mixin.Mixin;
@@ -56,5 +57,10 @@ public class MixinSimpleRegistry<T> implements ISimpleRegistry<T> {
 	
 		 this.temporaryUnfrozenMap.put(key.getValue(), value); // Paper - support pre-filling in registry mod API
 	}
+	
+	@Override
+    public Optional<T> getValueForCopying(RegistryKey<T> resourceKey) {
+        return this.frozen ? ((SimpleRegistry) (Object) this).getOptionalValue(resourceKey) : Optional.ofNullable(this.temporaryUnfrozenMap.get(resourceKey.getValue()));
+    }
 	
 }

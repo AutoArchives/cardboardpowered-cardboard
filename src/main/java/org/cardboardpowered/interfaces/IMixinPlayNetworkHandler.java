@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.bukkit.Location;
 
+import io.papermc.paper.connection.PlayerGameConnection;
 import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
@@ -28,5 +29,9 @@ public interface IMixinPlayNetworkHandler {
 	ClientConnection cb_get_connection();
 
 	void internalTeleport(PlayerPosition positionmoverotation, Set<PositionFlag> set);
+
+	/**
+	 */
+	PlayerGameConnection cardboard$playerGameConnection();
 
 }

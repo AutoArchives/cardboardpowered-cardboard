@@ -14,8 +14,10 @@ import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.DisconnectionInfo;
+import net.minecraft.network.NetworkPhase;
 import net.minecraft.network.NetworkThreadUtils;
 import net.minecraft.network.PacketCallbacks;
+import net.minecraft.network.packet.c2s.common.ClientOptionsC2SPacket;
 import net.minecraft.network.packet.c2s.common.ResourcePackStatusC2SPacket;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
@@ -66,9 +68,15 @@ import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import com.mojang.authlib.GameProfile;
+
+import io.papermc.paper.connection.PaperPlayerGameConnection;
+import io.papermc.paper.connection.PlayerGameConnection;
 
 import java.util.Collections;
 import java.util.Set;
@@ -792,5 +800,22 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
         Bukkit.getServer().getPluginManager().callEvent(event);
         handler.transferTo(player.playerScreenHandler, ((IMixinServerEntityPlayer)player).getBukkit());
     }
+
+    
+    @Unique
+    public PaperPlayerGameConnection cb$playerGameConnection;
+    
+    /**
+     * @since 1.21.7
+     */
+	@Override
+	public PlayerGameConnection cardboard$playerGameConnection() {
+		if (null == cb$playerGameConnection) {
+			// TODO: Paper has this on class init
+			this.cb$playerGameConnection = new PaperPlayerGameConnection( (ServerPlayNetworkHandler) (Object) this);
+		}
+		return this.cb$playerGameConnection;
+	}
+
 
 }

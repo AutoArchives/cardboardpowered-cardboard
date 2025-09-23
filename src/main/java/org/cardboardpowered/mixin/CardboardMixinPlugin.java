@@ -61,38 +61,29 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         logger.info("Loading Libraries...");
         loadLibs();
     }
-
+    
     public static void loadLibs() {
-        String repository = "https://repo1.maven.org/maven2/"; 
+    	List<Library> libraries = getLibs();
+    	
+    	String repository = "https://repo1.maven.org/maven2/"; 
+    	new LibraryManager(repository, "lib", true, 2, libraries).run();
+    }
+
+    public static List<Library> getLibs() {
         String mcver = GameVersion.create().getReleaseTarget();
 
         List<Library> libraries = new ArrayList<>();
 
         // Paper API
-        // libraries.add( new Library("io.papermc", "paper-api", "1.18.2-167", SHA1, "83a5712c916379a405bc0ab330a724e7edfdaca5", "paper") );
-        // libraries.add( new Library("io.papermc", "paper-api", "1.19.2-307", SHA1, "b44b4312df3673f9ea85133b61334dfac7f7dc14", "paper") );
-        // libraries.add( new Library("io.papermc", "paper-api", "1.19.4-550", SHA1, "3407bd5d6dcc3223dc4ea17eb5eebdafbc1bba92", "paper") );
 
-        // libraries.add( new Library("io.papermc", "paper-api", "1.20.1-R0.1-20230921.165944-178", SHA1, "71680be2f2e80f25e20ae4b49ebd84539d306a44", "paper") );
-        // libraries.add( new Library("io.papermc", "paper-api", "1.20.2-R0.1-20231203.034718-122", SHA1, "faf51e2d9f8eacd902e990a05b2760798acc0b37", "paper") );
-        // libraries.add( new Library("io.papermc", "paper-api", "1.20.3-R0.1-20231207.043048-3", SHA1, "c54200af33674c0fdc965317a1c72e3a0e02e236", "paper") );
-        // libraries.add( new Library("io.papermc", "paper-api", "1.20.4-R0.1-20240528.102248-175", SHA1, "1655f2444d10a3eb8f176f97c3431731e7cc7c1a", "paper") );
-        // libraries.add( new Library("io.papermc", "paper-api", "1.20.5-R0.1-20240429.035133-20", SHA1, "5ea381742186b489251fdbf6e7dba7fdcc142b4d", "paper") );
-        // libraries.add( new Library("io.papermc", "paper-api", "1.20.6-R0.1-20240916.192025-126", SHA1, "15ac8ae6289dddb563d17a20dd3ed80ad89eb629", "paper"));
-
-        // libraries.add( new Library("io.papermc", "paper-api", "1.21.1-R0.1-20240810.105324-1", SHA1, "f1f242327127cc802d94fba1ec823d420d86ff2d", "paper"));
-        // libraries.add( new Library("io.papermc", "paper-api", "1.21.1-R0.1-20241021.162528-124", SHA1, "2bc94e08501ef8145e562ae57daa03a5363630a7", "paper"));
-        // libraries.add( new Library("io.papermc", "paper-api", "1.21.4-R0.1-20241215.095037-18", SHA1, "83ab82c30f937f3b7620e1f24191e98ee6270a60", "paper"));
-        // libraries.add( new Library("io.papermc", "paper-api", "1.21.4-R0.1-20241226.084728-40", SHA1, "982e25808ef6c419a4be15c88ff2c7bd0bc23258", "paper"));
-        
         // libraries.add( new Library("io.papermc", "paper-api", "1.21.4-R0.1-20250118.134032-116", SHA1, "6a1c95efe04acca299d975021cfc9f33ca28d4c0", "paper"));
         // libraries.add( new Library("io.papermc", "paper-api", "1.21.4-R0.1-20250303.170158-184", SHA1, "c4f8188cbd61e52623069cf19054c43086fcbef7", "paper"));
 
         // libraries.add( new Library("io.papermc", "paper-api", "1.21.4-R0.1-20250313.115134-207", SHA1, "8531d7de9321971d382e2dd1a3e4555e006a7326", "paper"));
         // libraries.add( new Library("io.papermc", "paper-api", "1.21.4-R0.1-20250511.205801-225", SHA1, "664d0e9471c4a71af483734af88d6e57bbbd226c", "paper"));
         
-        libraries.add( new Library("io.papermc", "paper-api", "1.21.6-R0.1-20250630.094942-50", SHA1, "72c1661b05fb67a0e1e31c95b67aef24986ad1c8", "paper"));
-
+        // libraries.add( new Library("io.papermc", "paper-api", "1.21.6-R0.1-20250630.094942-50", SHA1, "72c1661b05fb67a0e1e31c95b67aef24986ad1c8", "paper"));
+        libraries.add( new Library("io.papermc", "paper-api", "1.21.7-R0.1-20250716.201120-28", SHA1, "46443b00829ecb9c76747057366b57da985b09ea", "paper"));
 
         
         // Paper API Libraries
@@ -111,14 +102,16 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         // String adventureVersion = "4.9.3";
         // String adventureVersion = "4.13.1";
         // String adventureVersion = "4.16.0";
-        String adventureVersion = "4.18.0";
+        // String adventureVersion = "4.18.0";
+        
+        String adventureVersion = "4.23.0";
 
-        libraries.add( new Library("net.kyori", "adventure-api", adventureVersion, SHA1, "2c26e57011830cb86f86b9f9d936fcffdf43e8b8", null) );
-        libraries.add( new Library("net.kyori", "adventure-key", adventureVersion, SHA1, "dc9db1a20e8ddc9ca50bebbf0a5af7d7a8812f95", null) );
-        libraries.add( new Library("net.kyori", "adventure-text-serializer-gson", adventureVersion, SHA1, "f0f59c9bc9747626d6e51d4a99bc5a76eaca59ab", null) );
-        libraries.add( new Library("net.kyori", "adventure-text-serializer-legacy", adventureVersion, SHA1, "04bf5d9605f768ebff17cf44db9998bf24a56572", null) );
-        libraries.add( new Library("net.kyori", "adventure-text-serializer-plain", adventureVersion, SHA1, "5870a0c2d8825ada8e127086592419c67003a5c0", null) );
-        libraries.add( new Library("net.kyori", "adventure-text-minimessage", adventureVersion, SHA1, "b4d004e56668e9670836c3c191a501cd92f3784e", null) );
+        libraries.add( new Library("net.kyori", "adventure-api", adventureVersion, SHA1, "f6b5b75465f7112dbaf38dd8cfdc5f6b906c53a0", null) );
+        libraries.add( new Library("net.kyori", "adventure-key", adventureVersion, SHA1, "0be07b3e282f9dbc1c0b24a65f0d442ebc504d4d", null) );
+        libraries.add( new Library("net.kyori", "adventure-text-serializer-gson", adventureVersion, SHA1, "bf81a8f6f9509e2c826fac29a0e580e8c377ba37", null) );
+        libraries.add( new Library("net.kyori", "adventure-text-serializer-legacy", adventureVersion, SHA1, "e9cacd4d98c1ecab249805e8058cf2eece047d5b", null) );
+        libraries.add( new Library("net.kyori", "adventure-text-serializer-plain", adventureVersion, SHA1, "2331599c8e892fe3996b6a25f85477152a1b2b3d", null) );
+        libraries.add( new Library("net.kyori", "adventure-text-minimessage", adventureVersion, SHA1, "03230c09453a50090ae354bfc0d8dd6b72026d88", null) );
 
          
         // libraries.add( new Library("net.kyori", "adventure-api", adventureVersion, SHA1, "cb966704b813d30d4ee9f0b97167b4063a249c34", null) );
@@ -143,7 +136,7 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         // as this provides more verbose stacktraces.
         System.setProperty("worldedit.bukkit.adapter", "com.sk89q.worldedit.bukkit.adapter.impl.v1_21_4.PaperweightAdapter");
 
-        new LibraryManager(repository, "lib", true, 2, libraries).run();
+        return libraries;
     }
 
     @Override

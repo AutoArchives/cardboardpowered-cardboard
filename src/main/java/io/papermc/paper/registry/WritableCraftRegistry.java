@@ -34,7 +34,7 @@ public class WritableCraftRegistry<M, T extends Keyed, B extends PaperRegistryBu
         
         ISimpleRegistry<M> cbr = (ISimpleRegistry<M>) this.registry;
         
-        final PaperRegistryBuilderFactory<M, T, B> builderFactory = new PaperRegistryBuilderFactory<M, T, B>(conversions, this.meta.builderFiller(), cbr.cb$temporaryUnfrozenMap()::get);
+        final PaperRegistryBuilderFactory<M, T, B> builderFactory = new PaperRegistryBuilderFactory<M, T, B>(this.registry.getKey(), conversions, this.meta.builderFiller(), cbr::getValueForCopying); // new PaperRegistryBuilderFactory<M, T, B>(conversions, this.meta.builderFiller(), cbr.cb$temporaryUnfrozenMap()::get);
         value.accept(builderFactory);
         PaperRegistryListenerManager.INSTANCE.registerWithListeners(
             this.registry,
@@ -45,6 +45,16 @@ public class WritableCraftRegistry<M, T extends Keyed, B extends PaperRegistryBu
             conversions
         );
     }
+    
+    /*
+    public void register(TypedKey<T> key, Consumer<RegistryBuilderFactory<T, B>> value, Conversions conversions) {
+        RegistryKey resourceKey = PaperRegistries.toNms(key);
+        this.registry.assertNotFrozen(resourceKey);
+        PaperRegistryBuilderFactory<M, T, B> builderFactory = new PaperRegistryBuilderFactory<M, T, B>(this.registry.getKey(), conversions, this.meta.builderFiller(), this.registry::getValueForCopying);
+        value.accept(builderFactory);
+        PaperRegistryListenerManager.INSTANCE.registerWithListeners(this.registry, this.meta, resourceKey, builderFactory.requireBuilder(), FROM_PLUGIN, conversions);
+    }
+    */
 
     public WritableRegistry<T, B> createApiWritableRegistry(final Conversions conversions) {
         return new ApiWritableRegistry(conversions);

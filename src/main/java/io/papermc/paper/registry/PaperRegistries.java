@@ -12,6 +12,7 @@ import io.papermc.paper.registry.data.PaperPaintingVariantRegistryEntry;
 import io.papermc.paper.registry.entry.RegistryEntry;
 import io.papermc.paper.registry.entry.RegistryEntryBuilder;
 import io.papermc.paper.registry.entry.RegistryEntryMeta;
+import io.papermc.paper.registry.entry.RegistryEntryMeta.Buildable;
 import io.papermc.paper.registry.tag.TagKey;
 // import io.papermc.paper.world.structure.ConfiguredStructure;
 import io.papermc.paper.world.structure.PaperConfiguredStructure;
@@ -220,6 +221,19 @@ public final class PaperRegistries {
         return (RegistryEntryMeta.Buildable<M, T, B>) buildableMeta;
     }
 
+    public static <M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> RegistryEntryMeta.Buildable<M, T, B> getBuildableMeta(RegistryKey<T> registryKey) {
+        RegistryEntry<M, T> entry = PaperRegistries.getEntry(registryKey);
+        if (entry == null) {
+            throw new IllegalArgumentException("No registry entry for " + String.valueOf(registryKey));
+        }
+        RegistryEntryMeta<M, T> registryEntryMeta = entry.meta();
+        if (!(registryEntryMeta instanceof RegistryEntryMeta.Buildable)) {
+            throw new IllegalArgumentException("Registry entry for " + String.valueOf(registryKey) + " is not buildable");
+        }
+        RegistryEntryMeta.Buildable buildableMeta = (RegistryEntryMeta.Buildable)registryEntryMeta;
+        return buildableMeta;
+    }
+    
     private PaperRegistries() {
     	
     	// api-only
@@ -243,6 +257,7 @@ public final class PaperRegistries {
         BY_REGISTRY_KEY = Collections.unmodifiableMap(byRegistryKey);
         BY_RESOURCE_KEY = Collections.unmodifiableMap(byResourceKey);
     }
+
 	
 }
 

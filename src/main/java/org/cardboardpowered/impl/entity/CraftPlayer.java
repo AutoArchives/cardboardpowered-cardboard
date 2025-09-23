@@ -155,6 +155,7 @@ import org.cardboardpowered.interfaces.IMixinWorld;
 import com.mojang.authlib.GameProfile;
 
 import io.netty.buffer.Unpooled;
+import io.papermc.paper.connection.PlayerGameConnection;
 import io.papermc.paper.entity.LookAnchor;
 import io.papermc.paper.entity.PaperPlayerGiveResult;
 import io.papermc.paper.entity.PlayerGiveResult;
@@ -2888,5 +2889,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
         this.getHandle().networkHandler.sendPacket(new net.minecraft.network.packet.s2c.play.SignEditorOpenS2CPacket(MCUtil.toBlockPos(block), side == Side.FRONT));
     }
+
+	@Override
+	public PlayerGameConnection getConnection() {
+		return ( (IMixinPlayNetworkHandler) this.getHandle().networkHandler).cardboard$playerGameConnection();
+	}
 
 }

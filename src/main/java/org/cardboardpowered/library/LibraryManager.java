@@ -14,10 +14,13 @@ import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Collection;
+import java.util.List;
+
 import javax.net.ssl.HttpsURLConnection;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.cardboardpowered.mixin.CardboardMixinPlugin;
 
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
@@ -28,7 +31,7 @@ import com.google.common.io.Files;
  */
 public final class LibraryManager {
 
-    private final Logger logger = LogManager.getLogger("Cardboard");
+    private static final Logger logger = LogManager.getLogger("Cardboard");
 
     /**
      * The Maven repository to download from.
@@ -100,7 +103,7 @@ public final class LibraryManager {
         KnotHelper.LOGGER.info("Loaded " + KnotHelper.loaded + " libraries.");
     }
     
-    private String read_central_checksum(String repository, Library library) throws IOException {
+    private static String read_central_checksum(String repository, Library library) throws IOException {
     	
     	if (library.libraryKey.artifactId.contains("paper-api")) {
     		return "paper";
@@ -130,6 +133,24 @@ public final class LibraryManager {
         in.close();
 
         return a.toString();
+    }
+    
+    public static void main(String[] args) {
+    	List<Library> list = CardboardMixinPlugin.getLibs();
+    	
+    	for (Library l : list) {
+    		String s = "Unknown";
+			try {
+				s = read_central_checksum("https://repo1.maven.org/maven2/", l);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if (!s.equalsIgnoreCase(l.checksumValue)) {
+				logger.info(l + " : " + s);
+			}
+    	}
+    	
     }
     
     public void download(Library library) {
