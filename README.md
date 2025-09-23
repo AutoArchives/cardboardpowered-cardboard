@@ -8,7 +8,8 @@ Cardboard is an implementation of the popular Bukkit/Spigot/Paper Modding API fo
 Fabric version chart:
 | Support | Minecraft       | Git Branch | Dev Status |
 |----------|----------------|------------|------------|
-| &#x2705; | Fabric 1.21.4  | ver/1.21.4 | Active     |
+| &#x2705; | Fabric 1.21.8  | ver/1.21.8 | Active     |
+| &#x2705; | Fabric 1.21.4  | ver/1.21.4 | Low        |
 | &#x2705; | Fabric 1.21.1  | ver/1.21   | Low        |
 | &#x274C; | <= 1.20        |            |            |
 

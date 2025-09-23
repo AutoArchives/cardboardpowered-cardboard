@@ -8,7 +8,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.DustColorTransitionParticleEffect;
 import net.minecraft.particle.DustParticleEffect;
-import net.minecraft.particle.EntityEffectParticleEffect;
+import net.minecraft.particle.TintedParticleEffect;
 import net.minecraft.particle.ItemStackParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.SculkChargeParticleEffect;
@@ -239,7 +239,7 @@ public abstract class CraftParticle<D> implements Keyed {
             BiFunction<NamespacedKey, net.minecraft.particle.ParticleType<?>, CraftParticle<?>> colorFunction = (name, particle) -> new CraftParticle<>(name, particle, Color.class) {
                 @Override
                 public ParticleEffect createParticleParam(Color color) {
-                    return EntityEffectParticleEffect.create((net.minecraft.particle.ParticleType<EntityEffectParticleEffect>) particle, color.asARGB());
+                    return TintedParticleEffect.create((net.minecraft.particle.ParticleType<TintedParticleEffect>) particle, color.asARGB());
                 }
             };
 
