@@ -30,6 +30,7 @@
     "MixinUserCache",
     "MixinComponentChanges",
     "MixinSimplePluginManager",
+    "MixinInternalAPIBridge",
     "block.MixinAbstractCandleBlock",
     "block.MixinBambooBlock",
     "block.MixinBambooSaplingBlock",

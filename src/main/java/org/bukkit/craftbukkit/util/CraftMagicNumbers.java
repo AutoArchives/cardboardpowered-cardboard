@@ -1050,6 +1050,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         return compound;
     }
 	
+    /*
 	 private Biome customBiome;
 	    // @Override
 	    public Biome getCustomBiome() {
@@ -1059,6 +1060,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 
 	        return this.customBiome;
 	    }
+	    */
 
 
 		@Override

@@ -1,10 +1,13 @@
 package org.bukkit.craftbukkit.block;
 
 import com.google.common.base.Preconditions;
+
+import io.papermc.paper.util.OldEnumHolderable;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 
 import java.util.Locale;
+import java.util.Objects;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -12,9 +15,79 @@ import org.bukkit.block.Biome;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.Handleable;
+import org.jspecify.annotations.Nullable;
 
-public class CraftBiome implements Biome, Handleable<net.minecraft.world.biome.Biome> {
+public class CraftBiome extends OldEnumHolderable<Biome, net.minecraft.world.biome.Biome> implements Biome {
 
+	private static int count = 0;
+
+    public static Biome minecraftToBukkit(net.minecraft.world.biome.Biome minecraft) {
+        return (Biome)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.BIOME);
+    }
+
+    public static Biome minecraftHolderToBukkit(RegistryEntry<net.minecraft.world.biome.Biome> minecraft) {
+        return (Biome)CraftRegistry.minecraftHolderToBukkit(minecraft, RegistryKeys.BIOME);
+    }
+
+    public static net.minecraft.world.biome.@Nullable Biome bukkitToMinecraft(Biome bukkit) {
+        if (bukkit == Biome.CUSTOM) {
+            return null;
+        }
+        return (net.minecraft.world.biome.Biome)CraftRegistry.bukkitToMinecraft(bukkit);
+    }
+
+    public static @Nullable RegistryEntry<net.minecraft.world.biome.Biome> bukkitToMinecraftHolder(Biome bukkit) {
+        if (bukkit == Biome.CUSTOM) {
+            return null;
+        }
+        return CraftRegistry.bukkitToMinecraftHolder(bukkit);
+    }
+
+    public CraftBiome(RegistryEntry<net.minecraft.world.biome.Biome> holder) {
+        super(holder, count++);
+    }
+    
+    @Deprecated(forRemoval=true, since="1.21.5")
+    // @ApiStatus.ScheduledForRemoval(inVersion="1.22")
+    public static class LegacyCustomBiomeImpl
+    implements Biome {
+        private static final NamespacedKey LEGACY_CUSTOM_KEY = new NamespacedKey("minecraft", "custom");
+        private final int ordinal = count++;
+
+        public NamespacedKey getKey() {
+            return LEGACY_CUSTOM_KEY;
+        }
+
+        public int compareTo(Biome other) {
+            return this.ordinal - other.ordinal();
+        }
+
+        public String name() {
+            return "CUSTOM";
+        }
+
+        public int ordinal() {
+            return this.ordinal;
+        }
+
+        public boolean equals(Object object) {
+            if (object == null || this.getClass() != object.getClass()) {
+                return false;
+            }
+            LegacyCustomBiomeImpl that = (LegacyCustomBiomeImpl)object;
+            return this.ordinal == that.ordinal;
+        }
+
+        public int hashCode() {
+            return Objects.hashCode(this.ordinal);
+        }
+
+        public String toString() {
+            return "CUSTOM";
+        }
+    }
+	
+	/*
 	 private static int count = 0;
 	
     public static Biome minecraftToBukkit(net.minecraft.world.biome.Biome minecraft) {
@@ -125,6 +198,6 @@ public class CraftBiome implements Biome, Handleable<net.minecraft.world.biome.B
     @Override
     public int hashCode() {
         return this.getKey().hashCode();
-    }
+    }*/
 
 }

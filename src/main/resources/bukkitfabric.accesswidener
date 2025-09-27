@@ -566,3 +566,6 @@ accessible method net/minecraft/server/network/ServerCommonNetworkHandler create
 accessible class net/minecraft/registry/RegistryOps$CachedRegistryInfoGetter
 accessible method net/minecraft/entity/mob/MobEntity isDisallowedInPeaceful ()Z
 accessible field net/minecraft/entity/attribute/EntityAttribute category Lnet/minecraft/entity/attribute/EntityAttribute$Category;
+accessible field net/minecraft/entity/damage/DamageTracker recentlyAttacked Z
+accessible method net/minecraft/entity/damage/DamageTracker getBiggestFall ()Lnet/minecraft/entity/damage/DamageRecord;
+accessible field net/minecraft/entity/damage/DamageTracker recentDamage Ljava/util/List;

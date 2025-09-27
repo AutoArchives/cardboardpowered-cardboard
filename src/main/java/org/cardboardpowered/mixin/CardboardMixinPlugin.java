@@ -133,7 +133,7 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         
         // Set WorldEdit adapter class name here
         // as this provides more verbose stacktraces.
-        System.setProperty("worldedit.bukkit.adapter", "com.sk89q.worldedit.bukkit.adapter.impl.v1_21_4.PaperweightAdapter");
+        System.setProperty("worldedit.bukkit.adapter", "com.sk89q.worldedit.bukkit.adapter.impl.v1_21_6.PaperweightAdapter");
 
         return libraries;
     }

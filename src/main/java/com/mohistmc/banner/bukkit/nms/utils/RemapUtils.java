@@ -125,7 +125,7 @@ public class RemapUtils {
         
         // File f = exportResource("bukkit-1.20.4-cl-intermed.csrg", dir);
         
-        String bukkit_cl_srg = "bukkit-1.21.4-cl.csrg";
+        String bukkit_cl_srg = "bukkit-1.21.8-cl.csrg";
         File bukkit_class_mappings_file = exportResource(bukkit_cl_srg, dir);
         
         jarMapping.classes.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/CraftWorld", "org/cardboardpowered/impl/world/CraftWorld");
