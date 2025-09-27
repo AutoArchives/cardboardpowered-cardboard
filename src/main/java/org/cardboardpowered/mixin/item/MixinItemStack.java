@@ -92,12 +92,12 @@ public class MixinItemStack implements IItemStack {
         int j;
 
         if (i > 0) {
-            
-        	j = EnchantmentHelper.getItemDamage(player.getWorld(), ((ItemStack)(Object)this), i);
+        	// j = EnchantmentHelper.getItemDamage(player.getWorld(), ((ItemStack)(Object)this), i);
         	// j = EnchantmentHelper.getLevel(Enchantments.UNBREAKING, ((ItemStack)(Object)this));
             // for (int l = 0; j > 0 && l < i; ++l) if (UnbreakingEnchantment.shouldPreventDamage(((ItemStack)(Object)this), j, random)) i--;
 
             if (player != null) {
+                j = EnchantmentHelper.getItemDamage(player.getWorld(), ((ItemStack)(Object)this), i);
                 PlayerItemDamageEvent event = new PlayerItemDamageEvent((Player) ((IMixinServerEntityPlayer)player).getBukkitEntity(), CraftItemStack.asCraftMirror((ItemStack)(Object)this), i, j);
                 event.getPlayer().getServer().getPluginManager().callEvent(event);
 
