@@ -333,7 +333,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
 
         if (true) {
             ServerWorld worldserver1 = worldserver;
-            ForcedChunkState forcedchunk = ((IMixinPersistentStateManager)worldserver.getPersistentStateManager()).Iget();
+            ForcedChunkState forcedchunk = (ForcedChunkState) ((IMixinPersistentStateManager)worldserver.getPersistentStateManager()).Iget();
 
             if (forcedchunk != null) {
                 LongIterator longiterator = forcedchunk.getChunks().iterator();
