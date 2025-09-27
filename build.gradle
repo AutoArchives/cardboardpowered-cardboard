@@ -38,9 +38,10 @@ repositories {
 
     maven { url = 'https://jitpack.io' }
     maven { url = 'https://repo.codemc.io/repository/maven-releases/' }
+	maven { url = 'https://repo.papermc.io/repository/maven-public/' }
 	maven { url = 'https://repo.spongepowered.org/maven' }
 	maven { url = 'https://maven.izzel.io/releases' }
-	maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+	
     mavenCentral()
 }
 
