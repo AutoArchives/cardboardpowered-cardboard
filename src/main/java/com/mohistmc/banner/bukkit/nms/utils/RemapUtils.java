@@ -119,7 +119,7 @@ public class RemapUtils {
         	System.out.println("debug: error loading remaputils");
             e.printStackTrace();
         }
-        
+
         File dir = new File("mappings");
         dir.mkdirs();
         
@@ -238,6 +238,15 @@ public class RemapUtils {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+        
+        /*
+        try {
+			Reader3.main(null);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		*/
         
         DEBUG_VERBOSE_CALLS = CardboardConfig.DEBUG_VERBOSE_CALLS;
     }

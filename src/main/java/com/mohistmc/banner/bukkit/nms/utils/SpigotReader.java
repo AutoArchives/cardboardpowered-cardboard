@@ -29,7 +29,7 @@ public class SpigotReader {
         HashMap<String, String> cm = new HashMap<>();
         
         MappingResolver mr = FabricLoader.getInstance().getMappingResolver(); 
-        
+
         float good = 0;
         float bad = 0;
         
