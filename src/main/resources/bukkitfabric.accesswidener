@@ -569,3 +569,4 @@ accessible field net/minecraft/entity/attribute/EntityAttribute category Lnet/mi
 accessible field net/minecraft/entity/damage/DamageTracker recentlyAttacked Z
 accessible method net/minecraft/entity/damage/DamageTracker getBiggestFall ()Lnet/minecraft/entity/damage/DamageRecord;
 accessible field net/minecraft/entity/damage/DamageTracker recentDamage Ljava/util/List;
+accessible method net/minecraft/server/network/ServerPlayerEntity$Respawn getDimension (Lnet/minecraft/server/network/ServerPlayerEntity$Respawn;)Lnet/minecraft/registry/RegistryKey;

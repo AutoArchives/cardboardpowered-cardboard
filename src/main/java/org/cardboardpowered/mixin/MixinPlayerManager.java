@@ -79,6 +79,9 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerRespawnEvent.RespawnFlag;
+import org.bukkit.event.player.PlayerRespawnEvent.RespawnReason;
+import org.cardboardpowered.CardboardConfig;
+import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.ChunkTicketBridge;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.world.CraftWorld;
@@ -139,7 +142,13 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
     
     @Override
     public ServerPlayerEntity respawn(ServerPlayerEntity player, boolean keepInventory, Entity.RemovalReason reason, PlayerRespawnEvent.RespawnReason eventReason, Location location) {
-        ServerWorld level1;
+       
+    	// DEBUG
+    	if (CardboardConfig.DEBUG_PLAYER) {
+    		CardboardMod.LOGGER.info("DEBUG: PlayerManager.respawn called");
+    	}
+    	
+    	ServerWorld level1;
         TeleportTarget teleportTransition;
         player.stopRiding();
         this.players.remove(player);
@@ -637,11 +646,235 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
     */
     
     /**
+     * @author Cardboard Mod
+     * @reason Bukkitize respawn
+     * @since 1.21.8
+     */
+    @Overwrite
+    public ServerPlayerEntity respawnPlayer(ServerPlayerEntity player, boolean keepInventory, RemovalReason reason) {
+    	//, RespawnReason eventReason, Location location) {
+    
+    	RespawnReason eventReason = null;
+    	Location location = null;
+    	
+        player.stopRiding();
+        this.players.remove(player);
+        // this.playersByName.remove(player.getNameForScoreboard().toLowerCase(Locale.ROOT));
+        player.getWorld().removePlayer(player, reason);
+        ServerPlayerEntity serverPlayer = player;
+        World fromWorld = player.getWorld();
+        player.notInAnyWorld = false;
+        player.networkHandler = player.networkHandler;
+        player.copyFrom(player, keepInventory);
+        player.setId(player.getId());
+        player.setMainArm(player.getMainArm());
+
+        for (String string: player.getCommandTags()) {
+            serverPlayer.addCommandTag(string);
+        }
+
+        boolean isBedSpawn = false;
+        boolean isRespawn = false;
+        boolean isAnchorSpawn = false;
+        TeleportTarget teleportTransition;
+        if (location == null) {
+            teleportTransition = ((IMixinServerEntityPlayer) player).findRespawnPositionAndUseSpawnBlock(!keepInventory, TeleportTarget.NO_OP, eventReason);
+            if (!keepInventory) {
+            	((IMixinServerEntityPlayer) player).reset();
+            }
+
+            if (teleportTransition == null) {
+                return player;
+            }
+
+            isRespawn = true;
+            location = CraftLocation.toBukkit(teleportTransition.position(), teleportTransition.world().getWorld(), teleportTransition.yaw(), teleportTransition.pitch());
+        } else {
+            teleportTransition = new TeleportTarget(
+                ((CraftWorld) location.getWorld()).getHandle(),
+                CraftLocation.toVec3(location),
+                Vec3d.ZERO,
+                location.getYaw(),
+                location.getPitch(),
+                TeleportTarget.NO_OP
+            );
+        }
+
+        if (teleportTransition == null) {
+            return player;
+        } else {
+            ServerWorld level = teleportTransition.world();
+            ((IMixinServerEntityPlayer) player).spawnIn(level);
+            serverPlayer.unsetRemoved();
+            serverPlayer.setSneaking(false);
+            Vec3d vec3 = teleportTransition.position();
+            ((IMixinServerEntityPlayer) serverPlayer).spigot$forceSetPositionRotation(vec3.x, vec3.y, vec3.z, teleportTransition.yaw(), teleportTransition.pitch());
+            level.getChunkManager().addTicket(ChunkTicketBridge.POST_TELEPORT, new ChunkPos(MathHelper.floor(vec3.getX()) >> 4, MathHelper.floor(vec3.getZ()) >> 4), 1);
+            if (teleportTransition.missingRespawnBlock()) {
+                serverPlayer.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.NO_RESPAWN_BLOCK, 0.0F));
+                // serverPlayer.r.setRespawnPosition(null, false, com.destroystokyo.paper.event.player.PlayerSetSpawnEvent.Cause.PLAYER_RESPAWN);
+            }
+
+            byte b = (byte)(keepInventory ? 1 : 0);
+            ServerWorld serverLevel = serverPlayer.getWorld();
+            WorldProperties levelData = serverLevel.getLevelProperties();
+            serverPlayer.networkHandler.sendPacket(new PlayerRespawnS2CPacket(serverPlayer.createCommonPlayerSpawnInfo(serverLevel), b));
+            // serverPlayer.networkHandler.sendPacket(new ChunkLoadDistanceS2CPacket(serverLevel.spigotConfig.viewDistance));
+            // serverPlayer.networkHandler.sendPacket(new SimulationDistanceS2CPacket(serverLevel.spigotConfig.simulationDistance));
+            
+            serverPlayer.networkHandler.sendPacket(new ChunkLoadDistanceS2CPacket(8)); // TODO
+            serverPlayer.networkHandler.sendPacket(new SimulationDistanceS2CPacket(8));
+            
+            IMixinPlayNetworkHandler iNetworkHandler = (IMixinPlayNetworkHandler) serverPlayer.networkHandler;
+            
+            iNetworkHandler.teleport(CraftLocation.toBukkit(serverPlayer.getPos(), serverLevel.getWorld(), serverPlayer.getYaw(), serverPlayer.getPitch()));
+            serverPlayer.networkHandler.sendPacket(new PlayerSpawnPositionS2CPacket(level.getSpawnPos(), level.getSpawnAngle()));
+            serverPlayer.networkHandler.sendPacket(new DifficultyS2CPacket(levelData.getDifficulty(), levelData.isDifficultyLocked()));
+            serverPlayer.networkHandler.sendPacket(new ExperienceBarUpdateS2CPacket(serverPlayer.experienceProgress, serverPlayer.totalExperience, serverPlayer.experienceLevel));
+            this.sendStatusEffects(serverPlayer);
+            this.sendWorldInfo(serverPlayer, level);
+            this.sendCommandTree(serverPlayer);
+
+            if (!iNetworkHandler.isDisconnected()) {
+                level.onPlayerRespawned(serverPlayer);
+                this.players.add(serverPlayer);
+                // this.playersByName.put(serverPlayer.getNameForScoreboard().toLowerCase(Locale.ROOT), serverPlayer);
+                this.playerMap.put(serverPlayer.getUuid(), serverPlayer);
+            }
+
+            serverPlayer.setHealth(serverPlayer.getHealth());
+            ServerPlayerEntity.Respawn respawnConfig = serverPlayer.getRespawn();
+            if (!keepInventory && respawnConfig != null) {
+                ServerWorld level1 = this.server.getWorld(respawnConfig.dimension());
+                if (level1 != null) {
+                    BlockPos blockPos = respawnConfig.pos();
+                    BlockState blockState = level1.getBlockState(blockPos);
+                    if (blockState.isOf(Blocks.RESPAWN_ANCHOR)) {
+                        serverPlayer.networkHandler.sendPacket(new PlaySoundS2CPacket(SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, SoundCategory.BLOCKS, blockPos.getX(), blockPos.getY(), blockPos.getZ(), 1.0F, 1.0F, level.getRandom().nextLong()));
+                    }
+
+                    if (!teleportTransition.missingRespawnBlock()) {
+                        if (blockState.isIn(BlockTags.BEDS)) {
+                            isBedSpawn = true;
+                        } else if (blockState.isOf(Blocks.RESPAWN_ANCHOR)) {
+                            isAnchorSpawn = true;
+                        }
+                    }
+                }
+            }
+
+            this.sendPlayerStatus(player);
+            player.sendAbilitiesUpdate();
+
+            for (StatusEffectInstance mobEffect: player.getStatusEffects()) {
+                player.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getId(), mobEffect, false));
+            }
+
+            player.worldChanged(level);
+            if (fromWorld != level) {
+                PlayerChangedWorldEvent event = new PlayerChangedWorldEvent((Player) (Player)((IMixinServerEntityPlayer)player).getBukkitEntity(), ((IMixinWorld) fromWorld).getCraftWorld());
+                CraftServer.INSTANCE.getPluginManager().callEvent(event);
+            }
+
+            if (iNetworkHandler.isDisconnected()) {
+                this.savePlayerData(player);
+            }
+
+            if (isRespawn) {
+                new PlayerPostRespawnEvent((Player) (Player)((IMixinServerEntityPlayer)player).getBukkitEntity(), location, isBedSpawn, isAnchorSpawn, teleportTransition.missingRespawnBlock(), eventReason).callEvent();
+            }
+
+            return serverPlayer;
+        }
+    }
+    
+    /**
+     * @author Cardboard Mod
+     * @reason Bukkitize respawn
+     * @since 1.21.8
+     */
+    /*
+    @Overwrite
+    public ServerPlayerEntity respawnPlayer(ServerPlayerEntity player, boolean alive, Entity.RemovalReason removalReason) {
+        this.players.remove(player);
+        player.getWorld().removePlayer(player, removalReason);
+        TeleportTarget lv = player.getRespawnTarget(!alive, TeleportTarget.NO_OP);
+        ServerWorld lv2 = lv.world();
+        ServerPlayerEntity lv3 = new ServerPlayerEntity(this.server, lv2, player.getGameProfile(), player.getClientOptions());
+        lv3.networkHandler = player.networkHandler;
+        lv3.copyFrom(player, alive);
+        lv3.setId(player.getId());
+        lv3.setMainArm(player.getMainArm());
+        if (!lv.missingRespawnBlock()) {
+           lv3.setSpawnPointFrom(player);
+        }
+
+        for (String string : player.getCommandTags()) {
+           lv3.addCommandTag(string);
+        }
+
+        Vec3d lv4 = lv.position();
+        lv3.refreshPositionAndAngles(lv4.x, lv4.y, lv4.z, lv.yaw(), lv.pitch());
+        if (lv.missingRespawnBlock()) {
+           lv3.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.NO_RESPAWN_BLOCK, GameStateChangeS2CPacket.DEMO_OPEN_SCREEN));
+        }
+
+        byte b = alive ? PlayerRespawnS2CPacket.KEEP_ATTRIBUTES : 0;
+        ServerWorld lv5 = lv3.getWorld();
+        WorldProperties lv6 = lv5.getLevelProperties();
+        lv3.networkHandler.sendPacket(new PlayerRespawnS2CPacket(lv3.createCommonPlayerSpawnInfo(lv5), b));
+        lv3.networkHandler.requestTeleport(lv3.getX(), lv3.getY(), lv3.getZ(), lv3.getYaw(), lv3.getPitch());
+        lv3.networkHandler.sendPacket(new PlayerSpawnPositionS2CPacket(lv2.getSpawnPos(), lv2.getSpawnAngle()));
+        lv3.networkHandler.sendPacket(new DifficultyS2CPacket(lv6.getDifficulty(), lv6.isDifficultyLocked()));
+        lv3.networkHandler.sendPacket(new ExperienceBarUpdateS2CPacket(lv3.experienceProgress, lv3.totalExperience, lv3.experienceLevel));
+        this.sendStatusEffects(lv3);
+        this.sendWorldInfo(lv3, lv2);
+        this.sendCommandTree(lv3);
+        lv2.onPlayerRespawned(lv3);
+        this.players.add(lv3);
+        this.playerMap.put(lv3.getUuid(), lv3);
+        lv3.onSpawn();
+        lv3.setHealth(lv3.getHealth());
+        ServerPlayerEntity.Respawn lv7 = lv3.getRespawn();
+        if (!alive && lv7 != null) {
+           ServerWorld lv8 = this.server.getWorld(lv7.dimension());
+           if (lv8 != null) {
+              BlockPos lv9 = lv7.pos();
+              BlockState lv10 = lv8.getBlockState(lv9);
+              if (lv10.isOf(Blocks.RESPAWN_ANCHOR)) {
+                 lv3.networkHandler
+                    .sendPacket(
+                       new PlaySoundS2CPacket(
+                          SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE,
+                          SoundCategory.BLOCKS,
+                          lv9.getX(),
+                          lv9.getY(),
+                          lv9.getZ(),
+                          1.0F,
+                          1.0F,
+                          lv2.getRandom().nextLong()
+                       )
+                    );
+              }
+           }
+        }
+
+        return lv3;
+     }
+     */
+    
+    /**
      * @author cardbaord
      * @reason bukkit
      */
+    /*
     @Overwrite
     public ServerPlayerEntity respawnPlayer(ServerPlayerEntity player, boolean keepInventory, Entity.RemovalReason reason) {
+    	
+    	if (CardboardConfig.DEBUG_PLAYER) {
+    		CardboardMod.LOGGER.info("DEBUG: PlayerManager.respawnPlayer called");
+    	}
+    	
         ServerWorld level1;
         TeleportTarget teleportTransition;
         player.stopRiding();
@@ -679,8 +912,8 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         /*
         } else {
             teleportTransition = new TeleportTarget(((CraftWorld)location.getWorld()).getHandle(), CraftLocation.toVec3(location), Vec3d.ZERO, location.getYaw(), location.getPitch(), TeleportTarget.NO_OP);
-        }
-        */
+        
+        *
         if (teleportTransition == null) {
             return player;
         }
@@ -755,6 +988,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         }
         return serverPlayer;
     }
+    */
     
     private Location banner$loc = null;
     private transient RespawnFlag banner$respawnReason;

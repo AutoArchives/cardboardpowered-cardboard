@@ -18,6 +18,7 @@
  */
 package org.cardboardpowered.mixin.entity;
 
+import java.util.Optional;
 //<<<<<<< HEAD
 //=======
 import java.util.OptionalInt;
@@ -29,6 +30,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+import org.cardboardpowered.CardboardConfig;
+import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.impl.world.CraftWorld;
@@ -40,6 +43,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerChangedMainHandEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.MainHand;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -81,6 +85,7 @@ import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity.Respawn;
 import net.minecraft.server.network.ServerPlayerEntity.RespawnPos;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -102,6 +107,7 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerChangedMainHandEvent;
 import org.bukkit.event.player.PlayerLocaleChangeEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.MainHand;
 import org.cardboardpowered.impl.entity.CraftPlayer;
@@ -220,6 +226,11 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     		target = "Lnet/minecraft/world/TeleportTarget;world()Lnet/minecraft/server/world/ServerWorld;"
     ), method = "Lnet/minecraft/server/network/ServerPlayerEntity;teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/server/network/ServerPlayerEntity;")
     public void cardboard$do_teleport_event(TeleportTarget target, CallbackInfoReturnable<ServerPlayerEntity> ci) {
+    	
+    	if (CardboardConfig.DEBUG_PLAYER) {
+    		CardboardMod.LOGGER.info("DEBUG: ServerPlayerEntity.cardboard$do_teleport_event called");
+    	}
+    	
     	ServerPlayerEntity thiz = (ServerPlayerEntity) (Object) this;
     	//ServerWorld serverWorld = target.world();
     	// ServerWorld serverWorld2 = thiz.getServerWorld();
@@ -238,6 +249,11 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         Location newExit = tpEvent.getTo();
         
         if (tpEvent.isCancelled() || null == newExit) {
+        	
+        	if (CardboardConfig.DEBUG_PLAYER) {
+        		CardboardMod.LOGGER.info("DEBUG: Teleport: EventCanceled?=" + tpEvent.isCancelled() + ", newExit=" + newExit);
+        	}
+        	
             ci.setReturnValue(null);
             return;
         }
@@ -251,6 +267,10 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         	target.velocity = Vec3d.ZERO;
         	target.yaw = newExit.getYaw();
         	target.pitch = newExit.getPitch();
+        	
+        	if (CardboardConfig.DEBUG_PLAYER) {
+        		CardboardMod.LOGGER.info("DEBUG: Teleport: Target=" + target);
+        	}
         	
         	/*
             target = new TeleportTarget(
@@ -636,5 +656,60 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         }
         plr.interactionManager.setWorld((ServerWorld)world);
 	}
+	
+	// SPIGOT-1903, MC-98153
+	@Override
+	public void spigot$forceSetPositionRotation(double x, double y, double z, float yaw, float pitch) {
+		((ServerPlayerEntity)(Object)this).refreshPositionAndAngles(x, y, z, yaw, pitch);
+		((ServerPlayerEntity)(Object)this).networkHandler.syncWithPlayerPosition();
+    }
+	
+	@Nullable
+	@Override
+    public TeleportTarget findRespawnPositionAndUseSpawnBlock(boolean useCharge, TeleportTarget.PostDimensionTransition postTeleportTransition, @Nullable PlayerRespawnEvent.RespawnReason respawnReason) {
+        ServerPlayerEntity thiz = (ServerPlayerEntity) (Object) this;
+		TeleportTarget teleportTransition;
+        boolean isBedSpawn = false;
+        boolean isAnchorSpawn = false;
+        Runnable consumeAnchorCharge = null;
+        Respawn respawnConfig = thiz.getRespawn();
+        ServerWorld level = thiz.getServer().getWorld(Respawn.getDimension(respawnConfig));
+        if (level != null && respawnConfig != null) {
+            Optional<RespawnPos> optional = ServerPlayerEntity.findRespawnPosition(level, respawnConfig, useCharge);
+            if (optional.isPresent()) {
+                RespawnPos respawnPosAngle = optional.get();
+                // isBedSpawn = respawnPosAngle.isBedSpawn();
+                // isAnchorSpawn = respawnPosAngle.isAnchorSpawn();
+                // consumeAnchorCharge = respawnPosAngle.consumeAnchorCharge();
+                teleportTransition = new TeleportTarget(level, respawnPosAngle.pos(), Vec3d.ZERO, respawnPosAngle.yaw(), 0.0f, postTeleportTransition);
+            } else {
+                teleportTransition = TeleportTarget.missingSpawnBlock(thiz.getServer().getOverworld(), thiz, postTeleportTransition);
+            }
+        } else {
+            teleportTransition = new TeleportTarget(CraftServer.server.getOverworld(), thiz, postTeleportTransition);
+        }
+        if (respawnReason == null) {
+            return teleportTransition;
+        }
+        CraftPlayer respawnPlayer = this.getBukkitEntity();
+        Location location = CraftLocation.toBukkit(teleportTransition.position(), (org.bukkit.World)teleportTransition.world().getWorld(), teleportTransition.yaw(), teleportTransition.pitch());
+        PlayerRespawnEvent respawnEvent = new PlayerRespawnEvent((Player)respawnPlayer, location, isBedSpawn, isAnchorSpawn, teleportTransition.missingRespawnBlock(), respawnReason);
+        thiz.getWorld().getCraftServer().getPluginManager().callEvent(respawnEvent);
+        
+        /*
+        if (this.networkHandler.isDisconnected()) {
+            return null;
+        }
+        */
+        
+        if (location.equals(respawnEvent.getRespawnLocation()) && consumeAnchorCharge != null) {
+            consumeAnchorCharge.run();
+        }
+        location = respawnEvent.getRespawnLocation();
+
+        TeleportCause cause = TeleportCause.UNKNOWN;
+        
+        return new TeleportTarget(((CraftWorld)location.getWorld()).getHandle(), CraftLocation.toVec3(location), teleportTransition.velocity(), location.getYaw(), location.getPitch(), teleportTransition.relatives(), teleportTransition.postTeleportTransition());
+    }
 
 }

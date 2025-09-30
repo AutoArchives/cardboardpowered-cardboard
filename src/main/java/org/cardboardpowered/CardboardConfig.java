@@ -10,8 +10,6 @@ import java.util.ArrayList;
 
 import org.cardboardpowered.library.KnotHelper;
 
-import org.cardboardpowered.CardboardMod;
-
 public class CardboardConfig {
 
     private static final String DEFAULT =
@@ -41,6 +39,7 @@ public class CardboardConfig {
     public static boolean DEBUG_EVENT_CALL = false;
     public static boolean DEBUG_VERBOSE_CALLS = false;
     public static boolean DEBUG_OTHER = false;
+    public static boolean DEBUG_PLAYER = false;
 
     public static void setup() throws Exception {
         File fabDir = FabricLoader.getInstance().getConfigDir().toFile();
@@ -79,7 +78,8 @@ public class CardboardConfig {
         DEBUG_EVENT_CALL = config.getOrDefault("debug_print_event_call", false);
         DEBUG_VERBOSE_CALLS =  config.getOrDefault("debug_print_all_calls", false);
         DEBUG_OTHER = config.getOrDefault("debug_other", false);
-        
+        DEBUG_PLAYER = config.getOrDefault("debug_player", false);
+
         String extraJar = config.getOrDefault("debug_extra_lib_file", "debug_extra.jar");
         if (extraJar.length() > 2) {
         	File file = new File(new File("lib"), extraJar);

@@ -18,14 +18,18 @@
  */
 package org.cardboardpowered.interfaces;
 
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 
 import org.cardboardpowered.interfaces.IMixinEntity;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.ClientConnection;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.TeleportTarget;
+import net.minecraft.world.TeleportTarget.PostDimensionTransition;
 import net.minecraft.world.World;
 
 public interface IMixinServerEntityPlayer extends IMixinEntity {
@@ -49,5 +53,11 @@ public interface IMixinServerEntityPlayer extends IMixinEntity {
 	void spawnIn(ServerWorld worldserver1);
 
 	void copyFrom_unused(ServerPlayerEntity entityplayer, boolean flag);
+
+	void spigot$forceSetPositionRotation(double x, double y, double z, float yaw, float pitch);
+
+	@Nullable
+	TeleportTarget findRespawnPositionAndUseSpawnBlock(boolean useCharge,
+			PostDimensionTransition postTeleportTransition, @Nullable PlayerRespawnEvent.RespawnReason respawnReason);
 
 }

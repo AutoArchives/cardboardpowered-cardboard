@@ -6,8 +6,6 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.*;
 
-import com.mohistmc.banner.bukkit.nms.remappers.BannerJarMapping;
-
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.MappingResolver;
 import net.techcable.srglib.JavaType;
