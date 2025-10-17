@@ -104,10 +104,10 @@ public class CraftMob extends LivingEntityImpl implements Mob {
 
     // Paper start
     public boolean isInDaylight() {
-        if (getHandle().getWorld().isDay()) {
+        if (getHandle().getEntityWorld().isDay()) {
             float f = getHandle().getBrightnessAtEyes();
             BlockPos blockPos = getHandle().getVehicle() instanceof BoatEntity ? BlockPos.ofFloored(getHandle().getX(), Math.round(getHandle().getY()), getHandle().getZ()).up() : BlockPos.ofFloored(getHandle().getX(), Math.round(getHandle().getY()), getHandle().getZ());
-            if (f > 0.5f && CardboardMod.random.nextFloat() * 30.0f < (f - 0.4f) * 2.0f && getHandle().getWorld().isSkyVisible(blockPos)) return true;
+            if (f > 0.5f && CardboardMod.random.nextFloat() * 30.0f < (f - 0.4f) * 2.0f && getHandle().getEntityWorld().isSkyVisible(blockPos)) return true;
         }
         return false;
     }
@@ -184,7 +184,7 @@ public class CraftMob extends LivingEntityImpl implements Mob {
 
 	@Override
 	public int getPossibleExperienceReward() {
-        return this.getHandle().getExperienceToDrop((ServerWorld) this.getHandle().getWorld()); // getXpToDrop();
+        return this.getHandle().getExperienceToDrop((ServerWorld) this.getHandle().getEntityWorld()); // getXpToDrop();
 	}
 	// 1.20.2 API:
 	
@@ -198,7 +198,10 @@ public class CraftMob extends LivingEntityImpl implements Mob {
 
 	@Override
 	public boolean shouldDespawnInPeaceful() {
-		return this.getHandle().isDisallowedInPeaceful();
+		
+		return !this.getHandle().getType().isAllowedInPeaceful();
+		
+		// return this.getHandle().isDisallowedInPeaceful();
 		// return this.getHandle().shouldActuallyDespawnInPeaceful();
 	}
 

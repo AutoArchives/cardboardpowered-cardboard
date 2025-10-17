@@ -407,9 +407,9 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void setWhitelisted(boolean arg0) {
-        if (arg0)
-            nms.getServer().getPlayerManager().getWhitelist().add(new WhitelistEntry(nms.getGameProfile()));
-        else nms.getServer().getPlayerManager().getWhitelist().remove(nms.getGameProfile());
+        if (arg0) {
+            nms.getEntityWorld().getServer().getPlayerManager().getWhitelist().add(new WhitelistEntry(nms.getGameProfile()));
+        } else nms.getEntityWorld().getServer().getPlayerManager().getWhitelist().remove(nms.getGameProfile());
     }
 
     @Override
@@ -1284,7 +1284,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void updateCommands() {
         if (getHandle().networkHandler == null) return;
 
-        nms.getServer().getCommandManager().sendCommandTree(nms);
+        nms.getEntityWorld().getServer().getCommandManager().sendCommandTree(nms);
     }
 
     @Override
@@ -1335,8 +1335,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (value == isOp()) return;
 
         if (value)
-             nms.getServer().getPlayerManager().addToOperators(nms.getGameProfile());
-        else nms.getServer().getPlayerManager().removeFromOperators(nms.getGameProfile());
+             nms.getEntityWorld().getServer().getPlayerManager().addToOperators(nms.getGameProfile());
+        else nms.getEntityWorld().getServer().getPlayerManager().removeFromOperators(nms.getGameProfile());
 
         perm.recalculatePermissions();
     }
@@ -1452,7 +1452,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         @Override
         public void respawn() {
             if (getHealth() <= 0 && isOnline())
-                nms.getServer().getPlayerManager().respawnPlayer( getHandle(), false, RemovalReason.KILLED );
+                nms.getEntityWorld().getServer().getPlayerManager().respawnPlayer( getHandle(), false, RemovalReason.KILLED );
         }
 
         @Override

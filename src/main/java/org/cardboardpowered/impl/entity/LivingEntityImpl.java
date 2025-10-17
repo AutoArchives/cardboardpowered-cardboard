@@ -993,7 +993,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 	}
 
 	public void broadcastSlotBreak(EquipmentSlot slot) {
-        this.getHandle().getWorld().sendEntityStatus(this.getHandle(), net.minecraft.entity.LivingEntity.getEquipmentBreakStatus(Utils.getNMS(slot)));
+        this.getHandle().getEntityWorld().sendEntityStatus(this.getHandle(), net.minecraft.entity.LivingEntity.getEquipmentBreakStatus(Utils.getNMS(slot)));
 	}
 
 	public void broadcastSlotBreak(EquipmentSlot slot, Collection<Player> players) {

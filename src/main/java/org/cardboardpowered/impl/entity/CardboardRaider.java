@@ -33,7 +33,7 @@ public class CardboardRaider extends CraftMonster implements Raider {
 
     @Override
     public Block getPatrolTarget() {
-        return getHandle().getPatrolTarget() == null ? null : CraftBlock.at((ServerWorld) getHandle().getWorld(), getHandle().getPatrolTarget());
+        return getHandle().getPatrolTarget() == null ? null : CraftBlock.at((ServerWorld) getHandle().getEntityWorld(), getHandle().getPatrolTarget());
     }
 
     @Override

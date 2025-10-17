@@ -577,3 +577,6 @@ accessible class net/minecraft/component/type/ProfileComponent$Dynamic
 accessible method net/minecraft/component/type/ProfileComponent$Data <init> (Ljava/util/Optional;Ljava/util/Optional;Lcom/mojang/authlib/properties/PropertyMap;)V
 accessible method net/minecraft/component/type/ProfileComponent$Static <init> (Lcom/mojang/datafixers/util/Either;Lnet/minecraft/entity/player/SkinTextures$SkinOverride;)V
 accessible method net/minecraft/entity/LazyEntityReference <init> (Lnet/minecraft/world/entity/UniquelyIdentifiable;)V
+accessible method net/minecraft/entity/LazyEntityReference <init> (Ljava/util/UUID;)V
+accessible method net/minecraft/entity/vehicle/TntMinecartEntity explode (Lnet/minecraft/entity/damage/DamageSource;D)V
+accessible method net/minecraft/server/world/ChunkTicketType register (Ljava/lang/String;JI)Lnet/minecraft/server/world/ChunkTicketType;

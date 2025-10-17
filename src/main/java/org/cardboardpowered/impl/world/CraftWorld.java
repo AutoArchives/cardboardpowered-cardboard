@@ -1363,9 +1363,9 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 			if(cp.getHandle().networkHandler == null) continue;
 
 			cp.getHandle().networkHandler.sendPacket(new WorldTimeUpdateS2CPacket(cp.getHandle()
-					.getWorld()
-					.getTime(), cp.getHandle().getWorld().getTime(), cp.getHandle()
-					.getWorld()
+					.getEntityWorld()
+					.getTime(), cp.getHandle().getEntityWorld().getTime(), cp.getHandle()
+					.getEntityWorld()
 					.getGameRules()
 					.getBoolean(GameRules.DO_DAYLIGHT_CYCLE)));
 		}

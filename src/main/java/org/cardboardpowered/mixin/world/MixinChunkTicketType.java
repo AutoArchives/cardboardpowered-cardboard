@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import net.minecraft.server.world.ChunkTicketType;
-import net.minecraft.server.world.ChunkTicketType.Use;
+// import net.minecraft.server.world.ChunkTicketType.Use;
 
 /**
  * Mixin for ChunkTicketType
@@ -23,8 +23,9 @@ import net.minecraft.server.world.ChunkTicketType.Use;
 public class MixinChunkTicketType implements IChunkTicketType {
 
     // Bukkit
-	private static final ChunkTicketType PLUGIN = register("plugin", 0L, false, Use.LOADING_AND_SIMULATION);
-    
+	private static final ChunkTicketType PLUGIN = ChunkTicketType.register("plugin", 0L, 6);
+			// old 1.21.8: register("plugin", 0L, false, Use.LOADING_AND_SIMULATION);
+
 	// Paper - start
     private static final ChunkTicketType POST_TELEPORT = ChunkTicketBridge.POST_TELEPORT;
     private static final ChunkTicketType PLUGIN_TICKET = ChunkTicketBridge.PLUGIN_TICKET;
@@ -38,8 +39,15 @@ public class MixinChunkTicketType implements IChunkTicketType {
     }
     
     @Shadow
+    public static ChunkTicketType register(String id, long expiryTicks, int flags) {
+    	return null; // Shadowed
+    }
+    
+    /*
+    @Shadow
     public static ChunkTicketType register(String id, long expiryTicks, boolean persist, Use use) {
     	return null; // Shadowed
     }
+    */
 
 }

@@ -227,7 +227,7 @@ public class CardboardEnderdragon extends CardboardComplexEntity implements Ende
 	}
 	
     public int getPossibleExperienceReward() {
-        return this.getHandle().getExperienceToDrop((net.minecraft.server.world.ServerWorld) this.getHandle().getWorld(), null);
+        return this.getHandle().getExperienceToDrop((net.minecraft.server.world.ServerWorld) this.getHandle().getEntityWorld(), null);
     }
 
     // 1.20.2 API
@@ -246,7 +246,8 @@ public class CardboardEnderdragon extends CardboardComplexEntity implements Ende
 	
 	@Override
 	public boolean shouldDespawnInPeaceful() {
-		return this.getHandle().isDisallowedInPeaceful();
+		return !this.getHandle().getType().isAllowedInPeaceful();
+		// return this.getHandle().isDisallowedInPeaceful();
 		// return this.getHandle().shouldActuallyDespawnInPeaceful();
 	}
 
@@ -262,4 +263,9 @@ public class CardboardEnderdragon extends CardboardComplexEntity implements Ende
 		// TODO return this.getHandle().despawnInPeacefulOverride;
 	}
 	
+	/*
+	public final boolean shouldDespawnInPeaceful() {
+	      return this.despawnInPeacefulOverride.toBooleanOrElse(!this.getType().isTypeAllowedInPeaceful());
+	   }
+	*/
 }

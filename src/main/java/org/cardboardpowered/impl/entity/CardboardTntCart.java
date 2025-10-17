@@ -38,12 +38,12 @@ public class CardboardTntCart extends CardboardMinecart implements ExplosiveMine
 
 	@Override
 	public void explode() {
-        this.getHandle().explode(this.getHandle().getVelocity().horizontalLengthSquared());
+        this.getHandle().explode(null, this.getHandle().getVelocity().horizontalLengthSquared());
 	}
 
 	@Override
 	public void explode(double arg0) {
-        this.getHandle().explode(arg0);
+        this.getHandle().explode(null, arg0);
 	}
 
 	@Override
