@@ -570,3 +570,10 @@ accessible field net/minecraft/entity/damage/DamageTracker recentlyAttacked Z
 accessible method net/minecraft/entity/damage/DamageTracker getBiggestFall ()Lnet/minecraft/entity/damage/DamageRecord;
 accessible field net/minecraft/entity/damage/DamageTracker recentDamage Ljava/util/List;
 accessible method net/minecraft/server/network/ServerPlayerEntity$Respawn getDimension (Lnet/minecraft/server/network/ServerPlayerEntity$Respawn;)Lnet/minecraft/registry/RegistryKey;
+accessible method net/minecraft/component/type/ProfileComponent$Dynamic <init> (Lcom/mojang/datafixers/util/Either;Lnet/minecraft/entity/player/SkinTextures$SkinOverride;)V
+accessible method net/minecraft/component/type/ProfileComponent get ()Lcom/mojang/datafixers/util/Either;
+accessible class net/minecraft/component/type/ProfileComponent$Data
+accessible class net/minecraft/component/type/ProfileComponent$Dynamic
+accessible method net/minecraft/component/type/ProfileComponent$Data <init> (Ljava/util/Optional;Ljava/util/Optional;Lcom/mojang/authlib/properties/PropertyMap;)V
+accessible method net/minecraft/component/type/ProfileComponent$Static <init> (Lcom/mojang/datafixers/util/Either;Lnet/minecraft/entity/player/SkinTextures$SkinOverride;)V
+accessible method net/minecraft/entity/LazyEntityReference <init> (Lnet/minecraft/world/entity/UniquelyIdentifiable;)V

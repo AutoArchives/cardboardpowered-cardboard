@@ -281,7 +281,7 @@ implements SkullMeta {
         }
         if (meta instanceof CraftMetaSkull) {
             CraftMetaSkull that = (CraftMetaSkull)meta;
-            return (this.profile != null ? that.profile != null && this.profile.equals(that.profile) && this.profile.getProperties().equals(that.profile.getProperties()) : that.profile == null) && Objects.equals(this.noteBlockSound, that.noteBlockSound);
+            return (this.profile != null ? that.profile != null && this.profile.equals(that.profile) && this.profile.properties().equals(that.profile.properties()) : that.profile == null) && Objects.equals(this.noteBlockSound, that.noteBlockSound);
         }
         return true;
     }

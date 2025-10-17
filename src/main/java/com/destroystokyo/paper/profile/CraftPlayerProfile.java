@@ -3,12 +3,19 @@ package com.destroystokyo.paper.profile;
 // import com.destroystokyo.paper.PaperConfig;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import org.cardboardpowered.interfaces.IUserCache;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
+import com.mojang.authlib.yggdrasil.ProfileResult;
+import com.mojang.datafixers.util.Either;
+
+import net.minecraft.component.type.ProfileComponent;
+import net.minecraft.entity.player.SkinTextures;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.util.Util;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -32,8 +39,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class CraftPlayerProfile implements PlayerProfile {
+public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
 
+	private boolean emptyName;
+	private boolean emptyUUID;
+	
     private GameProfile profile;
     private final PropertySet properties = new PropertySet();
  
@@ -43,12 +53,18 @@ public class CraftPlayerProfile implements PlayerProfile {
 
     public CraftPlayerProfile(UUID id, String name) {
         this.profile = new GameProfile(id, name);
+        this.emptyName = name == null;
+        this.emptyUUID = id == null;
     }
 
     public CraftPlayerProfile(GameProfile profile) {
         Validate.notNull(profile, "GameProfile cannot be null!");
         this.profile = profile;
     }
+    
+	public CraftPlayerProfile(PlayerConfigEntry nameAndId) {
+		this(nameAndId.id(), nameAndId.name());
+	}
 
     @Override
     public boolean hasProperty(String property) {
@@ -191,6 +207,8 @@ public class CraftPlayerProfile implements PlayerProfile {
         MinecraftServer server = CraftServer.INSTANCE.getServer();
         return complete(textures, server.isOnlineMode() || (SpigotConfig.bungee /*&& PaperConfig.bungeeOnlineMode*/));
     }
+
+    /*
     public boolean complete(boolean textures, boolean onlineMode) {
         MinecraftServer server = CraftServer.INSTANCE.getServer();
 
@@ -206,6 +224,30 @@ public class CraftPlayerProfile implements PlayerProfile {
         }
         return isProfileComplete() && (!onlineMode || !textures || hasTextures());
     }
+    */
+
+    public boolean complete(boolean textures, boolean onlineMode) {
+        if (!this.isComplete() || textures && !this.hasTextures()) {
+           MinecraftServer server = CraftServer.server;// MinecraftServer.getServer();
+           boolean isCompleteFromCache = this.completeFromCache(true, onlineMode);
+           if (onlineMode && (!isCompleteFromCache || textures && !this.hasTextures())) {
+              ProfileResult result = server.getApiServices().sessionService().fetchProfile(this.profile.id(), true);
+              if (result != null && result.profile() != null) {
+                 copyProfileProperties(result.profile(), this.profile, true);
+              }
+
+              if (this.isComplete()) {
+                 GameProfile copy = new GameProfile(this.profile.id(), this.profile.name(), new PropertyMap(this.profile.properties()));
+                 // TODO 1.21.9
+                 // server.getApiServices().paper().filledProfileCache().add(copy);
+              }
+           }
+
+           return this.isComplete() && (!onlineMode || !textures || this.hasTextures());
+        } else {
+           return true;
+        }
+     }
 
     private boolean isProfileComplete() {
         return profile.id() != null && StringUtils.isNotBlank(profile.name());
@@ -371,5 +413,28 @@ public class CraftPlayerProfile implements PlayerProfile {
         // Preconditions.checkArgument(isValidSkullProfile, "The skull profile is missing a name or textures!");
         return gameProfile;
     }
+
+	@Override
+	public @Nullable Property getProperty(@NotNull String var1) {
+		return (Property)Iterables.getFirst(this.profile.properties().get(var1), null);
+	}
+
+	@Override
+	public void setProperty(@NotNull String propertyName, @Nullable Property property) {
+		if (property != null) {
+			this.setProperty(new ProfileProperty(propertyName, property.value(), property.signature()));
+		} else {
+			this.profile.properties().removeAll(propertyName);
+		}
+	}
+
+	// accessible method net/minecraft/component/type/ProfileComponent$Dynamic <init> (Lcom/mojang/datafixers/util/Either;Lnet/minecraft/entity/player/SkinTextures$SkinOverride;)V
+	
+	@Override
+	public @NotNull ProfileComponent buildResolvableProfile() {
+		return (ProfileComponent)(this.emptyName != this.emptyUUID && this.properties.isEmpty()
+		         ? new ProfileComponent.Dynamic(this.emptyName ? Either.right(this.profile.id()) : Either.left(this.profile.name()), SkinTextures.SkinOverride.EMPTY)
+		         : ProfileComponent.ofStatic(this.buildGameProfile()));
+	}
 
 }

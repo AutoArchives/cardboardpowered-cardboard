@@ -3,15 +3,25 @@ package io.papermc.paper.datacomponent.item;
 import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
+import com.destroystokyo.paper.profile.SharedPlayerProfile;
 import com.google.common.base.Preconditions;
+import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
+import com.mojang.datafixers.util.Either;
+
+import io.papermc.paper.profile.MutablePropertyMap;
 import io.papermc.paper.util.MCUtil;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+
+import net.minecraft.component.type.ProfileComponent;
+import net.minecraft.entity.player.SkinTextures.SkinOverride;
 import net.minecraft.util.StringHelper;
+
+import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -20,9 +30,15 @@ public record PaperResolvableProfile(
     net.minecraft.component.type.ProfileComponent impl
 ) implements ResolvableProfile, Handleable<net.minecraft.component.type.ProfileComponent> {
 
+	static PaperResolvableProfile toApi(PlayerProfile profile) {
+		return new PaperResolvableProfile(((SharedPlayerProfile)profile).buildResolvableProfile());
+	}
+	
+	/*
     static PaperResolvableProfile toApi(final PlayerProfile profile) {
         return new PaperResolvableProfile(new net.minecraft.component.type.ProfileComponent(CraftPlayerProfile.asAuthlibCopy(profile)));
     }
+    */
 
     @Override
     public net.minecraft.component.type.ProfileComponent getHandle() {
@@ -31,27 +47,30 @@ public record PaperResolvableProfile(
 
     @Override
     public @Nullable UUID uuid() {
-        return this.impl.uuid().orElse(null);
+    	return this.impl.get().map(GameProfile::id, p -> p.id().orElse(null));
     }
 
     @Override
     public @Nullable String name() {
-        return this.impl.name().orElse(null);
+    	return this.impl.get().map(GameProfile::name, p -> p.name().orElse(null));
     }
 
-    @Override
-    public @Unmodifiable Collection<ProfileProperty> properties() {
-        return MCUtil.transformUnmodifiable(this.impl.properties().values(), input -> new ProfileProperty(input.name(), input.value(), input.signature()));
+    @Unmodifiable
+    public Collection<ProfileProperty> properties() {
+       return MCUtil.transformUnmodifiable(
+          this.impl.get().map(GameProfile::properties, ProfileComponent.Data::properties).values(),
+          input -> new ProfileProperty(input.name(), input.value(), input.signature())
+       );
     }
 
     @Override
     public CompletableFuture<PlayerProfile> resolve() {
-        return this.impl.getFuture().thenApply(resolvableProfile -> CraftPlayerProfile.asBukkitCopy(resolvableProfile.gameProfile()));
+    	return this.impl.resolve(CraftServer.server.getApiServices().profileResolver()).thenApply(CraftPlayerProfile::asBukkitCopy);
     }
 
     static final class BuilderImpl implements ResolvableProfile.Builder {
 
-        private final PropertyMap propertyMap = new PropertyMap();
+        private final PropertyMap propertyMap = new MutablePropertyMap();
         private @Nullable String name;
         private @Nullable UUID uuid;
 
@@ -89,10 +108,27 @@ public record PaperResolvableProfile(
             properties.forEach(this::addProperty);
             return this;
         }
+        
+        public ResolvableProfile build() {
+        	
+        	SkinOverride todoAddThis = SkinOverride.EMPTY; // this.skinPatch.asVanilla()
 
+            return this.propertyMap.isEmpty() && this.uuid == null != (this.name == null)
+               ? new PaperResolvableProfile(
+                  new ProfileComponent.Dynamic(this.name != null ? Either.left(this.name) : Either.right(this.uuid), todoAddThis)
+               )
+               : new PaperResolvableProfile(
+                  new ProfileComponent.Static(
+                     Either.right(new ProfileComponent.Data(Optional.ofNullable(this.name), Optional.ofNullable(this.uuid), new PropertyMap(this.propertyMap))),
+                     todoAddThis // this.skinPatch.asVanilla()
+                  )
+               );
+         }
+
+        /*
         @Override
         public ResolvableProfile build() {
-            final PropertyMap shallowCopy = new PropertyMap();
+            final PropertyMap shallowCopy = new MutablePropertyMap();
             shallowCopy.putAll(this.propertyMap);
 
             return new PaperResolvableProfile(new net.minecraft.component.type.ProfileComponent(
@@ -101,5 +137,6 @@ public record PaperResolvableProfile(
                 shallowCopy
             ));
         }
+        */
     }
 }
