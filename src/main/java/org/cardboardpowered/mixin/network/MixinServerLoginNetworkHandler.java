@@ -152,7 +152,7 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 						startVerify(profile);
 					} else {
 						disconnect("multiplayer.disconnect.unverified_username");
-						LOGGER_BF.error("Username '{}' tried to join with an invalid session", gameprofile.getName());
+						LOGGER_BF.error("Username '{}' tried to join with an invalid session", gameprofile.name());
 					}
 				} catch(AuthenticationUnavailableException authenticationunavailableexception) {
 					if(server.isSingleplayer()) {
@@ -180,12 +180,12 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 	}
 
 	public void fireEvents() throws Exception {
-		String playerName = profile.getName();
+		String playerName = profile.name();
 		java.net.InetAddress address;
 		if(connection.getAddress() instanceof LocalAddress) {
 			address = InetAddress.getLocalHost();
 		} else address = ((java.net.InetSocketAddress) connection.getAddress()).getAddress();
-		UUID uniqueId = profile.getId();
+		UUID uniqueId = profile.id();
 		final org.bukkit.craftbukkit.CraftServer server = CraftServer.INSTANCE;
 
 		AsyncPlayerPreLoginEvent asyncEvent = new AsyncPlayerPreLoginEvent(playerName, address, uniqueId);
@@ -215,7 +215,7 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 				return;
 			}
 		}
-		LOGGER_BF.info("UUID of player {} is {}", profile.getName(), profile.getId());
+		LOGGER_BF.info("UUID of player {} is {}", profile.name(), profile.id());
 		startVerify(profile);
 	}
 
@@ -405,7 +405,7 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 					} catch(Exception ex) {
 						disconnect("Failed to verify username!");
 						CraftServer.INSTANCE.getLogger()
-								.log(java.util.logging.Level.WARNING, "Exception verifying " + profile.getName(), ex);
+								.log(java.util.logging.Level.WARNING, "Exception verifying " + profile.name(), ex);
 					}
 				}
 			}.start();
@@ -420,14 +420,14 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 			uuid = ((IMixinClientConnection) connection).getSpoofedUUID();
 		else {
 			// Note: PlayerEntity (1.18) -> DynamicSerializableUuid (1.19) -> Uuids (1.19.4)
-			uuid = Uuids.getOfflinePlayerUuid(this.profile.getName());
+			uuid = Uuids.getOfflinePlayerUuid(this.profile.name());
 		}
 
-		this.profile = new GameProfile(uuid, this.profile.getName());
+		this.profile = new GameProfile(uuid, this.profile.name());
 
 		if(((IMixinClientConnection) connection).getSpoofedProfile() != null)
 			for(com.mojang.authlib.properties.Property property : ((IMixinClientConnection) connection).getSpoofedProfile())
-				this.profile.getProperties().put(property.name(), property);
+				this.profile.properties().put(property.name(), property);
 	}
 	// Spigot end
 

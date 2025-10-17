@@ -72,7 +72,7 @@ implements SkullMeta {
 
     CraftMetaSkull(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
-        CraftMetaSkull.getOrEmpty(tag, SKULL_PROFILE).ifPresent(resolvableProfile -> this.setProfile(resolvableProfile.gameProfile()));
+        CraftMetaSkull.getOrEmpty(tag, SKULL_PROFILE).ifPresent(resolvableProfile -> this.setProfile(resolvableProfile.getGameProfile()));
         CraftMetaSkull.getOrEmpty(tag, NOTE_BLOCK_SOUND).ifPresent(minecraftKey -> {
             this.noteBlockSound = minecraftKey;
         });
@@ -107,7 +107,7 @@ implements SkullMeta {
     }
     
     private void setProfile(ProfileComponent profile) {
-    	this.profile = profile.gameProfile();
+    	this.profile = profile.getGameProfile();
     	// this.profile = profile;
     }
 
@@ -172,11 +172,11 @@ implements SkullMeta {
     }
 
     public boolean hasOwner() {
-        return this.profile != null && !this.profile.getName().isEmpty();
+        return this.profile != null && !this.profile.name().isEmpty();
     }
 
     public String getOwner() {
-        return this.hasOwner() ? this.profile.getName() : null;
+        return this.hasOwner() ? this.profile.name() : null;
     }
 
     public void setPlayerProfile(@Nullable PlayerProfile profile) {
@@ -190,11 +190,11 @@ implements SkullMeta {
 
     public OfflinePlayer getOwningPlayer() {
         if (this.hasOwner()) {
-            if (!this.profile.getId().equals(Util.NIL_UUID)) {
-                return Bukkit.getOfflinePlayer((UUID)this.profile.getId());
+            if (!this.profile.id().equals(Util.NIL_UUID)) {
+                return Bukkit.getOfflinePlayer((UUID)this.profile.id());
             }
-            if (!this.profile.getName().isEmpty()) {
-                return Bukkit.getOfflinePlayer((String)this.profile.getName());
+            if (!this.profile.name().isEmpty()) {
+                return Bukkit.getOfflinePlayer((String)this.profile.name());
             }
         }
         return null;

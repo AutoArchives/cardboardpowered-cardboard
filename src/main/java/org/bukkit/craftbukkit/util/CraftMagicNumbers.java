@@ -946,7 +946,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         List<Text> lines = CraftItemStack.asNMSCopy(itemStack).getTooltip(
         		Item.TooltipContext.create(
         			player == null ? CraftServer.server.getRegistryManager() :
-        						((CraftPlayer)player).getHandle().getWorld().getRegistryManager()
+        						((CraftPlayer)player).getHandle().getEntityWorld().getRegistryManager()
         		),
         		player == null ? null : ((CraftPlayer)player).getHandle(), default_type
         );

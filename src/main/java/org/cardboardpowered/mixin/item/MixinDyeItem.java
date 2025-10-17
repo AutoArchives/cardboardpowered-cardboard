@@ -36,7 +36,7 @@ public class MixinDyeItem {
 
         SheepEntity entitysheep = (SheepEntity) entityliving;
         if (entitysheep.isAlive() && !entitysheep.isSheared() && entitysheep.getColor() != this.color) {
-            if (!entityhuman.getWorld().isClient) {
+            if (!entityhuman.getEntityWorld().isClient()) {
                 byte bColor = (byte) this.color.getIndex();
                 SheepDyeWoolEvent event = new SheepDyeWoolEvent((org.bukkit.entity.Sheep) ((IMixinEntity)entitysheep).getBukkitEntity(), org.bukkit.DyeColor.getByWoolData(bColor));
                 Bukkit.getServer().getPluginManager().callEvent(event);

@@ -118,7 +118,7 @@ public class CraftLootTable implements org.bukkit.loot.LootTable {
                 Entity nmsLootedEntity = ((CraftEntity) context.getLootedEntity()).getHandle();
                 this.setMaybe(builder, LootContextParameters.THIS_ENTITY, nmsLootedEntity);
                 this.setMaybe(builder, LootContextParameters.DAMAGE_SOURCE, handle.getDamageSources().generic());
-                this.setMaybe(builder, LootContextParameters.ORIGIN, nmsLootedEntity.getPos());
+                this.setMaybe(builder, LootContextParameters.ORIGIN, nmsLootedEntity.getEntityPos());
             }
 
             if (context.getKiller() != null) {
@@ -154,7 +154,7 @@ public class CraftLootTable implements org.bukkit.loot.LootTable {
     public static LootContext convertContext(net.minecraft.loot.context.LootContext info) {
         Vec3d position = info.get(LootContextParameters.ORIGIN);
         if (position == null) {
-            position = info.get(LootContextParameters.THIS_ENTITY).getPos(); // Every vanilla context has origin or this_entity, see LootContextParameterSets
+            position = info.get(LootContextParameters.THIS_ENTITY).getEntityPos(); // Every vanilla context has origin or this_entity, see LootContextParameterSets
         }
         Location location = CraftLocation.toBukkit(position, info.getWorld().getWorld());
         LootContext.Builder contextBuilder = new LootContext.Builder(location);

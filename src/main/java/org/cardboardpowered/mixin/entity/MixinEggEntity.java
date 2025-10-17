@@ -34,9 +34,9 @@ public abstract class MixinEggEntity {
     @Inject(at = @At(shift = Shift.AFTER, value = "HEAD"), method = "onCollision", cancellable = true)
     public void cardboard_doEggThrowEvent(HitResult res, CallbackInfo ci) {
         EggEntity egg = (EggEntity)(Object)this;
-        World world = egg.getWorld();
+        World world = egg.getEntityWorld();
 
-        if (!world.isClient) {
+        if (!world.isClient()) {
             boolean hatching = this.random.nextInt(8) == 0; // Spigot
             byte b0 = 1;
             if (this.random.nextInt(32) == 0) b0 = 4;

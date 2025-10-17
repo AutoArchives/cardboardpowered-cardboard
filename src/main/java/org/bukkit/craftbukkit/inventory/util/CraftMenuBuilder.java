@@ -17,7 +17,7 @@ public interface CraftMenuBuilder {
     public ScreenHandler build(ServerPlayerEntity var1, ScreenHandlerType<?> var2);
 
     public static CraftMenuBuilder worldAccess(LocationBoundContainerBuilder builder) {
-        return (player, type) -> builder.build(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory(), ScreenHandlerContext.create(player.getWorld(), player.getBlockPos()));
+        return (player, type) -> builder.build(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory(), ScreenHandlerContext.create(player.getEntityWorld(), player.getBlockPos()));
     }
 
     public static CraftMenuBuilder tileEntity(TileEntityObjectBuilder objectBuilder, Block block) {

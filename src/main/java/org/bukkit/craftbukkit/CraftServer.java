@@ -944,7 +944,7 @@ public class CraftServer implements Server {
 	@Override
 	public boolean dispatchCommand(CommandSender sender, String commandLine) throws CommandException {
 		if(sender instanceof Entity) {
-			ServerWorld world = (ServerWorld) ((CraftEntity) sender).nms.getWorld();
+			ServerWorld world = (ServerWorld) ((CraftEntity) sender).nms.getEntityWorld();
 			ServerCommandSource source = ((CraftEntity) sender).nms.getCommandSource(world);
 
 			try {
@@ -1015,7 +1015,10 @@ public class CraftServer implements Server {
 
     @Override
     public boolean getAllowNether() {
-    	return this.server.getProperties().allowNether;
+    	
+    	return true; // TODO
+    	
+    	// return this.server.getProperties().allowNether;
     	
         // return getServer().isNetherAllowed();
     }
@@ -1204,7 +1207,7 @@ public class CraftServer implements Server {
 
     public OfflinePlayer getOfflinePlayer(GameProfile profile) {
         OfflinePlayer player = new CraftOfflinePlayer(this, profile);
-        offlinePlayers.put(profile.getId(), player);
+        offlinePlayers.put(profile.id(), player);
         return player;
     }
 
@@ -1489,7 +1492,7 @@ public class CraftServer implements Server {
 
     @Override
     public int getViewDistance() {
-        return server != null ? server.getProperties().viewDistance : 12;
+        return server != null ? server.getProperties().viewDistance.get() : 12;
     }
 
     @Override
@@ -2544,7 +2547,7 @@ public class CraftServer implements Server {
     
     @Override
     public int getPauseWhenEmptyTime() {
-        return this.getProperties().pauseWhenEmptySeconds;
+        return this.getProperties().pauseWhenEmptySeconds.get();
     }
     
     @Override
@@ -2584,7 +2587,7 @@ public class CraftServer implements Server {
 
 	@Override
 	public boolean forcesDefaultGameMode() {
-		return CraftServer.console.getProperties().forceGameMode;
+		return CraftServer.console.getProperties().forceGameMode.get();
 	}
     
     // public boolean isTickPaused() {

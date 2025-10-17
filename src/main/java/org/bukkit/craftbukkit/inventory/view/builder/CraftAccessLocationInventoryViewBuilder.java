@@ -23,7 +23,7 @@ public class CraftAccessLocationInventoryViewBuilder<V extends InventoryView> ex
     protected ScreenHandler buildContainer(final ServerPlayerEntity player) {
         final ScreenHandlerContext access;
         if (super.position == null) {
-            access = ScreenHandlerContext.create(player.getWorld(), player.getBlockPos());
+            access = ScreenHandlerContext.create(player.getEntityWorld(), player.getBlockPos());
         } else {
             access = ScreenHandlerContext.create(super.world, super.position);
         }

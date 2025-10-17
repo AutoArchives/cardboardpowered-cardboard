@@ -153,9 +153,9 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         player.stopRiding();
         this.players.remove(player);
         // this.playersByName.remove(player.getNameForScoreboard().toLowerCase(Locale.ROOT));
-        player.getWorld().removePlayer(player, reason);
+        player.getEntityWorld().removePlayer(player, reason);
         ServerPlayerEntity serverPlayer = player;
-        ServerWorld fromWorld = player.getWorld();
+        ServerWorld fromWorld = player.getEntityWorld();
         player.notInAnyWorld = false;
         serverPlayer.networkHandler = player.networkHandler;
         serverPlayer.copyFrom(player, keepInventory);
@@ -199,7 +199,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
             serverPlayer.setSpawnPoint(null, false);
         }
         byte b2 = (byte)(keepInventory ? 1 : 0);
-        ServerWorld serverLevel = serverPlayer.getWorld();
+        ServerWorld serverLevel = serverPlayer.getEntityWorld();
         WorldProperties levelData = serverLevel.getLevelProperties();
         serverPlayer.networkHandler.sendPacket(new PlayerRespawnS2CPacket(serverPlayer.createCommonPlayerSpawnInfo(serverLevel), b2));
         // serverPlayer.networkHandler.sendPacket(new ChunkLoadDistanceS2CPacket(serverLevel.spigotConfig.viewDistance));
@@ -660,9 +660,9 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         player.stopRiding();
         this.players.remove(player);
         // this.playersByName.remove(player.getNameForScoreboard().toLowerCase(Locale.ROOT));
-        player.getWorld().removePlayer(player, reason);
+        player.getEntityWorld().removePlayer(player, reason);
         ServerPlayerEntity serverPlayer = player;
-        World fromWorld = player.getWorld();
+        World fromWorld = player.getEntityWorld();
         player.notInAnyWorld = false;
         player.networkHandler = player.networkHandler;
         player.copyFrom(player, keepInventory);
@@ -716,7 +716,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
             }
 
             byte b = (byte)(keepInventory ? 1 : 0);
-            ServerWorld serverLevel = serverPlayer.getWorld();
+            ServerWorld serverLevel = serverPlayer.getEntityWorld();
             WorldProperties levelData = serverLevel.getLevelProperties();
             serverPlayer.networkHandler.sendPacket(new PlayerRespawnS2CPacket(serverPlayer.createCommonPlayerSpawnInfo(serverLevel), b));
             // serverPlayer.networkHandler.sendPacket(new ChunkLoadDistanceS2CPacket(serverLevel.spigotConfig.viewDistance));
@@ -727,7 +727,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
             
             IMixinPlayNetworkHandler iNetworkHandler = (IMixinPlayNetworkHandler) serverPlayer.networkHandler;
             
-            iNetworkHandler.teleport(CraftLocation.toBukkit(serverPlayer.getPos(), serverLevel.getWorld(), serverPlayer.getYaw(), serverPlayer.getPitch()));
+            iNetworkHandler.teleport(CraftLocation.toBukkit(serverPlayer.getEntityPos(), serverLevel.getWorld(), serverPlayer.getYaw(), serverPlayer.getPitch()));
             serverPlayer.networkHandler.sendPacket(new PlayerSpawnPositionS2CPacket(level.getSpawnPos(), level.getSpawnAngle()));
             serverPlayer.networkHandler.sendPacket(new DifficultyS2CPacket(levelData.getDifficulty(), levelData.isDifficultyLocked()));
             serverPlayer.networkHandler.sendPacket(new ExperienceBarUpdateS2CPacket(serverPlayer.experienceProgress, serverPlayer.totalExperience, serverPlayer.experienceLevel));

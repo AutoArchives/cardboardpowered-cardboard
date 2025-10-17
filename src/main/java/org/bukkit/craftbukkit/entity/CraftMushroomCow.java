@@ -96,7 +96,7 @@ public class CraftMushroomCow extends CraftAbstractCow implements MushroomCow {
 	public void shear(@NotNull Source arg0) {
 		// this.getHandle().sheared(net.minecraft.sound.SoundCategory.AMBIENT);
 
-		if (!(this.getHandle().getWorld() instanceof final ServerWorld serverLevel)) return;
+		if (!(this.getHandle().getEntityWorld() instanceof final ServerWorld serverLevel)) return;
         this.getHandle().sheared(serverLevel, CardboardAdventure.asVanilla(arg0), new ItemStack(Items.SHEARS));
 	}
 	

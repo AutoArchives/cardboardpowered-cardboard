@@ -300,9 +300,9 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
 
         return ImmutableList.copyOf(
         		new BlockCollisionSpliterator<>(
-        				this.getHandle().getWorld(), (net.minecraft.entity.Entity) null,
-        				new Box(this.getHandle().getPos(), this.getHandle().getPos()).expand(0.06), false,
-        				(mutableBlockPos, voxelShape) -> CraftBlock.at((ServerWorld) this.getHandle().getWorld(), (BlockPos) mutableBlockPos)
+        				this.getHandle().getEntityWorld(), (net.minecraft.entity.Entity) null,
+        				new Box(this.getHandle().getEntityPos(), this.getHandle().getEntityPos()).expand(0.06), false,
+        				(mutableBlockPos, voxelShape) -> CraftBlock.at((ServerWorld) this.getHandle().getEntityWorld(), (BlockPos) mutableBlockPos)
         		)
         );
 		

@@ -108,7 +108,7 @@ public class ProfileBanList implements org.bukkit.BanList {
 
         @Override
         public String getTarget() {
-            return this.profile.getName();
+            return this.profile.name();
         }
 
         @Override

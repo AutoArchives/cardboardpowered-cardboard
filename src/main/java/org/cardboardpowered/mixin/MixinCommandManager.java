@@ -67,7 +67,7 @@ public class MixinCommandManager {
         Map<CommandNode<ServerCommandSource>, CommandNode<ServerCommandSource>> map = Maps.newIdentityHashMap();
         RootCommandNode vanillaRoot = new RootCommandNode();
 
-        RootCommandNode<ServerCommandSource> vanilla = entityplayer.getServer().getCommandManager().getDispatcher().getRoot();
+        RootCommandNode<ServerCommandSource> vanilla = entityplayer.getEntityWorld().getServer().getCommandManager().getDispatcher().getRoot();
         map.put(vanilla, vanillaRoot);
         this.deepCopyNodes(vanilla, vanillaRoot, entityplayer.getCommandSource(), (Map) map);
 

@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit.entity;
 import java.util.UUID;
 
 import net.minecraft.entity.LazyEntityReference;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.util.Nullables;
 
@@ -30,7 +31,8 @@ public class CraftTameableAnimal extends CraftAnimals implements Tameable, Creat
     }
 
     public void setOwnerUUID(UUID uuid) {
-        this.getHandle().setOwner(uuid == null ? null : new LazyEntityReference<>(uuid));
+
+        this.getHandle().setOwner( (LazyEntityReference)  (uuid == null ? null : new LazyEntityReference<LivingEntity>(uuid)) );
     }
 
     public UUID getOwnerUniqueId() {return getOwnerUUID();} // Paper

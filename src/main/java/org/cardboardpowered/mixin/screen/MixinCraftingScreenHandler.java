@@ -65,7 +65,7 @@ public class MixinCraftingScreenHandler extends MixinScreenHandler {
     }
 
     private static void aBF(int i, World world, PlayerEntity entityhuman, RecipeInputInventory inventorycrafting, CraftingResultInventory inventorycraftresult, ScreenHandler container) {
-        if (!world.isClient) {
+        if (!world.isClient()) {
         	CraftingRecipeInput craftinginput = inventorycrafting.createRecipeInput();
             ServerPlayerEntity entityplayer = (ServerPlayerEntity) entityhuman;
             ItemStack itemstack = ItemStack.EMPTY;

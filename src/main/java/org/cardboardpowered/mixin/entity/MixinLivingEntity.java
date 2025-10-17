@@ -72,8 +72,8 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
                 PICE_canceled = true;
                 return null;
             }
-            return (craftItem.equals(event.getItem())) ? get().activeItemStack.finishUsing(get().getWorld(), get()) : CraftItemStack.asNMSCopy(event.getItem()).finishUsing(get().getWorld(), get());
-        } else return get().activeItemStack.finishUsing(get().getWorld(), get());
+            return (craftItem.equals(event.getItem())) ? get().activeItemStack.finishUsing(get().getEntityWorld(), get()) : CraftItemStack.asNMSCopy(event.getItem()).finishUsing(get().getEntityWorld(), get());
+        } else return get().activeItemStack.finishUsing(get().getEntityWorld(), get());
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;setStackInHand(Lnet/minecraft/util/Hand;Lnet/minecraft/item/ItemStack;)V"),

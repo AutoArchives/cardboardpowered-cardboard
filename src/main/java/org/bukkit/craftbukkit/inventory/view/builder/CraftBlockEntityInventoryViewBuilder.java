@@ -29,7 +29,7 @@ public class CraftBlockEntityInventoryViewBuilder<V extends InventoryView> exten
     @Override
     protected ScreenHandler buildContainer(final ServerPlayerEntity player) {
         if (this.world == null) {
-            this.world = player.getWorld();
+            this.world = player.getEntityWorld();
         }
 
         if (this.position == null) {

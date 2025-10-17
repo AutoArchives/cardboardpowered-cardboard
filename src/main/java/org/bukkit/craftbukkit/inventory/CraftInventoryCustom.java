@@ -167,11 +167,11 @@ public class CraftInventoryCustom extends CraftInventory {
             return true;
         }
 
-        @Override
+        // @Override (Removed 1.21.9)
         public void onOpen(PlayerEntity entityHuman) {
         }
 
-        @Override
+        // @Override (Removed 1.21.9)
         public void onClose(PlayerEntity entityHuman) {
         }
 

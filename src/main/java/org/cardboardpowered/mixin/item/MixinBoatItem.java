@@ -110,7 +110,7 @@ public abstract class MixinBoatItem extends Item {
             if (!world.isSpaceEmpty(abstractboat, abstractboat.getBoundingBox())) {
                 return ActionResult.FAIL;
             }
-            if (!world.isClient) {
+            if (!world.isClient()) {
                 if (CraftEventFactory.callEntityPlaceEvent(world, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), user, abstractboat, hand).isCancelled()) {
                     return ActionResult.FAIL;
                 }

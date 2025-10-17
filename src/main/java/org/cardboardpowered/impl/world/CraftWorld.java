@@ -899,7 +899,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public Location getSpawnLocation() {
-		BlockPos pos = nms.getSpawnPos();
+		BlockPos pos = nms.getSpawnPoint().getPos();
 		return new Location(this, pos.getX(), pos.getY(), pos.getZ());
 	}
 

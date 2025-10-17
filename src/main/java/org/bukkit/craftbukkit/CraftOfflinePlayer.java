@@ -83,8 +83,8 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
             return player.getName();
 
         // This might not match lastKnownName but if not it should be more correct
-        if (profile.getName() != null)
-            return profile.getName();
+        if (profile.name() != null)
+            return profile.name();
 
         NbtCompound data = getBukkitData();
         
@@ -97,7 +97,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
     @Override
     public UUID getUniqueId() {
-        return profile.getId();
+        return profile.id();
     }
 
     public Server getServer() {
@@ -152,7 +152,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     public Map<String, Object> serialize() {
         Map<String, Object> result = new LinkedHashMap<String, Object>();
 
-        result.put("UUID", profile.getId().toString());
+        result.put("UUID", profile.id().toString());
 
         return result;
     }
@@ -166,7 +166,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[UUID=" + profile.getId() + "]";
+        return getClass().getSimpleName() + "[UUID=" + profile.id() + "]";
     }
 
     @Override
@@ -579,11 +579,11 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         final ServerPlayerEntity.Respawn respawnConfig = data.get("respawn", ServerPlayerEntity.Respawn.CODEC).orElse(null);
         if (respawnConfig == null) return null;
 
-        final ServerWorld level = this.server.console.getWorld(respawnConfig.dimension());
+        final ServerWorld level = this.server.console.getWorld(respawnConfig.respawnData().getDimension());
         if (level == null) return null;
 
         //if (!loadLocationAndValidate) {
-            return CraftLocation.toBukkit(respawnConfig.pos(), level.getWorld(), respawnConfig.angle(), 0);
+            return CraftLocation.toBukkit(respawnConfig.respawnData().getPos(), level.getWorld(), respawnConfig.respawnData().yaw(), 0);
         //}
 
             /*

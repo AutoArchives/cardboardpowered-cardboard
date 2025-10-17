@@ -215,7 +215,11 @@ public class CraftEventFactory {
         if (((CraftServer) Bukkit.getServer()).getHandle().getPlayerManager().getOpList().isEmpty()) return true;
         if (player.isOp()) return true;
 
-        BlockPos chunkcoordinates = world.getSpawnPos();
+        if (null == world.getSpawnPoint()) {
+        	return true;
+        }
+        
+        BlockPos chunkcoordinates = world.getSpawnPoint().getPos();
 
         int distanceFromSpawn = Math.max(Math.abs(x - chunkcoordinates.getX()), Math.abs(z - chunkcoordinates.getZ()));
         return distanceFromSpawn > spawnSize;
@@ -311,7 +315,7 @@ public class CraftEventFactory {
         BlockFace hitFace = null;
         if (position.getType() == Type.BLOCK) {
             BlockHitResult positionBlock = (BlockHitResult) position;
-            hitBlock = CraftBlock.at((ServerWorld) entity.getWorld(), positionBlock.getBlockPos());
+            hitBlock = CraftBlock.at((ServerWorld) entity.getEntityWorld(), positionBlock.getBlockPos());
             hitFace = CraftBlock.notchToBlockFace(positionBlock.getSide());
         }
 
@@ -616,9 +620,9 @@ public class CraftEventFactory {
     
     public int LivingEntity_getExpReward(net.minecraft.entity.LivingEntity thiz) {
 
-        if (thiz.getWorld() instanceof ServerWorld && !thiz.isExperienceDroppingDisabled()
-        		&& (thiz.shouldAlwaysDropExperience() || thiz.playerHitTimer > 0 && thiz.shouldDropExperience() && ((ServerWorld)thiz.getWorld()).getGameRules().getBoolean(GameRules.DO_MOB_LOOT))) {
-            int exp = thiz.getExperienceToDrop((ServerWorld) thiz.getWorld());
+        if (thiz.getEntityWorld() instanceof ServerWorld && !thiz.isExperienceDroppingDisabled()
+        		&& (thiz.shouldAlwaysDropExperience() || thiz.playerHitTimer > 0 && thiz.shouldDropExperience() && ((ServerWorld)thiz.getEntityWorld()).getGameRules().getBoolean(GameRules.DO_MOB_LOOT))) {
+            int exp = thiz.getExperienceToDrop((ServerWorld) thiz.getEntityWorld());
             return exp;
         } else {
             return 0;
@@ -771,7 +775,7 @@ public class CraftEventFactory {
     
     public static EntityBreakDoorEvent callEntityBreakDoorEvent(Entity entity, BlockPos pos) {
         org.bukkit.entity.Entity entity1 = ((IMixinEntity)entity).getBukkitEntity();
-        CraftBlock block = CraftBlock.at((ServerWorld) entity.getWorld(), pos);
+        CraftBlock block = CraftBlock.at((ServerWorld) entity.getEntityWorld(), pos);
 
         
         CraftBlockData bd = CraftBlockData.createData(block.getNMS());
@@ -784,7 +788,7 @@ public class CraftEventFactory {
     // todo: check this
     public static EntityBreakDoorEvent callEntityBreakDoorEvent(net.minecraft.entity.Entity entity, BlockPos pos, BlockState newState) {
     	 org.bukkit.entity.Entity entity1 = ((IMixinEntity)entity).getBukkitEntity();
-        CraftBlock block = CraftBlock.at((ServerWorld) entity.getWorld(), pos);
+        CraftBlock block = CraftBlock.at((ServerWorld) entity.getEntityWorld(), pos);
         
         CraftBlockData bd = CraftBlockData.createData(block.getNMS());
         

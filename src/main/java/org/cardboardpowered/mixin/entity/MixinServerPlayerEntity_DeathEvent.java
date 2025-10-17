@@ -64,7 +64,7 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
         }
         java.util.List<org.bukkit.inventory.ItemStack> loot = new java.util.ArrayList<>(cb$this().getInventory().size());
 
-        boolean keepInventory = cb$this().getWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || cb$this().isSpectator();
+        boolean keepInventory = cb$this().getEntityWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || cb$this().isSpectator();
         
         if (!keepInventory) {
             for (net.minecraft.item.ItemStack item : ((IMixinInventory) ((ServerPlayerEntity) (Object) this).getInventory()).getContents()) {
@@ -74,7 +74,7 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
             }
         }
         // SPIGOT-5071: manually add player loot tables (SPIGOT-5195 - ignores keepInventory rule)
-        this.dropLoot(cb$this().getWorld(), damageSource, cb$this().playerHitTimer > 0);
+        this.dropLoot(cb$this().getEntityWorld(), damageSource, cb$this().playerHitTimer > 0);
 
         ((IMixinEntity)(Object)this).cardboard_getDrops();
 
@@ -128,7 +128,7 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
         // SPIGOT-5478 must be called manually now
     	// cb$this().dropXp(damageSource.getAttacker());
     	
-    	this.dropExperience(cb$this().getWorld(), damageSource.getAttacker());
+    	this.dropExperience(cb$this().getEntityWorld(), damageSource.getAttacker());
     	
         // we clean the player's inventory after the EntityDeathEvent is called so plugins can get the exact state of the inventory.
         if (!cardboard$deathEvent.get().getKeepInventory()) {

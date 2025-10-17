@@ -90,7 +90,7 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
 
     @Override
     public String getOwner() {
-        return hasOwner() ? profile.getName() : null;
+        return hasOwner() ? profile.name() : null;
     }
 
     @Override
@@ -107,8 +107,8 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
     @Override
     public OfflinePlayer getOwningPlayer() {
         if (profile != null) {
-            if (profile.getId() != null) return Bukkit.getOfflinePlayer(profile.getId());
-            if (profile.getName() != null) return Bukkit.getOfflinePlayer(profile.getName());
+            if (profile.id() != null) return Bukkit.getOfflinePlayer(profile.id());
+            if (profile.name() != null) return Bukkit.getOfflinePlayer(profile.name());
         }
         return null;
     }

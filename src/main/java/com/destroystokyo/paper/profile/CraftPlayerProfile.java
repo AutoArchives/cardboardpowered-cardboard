@@ -52,13 +52,13 @@ public class CraftPlayerProfile implements PlayerProfile {
 
     @Override
     public boolean hasProperty(String property) {
-        return profile.getProperties().containsKey(property);
+        return profile.properties().containsKey(property);
     }
 
     @Override
     public void setProperty(ProfileProperty property) {
         String name = property.getName();
-        PropertyMap properties = profile.getProperties();
+        PropertyMap properties = profile.properties();
         properties.removeAll(name);
         properties.put(name, new Property(name, property.getValue(), property.getSignature()));
     }
@@ -69,28 +69,28 @@ public class CraftPlayerProfile implements PlayerProfile {
 
     @Override
     public UUID getId() {
-        return profile.getId();
+        return profile.id();
     }
 
     @Override
     public UUID setId(UUID uuid) {
         GameProfile prev = this.profile;
-        this.profile = new GameProfile(uuid, prev.getName());
+        this.profile = new GameProfile(uuid, prev.name());
         copyProfileProperties(prev, this.profile);
-        return prev.getId();
+        return prev.id();
     }
 
     @Override
     public String getName() {
-        return profile.getName();
+        return profile.name();
     }
 
     @Override
     public String setName(String name) {
         GameProfile prev = this.profile;
-        this.profile = new GameProfile(prev.getId(), name);
+        this.profile = new GameProfile(prev.id(), name);
         copyProfileProperties(prev, this.profile);
-        return prev.getName();
+        return prev.name();
     }
 
     @Override
@@ -105,12 +105,12 @@ public class CraftPlayerProfile implements PlayerProfile {
 
     @Override
     public void clearProperties() {
-        profile.getProperties().clear();
+        profile.properties().clear();
     }
 
     @Override
     public boolean removeProperty(String property) {
-        return !profile.getProperties().removeAll(property).isEmpty();
+        return !profile.properties().removeAll(property).isEmpty();
     }
 
     @Override
@@ -155,9 +155,9 @@ public class CraftPlayerProfile implements PlayerProfile {
 
     public boolean completeFromCache(boolean lookupUUID, boolean onlineMode) {
         MinecraftServer server = CraftServer.INSTANCE.getServer();
-        String name = profile.getName();
+        String name = profile.name();
         IUserCache userCache = CraftServer.getUC();
-        if (profile.getId() == null) {
+        if (profile.id() == null) {
             final GameProfile profile;
             if (onlineMode) {
                 profile = lookupUUID ? userCache.card_findByName(name).get() : userCache.card_findByName(name).get();
@@ -172,8 +172,8 @@ public class CraftPlayerProfile implements PlayerProfile {
             }
         }
 
-        if ((profile.getName() == null || !hasTextures()) && profile.getId() != null) {
-            Optional<GameProfile> o = userCache.card_getByUuid(this.profile.getId());
+        if ((profile.name() == null || !hasTextures()) && profile.id() != null) {
+            Optional<GameProfile> o = userCache.card_getByUuid(this.profile.id());
             if (o.isPresent()) {
                 GameProfile profile = o.get();
                 if (profile != null) {
@@ -208,7 +208,7 @@ public class CraftPlayerProfile implements PlayerProfile {
     }
 
     private boolean isProfileComplete() {
-        return profile.getId() != null && StringUtils.isNotBlank(profile.getName());
+        return profile.id() != null && StringUtils.isNotBlank(profile.name());
     }
 
     private static void copyProfileProperties(GameProfile source, GameProfile target) {
@@ -216,8 +216,8 @@ public class CraftPlayerProfile implements PlayerProfile {
     }
 
     private static void copyProfileProperties(GameProfile source, GameProfile target, boolean clearTarget) {
-        PropertyMap sourceProperties = source.getProperties();
-        PropertyMap targetProperties = target.getProperties();
+        PropertyMap sourceProperties = source.properties();
+        PropertyMap targetProperties = target.properties();
         if (clearTarget) targetProperties.clear();
         if (sourceProperties.isEmpty()) return;
 
@@ -232,7 +232,7 @@ public class CraftPlayerProfile implements PlayerProfile {
     }
 
     public static PlayerProfile asBukkitCopy(GameProfile gameProfile) {
-        CraftPlayerProfile profile = new CraftPlayerProfile(gameProfile.getId(), gameProfile.getName());
+        CraftPlayerProfile profile = new CraftPlayerProfile(gameProfile.id(), gameProfile.name());
         copyProfileProperties(gameProfile, profile.profile);
         return profile;
     }
@@ -259,12 +259,12 @@ public class CraftPlayerProfile implements PlayerProfile {
 
         @Override
         public Iterator<ProfileProperty> iterator() {
-            return new ProfilePropertyIterator(profile.getProperties().values().iterator());
+            return new ProfilePropertyIterator(profile.properties().values().iterator());
         }
 
         @Override
         public int size() {
-            return profile.getProperties().size();
+            return profile.properties().size();
         }
 
         @Override
@@ -282,7 +282,7 @@ public class CraftPlayerProfile implements PlayerProfile {
 
         @Override
         public boolean contains(Object o) {
-            return o instanceof ProfileProperty && profile.getProperties().containsKey(((ProfileProperty) o).getName());
+            return o instanceof ProfileProperty && profile.properties().containsKey(((ProfileProperty) o).getName());
         }
 
         private class ProfilePropertyIterator implements Iterator<ProfileProperty> {
@@ -356,8 +356,8 @@ public class CraftPlayerProfile implements PlayerProfile {
 	}
 
     public GameProfile buildGameProfile() {
-        GameProfile profile = new GameProfile(this.profile.getId(), this.profile.getName());
-        profile.getProperties().putAll((Multimap)this.profile.getProperties());
+        GameProfile profile = new GameProfile(this.profile.id(), this.profile.name());
+        profile.properties().putAll((Multimap)this.profile.properties());
         return profile;
     }
 
@@ -366,8 +366,8 @@ public class CraftPlayerProfile implements PlayerProfile {
     public static GameProfile validateSkullProfile(GameProfile gameProfile) {
         // The GameProfile needs to contain either both a uuid and textures, or a name.
         // The GameProfile always has a name or a uuid, so checking if it has a name is sufficient.
-        boolean isValidSkullProfile = (gameProfile.getName() != null)
-                || gameProfile.getProperties().containsKey(PROPERTY_NAME);
+        boolean isValidSkullProfile = (gameProfile.name() != null)
+                || gameProfile.properties().containsKey(PROPERTY_NAME);
         // Preconditions.checkArgument(isValidSkullProfile, "The skull profile is missing a name or textures!");
         return gameProfile;
     }

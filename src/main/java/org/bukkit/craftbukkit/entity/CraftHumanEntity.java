@@ -184,7 +184,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
     private Collection<RecipeEntry<?>> bukkitKeysToMinecraftRecipes(Collection<NamespacedKey> recipeKeys) {
         Collection<RecipeEntry<?>> recipes = new ArrayList<>();
-        ServerRecipeManager manager = getHandle().getWorld().getServer().getRecipeManager();
+        ServerRecipeManager manager = getHandle().getEntityWorld().getServer().getRecipeManager();
 
         for (NamespacedKey recipeKey : recipeKeys) {
             Optional<RecipeEntry<?>> recipe = manager.get(RecipeInterface.toMinecraft(recipeKey));
@@ -257,7 +257,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
     public Entity getShoulderEntityLeft() {
         if (!this.getHandle().getShoulderEntityLeft().isEmpty()) {
             try (ErrorReporter.Logging scopedCollector = new ErrorReporter.Logging(this.getHandle().getErrorReporterContext(), LOGGER);){
-                Entity entity = net.minecraft.entity.EntityType.getEntityFromData(NbtReadView.create(scopedCollector.makeChild(() -> ".shoulder"), this.getHandle().getRegistryManager(), this.getHandle().getShoulderEntityLeft()), this.getHandle().getWorld(), SpawnReason.LOAD).map(net.minecraft.entity.Entity::getBukkitEntity).orElse(null);
+                Entity entity = net.minecraft.entity.EntityType.getEntityFromData(NbtReadView.create(scopedCollector.makeChild(() -> ".shoulder"), this.getHandle().getRegistryManager(), this.getHandle().getShoulderEntityLeft()), this.getHandle().getEntityWorld(), SpawnReason.LOAD).map(net.minecraft.entity.Entity::getBukkitEntity).orElse(null);
                 return entity;
             }
         }
@@ -268,7 +268,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
     public Entity getShoulderEntityRight() {
         if (!this.getHandle().getShoulderEntityRight().isEmpty()) {
             try (ErrorReporter.Logging scopedCollector = new ErrorReporter.Logging(this.getHandle().getErrorReporterContext(), LOGGER);){
-                Entity entity = net.minecraft.entity.EntityType.getEntityFromData(NbtReadView.create(scopedCollector.makeChild(() -> ".shoulder"), this.getHandle().getRegistryManager(), this.getHandle().getShoulderEntityRight()), this.getHandle().getWorld(), SpawnReason.LOAD).map(net.minecraft.entity.Entity::getBukkitEntity).orElse(null);
+                Entity entity = net.minecraft.entity.EntityType.getEntityFromData(NbtReadView.create(scopedCollector.makeChild(() -> ".shoulder"), this.getHandle().getRegistryManager(), this.getHandle().getShoulderEntityRight()), this.getHandle().getEntityWorld(), SpawnReason.LOAD).map(net.minecraft.entity.Entity::getBukkitEntity).orElse(null);
                 return entity;
             }
         }
@@ -314,7 +314,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
         // If there isn't an enchant table we can force create one, won't be very useful though.
         BlockPos pos = new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-        getHandle().openHandledScreen(((EnchantingTableBlock) Blocks.ENCHANTING_TABLE).createScreenHandlerFactory(null, getHandle().getWorld(), pos));
+        getHandle().openHandledScreen(((EnchantingTableBlock) Blocks.ENCHANTING_TABLE).createScreenHandlerFactory(null, getHandle().getEntityWorld(), pos));
 
         if (force)
             ((IMixinScreenHandler)getHandle().currentScreenHandler).setCheckReachable(false);
@@ -342,7 +342,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
                 BlockEntity te = (BlockEntity) iinventory;
                 if (!te.hasWorld()) {
                    // te.setLocation(getHandle().world, getHandle().getBlockPos());
-                    te.setWorld(getHandle().getWorld());
+                    te.setWorld(getHandle().getEntityWorld());
                     te.pos = getHandle().getBlockPos();
                 }
             }
@@ -435,7 +435,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
         }
         if (location == null)
             location = getLocation();
-        getHandle().openHandledScreen(((CraftingTableBlock) Blocks.CRAFTING_TABLE).createScreenHandlerFactory(null, getHandle().getWorld(), new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ())));
+        getHandle().openHandledScreen(((CraftingTableBlock) Blocks.CRAFTING_TABLE).createScreenHandlerFactory(null, getHandle().getEntityWorld(), new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ())));
         if (force)
             ((IMixinScreenHandler)getHandle().currentScreenHandler).setCheckReachable(false);
         return ((IMixinScreenHandler)getHandle().currentScreenHandler).getBukkitView();
@@ -485,7 +485,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
     @Override
     public boolean sleep(Location location, boolean force) {
         BlockPos blockposition = new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-        BlockState iblockdata = getHandle().getWorld().getBlockState(blockposition);
+        BlockState iblockdata = getHandle().getEntityWorld().getBlockState(blockposition);
         if (!(iblockdata.getBlock() instanceof BedBlock))
             return false;
 
@@ -494,7 +494,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
         // From BlockBed
         iblockdata = (BlockState) iblockdata.with(BedBlock.OCCUPIED, true);
-        getHandle().getWorld().setBlockState(blockposition, iblockdata, 4);
+        getHandle().getEntityWorld().setBlockState(blockposition, iblockdata, 4);
 
         return true;
     }
@@ -779,8 +779,8 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
     public Firework fireworkBoost(ItemStack fireworkItemStack) {
         Preconditions.checkArgument((fireworkItemStack != null ? 1 : 0) != 0, (Object)"fireworkItemStack must not be null");
         Preconditions.checkArgument((fireworkItemStack.getType() == Material.FIREWORK_ROCKET ? 1 : 0) != 0, (String)"fireworkItemStack must be of type %s", (Object)Material.FIREWORK_ROCKET);
-        FireworkRocketEntity fireworks = new FireworkRocketEntity(this.getHandle().getWorld(), CraftItemStack.asNMSCopy(fireworkItemStack), this.getHandle());
-        boolean success = this.getHandle().getWorld().spawnEntity(fireworks);
+        FireworkRocketEntity fireworks = new FireworkRocketEntity(this.getHandle().getEntityWorld(), CraftItemStack.asNMSCopy(fireworkItemStack), this.getHandle());
+        boolean success = this.getHandle().getEntityWorld().spawnEntity(fireworks);
         return success ? (Firework)(((IMixinEntity) fireworks).getBukkitEntity()) : null;
     }
 

@@ -66,7 +66,7 @@ public class MixinEnderPearlItem extends Item {
     @Overwrite
     public ActionResult use(World world, PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
-        if (!world.isClient) {
+        if (!world.isClient()) {
             EnderPearlEntity enderPearlEntity = new EnderPearlEntity(world, user, new ItemStack(Items.ENDER_PEARL));
             enderPearlEntity.setItem(itemStack);
             enderPearlEntity.setVelocity(user, user.getPitch(), user.getYaw(), 0.0F, 1.5F, 1.0F);

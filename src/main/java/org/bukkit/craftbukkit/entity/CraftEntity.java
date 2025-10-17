@@ -430,7 +430,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public boolean addPassenger(Entity arg0) {
-        return ((CraftEntity) arg0).getHandle().startRiding(getHandle(), true);
+        return ((CraftEntity) arg0).getHandle().startRiding(getHandle()); // , true);
     }
 
     @Override
@@ -509,7 +509,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public List<org.bukkit.entity.Entity> getNearbyEntities(double x, double y, double z) {
-        List<net.minecraft.entity.Entity> notchEntityList = nms.getWorld().getOtherEntities(nms, nms.getBoundingBox().expand(x, y, z), null);
+        List<net.minecraft.entity.Entity> notchEntityList = nms.getEntityWorld().getOtherEntities(nms, nms.getBoundingBox().expand(x, y, z), null);
         List<org.bukkit.entity.Entity> bukkitEntityList = new java.util.ArrayList<org.bukkit.entity.Entity>(notchEntityList.size());
 
         for (net.minecraft.entity.Entity e : notchEntityList)
@@ -588,7 +588,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public World getWorld() {
-        return ((IMixinWorld)nms.getWorld()).getCraftWorld();
+        return ((IMixinWorld)nms.getEntityWorld()).getCraftWorld();
     }
 
     @Override
@@ -662,7 +662,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     @Override
     public void playEffect(EntityEffect type) {
         if (type.getApplicable().isInstance(this))
-            this.getHandle().getWorld().sendEntityStatus(getHandle(), type.getData());
+            this.getHandle().getEntityWorld().sendEntityStatus(getHandle(), type.getData());
     }
 
     @Override
@@ -885,7 +885,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public Chunk getChunk() {
-        IWorldChunk wc = (IWorldChunk) nms.getWorld().getWorldChunk(nms.getBlockPos());
+        IWorldChunk wc = (IWorldChunk) nms.getEntityWorld().getWorldChunk(nms.getBlockPos());
         return wc.getBukkitChunk();
     }
 
@@ -993,7 +993,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     @Override
     public @NotNull Set<Player> getTrackedPlayers() {
         ImmutableSet.Builder<Player> players = ImmutableSet.builder();
-        ServerWorld world = (ServerWorld) nms.getWorld();
+        ServerWorld world = (ServerWorld) nms.getEntityWorld();
         EntityTracker entityTracker = world.getChunkManager()
                 .chunkLoadingManager.entityTrackers
                 .get(this.getEntityId());
@@ -1036,7 +1036,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 	@Override
     public boolean collidesAt(@NotNull Location location) {
         Box aabb = ((IMixinEntity)this.getHandle()).cardboad_getBoundingBoxAt(location.getX(), location.getY(), location.getZ());
-        return !this.getHandle().getWorld().isSpaceEmpty(this.getHandle(), aabb);
+        return !this.getHandle().getEntityWorld().isSpaceEmpty(this.getHandle(), aabb);
     }
 
 	@Override
@@ -1074,7 +1074,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 	@Override
     public boolean wouldCollideUsing(@NotNull BoundingBox boundingBox) {
         Box aabb = new Box(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(), boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
-        return !this.getHandle().getWorld().isSpaceEmpty(this.getHandle(), aabb);
+        return !this.getHandle().getEntityWorld().isSpaceEmpty(this.getHandle(), aabb);
     }
 	
 	// 1.19.4:
@@ -1416,7 +1416,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     }
 	
     public Entity copy() {
-        net.minecraft.entity.Entity copy = this.copy(this.getHandle().getWorld());
+        net.minecraft.entity.Entity copy = this.copy(this.getHandle().getEntityWorld());
         Preconditions.checkArgument((copy != null ? 1 : 0) != 0, (Object)"Error creating new entity.");
         return ((IMixinEntity)copy).getBukkitEntity();
     }

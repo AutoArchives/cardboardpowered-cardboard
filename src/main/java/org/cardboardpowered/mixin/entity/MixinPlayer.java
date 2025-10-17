@@ -211,7 +211,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
 
     @Override
     public BlockPos getSpawnPoint(World world) {
-        return ((ServerWorld)world).getSpawnPos();
+        return ((ServerWorld)world).getSpawnPoint().getPos();
     }
 
     @Inject(at = @At("TAIL"), method = "onDisconnect")
@@ -234,7 +234,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     	ServerPlayerEntity thiz = (ServerPlayerEntity) (Object) this;
     	//ServerWorld serverWorld = target.world();
     	// ServerWorld serverWorld2 = thiz.getServerWorld();
-    	cb$from = thiz.getWorld(); // Cardboard - store from world
+    	cb$from = thiz.getEntityWorld(); // Cardboard - store from world
 
     	Location exit = CraftLocation.toBukkit(target.position(), target.world().getWorld());
 
@@ -584,7 +584,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
             ((ServerPlayerEntity)(Object)this).setScore(entityplayer.getScore());
             // TODO
             //((ServerPlayerEntity)(Object)this).lastNetherPortalPosition = entityplayer.lastNetherPortalPosition;
-        } else if (((ServerPlayerEntity)(Object)this).getWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || entityplayer.isSpectator()) {
+        } else if (((ServerPlayerEntity)(Object)this).getEntityWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || entityplayer.isSpectator()) {
             ((ServerPlayerEntity)(Object)this).inventory.clone(entityplayer.inventory);
             ((ServerPlayerEntity)(Object)this).experienceLevel = entityplayer.experienceLevel;
             ((ServerPlayerEntity)(Object)this).totalExperience = entityplayer.totalExperience;
@@ -649,7 +649,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
             }
             if (world == null || position == null) {
                 world = ((CraftWorld)Bukkit.getServer().getWorlds().get(0)).getHandle();
-                position = Vec3d.ofCenter(world.getSpawnPos());
+                position = Vec3d.ofCenter(world.getSpawnPoint());
             }
             plr.setServerWorld(world);
             plr.setPos(position.getX(), position.getY(), position.getZ());
@@ -683,7 +683,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
                 // consumeAnchorCharge = respawnPosAngle.consumeAnchorCharge();
                 teleportTransition = new TeleportTarget(level, respawnPosAngle.pos(), Vec3d.ZERO, respawnPosAngle.yaw(), 0.0f, postTeleportTransition);
             } else {
-                teleportTransition = TeleportTarget.missingSpawnBlock(thiz.getServer().getOverworld(), thiz, postTeleportTransition);
+                teleportTransition = TeleportTarget.missingSpawnBlock(/*thiz.getEntityWorld().getServer().getOverworld(),*/ thiz, postTeleportTransition);
             }
         } else {
             teleportTransition = new TeleportTarget(CraftServer.server.getOverworld(), thiz, postTeleportTransition);
@@ -694,7 +694,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         CraftPlayer respawnPlayer = this.getBukkitEntity();
         Location location = CraftLocation.toBukkit(teleportTransition.position(), (org.bukkit.World)teleportTransition.world().getWorld(), teleportTransition.yaw(), teleportTransition.pitch());
         PlayerRespawnEvent respawnEvent = new PlayerRespawnEvent((Player)respawnPlayer, location, isBedSpawn, isAnchorSpawn, teleportTransition.missingRespawnBlock(), respawnReason);
-        thiz.getWorld().getCraftServer().getPluginManager().callEvent(respawnEvent);
+        thiz.getEntityWorld().getCraftServer().getPluginManager().callEvent(respawnEvent);
         
         /*
         if (this.networkHandler.isDisconnected()) {

@@ -856,7 +856,7 @@ public final class CraftItemStack extends ItemStack {
 
                 @Override
                 void skullCallback(GameProfile gameProfile) {
-                    item.set(DataComponentTypes.PROFILE, new ProfileComponent(gameProfile));
+                    item.set(DataComponentTypes.PROFILE, ProfileComponent.ofStatic(gameProfile));
                 }
             };
             ((CraftMetaItem)itemMeta).applyToItem(tag);

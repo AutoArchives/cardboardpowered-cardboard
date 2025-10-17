@@ -408,7 +408,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
     public <T extends org.bukkit.entity.Entity> T addEntity(T entity) {
         // Preconditions.checkArgument((!entity.isInWorld() ? 1 : 0) != 0, (Object)"Entity has already been added to a world");
         Entity nmsEntity = ((CraftEntity)entity).getHandle();
-        if (nmsEntity.getWorld() != this.getHandle().toServerWorld()) {
+        if (nmsEntity.getEntityWorld() != this.getHandle().toServerWorld()) {
             
             nmsEntity = nmsEntity.teleportTo(new TeleportTarget(this.getHandle().toServerWorld(), nmsEntity, TeleportTarget.NO_OP));
         	// nmsEntity = nmsEntity.teleportTo(this.getHandle().toServerWorld());

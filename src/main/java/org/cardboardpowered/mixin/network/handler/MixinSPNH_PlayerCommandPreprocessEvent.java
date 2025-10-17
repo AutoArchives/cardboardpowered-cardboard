@@ -84,7 +84,7 @@ public abstract class MixinSPNH_PlayerCommandPreprocessEvent implements IMixinPl
 		
 		SignedMessage playerchatmessage;
 		String command = "/" + packet.command();
-		CardboardMod.LOGGER.info(this.player.getGameProfile().getName() + " issued server command: " + command);
+		CardboardMod.LOGGER.info(this.player.getGameProfile().name() + " issued server command: " + command);
 		PlayerCommandPreprocessEvent event = new PlayerCommandPreprocessEvent(this.getPlayer(), command, new LazyPlayerSet(CraftServer.server));
 		CraftServer.INSTANCE.getPluginManager().callEvent(event);
 

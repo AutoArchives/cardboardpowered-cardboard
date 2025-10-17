@@ -37,7 +37,7 @@ public class MixinSnowballItem extends Item {
     @Overwrite
     public ActionResult use(World world, PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
-        if (!world.isClient) {
+        if (!world.isClient()) {
             SnowballEntity snowballEntity = new SnowballEntity(world, user, itemStack);
             snowballEntity.setItem(itemStack);
             snowballEntity.setVelocity(user, user.getPitch(), user.getYaw(), 0.0F, 1.5F, 1.0F);
