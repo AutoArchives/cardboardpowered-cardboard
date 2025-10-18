@@ -29,5 +29,11 @@ public class TypedEntityDataExtra {
 		tag.putString("id", EntityType.getId((EntityType<?>)data.getType()).toString());
 		return tag;
 	}
+
+	public static NbtCompound copyTagWithBlockEntityId(TypedEntityData<?> data) {
+		NbtCompound tag = data.copyNbtWithoutId();
+		tag.putString("id", BlockEntityType.getId((BlockEntityType<?>)data.getType()).toString());
+		return tag;
+	}
 	
 }
