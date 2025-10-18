@@ -79,6 +79,21 @@ public class Conversions {
         return vanilla == null ? Component.empty() : this.serializer.deserialize(vanilla);
     }
     
+    public ClientTextureAsset asBukkit(@Nullable AssetInfo.TextureAsset clientTextureAsset) {
+        return clientTextureAsset == null
+           ? null
+           : ClientTextureAsset.clientTextureAsset(
+              PaperAdventure.asAdventure(clientTextureAsset.id()), PaperAdventure.asAdventure(clientTextureAsset.texturePath())
+           );
+     }
+    
+    public AssetInfo.TextureAssetInfo asVanilla(@Nullable ClientTextureAsset clientTextureAsset) {
+        return clientTextureAsset == null
+           ? null
+           : new AssetInfo.TextureAssetInfo(PaperAdventure.asVanilla(clientTextureAsset.identifier()), PaperAdventure.asVanilla(clientTextureAsset.texturePath()));
+     }
+    
+    /*
     public ClientTextureAsset asBukkit(@Nullable AssetInfo clientTextureAsset) {
         return clientTextureAsset == null ? null : ClientTextureAsset.clientTextureAsset(PaperAdventure.asAdventure(clientTextureAsset.id()), PaperAdventure.asAdventure(clientTextureAsset.texturePath()));
     }
@@ -86,6 +101,7 @@ public class Conversions {
     public AssetInfo asVanilla(@Nullable ClientTextureAsset clientTextureAsset) {
         return clientTextureAsset == null ? null : new AssetInfo(PaperAdventure.asVanilla(clientTextureAsset.identifier()), PaperAdventure.asVanilla(clientTextureAsset.texturePath()));
     }
+    */
     
     private static <M, A extends Keyed, B extends PaperRegistryBuilder<M, A>> RegistryEntryMeta.Buildable<M, A, B> getDirectHolderBuildableMeta(io.papermc.paper.registry.RegistryKey<A> registryKey) {
         RegistryEntryMeta.Buildable<M, A, B> buildableMeta = PaperRegistries.getBuildableMeta(registryKey);

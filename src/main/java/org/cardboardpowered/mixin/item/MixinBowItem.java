@@ -72,7 +72,7 @@ public class MixinBowItem {
                 event.getProjectile().remove();
                 return;
             }
-            stack.damage(this.getWeaponStackDamage(itemStack), shooter, LivingEntity.getSlotForHand(hand));
+            stack.damage(this.getWeaponStackDamage(itemStack), shooter, hand.getEquipmentSlot());
             if (event.getProjectile() != ((IMixinEntity)projectileEntity).getBukkitEntity() || world.spawnEntity(projectileEntity)) continue;
             if (shooter instanceof ServerPlayerEntity) {
             	((Player) ((IMixinServerEntityPlayer)  ((ServerPlayerEntity)shooter) ).getBukkitEntity()).updateInventory();

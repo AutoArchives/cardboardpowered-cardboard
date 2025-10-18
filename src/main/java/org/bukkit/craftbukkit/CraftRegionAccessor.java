@@ -1,6 +1,8 @@
 package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
+
+import org.cardboardpowered.TeleportTargetExtra;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
@@ -11,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.minecraft.block.Blocks;
@@ -409,8 +412,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
         // Preconditions.checkArgument((!entity.isInWorld() ? 1 : 0) != 0, (Object)"Entity has already been added to a world");
         Entity nmsEntity = ((CraftEntity)entity).getHandle();
         if (nmsEntity.getEntityWorld() != this.getHandle().toServerWorld()) {
-            
-            nmsEntity = nmsEntity.teleportTo(new TeleportTarget(this.getHandle().toServerWorld(), nmsEntity, TeleportTarget.NO_OP));
+            nmsEntity = nmsEntity.teleportTo(TeleportTargetExtra.newTeleportTarget(this.getHandle().toServerWorld(), nmsEntity, TeleportTarget.NO_OP));
         	// nmsEntity = nmsEntity.teleportTo(this.getHandle().toServerWorld());
         }
         this.addEntityWithPassengers(nmsEntity, CreatureSpawnEvent.SpawnReason.CUSTOM);

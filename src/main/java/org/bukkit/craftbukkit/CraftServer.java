@@ -52,6 +52,7 @@ import io.papermc.paper.configuration.PaperServerConfiguration;
 import io.papermc.paper.configuration.ServerConfiguration;
 import io.papermc.paper.datapack.DatapackManager;
 import io.papermc.paper.math.Position;
+import io.papermc.paper.profile.PaperFilledProfileCache;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
 import io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler;
@@ -178,6 +179,7 @@ import org.bukkit.util.permissions.DefaultPermissions;
 import org.cardboardpowered.RegistryUtil;
 import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.CardboardBossBar;
+import org.cardboardpowered.impl.CraftProfileBanList;
 import org.cardboardpowered.impl.CraftServerLinks;
 import org.cardboardpowered.impl.IpBanList;
 import org.cardboardpowered.impl.ProfileBanList;
@@ -301,6 +303,13 @@ public class CraftServer implements Server {
     
     private final ServerConfiguration serverConfig = new PaperServerConfiguration();
     
+    private final PaperFilledProfileCache paperProfileCache;
+    
+    // TODO: Move to ApiServices
+    public PaperFilledProfileCache getPaperFilledProfileCache() {
+    	return paperProfileCache;
+    }
+    
     public CraftServer(MinecraftDedicatedServer nms) {
     	
     	
@@ -313,6 +322,8 @@ public class CraftServer implements Server {
         commandMap = new CommandMapImpl(this);
         pluginManager = new SimplePluginManager(this, commandMap);
         // paperPluginManager = new PaperPluginManagerImpl(this, commandMap, this.pluginManager);
+        
+        this.paperProfileCache = new PaperFilledProfileCache();
         
         scoreboardManager = new CardboardScoreboardManager(nms, server.getScoreboard());
 
@@ -1046,7 +1057,7 @@ public class CraftServer implements Server {
                 return new IpBanList(server.playerManager.getIpBanList());
             case NAME:
             default:
-                return new ProfileBanList(server.playerManager.getUserBanList());
+                return new CraftProfileBanList(server.playerManager.getUserBanList());
         }
     }
 
@@ -2507,7 +2518,7 @@ public class CraftServer implements Server {
             return (B)new IpBanList(this.playerList.getIpBanList());
         }
         if (type == BanListType.PROFILE) {
-            return (B)new ProfileBanList(this.playerList.getUserBanList());
+            return (B)new CraftProfileBanList(this.playerList.getUserBanList());
         }
         throw new IllegalArgumentException("Unknown BanListType: " + String.valueOf(type));
 	}

@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.util;
 
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.GlobalPos;
 // import net.minecraft.util.math.PositionImpl;
@@ -43,6 +44,10 @@ public final class CraftLocation {
     public static Location toBukkit(BlockPos BlockPos, World world, float yaw, float pitch) {
         return new Location(world, BlockPos.getX(), BlockPos.getY(), BlockPos.getZ(), yaw, pitch);
     }
+    
+    public static Location toBukkit(BlockPos BlockPos, ServerWorld world, float yaw, float pitch) {
+        return new Location(((IMixinWorld) world).getCraftWorld(), BlockPos.getX(), BlockPos.getY(), BlockPos.getZ(), yaw, pitch);
+    }
 
     /*public static Location toBukkit(PositionImpl position) {
         return toBukkit(position, null, 0.0F, 0.0F);
@@ -85,4 +90,5 @@ public final class CraftLocation {
 	public static Vec3d toVec3(Location loc) {
 		return toVec3D(loc);
 	}
+
 }

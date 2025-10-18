@@ -61,7 +61,9 @@ public class CraftDataPack implements DataPack {
 
     @Override
     public int getPackFormat() {
-        return resourcePackInfo.packFormat();
+    	return resourcePackInfo.supportedFormats().maxInclusive().major();
+    	// TODO
+        // return resourcePackInfo.packFormat();
     }
 
     @Override
@@ -121,12 +123,18 @@ public class CraftDataPack implements DataPack {
     
 	@Override
 	public int getMinSupportedPackFormat() {
-		return this.resourcePackInfo.supportedFormats().orElse(new Range<Integer>(this.getPackFormat())).minInclusive();
+		
+		return this.resourcePackInfo.supportedFormats().minInclusive().major();
+		
+		// return this.resourcePackInfo.supportedFormats().orElse(new Range<Integer>(this.getPackFormat())).minInclusive();
 	}
 
 	@Override
 	public int getMaxSupportedPackFormat() {
-		return this.resourcePackInfo.supportedFormats().orElse(new Range<Integer>(this.getPackFormat())).maxInclusive();
+		
+		return this.resourcePackInfo.supportedFormats().maxInclusive().major();
+		
+		// return this.resourcePackInfo.supportedFormats().orElse(new Range<Integer>(this.getPackFormat())).maxInclusive();
 	}
 }
 

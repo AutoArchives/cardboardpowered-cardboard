@@ -12,7 +12,7 @@ import org.jspecify.annotations.Nullable;
 
 public class PaperFrogVariantRegistryEntry implements FrogVariantRegistryEntry {
 
-    protected @Nullable AssetInfo clientTextureAsset;
+    protected AssetInfo.TextureAssetInfo clientTextureAsset;
     protected SpawnConditionSelectors spawnConditions;
     protected final Conversions conversions;
 

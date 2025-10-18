@@ -21,7 +21,7 @@ import org.cardboardpowered.interfaces.IMixinWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.WorldGenerationProgressListener;
+/// import net.minecraft.server.WorldGenerationProgressListener;
 import net.minecraft.server.world.ServerEntityManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ProgressListener;
@@ -54,7 +54,7 @@ public class MixinServerWorld extends MixinWorld implements IServerWorld {
     		Executor executor,
     		LevelStorage.Session convertable_conversionsession,
     		ServerWorldProperties iworlddataserver, RegistryKey<World> resourcekey,
-    		DimensionOptions worlddimension, WorldGenerationProgressListener worldloadlistener,
+    		DimensionOptions worlddimension, // WorldGenerationProgressListener worldloadlistener,
     		boolean flag, long i2, List<SpecialSpawner> list, boolean flag1,
     		RandomSequencesState randomsequences, CallbackInfo ci
     	) {

@@ -887,16 +887,17 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 	// Paper start - Potential bed api
     @Override
     public Location getPotentialRespawnLocation() {
-    	ServerPlayerEntity.Respawn respawnConfig = ((ServerPlayerEntity)this.getHandle()).getRespawn();
+        ServerPlayerEntity.Respawn respawnConfig = ((ServerPlayerEntity)this.getHandle()).getRespawn();
         if (respawnConfig == null) {
-            return null;
+           return null;
+        } else {
+           ServerWorld level = super.server.getServer().getWorld(respawnConfig.respawnData().getDimension());
+           return level == null
+              ? null
+              : CraftLocation.toBukkit(respawnConfig.respawnData().getPos(), level, respawnConfig.respawnData().yaw(), respawnConfig.respawnData().pitch());
         }
-        ServerWorld level = ((ServerPlayerEntity)this.getHandle()).getServer().getWorld(respawnConfig.dimension());
-        if (level == null) {
-            return null;
-        }
-        return CraftLocation.toBukkit(respawnConfig.pos(), level.getWorld());
-    }
+     }
+    
     // Paper end
 
     // 1.21.6:

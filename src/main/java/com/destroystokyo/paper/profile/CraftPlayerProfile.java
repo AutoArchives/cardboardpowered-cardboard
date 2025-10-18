@@ -12,11 +12,14 @@ import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.authlib.yggdrasil.ProfileResult;
 import com.mojang.datafixers.util.Either;
 
+import io.papermc.paper.profile.MutablePropertyMap;
 import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.entity.player.SkinTextures;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.util.Util;
+import net.minecraft.util.Uuids;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.craftbukkit.CraftServer;
@@ -169,6 +172,7 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
         return completeFromCache(false, onlineMode);
     }
 
+    /*
     public boolean completeFromCache(boolean lookupUUID, boolean onlineMode) {
         MinecraftServer server = CraftServer.INSTANCE.getServer();
         String name = profile.name();
@@ -202,6 +206,66 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
 
         return isProfileComplete();
     }
+    */
+    
+    // PlayerConfigEntry.toUncompletedGameProfile
+    public GameProfile PlayerConfigEntry_toUncompletedGameProfile(PlayerConfigEntry thiz) {
+        return new GameProfile(thiz.id(), thiz.name());
+    }
+    
+    public boolean completeFromCache(boolean lookupUUID, boolean onlineMode) {
+        MinecraftServer server = CraftServer.INSTANCE.getServer();
+        String name = this.profile.name();
+        if (this.getId() == null) {
+           GameProfile profile;
+           if (onlineMode) {
+              profile = /*server.getApiServices().paper().filledProfileCache()*/
+            		  CraftServer.INSTANCE.getPaperFilledProfileCache().getIfCached(name);
+              if (profile == null && lookupUUID) {
+                 PlayerConfigEntry nameAndId = server.getApiServices().nameToIdCache().findByName(name).orElse(null);
+                 if (nameAndId != null) {
+                	 profile = PlayerConfigEntry_toUncompletedGameProfile(nameAndId);
+                    // profile = nameAndId.toUncompletedGameProfile();
+                 }
+              }
+           } else {
+              profile = Uuids.getOfflinePlayerProfile(name);
+           }
+
+           if (profile != null) {
+              GameProfile copy = new GameProfile(profile.id(), profile.name(), new MutablePropertyMap());
+              copy.properties().putAll(profile.properties());
+              copyProfileProperties(this.profile, copy);
+              this.profile = copy;
+              this.emptyUUID = false;
+           }
+        }
+
+        if ((this.profile.name().isEmpty() || !this.hasTextures()) && this.getId() != null) {
+           GameProfile profilex = /*server.getApiServices().paper().filledProfileCache()*/
+        		   CraftServer.INSTANCE.getPaperFilledProfileCache().getIfCached(this.profile.id());
+           if (profilex == null) {
+              Optional<PlayerConfigEntry> nameAndId = server.getApiServices().nameToIdCache().getByUuid(this.profile.id());
+              if (nameAndId.isPresent()) {
+                 profilex = PlayerConfigEntry_toUncompletedGameProfile(nameAndId.get());
+              }
+           }
+
+           if (profilex != null) {
+              if (this.profile.name().isEmpty()) {
+                 GameProfile copy = new GameProfile(profilex.id(), profilex.name(), new MutablePropertyMap());
+                 copy.properties().putAll(profilex.properties());
+                 copyProfileProperties(this.profile, copy);
+                 this.profile = copy;
+                 this.emptyName = false;
+              } else if (profilex != this.profile) {
+                 copyProfileProperties(profilex, this.profile);
+              }
+           }
+        }
+
+        return this.isComplete();
+     }
 
     public boolean complete(boolean textures) {
         MinecraftServer server = CraftServer.INSTANCE.getServer();
@@ -240,6 +304,7 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
                  GameProfile copy = new GameProfile(this.profile.id(), this.profile.name(), new PropertyMap(this.profile.properties()));
                  // TODO 1.21.9
                  // server.getApiServices().paper().filledProfileCache().add(copy);
+                 CraftServer.INSTANCE.getPaperFilledProfileCache().add(copy);
               }
            }
 

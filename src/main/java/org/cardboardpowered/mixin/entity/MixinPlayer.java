@@ -32,6 +32,7 @@ import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.cardboardpowered.CardboardConfig;
 import org.cardboardpowered.CardboardMod;
+import org.cardboardpowered.TeleportTargetExtra;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.impl.world.CraftWorld;
@@ -686,7 +687,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
                 teleportTransition = TeleportTarget.missingSpawnBlock(/*thiz.getEntityWorld().getServer().getOverworld(),*/ thiz, postTeleportTransition);
             }
         } else {
-            teleportTransition = new TeleportTarget(CraftServer.server.getOverworld(), thiz, postTeleportTransition);
+            teleportTransition = TeleportTargetExtra.newTeleportTarget(CraftServer.server.getOverworld(), thiz, postTeleportTransition);
         }
         if (respawnReason == null) {
             return teleportTransition;

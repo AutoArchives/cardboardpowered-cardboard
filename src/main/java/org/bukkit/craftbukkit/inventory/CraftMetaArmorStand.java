@@ -2,23 +2,40 @@ package org.bukkit.craftbukkit.inventory;
 
 import com.destroystokyo.paper.inventory.meta.ArmorStandMeta;
 import com.google.common.collect.ImmutableMap;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.TypedEntityData;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.registry.Registries;
+
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
+import org.cardboardpowered.TypedEntityDataExtra;
 
 @DelegateDeserialization(value=SerializableMeta.class)
 public class CraftMetaArmorStand
 extends CraftMetaItem
 implements ArmorStandMeta {
-    static final CraftMetaItem.ItemMetaKeyType<NbtComponent> ENTITY_TAG = new CraftMetaItem.ItemMetaKeyType<NbtComponent>(DataComponentTypes.ENTITY_DATA, "entity-tag");
+	
+	
+	static final CraftMetaItem.ItemMetaKeyType<TypedEntityData<EntityType<?>>> ENTITY_TAG = new CraftMetaItem.ItemMetaKeyType<>(
+		      DataComponentTypes.ENTITY_DATA, "entity-tag"
+		   );
+	
+    // static final CraftMetaItem.ItemMetaKeyType<NbtComponent> ENTITY_TAG = new CraftMetaItem.ItemMetaKeyType<NbtComponent>(DataComponentTypes.ENTITY_DATA, "entity-tag");
     static final CraftMetaItem.ItemMetaKey INVISIBLE = new CraftMetaItem.ItemMetaKey("Invisible", "invisible");
     static final CraftMetaItem.ItemMetaKey NO_BASE_PLATE = new CraftMetaItem.ItemMetaKey("NoBasePlate", "no-base-plate");
     static final CraftMetaItem.ItemMetaKey SHOW_ARMS = new CraftMetaItem.ItemMetaKey("ShowArms", "show-arms");
@@ -48,7 +65,7 @@ implements ArmorStandMeta {
     CraftMetaArmorStand(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaArmorStand.getOrEmpty(tag, ENTITY_TAG).ifPresent(nbt -> {
-            this.entityTag = nbt.copyNbt();
+            this.entityTag = TypedEntityDataExtra.copyTagWithEntityId(nbt);
             if (this.entityTag.contains(CraftMetaArmorStand.INVISIBLE.NBT)) {
                 this.invisible = this.entityTag.getBoolean(CraftMetaArmorStand.INVISIBLE.NBT).orElse(this.invisible);
             }
@@ -116,7 +133,7 @@ implements ArmorStandMeta {
             this.entityTag.putBoolean(CraftMetaArmorStand.MARKER.NBT, this.marker);
         }
         if (this.entityTag != null) {
-            tag.put(ENTITY_TAG, NbtComponent.of(this.entityTag));
+            tag.put(ENTITY_TAG, TypedEntityDataExtra.decodeEntity(this.entityTag));
         }
     }
 

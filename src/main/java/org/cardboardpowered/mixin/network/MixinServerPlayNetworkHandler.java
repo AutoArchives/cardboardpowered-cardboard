@@ -7,10 +7,10 @@ import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import org.cardboardpowered.interfaces.IMixinServerPlayerInteractionManager;
 import me.isaiah.common.cmixin.IMixinEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityPosition;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.DisconnectionInfo;
@@ -243,7 +243,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
     @Override
     public void teleport(Location dest) {
     	
-    	PlayerPosition pos = new PlayerPosition(CraftLocation.toVec3D(dest), Vec3d.ZERO, dest.getYaw(), dest.getPitch());
+    	EntityPosition pos = new EntityPosition(CraftLocation.toVec3D(dest), Vec3d.ZERO, dest.getYaw(), dest.getPitch());
     	requestTeleport(pos, Collections.emptySet());
     	
         // requestTeleport(dest.getX(), dest.getY(), dest.getZ(), dest.getYaw(), dest.getPitch(), Collections.emptySet());
@@ -282,7 +282,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
      */
     @Overwrite
     //public void requestTeleport(double d0, double d1, double d2, float f, float f1, Set<PositionFlag> set) {
-    public void requestTeleport( PlayerPosition pos, Set<PositionFlag> flags) {
+    public void requestTeleport( EntityPosition pos, Set<PositionFlag> flags) {
 
     	Player player = this.getPlayer();
         Location from = player.getLocation();
@@ -328,7 +328,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
         	flags.clear(); // Can't relative teleport
         	
             to = event.isCancelled() ? event.getFrom() : event.getTo();
-            pos = new PlayerPosition(CraftLocation.toVec3D(to), Vec3d.ZERO, to.getYaw(), to.getPitch());
+            pos = new EntityPosition(CraftLocation.toVec3D(to), Vec3d.ZERO, to.getYaw(), to.getPitch());
         }
 
         this.internalTeleport(pos, flags);
@@ -338,7 +338,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
     }
     
     @Override
-    public void internalTeleport(PlayerPosition positionmoverotation, Set<PositionFlag> set) {
+    public void internalTeleport(EntityPosition positionmoverotation, Set<PositionFlag> set) {
         // AsyncCatcher.catchOp("teleport");
         if (this.player.isRemoved()) {
             // LOGGER.info("Attempt to teleport removed player {} restricted", (Object)this.player.getNameForScoreboard());
@@ -348,10 +348,10 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
             return;
         }
         if (Float.isNaN(positionmoverotation.yaw())) {
-            positionmoverotation = new PlayerPosition(positionmoverotation.position(), positionmoverotation.deltaMovement(), 0.0f, positionmoverotation.pitch());
+            positionmoverotation = new EntityPosition(positionmoverotation.position(), positionmoverotation.deltaMovement(), 0.0f, positionmoverotation.pitch());
         }
         if (Float.isNaN(positionmoverotation.pitch())) {
-            positionmoverotation = new PlayerPosition(positionmoverotation.position(), positionmoverotation.deltaMovement(), positionmoverotation.yaw(), 0.0f);
+            positionmoverotation = new EntityPosition(positionmoverotation.position(), positionmoverotation.deltaMovement(), positionmoverotation.yaw(), 0.0f);
         }
         this.justTeleported = true;
         this.lastTeleportCheckTicks = this.ticks;
