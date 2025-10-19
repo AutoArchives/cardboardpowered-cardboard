@@ -30,8 +30,8 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerTask;
-import net.minecraft.server.WorldGenerationProgressListener;
-import net.minecraft.server.WorldGenerationProgressListenerFactory;
+// import net.minecraft.server.WorldGenerationProgressListener;
+// import net.minecraft.server.WorldGenerationProgressListenerFactory;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.MinecraftDedicatedServer;
@@ -92,7 +92,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
 
     @Shadow private long tickStartTimeNanos;
     @Shadow @Final protected SaveProperties saveProperties;
-    @Shadow public WorldGenerationProgressListenerFactory worldGenerationProgressListenerFactory;
+    // @Shadow public WorldGenerationProgressListenerFactory worldGenerationProgressListenerFactory;
 
     @Shadow public abstract ServerWorld getOverworld();
 
@@ -151,10 +151,12 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         //getServer().upgradeWorld(name);
     }
 
+    /*
     @Override
     public WorldGenerationProgressListenerFactory getWorldGenerationProgressListenerFactory() {
         return CraftServer.server.worldGenerationProgressListenerFactory;
     }
+    */
 
     @Override
     public Queue<Runnable> getProcessQueue() {
@@ -178,6 +180,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
      * 
      * @author Cardboard
      */
+    /*
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/ServerWorldProperties;getWorldBorder()Lnet/minecraft/world/border/WorldBorder$Properties;"), method = "createWorlds")
     public void onBeginCreateWorld(WorldGenerationProgressListener p, CallbackInfo ci) {
         Collection<ServerWorld> worldz = this.worlds.values();
@@ -186,6 +189,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
             CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldInitEvent(((IMixinWorld)world).getCraftWorld()));
         }
     }
+    */
 
     /**
      * Enable plugins
@@ -198,7 +202,8 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     public void afterWorldLoad(CallbackInfo ci) {
         for (ServerWorld worldserver : ((MinecraftServer)(Object)this).getWorlds()) {
             if (worldserver != getOverworld()) {
-                this.loadSpawn(worldserver.getChunkManager().chunkLoadingManager.worldGenerationProgressListener, worldserver);
+                // TODO IMPORTANT
+            	// this.loadSpawn(worldserver.getChunkManager().chunkLoadingManager.worldGenerationProgressListener, worldserver);
                 CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldLoadEvent(((IMixinWorld)worldserver).getCraftWorld()));
             }
         }
@@ -212,6 +217,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         CardboardMod.isAfterWorldLoad = true;
     }
 
+    /*
     @Redirect(method = "createWorlds", at = @At(value = "NEW", args = "class=net/minecraft/server/world/ServerWorld", ordinal = 1))
     private ServerWorld cardboard$spiltListener(MinecraftServer server, Executor dispatcher,
                                              LevelStorage.Session levelStorageAccess,
@@ -224,10 +230,6 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
                 dimension, levelStem, listener, isDebug, biomeZoomSeed, customSpawners, tickTime, randomSequences);
     }
     
-    
-    // [Lnet/minecraft/world/level/ServerWorldProperties;,
-    // Z, Lnet/minecraft/registry/Registry;, Lnet/minecraft/world/gen/GeneratorOptions;, J, J, Ljava/util/List;, Lnet/minecraft/world/dimension/DimensionOptions;, Lnet/minecraft/server/world/ServerWorld;]
-
     @Inject(method = "createWorlds",
             at = @At(value = "INVOKE",
             remap = false,
@@ -254,6 +256,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         cardboard$initLevel(serverWorld);
         cardboard$initializedLevel(serverWorld, serverWorldProperties, saveProperties, generatorOptions);
     }
+    */
 
     @Override
     public void addLevel(ServerWorld level) {
@@ -360,11 +363,14 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         this.forceTicks = false;
     }*/
     
+    /*
     @Override
     public void loadSpawn(WorldGenerationProgressListener a, ServerWorld b) {
     	prepareLevels(a, b);
     }
+    */
     
+    /*
     public void prepareLevels(WorldGenerationProgressListener listener, ServerWorld serverLevel) {
         int i2;
         this.forceTicks = true;
@@ -391,6 +397,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         // serverLevel.setMobSpawnOptions(serverLevel.getDifficulty() != Difficulty.PEACEFUL && ((MinecraftDedicatedServer)(Object)this).propertiesLoader.getPropertiesHandler().spawnMonsters);
         this.forceTicks = false;
     }
+    */
     
     @Shadow
     private void updateMobSpawnOptions() {
@@ -475,7 +482,8 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         worldborder.load(worldProperties.getWorldBorder().get());
         if (!worldProperties.isInitialized()) {
             try {
-                setupSpawn(worldserver, worldProperties, generatorsettings.hasBonusChest(), flag);
+            	// TODO IMPORTANT
+                // setupSpawn(worldserver, worldProperties, generatorsettings.hasBonusChest(), flag);
                 worldProperties.setInitialized(true);
             } catch (Throwable throwable) {
                 CrashReport crashreport = CrashReport.create(throwable, "Exception initializing level");
@@ -491,8 +499,10 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         // TODO Bukkit Generators
     }
 
+    /*
     @Shadow
     private static void setupSpawn(ServerWorld world, ServerWorldProperties swp, boolean bonusChest, boolean debugWorld) {
     }
+    */
 
 }

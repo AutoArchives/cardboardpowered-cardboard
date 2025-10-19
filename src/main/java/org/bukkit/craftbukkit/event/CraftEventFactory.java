@@ -722,7 +722,7 @@ public class CraftEventFactory {
     }
     
     public static PlayerExpChangeEvent callPlayerExpChangeEvent(PlayerEntity entity, ExperienceOrbEntity entityOrb) {
-        Player player = (Player)entity.getBukkitEntity();
+        Player player = (Player) ((IMixinEntity) entity).getBukkitEntity();
         ExperienceOrb source = (ExperienceOrb) ((IMixinEntity)entityOrb).getBukkitEntity();
         int expAmount = source.getExperience();
         

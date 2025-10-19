@@ -7,7 +7,6 @@ accessible	method	net/minecraft/entity/decoration/AbstractDecorationEntity	setFa
 accessible	field	net/minecraft/block/entity/AbstractFurnaceBlockEntity	litTimeRemaining	I
 accessible	field	net/minecraft/network/ClientConnection	address	Ljava/net/SocketAddress;
 accessible	field	net/minecraft/entity/boss/dragon/EnderDragonEntity	parts	[Lnet/minecraft/entity/boss/dragon/EnderDragonPart;
-accessible	field	net/minecraft/network/packet/s2c/play/PlayerSpawnPositionS2CPacket	pos	Lnet/minecraft/util/math/BlockPos;
 accessible	field	net/minecraft/entity/boss/BossBar	name	Lnet/minecraft/text/Text;
 accessible	field	net/minecraft/server/PlayerManager	players	Ljava/util/List;
 accessible	method	net/minecraft/entity/mob/SpellcastingIllagerEntity	getSpell	()Lnet/minecraft/entity/mob/SpellcastingIllagerEntity$Spell;
@@ -116,8 +115,6 @@ accessible	method	net/minecraft/entity/mob/ZombieEntity	setTicksUntilWaterConver
 # mutable	field	net/minecraft/entity/player/PlayerInventory	combinedInventory	Ljava/util/List;
 accessible	method	net/minecraft/entity/player/PlayerInventory	canStackAddMore	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z
 extendable	class	net/minecraft/entity/player/PlayerEntity$SleepFailureReason
-accessible	field	net/minecraft/entity/player/PlayerEntity	PLAYER_MODEL_PARTS	Lnet/minecraft/entity/data/TrackedData;
-mutable	field	net/minecraft/entity/player/PlayerEntity	PLAYER_MODEL_PARTS	Lnet/minecraft/entity/data/TrackedData;
 accessible	field	net/minecraft/entity/player/PlayerEntity	enderChestInventory	Lnet/minecraft/inventory/EnderChestInventory;
 mutable	field	net/minecraft/entity/player/PlayerEntity	enderChestInventory	Lnet/minecraft/inventory/EnderChestInventory;
 accessible	field	net/minecraft/entity/player/PlayerEntity	hungerManager	Lnet/minecraft/entity/player/HungerManager;
@@ -171,8 +168,6 @@ extendable	class	net/minecraft/world/GameMode
 # mutable	field	net/minecraft/world/GameMode	name	Ljava/lang/String;
 accessible	field	net/minecraft/world/World	thread	Ljava/lang/Thread;
 mutable	field	net/minecraft/world/World	thread	Ljava/lang/Thread;
-accessible	field	net/minecraft/world/World	border	Lnet/minecraft/world/border/WorldBorder;
-mutable	field	net/minecraft/world/World	border	Lnet/minecraft/world/border/WorldBorder;
 extendable	class	net/minecraft/world/level/LevelInfo
 accessible	field	net/minecraft/world/level/LevelInfo	gameMode	Lnet/minecraft/world/GameMode;
 mutable	field	net/minecraft/world/level/LevelInfo	gameMode	Lnet/minecraft/world/GameMode;
@@ -327,8 +322,6 @@ accessible	field	net/minecraft/text/Style	obfuscated	Ljava/lang/Boolean;
 mutable	field	net/minecraft/text/Style	obfuscated	Ljava/lang/Boolean;
 extendable	class	net/minecraft/network/NetworkSide
 accessible	class	net/minecraft/server/MinecraftServer$1
-accessible	field	net/minecraft/server/MinecraftServer	worldGenerationProgressListenerFactory	Lnet/minecraft/server/WorldGenerationProgressListenerFactory;
-mutable	field	net/minecraft/server/MinecraftServer	worldGenerationProgressListenerFactory	Lnet/minecraft/server/WorldGenerationProgressListenerFactory;
 accessible	field	net/minecraft/server/MinecraftServer	metadata	Lnet/minecraft/server/ServerMetadata;
 mutable	field	net/minecraft/server/MinecraftServer	metadata	Lnet/minecraft/server/ServerMetadata;
 accessible	field	net/minecraft/server/MinecraftServer	dataFixer	Lcom/mojang/datafixers/DataFixer;
@@ -351,7 +344,6 @@ accessible	field	net/minecraft/server/MinecraftServer	workerExecutor	Ljava/util/
 accessible	field	net/minecraft/server/MinecraftServer	serverId	Ljava/lang/String;
 accessible	method	net/minecraft/server/MinecraftServer	shutdown	()V
 accessible	method	net/minecraft/server/MinecraftServer	tick	(Ljava/util/function/BooleanSupplier;)V
-accessible	method	net/minecraft/server/MinecraftServer	isMonsterSpawningEnabled	()Z
 accessible	field	net/minecraft/server/ServerMetadata$Players	max	I
 mutable	field	net/minecraft/server/ServerMetadata$Players	max	I
 accessible	field	net/minecraft/server/ServerMetadata$Version	protocolVersion	I
@@ -362,7 +354,6 @@ accessible	field	net/minecraft/util/Identifier	namespace	Ljava/lang/String;
 accessible	field	net/minecraft/server/ServerTask	runnable	Ljava/lang/Runnable;
 accessible	class	net/minecraft/server/dedicated/MinecraftDedicatedServer$1
 accessible	field	net/minecraft/server/dedicated/MinecraftDedicatedServer	commandQueue	Ljava/util/List;
-accessible	field	net/minecraft/server/world/ServerChunkLoadingManager	worldGenerationProgressListener	Lnet/minecraft/server/WorldGenerationProgressListener;
 accessible	method	net/minecraft/server/world/ServerChunkLoadingManager	save	(Lnet/minecraft/world/chunk/Chunk;)Z
 accessible	field	net/minecraft/server/world/ServerWorld	players	Ljava/util/List;
 accessible	method	net/minecraft/server/world/ServerWorld	addPlayer	(Lnet/minecraft/server/network/ServerPlayerEntity;)V
@@ -423,7 +414,6 @@ accessible field net/minecraft/entity/player/PlayerEntity inventory Lnet/minecra
 accessible field net/minecraft/entity/Entity yaw F
 accessible field net/minecraft/entity/Entity pitch F
 accessible field net/minecraft/entity/player/PlayerEntity abilities Lnet/minecraft/entity/player/PlayerAbilities;
-accessible field net/minecraft/world/chunk/SerializedChunk CODEC Lcom/mojang/serialization/Codec;
 accessible method net/minecraft/world/biome/Biome getTemperature (Lnet/minecraft/util/math/BlockPos;I)F
 accessible field net/minecraft/server/MinecraftServer resourceManagerHolder Lnet/minecraft/server/MinecraftServer$ResourceManagerHolder;
 accessible field net/minecraft/entity/projectile/FireworkRocketEntity ITEM Lnet/minecraft/entity/data/TrackedData;
@@ -454,7 +444,6 @@ accessible field net/minecraft/entity/LivingEntity STUCK_ARROW_COUNT Lnet/minecr
 accessible field net/minecraft/entity/player/PlayerEntity enchantingTableSeed I
 accessible field net/minecraft/entity/FallingBlockEntity fallHurtAmount F
 accessible field net/minecraft/entity/FallingBlockEntity fallHurtMax I
-accessible method net/minecraft/entity/vehicle/TntMinecartEntity explode (D)V
 accessible field net/minecraft/block/entity/BellBlockEntity resonating Z
 accessible field net/minecraft/block/entity/SkullBlockEntity noteBlockSound Lnet/minecraft/util/Identifier;
 accessible method net/minecraft/entity/Entity unsetRemoved ()V
@@ -560,11 +549,9 @@ accessible method net/minecraft/entity/passive/TropicalFishEntity setTropicalFis
 accessible method net/minecraft/entity/passive/SalmonEntity setVariant (Lnet/minecraft/entity/passive/SalmonEntity$Variant;)V
 accessible method net/minecraft/entity/passive/MooshroomEntity setVariant (Lnet/minecraft/entity/passive/MooshroomEntity$Variant;)V
 accessible method net/minecraft/entity/passive/FrogEntity setVariant (Lnet/minecraft/registry/entry/RegistryEntry;)V
-accessible method net/minecraft/server/world/ChunkTicketType register (Ljava/lang/String;JZLnet/minecraft/server/world/ChunkTicketType$Use;)Lnet/minecraft/server/world/ChunkTicketType;
 accessible field net/minecraft/server/network/ServerCommonNetworkHandler connection Lnet/minecraft/network/ClientConnection;
 accessible method net/minecraft/server/network/ServerCommonNetworkHandler createClientData (Lnet/minecraft/network/packet/c2s/common/SyncedClientOptions;)Lnet/minecraft/server/network/ConnectedClientData;
 accessible class net/minecraft/registry/RegistryOps$CachedRegistryInfoGetter
-accessible method net/minecraft/entity/mob/MobEntity isDisallowedInPeaceful ()Z
 accessible field net/minecraft/entity/attribute/EntityAttribute category Lnet/minecraft/entity/attribute/EntityAttribute$Category;
 accessible field net/minecraft/entity/damage/DamageTracker recentlyAttacked Z
 accessible method net/minecraft/entity/damage/DamageTracker getBiggestFall ()Lnet/minecraft/entity/damage/DamageRecord;

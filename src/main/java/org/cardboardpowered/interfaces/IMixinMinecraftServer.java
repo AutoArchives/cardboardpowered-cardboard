@@ -20,8 +20,8 @@ import java.util.Queue;
 import org.bukkit.craftbukkit.CraftServer;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.WorldGenerationProgressListener;
-import net.minecraft.server.WorldGenerationProgressListenerFactory;
+// import net.minecraft.server.WorldGenerationProgressListener;
+// import net.minecraft.server.WorldGenerationProgressListenerFactory;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.registry.RegistryKey;
@@ -43,7 +43,7 @@ public interface IMixinMinecraftServer {
 
     void convertWorld(String name);
 
-    WorldGenerationProgressListenerFactory getWorldGenerationProgressListenerFactory();
+    // WorldGenerationProgressListenerFactory getWorldGenerationProgressListenerFactory();
 
     CommandManager setCommandManager(CommandManager commandManager);
 
@@ -51,7 +51,7 @@ public interface IMixinMinecraftServer {
         return CraftServer.server;
     }
 
-    void loadSpawn(WorldGenerationProgressListener worldGenerationProgressListener, ServerWorld internal);
+    // void loadSpawn(WorldGenerationProgressListener worldGenerationProgressListener, ServerWorld internal);
 
     void initWorld(ServerWorld worldserver, ServerWorldProperties iworlddataserver, SaveProperties saveData, GeneratorOptions generatorsettings);
 
