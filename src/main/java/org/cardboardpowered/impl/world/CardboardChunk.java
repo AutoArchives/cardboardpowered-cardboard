@@ -346,7 +346,81 @@ public class CardboardChunk implements Chunk {
         return new CardboardChunkSnapshot(getX(), getZ(), world.getName(), world.getFullTime(), sectionBlockIDs, sectionSkyLights, sectionEmitLights, sectionEmpty, hmap, biome);
     }*/
     
+    @Override
+    public ChunkSnapshot getChunkSnapshot(boolean includeMaxBlockY, boolean includeBiome, boolean includeBiomeTempRain) {
+        net.minecraft.world.chunk.Chunk chunk = this.getHandle(ChunkStatus.FULL);
+        ChunkSection[] cs = chunk.getSectionArray();
+        PalettedContainer[] sectionBlockIDs = new PalettedContainer[cs.length];
+        
+        // TODO: Update api to 1.21.9
+        boolean includeLightData = true;
+        
+        byte[][] sectionSkyLights = includeLightData ? new byte[cs.length][] : null;
+        byte[][] sectionEmitLights = includeLightData ? new byte[cs.length][] : null;
+        boolean[] sectionEmpty = new boolean[cs.length];
+        ReadableContainer<RegistryEntry<Biome>>[] biome = !includeBiome && !includeBiomeTempRain ? null : new PalettedContainer[cs.length];
+
+        for (int i = 0; i < cs.length; i++) {
+           sectionEmpty[i] = cs[i].isEmpty();
+           if (!sectionEmpty[i]) {
+              sectionBlockIDs[i] = cs[i].getBlockStateContainer().copy();
+           } else {
+              sectionBlockIDs[i] = emptyBlockIDs;
+           }
+
+           if (includeLightData) {
+              LightingProvider lightEngine = this.worldServer.getLightingProvider();
+              ChunkNibbleArray skyLightArray = lightEngine.get(LightType.SKY).getLightSection(ChunkSectionPos.from(this.x, chunk.sectionIndexToCoord(i), this.z));
+              if (skyLightArray == null) {
+                 sectionSkyLights[i] = this.worldServer.getDimension().hasSkyLight() ? FULL_LIGHT : EMPTY_LIGHT;
+              } else {
+                 sectionSkyLights[i] = new byte[2048];
+                 System.arraycopy(skyLightArray.asByteArray(), 0, sectionSkyLights[i], 0, 2048);
+              }
+
+              ChunkNibbleArray emitLightArray = lightEngine.get(LightType.BLOCK)
+                 .getLightSection(ChunkSectionPos.from(this.x, chunk.sectionIndexToCoord(i), this.z));
+              if (emitLightArray == null) {
+                 sectionEmitLights[i] = EMPTY_LIGHT;
+              } else {
+                 sectionEmitLights[i] = new byte[2048];
+                 System.arraycopy(emitLightArray.asByteArray(), 0, sectionEmitLights[i], 0, 2048);
+              }
+           }
+
+           if (biome != null) {
+              biome[i] = cs[i].getBiomeContainer().copy();
+           }
+        }
+
+        Heightmap heightmap = null;
+        if (includeMaxBlockY) {
+           heightmap = new Heightmap(chunk, Heightmap.Type.MOTION_BLOCKING);
+           heightmap.setTo(chunk, Heightmap.Type.MOTION_BLOCKING, chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING).asLongArray());
+        }
+
+        net.minecraft.registry.Registry<Biome> iregistry = worldServer.getRegistryManager().getOrThrow(RegistryKeys.BIOME);
+
+        World world = this.getWorld();
+        return new CardboardChunkSnapshot(
+           this.getX(),
+           this.getZ(),
+           chunk.getBottomY(),
+           chunk.getTopYInclusive(),
+           world.getSeaLevel(),
+           world.getName(),
+           world.getFullTime(),
+           sectionBlockIDs,
+           sectionSkyLights,
+           sectionEmitLights,
+           sectionEmpty,
+           heightmap,
+           iregistry, // TODO: Check 1.21.9 removed from constructor: iregistry
+           biome
+        );
+     }
     
+    /*
     @Override
     public ChunkSnapshot getChunkSnapshot(boolean includeMaxBlockY, boolean includeBiome, boolean includeBiomeTempRain) {
         net.minecraft.world.chunk.Chunk chunk = getHandle(ChunkStatus.FULL);
@@ -360,7 +434,8 @@ public class CardboardChunk implements Chunk {
 
         net.minecraft.registry.Registry<Biome> iregistry = worldServer.getRegistryManager().getOrThrow(RegistryKeys.BIOME);
         // Codec<ReadableContainer<RegistryEntry<Biome>>> biomeCodec = PalettedContainer.createReadableContainerCodec(iregistry.getIndexedEntries(), iregistry.createEntryCodec(), PalettedContainer.PaletteProvider.BIOME, iregistry.entryOf(BiomeKeys.PLAINS));
-        Codec<ReadableContainer<RegistryEntry<Biome>>> biomeCodec = PalettedContainer.createReadableContainerCodec(iregistry.getIndexedEntries(), iregistry.getEntryCodec(), PalettedContainer.PaletteProvider.BIOME, iregistry.getOrThrow(BiomeKeys.PLAINS));
+        // Codec<ReadableContainer<RegistryEntry<Biome>>> biomeCodec = PalettedContainer.createReadableContainerCodec(iregistry.getIndexedEntries(), iregistry.getEntryCodec(), PalettedContainer.PaletteProvider.BIOME, iregistry.getOrThrow(BiomeKeys.PLAINS));
+        Codec<ReadableContainer<RegistryEntry<Biome>>> biomeCodec = worldServer.getPalettesFactory().biomeContainerCodec();
         
         for (int i = 0; i < cs.length; i++) {
             NbtCompound data = new NbtCompound();
@@ -404,6 +479,7 @@ public class CardboardChunk implements Chunk {
         World world = getWorld();
         return new CardboardChunkSnapshot(getX(), getZ(), chunk.getBottomY(), chunk.getTopYInclusive(), world.getSeaLevel(), world.getName(), world.getFullTime(), sectionBlockIDs, sectionSkyLights, sectionEmitLights, sectionEmpty, hmap, iregistry, biome);
     }
+    */
     
     public static ChunkSnapshot getEmptyChunkSnapshot(int x, int z, CraftWorld world, boolean includeBiome, boolean includeBiomeTempRain) {
         net.minecraft.world.chunk.Chunk actual = world.getHandle().getChunk(x, z, (includeBiome || includeBiomeTempRain) ? ChunkStatus.BIOMES : ChunkStatus.EMPTY);
@@ -416,8 +492,9 @@ public class CardboardChunk implements Chunk {
         boolean[] empty = new boolean[hSection];
         net.minecraft.registry.Registry<Biome> iregistry = world.getHandle().getRegistryManager().getOrThrow(RegistryKeys.BIOME);
         PalettedContainer<RegistryEntry<Biome>>[] biome = (includeBiome || includeBiomeTempRain) ? new PalettedContainer[hSection] : null;
-        Codec<ReadableContainer<RegistryEntry<Biome>>> biomeCodec = PalettedContainer.createReadableContainerCodec(iregistry.getIndexedEntries(), iregistry.getEntryCodec(), PalettedContainer.PaletteProvider.BIOME, iregistry.getOrThrow(BiomeKeys.PLAINS));
-
+        // Codec<ReadableContainer<RegistryEntry<Biome>>> biomeCodec = PalettedContainer.createReadableContainerCodec(iregistry.getIndexedEntries(), iregistry.getEntryCodec(), PalettedContainer.PaletteProvider.BIOME, iregistry.getOrThrow(BiomeKeys.PLAINS));
+        Codec<ReadableContainer<RegistryEntry<Biome>>> biomeCodec = world.getHandle().getPalettesFactory().biomeContainerCodec();
+        
         for (int i = 0; i < hSection; i++) {
             blockIDs[i] = emptyBlockIDs;
             skyLight[i] = emptyLight;

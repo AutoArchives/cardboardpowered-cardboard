@@ -1,27 +1,14 @@
 package org.cardboardpowered.mixin;
 
 import org.cardboardpowered.interfaces.IUserCache;
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.GameProfileRepository;
-import com.mojang.authlib.ProfileLookupCallback;
-import me.isaiah.common.ICommonMod;
-import net.minecraft.util.UserCache;
-import net.minecraft.util.UserCache.Entry;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.bukkit.craftbukkit.CraftServer.server;
+import net.minecraft.util.UserCache;
 
 @Mixin(UserCache.class)
 public class MixinUserCache implements IUserCache {
 
+	/*
     @Shadow private Map<UUID, Entry> byUuid;
     @Shadow private Map<String, Entry> byName;
     @Shadow private GameProfileRepository profileRepository;
@@ -62,19 +49,23 @@ public class MixinUserCache implements IUserCache {
         return optional2;
     }
  
-    private static Optional<GameProfile> card_findProfileByName(GameProfileRepository repository, String name) {
-        final AtomicReference<GameProfile> atomicReference = new AtomicReference();
+    private static Optional<PlayerConfigEntry> card_findProfileByName(GameProfileRepository repository, String name) {
+        final AtomicReference<PlayerConfigEntry> atomicReference = new AtomicReference();
         ProfileLookupCallback profileLookupCallback = new ProfileLookupCallback(){
-            public void onProfileLookupSucceeded(GameProfile profile) {
+            public void onProfileLookupSucceeded(PlayerConfigEntry profile) {
                 atomicReference.set(profile);
             }
             @Override
             public void onProfileLookupFailed(String profileName, Exception exception) {
                 atomicReference.set(null);
             }
+			@Override
+			public void onProfileLookupSucceeded(String profileName, UUID profileId) {
+				
+			}
         };
         repository.findProfilesByNames(new String[]{name}, profileLookupCallback);
-        GameProfile gameProfile = (GameProfile)atomicReference.get();
+        PlayerConfigEntry gameProfile = (PlayerConfigEntry)atomicReference.get();
         if (!shouldUseRemote() && gameProfile == null) {
             
         	
@@ -85,6 +76,7 @@ public class MixinUserCache implements IUserCache {
         	// 1.18: UUID uUID = PlayerEntity.getUuidFromProfile((GameProfile)new GameProfile(null, name));
             return Optional.of(new GameProfile(uUID, name));
         }
+
         return Optional.ofNullable(gameProfile);
     }
 
@@ -97,5 +89,6 @@ public class MixinUserCache implements IUserCache {
     private long incrementAndGetAccessCount() {
         return 0;
     }
+    */
 
 }

@@ -1,14 +1,15 @@
 package org.cardboardpowered.interfaces;
 
-import java.util.Optional;
-import java.util.UUID;
-
-import com.mojang.authlib.GameProfile;
-
+/**
+ * 1.21.9 has moved lots of GameProfile over to PlayerConfigEntry
+ */
+@Deprecated(forRemoval = true)
 public interface IUserCache {
 
+	/*
     Optional<GameProfile> card_getByUuid(UUID uuid);
 
     Optional<GameProfile> card_findByName(String name);
+    */
 
 }

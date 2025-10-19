@@ -175,6 +175,7 @@ import net.minecraft.advancement.PlayerAdvancementTracker;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.entity.Entity.RemovalReason;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.CustomPayload;
@@ -1319,10 +1320,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     public GameProfile getProfile() {
-        Optional<GameProfile> opt = CraftServer.getUC().card_getByUuid(getUniqueId());
-
-        // TODO Add a GameProfile API to iCommon
-        return opt.isEmpty() ? null : opt.get();
+    	return this.getHandle().getGameProfile();
     }
 
     @Override
@@ -2624,10 +2622,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 				return null;
 			} else {
 				return !loadLocationAndValidate
-	               ? CraftLocation.toBukkit(respawnData.getPos(), world, respawnData.yaw(), respawnData.pitch())
-	               : ServerPlayerEntity.findRespawnPosition(world, respawnConfig, false)
-	                  .map(pos -> CraftLocation.toBukkit(pos.pos(), world, pos.yaw(), pos.pitch()))
-	                  .orElse(null);
+	           ? CraftLocation.toBukkit(respawnData.getPos(), world, respawnData.yaw(), respawnData.pitch())
+	           : ServerPlayerEntity.findRespawnPosition(world, respawnConfig, false)
+	              .map(pos -> CraftLocation.toBukkit(pos.pos(), world, pos.yaw(), pos.pitch()))
+	              .orElse(null);
 			}
 		}
 	}
@@ -2835,16 +2833,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 	@Override
 	public void setPlayerListOrder(int order) {
 		/*
-		 this.getHandle().listOrder = order;
-	        // Paper start - Send update packet
-	        if (getHandle().networkHandler == null) return; // Updates are possible before the player has fully joined
-	        for (ServerPlayerEntity player : server.getHandle().players) {
-	            if (player.getBukkitEntity().canSee(this)) {
-	                player.networkHandler.sendPacket(new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_LIST_ORDER, getHandle()));
-	            }
+		this.getHandle().listOrder = order;
+	    // Paper start - Send update packet
+	    if (getHandle().networkHandler == null) return; // Updates are possible before the player has fully joined
+	    for (ServerPlayerEntity player : server.getHandle().players) {
+	        if (player.getBukkitEntity().canSee(this)) {
+	            player.networkHandler.sendPacket(new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_LIST_ORDER, getHandle()));
 	        }
-	        // Paper end - Send update packet
-	         */
+	    }
+	    // Paper end - Send update packet
+	     */
 	}
 
 	@Override
@@ -2871,7 +2869,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         final ImmutableList.Builder<Item> drops = ImmutableList.builder();
         final ImmutableList.Builder<ItemStack> leftovers = ImmutableList.builder();
 		
-		 // Validate all items before attempting to spawn any.
+		// Validate all items before attempting to spawn any.
         for (final ItemStack item : items) {
             Preconditions.checkArgument(item != null, "ItemStack cannot be null");
             Preconditions.checkArgument(!item.isEmpty(), "ItemStack cannot be empty");
@@ -2918,6 +2916,48 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 	@Override
 	public PlayerGameConnection getConnection() {
 		return ( (IMixinPlayNetworkHandler) this.getHandle().networkHandler).cardboard$playerGameConnection();
+	}
+	
+	@Override
+	public org.bukkit.entity.Entity getShoulderEntityRight() {
+		if (!this.getHandle().getRightShoulderNbt().isEmpty()) {
+			org.bukkit.entity.Entity var2;
+			try (ErrorReporter.Logging scopedCollector = new ErrorReporter.Logging(this.getHandle().getErrorReporterContext(), LOGGER)) {
+				var2 = net.minecraft.entity.EntityType.getEntityFromData(
+	              NbtReadView.create(
+	                 scopedCollector.makeChild(() -> ".shoulder"), this.getHandle().getRegistryManager(), this.getHandle().getRightShoulderNbt()
+	              ),
+	              this.getHandle().getEntityWorld(),
+	              SpawnReason.LOAD
+	           )
+	           .map(IMixinEntity::getBukkitEntity)
+	           .orElse(null);
+	     }
+
+	     return var2;
+	  } else {
+	     return null;
+	  }
+	}
+	
+	@Override
+	public org.bukkit.entity.Entity getShoulderEntityLeft() {
+		if (!this.getHandle().getLeftShoulderNbt().isEmpty()) {
+			org.bukkit.entity.Entity var2;
+			try (ErrorReporter.Logging scopedCollector = new ErrorReporter.Logging(this.getHandle().getErrorReporterContext(), LOGGER)) {
+				var2 = net.minecraft.entity.EntityType.getEntityFromData(
+						NbtReadView.create(scopedCollector.makeChild(() -> ".shoulder"), this.getHandle().getRegistryManager(), this.getHandle().getLeftShoulderNbt()),
+						this.getHandle().getEntityWorld(),
+						SpawnReason.LOAD
+					)
+					.map(IMixinEntity::getBukkitEntity)
+					.orElse(null);
+			}
+
+			return var2;
+		} else {
+			return null;
+		}
 	}
 
 }

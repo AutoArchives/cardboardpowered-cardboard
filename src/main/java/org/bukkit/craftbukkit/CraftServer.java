@@ -368,9 +368,11 @@ public class CraftServer implements Server {
         return this.serverLinks;
     }
  
+    /*
     public static IUserCache getUC() {
         return (IUserCache) server.getUserCache();
     }
+    */
 
     public void saveConfig() {
         try {

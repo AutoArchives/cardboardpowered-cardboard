@@ -21,9 +21,9 @@ import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 import io.papermc.paper.event.player.PlayerFailMoveEvent;
+import net.minecraft.entity.EntityPosition;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.network.NetworkThreadUtils;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
@@ -93,7 +93,7 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
     }
 	
 	@Shadow
-	public void requestTeleport( PlayerPosition pos, Set<PositionFlag> flags) {}
+	public void requestTeleport( EntityPosition pos, Set<PositionFlag> flags) {}
 	
 	@Shadow
     public void requestTeleport(double d0, double d1, double d2, float f, float f1) {}
@@ -238,7 +238,7 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                                     this.player.jump();
                                 } else {
                                     from = event5.getFrom();
-                                    ((IMixinPlayNetworkHandler)(Object)this).internalTeleport(new PlayerPosition(CraftLocation.toVec3D(from), Vec3d.ZERO, from.getYaw(), from.getPitch()), Collections.emptySet());
+                                    ((IMixinPlayNetworkHandler)(Object)this).internalTeleport(new EntityPosition(CraftLocation.toVec3D(from), Vec3d.ZERO, from.getYaw(), from.getPitch()), Collections.emptySet());
                                     return;
                                 }
                             }

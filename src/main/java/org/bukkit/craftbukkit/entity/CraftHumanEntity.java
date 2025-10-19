@@ -140,7 +140,7 @@ import net.minecraft.util.math.BlockPos;
 
 public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
-	private static final Logger LOGGER = LogUtils.getLogger();
+	protected static final Logger LOGGER = LogUtils.getLogger();
 	
     public void openSign(Sign sign, Side side) {
         CardboardSign.openSign(sign, (CraftPlayer)this, side);
@@ -255,23 +255,13 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
     @Override
     public Entity getShoulderEntityLeft() {
-        if (!this.getHandle().getShoulderEntityLeft().isEmpty()) {
-            try (ErrorReporter.Logging scopedCollector = new ErrorReporter.Logging(this.getHandle().getErrorReporterContext(), LOGGER);){
-                Entity entity = net.minecraft.entity.EntityType.getEntityFromData(NbtReadView.create(scopedCollector.makeChild(() -> ".shoulder"), this.getHandle().getRegistryManager(), this.getHandle().getShoulderEntityLeft()), this.getHandle().getEntityWorld(), SpawnReason.LOAD).map(net.minecraft.entity.Entity::getBukkitEntity).orElse(null);
-                return entity;
-            }
-        }
+    	// 1.21.9: Moved to Player
         return null;
     }
 
     @Override
     public Entity getShoulderEntityRight() {
-        if (!this.getHandle().getShoulderEntityRight().isEmpty()) {
-            try (ErrorReporter.Logging scopedCollector = new ErrorReporter.Logging(this.getHandle().getErrorReporterContext(), LOGGER);){
-                Entity entity = net.minecraft.entity.EntityType.getEntityFromData(NbtReadView.create(scopedCollector.makeChild(() -> ".shoulder"), this.getHandle().getRegistryManager(), this.getHandle().getShoulderEntityRight()), this.getHandle().getEntityWorld(), SpawnReason.LOAD).map(net.minecraft.entity.Entity::getBukkitEntity).orElse(null);
-                return entity;
-            }
-        }
+        // 1.21.9: Moved to Player
         return null;
     }
 

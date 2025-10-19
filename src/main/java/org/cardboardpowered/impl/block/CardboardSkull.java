@@ -1,5 +1,6 @@
 package org.cardboardpowered.impl.block;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import org.bukkit.Bukkit;
@@ -24,19 +25,24 @@ import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
+import com.mojang.datafixers.util.Either;
 
 import io.papermc.paper.adventure.PaperAdventure;
 import me.isaiah.common.cmixin.IMixinSkullBlockEntity;
 import net.kyori.adventure.text.Component;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.SkullBlockEntity;
+import net.minecraft.component.type.ProfileComponent;
+import net.minecraft.entity.player.SkinTextures;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 
 @SuppressWarnings("deprecation")
 public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> implements Skull {
 
     private static final int MAX_OWNER_LENGTH = 16;
-    private GameProfile profile;
+    private ProfileComponent profile;
 
     public CardboardSkull(World world, SkullBlockEntity tileEntity) {
         super(world, tileEntity);
@@ -60,9 +66,14 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
     @Override
     public void load(SkullBlockEntity skull) {
         super.load(skull);
+        
+        ProfileComponent owner = skull.getOwner();
+        if (null != owner) {
+        	this.profile = owner;
+        }
 
-        IMixinSkullBlockEntity ic = ((IMixinSkullBlockEntity)(Object)this);
-        profile = ic.IC$get_game_profile();
+        // IMixinSkullBlockEntity ic = ((IMixinSkullBlockEntity)(Object)this);
+        // profile = ic.IC$get_game_profile();
     }
 
     static int getSkullType(SkullType type) {
@@ -90,9 +101,10 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
 
     @Override
     public String getOwner() {
-        return hasOwner() ? profile.name() : null;
+    	return this.hasOwner() ? this.profile.getName().orElse(null) : null;
     }
 
+    /*
     @Override
     public boolean setOwner(String name) {
         if (name == null || name.length() > MAX_OWNER_LENGTH) return false;
@@ -102,23 +114,62 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
 
         this.profile = profile.get();
         return true;
+    }*/
+    
+    // PlayerConfigEntry.toUncompletedGameProfile
+    public static GameProfile PlayerConfigEntry_toUncompletedGameProfile(PlayerConfigEntry thiz) {
+        return new GameProfile(thiz.id(), thiz.name());
     }
+    
+    @Override
+    public boolean setOwner(String name) {
+        if (name != null && name.length() <= 16) {
+           GameProfile profile = CraftServer.INSTANCE.getPaperFilledProfileCache().getIfCached(name);
+           if (profile == null) {
+              profile = CraftServer.server
+                 .getApiServices()
+                 .nameToIdCache()
+                 .findByName(name)
+                 .map(CardboardSkull::PlayerConfigEntry_toUncompletedGameProfile)
+                 .orElse(null);
+           }
+
+           if (profile == null) {
+              return false;
+           } else {
+              this.profile = ProfileComponent.ofStatic(profile);
+              return true;
+           }
+        } else {
+           return false;
+        }
+     }
 
     @Override
     public OfflinePlayer getOwningPlayer() {
-        if (profile != null) {
-            if (profile.id() != null) return Bukkit.getOfflinePlayer(profile.id());
-            if (profile.name() != null) return Bukkit.getOfflinePlayer(profile.name());
-        }
+    	if (this.hasOwner()) {
+            GameProfile gameProfile = this.profile.getGameProfile();
+            if (Objects.equals(gameProfile.id(), Util.NIL_UUID)) {
+               return Bukkit.getOfflinePlayer(gameProfile.id());
+            }
+
+            if (!gameProfile.name().isEmpty()) {
+               return Bukkit.getOfflinePlayer(gameProfile.name());
+            }
+         }
         return null;
     }
 
     @Override
     public void setOwningPlayer(OfflinePlayer player) {
         Preconditions.checkNotNull(player, "player");
-        this.profile = (player instanceof CraftPlayer) ? ((CraftPlayer) player).nms.getGameProfile() : new GameProfile(player.getUniqueId(), player.getName());
-    }
-
+        if (player instanceof CraftPlayer craftPlayer) {
+           this.profile = ProfileComponent.ofStatic(craftPlayer.getProfile());
+        } else {
+           this.profile = new ProfileComponent.Dynamic(Either.right(player.getUniqueId()), SkinTextures.SkinOverride.EMPTY);
+        }
+     }
+    
     @Override
     public BlockFace getRotation() {
         BlockData blockData = getBlockData();
@@ -168,11 +219,8 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
     @Override
     public void applyTo(SkullBlockEntity skull) {
         super.applyTo(skull);
-        if (getSkullType() == SkullType.PLAYER) {
-        	
-        	IMixinSkullBlockEntity ic = ((IMixinSkullBlockEntity)(Object)this);
-        	ic.IC$set_game_profile(profile);
-            // skull.setOwner(profile);
+        if (this.getSkullType() == SkullType.PLAYER) {
+            skull.owner = this.hasOwner() ? this.profile : null;
         }
     }
 
@@ -184,7 +232,7 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
 
     @Override
     public void setPlayerProfile(PlayerProfile arg0) {
-        this.profile = new GameProfile(arg0.getId(), arg0.getName());
+    	this.profile = CraftPlayerProfile.asResolvableProfileCopy(arg0);
     }
 
     @Override 

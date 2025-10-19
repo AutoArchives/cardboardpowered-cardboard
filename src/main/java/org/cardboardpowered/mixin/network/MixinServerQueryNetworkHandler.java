@@ -2,6 +2,7 @@ package org.cardboardpowered.mixin.network;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.bukkit.craftbukkit.CraftServer;
@@ -20,6 +21,7 @@ import net.minecraft.network.packet.c2s.query.QueryPingC2SPacket;
 import net.minecraft.network.packet.c2s.query.QueryRequestC2SPacket;
 import net.minecraft.network.packet.s2c.query.QueryResponseS2CPacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.ServerMetadata;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerQueryNetworkHandler;
@@ -49,13 +51,16 @@ public class MixinServerQueryNetworkHandler {
             CardboardServerListPingEvent event = new CardboardServerListPingEvent(connection, server);
             CraftServer.INSTANCE.getPluginManager().callEvent(event);
 
-            ArrayList<GameProfile> profiles = new ArrayList<GameProfile>(event.players.length);
+            ArrayList<PlayerConfigEntry> profiles = new ArrayList<PlayerConfigEntry>(event.players.length);
             for (Object player : event.players) {
-                if (player != null)
-                    profiles.add(((ServerPlayerEntity) player).getGameProfile());
+                if (player != null) {
+                    profiles.add(((ServerPlayerEntity) player).getPlayerConfigEntry());
+                }
             }
+            
 
-            ServerMetadata.Players samp = new ServerMetadata.Players(event.getMaxPlayers(), profiles.size(), (server.hideOnlinePlayers()) ? Collections.emptyList() : profiles);
+            List<PlayerConfigEntry> profiles2 = (server.hideOnlinePlayers()) ? Collections.emptyList() : profiles;
+            ServerMetadata.Players samp = new ServerMetadata.Players(event.getMaxPlayers(), profiles.size(), profiles2);
 
             ServerMetadata ping = new ServerMetadata(
                     CraftChatMessage.fromString(event.getMotd(), true)[0],

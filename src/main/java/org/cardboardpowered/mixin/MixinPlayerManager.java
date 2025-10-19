@@ -100,6 +100,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.Entity.RemovalReason;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.world.WorldProperties;
@@ -378,6 +379,8 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
     @Override
     public ServerPlayerEntity attemptLogin(ServerLoginNetworkHandler nethand, GameProfile profile, PlayerPublicKey key, String hostname) {
     	MutableText chatmessage;
+    	
+    	PlayerConfigEntry pce = new PlayerConfigEntry(profile);
 
         // Moved from processLogin
         // 1.18: UUID uuid = PlayerEntity.getUuidFromProfile(profile);
@@ -410,12 +413,12 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         Player player = (Player) ((IMixinServerEntityPlayer)entity).getBukkitEntity();
         PlayerLoginEvent event = new PlayerLoginEvent(player, hostname, ((java.net.InetSocketAddress) address).getAddress(), ((java.net.InetSocketAddress) ims.cb_get_connection().channel.remoteAddress()).getAddress());
 
-        if (((PlayerManager)(Object)this).getUserBanList().contains(profile) /*&& !((PlayerManager)(Object)this).getUserBanList().get(gameprofile).isInvalid()*/) {
+        if (((PlayerManager)(Object)this).getUserBanList().contains(pce) /*&& !((PlayerManager)(Object)this).getUserBanList().get(gameprofile).isInvalid()*/) {
             chatmessage = Text.translatable("multiplayer.disconnect.banned.reason", new Object[]{"TODO REASON!"});
             //chatmessage.append(new TranslatableTextContent("multiplayer.disconnect.banned.expiration", new Object[] {"TODO EXPIRE!"}));
 
             event.disallow(PlayerLoginEvent.Result.KICK_BANNED, CraftChatMessage.fromComponent(chatmessage));
-        } else if (!((PlayerManager)(Object)this).isWhitelisted(profile)) {
+        } else if (!((PlayerManager)(Object)this).isWhitelisted(pce)) {
             chatmessage = Text.translatable("multiplayer.disconnect.not_whitelisted");
             event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, "Server whitelisted!");
         } else if (((PlayerManager)(Object)this).getIpBanList().isBanned(address) /*&& !((PlayerManager)(Object)this).getIpBanList().get(socketaddress).isInvalid()*/) {
@@ -427,7 +430,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
 
             event.disallow(PlayerLoginEvent.Result.KICK_BANNED, CraftChatMessage.fromComponent(chatmessage));
         } else {
-            if (this.players.size() >= ((PlayerManager)(Object)this).getMaxPlayerCount() && !((PlayerManager)(Object)this).canBypassPlayerLimit(profile))
+            if (this.players.size() >= ((PlayerManager)(Object)this).getMaxPlayerCount() && !((PlayerManager)(Object)this).canBypassPlayerLimit(pce))
                 event.disallow(PlayerLoginEvent.Result.KICK_FULL, "Server is full");
         }
 

@@ -581,3 +581,5 @@ accessible method net/minecraft/entity/LazyEntityReference <init> (Ljava/util/UU
 accessible method net/minecraft/entity/vehicle/TntMinecartEntity explode (Lnet/minecraft/entity/damage/DamageSource;D)V
 accessible method net/minecraft/server/world/ChunkTicketType register (Ljava/lang/String;JI)Lnet/minecraft/server/world/ChunkTicketType;
 accessible method net/minecraft/server/MinecraftServer refreshSpawnPoint ()V
+accessible field net/minecraft/world/chunk/Chunk heightmaps Ljava/util/Map;
+accessible field net/minecraft/block/entity/SkullBlockEntity owner Lnet/minecraft/component/type/ProfileComponent;

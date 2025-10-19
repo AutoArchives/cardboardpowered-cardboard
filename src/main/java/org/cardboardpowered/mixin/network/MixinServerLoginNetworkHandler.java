@@ -4,9 +4,18 @@ import org.cardboardpowered.interfaces.IMixinClientConnection;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinPlayerManager;
 import org.cardboardpowered.interfaces.IMixinServerLoginNetworkHandler;
+
+import com.destroystokyo.paper.profile.CraftPlayerProfile;
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.exceptions.AuthenticationUnavailableException;
+import com.mojang.authlib.yggdrasil.ProfileResult;
+
 import io.netty.channel.local.LocalAddress;
+import io.papermc.paper.adventure.PaperAdventure;
+import io.papermc.paper.configuration.GlobalConfiguration;
+import net.kyori.adventure.text.Component;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.PacketCallbacks;
 import net.minecraft.network.encryption.NetworkEncryptionException;
@@ -27,14 +36,18 @@ import net.minecraft.server.network.ServerLoginNetworkHandler.State;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Uuids;
+import net.minecraft.util.logging.UncaughtExceptionLogger;
+
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.Waitable;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerPreLoginEvent.Result;
 import org.cardboardpowered.interfaces.INetworkConfiguration;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -52,12 +65,21 @@ import java.net.SocketAddress;
 import java.security.PrivateKey;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("deprecation")
 @Mixin(value = ServerLoginNetworkHandler.class, priority = 999)
 public abstract class MixinServerLoginNetworkHandler implements IMixinServerLoginNetworkHandler {
 
+	private static Logger LOGGER_BF = LoggerFactory.getLogger("PaperMC|ServerLoginNetworkHandler"); // LogManager.getLogger("Bukkit|ServerLoginNetworkHandler");
+	
+	// Cardboard: Paper - Use ExecutorService
+	private static final ExecutorService authenticatorPool = Executors.newCachedThreadPool(
+		      new ThreadFactoryBuilder().setNameFormat("User Authenticator #%d").setUncaughtExceptionHandler(new UncaughtExceptionLogger(LOGGER_BF)).build()
+		   );
+	
 	@Shadow @Nullable private String profileName;
 	@Shadow
 	abstract void startVerify(GameProfile profile);
@@ -76,7 +98,6 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 		return connection;
 	}
 
-	private Logger LOGGER_BF = LogManager.getLogger("Bukkit|ServerLoginNetworkHandler");
 	public String hostname = ""; // Bukkit - add field
 	private long theid = 0;
 	
@@ -111,6 +132,7 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 	 * @author cardboard
 	 * @reason Bukkit login changes
 	 */
+	/*
 	@Overwrite
 	public void onKey(LoginKeyC2SPacket packetIn) {
 		Validate.validState(this.state == ServerLoginNetworkHandler.State.KEY, "Unexpected key packet");
@@ -178,7 +200,163 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 		// TODO: thread.setUncaughtExceptionHandler(new UncaughtExceptionLogger(LogManager.getLogger("BukkitServerLoginManager")));
 		thread.start();
 	}
+	*/
+	
+	@Overwrite
+	public void onKey(LoginKeyC2SPacket packet) {
+		Validate.validState(this.state == ServerLoginNetworkHandler.State.KEY, "Unexpected key packet", new Object[0]);
+		final String string;
+		try {
+			PrivateKey _private = this.server.getKeyPair().getPrivate();
+			if (!packet.verifySignedNonce(this.nonce, _private)) {
+				throw new IllegalStateException("Protocol error");
+			}
 
+			// SecretKey secretKey = packet.decryptSecretKey(_private);
+			// string = new BigInteger(NetworkEncryptionUtils.computeServerId("", this.server.getKeyPair().getPublic(), secretKey)).toString(16);
+	        // this.state = ServerLoginNetworkHandler.State.AUTHENTICATING;
+	        // this.connection.setEncryptionKey(secretKey);
+	        SecretKey secretKey = packet.decryptSecretKey(_private);
+				Cipher cipher = NetworkEncryptionUtils.cipherFromKey(2, secretKey);
+				Cipher cipher1 = NetworkEncryptionUtils.cipherFromKey(1, secretKey);
+				string = (new BigInteger(NetworkEncryptionUtils.computeServerId("", this.server.getKeyPair()
+						.getPublic(), secretKey))).toString(16);
+
+				this.state = ServerLoginNetworkHandler.State.AUTHENTICATING;
+				this.connection.setupEncryption(cipher, cipher1);
+	        
+	     } catch (NetworkEncryptionException var5) {
+	        throw new IllegalStateException("Protocol error", var5);
+	     }
+
+	     authenticatorPool.execute(
+	        new Runnable() {
+	           @Override
+	           public void run() {
+	              String string1 = Objects.requireNonNull(profileName, "Player name not initialized");
+
+	              try {
+	                 ProfileResult profileResult = server
+	                    .getApiServices()
+	                    .sessionService()
+	                    .hasJoinedServer(string1, string, this.getClientAddress());
+	                 if (profileResult != null) {
+	                    GameProfile gameProfile = profileResult.profile();
+	                    if (!connection.isOpen()) {
+	                       return;
+	                    }
+
+	                    fireEvents();
+	                    
+	                    gameProfile = callPlayerPreLoginEvents(gameProfile);
+	                    LOGGER_BF.info("UUID of player {} is {}", gameProfile.name(), gameProfile.id());
+	                    startVerify(gameProfile);
+	                 } else if (server.isSingleplayer()) {
+	               	 LOGGER_BF.warn("Failed to verify username but will let them in anyway!");
+	                    startVerify(createOfflineProfile(string1));
+	                 } else {
+	                    disconnect(Text.translatable("multiplayer.disconnect.unverified_username"));
+	                    LOGGER_BF.error("Username '{}' tried to join with an invalid session", string1);
+	                 }
+	              } catch (AuthenticationUnavailableException var4) {
+	                 if (server.isSingleplayer()) {
+	               	 LOGGER_BF.warn("Authentication servers are down but will let them in anyway!");
+	                    startVerify(createOfflineProfile(string1));
+	                 } else {
+	                    // this.disconnect(PaperAdventure.asVanilla(GlobalConfiguration.get().messages.kick.authenticationServersDown));
+	               	 disconnect(PaperAdventure.asVanilla( Component.translatable("multiplayer.disconnect.authservers_down")) );
+	               	 LOGGER_BF.error("Couldn't verify username because servers are unavailable");
+	                 }
+	              } catch (Exception var5) {
+	                 disconnect("Failed to verify username!");
+	                 LOGGER_BF.warn("Exception verifying {}", string1, var5);
+	              }
+	           }
+
+	           @Nullable
+	           private InetAddress getClientAddress() {
+	              SocketAddress remoteAddress = connection.getAddress();
+	              return server.shouldPreventProxyConnections() && remoteAddress instanceof InetSocketAddress
+	                 ? ((InetSocketAddress)remoteAddress).getAddress()
+	                 : null;
+	           }
+	        }
+	      );
+	   }
+	
+	protected GameProfile createOfflineProfile(String s) {
+	    /*  
+		UUID uuid;
+	      if (this.connection.spoofedUUID != null) {
+	         uuid = this.connection.spoofedUUID;
+	      } else {
+	         uuid = Uuids.getOfflinePlayerUuid(s);
+	      }
+
+	      Builder<String, Property> props = ImmutableMultimap.builder();
+	      if (this.connection.spoofedProfile != null) {
+	         for (Property property : this.connection.spoofedProfile) {
+	            if (ServerHandshakeNetworkHandler.PROP_PATTERN.matcher(property.name()).matches()) {
+	               props.put(property.name(), property);
+	            }
+	         }
+	      }
+
+	      return new GameProfile(uuid, s, new PropertyMap(props.build()));
+	      */
+		// TODO
+		return Uuids.getOfflinePlayerProfile(s);
+	   }
+
+	private GameProfile callPlayerPreLoginEvents(GameProfile gameprofile) throws Exception {
+	      if (false /*this.velocityLoginMessageId == -1 && GlobalConfiguration.get().proxies.velocity.enabled*/) {
+	         this.disconnect("This server requires you to connect with Velocity.");
+	         return gameprofile;
+	      } else {
+	         String playerName = gameprofile.name();
+	         InetAddress address = ((InetSocketAddress)this.connection.getAddress()).getAddress();
+	         UUID uniqueId = gameprofile.id();
+	         final CraftServer server = CraftServer.INSTANCE;
+	         InetAddress rawAddress = ((InetSocketAddress)this.connection.channel.remoteAddress()).getAddress();
+	         PlayerProfile profile = CraftPlayerProfile.asBukkitCopy(gameprofile);
+	         
+	         
+	         AsyncPlayerPreLoginEvent asyncEvent = new AsyncPlayerPreLoginEvent(playerName, address, uniqueId);
+	         /*
+	         AsyncPlayerPreLoginEvent asyncEvent = new AsyncPlayerPreLoginEvent(
+	            playerName, address, rawAddress, uniqueId, this.transferred, profile, this.connection.hostname, this.paperLoginConnection
+	         );
+	         */
+	         server.getPluginManager().callEvent(asyncEvent);
+	         profile = asyncEvent.getPlayerProfile();
+	         profile.complete(true);
+	         gameprofile = CraftPlayerProfile.asAuthlibCopy(profile);
+	         playerName = gameprofile.name();
+	         uniqueId = gameprofile.id();
+	         if (PlayerPreLoginEvent.getHandlerList().getRegisteredListeners().length != 0) {
+	            final PlayerPreLoginEvent event = new PlayerPreLoginEvent(playerName, address, uniqueId);
+	            if (asyncEvent.getResult() != Result.ALLOWED) {
+	               event.disallow(asyncEvent.getResult(), asyncEvent.kickMessage());
+	            }
+
+	            Waitable<Result> waitable = new Waitable<Result>() {
+	               protected Result evaluate() {
+	                  server.getPluginManager().callEvent(event);
+	                  return event.getResult();
+	               }
+	            };
+	            ((IMixinMinecraftServer) CraftServer.server).getProcessQueue().add(waitable);
+	            if (waitable.get() != Result.ALLOWED) {
+	               this.disconnect(PaperAdventure.asVanilla(event.kickMessage()));
+	            }
+	         } else if (asyncEvent.getLoginResult() != org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result.ALLOWED) {
+	            this.disconnect(PaperAdventure.asVanilla(asyncEvent.kickMessage()));
+	         }
+
+	         return gameprofile;
+	      }
+	   }
+	
 	public void fireEvents() throws Exception {
 		String playerName = profile.name();
 		java.net.InetAddress address;
@@ -285,7 +463,7 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 
                 this.connection.send(new LoginCompressionS2CPacket(this.server.getNetworkCompressionThreshold()), PacketCallbacks.always(() -> this.connection.setCompressionThreshold(this.server.getNetworkCompressionThreshold(), true)));
             }
-            if (bl = playerManager.disconnectDuplicateLogins(profile)) {
+            if (bl = playerManager.disconnectDuplicateLogins(profile.id())) {
                 this.state = State.WAITING_FOR_DUPE_DISCONNECT;
             } else {
                 this.sendSuccessPacket(profile);

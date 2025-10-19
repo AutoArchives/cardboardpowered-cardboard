@@ -267,7 +267,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     }
 
     public void updateDifficulty() {
-        ((MinecraftServer)(Object)this).setDifficulty(((DedicatedServer)(Object)this).getProperties().difficulty, true);
+        ((MinecraftServer)(Object)this).setDifficulty(((DedicatedServer)(Object)this).getProperties().difficulty.get(), true);
     }
 
     /**
