@@ -198,19 +198,23 @@ import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket;
 import net.minecraft.network.packet.s2c.play.TitleFadeS2CPacket;
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
 import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.WhitelistEntry;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity.RespawnPos;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.NbtReadView;
 import net.minecraft.text.Text;
 import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.WorldProperties;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket;
 
@@ -392,7 +396,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public String getName() {
-    	return nms.getGameProfile().getName();
+    	return nms.getNameForScoreboard();
     }
 
     @Override
@@ -401,16 +405,18 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public boolean isWhitelisted() {
-        return CraftServer.server.getPlayerManager().isWhitelisted(nms.getGameProfile());
-    }
+	public boolean isWhitelisted() {
+		return CraftServer.server.getPlayerManager().getWhitelist().isAllowed(this.getHandle().getPlayerConfigEntry());
+	}
 
     @Override
-    public void setWhitelisted(boolean arg0) {
-        if (arg0) {
-            nms.getEntityWorld().getServer().getPlayerManager().getWhitelist().add(new WhitelistEntry(nms.getGameProfile()));
-        } else nms.getEntityWorld().getServer().getPlayerManager().getWhitelist().remove(nms.getGameProfile());
-    }
+	public void setWhitelisted(boolean value) {
+		if (value) {
+			CraftServer.server.getPlayerManager().getWhitelist().add(new WhitelistEntry(this.getHandle().getPlayerConfigEntry()));
+        } else {
+        	CraftServer.server.getPlayerManager().getWhitelist().remove(this.getHandle().getPlayerConfigEntry());
+        }
+	}
 
     @Override
     public Map<String, Object> serialize() {
@@ -695,9 +701,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public void loadData() {
-        ((IMixinMinecraftServer)CraftServer.server).getSaveHandler_BF().loadPlayerData(nms, ErrorReporter.EMPTY);
-    }
+ 	public void loadData() {
+ 		((IMixinMinecraftServer)CraftServer.server).getSaveHandler_BF()
+        .loadPlayerData(this.getHandle().getPlayerConfigEntry())
+        .map(tag -> NbtReadView.create(ErrorReporter.EMPTY, super.server.getServer().getRegistryManager(), tag))
+        .ifPresent(this.getHandle()::readData);
+ 	}
 
     @Override
     public void openBook(ItemStack book) {
@@ -1319,27 +1328,32 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @Override
     public boolean isOp() {
         try {
-            return CraftServer.server.getPlayerManager().isOperator(getProfile());
+            // return CraftServer.server.getPlayerManager().isOperator(getProfile());
+            
+            return CraftServer.server.getPlayerManager().isOperator(this.getHandle().getPlayerConfigEntry());
+            
         } catch (NullPointerException e) {
             try {
                 return CraftServer.INSTANCE.getOperatorList().contains(getUniqueId().toString());
             } catch (IOException ex) {
-                GameProfile gp = new GameProfile(super.getUniqueId(), this.getName());
+            	PlayerConfigEntry gp = new PlayerConfigEntry(super.getUniqueId(), this.getName());
                 return CraftServer.server.getPlayerManager().isOperator(gp);
             }
         }
     }
 
     @Override
-    public void setOp(boolean value) {
-        if (value == isOp()) return;
+	public void setOp(boolean value) {
+    	if (value != this.isOp()) {
+    		if (value) {
+    			CraftServer.server.getPlayerManager().addToOperators(this.getHandle().getPlayerConfigEntry());
+    		} else {
+    			CraftServer.server.getPlayerManager().removeFromOperators(this.getHandle().getPlayerConfigEntry());
+    		}
 
-        if (value)
-             nms.getEntityWorld().getServer().getPlayerManager().addToOperators(nms.getGameProfile());
-        else nms.getEntityWorld().getServer().getPlayerManager().removeFromOperators(nms.getGameProfile());
-
-        perm.recalculatePermissions();
-    }
+    		super.perm.recalculatePermissions();
+    	}
+	}
 
     @Override
     public boolean teleport(Location location, PlayerTeleportEvent.TeleportCause cause) {
@@ -1543,16 +1557,23 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @Override
     public void setRespawnLocation(Location location, boolean override) {
         if (location == null) {
-            this.getHandle().setSpawnPoint(null, false/*, PlayerSetSpawnEvent.Cause.PLUGIN*/);
+           this.getHandle().setSpawnPoint(null, false); // , com.destroystokyo.paper.event.player.PlayerSetSpawnEvent.Cause.PLUGIN);
         } else {
-            this.getHandle().setSpawnPoint(
-            		new ServerPlayerEntity.Respawn(
-            				((CraftWorld)location.getWorld()).getHandle().getRegistryKey(),
-            				CraftLocation.toBlockPosition(location), location.getYaw(), override
-            		),
-            		false/*, PlayerSetSpawnEvent.Cause.PLUGIN*/);
+           this.getHandle()
+              .setSpawnPoint(
+                 new ServerPlayerEntity.Respawn(
+                    new WorldProperties.SpawnPoint(
+                       GlobalPos.create(((CraftWorld)location.getWorld()).getHandle().getRegistryKey(), CraftLocation.toBlockPosition(location)),
+                       location.getYaw(),
+                       location.getPitch()
+                    ),
+                    override
+                 ),
+                 false // ,
+                 // com.destroystokyo.paper.event.player.PlayerSetSpawnEvent.Cause.PLUGIN
+              );
         }
-    }
+     }
 
     public void setFirstPlayed(long modified) {
         // TODO Auto-generated method stub
@@ -2593,19 +2614,23 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 	
 	public Location getRespawnLocation(boolean loadLocationAndValidate) {
-        ServerPlayerEntity.Respawn respawnConfig = this.getHandle().getRespawn();
-        if (respawnConfig == null) {
-            return null;
-        }
-        ServerWorld world = this.getHandle().getServer().getWorld(respawnConfig.dimension());
-        if (world == null) {
-            return null;
-        }
-        if (!loadLocationAndValidate) {
-            return CraftLocation.toBukkit(respawnConfig.pos(), (World)world.getWorld(), respawnConfig.angle(), 0.0f);
-        }
-        return ServerPlayerEntity.findRespawnPosition(world, respawnConfig, false).map(pos -> CraftLocation.toBukkit(pos.pos(), (World)world.getWorld(), pos.yaw(), 0.0f)).orElse(null);
-    }
+		ServerPlayerEntity.Respawn respawnConfig = this.getHandle().getRespawn();
+		if (respawnConfig == null) {
+			return null;
+		} else {
+			WorldProperties.SpawnPoint respawnData = respawnConfig.respawnData();
+			ServerWorld world = super.server.getServer().getWorld(respawnData.getDimension());
+			if (world == null) {
+				return null;
+			} else {
+				return !loadLocationAndValidate
+	               ? CraftLocation.toBukkit(respawnData.getPos(), world, respawnData.yaw(), respawnData.pitch())
+	               : ServerPlayerEntity.findRespawnPosition(world, respawnConfig, false)
+	                  .map(pos -> CraftLocation.toBukkit(pos.pos(), world, pos.yaw(), pos.pitch()))
+	                  .orElse(null);
+			}
+		}
+	}
 
 	/*
 	@Override

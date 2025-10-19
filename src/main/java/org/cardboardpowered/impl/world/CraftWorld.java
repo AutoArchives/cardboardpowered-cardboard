@@ -111,6 +111,7 @@ import io.papermc.paper.raytracing.PositionedRayTraceConfigurationBuilder;
 import io.papermc.paper.world.MoonPhase;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import me.isaiah.common.cmixin.IMixinWorld;
+import net.kyori.adventure.util.TriState;
 import net.minecraft.block.AbstractRedstoneGateBlock;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.AreaEffectCloudEntity;
@@ -138,6 +139,7 @@ import net.minecraft.entity.vehicle.TntMinecartEntity;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
 import net.minecraft.network.packet.s2c.play.WorldTimeUpdateS2CPacket;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -152,10 +154,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.GlobalPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.Heightmap.Type;
 import net.minecraft.world.RaycastContext;
+import net.minecraft.world.WorldProperties;
 import net.minecraft.world.biome.source.util.MultiNoiseUtil;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
@@ -165,6 +170,7 @@ import net.minecraft.world.gen.feature.ConfiguredFeature;
 import net.minecraft.world.level.LevelProperties;
 import net.minecraft.world.level.ServerWorldProperties;
 import org.bukkit.*;
+import org.cardboardpowered.ChunkTicketBridge;
 import org.cardboardpowered.impl.CardboardPotionUtil;
 import org.cardboardpowered.interfaces.IWorldChunk;
 
@@ -1068,7 +1074,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 			chunk = nms.getChunkManager().getChunk(x, z, ChunkStatus.FULL, true);
 
 		if(chunk instanceof net.minecraft.world.chunk.WorldChunk) {
-			nms.getChunkManager().addTicket(ChunkTicketType.START, new ChunkPos(x, z), 1);
+			nms.getChunkManager().addTicket(ChunkTicketBridge.PLUGIN_TICKET, new ChunkPos(x, z), 1);
 			// nms.getChunkManager().addTicket(ChunkTicketType.START, new ChunkPos(x, z), 1, Unit.INSTANCE);
 			return true;
 		}
@@ -1399,9 +1405,18 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 		// TODO Auto-generated method stub
 	}
 
+	// TODO: Is this unused in Paper, besides in CraftWorld?
+	public TriState pvpMode = TriState.NOT_SET;
+	
 	@Override
-	public void setPVP(boolean arg0) {
-		nms.getServer().setPvpEnabled(arg0);
+	public void setPVP(boolean pvp) {
+		if (this.nms.getGameRules().getBoolean(GameRules.PVP) != pvp) {
+			this.pvpMode = TriState.byBoolean(pvp);
+		}
+		
+		// nms.getServer()
+		
+		// nms.getServer().setPvpEnabled(pvp);
 	}
 
 	@Override
@@ -1416,6 +1431,9 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public boolean setSpawnLocation(int x, int y, int z) {
+		return this.setSpawnLocation(x, y, z, 0.0F, 0.0F);
+		
+		/*
 		try {
 			Location previousLocation = getSpawnLocation();
 			nms.setSpawnPos(new BlockPos(x, y, z), 0);
@@ -1428,6 +1446,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 		} catch(Exception e) {
 			return false;
 		}
+		*/
 	}
 
 	@Override
@@ -2108,7 +2127,30 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	public void setTicksPerWaterAmbientSpawns(int arg0) {
 		// TODO Auto-generated method stub
 	}
+	
+	private boolean setSpawnLocation(int x, int y, int z, float yaw, float pitch) {
+		try {
+			Location previousLocation = this.getSpawnLocation();
+			this.nms.setSpawnPoint(
+				new WorldProperties.SpawnPoint(
+						GlobalPos.create(RegistryKey.of(RegistryKeys.WORLD, this.nms.getRegistryKey().getValue()), new BlockPos(x, y, z)),
+						MathHelper.wrapDegrees(yaw),
+						MathHelper.wrapDegrees(pitch)
+						)
+					);
+			CraftServer.INSTANCE.getServer().refreshSpawnPoint();
+			new SpawnChangeEvent(this, previousLocation).callEvent();
+			return true;
+		} catch (Exception var7) {
+			return false;
+		}
+	}
 
+	public boolean setSpawnLocation(int x, int y, int z, float yaw) {
+		return this.setSpawnLocation(x, y, z, yaw, 0.0F);
+	}
+
+	   /*
 	@Override
 	public boolean setSpawnLocation(int x, int y, int z, float angle) {
 		try {
@@ -2123,6 +2165,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 			return false;
 		}
 	}
+	*/
 
 	@Override
 	public boolean createExplosion(Entity arg0, Location arg1, float arg2, boolean arg3, boolean arg4) {
@@ -2138,7 +2181,11 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public int getChunkCount() {
-		return nms.getChunkManager().getTotalChunksLoadedCount();
+		
+		// TODO:
+		return nms.getChunkManager().getLoadedChunkCount();
+		
+		// return nms.getChunkManager().fullChunks.size();
 	}
 
 	@Override

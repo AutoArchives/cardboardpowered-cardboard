@@ -28,6 +28,10 @@ public final class CraftLocation {
     public static Location toBukkit(Vec3d vec3D, World world, float yaw, float pitch) {
         return new Location(world, vec3D.getX(), vec3D.getY(), vec3D.getZ(), yaw, pitch);
     }
+    
+    public static Location toBukkit(Vec3d vec3D, net.minecraft.world.World world, float yaw, float pitch) {
+        return new Location( ((IMixinWorld) world).getCraftWorld(), vec3D.getX(), vec3D.getY(), vec3D.getZ(), yaw, pitch);
+    }
 
     public static Location toBukkit(BlockPos BlockPos) {
         return toBukkit(BlockPos,  (World) null);

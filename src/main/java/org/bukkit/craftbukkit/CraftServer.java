@@ -48,6 +48,7 @@ import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import io.papermc.paper.ban.BanListType;
+import io.papermc.paper.configuration.GlobalConfiguration;
 import io.papermc.paper.configuration.PaperServerConfiguration;
 import io.papermc.paper.configuration.ServerConfiguration;
 import io.papermc.paper.datapack.DatapackManager;
@@ -89,6 +90,7 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.BannedIpEntry;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.dedicated.DedicatedPlayerManager;
@@ -1190,17 +1192,33 @@ public class CraftServer implements Server {
 
     @Override
     public OfflinePlayer getOfflinePlayer(String name) {
-        OfflinePlayer result = getPlayerExact(name);
+        Preconditions.checkArgument(name != null, "name cannot be null");
+        Preconditions.checkArgument(!name.isBlank(), "name cannot be empty");
+        OfflinePlayer result = this.getPlayerExact(name);
         if (result == null) {
-            GameProfile profile = null;
-            if (this.getOnlineMode() || SpigotConfig.bungee) {
-                profile = server.getUserCache().findByName(name).orElse(null);
-            }
-            result = profile == null ? this.getOfflinePlayer(new GameProfile(UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(Charsets.UTF_8)), name)) : this.getOfflinePlayer(profile);
-        } else offlinePlayers.remove(result.getUniqueId());
+           PlayerConfigEntry profile = null;
+           //if (GlobalConfiguration.get().proxies.isProxyOnlineMode()) {
+           if (this.getOnlineMode() || SpigotConfig.bungee) {
+        	   profile = this.console.getApiServices().nameToIdCache().findByName(name).orElse(null);
+           }
+
+           if (profile == null) {
+              result = this.getOfflinePlayer(PlayerConfigEntry.fromNickname(name));
+           } else {
+              result = this.getOfflinePlayer(profile);
+           }
+        } else {
+           this.offlinePlayers.remove(result.getUniqueId());
+        }
 
         return result;
-    }
+     }
+    
+	public OfflinePlayer getOfflinePlayer(PlayerConfigEntry nameAndId) {
+		OfflinePlayer player = new CraftOfflinePlayer(this, nameAndId);
+		this.offlinePlayers.put(nameAndId.id(), player);
+		return player;
+	}
 
     @Override
     public OfflinePlayer getOfflinePlayer(UUID id) {
@@ -1208,7 +1226,7 @@ public class CraftServer implements Server {
         if (result == null) {
             result = offlinePlayers.get(id);
             if (result == null) {
-                result = new CraftOfflinePlayer(this, new GameProfile(id, ""));
+                result = new CraftOfflinePlayer(this, new PlayerConfigEntry(id, ""));
                 offlinePlayers.put(id, result);
             }
         } else offlinePlayers.remove(id);
@@ -1216,11 +1234,13 @@ public class CraftServer implements Server {
         return result;
     }
 
+    /*
     public OfflinePlayer getOfflinePlayer(GameProfile profile) {
         OfflinePlayer player = new CraftOfflinePlayer(this, profile);
         offlinePlayers.put(profile.id(), player);
         return player;
     }
+    */
 
     @Override
     public OfflinePlayer[] getOfflinePlayers() {

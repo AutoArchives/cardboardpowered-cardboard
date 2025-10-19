@@ -3,6 +3,8 @@ package org.bukkit.craftbukkit;
 import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinWorldSaveHandler;
+
+import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
@@ -25,6 +27,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.WhitelistEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -56,10 +59,19 @@ import org.jetbrains.annotations.Nullable;
 @SerializableAs("Player")
 public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializable {
 
-    private final GameProfile profile;
+	private final PlayerConfigEntry nameAndId;
+	
+    // private final GameProfile profile;
     private final CraftServer server;
     private final PlayerSaveHandler storage;
 
+	protected CraftOfflinePlayer(CraftServer server, PlayerConfigEntry nameAndId) {
+		this.server = server;
+		this.nameAndId = nameAndId;
+		this.storage = ((IMixinMinecraftServer)server.getServer()).getSaveHandler_BF();
+	}
+
+	/*
     protected CraftOfflinePlayer(CraftServer server, GameProfile profile) {
         this.server = server;
         this.profile = profile;
@@ -69,35 +81,30 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     public GameProfile getProfile() {
         return profile;
     }
+    */
 
     @Override
     public boolean isOnline() {
-        System.out.println("isOnline: " + profile.toString() + ", " + (getPlayer() != null));
+        // System.out.println("isOnline: " + profile.toString() + ", " + (getPlayer() != null));
         return getPlayer() != null;
     }
 
     @Override
     public String getName() {
-        Player player = getPlayer();
-        if (player != null)
-            return player.getName();
-
-        // This might not match lastKnownName but if not it should be more correct
-        if (profile.name() != null)
-            return profile.name();
-
-        NbtCompound data = getBukkitData();
-        
-        if (data != null) {
-            return data.getString("lastKnownName").orElse(null);
+        Player player = this.getPlayer();
+        if (player != null) {
+           return player.getName();
+        } else if (!this.nameAndId.name().isEmpty()) {
+           return this.nameAndId.name();
+        } else {
+           NbtCompound data = this.getBukkitData();
+           return data != null ? data.getString("lastKnownName").orElse(null) : null;
         }
-
-        return null;
-    }
+     }
 
     @Override
     public UUID getUniqueId() {
-        return profile.id();
+    	return this.nameAndId.id();
     }
 
     public Server getServer() {
@@ -106,15 +113,15 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
     @Override
     public boolean isOp() {
-        return server.getHandle().getPlayerManager().isOperator(profile);
+        return server.getHandle().getPlayerManager().isOperator(this.nameAndId);
     }
 
     @Override
     public void setOp(boolean value) {
         if (value == isOp()) return;
 
-        if (value) server.getHandle().getPlayerManager().addToOperators(profile);
-        else server.getHandle().getPlayerManager().removeFromOperators(profile);
+        if (value) server.getHandle().getPlayerManager().addToOperators(this.nameAndId);
+        else server.getHandle().getPlayerManager().removeFromOperators(this.nameAndId);
     }
 
     @Override
@@ -136,15 +143,15 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
     @Override
     public boolean isWhitelisted() {
-        return server.getHandle().getPlayerManager().getWhitelist().isAllowed(profile);
+        return server.getHandle().getPlayerManager().getWhitelist().isAllowed(this.nameAndId);
     }
 
     @Override
     public void setWhitelisted(boolean value) {
         if (value) {
-            server.getHandle().getPlayerManager().getWhitelist().add(new WhitelistEntry(profile));
+            server.getHandle().getPlayerManager().getWhitelist().add(new WhitelistEntry(this.nameAndId));
         } else {
-            server.getHandle().getPlayerManager().getWhitelist().remove(profile);
+            server.getHandle().getPlayerManager().getWhitelist().remove(this.nameAndId);
         }
     }
 
@@ -152,7 +159,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     public Map<String, Object> serialize() {
         Map<String, Object> result = new LinkedHashMap<String, Object>();
 
-        result.put("UUID", profile.id().toString());
+        result.put("UUID", nameAndId.id().toString());
 
         return result;
     }
@@ -166,7 +173,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[UUID=" + profile.id() + "]";
+        return getClass().getSimpleName() + "[UUID=" + nameAndId.id() + "]";
     }
 
     @Override
@@ -494,8 +501,12 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
 	// @Override
 	public @NotNull com.destroystokyo.paper.profile.@NotNull PlayerProfile getPlayerProfile() {
-		// TODO Auto-generated method stub
-		return null;
+		return CraftPlayerProfile.asBukkitCopy(this.nameAndId_toUncompletedGameProfile());
+	}
+	
+	// TODO: move to nameAndId
+	public GameProfile nameAndId_toUncompletedGameProfile() {
+		return new GameProfile(this.nameAndId.id(), this.nameAndId.name());
 	}
 
 	@Override

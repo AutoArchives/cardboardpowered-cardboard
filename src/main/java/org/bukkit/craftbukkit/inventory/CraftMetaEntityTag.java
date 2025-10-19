@@ -8,10 +8,12 @@ import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
+import net.minecraft.entity.TypedEntityData;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
+import org.cardboardpowered.TypedEntityDataExtra;
 
 @DelegateDeserialization(value=SerializableMeta.class)
 public class CraftMetaEntityTag extends CraftMetaItem {
@@ -28,7 +30,7 @@ public class CraftMetaEntityTag extends CraftMetaItem {
     	}
     );
 
-    static final CraftMetaItem.ItemMetaKeyType<NbtComponent> ENTITY_TAG = new CraftMetaItem.ItemMetaKeyType<NbtComponent>(DataComponentTypes.ENTITY_DATA, "EntityTag", "entity-tag");
+    static final CraftMetaItem.ItemMetaKeyType<TypedEntityData<net.minecraft.entity.EntityType<?>>> ENTITY_TAG = new CraftMetaItem.ItemMetaKeyType<>(DataComponentTypes.ENTITY_DATA, "EntityTag", "entity-tag");
     NbtCompound entityTag;
 
     CraftMetaEntityTag(CraftMetaItem meta) {
@@ -43,7 +45,7 @@ public class CraftMetaEntityTag extends CraftMetaItem {
     CraftMetaEntityTag(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaEntityTag.getOrEmpty(tag, ENTITY_TAG).ifPresent(nbt -> {
-            this.entityTag = nbt.copyNbt();
+            this.entityTag = TypedEntityDataExtra.copyTagWithEntityId(nbt); // nbt.copyNbt();
         });
     }
 
@@ -70,7 +72,7 @@ public class CraftMetaEntityTag extends CraftMetaItem {
     void applyToItem(CraftMetaItem.Applicator tag) {
         super.applyToItem(tag);
         if (this.entityTag != null) {
-            tag.put(ENTITY_TAG, NbtComponent.of(this.entityTag));
+            tag.put(ENTITY_TAG, TypedEntityDataExtra.decodeEntity(this.entityTag));
         }
     }
 

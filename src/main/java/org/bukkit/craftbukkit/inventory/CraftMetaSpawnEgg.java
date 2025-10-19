@@ -10,6 +10,7 @@ import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
+import net.minecraft.entity.TypedEntityData;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.registry.Registries;
@@ -27,6 +28,7 @@ import org.bukkit.entity.EntitySnapshot;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.bukkit.material.MaterialData;
+import org.cardboardpowered.TypedEntityDataExtra;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -117,7 +119,7 @@ implements SpawnEggMeta {
     				Material.ZOMBIE_VILLAGER_SPAWN_EGG,
     				Material.ZOMBIFIED_PIGLIN_SPAWN_EGG
     				});
-    static final CraftMetaItem.ItemMetaKeyType<NbtComponent> ENTITY_TAG = new CraftMetaItem.ItemMetaKeyType<NbtComponent>(DataComponentTypes.ENTITY_DATA, "entity-tag");
+    static final CraftMetaItem.ItemMetaKeyType<TypedEntityData<net.minecraft.entity.EntityType<?>>> ENTITY_TAG = new CraftMetaItem.ItemMetaKeyType<>(DataComponentTypes.ENTITY_DATA, "entity-tag");
     static final CraftMetaItem.ItemMetaKey ENTITY_ID = new CraftMetaItem.ItemMetaKey("id");
     private EntityType spawnedType;
     private NbtCompound entityTag;
@@ -135,7 +137,7 @@ implements SpawnEggMeta {
     CraftMetaSpawnEgg(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaSpawnEgg.getOrEmpty(tag, ENTITY_TAG).ifPresent(nbt -> {
-            this.entityTag = nbt.copyNbt();
+            this.entityTag = TypedEntityDataExtra.copyTagWithEntityId(nbt);// nbt.copyTagWithEntityId();
         });
     }
 
@@ -189,7 +191,7 @@ implements SpawnEggMeta {
             this.entityTag = new NbtCompound();
         }
         if (this.entityTag != null) {
-            tag.put(ENTITY_TAG, NbtComponent.of(this.entityTag));
+            tag.put(ENTITY_TAG, TypedEntityDataExtra.decodeEntity(this.entityTag));
         }
     }
 

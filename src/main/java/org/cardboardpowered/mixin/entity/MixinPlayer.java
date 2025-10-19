@@ -101,6 +101,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldProperties.SpawnPoint;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -593,7 +595,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
             ((ServerPlayerEntity)(Object)this).setScore(entityplayer.getScore());
         }
         ((ServerPlayerEntity)(Object)this).enderChestInventory = entityplayer.enderChestInventory;
-        ((ServerPlayerEntity)(Object)this).getDataTracker().set(ServerPlayerEntity.PLAYER_MODEL_PARTS, entityplayer.getDataTracker().get(ServerPlayerEntity.PLAYER_MODEL_PARTS));
+        // ((ServerPlayerEntity)(Object)this).getDataTracker().set(ServerPlayerEntity.PLAYER_MODEL_PARTS, entityplayer.getDataTracker().get(ServerPlayerEntity.PLAYER_MODEL_PARTS));
         ((ServerPlayerEntity)(Object)this).syncedExperience = -1;
         ((ServerPlayerEntity)(Object)this).syncedHealth = -1.0F;
         ((ServerPlayerEntity)(Object)this).syncedFoodLevel = -1;
@@ -642,15 +644,15 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         	plr.unsetRemoved();
             Vec3d position = null;
             
-            RegistryKey<World> rw = plr.getRespawn().dimension();
-
-            if (rw != null && (world = plr.getServer().getWorld(rw)) != null && plr.getRespawn().pos() != null) {
+            RegistryKey<World> rw = Respawn.getDimension(plr.getRespawn());
+            SpawnPoint point = plr.getRespawn().respawnData();
+            if (rw != null && (world = CraftServer.server.getWorld(rw)) != null && point.getPos() != null) {
                 position = ServerPlayerEntity.findRespawnPosition((ServerWorld)world, plr.getRespawn(), false)
                 		.map(RespawnPos::pos).orElse(null);
             }
             if (world == null || position == null) {
                 world = ((CraftWorld)Bukkit.getServer().getWorlds().get(0)).getHandle();
-                position = Vec3d.ofCenter(world.getSpawnPoint());
+                position = Vec3d.ofCenter(point.getPos());
             }
             plr.setServerWorld(world);
             plr.setPos(position.getX(), position.getY(), position.getZ());
@@ -674,7 +676,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         boolean isAnchorSpawn = false;
         Runnable consumeAnchorCharge = null;
         Respawn respawnConfig = thiz.getRespawn();
-        ServerWorld level = thiz.getServer().getWorld(Respawn.getDimension(respawnConfig));
+        ServerWorld level = CraftServer.server.getWorld(Respawn.getDimension(respawnConfig));
         if (level != null && respawnConfig != null) {
             Optional<RespawnPos> optional = ServerPlayerEntity.findRespawnPosition(level, respawnConfig, useCharge);
             if (optional.isPresent()) {

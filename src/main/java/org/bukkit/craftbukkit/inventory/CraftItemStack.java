@@ -855,8 +855,8 @@ public final class CraftItemStack extends ItemStack {
             CraftMetaItem.Applicator tag = new CraftMetaItem.Applicator(){
 
                 @Override
-                void skullCallback(GameProfile gameProfile) {
-                    item.set(DataComponentTypes.PROFILE, ProfileComponent.ofStatic(gameProfile));
+                void skullCallback(ProfileComponent gameProfile) {
+                    item.set(DataComponentTypes.PROFILE, gameProfile);
                 }
             };
             ((CraftMetaItem)itemMeta).applyToItem(tag);
@@ -868,6 +868,17 @@ public final class CraftItemStack extends ItemStack {
         }
         return true;
     }
+    
+    public static void applyMetaToItem(net.minecraft.item.ItemStack itemStack, ItemMeta itemMeta) {
+        CraftMetaItem.Applicator tag = new CraftMetaItem.Applicator() {
+           @Override
+           void skullCallback(ProfileComponent profile) {
+              itemStack.set(DataComponentTypes.PROFILE, profile);
+           }
+        };
+        ((CraftMetaItem)itemMeta).applyToItem(tag);
+        itemStack.applyUnvalidatedChanges(tag.build());
+     }
 
     /*public static boolean setItemMeta_old(net.minecraft.item.ItemStack item, ItemMeta itemMeta) {
         if (item == null) return false;

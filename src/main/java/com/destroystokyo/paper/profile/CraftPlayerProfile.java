@@ -69,7 +69,12 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
 		this(nameAndId.id(), nameAndId.name());
 	}
 
-    @Override
+	public CraftPlayerProfile(ProfileComponent resolvableProfile) {
+	      this(resolvableProfile.get().map(GameProfile::id, p -> p.id().orElse(null)), resolvableProfile.get().map(GameProfile::name, p -> p.name().orElse(null)));
+	      copyProfileProperties(resolvableProfile.getGameProfile(), this.profile);
+	}
+
+	@Override
     public boolean hasProperty(String property) {
         return profile.properties().containsKey(property);
     }
@@ -500,6 +505,10 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
 		return (ProfileComponent)(this.emptyName != this.emptyUUID && this.properties.isEmpty()
 		         ? new ProfileComponent.Dynamic(this.emptyName ? Either.right(this.profile.id()) : Either.left(this.profile.name()), SkinTextures.SkinOverride.EMPTY)
 		         : ProfileComponent.ofStatic(this.buildGameProfile()));
+	}
+
+	public static ProfileComponent asResolvableProfileCopy(@Nullable PlayerProfile profile2) {
+		return ((SharedPlayerProfile)profile2).buildResolvableProfile();
 	}
 
 }

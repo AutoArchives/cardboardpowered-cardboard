@@ -3086,7 +3086,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         Applicator() {
         }
 
-        void skullCallback(GameProfile gameProfile) {
+        void skullCallback(ProfileComponent gameProfile) {
         }
 
         <T> Applicator put(ItemMetaKeyType<T> key, T value) {
