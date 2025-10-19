@@ -472,7 +472,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         // TODO Bukkit generators
         WorldBorder worldborder = worldserver.getWorldBorder();
 
-        worldborder.load(worldProperties.getWorldBorder());
+        worldborder.load(worldProperties.getWorldBorder().get());
         if (!worldProperties.isInitialized()) {
             try {
                 setupSpawn(worldserver, worldProperties, generatorsettings.hasBonusChest(), flag);

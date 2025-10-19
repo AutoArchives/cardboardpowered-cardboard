@@ -79,7 +79,7 @@ public class Conversions {
         return vanilla == null ? Component.empty() : this.serializer.deserialize(vanilla);
     }
     
-    public ClientTextureAsset asBukkit(@Nullable AssetInfo.TextureAsset clientTextureAsset) {
+    public ClientTextureAsset asBukkit(AssetInfo.TextureAsset clientTextureAsset) {
         return clientTextureAsset == null
            ? null
            : ClientTextureAsset.clientTextureAsset(

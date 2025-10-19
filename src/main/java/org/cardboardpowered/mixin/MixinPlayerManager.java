@@ -149,7 +149,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
     		CardboardMod.LOGGER.info("DEBUG: PlayerManager.respawn called");
     	}
     	
-    	ServerWorld level1;
+    	// ServerWorld level1;
         TeleportTarget teleportTransition;
         player.stopRiding();
         this.players.remove(player);
@@ -209,7 +209,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         // serverPlayer.networkHandler.teleport(CraftLocation.toBukkit(serverPlayer.getPos(), (org.bukkit.World)serverLevel.getWorld(), serverPlayer.getYaw(), serverPlayer.getPitch()));
         player.teleport(worldserver1, location.getX(), location.getY(), location.getZ(), null, 0, 0, false);
         
-        serverPlayer.networkHandler.sendPacket(new PlayerSpawnPositionS2CPacket(level.getSpawnPos(), level.getSpawnAngle()));
+        serverPlayer.networkHandler.sendPacket(new PlayerSpawnPositionS2CPacket(level.getSpawnPoint()));
         serverPlayer.networkHandler.sendPacket(new DifficultyS2CPacket(levelData.getDifficulty(), levelData.isDifficultyLocked()));
         serverPlayer.networkHandler.sendPacket(new ExperienceBarUpdateS2CPacket(serverPlayer.experienceProgress, serverPlayer.totalExperience, serverPlayer.experienceLevel));
         this.sendStatusEffects(serverPlayer);
@@ -223,18 +223,23 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         }
         serverPlayer.setHealth(serverPlayer.getHealth());
         ServerPlayerEntity.Respawn respawnConfig = serverPlayer.getRespawn();
-        if (!keepInventory && respawnConfig != null && (level1 = this.server.getWorld(respawnConfig.dimension())) != null) {
-            BlockPos blockPos = respawnConfig.pos();
-            BlockState blockState = ((World)level1).getBlockState(blockPos);
-            if (blockState.isOf(Blocks.RESPAWN_ANCHOR)) {
-                serverPlayer.networkHandler.sendPacket(new PlaySoundS2CPacket(SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, SoundCategory.BLOCKS, blockPos.getX(), blockPos.getY(), blockPos.getZ(), 1.0f, 1.0f, level.getRandom().nextLong()));
-            }
-            if (!teleportTransition.missingRespawnBlock()) {
-                if (blockState.isIn(BlockTags.BEDS)) {
-                    isBedSpawn = true;
-                } else if (blockState.isOf(Blocks.RESPAWN_ANCHOR)) {
-                    isAnchorSpawn = true;
-                }
+        if (!keepInventory && respawnConfig != null) {
+        	WorldProperties.SpawnPoint respawnData = respawnConfig.respawnData();
+            ServerWorld level1 = this.server.getWorld(respawnData.getDimension());
+        	
+            if (null != level1) {
+	        	BlockPos blockPos = respawnData.getPos();
+	            BlockState blockState = ((World)level1).getBlockState(blockPos);
+	            if (blockState.isOf(Blocks.RESPAWN_ANCHOR)) {
+	                serverPlayer.networkHandler.sendPacket(new PlaySoundS2CPacket(SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, SoundCategory.BLOCKS, blockPos.getX(), blockPos.getY(), blockPos.getZ(), 1.0f, 1.0f, level.getRandom().nextLong()));
+	            }
+	            if (!teleportTransition.missingRespawnBlock()) {
+	                if (blockState.isIn(BlockTags.BEDS)) {
+	                    isBedSpawn = true;
+	                } else if (blockState.isOf(Blocks.RESPAWN_ANCHOR)) {
+	                    isAnchorSpawn = true;
+	                }
+	            }
             }
         }
         this.sendPlayerStatus(player);
@@ -731,7 +736,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
             IMixinPlayNetworkHandler iNetworkHandler = (IMixinPlayNetworkHandler) serverPlayer.networkHandler;
             
             iNetworkHandler.teleport(CraftLocation.toBukkit(serverPlayer.getEntityPos(), serverLevel.getWorld(), serverPlayer.getYaw(), serverPlayer.getPitch()));
-            serverPlayer.networkHandler.sendPacket(new PlayerSpawnPositionS2CPacket(level.getSpawnPos(), level.getSpawnAngle()));
+            serverPlayer.networkHandler.sendPacket(new PlayerSpawnPositionS2CPacket(level.getSpawnPoint()));
             serverPlayer.networkHandler.sendPacket(new DifficultyS2CPacket(levelData.getDifficulty(), levelData.isDifficultyLocked()));
             serverPlayer.networkHandler.sendPacket(new ExperienceBarUpdateS2CPacket(serverPlayer.experienceProgress, serverPlayer.totalExperience, serverPlayer.experienceLevel));
             this.sendStatusEffects(serverPlayer);
@@ -748,9 +753,10 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
             serverPlayer.setHealth(serverPlayer.getHealth());
             ServerPlayerEntity.Respawn respawnConfig = serverPlayer.getRespawn();
             if (!keepInventory && respawnConfig != null) {
-                ServerWorld level1 = this.server.getWorld(respawnConfig.dimension());
+            	WorldProperties.SpawnPoint respawnData = respawnConfig.respawnData();
+                ServerWorld level1 = this.server.getWorld(respawnData.getDimension());
                 if (level1 != null) {
-                    BlockPos blockPos = respawnConfig.pos();
+                    BlockPos blockPos = respawnData.getPos();
                     BlockState blockState = level1.getBlockState(blockPos);
                     if (blockState.isOf(Blocks.RESPAWN_ANCHOR)) {
                         serverPlayer.networkHandler.sendPacket(new PlaySoundS2CPacket(SoundEvents.BLOCK_RESPAWN_ANCHOR_DEPLETE, SoundCategory.BLOCKS, blockPos.getX(), blockPos.getY(), blockPos.getZ(), 1.0F, 1.0F, level.getRandom().nextLong()));
