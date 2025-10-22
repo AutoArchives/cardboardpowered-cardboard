@@ -28,6 +28,8 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
 
 import io.papermc.paper.adventure.PaperAdventure;
+import io.papermc.paper.datacomponent.item.PaperResolvableProfile;
+import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import me.isaiah.common.cmixin.IMixinSkullBlockEntity;
 import net.kyori.adventure.text.Component;
 import net.minecraft.block.entity.BlockEntity;
@@ -280,6 +282,20 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
 	public void customName(@Nullable Component customName) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public @Nullable ResolvableProfile getProfile() {
+		return this.profile == null ? null : new PaperResolvableProfile(this.profile);
+	}
+
+	@Override
+	public void setProfile(@Nullable ResolvableProfile profile) {
+		if (profile == null) {
+			this.profile = null;
+		} else {
+			this.profile = ((PaperResolvableProfile) profile).getHandle();
+		}
 	}
 
 }

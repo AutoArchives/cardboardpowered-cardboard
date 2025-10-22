@@ -28,7 +28,9 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.command.DataCommandStorage;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.SaveLoading;
 import net.minecraft.server.ServerTask;
 // import net.minecraft.server.WorldGenerationProgressListener;
 // import net.minecraft.server.WorldGenerationProgressListenerFactory;
@@ -45,28 +47,46 @@ import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.random.RandomSequencesState;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
+import net.minecraft.village.ZombieSiegeManager;
 import net.minecraft.world.Difficulty;
 // import net.minecraft.world.ForcedChunkState;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.PlayerSaveHandler;
 import net.minecraft.world.SaveProperties;
+import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.border.WorldBorder;
+import net.minecraft.world.chunk.ChunkLoadProgress;
+import net.minecraft.world.chunk.ChunkLoadingCounter;
 import net.minecraft.world.dimension.DimensionOptions;
+import net.minecraft.world.dimension.DimensionTypes;
 import net.minecraft.world.gen.GeneratorOptions;
+import net.minecraft.world.gen.chunk.*;
+import net.minecraft.world.gen.*;
+import net.minecraft.world.level.LevelProperties;
 import net.minecraft.world.level.ServerWorldProperties;
 import net.minecraft.world.level.storage.LevelStorage;
+import net.minecraft.world.spawner.*;
+import net.minecraft.world.*;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.World.Environment;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.generator.CraftWorldInfo;
 import org.bukkit.craftbukkit.scoreboard.CardboardScoreboardManager;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.event.world.WorldInitEvent;
+import org.bukkit.event.world.WorldLoadEvent;
+import org.bukkit.generator.BiomeProvider;
+import org.bukkit.generator.WorldInfo;
 import org.cardboardpowered.interfaces.INetworkIo;
+import org.cardboardpowered.interfaces.IServerWorld;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -77,8 +97,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import com.google.common.collect.ImmutableList;
+
+import io.papermc.paper.configuration.GlobalConfiguration;
+import io.papermc.paper.world.PaperWorldLoader;
+
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -90,6 +116,14 @@ import java.util.function.BooleanSupplier;
 @Mixin(value=MinecraftServer.class)
 public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<ServerTask> implements IMixinMinecraftServer {
 
+	// public final WorldLoader.DataLoadContext worldLoaderContext;
+	public SaveLoading.LoadContextSupplierContext worldLoaderContext;
+	
+	@Override
+	public SaveLoading.LoadContextSupplierContext cardboard$worldLoaderContext() {
+		return worldLoaderContext;
+	}
+	
     @Shadow private long tickStartTimeNanos;
     @Shadow @Final protected SaveProperties saveProperties;
     // @Shadow public WorldGenerationProgressListenerFactory worldGenerationProgressListenerFactory;
@@ -203,6 +237,10 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         for (ServerWorld worldserver : ((MinecraftServer)(Object)this).getWorlds()) {
             if (worldserver != getOverworld()) {
                 // TODO IMPORTANT
+            	
+            	// ServerWorld world, ServerWorldProperties worldProperties, boolean bonusChest, boolean debugWorld, ChunkLoadProgress loadProgress
+            	setupSpawn(worldserver, worldserver.worldProperties, false, false, ((IServerWorld) worldserver).cardboard$levelLoadListener());
+            	
             	// this.loadSpawn(worldserver.getChunkManager().chunkLoadingManager.worldGenerationProgressListener, worldserver);
                 CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldLoadEvent(((IMixinWorld)worldserver).getCraftWorld()));
             }
@@ -370,6 +408,42 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     }
     */
     
+    /**
+     * Prepare Levels 1.21.9
+     */
+    @Override
+    public void cardboard$prepareLevel(ServerWorld serverLevel) {
+    	this.forceTicks = true;
+    	ChunkLoadingCounter chunkLoadCounter = new ChunkLoadingCounter();
+    	chunkLoadCounter.load(serverLevel, () -> {
+    		ChunkTicketManager ticketStorage = serverLevel.getPersistentStateManager().get(ChunkTicketManager.STATE_TYPE);
+    		if (ticketStorage != null) {
+    			ticketStorage.promoteToRealTickets();
+    		}
+    	});
+
+    	IServerWorld world = (IServerWorld) serverLevel;
+
+    	world.cardboard$levelLoadListener().init(ChunkLoadProgress.Stage.LOAD_INITIAL_CHUNKS, chunkLoadCounter.getTotalChunks());
+
+    	do {
+    		world.cardboard$levelLoadListener()
+    		.progress(ChunkLoadProgress.Stage.LOAD_INITIAL_CHUNKS, chunkLoadCounter.getFullChunks(), chunkLoadCounter.getTotalChunks());
+    		this.executeModerately();
+    	} while (chunkLoadCounter.getNonFullChunks() > 0);
+
+    	world.cardboard$levelLoadListener().finish(ChunkLoadProgress.Stage.LOAD_INITIAL_CHUNKS);
+    	serverLevel.setMobSpawnOptions(serverLevel.worldProperties.getDifficulty() != Difficulty.PEACEFUL && serverLevel.getGameRules().getBoolean(GameRules.SPAWN_MONSTERS));
+    	this.refreshSpawnPoint();
+    	this.forceTicks = false;
+    	new WorldLoadEvent(serverLevel.getWorld()).callEvent();
+    }
+
+    @Shadow
+    public void refreshSpawnPoint() {
+    	// Shadowed
+    }
+    
     /*
     public void prepareLevels(WorldGenerationProgressListener listener, ServerWorld serverLevel) {
         int i2;
@@ -462,28 +536,32 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
             CraftServer.INSTANCE.getPluginManager().disablePlugins();
     }
 
-    public void initWorld(ServerWorld worldserver, ServerWorldProperties worldProperties, SaveProperties saveData, GeneratorOptions generatorsettings) {
-        cardboard$initLevel(worldserver);
-        cardboard$initializedLevel(worldserver, worldProperties, saveData, generatorsettings);
+    // public void initWorld(ServerWorld worldserver, ServerWorldProperties worldProperties, SaveProperties saveData, GeneratorOptions generatorsettings) {
+    public void initWorld(ServerWorld serverLevel, LevelProperties serverLevelData, GeneratorOptions worldOptions) {
+        cardboard$initLevel(serverLevel);
+        cardboard$initializedLevel(serverLevel, serverLevelData, worldOptions);
     }
 
     private void cardboard$initLevel(ServerWorld serverWorld) {
         if (((CraftServer) Bukkit.getServer()).scoreboardManager == null) {
             ((CraftServer) Bukkit.getServer()).scoreboardManager = new CardboardScoreboardManager((MinecraftServer) (Object) this, serverWorld.getScoreboard());
         }
-        Bukkit.getPluginManager().callEvent(new WorldInitEvent(((IMixinWorld) serverWorld).getCraftWorld()));
+        // Bukkit.getPluginManager().callEvent(new WorldInitEvent(((IMixinWorld) serverWorld).getCraftWorld()));
     }
 
-    private void cardboard$initializedLevel(ServerWorld worldserver, ServerWorldProperties worldProperties, SaveProperties saveData, GeneratorOptions generatorsettings) {
+    private void cardboard$initializedLevel(ServerWorld worldserver, ServerWorldProperties worldProperties, GeneratorOptions generatorsettings) {
         boolean flag = false;
         // TODO Bukkit generators
         WorldBorder worldborder = worldserver.getWorldBorder();
 
         worldborder.load(worldProperties.getWorldBorder().get());
+        
+        Bukkit.getPluginManager().callEvent(new WorldInitEvent(((IMixinWorld) worldserver).getCraftWorld()));
+        
         if (!worldProperties.isInitialized()) {
             try {
             	// TODO IMPORTANT
-                // setupSpawn(worldserver, worldProperties, generatorsettings.hasBonusChest(), flag);
+                setupSpawn(worldserver, worldProperties, generatorsettings.hasBonusChest(), flag, ((IServerWorld) worldserver).cardboard$levelLoadListener());
                 worldProperties.setInitialized(true);
             } catch (Throwable throwable) {
                 CrashReport crashreport = CrashReport.create(throwable, "Exception initializing level");
@@ -492,17 +570,124 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
 
             worldProperties.setInitialized(true);
         }
+        
+        GlobalPos globalPos = ((MinecraftServer) (Object) this).getSpawnPos();
+        ((IServerWorld) worldserver).cardboard$levelLoadListener().initSpawnPos(globalPos.dimension(), new ChunkPos(globalPos.pos()));
+        /*
+        if (worldProperties.getCustomBossEvents() != null) {
+           this.getBossBarManager().readNbt(serverLevelData.getCustomBossEvents(), this.getRegistryManager());
+        }
+        */
+    }
+    
+    
+    @Override
+    public void createLevel(
+    	      DimensionOptions levelStem, PaperWorldLoader.WorldLoadingInfo loadingInfo, LevelStorage.Session levelStorageAccess, LevelProperties serverLevelData
+    	   ) {
+    	
+    	MinecraftServer server = (MinecraftServer) (Object) this;
+    	
+    	GeneratorOptions worldOptions = serverLevelData.getGeneratorOptions();
+        long seed = worldOptions.getSeed();
+        long l = BiomeAccess.hashSeed(seed);
+        List<SpecialSpawner> list = ImmutableList.of(
+           new PhantomSpawner(), new PatrolSpawner(), new CatSpawner(), new ZombieSiegeManager(), new WanderingTraderManager(serverLevelData)
+        );
+
+        // ChunkGenerator chunkGenerator = this..getGenerator(loadingInfo.name());
+        // BiomeProvider biomeProvider = this.server.getBiomeProvider(loadingInfo.name());
+
+        WorldInfo worldInfo = new CraftWorldInfo(
+           serverLevelData,
+           levelStorageAccess,
+           Environment.getEnvironment(loadingInfo.dimension()),
+           levelStem.dimensionTypeEntry().value(),
+           levelStem.chunkGenerator(),
+           server.getRegistryManager()
+        );
+        /*
+        if (biomeProvider == null && chunkGenerator != null) {
+           biomeProvider = chunkGenerator.getDefaultBiomeProvider(worldInfo);
+        }
+        */
+
+        RegistryKey<World> dimensionKey = RegistryKey.of(RegistryKeys.WORLD, loadingInfo.stemKey().getValue());
+        ServerWorld serverLevel;
+        if (loadingInfo.stemKey() == DimensionOptions.OVERWORLD) {
+           serverLevel = new ServerWorld(
+              server,
+              server.workerExecutor,
+              levelStorageAccess,
+              serverLevelData,
+              dimensionKey,
+              levelStem,
+              serverLevelData.isDebugWorld(),
+              l,
+              list,
+              true,
+              null
+              /* ,
+              Environment.getEnvironment(loadingInfo.dimension()),
+              chunkGenerator,
+              biomeProvider */
+           );
+           this.saveProperties = serverLevelData;
+           this.saveProperties.setGameMode(((MinecraftDedicatedServer)(Object)this).getProperties().gameMode.get());
+           PersistentStateManager dataStorage = serverLevel.getPersistentStateManager();
+           this.initScoreboard(dataStorage);
+           this.dataCommandStorage = new DataCommandStorage(dataStorage);
+           CraftServer.INSTANCE.scoreboardManager = new CardboardScoreboardManager(server, serverLevel.getScoreboard());
+        } else {
+           List<SpecialSpawner> spawners;
+           
+           // Note: add useDimensionTypeForCustomSpawners (default = false)
+           
+           if (false && levelStem.dimensionTypeEntry().matchesKey(DimensionTypes.OVERWORLD)) {
+              spawners = list;
+           } else {
+              spawners = Collections.emptyList();
+           }
+
+           serverLevel = new ServerWorld(
+              server,
+              server.workerExecutor,
+              levelStorageAccess,
+              serverLevelData,
+              dimensionKey,
+              levelStem,
+              this.saveProperties.isDebugWorld(),
+              l,
+              spawners,
+              true,
+              server.getOverworld().getRandomSequences()/*,
+              Environment.getEnvironment(loadingInfo.dimension()),
+              chunkGenerator,
+              biomeProvider
+              */
+           );
+        }
+
+        this.addLevel(serverLevel);
+        this.initWorld(serverLevel, serverLevelData, worldOptions);
     }
 
+    /*
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerChunkManager;getChunkGenerator()Lnet/minecraft/world/gen/chunk/ChunkGenerator;"), method = "setupSpawn")
     private static void setupSpawn_BukkitGenerators(ServerWorld world, ServerWorldProperties swp, boolean bonusChest, boolean debugWorld, CallbackInfo ci) {
         // TODO Bukkit Generators
     }
+    */
 
     /*
     @Shadow
     private static void setupSpawn(ServerWorld world, ServerWorldProperties swp, boolean bonusChest, boolean debugWorld) {
     }
     */
+    
+    @Shadow
+    private static void setupSpawn( ServerWorld world, ServerWorldProperties worldProperties, boolean bonusChest, boolean debugWorld, ChunkLoadProgress loadProgress) {
+    	// Shadowed
+    }
 
 }

@@ -12,12 +12,16 @@ import org.bukkit.FeatureFlag;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.CraftFeatureFlag;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
-import org.bukkit.packs.DataPack;
+// import org.bukkit.packs.DataPack;
 
 import me.isaiah.common.ICommonMod;
 import me.isaiah.common.IDatapack;
 
-public class CraftDataPack implements DataPack {
+/**
+ * Removed in Paper 1.21.9+
+ */
+@Deprecated
+public class CraftDataPack /* implements DataPack */ {
 
     private final ResourcePackProfile handle;
     private PackResourceMetadata resourcePackInfo;
@@ -49,29 +53,30 @@ public class CraftDataPack implements DataPack {
     	return this.asICommon().get_raw_id();
     }
 
-    @Override
+    // @Override
     public String getTitle() {
         return CraftChatMessage.fromComponent(this.getHandle().getDisplayName());
     }
 
-    @Override
+    // @Override
     public String getDescription() {
         return CraftChatMessage.fromComponent(this.getHandle().getDescription());
     }
 
-    @Override
+    // @Override
     public int getPackFormat() {
     	return resourcePackInfo.supportedFormats().maxInclusive().major();
     	// TODO
         // return resourcePackInfo.packFormat();
     }
 
-    @Override
+    // @Override
     public boolean isRequired() {
         return this.asICommon().is_required();
     }
 
-    @Override
+    // @Override
+    /*
     public DataPack.Compatibility getCompatibility() {
         return switch (this.getHandle().getCompatibility()) {
             default -> throw new IncompatibleClassChangeError();
@@ -80,13 +85,15 @@ public class CraftDataPack implements DataPack {
             case TOO_OLD -> DataPack.Compatibility.OLD;
         };
     }
+    */
 
-    @Override
+    // @Override
     public boolean isEnabled() {
     	return this.asICommon().is_enabled();
     }
 
-    @Override
+    // @Override
+    /*
     public DataPack.Source getSource() {
         if (this.getHandle().getSource() == ResourcePackSource.BUILTIN) {
             return DataPack.Source.BUILT_IN;
@@ -102,26 +109,27 @@ public class CraftDataPack implements DataPack {
         }
         return DataPack.Source.DEFAULT;
     }
+    */
 
-    @Override
+    // @Override
     public Set<FeatureFlag> getRequestedFeatures() {
         return CraftFeatureFlag.getFromNMS(this.getHandle().getRequestedFeatures()).stream().map(FeatureFlag.class::cast).collect(Collectors.toUnmodifiableSet());
     }
 
-    @Override
+    // @Override
     public NamespacedKey getKey() {
         return NamespacedKey.fromString((String)this.getRawId());
     }
 
-    @Override
+    // @Override
     public String toString() {
         String requestedFeatures = this.getRequestedFeatures().stream().map(featureFlag -> featureFlag.getKey().toString()).collect(Collectors.joining(","));
-        return "CraftDataPack{rawId=" + this.getRawId() + ",id=" + this.getKey() + ",title=" + this.getTitle() + ",description=" + this.getDescription() + ",packformat=" + this.getPackFormat() + ",compatibility=" + this.getCompatibility() + ",source=" + this.getSource() + ",enabled=" + this.isEnabled() + ",requestedFeatures=[" + requestedFeatures + "]}";
+        return "CraftDataPack{rawId=" + this.getRawId() + ",id=" + this.getKey() + ",title=" + this.getTitle() + ",description=" + this.getDescription() + ",packformat=" + this.getPackFormat() + ",compatibility=" + "voidptr" + ",source=" + "voidptr" + ",enabled=" + this.isEnabled() + ",requestedFeatures=[" + requestedFeatures + "]}";
     }
 
     // 1.20.2 API:
     
-	@Override
+	// @Override
 	public int getMinSupportedPackFormat() {
 		
 		return this.resourcePackInfo.supportedFormats().minInclusive().major();
@@ -129,7 +137,7 @@ public class CraftDataPack implements DataPack {
 		// return this.resourcePackInfo.supportedFormats().orElse(new Range<Integer>(this.getPackFormat())).minInclusive();
 	}
 
-	@Override
+	// @Override
 	public int getMaxSupportedPackFormat() {
 		
 		return this.resourcePackInfo.supportedFormats().maxInclusive().major();

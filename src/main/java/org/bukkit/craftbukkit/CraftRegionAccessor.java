@@ -495,9 +495,12 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
             }
             throw new IllegalArgumentException("Cannot spawn an entity for " + clazz.getName());
         }
+        // TODO
+        /*
         if (!entityTypeData.entityType().isEnabledByFeature((World)((IMixinWorld)this.getHandle()).getCraftWorld())) {
             throw new IllegalArgumentException("Cannot spawn an entity for " + clazz.getName() + " because it is not an enabled feature");
         }
+        */
         Entity entity = (Entity)entityTypeData.spawnFunction().apply(new CraftEntityTypes.SpawnData(this.getHandle(), location, randomizeData, this.isNormalWorld()));
         
         

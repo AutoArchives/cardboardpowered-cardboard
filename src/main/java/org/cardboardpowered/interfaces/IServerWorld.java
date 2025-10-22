@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.impl.world.CraftWorld;
 
+import net.minecraft.world.chunk.ChunkLoadProgress;
 import net.minecraft.world.level.ServerWorldProperties;
 
 public interface IServerWorld {
@@ -22,5 +23,9 @@ public interface IServerWorld {
 	public void cardboard$set_uuid(UUID id);
 	
 	public UUID cardboard$get_uuid();
+
+	/**
+	 */
+	ChunkLoadProgress cardboard$levelLoadListener();
 
 }

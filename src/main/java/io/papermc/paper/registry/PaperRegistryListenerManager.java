@@ -21,7 +21,7 @@ import io.papermc.paper.registry.entry.RegistryEntryMeta;
 // import io.papermc.paper.registry.event.RegistryEntryAddEventImpl;
 // import io.papermc.paper.registry.event.RegistryEventMap;
 import io.papermc.paper.registry.event.RegistryEventProvider;
-import io.papermc.paper.registry.event.RegistryFreezeEvent;
+// import io.papermc.paper.registry.event.RegistryFreezeEvent;
 // import io.papermc.paper.registry.event.RegistryFreezeEventImpl;
 import io.papermc.paper.registry.event.type.RegistryEntryAddEventType;
 // import io.papermc.paper.registry.event.type.RegistryEntryAddEventTypeImpl;
@@ -196,6 +196,7 @@ public class PaperRegistryListenerManager {
     }
     */
     
+    /*
     public <T, B extends RegistryBuilder<T>> LifecycleEventType.Prioritizable<BootstrapContext, RegistryFreezeEvent<T, B>> getRegistryFreezeEventType(final RegistryEventProvider<T, B> type) {
         final RegistryEntry<?, ?> entry = PaperRegistries.getEntry(type.registryKey());
         if (entry == null || !entry.meta().modificationApiSupport().canAdd()) {
@@ -205,6 +206,7 @@ public class PaperRegistryListenerManager {
         return null;
         //return this.freezeEventTypes.getOrCreate(type.registryKey(), RegistryLifecycleEventType::new);
     }
+    */
 
     @FunctionalInterface
     public static interface RegisterMethod<M, R> {

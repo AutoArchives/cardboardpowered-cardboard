@@ -1,17 +1,26 @@
 package org.cardboardpowered.impl;
 
 import io.papermc.paper.InternalAPIBridge;
+import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.datacomponent.item.PaperResolvableProfile;
+import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import io.papermc.paper.world.damagesource.CombatEntry;
 import io.papermc.paper.world.damagesource.FallLocationType;
 import io.papermc.paper.world.damagesource.PaperCombatEntryWrapper;
 import io.papermc.paper.world.damagesource.PaperCombatTrackerWrapper;
+
+import java.util.Arrays;
 import java.util.function.Predicate;
 
+import net.kyori.adventure.text.Component;
 import net.minecraft.command.PermissionLevelSource;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageRecord;
 import net.minecraft.entity.damage.FallLocation;
+import net.minecraft.entity.decoration.MannequinEntity;
+import net.minecraft.entity.player.PlayerModelPart;
+import net.minecraft.text.Text;
 import net.minecraft.util.Nullables;
 import org.bukkit.block.Biome;
 import org.bukkit.craftbukkit.block.CraftBiome;
@@ -23,6 +32,9 @@ import org.bukkit.damage.DamageSource;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import com.destroystokyo.paper.PaperSkinParts;
+import com.destroystokyo.paper.SkinParts.Mutable;
 
 @NullMarked
 public class PaperServerInternalAPIBridge implements InternalAPIBridge {
@@ -68,5 +80,27 @@ public class PaperServerInternalAPIBridge implements InternalAPIBridge {
         }
         return new RestrictedPredicate(predicate);
     }
+
+	@Override
+	public ResolvableProfile defaultMannequinProfile() {
+		return new PaperResolvableProfile(MannequinEntity.DEFAULT_INFO);
+	}
+
+	// TODO: 1.21.9: Aw
+	public static final byte MannequinEntity_ALL_MODEL_PARTS = (byte)Arrays.stream(PlayerModelPart.values())
+		      .mapToInt(PlayerModelPart::getBitFlag)
+		      .reduce(0, (flagL, flagR) -> flagL | flagR);
+	
+	@Override
+	public Mutable allSkinParts() {
+		return new PaperSkinParts.Mutable(MannequinEntity_ALL_MODEL_PARTS);
+	}
+
+	@Override
+	public Component defaultMannequinDescription() {
+		// DEFAULT_DESCRIPTION not visible
+		return PaperAdventure.asAdventure(Text.of("Hello, I'm a Mannequin"));
+		// return PaperAdventure.asAdventure(MannequinEntity.DEFAULT_DESCRIPTION);
+	}
 
 }

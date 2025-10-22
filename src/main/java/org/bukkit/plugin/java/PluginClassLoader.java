@@ -58,6 +58,12 @@ public class PluginClassLoader extends URLClassLoader {
     static {
         ClassLoader.registerAsParallelCapable();
     }
+    
+    @Nullable
+    public JavaPlugin getPlugin() {
+       return this.plugin;
+    }
+
 
     PluginClassLoader(@NotNull final JavaPluginLoader loader, @Nullable final ClassLoader parent, @NotNull final PluginDescriptionFile description, @NotNull final File dataFolder, @NotNull final File file, @Nullable ClassLoader libraryLoader) throws IOException, InvalidPluginException, MalformedURLException {
         super(new URL[] {file.toURI().toURL()}, parent);

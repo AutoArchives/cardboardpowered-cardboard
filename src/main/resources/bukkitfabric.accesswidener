@@ -570,3 +570,11 @@ accessible method net/minecraft/server/world/ChunkTicketType register (Ljava/lan
 accessible method net/minecraft/server/MinecraftServer refreshSpawnPoint ()V
 accessible field net/minecraft/world/chunk/Chunk heightmaps Ljava/util/Map;
 accessible field net/minecraft/block/entity/SkullBlockEntity owner Lnet/minecraft/component/type/ProfileComponent;
+accessible field net/minecraft/server/dedicated/MinecraftDedicatedServer propertiesLoader Lnet/minecraft/server/dedicated/ServerPropertiesLoader;
+accessible field net/minecraft/entity/decoration/MannequinEntity ALL_MODEL_PARTS B
+accessible field net/minecraft/entity/decoration/MannequinEntity DEFAULT_DESCRIPTION Lnet/minecraft/text/Text;
+accessible method net/minecraft/server/Main createWorld (Lnet/minecraft/server/dedicated/ServerPropertiesLoader;Lnet/minecraft/server/SaveLoading$LoadContextSupplierContext;Lnet/minecraft/registry/Registry;ZZ)Lnet/minecraft/server/SaveLoading$LoadContext;
+accessible field net/minecraft/world/level/LevelInfo name Ljava/lang/String;
+mutable field net/minecraft/world/level/LevelInfo name Ljava/lang/String;
+accessible field net/minecraft/world/GameRules RULE_TYPES Ljava/util/Map;
+accessible field net/minecraft/world/level/storage/LevelStorage$Session directory Lnet/minecraft/world/level/storage/LevelStorage$LevelSave;

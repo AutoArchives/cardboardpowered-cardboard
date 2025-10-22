@@ -135,10 +135,11 @@ public final class LibraryManager {
         return a.toString();
     }
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
     	List<Library> list = CardboardMixinPlugin.getLibs();
     	
     	for (Library l : list) {
+
     		String s = "Unknown";
 			try {
 				s = read_central_checksum("https://repo1.maven.org/maven2/", l);
@@ -146,6 +147,36 @@ public final class LibraryManager {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
+			if (s.equalsIgnoreCase("paper")) {
+
+				String ver = l.version.split("-R0.1")[0];
+
+            	String paper_jar = PAPER_MAVEN + "/io/papermc/paper/paper-api/" + ver + "-R0.1-SNAPSHOT/paper-api-" + l.version + ".jar";
+
+            	URL downloadUrl = new URL(paper_jar);
+            	
+            	File file = new File("papertest.jar");
+            	
+            	HttpsURLConnection connection = (HttpsURLConnection) downloadUrl.openConnection();
+                connection.setRequestProperty("User-Agent", "Mozilla/5.0 Chrome/90.0.4430.212");
+
+                try (
+                		ReadableByteChannel input = Channels.newChannel(connection.getInputStream());
+                		FileOutputStream output = new FileOutputStream(file)
+                	) {
+                    output.getChannel().transferFrom(input, 0, Long.MAX_VALUE);
+                    logger.info("Downloaded " + l.toString() + '.');
+                } catch (FileNotFoundException ex) {
+                	logger.info("Note: repo.papermc.io is misbehaving. Attempting backup URL..");
+                }
+
+                if (l.checksumType != null && l.checksumValue != null && !checksum(file, l)) {
+                	logger.error("The checksum of does not match. Found: " + l.checksumValue2 + ", Need: " + l.checksumValue);
+                }
+				
+			}
+			
 			if (!s.equalsIgnoreCase(l.checksumValue)) {
 				logger.info(l + " : " + s);
 			}
@@ -260,7 +291,7 @@ public final class LibraryManager {
         }
     }
 
-    boolean checksum(File file, Library library) {
+    static boolean checksum(File file, Library library) {
         checkNotNull(file);
         if (!file.exists()) return false;
 

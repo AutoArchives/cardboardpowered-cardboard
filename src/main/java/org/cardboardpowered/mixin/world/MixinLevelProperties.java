@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.world.level.LevelInfo;
 import net.minecraft.world.level.LevelProperties;
 
-@MixinInfo(events = {"ThunderChangeEvent","WeatherChangeEvent"})
+// @MixinInfo(events = {"ThunderChangeEvent","WeatherChangeEvent"})
 @Mixin(LevelProperties.class)
 public class MixinLevelProperties implements ILevelProperties {
 
@@ -52,6 +52,9 @@ public class MixinLevelProperties implements ILevelProperties {
 
     @Override
     public void checkName(String name) {
+    	if (!this.levelInfo.name.equals(name)) {
+    		this.levelInfo.name = name;
+    	}
     }
 
 }

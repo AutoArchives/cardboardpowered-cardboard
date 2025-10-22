@@ -19,7 +19,9 @@ import java.util.Queue;
 
 import org.bukkit.craftbukkit.CraftServer;
 
+import io.papermc.paper.world.PaperWorldLoader.WorldLoadingInfo;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.SaveLoading.LoadContextSupplierContext;
 // import net.minecraft.server.WorldGenerationProgressListener;
 // import net.minecraft.server.WorldGenerationProgressListenerFactory;
 import net.minecraft.server.command.CommandManager;
@@ -27,7 +29,9 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.world.PlayerSaveHandler;
 import net.minecraft.world.SaveProperties;
+import net.minecraft.world.dimension.DimensionOptions;
 import net.minecraft.world.gen.GeneratorOptions;
+import net.minecraft.world.level.LevelProperties;
 import net.minecraft.world.level.ServerWorldProperties;
 import net.minecraft.world.level.storage.LevelStorage.Session;
 
@@ -60,5 +64,22 @@ public interface IMixinMinecraftServer {
     Session getSessionBF();
 
     void cardboard_runOnMainThread(Runnable r);
+
+    /**
+     * @since 1.21.9
+     */
+	LoadContextSupplierContext cardboard$worldLoaderContext();
+
+	/**
+	 * Prepare Levels 1.21.9
+	 */
+	void cardboard$prepareLevel(ServerWorld serverLevel);
+
+	/**
+	 * @implNote Paper MinecraftServer.java.patch
+	 * @since 1.21.9
+	 */
+	void createLevel(DimensionOptions levelStem, WorldLoadingInfo loadingInfo, Session levelStorageAccess,
+			LevelProperties serverLevelData);
 
 }

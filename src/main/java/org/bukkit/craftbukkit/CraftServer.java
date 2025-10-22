@@ -158,7 +158,7 @@ import org.bukkit.inventory.*;
 import org.bukkit.loot.LootTable;
 import org.bukkit.map.MapView;
 import org.bukkit.metadata.MetadataStoreBase;
-import org.bukkit.packs.DataPackManager;
+// import org.bukkit.packs.DataPackManager;
 import org.bukkit.packs.ResourcePack;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.Permission;
@@ -254,7 +254,7 @@ import net.minecraft.world.PlayerSaveHandler;
 public class CraftServer implements Server {
 
     public final String serverName = "Cardboard";
-    public final String bukkitVersion = "1.21.8-R0.1-SNAPSHOT"; // "1.21.6-R0.1-SNAPSHOT"; // "1.21.1-R0.1-SNAPSHOT"; // "1.20.6-R0.1-SNAPSHOT"; // "1.19.4-R0.1-SNAPSHOT"; // "1.19.2-R0.1-SNAPSHOT";
+    public final String bukkitVersion = "1.21.9-R0.1-SNAPSHOT"; // "1.21.6-R0.1-SNAPSHOT"; // "1.21.1-R0.1-SNAPSHOT"; // "1.20.6-R0.1-SNAPSHOT"; // "1.19.4-R0.1-SNAPSHOT"; // "1.19.2-R0.1-SNAPSHOT";
     public final String serverVersion;
     public final String shortVersion;
 
@@ -2366,8 +2366,9 @@ public class CraftServer implements Server {
 		return false;
 	}
 
-	@Override
-	public @NotNull DataPackManager getDataPackManager() {
+	// @Override
+	@Deprecated(forRemoval = true)
+	public @NotNull CraftDataPackManager getDataPackManager() {
         return this.dataPackManager;
 	}
 
@@ -2621,6 +2622,18 @@ public class CraftServer implements Server {
 	@Override
 	public boolean forcesDefaultGameMode() {
 		return CraftServer.console.getProperties().forceGameMode.get();
+	}
+
+	@Override
+	public @NotNull World getRespawnWorld() {
+		return this.console.getSpawnWorld().getWorld();
+	}
+
+	@Override
+	public void setRespawnWorld(@NotNull World world) {
+		// TODO Auto-generated method stub
+		// this.console.getOverworld().worldProperties.respawnDimension = ((CraftWorld)world).getHandle().getRegistryKey();
+	    this.console.refreshSpawnPoint();
 	}
     
     // public boolean isTickPaused() {

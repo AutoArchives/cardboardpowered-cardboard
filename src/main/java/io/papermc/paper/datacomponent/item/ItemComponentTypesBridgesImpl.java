@@ -4,6 +4,8 @@ import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.base.Preconditions;
 
 import io.papermc.paper.datacomponent.item.BlocksAttacks.Builder;
+import io.papermc.paper.datacomponent.item.ResolvableProfile.SkinPatch;
+import io.papermc.paper.datacomponent.item.ResolvableProfile.SkinPatchBuilder;
 import io.papermc.paper.registry.PaperRegistries;
 import io.papermc.paper.registry.set.PaperRegistrySets;
 import io.papermc.paper.registry.set.RegistryKeySet;
@@ -255,5 +257,15 @@ public final class ItemComponentTypesBridgesImpl implements ItemComponentTypesBr
 	@Override
 	public io.papermc.paper.datacomponent.item.Weapon.Builder weapon() {
 		return new PaperWeapon.BuilderImpl();
+	}
+
+	@Override
+	public SkinPatchBuilder skinPatch() {
+		return new PaperResolvableProfile.SkinPatchBuilderImpl();
+	}
+
+	@Override
+	public SkinPatch emptySkinPatch() {
+		return new PaperResolvableProfile.PaperSkinPatch(null, null, null, null);
 	}
 }

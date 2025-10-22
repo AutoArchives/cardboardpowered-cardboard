@@ -12,10 +12,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.mojang.authlib.GameProfile;
-
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.network.packet.c2s.config.ReadyC2SPacket;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerConfigurationNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -31,9 +30,9 @@ public class MixinServerConfigurationNetworkHandler implements INetworkConfigura
 	private SyncedClientOptions syncedOptions;
 	
 	@Redirect(at = @At(value = "INVOKE",
-	         target = "Lnet/minecraft/server/PlayerManager;checkCanJoin(Ljava/net/SocketAddress;Lcom/mojang/authlib/GameProfile;)Lnet/minecraft/text/Text;"),
+	         target = "Lnet/minecraft/server/PlayerManager;checkCanJoin(Ljava/net/SocketAddress;Lnet/minecraft/server/PlayerConfigEntry;)Lnet/minecraft/text/Text;"),
 	         method = "onReady(Lnet/minecraft/network/packet/c2s/config/ReadyC2SPacket;)V")
-	public Text cardboard$onReady_checkCanJoin_redirect(PlayerManager man, SocketAddress a, GameProfile b) {
+	public Text cardboard$onReady_checkCanJoin_redirect(PlayerManager man, SocketAddress a, PlayerConfigEntry b) {
 		// Cardboard: Let's take over vanilla player creation.
 		// TODO: check on CraftEventFactory.handleLoginResult(
 		return null;
@@ -41,7 +40,7 @@ public class MixinServerConfigurationNetworkHandler implements INetworkConfigura
 	
 	@Inject(at = @At(
 			value = "INVOKE",
-			target = "Lnet/minecraft/server/PlayerManager;checkCanJoin(Ljava/net/SocketAddress;Lcom/mojang/authlib/GameProfile;)Lnet/minecraft/text/Text;",
+			target = "Lnet/minecraft/server/PlayerManager;checkCanJoin(Ljava/net/SocketAddress;Lnet/minecraft/server/PlayerConfigEntry;)Lnet/minecraft/text/Text;",
 			shift = At.Shift.AFTER
 			),
 			method = "onReady(Lnet/minecraft/network/packet/c2s/config/ReadyC2SPacket;)V", cancellable = true)

@@ -27,6 +27,8 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ProgressListener;
 import net.minecraft.util.math.random.RandomSequencesState;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.ChunkLoadProgress;
+import net.minecraft.world.chunk.LoggingChunkLoadProgress;
 import net.minecraft.world.dimension.DimensionOptions;
 import net.minecraft.world.entity.EntityLookup;
 import net.minecraft.world.level.LevelProperties;
@@ -47,6 +49,7 @@ public class MixinServerWorld extends MixinWorld implements IServerWorld {
 
 	private LevelStorage.Session cardboard$session;
 	private UUID cardboard$uuid;
+	private ChunkLoadProgress cardboard$levelLoadListener;
 
 	@Inject(method = "<init>", at = @At(value = "RETURN"))
     private void banner$initWorldServer(
@@ -65,7 +68,9 @@ public class MixinServerWorld extends MixinWorld implements IServerWorld {
 
         this.cardboard$session = convertable_conversionsession;
         this.cardboard$uuid = Utils.getWorldUUID(cardboard$session.getWorldDirectory(((ServerWorld)(Object)this).getRegistryKey()).toFile());
-
+        
+        // TODO: add ServerWorld argument to LoggingChunkLoadProgress constructor
+        this.cardboard$levelLoadListener = new LoggingChunkLoadProgress(false);
     }
 
     @Inject(at = @At("HEAD"), method = "save")
@@ -110,6 +115,11 @@ public class MixinServerWorld extends MixinWorld implements IServerWorld {
 	@Override
 	public UUID cardboard$get_uuid() {
 		return this.cardboard$uuid;
+	}
+	
+	@Override
+	public ChunkLoadProgress cardboard$levelLoadListener() {
+		return cardboard$levelLoadListener;
 	}
 
     /**

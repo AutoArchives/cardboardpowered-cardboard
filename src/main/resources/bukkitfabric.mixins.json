@@ -11,6 +11,7 @@
     "MixinDedicatedServer",
     "MixinExplosion",
     "MixinFrostWalkerEnchantment",
+    "MixinMain",
     "MixinMapState",
     "MixinMCServer",
     "MixinMinecraftServer",
@@ -208,6 +209,8 @@
     "world.MixinWorldBorder",
     "world.MixinWorldChunk",
     "world.MixinWorldSaveHandler",
+    "world.MixinLevelStorage",
+    "world.MixinLevelStorageSession",
     "MixinMaterial"
   ],
   "injectors": {

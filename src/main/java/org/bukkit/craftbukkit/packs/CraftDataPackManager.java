@@ -20,13 +20,17 @@ import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.craftbukkit.packs.CraftDataPack;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemType;
-import org.bukkit.packs.DataPack;
-import org.bukkit.packs.DataPackManager;
+// import org.bukkit.packs.DataPack;
+// import org.bukkit.packs.DataPackManager;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftDataPackManager
-implements DataPackManager {
+/**
+ * Removed in Paper 1.21.9+
+ */
+@Deprecated
+public class CraftDataPackManager /* implements DataPackManager */ {
+
     private final ResourcePackManager handle;
 
     public CraftDataPackManager(ResourcePackManager resourcePackRepository) {
@@ -37,18 +41,18 @@ implements DataPackManager {
         return this.handle;
     }
 
-    public Collection<DataPack> getDataPacks() {
+    public Collection<CraftDataPack> getDataPacks() {
         this.getHandle().scanPacks();
         Collection<ResourcePackProfile> availablePacks = this.getHandle().getProfiles();
         return availablePacks.stream().map(CraftDataPack::new).collect(Collectors.toUnmodifiableList());
     }
 
-    public DataPack getDataPack(NamespacedKey namespacedKey) {
+    public CraftDataPack getDataPack(NamespacedKey namespacedKey) {
         Preconditions.checkArgument((namespacedKey != null ? 1 : 0) != 0, (Object)"namespacedKey cannot be null");
         return new CraftDataPack(this.getHandle().getProfile(namespacedKey.getKey()));
     }
 
-    public Collection<DataPack> getEnabledDataPacks(World world) {
+    public Collection<CraftDataPack> getEnabledDataPacks(World world) {
         Preconditions.checkArgument((world != null ? 1 : 0) != 0, (Object)"world cannot be null");
         CraftWorld craftWorld = (CraftWorld)world;
         return ((LevelProperties)craftWorld.getHandle().worldProperties).getDataConfiguration().dataPacks().getEnabled().stream().map(packName -> {
@@ -60,7 +64,7 @@ implements DataPackManager {
         }).filter(Objects::nonNull).collect(Collectors.toUnmodifiableList());
     }
 
-    public Collection<DataPack> getDisabledDataPacks(World world) {
+    public Collection<CraftDataPack> getDisabledDataPacks(World world) {
         Preconditions.checkArgument((world != null ? 1 : 0) != 0, (Object)"world cannot be null");
         CraftWorld craftWorld = (CraftWorld)world;
 
@@ -98,13 +102,13 @@ implements DataPackManager {
 
     // 1.20.6 API
     
-	@Override
+	// @Override
 	public boolean isEnabledByFeature(@NotNull ItemType itemType, @NotNull World world) {
 		// TODO Auto-generated method stub
         return CraftItemType.bukkitToMinecraftNew((ItemType)itemType.typed()).isEnabled( ((CraftWorld)world) .getHandle().getEnabledFeatures());
 	}
 
-	@Override
+	// @Override
 	public boolean isEnabledByFeature(@NotNull BlockType blockType, @NotNull World world) {
 		CraftWorld craftWorld = (CraftWorld)world;
 		return CraftBlockType.bukkitToMinecraftNew((BlockType)blockType.typed()).isEnabled(craftWorld.getHandle().getEnabledFeatures());
