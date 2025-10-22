@@ -23,6 +23,7 @@ import net.minecraft.util.Uuids;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.profile.CraftPlayerTextures;
 import org.bukkit.profile.PlayerTextures;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.jetbrains.annotations.NotNull;
@@ -55,7 +56,7 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
     }
 
     public CraftPlayerProfile(UUID id, String name) {
-        this.profile = new GameProfile(id, name);
+    	this.profile = createAuthLibProfile(id, name);
         this.emptyName = name == null;
         this.emptyUUID = id == null;
     }
@@ -73,6 +74,16 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
 	      this(resolvableProfile.get().map(GameProfile::id, p -> p.id().orElse(null)), resolvableProfile.get().map(GameProfile::name, p -> p.name().orElse(null)));
 	      copyProfileProperties(resolvableProfile.getGameProfile(), this.profile);
 	}
+	
+	private static GameProfile createAuthLibProfile(UUID uniqueId, String name) {
+        // Preconditions.checkArgument(name == null || name.length() <= 16, "Name cannot be longer than 16 characters");
+        // Preconditions.checkArgument(name == null || StringUtil.isValidPlayerName(name), "The name of the profile contains invalid characters: %s", name);
+        return new GameProfile(
+            uniqueId != null ? uniqueId : Util.NIL_UUID,
+            name != null ? name : "",
+            new MutablePropertyMap()
+        );
+    }
 
 	@Override
     public boolean hasProperty(String property) {
@@ -99,7 +110,7 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
     @Override
     public UUID setId(UUID uuid) {
         GameProfile prev = this.profile;
-        this.profile = new GameProfile(uuid, prev.name());
+        this.profile = createAuthLibProfile(uuid, prev.name());
         copyProfileProperties(prev, this.profile);
         return prev.id();
     }
@@ -112,7 +123,7 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
     @Override
     public String setName(String name) {
         GameProfile prev = this.profile;
-        this.profile = new GameProfile(prev.id(), name);
+        this.profile = createAuthLibProfile(prev.id(), name);
         copyProfileProperties(prev, this.profile);
         return prev.name();
     }
@@ -455,16 +466,21 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
         }
         return map;
     }
+
 	@Override
 	public @NotNull PlayerTextures getTextures() {
-		// TODO Auto-generated method stub
-		return null;
+		return new CraftPlayerTextures(this);
 	}
 
 	@Override
-	public void setTextures(@Nullable PlayerTextures arg0) {
-		// TODO Auto-generated method stub
-		
+	public void setTextures(@Nullable PlayerTextures textures) {
+		if (textures == null) {
+			this.removeProperty("textures");
+		} else {
+			CraftPlayerTextures craftPlayerTextures = new CraftPlayerTextures(this);
+			craftPlayerTextures.copyFrom(textures);
+			craftPlayerTextures.rebuildPropertyIfDirty();
+		}
 	}
 
     public GameProfile buildGameProfile() {

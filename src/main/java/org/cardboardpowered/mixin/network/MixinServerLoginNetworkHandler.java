@@ -246,7 +246,7 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 	                       return;
 	                    }
 
-	                    fireEvents();
+	                    // fireEvents(gameProfile);
 	                    
 	                    gameProfile = callPlayerPreLoginEvents(gameProfile);
 	                    LOGGER_BF.info("UUID of player {} is {}", gameProfile.name(), gameProfile.id());
@@ -357,7 +357,7 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 	      }
 	   }
 	
-	public void fireEvents() throws Exception {
+	public void fireEvents(GameProfile profile) throws Exception {
 		String playerName = profile.name();
 		java.net.InetAddress address;
 		if(connection.getAddress() instanceof LocalAddress) {
@@ -579,7 +579,7 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 				public void run() {
 					try {
 						initUUID();
-						fireEvents();
+						fireEvents(profile);
 					} catch(Exception ex) {
 						disconnect("Failed to verify username!");
 						CraftServer.INSTANCE.getLogger()
