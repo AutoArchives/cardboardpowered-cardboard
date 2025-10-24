@@ -32,6 +32,7 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockCookEvent;
+import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.cardboardpowered.api.event.CardboardEventManager;
 import org.cardboardpowered.impl.entity.CraftPlayer;
@@ -48,6 +49,7 @@ import me.isaiah.common.event.block.BlockEntityWriteNbtEvent;
 import me.isaiah.common.event.block.LeavesDecayEvent;
 import me.isaiah.common.event.entity.BlockEntityLoadEvent;
 import me.isaiah.common.event.entity.CampfireBlockEntityCookEvent;
+import me.isaiah.common.event.entity.EntityPortalCollideEvent;
 import me.isaiah.common.event.entity.player.PlayerGamemodeChangeEvent;
 import me.isaiah.common.event.entity.player.ServerPlayerInitEvent;
 import me.isaiah.common.event.server.ServerWorldInitEvent;
@@ -56,6 +58,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.block.LeavesBlock;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -69,6 +72,7 @@ import net.minecraft.world.level.ServerWorldProperties;
  * 
  * @author isaiah
  */
+@SuppressWarnings({ "removal", "deprecation" })
 public class CardboardMod implements ModInitializer {
 
     public static Logger LOGGER = BukkitLogger.getLogger(); 
@@ -240,7 +244,9 @@ public class CardboardMod implements ModInitializer {
             tag.put("PublicBukkitValues", persistentDataContainer.toTagCompound());
     }
 
-    @SuppressWarnings({ "removal", "deprecation" })
+    /**
+     * iCommonLib CampfireBlockEntityCookEvent -> Bukkit BlockCookEvent
+     */
 	@EventHandler
     public void onCampfireCook(CampfireBlockEntityCookEvent ev) {
         Object[] ob = ev.getMcObjects();
@@ -262,6 +268,21 @@ public class CardboardMod implements ModInitializer {
 
         result = blockCookEvent.getResult();
         ev.setResult( CraftItemStack.asNMSCopy(result) );
+    }
+
+    /**
+     * iCommonLib EntityPortalCollideEvent -> Bukkit EntityPortalEnterEvent
+     */
+    @EventHandler
+    public void onNetherPortalEnter(EntityPortalCollideEvent ev) {
+    	Entity entity = ev.getEntity();
+    	BlockPos pos = ev.getBlockPos();
+    	World world = ev.getEntity().getEntityWorld(); // TODO: should we add EntityPortalCollideEvent.getWorld() ?
+
+    	if (!entity.hasVehicle() && !entity.hasPassengers() && entity.canUsePortals(true)) {
+            EntityPortalEnterEvent event = new EntityPortalEnterEvent(((IMixinEntity)entity).getBukkitEntity(), new org.bukkit.Location(((IMixinWorld)world).getCraftWorld(), pos.getX(), pos.getY(), pos.getZ()));
+            Bukkit.getPluginManager().callEvent(event);
+        }
     }
 
 }

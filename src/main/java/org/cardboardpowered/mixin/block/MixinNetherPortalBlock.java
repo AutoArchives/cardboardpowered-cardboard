@@ -18,10 +18,15 @@ import net.minecraft.entity.EntityCollisionHandler;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+/**
+ * 1.21.10 Note: now uses iCommonLib API
+ * I forgot about this in 1.21.9
+ */
 @MixinInfo(events = {"EntityPortalEnterEvent"})
 @Mixin(NetherPortalBlock.class)
 public class MixinNetherPortalBlock {
 
+	/*
     @Inject(at = @At("HEAD"), method = "onEntityCollision")
     public void callBukkitEvent(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler ech, CallbackInfo ci) {
         if (!entity.hasVehicle() && !entity.hasPassengers() && entity.canUsePortals(true)) {
@@ -29,5 +34,6 @@ public class MixinNetherPortalBlock {
             Bukkit.getPluginManager().callEvent(event);
         }
     }
+    */
 
 }

@@ -18,8 +18,22 @@ public class MixinLilyPadBlock {
 
 	// TODO: EntityInsideBlockEvent
 	
-    @Inject(method = "onEntityCollision", cancellable = true, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;breakBlock(Lnet/minecraft/util/math/BlockPos;ZLnet/minecraft/entity/Entity;)Z"))
-    public void entityChangeBlock(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler ech, CallbackInfo ci) {
+	/*
+    @Inject(
+    		method = "onEntityCollision", cancellable = true, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;breakBlock(Lnet/minecraft/util/math/BlockPos;ZLnet/minecraft/entity/Entity;)Z"),
+    		require = 0 
+    )
+    public void entityChangeBlock_1_21_9(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler ech, CallbackInfo ci) {
+        if (CraftEventFactory.callEntityChangeBlockEvent(entity, pos, Blocks.AIR.getDefaultState()).isCancelled()) {
+            ci.cancel();
+        }
+    }
+    */
+    
+    @Inject(
+    		method = "onEntityCollision", cancellable = true, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;breakBlock(Lnet/minecraft/util/math/BlockPos;ZLnet/minecraft/entity/Entity;)Z")
+    )
+    public void entityChangeBlock_1_21_10(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler ech, boolean b, CallbackInfo ci) {
         if (CraftEventFactory.callEntityChangeBlockEvent(entity, pos, Blocks.AIR.getDefaultState()).isCancelled()) {
             ci.cancel();
         }
