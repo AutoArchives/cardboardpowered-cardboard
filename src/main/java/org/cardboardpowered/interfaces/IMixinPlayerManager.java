@@ -20,15 +20,18 @@ package org.cardboardpowered.interfaces;
 
 import org.bukkit.Location;
 import org.bukkit.event.player.PlayerRespawnEvent.RespawnReason;
+import org.cardboardpowered.extras.PlayerManager_LoginResult;
 
 import com.mojang.authlib.GameProfile;
 
 import net.minecraft.entity.Entity.RemovalReason;
 import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.scoreboard.ServerScoreboard;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.network.ServerLoginNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 
 public interface IMixinPlayerManager {
 
@@ -48,5 +51,10 @@ public interface IMixinPlayerManager {
      */
 	ServerPlayerEntity respawn(ServerPlayerEntity player, boolean keepInventory, RemovalReason reason,
 			RespawnReason eventReason, Location location);
+
+	/**
+	 * paper login api
+	 */
+	PlayerManager_LoginResult cardboard$canPlayerLogin(Text vanilla, PlayerConfigEntry nameAndId);
 
 }

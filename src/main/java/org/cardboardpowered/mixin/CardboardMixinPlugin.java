@@ -92,12 +92,17 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         // TODO: Keep Adventure version in check
         String adventureVersion = "4.25.0";
 
+        // Paper Loves kyori
         libraries.add( new Library("net.kyori", "adventure-api", adventureVersion, SHA1, "6bd10494eeb2f8eadce7226db4445e8728985cbb", null) );
         libraries.add( new Library("net.kyori", "adventure-key", adventureVersion, SHA1, "eadeff9eeaa46f76de3f31fdff1d8e952273cf04", null) );
         libraries.add( new Library("net.kyori", "adventure-text-serializer-gson", adventureVersion, SHA1, "e312e240fe82f4207ff2232b33ee4433855bdfff", null) );
+        libraries.add( new Library("net.kyori", "adventure-text-serializer-json", adventureVersion, SHA1, "ff6b4381dd8be9a40a1127937a4b71b9b010fcd6", null) );
+        libraries.add( new Library("net.kyori", "adventure-text-serializer-commons", adventureVersion, SHA1, "58708c96ea4292800f08360ca1ce8a31ef0cdf97", null) );
         libraries.add( new Library("net.kyori", "adventure-text-serializer-legacy", adventureVersion, SHA1, "b12eaaac78d2534b9b1556049a8d95a046b0812d", null) );
         libraries.add( new Library("net.kyori", "adventure-text-serializer-plain", adventureVersion, SHA1, "82f5d4188f3cb6da9654b4ceea8b4093af5f1243", null) );
         libraries.add( new Library("net.kyori", "adventure-text-minimessage", adventureVersion, SHA1, "38f8f778c92f1ea848f79f992c99c4b98f96f23b", null) );
+        libraries.add( new Library("net.kyori", "option", "1.1.0", SHA1, "593fecb9c42688eebc7d8da5d6ea127f4d4c92a2", null) );
+
 
         if (mcver.contains("1.17")) {
             libraries.add( new Library("org.jline", "jline", "3.19.0", SHA1, "27edf6497c4fac20b63ca4cd8788581ca86cb83e", null) );

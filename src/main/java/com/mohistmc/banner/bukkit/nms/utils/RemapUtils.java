@@ -13,17 +13,9 @@ import com.mohistmc.banner.bukkit.nms.remappers.ReflectRemapper;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.MappingResolver;
-import net.md_5.specialsource.InheritanceMap;
 import net.md_5.specialsource.provider.JointProvider;
-import net.minecraft.util.Identifier;
-import net.techcable.srglib.JavaType;
-import net.techcable.srglib.MethodSignature;
-
 import org.cardboardpowered.CardboardConfig;
-import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.util.nms.MappingsReader;
-import org.cardboardpowered.util.nms.ReflectionMethodVisitor;
-import org.cardboardpowered.util.nms.ReflectionRemapper;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
@@ -44,7 +36,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -61,7 +52,7 @@ public class RemapUtils {
     
     public static boolean DEBUG_VERBOSE_CALLS = true;
 
-    public static String NMS_VERSION = "v1_21_R5"; // "v1_21_R3"; // "v1_20_R4";
+    public static String NMS_VERSION = "v1_21_R6"; // "v1_21_R3"; // "v1_20_R4";
     
     public static File exportResource(String res, File folder) {
         try (InputStream stream = MappingsReader.class.getClassLoader().getResourceAsStream("mappings/" + res)) {
@@ -125,7 +116,7 @@ public class RemapUtils {
         
         // File f = exportResource("bukkit-1.20.4-cl-intermed.csrg", dir);
         
-        String bukkit_cl_srg = "bukkit-1.21.8-cl.csrg";
+        String bukkit_cl_srg = "bukkit-1.21.10-cl.csrg";
         File bukkit_class_mappings_file = exportResource(bukkit_cl_srg, dir);
         
         jarMapping.classes.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/CraftWorld", "org/cardboardpowered/impl/world/CraftWorld");

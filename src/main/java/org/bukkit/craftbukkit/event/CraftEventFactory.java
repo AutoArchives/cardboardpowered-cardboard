@@ -19,7 +19,10 @@
 package org.bukkit.craftbukkit.event;
 
 import com.google.common.collect.Lists;
+import com.mojang.authlib.GameProfile;
+
 import org.cardboardpowered.CardboardMod;
+import org.cardboardpowered.extras.PlayerManager_LoginResult;
 import org.cardboardpowered.BukkitLogger;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinInventory;
@@ -29,7 +32,11 @@ import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinScreenHandler;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import org.cardboardpowered.interfaces.IMixinWorld;
+
+import io.papermc.paper.adventure.PaperAdventure;
+import io.papermc.paper.connection.PlayerConnection;
 import io.papermc.paper.event.block.BellRingEvent;
+import io.papermc.paper.event.connection.PlayerConnectionValidateLoginEvent;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ExperienceOrbEntity;
@@ -47,12 +54,15 @@ import net.minecraft.item.Items;
 import net.minecraft.loot.LootTable;
 import net.minecraft.loot.context.LootContext;
 import net.minecraft.loot.context.LootContextParameters;
+import net.minecraft.network.ClientConnection;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
@@ -897,6 +907,44 @@ public class CraftEventFactory {
         PlayerSignOpenEvent event = new PlayerSignOpenEvent(player, sign, side, cause);
         Bukkit.getPluginManager().callEvent((Event)event);
         return !event.isCancelled();
+    }
+
+    public static Text handleLoginResult(
+    		PlayerManager_LoginResult result, PlayerConnection paperConnection, ClientConnection connection, GameProfile profile, MinecraftServer server, boolean loginPhase
+    		) {
+    	PlayerConnectionValidateLoginEvent event = new PlayerConnectionValidateLoginEvent(
+    			paperConnection, result.isAllowed() ? null : PaperAdventure.asAdventure(result.message())
+    			);
+    	event.callEvent();
+    	
+    	if (null == event.getKickMessage()) {
+    		return null;
+    	}
+    	
+    	Text disconnectReason = PaperAdventure.asVanilla(event.getKickMessage());
+    	
+    	// TODO: Move new PlayerLoginEvent Here!
+    	
+    	/*
+    	if (loginPhase) {
+    		disconnectReason = HorriblePlayerLoginEventHack.execute(
+    				connection,
+    				server,
+    				profile,
+    				disconnectReason == null
+    				? PlayerManager_LoginResult.ALLOW
+    						: new PlayerManager_LoginResult(disconnectReason, disconnectReason == null ? org.bukkit.event.player.PlayerLoginEvent.Result.KICK_OTHER : result.result())
+    				);
+    	}
+    	*/
+    	
+    	/*
+    	else if (connection.legacySavedLoginEventResultOverride != null) {
+    		disconnectReason = connection.legacySavedLoginEventResultOverride.orElse(null);
+    	}
+    	*/
+
+    	return disconnectReason;
     }
 
 }

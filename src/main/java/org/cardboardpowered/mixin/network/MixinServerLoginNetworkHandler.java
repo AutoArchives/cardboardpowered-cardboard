@@ -1,5 +1,6 @@
 package org.cardboardpowered.mixin.network;
 
+import org.cardboardpowered.extras.PlayerManager_LoginResult;
 import org.cardboardpowered.interfaces.IMixinClientConnection;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinPlayerManager;
@@ -28,6 +29,7 @@ import net.minecraft.network.packet.s2c.login.LoginDisconnectS2CPacket;
 import net.minecraft.network.packet.s2c.login.LoginSuccessS2CPacket;
 import net.minecraft.network.state.ConfigurationStates;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerConfigurationNetworkHandler;
@@ -44,6 +46,7 @@ import org.apache.logging.log4j.LogManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.util.Waitable;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerPreLoginEvent;
@@ -68,6 +71,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import io.papermc.paper.connection.PaperPlayerLoginConnection;
 
 @SuppressWarnings("deprecation")
 @Mixin(value = ServerLoginNetworkHandler.class, priority = 999)
@@ -103,6 +107,35 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 	
 	// Cardboard: field added by bukkit
 	private ServerPlayerEntity player;
+	public UUID requestedUuid;
+	private PaperPlayerLoginConnection paperLoginConnection1;
+	
+	private PaperPlayerLoginConnection paperLoginConnection() {
+		if (null == paperLoginConnection1) {
+			this.paperLoginConnection1 = new PaperPlayerLoginConnection((ServerLoginNetworkHandler) (Object) this);
+		}
+		return this.paperLoginConnection1;
+	}
+	
+	@Inject(at = @At("HEAD"), method = "onHello")
+	public void cardboard$setRequestedUuid(LoginHelloC2SPacket packet, CallbackInfo ci) {
+		this.requestedUuid = packet.profileId();
+	}
+	
+	@Override
+	public UUID cardboard$requestedUuid() {
+		return this.requestedUuid;
+	}
+	
+	@Override
+	public String cardboard$profileName() {
+		return this.profileName;
+	}
+	
+	@Override
+	public boolean cardboard$transferred() {
+		return this.transferred;
+	}
 
 	//@Shadow
 	// private PlayerPublicKey.PublicKeyData publicKeyData;
@@ -444,11 +477,22 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 	@Overwrite
     private void tickVerify(GameProfile profile) {
         PlayerManager playerManager = this.server.getPlayerManager();
-        Text text = null; // playerManager.checkCanJoin(this.connection.getAddress(), profile);
         
+        Text text = playerManager.checkCanJoin(this.connection.getAddress(), new PlayerConfigEntry(profile));
+
         IMixinPlayerManager pm = ((IMixinPlayerManager) this.server.getPlayerManager());
-        ServerPlayerEntity s = pm.attemptLogin((ServerLoginNetworkHandler) (Object) this, this.profile, null, hostname);
+
+        PlayerManager_LoginResult paperizedResult = pm.cardboard$canPlayerLogin(text, new PlayerConfigEntry(profile));
+        text = CraftEventFactory.handleLoginResult(
+        		paperizedResult,
+                this.paperLoginConnection(),
+                this.connection,
+                profile,
+                this.server,
+                true
+        );
         
+        ServerPlayerEntity s = pm.attemptLogin((ServerLoginNetworkHandler) (Object) this, this.profile, null, hostname);
         this.cardboard_player = s;
         this.player = s;
         

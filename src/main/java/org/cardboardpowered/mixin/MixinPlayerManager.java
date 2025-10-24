@@ -39,6 +39,8 @@ import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.BannedIpEntry;
+import net.minecraft.server.BannedPlayerEntry;
+import net.minecraft.server.BannedPlayerList;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerLoginNetworkHandler;
@@ -83,6 +85,7 @@ import org.bukkit.event.player.PlayerRespawnEvent.RespawnReason;
 import org.cardboardpowered.CardboardConfig;
 import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.ChunkTicketBridge;
+import org.cardboardpowered.extras.PlayerManager_LoginResult;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
@@ -129,6 +132,9 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
 
     @Shadow
     public Map<UUID, ServerPlayerEntity> playerMap;
+    
+    @Shadow
+    private BannedPlayerList bannedProfiles;
 
     // ServerPlayerEntity.forceSetPositionRotation
     public void Player_forceSetPositionRotation(ServerPlayerEntity p, double x, double y, double z, float yaw, float pitch) {
@@ -795,6 +801,20 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
 
             return serverPlayer;
         }
+    }
+    
+    @Override
+    public PlayerManager_LoginResult cardboard$canPlayerLogin(Text vanilla, PlayerConfigEntry nameAndId) {
+    	if (null == vanilla) {
+    		return PlayerManager_LoginResult.ALLOW;
+    	}
+
+    	BannedPlayerEntry userBanListEntry;
+    	if (this.bannedProfiles.contains(nameAndId) && (userBanListEntry = this.bannedProfiles.get(nameAndId)) != null) {
+    		return new PlayerManager_LoginResult(vanilla, PlayerLoginEvent.Result.KICK_BANNED);
+    	}
+    	
+    	return new PlayerManager_LoginResult(vanilla, PlayerLoginEvent.Result.KICK_OTHER);
     }
     
     /**
