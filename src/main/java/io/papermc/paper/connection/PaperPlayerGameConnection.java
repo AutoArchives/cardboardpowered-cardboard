@@ -45,7 +45,12 @@ public class PaperPlayerGameConnection extends PaperCommonConnection<ServerPlayN
     }
 
     public Set<String> getListeningPluginChannels() {
-        return this.getPlayer().getListeningPluginChannels();
+    	return this.getPlayer().getListeningPluginChannels();
     }
+
+	@Override
+	public boolean isConnected() {
+		return getPlayer().isConnected();
+	}
 
 }

@@ -132,8 +132,11 @@ public abstract class MixinSPNH_PlayerCommandPreprocessEvent implements IMixinPl
 	}
 
 	@Shadow @Final private MessageChainTaskQueue messageChainTaskQueue;
+	
+	/*
 	public CraftPlayer getPlayer() {
 		return (CraftPlayer) ((IMixinServerEntityPlayer) (Object) this.player).getBukkitEntity();
 	}
+	*/
 
 }

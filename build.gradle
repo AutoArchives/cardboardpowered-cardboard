@@ -64,8 +64,11 @@ configurations.all {
 // def PAPER_VER_A = "1.21.8-R0.1-SNAPSHOT"
 // def PAPER_VER_B = "1.21.8-R0.1-20250906.215025-55"
 
-def PAPER_VER_A = "1.21.9-R0.1-SNAPSHOT"
-def PAPER_VER_B = "1.21.9-R0.1-20251007.115206-20"
+// def PAPER_VER_A = "1.21.9-R0.1-SNAPSHOT"
+// def PAPER_VER_B = "1.21.9-R0.1-20251007.115206-20"
+
+def PAPER_VER_A = "1.21.10-R0.1-SNAPSHOT"
+def PAPER_VER_B = "1.21.10-R0.1-20251020.022259-22"
 
 def PAPER_API_VER = "io.papermc.paper:paper-api:" + PAPER_VER_B
 
@@ -136,6 +139,7 @@ dependencies {
     // modImplementation "com.javazilla.mods:permissions:1.1"
 
     // Remove parts that are included with Minecraft or Downloaded
+    
     removeLibs group: "com.google.guava", name: "guava", version: "21.0"
     removeLibs group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
     removeLibs group: 'org.apache.commons', name: 'commons-collections4', version: '4.2'

@@ -22,11 +22,8 @@ import org.cardboardpowered.CardboardMod;
 import org.bukkit.craftbukkit.scheduler.CraftScheduler;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinWorld;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import me.isaiah.common.cmixin.IMixinPersistentStateManager;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.command.DataCommandStorage;
-import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
@@ -38,18 +35,11 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 import net.minecraft.server.world.ChunkTicketManager;
-import net.minecraft.server.world.ChunkTicketType;
-import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Unit;
-import net.minecraft.util.Util;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.GlobalPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.random.RandomSequencesState;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
 import net.minecraft.village.ZombieSiegeManager;
 import net.minecraft.world.Difficulty;
@@ -65,8 +55,6 @@ import net.minecraft.world.chunk.ChunkLoadingCounter;
 import net.minecraft.world.dimension.DimensionOptions;
 import net.minecraft.world.dimension.DimensionTypes;
 import net.minecraft.world.gen.GeneratorOptions;
-import net.minecraft.world.gen.chunk.*;
-import net.minecraft.world.gen.*;
 import net.minecraft.world.level.LevelProperties;
 import net.minecraft.world.level.ServerWorldProperties;
 import net.minecraft.world.level.storage.LevelStorage;
@@ -83,34 +71,27 @@ import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldLoadEvent;
-import org.bukkit.generator.BiomeProvider;
 import org.bukkit.generator.WorldInfo;
 import org.cardboardpowered.interfaces.INetworkIo;
 import org.cardboardpowered.interfaces.IServerWorld;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-
 import com.google.common.collect.ImmutableList;
 
-import io.papermc.paper.configuration.GlobalConfiguration;
 import io.papermc.paper.world.PaperWorldLoader;
 
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
 
 @Mixin(value=MinecraftServer.class)
@@ -125,9 +106,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
 	}
 	
     @Shadow private long tickStartTimeNanos;
-    @Shadow @Final protected SaveProperties saveProperties;
-    // @Shadow public WorldGenerationProgressListenerFactory worldGenerationProgressListenerFactory;
-
+    @Shadow @Final @Mutable protected SaveProperties saveProperties;
     @Shadow public abstract ServerWorld getOverworld();
 
     @Shadow public abstract boolean save(boolean suppressLogs, boolean flush, boolean force);
@@ -136,17 +115,11 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         super(string);
     }
 
-   // @Shadow @Final public DynamicRegistryManager.Impl registryManager;
     @Shadow @Final public PlayerSaveHandler saveHandler;
-    // @Shadow @Final private static Logger LOGGER;
-    //@Shadow @Final public Executor workerExecutor;
-   // @Shadow @Final public WorldGenerationProgressListenerFactory worldGenerationProgressListenerFactory;
-
     @Shadow public Map<RegistryKey<net.minecraft.world.World>, ServerWorld> worlds;
-    @Shadow public MinecraftServer.ResourceManagerHolder resourceManagerHolder; // 1.18.1: serverResourceManager
+    @Shadow public MinecraftServer.ResourceManagerHolder resourceManagerHolder;
     @Shadow public LevelStorage.Session session;
     @Shadow public DataCommandStorage dataCommandStorage;
- //   @Shadow @Mutable SaveProperties saveProperties;
     @Shadow private int ticks;
 
     @Shadow public void initScoreboard(PersistentStateManager arg0) {}
@@ -172,7 +145,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     @Inject(at = @At("HEAD"), method = "getServerModName", remap=false, cancellable = true)
     public void getServerModName_cardboard(CallbackInfoReturnable<String> ci) {
         if (null != Bukkit.getServer())
-            ci.setReturnValue("Cardboard (PaperMC+Fabric)");
+            ci.setReturnValue("Cardboard (Paper+Fabric)");
     }
 
     @Override
@@ -185,13 +158,6 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         //getServer().upgradeWorld(name);
     }
 
-    /*
-    @Override
-    public WorldGenerationProgressListenerFactory getWorldGenerationProgressListenerFactory() {
-        return CraftServer.server.worldGenerationProgressListenerFactory;
-    }
-    */
-
     @Override
     public Queue<Runnable> getProcessQueue() {
         return processQueue;
@@ -199,9 +165,6 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
 
     @Override
     public CommandManager setCommandManager(CommandManager commandManager) {
-
-        // TODO: 1.18.2
-        
         return (this.resourceManagerHolder.dataPackContents().commandManager = commandManager);
     }
 
@@ -351,8 +314,9 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
                 } catch (Exception e) {
                 }
             }
-            if (moddedMaterials.size() > 0)
-                CardboardMod.LOGGER.info("Added Modded blocks/items to WorldEdit registry.");
+            if (moddedMaterials.size() > 0) {
+                CardboardMod.LOGGER.info("Added " + moddedMaterials.size() + "Modded blocks/items to WorldEdit registry.");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

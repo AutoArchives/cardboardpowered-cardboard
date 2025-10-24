@@ -12,6 +12,7 @@ package org.cardboardpowered.interfaces;
 import java.util.Set;
 
 import org.bukkit.Location;
+import org.cardboardpowered.impl.entity.CraftPlayer;
 
 import io.papermc.paper.connection.PlayerGameConnection;
 import net.minecraft.entity.EntityPosition;
@@ -33,5 +34,11 @@ public interface IMixinPlayNetworkHandler {
 	/**
 	 */
 	PlayerGameConnection cardboard$playerGameConnection();
+
+	/**
+	 * @return The CraftPlayer object for the Player of this network handler
+	 * @since 1.21.10 - moved getPlayer() to this interface
+	 */
+	CraftPlayer getPlayer();
 
 }

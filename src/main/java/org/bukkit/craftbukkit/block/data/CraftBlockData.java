@@ -687,170 +687,174 @@ public class CraftBlockData implements BlockData {
         return !state.isToolRequired() || nmsItem.isSuitableFor(state);
     }
 
-	@Override
-	public boolean isRandomlyTicked() {
-		return state.hasRandomTicks();
-	}
+    @Override
+    public boolean isRandomlyTicked() {
+    	return state.hasRandomTicks();
+    }
 
-	  @Override
-	    public boolean isSupported(org.bukkit.block.Block block) {
-	        Preconditions.checkArgument(block != null, "block must not be null");
+    public boolean isReplaceable() {
+    	return this.state.isReplaceable();
+    }
 
-	        CraftBlock craftBlock = (CraftBlock) block;
-	        return state.canPlaceAt(craftBlock.getCraftWorld().getHandle(), craftBlock.getPosition());
-	    }
+    @Override
+    public boolean isSupported(org.bukkit.block.Block block) {
+    	Preconditions.checkArgument(block != null, "block must not be null");
 
-	    @Override
-	    public boolean isSupported(Location location) {
-	        Preconditions.checkArgument(location != null, "location must not be null");
+    	CraftBlock craftBlock = (CraftBlock) block;
+    	return state.canPlaceAt(craftBlock.getCraftWorld().getHandle(), craftBlock.getPosition());
+    }
 
-	        CraftWorld world = (CraftWorld) location.getWorld();
-	        Preconditions.checkArgument(world != null, "location must not have a null world");
+    @Override
+    public boolean isSupported(Location location) {
+    	Preconditions.checkArgument(location != null, "location must not be null");
+
+    	CraftWorld world = (CraftWorld) location.getWorld();
+    	Preconditions.checkArgument(world != null, "location must not have a null world");
 
 
 
-	        BlockPos position = CraftLocation.toBlockPosition(location);
-	        return state.canPlaceAt(world.getHandle(), position);
-	    }
+    	BlockPos position = CraftLocation.toBlockPosition(location);
+    	return state.canPlaceAt(world.getHandle(), position);
+    }
 
-		@Override
-		public int getLightEmission() {
-			return this.state.getLuminance();
-		}
+    @Override
+    public int getLightEmission() {
+    	return this.state.getLuminance();
+    }
 
-		@Override
-	    public Material getPlacementMaterial() {
-	        return CraftMagicNumbers.getMaterial(this.state.getBlock().asItem());
-	    }
+    @Override
+    public Material getPlacementMaterial() {
+    	return CraftMagicNumbers.getMaterial(this.state.getBlock().asItem());
+    }
 
-		@Override
-	    public boolean isOccluding() {
-	        return this.state.isOpaque();
-	    }
+    @Override
+    public boolean isOccluding() {
+    	return this.state.isOpaque();
+    }
 
-		@Override
-	    public void mirror(Mirror mirror) {
-	        this.state = this.state.mirror(BlockMirror.valueOf(mirror.name()));
-	    }
+    @Override
+    public void mirror(Mirror mirror) {
+    	this.state = this.state.mirror(BlockMirror.valueOf(mirror.name()));
+    }
 
-		@Override
-	    public boolean requiresCorrectToolForDrops() {
-	        return this.state.isToolRequired();
-	    }
+    @Override
+    public boolean requiresCorrectToolForDrops() {
+    	return this.state.isToolRequired();
+    }
 
-		@Override
-	    public void rotate(StructureRotation rotation) {
-	        this.state = this.state.rotate(BlockRotation.valueOf(rotation.name()));
-	    }
+    @Override
+    public void rotate(StructureRotation rotation) {
+    	this.state = this.state.rotate(BlockRotation.valueOf(rotation.name()));
+    }
 
-		@Override
-	    public PistonMoveReaction getPistonMoveReaction() {
-	        return PistonMoveReaction.getById((int)this.state.getPistonBehavior().ordinal());
-	    }
+    @Override
+    public PistonMoveReaction getPistonMoveReaction() {
+    	return PistonMoveReaction.getById((int)this.state.getPistonBehavior().ordinal());
+    }
 
-		@Override
-		public org.bukkit.block.@NotNull BlockState createBlockState() {
-			return CraftBlockStates.getBlockState(this.state, null);
-		}
+    @Override
+    public org.bukkit.block.@NotNull BlockState createBlockState() {
+    	return CraftBlockStates.getBlockState(this.state, null);
+    }
 
-		@Override
-		public float getDestroySpeed(ItemStack itemStack, boolean considerEnchants) {
-	        net.minecraft.item.ItemStack nmsItemStack = CraftItemStack.unwrap(itemStack);
-	        float speed = nmsItemStack.getMiningSpeedMultiplier(this.state);
-	        if (speed > 1.0f && considerEnchants) {
-	            RegistryEntry<EntityAttribute> attribute = EntityAttributes.MINING_EFFICIENCY;
-	            double initialBaseValue = attribute.value().getDefaultValue();
-	            MutableDouble modifiedBaseValue = new MutableDouble(initialBaseValue);
-	            MutableDouble baseValMul = new MutableDouble(1.0);
-	            MutableDouble totalValMul = new MutableDouble(1.0);
-	            EnchantmentHelper.applyAttributeModifiers(nmsItemStack, EquipmentSlot.MAINHAND, (attributeHolder, attributeModifier) -> {
-	                switch (attributeModifier.operation()) {
-	                    case ADD_VALUE: {
-	                        modifiedBaseValue.add(attributeModifier.value());
-	                        break;
-	                    }
-	                    case ADD_MULTIPLIED_BASE: {
-	                        baseValMul.add(attributeModifier.value());
-	                        break;
-	                    }
-	                    case ADD_MULTIPLIED_TOTAL: {
-	                        totalValMul.setValue(totalValMul.doubleValue() * (1.0 + attributeModifier.value()));
-	                    }
-	                }
-	            });
-	            double actualModifier = modifiedBaseValue.doubleValue() * baseValMul.doubleValue() * totalValMul.doubleValue();
-	            speed += (float)attribute.value().clamp(actualModifier);
-	        }
-	        return speed;
-	    }
+    @Override
+    public float getDestroySpeed(ItemStack itemStack, boolean considerEnchants) {
+    	net.minecraft.item.ItemStack nmsItemStack = CraftItemStack.unwrap(itemStack);
+    	float speed = nmsItemStack.getMiningSpeedMultiplier(this.state);
+    	if (speed > 1.0f && considerEnchants) {
+    		RegistryEntry<EntityAttribute> attribute = EntityAttributes.MINING_EFFICIENCY;
+    		double initialBaseValue = attribute.value().getDefaultValue();
+    		MutableDouble modifiedBaseValue = new MutableDouble(initialBaseValue);
+    		MutableDouble baseValMul = new MutableDouble(1.0);
+    		MutableDouble totalValMul = new MutableDouble(1.0);
+    		EnchantmentHelper.applyAttributeModifiers(nmsItemStack, EquipmentSlot.MAINHAND, (attributeHolder, attributeModifier) -> {
+    			switch (attributeModifier.operation()) {
+    			case ADD_VALUE: {
+    				modifiedBaseValue.add(attributeModifier.value());
+    				break;
+    			}
+    			case ADD_MULTIPLIED_BASE: {
+    				baseValMul.add(attributeModifier.value());
+    				break;
+    			}
+    			case ADD_MULTIPLIED_TOTAL: {
+    				totalValMul.setValue(totalValMul.doubleValue() * (1.0 + attributeModifier.value()));
+    			}
+    			}
+    		});
+    		double actualModifier = modifiedBaseValue.doubleValue() * baseValMul.doubleValue() * totalValMul.doubleValue();
+    		speed += (float)attribute.value().clamp(actualModifier);
+    	}
+    	return speed;
+    }
 
-		// 1.20.2 API
-		@Override
-		public org.bukkit.util.VoxelShape getCollisionShape(Location location) {
-			Preconditions.checkArgument((location != null ? 1 : 0) != 0, "location must not be null");
-			CraftWorld world = (CraftWorld)location.getWorld();
-			Preconditions.checkArgument((world != null ? 1 : 0) != 0, "location must not have a null world");
-			BlockPos position = CraftLocation.toBlockPosition(location);
-			net.minecraft.util.shape.VoxelShape shape = this.state.getCollisionShape(world.getHandle(), position);
-			return new CraftVoxelShape(shape);
-		}
-		
-		// 1.20.4 API
+    // 1.20.2 API
+    @Override
+    public org.bukkit.util.VoxelShape getCollisionShape(Location location) {
+    	Preconditions.checkArgument((location != null ? 1 : 0) != 0, "location must not be null");
+    	CraftWorld world = (CraftWorld)location.getWorld();
+    	Preconditions.checkArgument((world != null ? 1 : 0) != 0, "location must not have a null world");
+    	BlockPos position = CraftLocation.toBlockPosition(location);
+    	net.minecraft.util.shape.VoxelShape shape = this.state.getCollisionShape(world.getHandle(), position);
+    	return new CraftVoxelShape(shape);
+    }
 
-		@Override
-		public @NotNull Color getMapColor() {
-	        return Color.fromRGB((int)this.state.getMapColor(null, null).color);
-		}
+    // 1.20.4 API
 
-		@Override
-		public void copyTo(@NotNull BlockData blockData) {
-	        CraftBlockData other = (CraftBlockData)blockData;
-	        net.minecraft.block.BlockState nms = other.state;
-	        for (Property<?> property : this.state.getBlock().getStateManager().getProperties()) {
-	            if (!nms.contains(property)) continue;
-	            nms = this.copyProperty(this.state, nms, property);
-	        }
-	        other.state = nms;
-		}
-		
-	    private <T extends Comparable<T>> net.minecraft.block.BlockState copyProperty(net.minecraft.block.BlockState source, net.minecraft.block.BlockState target, Property<T> property) {
-	        return (net.minecraft.block.BlockState)target.with(property, source.get(property));
-	    }
+    @Override
+    public @NotNull Color getMapColor() {
+    	return Color.fromRGB((int)this.state.getMapColor(null, null).color);
+    }
 
-		public static CraftBlockData newData(BlockType blockType, String data) {
-	        net.minecraft.block.Block block;
-	        if (blockType != null && (block = CraftBlockType.bukkitToMinecraftNew(blockType)) != null) {
-	            Identifier key = Registries.BLOCK.getId(block);
-	            data = data == null ? key.toString() : String.valueOf(key) + data;
-	        }
-	        CraftBlockData cached = stringDataCache.computeIfAbsent(data, s -> CraftBlockData.createNewData(null, s));
-	        return (CraftBlockData) cached.clone();
-		}
-		
-		private static CraftBlockData createNewData(BlockType blockType, String data) {
-	        net.minecraft.block.BlockState blockData;
-	        net.minecraft.block.Block block = blockType == null ? null : ((CraftBlockType)blockType).getHandle();
-	        Map<Property<?>, Comparable<?>> parsed = null;
-	        if (data != null) {
-	            try {
-	                if (block != null) {
-	                    data = String.valueOf(Registries.BLOCK.getId(block)) + (String)data;
-	                }
-	                StringReader reader = new StringReader((String)data);
-	                BlockArgumentParser.BlockResult arg = BlockArgumentParser.block(CraftRegistry.getMinecraftRegistry(RegistryKeys.BLOCK), reader, false);
-	                Preconditions.checkArgument((!reader.canRead() ? 1 : 0) != 0, (Object)("Spurious trailing data: " + (String)data));
-	                blockData = arg.blockState();
-	                parsed = arg.properties();
-	            }
-	            catch (CommandSyntaxException ex) {
-	                throw new IllegalArgumentException("Could not parse data: " + (String)data, ex);
-	            }
-	        } else {
-	            blockData = block.getDefaultState();
-	        }
-	        CraftBlockData craft = CraftBlockData.fromData(blockData);
-	        craft.parsedStates = parsed;
-	        return craft;
-	    }
+    @Override
+    public void copyTo(@NotNull BlockData blockData) {
+    	CraftBlockData other = (CraftBlockData)blockData;
+    	net.minecraft.block.BlockState nms = other.state;
+    	for (Property<?> property : this.state.getBlock().getStateManager().getProperties()) {
+    		if (!nms.contains(property)) continue;
+    		nms = this.copyProperty(this.state, nms, property);
+    	}
+    	other.state = nms;
+    }
+
+    private <T extends Comparable<T>> net.minecraft.block.BlockState copyProperty(net.minecraft.block.BlockState source, net.minecraft.block.BlockState target, Property<T> property) {
+    	return (net.minecraft.block.BlockState)target.with(property, source.get(property));
+    }
+
+    public static CraftBlockData newData(BlockType blockType, String data) {
+    	net.minecraft.block.Block block;
+    	if (blockType != null && (block = CraftBlockType.bukkitToMinecraftNew(blockType)) != null) {
+    		Identifier key = Registries.BLOCK.getId(block);
+    		data = data == null ? key.toString() : String.valueOf(key) + data;
+    	}
+    	CraftBlockData cached = stringDataCache.computeIfAbsent(data, s -> CraftBlockData.createNewData(null, s));
+    	return (CraftBlockData) cached.clone();
+    }
+
+    private static CraftBlockData createNewData(BlockType blockType, String data) {
+    	net.minecraft.block.BlockState blockData;
+    	net.minecraft.block.Block block = blockType == null ? null : ((CraftBlockType)blockType).getHandle();
+    	Map<Property<?>, Comparable<?>> parsed = null;
+    	if (data != null) {
+    		try {
+    			if (block != null) {
+    				data = String.valueOf(Registries.BLOCK.getId(block)) + (String)data;
+    			}
+    			StringReader reader = new StringReader((String)data);
+    			BlockArgumentParser.BlockResult arg = BlockArgumentParser.block(CraftRegistry.getMinecraftRegistry(RegistryKeys.BLOCK), reader, false);
+    			Preconditions.checkArgument((!reader.canRead() ? 1 : 0) != 0, (Object)("Spurious trailing data: " + (String)data));
+    			blockData = arg.blockState();
+    			parsed = arg.properties();
+    		}
+    		catch (CommandSyntaxException ex) {
+    			throw new IllegalArgumentException("Could not parse data: " + (String)data, ex);
+    		}
+    	} else {
+    		blockData = block.getDefaultState();
+    	}
+    	CraftBlockData craft = CraftBlockData.fromData(blockData);
+    	craft.parsedStates = parsed;
+    	return craft;
+    }
 
 }

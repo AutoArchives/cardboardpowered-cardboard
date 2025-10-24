@@ -175,6 +175,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
         CraftServer.server.submitAndJoin(im.cb_get_connection()::handleDisconnection);
     }
 
+    @Override
     public CraftPlayer getPlayer() {
         return (CraftPlayer) ((IMixinServerEntityPlayer)(Object)this.player).getBukkitEntity();
     }
