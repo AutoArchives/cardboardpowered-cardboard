@@ -23,19 +23,12 @@ public class KnotHelper {
     public static String ver_adventure = "";
 
     /**
-     * Add to class path in Fabric 0.12 or higher
+     * Modern Loader 0.17 / Quilt Support
      */
-    public static void fabric_modern_load(File file) {
+    public static void modern_load(File file) {
         try {
-            Class<?> l = Class.forName("net.fabricmc.loader.impl.launch.FabricLauncherBase");
-            Field instance = l.getDeclaredField("launcher");
-            instance.setAccessible(true);
-            Object lb = instance.get(null);
-            Class<?> lbc = lb.getClass();
-            Method m = lbc.getMethod("addToClassPath", Path.class, String[].class);
-
             if (!FabricLoader.getInstance().isDevelopmentEnvironment()) {
-                m.invoke(lb, file.toPath(), getPackages());
+            	net.fabricmc.loader.impl.launch.FabricLauncherBase.getLauncher().addToClassPath(file.toPath(), getPackages());
             }
 
             if (CardboardConfig.DEBUG_VERBOSE_CALLS) {
@@ -61,6 +54,10 @@ public class KnotHelper {
             e.printStackTrace();
             LOGGER.info("ERROR: Got " + e.getClass().getSimpleName() + " while accessing Fabric Loader.");
         }
+    }
+    
+    public static void fabric_modern_load(File file) {
+    	modern_load(file);
     }
 
     public static void propose(File file) throws MalformedURLException {
