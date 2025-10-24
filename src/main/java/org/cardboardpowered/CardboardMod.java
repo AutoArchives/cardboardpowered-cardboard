@@ -58,6 +58,7 @@ import net.minecraft.block.LeavesBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -131,6 +132,21 @@ public class CardboardMod implements ModInitializer {
     }
 
     public static void on_world_init_mc(ServerWorld nms) {
+    	// Check if Server is null
+    	if (null == CraftServer.INSTANCE) {
+    		MinecraftServer mc = nms.getServer();
+    		if (!mc.isDedicated()) {
+    			LOGGER.info("----------------------------------------");
+    			LOGGER.info("Cardboard currently only supports the Dedicated Server.");
+    			LOGGER.info("(Although Pull Requests to add support are Welcome :) )");
+    			LOGGER.info("Server will now shutdown");
+    			LOGGER.info("----------------------------------------");
+    			mc.stop(true);
+    		}
+    		return;
+    	}
+    	
+    	
         String name = ((ServerWorldProperties) nms.getLevelProperties()).getLevelName();
 
         File fi = new File(name + "_the_end");
