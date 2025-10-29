@@ -339,6 +339,23 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         	}
         }
         
+        /*
+        if (owner.contains("Logger") && name.contains("getLogger")) {
+        	// Redirect JUL to SLF4J
+        	debug(owner + " " + name + " " + desc);
+        	owner = owner.replace("java/util/logging/Logger", "org/cardboardpowered/BukkitLogger");
+        }
+        */
+        
+        // configureLogger
+        
+        if (owner.contains("com/sk89q/worldguard/util/logging/RecordMessagePrefixer") ) {
+        	owner = owner.replace("com/sk89q/worldguard/util/logging/RecordMessagePrefixer", "org/cardboardpowered/util/RecordMessagePrefixer");
+        	
+        	// CardboardMod.LOGGER.info(owner + " " + name + " " + desc);
+        	// return;
+        }
+
         if (owner.contains("LegacyPotionMetaProvider")) {
         	debug(owner + " " + name + " " + desc);
         	owner = owner.replace("LegacyPotionMetaProvider", "ModernPotionMetaProvider");

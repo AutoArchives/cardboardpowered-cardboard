@@ -94,12 +94,12 @@ public class CardboardMod implements ModInitializer {
             mc = "- Minecraft " + mcver;
         }
 
-        LOGGER.info("Cardboard (CardboardPowered.org) " + mc);
-        
-        int r = EventRegistery.registerAll(this);
-        LOGGER.info("Registered '" + r + "' iCommon events.");
+		new File("plugins").mkdirs();
 
-        new File("plugins").mkdirs();
+		var ver_paper = org.cardboardpowered.library.KnotHelper.ver_paper;
+		int r = EventRegistery.registerAll(this);
+
+        LOGGER.info("Cardboard " + mc + " - Paper-API " + ver_paper + ". " + "Registered '" + r + "' iCommon events.");
 
         CardboardEventManager.INSTANCE.callCardboardEvents();
     }

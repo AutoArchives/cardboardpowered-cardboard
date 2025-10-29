@@ -286,9 +286,12 @@ public class SpigotConfig {
             ctx.updateLoggers( conf );
         }
 
+        // Cardboard: Let's Be Quiet Here.
+        /*
         if ( LogManager.getRootLogger().isTraceEnabled() )
             Bukkit.getLogger().info( "Debug logging is enabled" );
         else Bukkit.getLogger().info( "Debug logging is disabled" );
+        */
     }
 
     public static boolean disableAdvancementSaving;

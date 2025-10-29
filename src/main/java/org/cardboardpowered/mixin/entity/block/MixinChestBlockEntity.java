@@ -19,13 +19,20 @@ import org.cardboardpowered.interfaces.IMixinWorld;
 import me.isaiah.common.cmixin.IMixinChestBlockEntity;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.ChestBlockEntity;
+import net.minecraft.block.entity.ViewerCountManager;
 import net.minecraft.entity.ContainerUser;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 
+/**
+ * @see {@link me.isaiah.common.cmixin.IMixinChestBlockEntity}
+ */
 @Mixin(ChestBlockEntity.class)
 public class MixinChestBlockEntity implements IMixinInventory {
+	
+    @Shadow
+    private ViewerCountManager stateManager;
 
     @Shadow public DefaultedList<ItemStack> inventory;
 
@@ -81,7 +88,7 @@ public class MixinChestBlockEntity implements IMixinInventory {
      */
     @Inject(at = @At("HEAD"), method = "onOpen")
     public void doBukkitEvent_RedstoneChange_1(ContainerUser e, CallbackInfo ci) {
-        oldPower_B = Math.max(0, Math.min(15, ((IMixinChestBlockEntity)this).I_getViewCount())); // CraftBukkit - Get power before new viewer is added
+        oldPower_B = Math.max(0, Math.min(15, stateManager.getViewerCount())); // CraftBukkit - Get power before new viewer is added
     }
 
     /**
@@ -90,7 +97,7 @@ public class MixinChestBlockEntity implements IMixinInventory {
     @Inject(at = @At("TAIL"), method = "onOpen")
     public void doBukkitEvent_RedstoneChange_2(ContainerUser e, CallbackInfo ci) {
         if (((ChestBlockEntity)(Object)this).getCachedState().getBlock() == Blocks.TRAPPED_CHEST) {
-            int newPower = Math.max(0, Math.min(15, ((IMixinChestBlockEntity)this).I_getViewCount()));
+            int newPower = Math.max(0, Math.min(15, stateManager.getViewerCount()));
             if (oldPower_B != newPower)
                 CraftEventFactory.callRedstoneChange(((ChestBlockEntity)(Object)this).world, ((ChestBlockEntity)(Object)this).pos, oldPower_B, newPower);
         }

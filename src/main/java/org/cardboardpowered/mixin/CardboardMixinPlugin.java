@@ -56,6 +56,8 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
                 read_plugins = false;
                 e.printStackTrace();
             }
+        } else {
+        	pl.mkdirs();
         }
 
         logger.info("Loading Libraries...");
@@ -110,7 +112,7 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
 
         // Set WorldEdit adapter class name here
         // as this provides more verbose stacktraces.
-        System.setProperty("worldedit.bukkit.adapter", "com.sk89q.worldedit.bukkit.adapter.impl.v1_21_6.PaperweightAdapter");
+        System.setProperty("worldedit.bukkit.adapter", "com.sk89q.worldedit.bukkit.adapter.impl.v1_21_9.PaperweightAdapter");
 
         return libraries;
     }
@@ -124,7 +126,8 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         if (!read_plugins) {
             return true;
         }
-        return JarReader.found.contains(event);
+        return true; // TODO
+        // return JarReader.found.contains(event);
     }
     
     // private static final TestCl dummy = new TestCl();

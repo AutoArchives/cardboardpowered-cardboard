@@ -98,9 +98,10 @@ public final class LibraryManager {
         		download(lib);
         	}
         }
-
-        KnotHelper.LOGGER.info("Loaded Adventure: " + KnotHelper.ver_adventure + " (" + KnotHelper.loaded_adventure + ")");
-        KnotHelper.LOGGER.info("Loaded " + KnotHelper.loaded + " libraries.");
+		
+		String adv = KnotHelper.ver_adventure + " (" + KnotHelper.loaded_adventure + ")";
+		String det = "Paper-API: " + KnotHelper.ver_paper + "; Adventure: " + adv + "; BungeeChat: " + KnotHelper.ver_bungeechat;
+        KnotHelper.LOGGER.info("Loaded " + KnotHelper.loaded + " libraries. " + det);
     }
     
     private static String read_central_checksum(String repository, Library library) throws IOException {

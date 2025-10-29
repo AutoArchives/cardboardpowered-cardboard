@@ -14,6 +14,8 @@ public class CardboardConfig {
 
     private static final String DEFAULT =
             "# This is the configuration file for Cardboard\n\n" +
+            "# config-version internal use, do not modify.\n" +
+            "config-version: 1\n\n" +
             "# Invoke ChatEvent from PlayerManager instead of NetworkHandler\n" +
             "# This can solve issues with other mods that overwrite the chat method,\n" +
             "use_alternative_chat_mixin: false\n" +
@@ -29,7 +31,15 @@ public class CardboardConfig {
             "# You can add plugin names here (that dont use Reflection) to our SKIP array\n" +
             "skip_reflection_for_plugin:\n\t- vault\n\t- worldguard\n\n" +
             "# Forcefully Disable Mixins - If a mixin is causing an issue you can disable it here\n" +
-            "mixin-force-disable:\n\t- None"
+            "mixin-force-disable:\n\t- None\n\n" +
+            "# Register '/mods' Command\n" +
+            "# This will add a command to view all Fabric mods similar to /plugins \n" +
+            "add-mods-command: true\n\n" + 
+            "# Debug Test Stuff\n" +
+            "debug_print_event_call: false\n" +
+            "debug_print_all_calls: false\n" +
+            "debug_player: false\n" +
+            "debug_other: false\n"
             ;
 
     public static ArrayList<String> disabledMixins = new ArrayList<>();
@@ -40,6 +50,8 @@ public class CardboardConfig {
     public static boolean DEBUG_VERBOSE_CALLS = false;
     public static boolean DEBUG_OTHER = false;
     public static boolean DEBUG_PLAYER = false;
+
+	public static boolean addModsCommand = true;
 
     public static void setup() throws Exception {
         File fabDir = FabricLoader.getInstance().getConfigDir().toFile();
@@ -79,6 +91,7 @@ public class CardboardConfig {
         DEBUG_VERBOSE_CALLS =  config.getOrDefault("debug_print_all_calls", false);
         DEBUG_OTHER = config.getOrDefault("debug_other", false);
         DEBUG_PLAYER = config.getOrDefault("debug_player", false);
+        addModsCommand = config.getOrDefault("add-mods-command", true);
 
         String extraJar = config.getOrDefault("debug_extra_lib_file", "debug_extra.jar");
         if (extraJar.length() > 2) {

@@ -15,7 +15,7 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-import org.cardboardpowered.BukkitLogger;
+import org.cardboardpowered.CardboardLogger;
 
 import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -35,7 +35,8 @@ public class CardboardConsoleCommandSender implements ConsoleCommandSender, Comm
 
     @Override
     public void sendMessage(String msg) {
-        BukkitLogger.getLogger().info(msg);
+        // BukkitLogger.getLogger().info(msg);
+    	CardboardLogger.getSLF4J().info(msg);
     }
 
     @Override

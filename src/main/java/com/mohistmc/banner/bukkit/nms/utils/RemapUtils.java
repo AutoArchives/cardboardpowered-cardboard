@@ -15,6 +15,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.MappingResolver;
 import net.md_5.specialsource.provider.JointProvider;
 import org.cardboardpowered.CardboardConfig;
+import org.cardboardpowered.CardboardLogger;
 import org.cardboardpowered.util.nms.MappingsReader;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -45,6 +46,8 @@ import java.util.regex.Pattern;
  * @date 2019/6/30 11:50 PM
  */
 public class RemapUtils {
+	
+	private static CardboardLogger LOGGER = CardboardLogger.get("RemapUtils");
 
     public static BannerJarMapping jarMapping;
     public static BannerJarRemapper jarRemapper;
@@ -64,12 +67,17 @@ public class RemapUtils {
         } catch (IOException e) { e.printStackTrace(); return null;}
     }
     
-    public static void LOG(String msg) {
-    	CardboardMod.LOGGER.info("RemapUtils: " + msg);
+    public static void LOG1(String msg) {
+		LOGGER.info(msg);
+    	// CardboardMod.LOGGER.info("RemapUtils: " + msg);
     }
+	
+	public static void debug(String msg) {
+		LOGGER.debug(msg);
+	}
     
     public static void init() {
-    	LOG("Remap Util init");
+    	debug("Remap Util init");
     	
         jarMapping = new BannerJarMapping();
         // v1_20_R1
@@ -159,7 +167,7 @@ public class RemapUtils {
 		*/
         
         try {
-        	LOG("Reading \"" + bukkit_cl_srg + "\".");
+        	LOGGER.debug("Reading \"" + bukkit_cl_srg + "\".");
 
         	List<String> lines = Files.readAllLines(bukkit_class_mappings_file.toPath());
         	int count = 0, total = 0;
@@ -206,7 +214,7 @@ public class RemapUtils {
         		}
         		total += 1;
         	}
-        	LOG("Parsed " + count + " classes from " + bukkit_cl_srg);
+        	LOGGER.info("Read " + count + " classes from " + bukkit_cl_srg);
         } catch (IOException e) {
         	e.printStackTrace();
         }

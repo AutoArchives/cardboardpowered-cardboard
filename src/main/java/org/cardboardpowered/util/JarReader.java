@@ -17,10 +17,11 @@ import org.apache.logging.log4j.Logger;
 public class JarReader {
 
     public static List<String> found = new ArrayList<>();
-    private static final Logger logger = LogManager.getLogger("Cardboard");
+    // private static final Logger logger = LogManager.getLogger("Cardboard");
+    public static long timeTook;
 
-    public static void read_plugins(File folder) throws Exception {
-        logger.info("Please wait, Scanning plugins for events...");
+    public static int read_plugins(File folder) throws Exception {
+        // logger.info("Please wait, Scanning plugins for events...");
         long start = System.currentTimeMillis();
         for (File f : folder.listFiles()) {
             if (f.getName().endsWith(".jar")) {
@@ -28,8 +29,10 @@ public class JarReader {
             }
         }
 
+        timeTook = System.currentTimeMillis() - start;
         // for (String s : found) System.out.println(s);
-        logger.info("Found: " + found.size() + " (Took: " + (System.currentTimeMillis() - start) + "ms)");
+        //logger.info("Found: " + found.size() + " (Took: " + timeTook + "ms)");
+        return found.size();
     }
 
     public static void read_jar(String path) throws Exception {

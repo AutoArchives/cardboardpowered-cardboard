@@ -1,17 +1,13 @@
 package org.cardboardpowered.library;
 
 import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
-import java.nio.file.Path;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cardboardpowered.CardboardConfig;
 
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.Version;
 
 public class KnotHelper {
 
@@ -21,6 +17,9 @@ public class KnotHelper {
     
     public static int loaded_adventure = 0;
     public static String ver_adventure = "";
+	
+	public static String ver_paper = "";
+	public static String ver_bungeechat = "";
 
     /**
      * Modern Loader 0.17 / Quilt Support
@@ -37,9 +36,16 @@ public class KnotHelper {
             	return;
             }
             String nam = file.getName();
-            	
-            if (nam.contains("paper-api") || nam.contains("bungeecord-chat")) {
-            	LOGGER.info("Loaded library: " + file.getName());
+
+			if (nam.contains("paper-api-")) {
+				String[] parts = nam.replace(".jar", "").split("-");
+				String versionNumber = parts[2];
+				String finalNumber = parts[parts.length - 1];
+				ver_paper = versionNumber + "-" + finalNumber;
+            }
+
+            if (nam.contains("bungeecord-chat-")) {
+				ver_bungeechat = nam.split("bungeecord-chat-")[1].split(".jar")[0];
             }
 
             if (nam.contains("adventure-")) {
@@ -47,7 +53,7 @@ public class KnotHelper {
             }
 
             if (nam.contains("adventure-api-")) {
-            	ver_adventure = nam.split("adventure-api-")[1].split(".jar")[0];
+				ver_adventure = nam.split("adventure-api-")[1].split(".jar")[0];
             }
             loaded += 1;
         } catch (Exception e) {

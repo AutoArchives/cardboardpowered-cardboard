@@ -11,6 +11,7 @@ import java.util.Map;
 //=======
 import org.bukkit.command.defaults.PluginsCommand;
 ///>>>>>>> upstream/ver/1.20
+import org.cardboardpowered.CardboardConfig;
 
 public class CommandMapImpl extends SimpleCommandMap {
 	private static final Class<?> CARDBOARD_VERSION_COMMAND = VersionCommand.class;
@@ -66,7 +67,11 @@ public class CommandMapImpl extends SimpleCommandMap {
 	private void registerCardboardCommands() {
 		register("bukkit", new VersionCommand("version"));
 		this.register("bukkit", new PluginsCommand("plugins"));
-		register("cardboard", new ModsCommand("fabricmods"));
+
+		if (CardboardConfig.addModsCommand) {
+			register("cardboard", new ModsCommand("fabricmods"));
+		}
+
 		register("cardboard", new MyCommand());
 	}
 
