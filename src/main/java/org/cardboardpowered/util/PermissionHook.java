@@ -1,10 +1,17 @@
 package org.cardboardpowered.util;
 
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public class PermissionHook {
 
     public static boolean hasPermission(ServerPlayerEntity plr, String permission) {
+    	
+    	if (Permissions.check(plr, permission)) {
+    	    // Woo!
+    		return true;
+    	}
+    	
         /*if (null == perms.get(permission)) {
             org.bukkit.permissions.Permission bu = Bukkit.getPluginManager().getPermission(permission);
             if (null == bu)

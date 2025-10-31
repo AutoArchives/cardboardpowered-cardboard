@@ -50,23 +50,6 @@ configurations.all {
 }
 
 // Paper-API
-// def PAPER_VER_A = "1.21.4-R0.1-SNAPSHOT"
-// def PAPER_VER_B = "1.21.4-R0.1-20250313.115134-207"
-//paper-api-1.21.4-R0.1-20250511.205801-225
-// def PAPER_VER_B = "1.21.4-R0.1-20250511.205801-225"
-
-// def PAPER_VER_A = "1.21.6-R0.1-SNAPSHOT"
-// def PAPER_VER_B = "1.21.6-R0.1-20250630.094942-50"
-
-// def PAPER_VER_A = "1.21.7-R0.1-SNAPSHOT"
-// def PAPER_VER_B = "1.21.7-R0.1-20250716.201120-28"
-
-// def PAPER_VER_A = "1.21.8-R0.1-SNAPSHOT"
-// def PAPER_VER_B = "1.21.8-R0.1-20250906.215025-55"
-
-// def PAPER_VER_A = "1.21.9-R0.1-SNAPSHOT"
-// def PAPER_VER_B = "1.21.9-R0.1-20251007.115206-20"
-
 def PAPER_VER_A = "1.21.10-R0.1-SNAPSHOT"
 def PAPER_VER_B = "1.21.10-R0.1-20251020.022259-22"
 
@@ -135,8 +118,8 @@ dependencies {
 
     compileOnly fileTree(dir: 'libs', include: "srglib-0.1.2.jar")
 
-    // (Optional) Fabric Permissions API.
-    // modImplementation "com.javazilla.mods:permissions:1.1"
+    // Fabric Permissions API.
+    include(modImplementation('me.lucko:fabric-permissions-api:0.5.0'))
 
     // Remove parts that are included with Minecraft or Downloaded
     
@@ -219,11 +202,11 @@ shadowJar {
 modrinth {
     token = System.getenv("MODRINTH") // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
     projectId = "MLYQ9VGP" // This can be the project ID or the slug. Either will work!
-    versionNumber = "1.21.9-" + System.env.BUILD_NUMBER // You don't need to set this manually. Will fail if Modrinth has this version already
+    versionNumber = "1.21.10-" + System.env.BUILD_NUMBER // You don't need to set this manually. Will fail if Modrinth has this version already
     // versionType = "beta" // This is the default -- can also be `beta` or `alpha`
     versionType = "alpha"
     uploadFile = remapJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
-    gameVersions = ["1.21.9"] // Must be an array, even with only one version
+    gameVersions = ["1.21.10"] // Must be an array, even with only one version
     loaders = ["fabric"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
 }
 
