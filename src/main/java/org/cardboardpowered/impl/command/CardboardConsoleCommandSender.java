@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -14,7 +15,7 @@ import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-
+import org.cardboardpowered.CardboardConfig;
 import org.cardboardpowered.CardboardLogger;
 
 import net.kyori.adventure.text.Component;
@@ -36,6 +37,9 @@ public class CardboardConsoleCommandSender implements ConsoleCommandSender, Comm
     @Override
     public void sendMessage(String msg) {
         // BukkitLogger.getLogger().info(msg);
+    	if (CardboardConfig.shouldStripConsoleColor) {
+    		CardboardLogger.getSLF4J().info( ChatColor.stripColor(msg) );
+    	}
     	CardboardLogger.getSLF4J().info(msg);
     }
 

@@ -36,17 +36,22 @@ public final class VersionUtil {
     public static final BukkitVersion v1_17_1_R01 = BukkitVersion.fromString("1.17.1-R0.1-SNAPSHOT");
     public static final BukkitVersion v1_18_2_R01 = BukkitVersion.fromString("1.18.2-R0.1-SNAPSHOT");
     public static final BukkitVersion v1_19_R01 = BukkitVersion.fromString("1.19-R0.1-SNAPSHOT");
-    public static final BukkitVersion v1_19_4_R01 = BukkitVersion.fromString("1.19.4-R0.1-SNAPSHOT");
-    public static final BukkitVersion v1_20_1_R01 = BukkitVersion.fromString("1.20.1-R0.1-SNAPSHOT");
+
+    // these three are removed
     public static final BukkitVersion v1_20_4_R01 = BukkitVersion.fromString("1.20.4-R0.1-SNAPSHOT");
-    public static final BukkitVersion v1_20_6_R01 = BukkitVersion.fromString("1.20.6-R0.1-SNAPSHOT");
-    
-    public static final BukkitVersion v1_21_R01 = BukkitVersion.fromString("1.21-R0.1-SNAPSHOT");
     public static final BukkitVersion v1_21_1_R01 = BukkitVersion.fromString("1.21.1-R0.1-SNAPSHOT");
     public static final BukkitVersion v1_21_4_R01 = BukkitVersion.fromString("1.21.4-R0.1-SNAPSHOT");
+    
+    public static final BukkitVersion v1_19_4_R01 = BukkitVersion.fromString("1.19.4-R0.1-SNAPSHOT");
+    public static final BukkitVersion v1_20_1_R01 = BukkitVersion.fromString("1.20.1-R0.1-SNAPSHOT");
+    public static final BukkitVersion v1_20_6_R01 = BukkitVersion.fromString("1.20.6-R0.1-SNAPSHOT");
+    public static final BukkitVersion v1_21_R01 = BukkitVersion.fromString("1.21-R0.1-SNAPSHOT");
+    public static final BukkitVersion v1_21_3_R01 = BukkitVersion.fromString("1.21.3-R0.1-SNAPSHOT");
+    public static final BukkitVersion v1_21_5_R01 = BukkitVersion.fromString("1.21.5-R0.1-SNAPSHOT");
+    public static final BukkitVersion v1_21_8_R01 = BukkitVersion.fromString("1.21.8-R0.1-SNAPSHOT");
     public static final BukkitVersion v1_21_10_R01 = BukkitVersion.fromString("1.21.10-R0.1-SNAPSHOT");
 
-    private static final Set<BukkitVersion> supportedVersions = ImmutableSet.of(v1_8_8_R01, v1_9_4_R01, v1_10_2_R01, v1_11_2_R01, v1_12_2_R01, v1_13_2_R01, v1_14_4_R01, v1_15_2_R01, v1_16_5_R01, v1_17_1_R01, v1_18_2_R01, v1_19_4_R01, v1_20_4_R01, v1_20_6_R01, v1_21_R01, v1_21_1_R01, v1_21_10_R01);
+    private static final Set<BukkitVersion> supportedVersions = ImmutableSet.of(v1_8_8_R01, v1_9_4_R01, v1_10_2_R01, v1_11_2_R01, v1_12_2_R01, v1_13_2_R01, v1_14_4_R01, v1_15_2_R01, v1_16_5_R01, v1_17_1_R01, v1_18_2_R01, v1_19_4_R01, v1_20_6_R01, v1_21_10_R01);
 
     public static final boolean PRE_FLATTENING = VersionUtil.getServerBukkitVersion().isLowerThan(VersionUtil.v1_13_0_R01);
 
@@ -186,6 +191,11 @@ public final class VersionUtil {
         private final int releaseCandidate;
         private final int patch;
         private final double revision;
+        
+        private final boolean snapshot;
+        private final int snapshotYear;
+        private final int snapshotWeek;
+        private final char snapshotLetter;
 
         private BukkitVersion(final int major, final int minor, final int patch, final double revision, final int preRelease, final int releaseCandidate) {
             this.major = major;
@@ -194,6 +204,10 @@ public final class VersionUtil {
             this.revision = revision;
             this.preRelease = preRelease;
             this.releaseCandidate = releaseCandidate;
+            this.snapshot = false;
+            this.snapshotYear = -1;
+            this.snapshotWeek = -1;
+            this.snapshotLetter = '\0';
         }
 
         public static BukkitVersion fromString(final String string) {
@@ -276,8 +290,8 @@ public final class VersionUtil {
             return preRelease;
         }
 
-        public int getReleaseCandidate() {
-            return releaseCandidate;
+        public boolean isSnapshot() {
+            return snapshot;
         }
 
         @Override

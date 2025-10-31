@@ -56,7 +56,7 @@ public class BukkitLogger extends Logger {
     public BukkitLogger(String name, String str) {
         super(name, str);
         this.log4j = LoggerFactory.getLogger(name);
-        this.doPrefix = true;
+        this.doPrefix = CardboardConfig.shouldAddPrefixToLoggers();
         if (inst == null) {
             inst = this;
         }

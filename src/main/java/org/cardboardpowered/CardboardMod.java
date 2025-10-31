@@ -64,6 +64,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.level.ServerWorldProperties;
@@ -99,7 +101,17 @@ public class CardboardMod implements ModInitializer {
 		var ver_paper = org.cardboardpowered.library.KnotHelper.ver_paper;
 		int r = EventRegistery.registerAll(this);
 
-        LOGGER.info("Cardboard " + mc + " - Paper-API " + ver_paper + ". " + "Registered '" + r + "' iCommon events.");
+		String details = " - Paper-API " + ver_paper + ". " + "Registered '" + r + "' iCommon events.";
+		
+		// Check for FabricBetterConsole
+		if (CardboardConfig.isBetterConsole()) {
+			Text message = Text.literal("Cardboard " + mc)
+		            .formatted(Formatting.GOLD).append(details);
+			LOGGER.info(message.getString());
+		} else {
+		
+			LOGGER.info("Cardboard " + mc + details);
+		}
 
         CardboardEventManager.INSTANCE.callCardboardEvents();
     }
