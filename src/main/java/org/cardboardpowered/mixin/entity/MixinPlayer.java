@@ -727,7 +727,10 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
 	@Nullable
 	@Override
     public TeleportTarget findRespawnPositionAndUseSpawnBlock(boolean useCharge, TeleportTarget.PostDimensionTransition postTeleportTransition, @Nullable PlayerRespawnEvent.RespawnReason respawnReason) {
-        ServerPlayerEntity thiz = (ServerPlayerEntity) (Object) this;
+		if (CardboardConfig.DEBUG_PLAYER) {
+    		CardboardMod.LOGGER.info("findRespawnPosAndUseSpawnBlock");
+    	}
+		ServerPlayerEntity thiz = (ServerPlayerEntity) (Object) this;
 		TeleportTarget teleportTransition;
         boolean isBedSpawn = false;
         boolean isAnchorSpawn = false;
@@ -768,6 +771,10 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         location = respawnEvent.getRespawnLocation();
 
         TeleportCause cause = TeleportCause.UNKNOWN;
+        
+        if (CardboardConfig.DEBUG_PLAYER) {
+    		CardboardMod.LOGGER.info("loc = " + location);
+    	}
         
         return new TeleportTarget(((CraftWorld)location.getWorld()).getHandle(), CraftLocation.toVec3(location), teleportTransition.velocity(), location.getYaw(), location.getPitch(), teleportTransition.relatives(), teleportTransition.postTeleportTransition());
     }

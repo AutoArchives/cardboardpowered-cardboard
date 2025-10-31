@@ -95,7 +95,7 @@ public class MixinSimplePluginManager {
 			// Print debug info
 			String name = event.getEventName();
 
-			if (name.contains("EntityAirChangeEvent")) {
+			if (name.contains("EntityAirChangeEvent") || name.contains("EntityRemoveFromWorldEvent") || name.contains("EntityAddToWorldEvent")) {
 				// Avoid spam
 				return;
 			}

@@ -28,6 +28,8 @@ import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import org.cardboardpowered.interfaces.IMixinServerLoginNetworkHandler;
 import org.cardboardpowered.interfaces.IMixinWorld;
 import com.mojang.authlib.GameProfile;
+import com.mojang.logging.LogUtils;
+
 import me.isaiah.common.ICommonMod;
 import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.minecraft.block.BlockState;
@@ -36,6 +38,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.BannedIpEntry;
@@ -46,14 +49,17 @@ import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerLoginNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity.RespawnPos;
+import net.minecraft.server.network.SpawnLocating;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.TeleportTarget;
@@ -66,6 +72,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bukkit.Bukkit;
@@ -89,6 +97,7 @@ import org.cardboardpowered.extras.PlayerManager_LoginResult;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -106,6 +115,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.storage.NbtReadView;
+import net.minecraft.storage.ReadView;
 import net.minecraft.world.WorldProperties;
 import net.minecraft.network.packet.s2c.play.*;
 //>>>>>>> upstream/ver/1.20
@@ -175,8 +186,8 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         boolean isRespawn = false;
         boolean isAnchorSpawn = false;
         if (location == null) {
-             // teleportTransition = player.findRespawnPositionAndUseSpawnBlock(!keepInventory, TeleportTarget.NO_OP, eventReason);
-            teleportTransition = player.getRespawnTarget(!keepInventory, TeleportTarget.NO_OP);
+            teleportTransition = ((IMixinServerEntityPlayer) player).findRespawnPositionAndUseSpawnBlock(!keepInventory, TeleportTarget.NO_OP, eventReason);
+            // teleportTransition = player.getRespawnTarget(!keepInventory, TeleportTarget.NO_OP);
             
             if (!keepInventory) {
                 ((IMixinServerEntityPlayer)player).reset();
@@ -201,6 +212,11 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         //serverPlayer.forceSetPositionRotation(vec3.x, vec3.y, vec3.z, teleportTransition.yaw(), teleportTransition.pitch());
         level.getChunkManager().addTicket(ChunkTicketBridge.POST_TELEPORT, new ChunkPos(MathHelper.floor(vec3.getX()) >> 4, MathHelper.floor(vec3.getZ()) >> 4), 1);
         if (teleportTransition.missingRespawnBlock()) {
+        	
+        	if (CardboardConfig.DEBUG_PLAYER) {
+        		CardboardMod.LOGGER.info("teleportTransition#missingRespawnBlock!");
+        	}
+        	
             serverPlayer.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.NO_RESPAWN_BLOCK, 0.0f));
             // serverPlayer.setRespawnPosition(null, false, PlayerSetSpawnEvent.Cause.PLAYER_RESPAWN);
             serverPlayer.setSpawnPoint(null, false);
@@ -222,6 +238,9 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         this.sendWorldInfo(serverPlayer, level);
         this.sendCommandTree(serverPlayer);
         if (!serverPlayer.isDisconnected()) {
+        	if (CardboardConfig.DEBUG_PLAYER) {
+        		CardboardMod.LOGGER.info("calling onPlayerRespawned");
+        	}
             level.onPlayerRespawned(serverPlayer);
             this.players.add(serverPlayer);
             // this.playersByName.put(serverPlayer.getNameForScoreboard().toLowerCase(Locale.ROOT), serverPlayer);
@@ -386,6 +405,92 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         CraftServer.INSTANCE.getPluginManager().callEvent(playerQuitEvent);
         player.playerTick();
     }
+    
+    private static final Logger cb$LOGGER = LogUtils.getLogger();
+    
+    /**
+     * todo: update our login code to use SpawnPrepareTask instead of our attemptLogin
+     */
+    private Location cardboard$getPlayerSpawn(PlayerConfigEntry player) {
+    	Optional<ReadView> optional;
+    	RegistryKey<World> resourceKey = null;
+    	boolean[] invalidPlayerWorld = new boolean[]{false};
+
+    	try (ErrorReporter.Logging scopedCollector = new ErrorReporter.Logging(cb$LOGGER)) {
+    		optional = this.server
+    				.getPlayerManager()
+    				.loadPlayerData(player)
+    				.map(nbt -> NbtReadView.create(scopedCollector, this.server.getRegistryManager(), nbt));
+
+    		bukkitData:
+    			if (optional.isPresent()) {
+    				ReadView playerData = optional.get();
+    				Optional<Long> worldUUIDMost = playerData.getOptionalLong("WorldUUIDMost");
+    				Optional<Long> worldUUIDLeast = playerData.getOptionalLong("WorldUUIDLeast");
+    				Optional<String> worldName = playerData.getOptionalString("world");
+    				org.bukkit.World bWorld;
+    				if (worldUUIDMost.isPresent() && worldUUIDLeast.isPresent()) {
+    					bWorld = Bukkit.getServer().getWorld(new UUID(worldUUIDMost.get(), worldUUIDLeast.get()));
+    				} else {
+    					if (!worldName.isPresent()) {
+    						break bukkitData;
+    					}
+
+    					bWorld = Bukkit.getServer().getWorld(worldName.get());
+    				}
+
+    				if (bWorld != null) {
+    					resourceKey = ((CraftWorld)bWorld).getHandle().getRegistryKey();
+    				} else {
+    					resourceKey = World.OVERWORLD;
+    					invalidPlayerWorld[0] = true;
+    				}
+    			}
+
+    		ServerPlayerEntity.SavePos savedPosition = optional.<ServerPlayerEntity.SavePos>flatMap(view -> view.read(ServerPlayerEntity.SavePos.CODEC))
+    				.orElse(ServerPlayerEntity.SavePos.EMPTY);
+    		WorldProperties.SpawnPoint respawnData = this.server.getSaveProperties().getMainWorldProperties().getSpawnPoint();
+
+    		if (resourceKey == null) {
+    			resourceKey = savedPosition.dimension().orElse(null);
+    		}
+
+    		ServerWorld vanillaDefaultLevel = this.server.getWorld(respawnData.getDimension());
+    		if (vanillaDefaultLevel == null) {
+    			vanillaDefaultLevel = this.server.getOverworld();
+    		}
+
+    		ServerWorld serverLevel1;
+    		if (resourceKey == null) {
+    			serverLevel1 = vanillaDefaultLevel;
+    		} else {
+    			serverLevel1 = this.server.getWorld(resourceKey);
+    			if (serverLevel1 == null) {
+    				cb$LOGGER.warn("Unknown respawn dimension {}, defaulting to overworld", resourceKey);
+    				serverLevel1 = vanillaDefaultLevel;
+    			}
+    		}
+
+    		ServerWorld serverLevel = serverLevel1;
+    		CompletableFuture<Vec3d> completableFuture = savedPosition.position()
+    				.map(CompletableFuture::completedFuture)
+    				.orElseGet(() -> SpawnLocating.locateSpawnPos(serverLevel, respawnData.getPos()));
+    		Vec2f vec2 = savedPosition.rotation().orElse(new Vec2f(respawnData.yaw(), respawnData.pitch()));
+    		// this.stage = new PrepareSpawnTask.LoadPlayerChunks(serverLevel, completableFuture, vec2);
+    		
+    		// CraftLocation.toBukkit(null, serverLevel, 0, 0)
+    		
+    		try {
+				Vec3d d3 = completableFuture.get();
+				Location loc = CraftLocation.toBukkit(d3, serverLevel, vec2.x, vec2.y);
+				return loc;
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+				return null;
+			}
+    		
+    	}
+    }
 
     @Override
     public ServerPlayerEntity attemptLogin(ServerLoginNetworkHandler nethand, GameProfile profile, PlayerPublicKey key, String hostname) {
@@ -418,12 +523,22 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         IMixinServerLoginNetworkHandler ims = (IMixinServerLoginNetworkHandler)nethand;
         SocketAddress address = ims.cb_get_connection().getAddress();
 
-        me.isaiah.common.cmixin.IMixinPlayerManager imixin = (me.isaiah.common.cmixin.IMixinPlayerManager) (Object)this;
+        // me.isaiah.common.cmixin.IMixinPlayerManager imixin = (me.isaiah.common.cmixin.IMixinPlayerManager) (Object)this;
        // ServerPlayerEntity entity = imixin.InewPlayer(CraftServer.server, CraftServer.server.getWorld(World.OVERWORLD), profile);
-        ServerPlayerEntity entity = new ServerPlayerEntity(CraftServer.server, CraftServer.server.getWorld(World.OVERWORLD), profile, SyncedClientOptions.createDefault());
+        
+        // TODO Test
+        Location spawnPos = cardboard$getPlayerSpawn(pce);
+        ServerWorld spawnWorld = null != spawnPos ? ((CraftWorld) spawnPos.getWorld()).getHandle() : CraftServer.server.getWorld(World.OVERWORLD);
+        
+        ServerPlayerEntity entity = new ServerPlayerEntity(CraftServer.server, spawnWorld, profile, SyncedClientOptions.createDefault());
         Player player = (Player) ((IMixinServerEntityPlayer)entity).getBukkitEntity();
-        PlayerLoginEvent event = new PlayerLoginEvent(player, hostname, ((java.net.InetSocketAddress) address).getAddress(), ((java.net.InetSocketAddress) ims.cb_get_connection().channel.remoteAddress()).getAddress());
+        
+        if (null != spawnPos) {
+        	entity.refreshPositionAndAngles(BlockPos.ofFloored(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ()), spawnPos.getYaw(), spawnPos.getPitch());
+        }
 
+        PlayerLoginEvent event = new PlayerLoginEvent(player, hostname, ((java.net.InetSocketAddress) address).getAddress(), ((java.net.InetSocketAddress) ims.cb_get_connection().channel.remoteAddress()).getAddress());
+        
         if (((PlayerManager)(Object)this).getUserBanList().contains(pce) /*&& !((PlayerManager)(Object)this).getUserBanList().get(gameprofile).isInvalid()*/) {
             chatmessage = Text.translatable("multiplayer.disconnect.banned.reason", new Object[]{"TODO REASON!"});
             //chatmessage.append(new TranslatableTextContent("multiplayer.disconnect.banned.expiration", new Object[] {"TODO EXPIRE!"}));
@@ -698,6 +813,9 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
             }
 
             if (teleportTransition == null) {
+            	if (CardboardConfig.DEBUG_PLAYER) {
+            		CardboardMod.LOGGER.info("teleportTransition is null");
+            	}
                 return player;
             }
 
@@ -715,6 +833,9 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         }
 
         if (teleportTransition == null) {
+        	if (CardboardConfig.DEBUG_PLAYER) {
+        		CardboardMod.LOGGER.info("teleTrans is null");
+        	}
             return player;
         } else {
             ServerWorld level = teleportTransition.world();
@@ -725,6 +846,10 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
             ((IMixinServerEntityPlayer) serverPlayer).spigot$forceSetPositionRotation(vec3.x, vec3.y, vec3.z, teleportTransition.yaw(), teleportTransition.pitch());
             level.getChunkManager().addTicket(ChunkTicketBridge.POST_TELEPORT, new ChunkPos(MathHelper.floor(vec3.getX()) >> 4, MathHelper.floor(vec3.getZ()) >> 4), 1);
             if (teleportTransition.missingRespawnBlock()) {
+            	if (CardboardConfig.DEBUG_PLAYER) {
+            		CardboardMod.LOGGER.info("teleTrans missing respawn block");
+            	}
+            	
                 serverPlayer.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.NO_RESPAWN_BLOCK, 0.0F));
                 // serverPlayer.r.setRespawnPosition(null, false, com.destroystokyo.paper.event.player.PlayerSetSpawnEvent.Cause.PLAYER_RESPAWN);
             }
@@ -741,6 +866,10 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
             
             IMixinPlayNetworkHandler iNetworkHandler = (IMixinPlayNetworkHandler) serverPlayer.networkHandler;
             
+            if (CardboardConfig.DEBUG_PLAYER) {
+        		CardboardMod.LOGGER.info("tele to " + serverPlayer.getEntityPos().toString());
+        	}
+            
             iNetworkHandler.teleport(CraftLocation.toBukkit(serverPlayer.getEntityPos(), serverLevel.getWorld(), serverPlayer.getYaw(), serverPlayer.getPitch()));
             serverPlayer.networkHandler.sendPacket(new PlayerSpawnPositionS2CPacket(level.getSpawnPoint()));
             serverPlayer.networkHandler.sendPacket(new DifficultyS2CPacket(levelData.getDifficulty(), levelData.isDifficultyLocked()));
@@ -750,6 +879,10 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
             this.sendCommandTree(serverPlayer);
 
             if (!iNetworkHandler.isDisconnected()) {
+            	if (CardboardConfig.DEBUG_PLAYER) {
+            		CardboardMod.LOGGER.info("onplrrespawned");
+            	}
+            	
                 level.onPlayerRespawned(serverPlayer);
                 this.players.add(serverPlayer);
                 // this.playersByName.put(serverPlayer.getNameForScoreboard().toLowerCase(Locale.ROOT), serverPlayer);

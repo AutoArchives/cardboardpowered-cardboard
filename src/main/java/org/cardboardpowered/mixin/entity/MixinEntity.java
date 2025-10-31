@@ -59,9 +59,11 @@ import net.minecraft.entity.vehicle.MinecartEntity;
 import net.minecraft.entity.vehicle.TntMinecartEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 //<<<<<<< HEAD
 import net.minecraft.util.ActionResult;
@@ -573,5 +575,16 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
         }
     }
     */
+	
+	/**
+	 * Save Bukkit WorldUUID
+	 * 
+	 * @author Cardboard
+	 */
+	@Inject(method = "writeData", at = @At(value = "INVOKE", shift = At.Shift.AFTER, ordinal = 0, target = "Lnet/minecraft/storage/WriteView;put(Ljava/lang/String;Lcom/mojang/serialization/Codec;Ljava/lang/Object;)V"))
+    public void cardboard$writeData_saveBukkitWorldUuid(WriteView output, CallbackInfo ci) {
+		output.putLong("WorldUUIDLeast", this.world.getCraftWorld().getUID().getLeastSignificantBits());
+		output.putLong("WorldUUIDMost", this.world.getCraftWorld().getUID().getMostSignificantBits());
+    }
     
 }
