@@ -11,6 +11,7 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
 import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.entity.ai.brain.task.UpdateJobSiteTask;
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.GlobalPos;
@@ -30,7 +31,7 @@ public class MixinGoToWorkTask {
 
     @Inject(method = "method_46891", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/entity/passive/VillagerEntity;setVillagerData(Lnet/minecraft/village/VillagerData;)V"), cancellable = true)
-    private static void banner$jobChange(VillagerEntity villagerEntity, ServerWorld serverLevel, VillagerProfession profession, CallbackInfo ci) {
+    private static void banner$jobChange(VillagerEntity villagerEntity, ServerWorld serverLevel, VillagerProfession profession, RegistryEntry.Reference ref, CallbackInfo ci) {
         // CraftBukkit start - Fire VillagerCareerChangeEvent where Villager gets employed
         VillagerCareerChangeEvent event = CraftEventFactory.callVillagerCareerChangeEvent(villagerEntity, CraftVillager.nmsToBukkitProfession(profession), VillagerCareerChangeEvent.ChangeReason.EMPLOYED);
         if (event.isCancelled()) {

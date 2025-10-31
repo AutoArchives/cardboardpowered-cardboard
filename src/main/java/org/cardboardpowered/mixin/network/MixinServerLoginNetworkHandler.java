@@ -444,8 +444,8 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
         this.connection.transitionOutbound(ConfigurationStates.S2C);
         ConnectedClientData commonlistenercookie = ConnectedClientData.createDefault(Objects.requireNonNull(this.profile), this.transferred);
         ServerConfigurationNetworkHandler networkConfig = new ServerConfigurationNetworkHandler(this.server, this.connection, commonlistenercookie);
-       
-        System.out.println("networkConfig: setting player");
+
+        // System.out.println("networkConfig: setting player");
         if(cardboard_player != null) {
 			((INetworkConfiguration) networkConfig).cardboard_setPlayer(cardboard_player);
 		}
