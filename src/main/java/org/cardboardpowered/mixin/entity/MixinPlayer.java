@@ -69,6 +69,8 @@ import net.fabricmc.fabric.impl.screenhandler.Networking;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageTracker;
+import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerEntity;
 //>>>>>>> upstream/ver/1.20
 import net.minecraft.inventory.DoubleInventory;
@@ -209,7 +211,49 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
 
     @Override
     public void reset() {
-        // TODO Bukkit4Fabric: Auto-generated method stub
+        ServerPlayerEntity thiz = (ServerPlayerEntity) (Object) this;
+    	
+    	float exp = 0.0F;
+        
+    	/*
+    	if (thiz.keepLevel) {
+           exp = super.experienceProgress;
+           thiz.newTotalExp = super.totalExperience;
+           thiz.newLevel = super.experienceLevel;
+        }
+        */
+
+        thiz.setHealth(thiz.getMaxHealth());
+        thiz.clearActiveItem();
+        thiz.setAir(thiz.getMaxAir());
+        thiz.setFireTicks(0);
+        thiz.fallDistance = 0.0;
+        thiz.hungerManager = new HungerManager();
+        // thiz.experienceLevel = thiz.newLevel;
+        // thiz.totalExperience = thiz.newTotalExp;
+        thiz.experienceProgress = 0.0F;
+        thiz.deathTime = 0;
+        // thiz.setArrowCount(0, true);
+        thiz.clearStatusEffects();
+        // thiz.removeAllEffects(org.bukkit.event.entity.EntityPotionEffectEvent.Cause.DEATH);
+        thiz.effectsChanged = true;
+        thiz.currentScreenHandler = thiz.playerScreenHandler;
+        thiz.attackingPlayer = null;
+        thiz.attackerReference = null;
+        thiz.damageTracker = new DamageTracker(thiz);
+        thiz.syncedExperience = -1;
+        
+        /*
+        if (thiz.keepLevel) {
+        	thiz.experienceProgress = exp;
+        } else {
+           thiz.addExperience(thiz.newExp);
+        }
+
+        thiz.keepLevel = false;
+        */
+        thiz.setVelocity(0.0, 0.0, 0.0);
+        thiz.experienceDroppingDisabled = false;
     }
 
     @Override
@@ -617,7 +661,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         handler.transferTo(((ServerPlayerEntity)(Object)this).playerScreenHandler, getBukkitEntity());
     }
     
-    public void spawnIn(World world) {
+    public void spawnIn1(World world) {
         /*this.setWorld(world);
         if (world == null) {
             this.unsetRemoved();
@@ -634,7 +678,19 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         }
         this.interactionManager.setWorld((ServerWorld)world);*/
     }
+    
+    @Override
+    public void spawnIn(ServerWorld level) {
+    	if (level == null) {
+    		throw new IllegalArgumentException("level can't be null");
+    	} else {
+    		ServerPlayerEntity plr = ((ServerPlayerEntity)(Object)this);
+    		plr.setServerWorld(level);
+    		plr.interactionManager.setWorld(level);
+    	}
+    }
 
+    /*
 	@Override
 	public void spawnIn(ServerWorld world) {
 		ServerPlayerEntity plr = ((ServerPlayerEntity)(Object)this);
@@ -659,6 +715,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         }
         plr.interactionManager.setWorld((ServerWorld)world);
 	}
+	*/
 	
 	// SPIGOT-1903, MC-98153
 	@Override

@@ -578,3 +578,8 @@ accessible field net/minecraft/world/level/LevelInfo name Ljava/lang/String;
 mutable field net/minecraft/world/level/LevelInfo name Ljava/lang/String;
 accessible field net/minecraft/world/GameRules RULE_TYPES Ljava/util/Map;
 accessible field net/minecraft/world/level/storage/LevelStorage$Session directory Lnet/minecraft/world/level/storage/LevelStorage$LevelSave;
+accessible field net/minecraft/entity/LivingEntity attackerReference Lnet/minecraft/entity/LazyEntityReference;
+accessible field net/minecraft/entity/LivingEntity damageTracker Lnet/minecraft/entity/damage/DamageTracker;
+mutable field net/minecraft/entity/LivingEntity damageTracker Lnet/minecraft/entity/damage/DamageTracker;
+accessible field net/minecraft/entity/LivingEntity experienceDroppingDisabled Z
+accessible field net/minecraft/entity/LivingEntity effectsChanged Z
