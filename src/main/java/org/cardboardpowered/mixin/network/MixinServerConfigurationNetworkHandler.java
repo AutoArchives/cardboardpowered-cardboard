@@ -1,24 +1,12 @@
 package org.cardboardpowered.mixin.network;
 
-import java.net.SocketAddress;
-
-import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.interfaces.INetworkConfiguration;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
-import net.minecraft.network.packet.c2s.config.ReadyC2SPacket;
-import net.minecraft.server.PlayerConfigEntry;
-import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerConfigurationNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 
 @Mixin(ServerConfigurationNetworkHandler.class)
 public class MixinServerConfigurationNetworkHandler implements INetworkConfiguration {
@@ -29,6 +17,7 @@ public class MixinServerConfigurationNetworkHandler implements INetworkConfigura
 	@Shadow
 	private SyncedClientOptions syncedOptions;
 	
+	/*
 	@Redirect(at = @At(value = "INVOKE",
 	         target = "Lnet/minecraft/server/PlayerManager;checkCanJoin(Ljava/net/SocketAddress;Lnet/minecraft/server/PlayerConfigEntry;)Lnet/minecraft/text/Text;"),
 	         method = "onReady(Lnet/minecraft/network/packet/c2s/config/ReadyC2SPacket;)V")
@@ -37,6 +26,7 @@ public class MixinServerConfigurationNetworkHandler implements INetworkConfigura
 		// TODO: check on CraftEventFactory.handleLoginResult(
 		return null;
 	}
+
 	
 	@Inject(at = @At(
 			value = "INVOKE",
@@ -53,6 +43,7 @@ public class MixinServerConfigurationNetworkHandler implements INetworkConfigura
 			return;
 		}
 	}
+	*/
 
 	@Override
 	public void cardboard_setPlayer(ServerPlayerEntity entity) {
