@@ -21,7 +21,7 @@ import net.minecraft.world.World;
 public class MixinFirechargeItem {
 
     @Inject(method = "useOnBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/FireChargeItem;playUseSound(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V"))
-    public void useOnBlock_BF1(ItemUsageContext context, CallbackInfoReturnable<ActionResult> ci) {
+    public void cardboard$fireChargeItem_BlockIgniteEvent(ItemUsageContext context, CallbackInfoReturnable<ActionResult> ci) {
         World world = context.getWorld();
         BlockPos blockpos = context.getBlockPos();
         BlockState state = world.getBlockState(blockpos);

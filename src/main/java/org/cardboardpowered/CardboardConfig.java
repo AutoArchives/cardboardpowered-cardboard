@@ -15,37 +15,6 @@ import org.cardboardpowered.library.KnotHelper;
 public class CardboardConfig {
 
 	private static final int CONFIG_VERSION = 1;
-	
-	/*
-    private static final String DEFAULT =
-    		"# This is the configuration file for Cardboard\n\n" +
-            "# config-version internal use, do not modify.\n" +
-            "config-version: " + CONFIG_VERSION + "\n\n" +
-            "# Invoke ChatEvent from PlayerManager instead of NetworkHandler\n" +
-            "# This can solve issues with other mods that overwrite the chat method,\n" +
-            "use_alternative_chat_mixin: false\n" +
-            "\n"+
-            "# Registry Command Fix\n" +
-            "# Commands like \"/give\" or \"/setblock\" don't work when\n" +
-            "# executed by entities unless \"minecraft:\" prefix is specified.\n" +
-            "# Enabling will break chat signatures.\n" +
-            "registry-command-fix: true\n" +
-            "\n"+
-            "# Reflection Remapper Skip\n" +
-            "# Our current Reflection remapper might cause issues with some plugins\n" +
-            "# You can add plugin names here (that dont use Reflection) to our SKIP array\n" +
-            "skip_reflection_for_plugin:\n\t- vault\n\t- worldguard\n\n" +
-            "# Forcefully Disable Mixins - If a mixin is causing an issue you can disable it here\n" +
-            "mixin-force-disable:\n\t- None\n\n" +
-            "# Register '/mods' Command\n" +
-            "# This will add a command to view all Fabric mods similar to /plugins \n" +
-            "add-mods-command: true\n\n" + 
-            "# Debug Test Stuff\n" +
-            "debug_print_event_call: false\n" +
-            "debug_print_all_calls: false\n" +
-            "debug_player: false\n" +
-            "debug_other: false\n"
-            ;*/
     
 	private static DefaultConfig DEFAULT_CONF = new DefaultConfig()
 			.addSection(new ConfigSection()
@@ -171,15 +140,13 @@ public class CardboardConfig {
 							.mapToObj(i -> keys[i] + (values[i].contains("\n") ? ":" : ": ") + values[i])
 							.collect(Collectors.joining("\n"));
 		}
-		
+
 		public String asString() {
 			return String.join("\n", comments) + "\n" + joinKeyValuePairs() + "\n";
 		}
-		
+
 	}
-	
-	
-	
+
 	private static final String DEF_CONFIG_TEXT = DEFAULT_CONF.asString();
 
     public static ArrayList<String> disabledMixins = new ArrayList<>();

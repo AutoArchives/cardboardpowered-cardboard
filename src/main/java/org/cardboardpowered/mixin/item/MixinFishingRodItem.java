@@ -25,7 +25,7 @@ import net.minecraft.world.World;
 public class MixinFishingRodItem {
 
     @Inject(at = @At("HEAD"), method = "use", cancellable = true)
-    public void bukkitize(World world, PlayerEntity entityhuman, Hand enumhand, CallbackInfoReturnable<ActionResult> ci) {
+    public void cardboard$fishingRodUse_PlayerFishEvent(World world, PlayerEntity entityhuman, Hand enumhand, CallbackInfoReturnable<ActionResult> ci) {
         if (null == entityhuman.fishHook) {
             ItemStack itemstack = entityhuman.getStackInHand(enumhand);
 

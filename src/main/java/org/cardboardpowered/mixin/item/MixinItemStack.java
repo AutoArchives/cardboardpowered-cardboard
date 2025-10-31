@@ -1,21 +1,15 @@
 package org.cardboardpowered.mixin.item;
 
-// import java.util.Random;
-
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
-import me.isaiah.common.cmixin.IMixinItemStack;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.MergedComponentMap;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -26,7 +20,6 @@ import net.minecraft.stat.Stats;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -40,7 +33,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -81,7 +73,6 @@ public class MixinItemStack implements IItemStack {
         ((ItemStack)(Object)this).applyUnvalidatedChanges(patch);
     }
 
-    
     @Inject(at = @At("HEAD"), method = "Lnet/minecraft/item/ItemStack;damage(ILnet/minecraft/server/world/ServerWorld;Lnet/minecraft/server/network/ServerPlayerEntity;Ljava/util/function/Consumer;)V", cancellable = true)
     public void callPlayerItemDamageEvent( int i, ServerWorld world, ServerPlayerEntity player, java.util.function.Consumer<Item> breakCallback, CallbackInfo ci) {
         if (!((ItemStack)(Object)this).isDamageable()) {

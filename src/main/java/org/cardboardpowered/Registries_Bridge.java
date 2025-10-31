@@ -13,17 +13,6 @@ import net.minecraft.registry.ServerDynamicRegistryType;
 
 public class Registries_Bridge {
 
-	/*
-	old 1.21.1:
-    public static final Conversions BUILT_IN_CONVERSIONS = new Conversions(new RegistryOps.RegistryInfoGetter(){
-
-        public <T> Optional<RegistryOps.RegistryInfo<T>> getRegistryInfo(RegistryKey<? extends Registry<? extends T>> registryRef) {
-            Registry<T> registry = ServerDynamicRegistryType.STATIC_REGISTRY_MANAGER.get(registryRef);
-            return Optional.of(new RegistryOps.RegistryInfo<T>(registry.getReadOnlyWrapper(), registry.getTagCreatingWrapper(), Lifecycle.experimental()));
-        }
-    });
-    */
-    
     public static final Conversions BUILT_IN_CONVERSIONS = new Conversions(new RegistryOps.RegistryInfoGetter(){
 
         public <T> Optional<RegistryOps.RegistryInfo<T>> getRegistryInfo(RegistryKey<? extends Registry<? extends T>> registryRef) {

@@ -77,11 +77,7 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         List<Library> libraries = new ArrayList<>();
 
         // Paper API
-        // libraries.add( new Library("io.papermc", "paper-api", "1.21.4-R0.1-20250511.205801-225", SHA1, "664d0e9471c4a71af483734af88d6e57bbbd226c", "paper"));
-        // libraries.add( new Library("io.papermc", "paper-api", "1.21.6-R0.1-20250630.094942-50", SHA1, "72c1661b05fb67a0e1e31c95b67aef24986ad1c8", "paper"));
-
         libraries.add( new Library("io.papermc", "paper-api", "1.21.10-R0.1-20251020.022259-22", SHA1, "ecd306f6c6e7e715ebccb6cb7706c5f932bd639b", "paper"));
-        // libraries.add( new Library("io.papermc", "paper-api", "1.21.9-R0.1-20251007.115206-20", SHA1, "75605335af3709981b8862fbbc0d2fd52e533a3a", "paper"));
 
         // Paper API Libraries
         libraries.add( new Library("org.xerial", "sqlite-jdbc", "3.41.0.0", MD5, "0d63ee5b583e9a75ea1717ffce63fed8", null));
@@ -94,7 +90,6 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         // TODO: Keep Adventure version in check
         String adventureVersion = "4.25.0";
 
-        // Paper Loves kyori
         libraries.add( new Library("net.kyori", "adventure-api", adventureVersion, SHA1, "6bd10494eeb2f8eadce7226db4445e8728985cbb", null) );
         libraries.add( new Library("net.kyori", "adventure-key", adventureVersion, SHA1, "eadeff9eeaa46f76de3f31fdff1d8e952273cf04", null) );
         libraries.add( new Library("net.kyori", "adventure-text-serializer-gson", adventureVersion, SHA1, "e312e240fe82f4207ff2232b33ee4433855bdfff", null) );
@@ -104,11 +99,6 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         libraries.add( new Library("net.kyori", "adventure-text-serializer-plain", adventureVersion, SHA1, "82f5d4188f3cb6da9654b4ceea8b4093af5f1243", null) );
         libraries.add( new Library("net.kyori", "adventure-text-minimessage", adventureVersion, SHA1, "38f8f778c92f1ea848f79f992c99c4b98f96f23b", null) );
         libraries.add( new Library("net.kyori", "option", "1.1.0", SHA1, "593fecb9c42688eebc7d8da5d6ea127f4d4c92a2", null) );
-
-
-        if (mcver.contains("1.17")) {
-            libraries.add( new Library("org.jline", "jline", "3.19.0", SHA1, "27edf6497c4fac20b63ca4cd8788581ca86cb83e", null) );
-        }
 
         // Set WorldEdit adapter class name here
         // as this provides more verbose stacktraces.
@@ -129,8 +119,6 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         return true; // TODO
         // return JarReader.found.contains(event);
     }
-    
-    // private static final TestCl dummy = new TestCl();
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
@@ -176,7 +164,6 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         if (mcver.contains("1.20") && mixin.endsWith("_1_18")) {
         	return false;
         }
-
 
         // Disable mixin if event is not found in plugins.
         /*if (not_has_event(mixin, "LeashKnotEntity", "PlayerLeashEntityEvent") && not_has_event(mixin, "LeashKnotEntity", "PlayerUnleashEntityEvent")) return false;

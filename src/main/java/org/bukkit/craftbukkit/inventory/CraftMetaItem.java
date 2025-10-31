@@ -12,32 +12,26 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
-import com.google.gson.JsonParseException;
 import com.javazilla.bukkitfabric.Utils;
-import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 
 import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
 
 import me.isaiah.common.ICommonMod;
-import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.component.type.*;
 import net.minecraft.component.*;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.item.BlockItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.nbt.visitor.NbtOrderedStringFormatter;
 import net.minecraft.predicate.BlockPredicate;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registry;
@@ -47,15 +41,11 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.nbt.NbtSizeTracker;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.Property;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.Unit;
-
-import static org.spigotmc.ValidateUtils.limit;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -2135,12 +2125,12 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public boolean hasDamage() {
-        return damage > 0;
+    	return this.damage != null && this.damage > 0;
     }
 
     @Override
     public int getDamage() {
-        return damage;
+    	return this.damage == null ? 0 : this.damage;
     }
 
     @Override

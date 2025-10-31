@@ -1,6 +1,6 @@
 /**
  * Cardboard - Spigot/Paper API for Fabric
- * Copyright (C) 2020-2021 Cardboard contributors
+ * Copyright (C) 2020-2025 Cardboard contributors
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,60 +19,48 @@
 package org.cardboardpowered.mixin.entity;
 
 import java.util.Optional;
-//<<<<<<< HEAD
-//=======
 import java.util.OptionalInt;
-import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftEntity;
-import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.craftbukkit.util.CraftLocation;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.PlayerChangedMainHandEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerLocaleChangeEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.inventory.MainHand;
 import org.cardboardpowered.CardboardConfig;
 import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.TeleportTargetExtra;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.impl.world.CraftWorld;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.util.CraftChatMessage;
-import org.bukkit.craftbukkit.util.CraftLocation;
-import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.player.PlayerChangedMainHandEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
-import org.bukkit.inventory.MainHand;
+import org.cardboardpowered.interfaces.IMixinCommandOutput;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.interfaces.IMixinScreenHandler;
+import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-//>>>>>>> upstream/ver/1.20
-import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.cardboardpowered.interfaces.IMixinCommandOutput;
-import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinScreenHandler;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
-import org.cardboardpowered.interfaces.IMixinWorld;
+
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.fabricmc.fabric.impl.screenhandler.Networking;
-//<<<<<<< HEAD
-//=======
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTracker;
 import net.minecraft.entity.player.HungerManager;
-import net.minecraft.entity.player.PlayerEntity;
-//>>>>>>> upstream/ver/1.20
 import net.minecraft.inventory.DoubleInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.network.ClientConnection;
@@ -83,7 +71,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerListener;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -95,57 +82,28 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-//<<<<<<< HEAD
-//=======
-import net.minecraft.registry.Registries;
 import net.minecraft.util.math.Vec3d;
-//>>>>>>> upstream/ver/1.20
 import net.minecraft.world.GameRules;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldProperties.SpawnPoint;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.player.PlayerChangedMainHandEvent;
-import org.bukkit.event.player.PlayerLocaleChangeEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.inventory.MainHand;
-import org.cardboardpowered.impl.entity.CraftPlayer;
-import org.cardboardpowered.impl.inventory.CardboardInventoryView;
-import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.OptionalInt;
 
 @Mixin(value = ServerPlayerEntity.class, priority = 999)
 public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCommandOutput, IMixinServerEntityPlayer  {
 
-	
 	@Shadow
 	private CommandOutput commandOutput;
-	
+
 	public CommandOutput cb$get_command_output() {
 		return commandOutput;
 	}
-	
+
 	public void cb$set_command_output(CommandOutput out) {
 		this.commandOutput = out;
 	}
-	
+
 	public void cb$set_bukkit_command_output(CommandOutput out) {
 		// this.commandOutput = out;
-		
+	
 		this.commandOutput = new CommandOutput() {
 
 			@Override
@@ -172,15 +130,13 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
 			// @Override
             public CommandSender getBukkitSender(ServerCommandSource wrapper) {
                 return ( (IMixinEntity)  ((ServerPlayerEntity) (Object) this) ) .getBukkitEntity();
-            	// return ServerPlayerEntity.this.getBukkitEntity();
             }
 			
 		};
 		
 	}
-	
-    private CraftPlayer bukkit;
 
+    private CraftPlayer bukkit;
     public ClientConnection connectionBF;
 
     @Shadow
@@ -273,14 +229,11 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     		target = "Lnet/minecraft/world/TeleportTarget;world()Lnet/minecraft/server/world/ServerWorld;"
     ), method = "Lnet/minecraft/server/network/ServerPlayerEntity;teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/server/network/ServerPlayerEntity;")
     public void cardboard$do_teleport_event(TeleportTarget target, CallbackInfoReturnable<ServerPlayerEntity> ci) {
-    	
     	if (CardboardConfig.DEBUG_PLAYER) {
     		CardboardMod.LOGGER.info("DEBUG: ServerPlayerEntity.cardboard$do_teleport_event called");
     	}
     	
     	ServerPlayerEntity thiz = (ServerPlayerEntity) (Object) this;
-    	//ServerWorld serverWorld = target.world();
-    	// ServerWorld serverWorld2 = thiz.getServerWorld();
     	cb$from = thiz.getEntityWorld(); // Cardboard - store from world
 
     	Location exit = CraftLocation.toBukkit(target.position(), target.world().getWorld());
@@ -306,8 +259,6 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         }
         
         if (!newExit.equals(exit)) {
-            // worldserver = ((CraftWorld)newExit.getWorld()).getHandle();
-        	
         	// Set our new TeleportTarget
         	target.world = ((CraftWorld)newExit.getWorld()).getHandle();
         	target.position = CraftLocation.toVec3D(newExit);
@@ -588,27 +539,6 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     public void doBukkitEvent_PlayerLevelChangeEvent(CallbackInfo ci) {
         //ServerPlayerEntity plr = ((ServerPlayerEntity)(Object)this);
 
-        // Avoid suffocation on join
-        /*BlockPos saved = bukkit.posAtLogin;
-        if (null != saved && plr.age > 8) {
-            if (plr.age < 60) {
-                if (h == 0) h = plr.getHealth();
-                 plr.setInvulnerable(true);
-                BlockPos pos = plr.getBlockPos();
-                if (Math.abs(saved.x-pos.x) <= 1 && Math.abs(saved.z-pos.z) <= 1) {
-                    if (!plr.getServerWorld().getBlockState(new BlockPos(pos.x, pos.y+1, pos.z)).isAir()) {
-                        int ty = saved.getY();
-                        while (!plr.getServerWorld().getBlockState(new BlockPos(pos.x, ty, pos.z)).isAir()) { ty++; }
-                        plr.teleport(saved.x, ty, saved.z);
-                    }
-                }
-                plr.setHealth(h);
-            } else if (plr.age < 80) {
-                plr.setInvulnerable(bukkit.in);
-            }
-        }*/
-        // end
-
         try {
             if (this.oldLevel == -1) this.oldLevel = ((ServerPlayerEntity)(Object)this).experienceLevel;
             if (this.oldLevel != ((ServerPlayerEntity)(Object)this).experienceLevel) {
@@ -629,8 +559,6 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
             ((ServerPlayerEntity)(Object)this).totalExperience = entityplayer.totalExperience;
             ((ServerPlayerEntity)(Object)this).experienceProgress = entityplayer.experienceProgress;
             ((ServerPlayerEntity)(Object)this).setScore(entityplayer.getScore());
-            // TODO
-            //((ServerPlayerEntity)(Object)this).lastNetherPortalPosition = entityplayer.lastNetherPortalPosition;
         } else if (((ServerPlayerEntity)(Object)this).getEntityWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || entityplayer.isSpectator()) {
             ((ServerPlayerEntity)(Object)this).inventory.clone(entityplayer.inventory);
             ((ServerPlayerEntity)(Object)this).experienceLevel = entityplayer.experienceLevel;
@@ -639,16 +567,11 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
             ((ServerPlayerEntity)(Object)this).setScore(entityplayer.getScore());
         }
         ((ServerPlayerEntity)(Object)this).enderChestInventory = entityplayer.enderChestInventory;
-        // ((ServerPlayerEntity)(Object)this).getDataTracker().set(ServerPlayerEntity.PLAYER_MODEL_PARTS, entityplayer.getDataTracker().get(ServerPlayerEntity.PLAYER_MODEL_PARTS));
         ((ServerPlayerEntity)(Object)this).syncedExperience = -1;
         ((ServerPlayerEntity)(Object)this).syncedHealth = -1.0F;
         ((ServerPlayerEntity)(Object)this).syncedFoodLevel = -1;
-        //((ServerPlayerEntity)(Object)this).removedEntities.addAll(entityplayer.removedEntities);
         ((ServerPlayerEntity)(Object)this).seenCredits = entityplayer.seenCredits;
         ((ServerPlayerEntity)(Object)this).enteredNetherPos = entityplayer.enteredNetherPos;
-        //((ServerPlayerEntity)(Object)this).setShoulderEntityLeft(entityplayer.getShoulderEntityLeft());
-        //((ServerPlayerEntity)(Object)this).setShoulderEntityRight(entityplayer.getShoulderEntityRight());
-
     }
     
     @Inject(at = @At("HEAD"), method = "closeHandledScreen")
@@ -660,25 +583,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         Bukkit.getPluginManager().callEvent(event);
         handler.transferTo(((ServerPlayerEntity)(Object)this).playerScreenHandler, getBukkitEntity());
     }
-    
-    public void spawnIn1(World world) {
-        /*this.setWorld(world);
-        if (world == null) {
-            this.unsetRemoved();
-            Vec3d position = null;
-            if (this.spawnPointDimension != null && (world = this.server.getWorld(this.spawnPointDimension)) != null && this.getSpawnPointPosition() != null) {
-                position = PlayerEntity.findRespawnPosition((ServerWorld)world, this.getSpawnPointPosition(), this.getSpawnAngle(), false, false).orElse(null);
-            }
-            if (world == null || position == null) {
-                world = ((CraftWorld)Bukkit.getServer().getWorlds().get(0)).getHandle();
-                position = Vec3d.ofCenter(world.getSpawnPos());
-            }
-            this.setWorld(world);
-            this.setPos(position.getX(), position.getY(), position.getZ());
-        }
-        this.interactionManager.setWorld((ServerWorld)world);*/
-    }
-    
+
     @Override
     public void spawnIn(ServerWorld level) {
     	if (level == null) {
@@ -690,33 +595,6 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     	}
     }
 
-    /*
-	@Override
-	public void spawnIn(ServerWorld world) {
-		ServerPlayerEntity plr = ((ServerPlayerEntity)(Object)this);
-		
-		plr.setServerWorld(world);
-        if (world == null) {
-        	plr.unsetRemoved();
-            Vec3d position = null;
-            
-            RegistryKey<World> rw = Respawn.getDimension(plr.getRespawn());
-            SpawnPoint point = plr.getRespawn().respawnData();
-            if (rw != null && (world = CraftServer.server.getWorld(rw)) != null && point.getPos() != null) {
-                position = ServerPlayerEntity.findRespawnPosition((ServerWorld)world, plr.getRespawn(), false)
-                		.map(RespawnPos::pos).orElse(null);
-            }
-            if (world == null || position == null) {
-                world = ((CraftWorld)Bukkit.getServer().getWorlds().get(0)).getHandle();
-                position = Vec3d.ofCenter(point.getPos());
-            }
-            plr.setServerWorld(world);
-            plr.setPos(position.getX(), position.getY(), position.getZ());
-        }
-        plr.interactionManager.setWorld((ServerWorld)world);
-	}
-	*/
-	
 	// SPIGOT-1903, MC-98153
 	@Override
 	public void spigot$forceSetPositionRotation(double x, double y, double z, float yaw, float pitch) {

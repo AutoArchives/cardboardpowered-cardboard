@@ -1,15 +1,8 @@
 package org.cardboardpowered.mixin.item;
 
-import org.bukkit.Bukkit;
-import org.bukkit.event.server.MapInitializeEvent;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-
 import net.minecraft.item.FilledMapItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.map.MapState;
-import net.minecraft.world.World;
 
 @MixinInfo(events = {"MapInitializeEvent"})
 @Mixin(FilledMapItem.class)

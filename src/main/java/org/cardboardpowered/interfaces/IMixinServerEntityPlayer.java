@@ -21,7 +21,6 @@ package org.cardboardpowered.interfaces;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.ClientConnection;

@@ -20,7 +20,7 @@ public abstract class MixinServerPlayNetworkHandler_ChatEvent extends ServerComm
     @Shadow 
     public ServerPlayerEntity player;
 
-    private static final AtomicIntegerFieldUpdater<ServerPlayNetworkHandler> chatSpamField = AtomicIntegerFieldUpdater.newUpdater(ServerPlayNetworkHandler.class, "messageCooldownBukkit");
+    // private static final AtomicIntegerFieldUpdater<ServerPlayNetworkHandler> chatSpamField = AtomicIntegerFieldUpdater.newUpdater(ServerPlayNetworkHandler.class, "messageCooldownBukkit");
 
     // @Shadow
     // public int prevTeleportCheckTicks;
