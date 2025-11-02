@@ -99,6 +99,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.inventory.InventoryCloseEvent.Reason;
 import org.bukkit.event.player.PlayerExpCooldownChangeEvent;
+import org.bukkit.event.player.PlayerItemMendEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerKickEvent.Cause;
 import org.bukkit.event.player.PlayerRegisterChannelEvent;
@@ -174,7 +175,12 @@ import net.kyori.adventure.util.TriState;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.advancement.PlayerAdvancementTracker;
 import net.minecraft.block.entity.SignBlockEntity;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.EnchantmentEffectComponentTypes;
+import net.minecraft.enchantment.EnchantmentEffectContext;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity.RemovalReason;
+import net.minecraft.entity.ExperienceOrbEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -1777,6 +1783,34 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         // TODO Auto-generated method stub
         return 0;
     }
+    
+    /*
+    public int applyMending(int amount) {
+        ServerPlayerEntity handle = this.getHandle();
+        Optional<EnchantmentEffectContext> stackEntry = EnchantmentHelper.chooseEquipmentWith(
+           EnchantmentEffectComponentTypes.REPAIR_WITH_XP, handle, net.minecraft.item.ItemStack::isDamaged
+        );
+        net.minecraft.item.ItemStack itemstack = stackEntry.map(EnchantmentEffectContext::stack).orElse(net.minecraft.item.ItemStack.EMPTY);
+        if (!itemstack.isEmpty() && itemstack.getItem().getComponents().contains(DataComponentTypes.MAX_DAMAGE)) {
+           ExperienceOrbEntity orb = net.minecraft.entity.EntityType.EXPERIENCE_ORB.create(handle.getEntityWorld(), SpawnReason.COMMAND);
+           orb.setValue(amount);
+           // orb.spawnReason = org.bukkit.entity.ExperienceOrb.SpawnReason.CUSTOM;
+           orb.setPos(handle.getX(), handle.getY(), handle.getZ());
+           int possibleDurabilityFromXp = EnchantmentHelper.getRepairWithExperience(handle.getEntityWorld(), itemstack, amount);
+           int i = Math.min(possibleDurabilityFromXp, itemstack.getDamage());
+           int consumedExperience = i > 0 ? i * amount / possibleDurabilityFromXp : possibleDurabilityFromXp;
+           PlayerItemMendEvent event = CraftEventFactory.callPlayerItemMendEvent(handle, orb, itemstack, stackEntry.get().slot(), i, consumedExperience);
+           i = event.getRepairAmount();
+           orb.discard();
+           if (!event.isCancelled()) {
+              amount -= consumedExperience;
+              itemstack.setDamage(itemstack.getDamage() - i);
+           }
+        }
+
+        return amount;
+     }
+     */
 
     @Override
     public Firework boostElytra(ItemStack arg0) {
@@ -1804,14 +1838,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public float getCooldownPeriod() {
-        // TODO Auto-generated method stub
-        return 0;
+    	return this.getHandle().getAttackCooldownProgressPerTick();
     }
 
     @Override
-    public float getCooledAttackStrength(float arg0) {
-        // TODO Auto-generated method stub
-        return 0;
+    public float getCooledAttackStrength(float adjustTicks) {
+    	return this.getHandle().getAttackCooldownProgress(adjustTicks);
     }
 
     @Override
