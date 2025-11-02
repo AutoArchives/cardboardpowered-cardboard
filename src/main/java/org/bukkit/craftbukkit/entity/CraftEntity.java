@@ -302,9 +302,12 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     private final CraftPersistentDataContainer persistentDataContainer = new CraftPersistentDataContainer(DATA_TYPE_REGISTRY);
 
     protected final CraftServer server = CraftServer.INSTANCE;
+    
+    private final EntityType entityType;
 
     public CraftEntity(net.minecraft.entity.Entity entity) {
         this.nms = entity;
+        this.entityType = CraftEntityType.minecraftToBukkit(entity.getType());
     }
 
     public net.minecraft.entity.Entity getHandle() {
@@ -1057,8 +1060,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 	
 	@Override
 	public @NotNull EntityType getType() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.entityType;
 	}
 
 	@Override
