@@ -187,6 +187,7 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.TntEntity;
+import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.Entity.RemovalReason;
 import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
@@ -1545,9 +1546,16 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     // 1.21.4: (moved from Player)
 
 	@Override
-	public void lookAt(double arg0, double arg1, double arg2, @NotNull LookAnchor arg3) {
-		// TODO Auto-generated method stub
-		
+	public void lookAt(double x, double y, double z, @NotNull LookAnchor entityAnchor) {
+		this.getHandle().lookAt(toNmsAnchor(entityAnchor), new Vec3d(x, y, z));
+	}
+	
+	public static EntityAnchorArgumentType.EntityAnchor toNmsAnchor(LookAnchor nmsAnchor) {
+		return switch (nmsAnchor) {
+		case EYES -> EntityAnchorArgumentType.EntityAnchor.EYES;
+		case FEET -> EntityAnchorArgumentType.EntityAnchor.FEET;
+		default -> throw new MatchException(null, null);
+		};
 	}
 	
 	// 1.21.6:
