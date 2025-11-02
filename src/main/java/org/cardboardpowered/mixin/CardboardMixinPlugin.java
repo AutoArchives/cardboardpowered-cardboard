@@ -85,7 +85,7 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
 		libraries.add( new Library("commons-lang", "commons-lang", "2.6", SHA1, "0ce1edb914c94ebc388f086c6827e8bdeec71ac2", null) );
         libraries.add( new Library("org.apache.commons", "commons-collections4", "4.4", SHA1, "62ebe7544cb7164d87e0637a2a6a2bdc981395e8", null) );
         libraries.add( new Library("commons-collections", "commons-collections", "3.2.1", SHA1, "761ea405b9b37ced573d2df0d1e3a4e0f9edc668", null) );
-        libraries.add( new Library("net.md-5", "bungeecord-chat", "1.16-R0.4", SHA1, "e043e8eed8fdb5c157090a84ac8fd64a6a8d0d88", null) );
+        libraries.add( new Library("net.md-5", "bungeecord-chat", "1.21-R0.2", SHA1, "64956ff493786f981a15697ce406fe39a2551692", null) );
         
         // TODO: Keep Adventure version in check
         String adventureVersion = "4.25.0";

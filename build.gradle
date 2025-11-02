@@ -98,7 +98,7 @@ dependencies {
 
 	// Paper-API libs
 	modImplementation(PAPER_API_VER)
-	modImplementation("net.md-5:bungeecord-chat:1.16-R0.4")
+	modImplementation("net.md-5:bungeecord-chat:1.21-R0.2")
 	modImplementation("net.kyori:adventure-api:4.23.0")
 	modImplementation("net.kyori:adventure-text-serializer-gson:4.23.0")
 	modImplementation("net.kyori:adventure-text-serializer-legacy:4.23.0")

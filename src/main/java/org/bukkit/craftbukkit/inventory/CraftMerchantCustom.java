@@ -18,6 +18,7 @@ import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.entity.ExperienceOrb.SpawnReason;
+import org.cardboardpowered.interfaces.IMixinTrader;
 
 public class CraftMerchantCustom implements CraftMerchant {
    private CraftMerchantCustom.MinecraftMerchant merchant;
@@ -42,7 +43,7 @@ public class CraftMerchantCustom implements CraftMerchant {
       return this.merchant;
    }
 
-   public static class MinecraftMerchant implements Merchant {
+   public static class MinecraftMerchant implements Merchant, IMixinTrader {
       private final Text title;
       private final TradeOfferList trades = new TradeOfferList();
       private PlayerEntity tradingPlayer;
@@ -63,7 +64,7 @@ public class CraftMerchantCustom implements CraftMerchant {
          this.title = EntityType.VILLAGER.getName();
       }
 
-      // @Override
+      @Override
       public CraftMerchant getCraftMerchant() {
          return this.craftMerchant;
       }

@@ -14,6 +14,7 @@ import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
@@ -25,6 +26,8 @@ import org.bukkit.loot.LootTable;
 import org.bukkit.util.Vector;
 
 import com.destroystokyo.paper.entity.Pathfinder;
+import com.google.common.base.Preconditions;
+
 import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.interfaces.IMixinEntity;
 
@@ -120,61 +123,60 @@ public class CraftMob extends LivingEntityImpl implements Mob {
 
     @Override
     public int getHeadRotationSpeed() {
-        // TODO Auto-generated method stub
-        return 0;
+    	return this.getHandle().getMaxLookYawChange();
     }
 
     @Override
     public int getMaxHeadPitch() {
-        // TODO Auto-generated method stub
-        return 0;
+    	return this.getHandle().getMaxLookPitchChange();
     }
 
     @Override
-    public void lookAt(@NotNull Location arg0) {
-        // TODO Auto-generated method stub
-        
+    public void lookAt(@NotNull Location location) {
+    	Preconditions.checkNotNull(location, "location cannot be null");
+    	Preconditions.checkArgument(location.getWorld().equals(this.getWorld()), "location in a different world");
+    	this.getHandle().getLookControl().lookAt(location.getX(), location.getY(), location.getZ());
     }
 
     @Override
-    public void lookAt(@NotNull Entity arg0) {
-        // TODO Auto-generated method stub
-        
+    public void lookAt(@NotNull Location location, float headRotationSpeed, float maxHeadPitch) {
+    	Preconditions.checkNotNull(location, "location cannot be null");
+    	Preconditions.checkArgument(location.getWorld().equals(this.getWorld()), "location in a different world");
+    	this.getHandle().getLookControl().lookAt(location.getX(), location.getY(), location.getZ(), headRotationSpeed, maxHeadPitch);
     }
 
     @Override
-    public void lookAt(@NotNull Location arg0, float arg1, float arg2) {
-        // TODO Auto-generated method stub
-        
+    public void lookAt(@NotNull org.bukkit.entity.Entity entity) {
+    	Preconditions.checkNotNull(entity, "entity cannot be null");
+    	Preconditions.checkArgument(entity.getWorld().equals(this.getWorld()), "entity in a different world");
+    	this.getHandle().getLookControl().lookAt(((CraftEntity)entity).getHandle());
     }
 
     @Override
-    public void lookAt(@NotNull Entity arg0, float arg1, float arg2) {
-        // TODO Auto-generated method stub
-        
+    public void lookAt(@NotNull org.bukkit.entity.Entity entity, float headRotationSpeed, float maxHeadPitch) {
+    	Preconditions.checkNotNull(entity, "entity cannot be null");
+    	Preconditions.checkArgument(entity.getWorld().equals(this.getWorld()), "entity in a different world");
+    	this.getHandle().getLookControl().lookAt(((CraftEntity)entity).getHandle(), headRotationSpeed, maxHeadPitch);
     }
 
     @Override
-    public void lookAt(double arg0, double arg1, double arg2) {
-        // TODO Auto-generated method stub
-        
+    public void lookAt(double x, double y, double z) {
+    	this.getHandle().getLookControl().lookAt(x, y, z);
     }
 
     @Override
-    public void lookAt(double arg0, double arg1, double arg2, float arg3, float arg4) {
-        // TODO Auto-generated method stub
-        
+    public void lookAt(double x, double y, double z, float headRotationSpeed, float maxHeadPitch) {
+    	this.getHandle().getLookControl().lookAt(x, y, z, headRotationSpeed, maxHeadPitch);
     }
 
     @Override
     public boolean isLeftHanded() {
-        // TODO Auto-generated method stub
-        return false;
+    	return this.getHandle().isLeftHanded();
     }
 
     @Override
     public void setLeftHanded(boolean bl) {
-        // TODO Auto-generated method stub
+    	this.getHandle().setLeftHanded(bl);
     }
 
 	@Override
