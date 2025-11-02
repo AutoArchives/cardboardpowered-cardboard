@@ -19,6 +19,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 import org.bukkit.craftbukkit.entity.CraftEntity;
@@ -993,14 +994,14 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 	}
 
 	public void broadcastSlotBreak(EquipmentSlot slot) {
-        this.getHandle().getEntityWorld().sendEntityStatus(this.getHandle(), net.minecraft.entity.LivingEntity.getEquipmentBreakStatus(Utils.getNMS(slot)));
+        this.getHandle().getEntityWorld().sendEntityStatus(this.getHandle(), net.minecraft.entity.LivingEntity.getEquipmentBreakStatus(CraftEquipmentSlot.getNMS(slot)));
 	}
 
 	public void broadcastSlotBreak(EquipmentSlot slot, Collection<Player> players) {
 		if (players.isEmpty()) {
 			return;
 		}
-		EntityStatusS2CPacket packet = new EntityStatusS2CPacket(this.getHandle(), net.minecraft.entity.LivingEntity.getEquipmentBreakStatus( Utils.getNMS(slot)));
+		EntityStatusS2CPacket packet = new EntityStatusS2CPacket(this.getHandle(), net.minecraft.entity.LivingEntity.getEquipmentBreakStatus( CraftEquipmentSlot.getNMS(slot)));
 		players.forEach(player -> ((CraftPlayer)player).getHandle().networkHandler.sendPacket(packet));
 	}
 
@@ -1028,7 +1029,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
 	@Override
     public void damageItemStack(EquipmentSlot slot, int amount) {
-        net.minecraft.entity.EquipmentSlot nmsSlot = Utils.getNMS(slot);
+        net.minecraft.entity.EquipmentSlot nmsSlot = CraftEquipmentSlot.getNMS(slot);
         this.damageItemStack0(this.getHandle().getEquippedStack(nmsSlot), amount, nmsSlot);
     }
 	
@@ -1178,7 +1179,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 	
 	@Override
     public EquipmentSlot getActiveItemHand() {
-        return Utils.getHand(this.getHandle().getActiveHand());
+        return CraftEquipmentSlot.getHand(this.getHandle().getActiveHand());
     }
 	
     @Override
@@ -1276,7 +1277,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
 	@Override
 	public boolean canUseEquipmentSlot(@NotNull EquipmentSlot slot) {
-		net.minecraft.entity.EquipmentSlot es = Utils.getNMS(slot);
+		net.minecraft.entity.EquipmentSlot es = CraftEquipmentSlot.getNMS(slot);
 		return this.getHandle().canUseSlot( es );
 	}
 	

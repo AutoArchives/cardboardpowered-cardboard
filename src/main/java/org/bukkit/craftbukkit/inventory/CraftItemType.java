@@ -1,6 +1,7 @@
 package org.bukkit.craftbukkit.inventory;
 
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.attribute.CraftAttribute;
@@ -260,7 +261,7 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
     }
 
     public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(org.bukkit.inventory.EquipmentSlot slot) {
-        EquipmentSlot nmsSlot = Utils.getNMS(slot);
+        EquipmentSlot nmsSlot = CraftEquipmentSlot.getNMS(slot);
         return this.getDefaultAttributeModifiers((AttributeModifierSlot sg) -> sg.matches(nmsSlot));
     }
     

@@ -56,4 +56,7 @@ public class CraftEquipmentSlot {
         CraftEquipmentSlot.set(org.bukkit.inventory.EquipmentSlot.BODY, EquipmentSlot.BODY);
     }
 
+    public static EquipmentSlotGroup getSlotGroup(AttributeModifierSlot slotGroup) {
+    	return EquipmentSlotGroup.getByName(slotGroup.asString());
+    }
 }

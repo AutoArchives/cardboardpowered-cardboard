@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.memory.MemoryKey;
@@ -35,10 +36,8 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.interfaces.IMixinWorld;
-import org.jetbrains.annotations.Nullable;
 
 import me.isaiah.common.cmixin.IMixinGlobalPos;
-import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.World;
@@ -48,9 +47,10 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 
 public class Utils {
-    
-    public static EquipmentSlot getHand(Hand enumhand) {
-        return (enumhand == Hand.MAIN_HAND) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
+
+	@Deprecated
+    public static EquipmentSlot getHand(Hand h) {
+        return CraftEquipmentSlot.getHand(h);
     }
 
     public static UUID getWorldUUID(File baseDir) {
@@ -113,60 +113,5 @@ public class Utils {
     public static GlobalPos toNmsGlobalPos(Location location) {
         return GlobalPos.create(((CraftWorld) Objects.requireNonNull(location.getWorld())).getHandle().getRegistryKey(), BlockPos.ofFloored(location.getX(), location.getY(), location.getZ()));
     }
-
-    private static final net.minecraft.entity.EquipmentSlot[] slots = new net.minecraft.entity.EquipmentSlot[EquipmentSlot.values().length];
-    private static final EquipmentSlot[] enums = new EquipmentSlot[net.minecraft.entity.EquipmentSlot.values().length];
-
-    static {
-        set(EquipmentSlot.HAND, net.minecraft.entity.EquipmentSlot.MAINHAND);
-        set(EquipmentSlot.OFF_HAND, net.minecraft.entity.EquipmentSlot.OFFHAND);
-        set(EquipmentSlot.FEET, net.minecraft.entity.EquipmentSlot.FEET);
-        set(EquipmentSlot.LEGS, net.minecraft.entity.EquipmentSlot.LEGS);
-        set(EquipmentSlot.CHEST, net.minecraft.entity.EquipmentSlot.CHEST);
-        set(EquipmentSlot.HEAD, net.minecraft.entity.EquipmentSlot.HEAD);
-    }
-
-    private static void set(EquipmentSlot type, net.minecraft.entity.EquipmentSlot value) {
-        slots[type.ordinal()] = value;
-        enums[value.ordinal()] = type;
-    }
-
-    public static EquipmentSlot getSlot(net.minecraft.entity.EquipmentSlot nms) {
-        return enums[nms.ordinal()];
-    }
-
-    public static net.minecraft.entity.EquipmentSlot getNMS(EquipmentSlot slot) {
-        return slots[slot.ordinal()];
-    }
-
-	public static EquipmentSlot getSlot(AttributeModifierSlot slotName) {
-		// TODO Auto-generated method stub
-		switch (slotName) {
-			case ANY:
-				return EquipmentSlot.CHEST;
-			case ARMOR:
-				return EquipmentSlot.CHEST;
-			case BODY:
-				return EquipmentSlot.CHEST;
-			case CHEST:
-				return EquipmentSlot.CHEST;
-			case FEET:
-				return EquipmentSlot.FEET;
-			case HAND:
-				return EquipmentSlot.HAND;
-			case HEAD:
-				return EquipmentSlot.HEAD;
-			case LEGS:
-				return EquipmentSlot.LEGS;
-			case MAINHAND:
-				return EquipmentSlot.HAND;
-			case OFFHAND:
-				return EquipmentSlot.OFF_HAND;
-			default:
-				break;
-		
-		}
-		return EquipmentSlot.HAND;
-	}
 
 }
