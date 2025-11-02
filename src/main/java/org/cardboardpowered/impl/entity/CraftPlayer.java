@@ -220,6 +220,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldProperties;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket;
+import net.minecraft.network.packet.s2c.play.OverlayMessageS2CPacket;
 
 import org.bukkit.map.MapCursor;
 import org.bukkit.map.MapView;
@@ -1647,16 +1648,22 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         showTitle(title.getTitle());
     }
 
+    @Override
     public void sendActionBar(BaseComponent[] message) {
-        if (getHandle().networkHandler == null) return;
-     // TODO 1.17ify getHandle().networkHandler.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.TITLE, Text.of(ComponentSerializer.toString(message)), 0, 0, 0));
+    	if (this.getHandle().networkHandler != null && message != null) {
+    		OverlayMessageS2CPacket packet = new OverlayMessageS2CPacket(CraftChatMessage.bungeeToVanilla(message));
+    		this.getHandle().networkHandler.sendPacket(packet);
+    	}
     }
 
+    @Override
     public void sendActionBar(String message) {
-        if (getHandle().networkHandler == null || message == null || message.isEmpty()) return;
-     // TODO 1.17ifygetHandle().networkHandler.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.TITLE, CraftChatMessage.fromStringOrNull(message), 0, 0, 0));
+    	if (this.getHandle().networkHandler != null && message != null && !message.isEmpty()) {
+    		this.getHandle().networkHandler.sendPacket(new OverlayMessageS2CPacket(CraftChatMessage.fromStringOrNull(message)));
+    	}
     }
 
+    @Override
     public void sendActionBar(char alternateChar, String message) {
         if (message == null || message.isEmpty()) return;
         sendActionBar(org.bukkit.ChatColor.translateAlternateColorCodes(alternateChar, message));

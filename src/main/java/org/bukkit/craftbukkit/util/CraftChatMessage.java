@@ -6,6 +6,9 @@ import com.google.gson.JsonParseException;
 import com.mojang.serialization.JavaOps;
 
 import me.isaiah.common.cmixin.IMixinMinecraftServer;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.chat.ChatVersion;
+import net.md_5.bungee.chat.VersionedComponentSerializer;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.ClickEvent.Action;
 import net.minecraft.text.MutableText;
@@ -19,7 +22,6 @@ import net.minecraft.util.dynamic.Codecs;
 
 import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.CraftServer;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,11 +34,14 @@ public final class CraftChatMessage {
 
     private static final Pattern LINK_PATTERN = Pattern.compile("((?:(?:https?):\\/\\/)?(?:[-\\w_\\.]{2,}\\.[a-z]{2,4}.*?(?=[\\.\\?!,;:]?(?:[" + String.valueOf(org.bukkit.ChatColor.COLOR_CHAR) + " \\n]|$))))");
     private static final Map<Character, Formatting> formatMap;
+    private static VersionedComponentSerializer bungeeSerializer;
 
     static {
         Builder<Character, Formatting> builder = ImmutableMap.builder();
         for (Formatting format : Formatting.values()) builder.put(Character.toLowerCase(format.toString().charAt(1)), format);
         formatMap = builder.build();
+        
+        bungeeSerializer = VersionedComponentSerializer.forVersion(ChatVersion.V1_21_5);
     }
 
     public static Formatting getColor(ChatColor color) {
@@ -451,6 +456,14 @@ public final class CraftChatMessage {
 
     public static Optional<Text> fromStringOrOptional(String message, boolean keepNewlines) {
         return Optional.ofNullable(CraftChatMessage.fromStringOrNull(message, keepNewlines));
+    }
+
+    public static Text bungeeToVanilla(BaseComponent... components) {
+    	return fromJSON(bungeeToJson(components));
+    }
+
+    public static String bungeeToJson(BaseComponent... components) {
+    	return bungeeSerializer.toString(components);
     }
 
 

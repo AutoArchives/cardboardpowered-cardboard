@@ -29,7 +29,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
 import org.cardboardpowered.BukkitLogger;
-import com.javazilla.bukkitfabric.Utils;
 import org.cardboardpowered.impl.MetadataStoreImpl;
 import org.bukkit.craftbukkit.scheduler.CraftScheduler;
 import org.cardboardpowered.interfaces.IMixinAdvancement;
@@ -39,16 +38,13 @@ import org.cardboardpowered.interfaces.IMixinRecipe;
 import org.cardboardpowered.interfaces.IMixinRecipeManager;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import org.cardboardpowered.interfaces.IMixinWorld;
-import org.cardboardpowered.interfaces.IUserCache;
 import com.mohistmc.banner.bukkit.nms.utils.RemapUtils;
-import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import io.papermc.paper.ban.BanListType;
-import io.papermc.paper.configuration.GlobalConfiguration;
 import io.papermc.paper.configuration.PaperServerConfiguration;
 import io.papermc.paper.configuration.ServerConfiguration;
 import io.papermc.paper.datapack.DatapackManager;
@@ -99,8 +95,6 @@ import net.minecraft.server.dedicated.PendingServerCommand;
 import net.minecraft.server.dedicated.ServerPropertiesHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.ClickEvent.Action;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.Texts;
@@ -237,6 +231,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -1547,7 +1542,7 @@ public class CraftServer implements Server {
 
     @Override
     public World getWorld(String name) {
-        return worlds.get(name);
+        return worlds.get(name.toLowerCase(Locale.ROOT));
     }
 
     @Override
