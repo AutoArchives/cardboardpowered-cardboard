@@ -2878,9 +2878,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 	}
 	
 	@Override
-	public void lookAt(@NotNull Entity arg0, @NotNull LookAnchor arg1, @NotNull LookAnchor arg2) {
-		// TODO Auto-generated method stub
-		
+	public void lookAt(@NotNull Entity entity, @NotNull LookAnchor playerAnchor, @NotNull LookAnchor entityAnchor) {
+		this.getHandle().lookAtEntity(toNmsAnchor(playerAnchor), ((CraftEntity)entity).getHandle(), toNmsAnchor(entityAnchor));
 	}
 
 	@Override
