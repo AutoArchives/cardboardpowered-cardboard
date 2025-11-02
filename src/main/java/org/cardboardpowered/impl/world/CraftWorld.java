@@ -51,6 +51,7 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.generator.structure.CraftGeneratedStructure;
@@ -72,6 +73,7 @@ import org.bukkit.event.world.TimeSkipEvent;
 import org.bukkit.generator.BiomeProvider;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.generator.WorldInfo;
 import org.bukkit.generator.structure.GeneratedStructure;
 import org.bukkit.generator.structure.Structure;
 import org.bukkit.inventory.ItemStack;
@@ -106,6 +108,7 @@ import org.cardboardpowered.interfaces.IMixinThreadedAnvilChunkStorage;
 import com.mojang.datafixers.util.Pair;
 
 import io.papermc.paper.block.fluid.FluidData;
+import io.papermc.paper.event.world.WorldGameRuleChangeEvent;
 import io.papermc.paper.math.Position;
 import io.papermc.paper.raytracing.PositionedRayTraceConfigurationBuilder;
 import io.papermc.paper.world.MoonPhase;
@@ -139,12 +142,14 @@ import net.minecraft.entity.vehicle.TntMinecartEntity;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
 import net.minecraft.network.packet.s2c.play.WorldTimeUpdateS2CPacket;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ChunkTicketType;
+import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureStart;
 import net.minecraft.util.Identifier;
@@ -161,6 +166,7 @@ import net.minecraft.world.GameRules;
 import net.minecraft.world.Heightmap.Type;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.WorldProperties;
+import net.minecraft.world.biome.source.BiomeSource;
 import net.minecraft.world.biome.source.util.MultiNoiseUtil;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
@@ -308,6 +314,8 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 		loc.setZ(loc.getZ() + zs);
 		return dropItem(loc, arg1);
 	}
+	
+	
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
@@ -1163,17 +1171,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public void playSound(Location loc, String sound, org.bukkit.SoundCategory category, float volume, float pitch) {
-		// TODO: 1.19
-    	
-    	/*if (loc == null || sound == null || category == null) return;
-
-        double x = loc.getX();
-        double y = loc.getY();
-        double z = loc.getZ();
-
-        PlaySoundIdS2CPacket packet = new PlaySoundIdS2CPacket(new Identifier(sound), net.minecraft.sound.SoundCategory.valueOf(category.name()), new Vec3d(x, y, z), volume, pitch);
-        nms.getServer().getPlayerManager().sendToAround(null, x, y, z, volume > 1.0F ? 16.0F * volume : 16.0D, nms.getRegistryKey(), packet);
-    */
+		this.playSound(loc, sound, category, volume, pitch, this.getHandle().random.nextLong());
 	}
 
 	@Override
@@ -1353,6 +1351,28 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	public void setDifficulty(Difficulty diff) {
 		// FIXME BROKEN
 		// nms.getLevelProperties().setDifficulty(net.minecraft.world.Difficulty.byOrdinal(diff.ordinal()));
+		
+		net.minecraft.world.Difficulty mc = net.minecraft.world.Difficulty.NORMAL;
+		
+		switch (diff) {
+			case EASY:
+				mc = net.minecraft.world.Difficulty.EASY;
+				break;
+			case HARD:
+				mc = net.minecraft.world.Difficulty.HARD;
+				break;
+			case NORMAL:
+				mc = net.minecraft.world.Difficulty.NORMAL;
+				break;
+			case PEACEFUL:
+				mc = net.minecraft.world.Difficulty.PEACEFUL;
+				break;
+			default:
+				break;
+		}
+		
+		// to do : per world diff
+		this.getHandle().getServer().setDifficulty(mc, true);
 	}
 
 	@Override
@@ -1378,10 +1398,24 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	}
 
 	@Override
-	public <T> boolean setGameRule(GameRule<T> arg0, T arg1) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+	public <T> boolean setGameRule(GameRule<T> rule, T newValue) {
+	      Preconditions.checkArgument(rule != null, "GameRule cannot be null");
+	      Preconditions.checkArgument(newValue != null, "GameRule value cannot be null");
+	      if (!this.isGameRule(rule.getName())) {
+	         return false;
+	      } else {
+	         WorldGameRuleChangeEvent event = new WorldGameRuleChangeEvent(this, null, rule, String.valueOf(newValue));
+	         if (!event.callEvent()) {
+	            return false;
+	         } else {
+	            GameRules.Rule<?> handle = this.getHandle().getGameRules().get(
+	            		this.getGameRulesNMS().get(rule.getName()));
+	            // handle.deserialize(event.getValue());
+	            // handle.onChanged(this.getHandle());
+	            return true;
+	         }
+	      }
+	   }
 
 	@Override
 	public boolean setGameRuleValue(String arg0, String arg1) {
@@ -2039,8 +2073,17 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	@Override
 	public LightningStrike strikeLightningEffect(Location arg0) {
 		// TODO Auto-generated method stub
-		return null;
+		return strikeLightning0(arg0, true);
 	}
+	
+	private LightningStrike strikeLightning0(Location loc, boolean isVisual) {
+	      Preconditions.checkArgument(loc != null, "Location cannot be null");
+	      LightningEntity lightning = net.minecraft.entity.EntityType.LIGHTNING_BOLT.create(this.nms, net.minecraft.entity.SpawnReason.COMMAND);
+	      lightning.refreshPositionAfterTeleport(loc.getX(), loc.getY(), loc.getZ());
+	      // lightning.isEffect = isVisual;
+	      // this.nms.strikeLightning(lightning);
+	      return (LightningStrike)lightning.getBukkitEntity();
+	   }
 
 	@Override
 	public boolean unloadChunk(int x, int z) {
@@ -2281,9 +2324,19 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	}
 
 	@Override
-	public Item dropItem(Location arg0, ItemStack arg1, java.util.function.Consumer<? super Item> arg2) {
-		// TODO Auto-generated method stub
-		return null;
+	public Item dropItem(Location location, ItemStack item, java.util.function.Consumer<? super Item> function) {
+		Preconditions.checkArgument(location != null, "Location cannot be null");
+		Preconditions.checkArgument(item != null, "ItemStack cannot be null");
+		ItemEntity entity = new ItemEntity(this.nms, location.getX(), location.getY(), location.getZ(), CraftItemStack.asNMSCopy(item));
+		Item itemEntity = (Item)entity.getBukkitEntity();
+		entity.pickupDelay = 10;
+		if (function != null) {
+			function.accept(itemEntity);
+		}
+
+		// this.nms.addFreshEntity(entity, SpawnReason.CUSTOM);
+		this.nms.addEntity(entity);
+		return itemEntity;
 	}
 
 	@Override
@@ -2313,13 +2366,13 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	@Override
 	public @NotNull NamespacedKey getKey() {
 		// TODO Auto-generated method stub
-		return NamespacedKey.minecraft(this.getName());
+		return CraftNamespacedKey.fromMinecraft(this.nms.getRegistryKey().getValue());
+		// return NamespacedKey.minecraft(this.getName());
 	}
 
 	@Override
 	public int getMinHeight() {
-		// TODO Auto-generated method stub
-		return 0;
+		return this.nms.getBottomY();
 	}
 
 	// @Override
@@ -2330,8 +2383,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public boolean hasRaids() {
-		// TODO Auto-generated method stub
-		return false;
+		return this.nms.getDimension().hasRaids();
 	}
 
 	// @Override
@@ -2342,26 +2394,22 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public boolean isFixedTime() {
-		// TODO Auto-generated method stub
-		return false;
+		return this.getHandle().getDimension().hasFixedTime();
 	}
 
 	@Override
 	public boolean isNatural() {
-		// TODO Auto-generated method stub
-		return false;
+		return this.nms.getDimension().natural();
 	}
 
 	@Override
 	public boolean isPiglinSafe() {
-		// TODO Auto-generated method stub
-		return false;
+		return this.nms.getDimension().piglinSafe();
 	}
 
 	// @Override
 	public boolean isUltrawarm() {
-		// Removed API
-		return false;
+		return this.nms.getDimension().ultrawarm();
 	}
 
 	@Override
@@ -2402,15 +2450,13 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	}
 
 	@Override
-	public @NotNull BlockData getBlockData(@NotNull Location arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public @NotNull BlockData getBlockData(@NotNull Location l) {
+		return CraftBlockData.fromData(this.getData(l.getBlockX(), l.getBlockY(), l.getBlockZ()));
 	}
 
 	@Override
-	public @NotNull BlockData getBlockData(int arg0, int arg1, int arg2) {
-		// TODO Auto-generated method stub
-		return null;
+	public BlockData getBlockData(int x, int y, int z) {
+		return CraftBlockData.fromData(this.getData(x, y, z));
 	}
 
 	@Override
@@ -2420,21 +2466,18 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	}
 
 	@Override
-	public @NotNull BlockState getBlockState(int arg0, int arg1, int arg2) {
-		// TODO Auto-generated method stub
-		return null;
+	public @NotNull BlockState getBlockState(int x, int y, int z) {
+		return CraftBlock.at(this.getHandle(), new BlockPos(x, y, z)).getState();
 	}
 
 	@Override
-	public @NotNull Material getType(@NotNull Location arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public @NotNull Material getType(@NotNull Location location) {
+		return this.getType(location.getBlockX(), location.getBlockY(), location.getBlockZ());
 	}
 
 	@Override
-	public @NotNull Material getType(int arg0, int arg1, int arg2) {
-		// TODO Auto-generated method stub
-		return null;
+	public @NotNull Material getType(int x, int y, int z) {
+		return CraftBlockType.minecraftToBukkit(this.getData(x, y, z).getBlock());
 	}
 
 	@Override
@@ -2445,39 +2488,34 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public void setBlockData(@NotNull Location arg0, @NotNull BlockData arg1) {
-		// TODO Auto-generated method stub
-
+		super.setBlockData(arg0, arg1);
 	}
 
 	@Override
 	public void setBlockData(int arg0, int arg1, int arg2, @NotNull BlockData arg3) {
-		// TODO Auto-generated method stub
-
+		super.setBlockData(arg0, arg1, arg2, arg3);
 	}
 
 	@Override
 	public void setType(@NotNull Location arg0, @NotNull Material arg1) {
-		// TODO Auto-generated method stub
-
+		super.setType(arg0, arg1);
 	}
 
+	
 	@Override
 	public void setType(int arg0, int arg1, int arg2, @NotNull Material arg3) {
-		// TODO Auto-generated method stub
-
+		super.setType(arg0, arg1, arg2, arg3);
 	}
 
 	@Override
 	public <T extends Entity> @NotNull T spawn(@NotNull Location arg0, @NotNull Class<T> arg1, boolean arg2,
 	                                           @Nullable java.util.function.Consumer<? super T> arg3) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return null;
+		return super.spawn(arg0, arg1, arg2, arg3);
 	}
 
 	@Override
 	public @NotNull Entity spawnEntity(@NotNull Location arg0, @NotNull EntityType arg1, boolean arg2) {
-		// TODO Auto-generated method stub
-		return null;
+		return super.spawnEntity(arg0, arg1, arg2);
 	}
 
 	@Override
@@ -2500,8 +2538,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public int getLogicalHeight() {
-		// TODO Auto-generated method stub
-		return 0;
+		return this.nms.getDimension().logicalHeight();
 	}
 
 	@Override
@@ -2536,8 +2573,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public boolean isBedWorks() {
-		// TODO Auto-generated method stub
-		return false;
+		return this.nms.getDimension().bedWorks();
 	}
 
 	@Override
@@ -2553,9 +2589,18 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	}
 
 	@Override
-	public void sendGameEvent(@Nullable Entity arg0, @NotNull GameEvent arg1, @NotNull Vector arg2) {
-		// TODO Auto-generated method stub
+	public void sendGameEvent(@Nullable Entity sourceEntity, @NotNull GameEvent gameEvent, @NotNull Vector position) {
+		this.getHandle()
+        .emitGameEvent(
+           sourceEntity != null ? ((CraftEntity)sourceEntity).getHandle() : null,
+           Registries.GAME_EVENT.getEntry(CraftNamespacedKey.toMinecraft(gameEvent.getKey())).orElseThrow(),
+           CraftVector_toBlockPos(position)
+        );
 	}
+	
+	public static BlockPos CraftVector_toBlockPos(Vector vector) {
+	      return BlockPos.ofFloored(vector.getX(), vector.getY(), vector.getZ());
+	   }
 
 	@Override
 	public void setSendViewDistance(int i) {
@@ -2589,11 +2634,37 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+	
 	@Override
-	public @NotNull BiomeProvider vanillaBiomeProvider() {
-		// TODO Auto-generated method stub
-		return null;
+	public BiomeProvider vanillaBiomeProvider() {
+		ServerChunkManager serverCache = this.getHandle().getChunkManager();
+		net.minecraft.world.gen.chunk.ChunkGenerator gen = serverCache.getChunkGenerator();
+		final BiomeSource biomeSource;
+
+		/*
+	      if (gen instanceof CustomChunkGenerator custom) {
+	         biomeSource = custom.getDelegate().getBiomeSource();
+	      } else {
+	         biomeSource = gen.getBiomeSource();
+	      }
+
+	      if (biomeSource instanceof CustomWorldChunkManager customBiomeSource) {
+	         biomeSource = customBiomeSource.vanillaBiomeSource;
+	      }
+		 */
+		biomeSource = gen.getBiomeSource();
+
+		final MultiNoiseUtil.MultiNoiseSampler sampler = serverCache.getNoiseConfig().getMultiNoiseSampler();
+		final List<Biome> possibleBiomes = biomeSource.getBiomes().stream().map(CraftBiome::minecraftHolderToBukkit).toList();
+		return new BiomeProvider() {
+			public Biome getBiome(WorldInfo worldInfo, int x, int y, int z) {
+				return CraftBiome.minecraftHolderToBukkit(biomeSource.getBiome(x >> 2, y >> 2, z >> 2, sampler));
+			}
+
+			public List<Biome> getBiomes(WorldInfo worldInfo) {
+				return possibleBiomes;
+			}
+		};
 	}
 
 	@Override
@@ -2613,7 +2684,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 		// TODO Auto-generated method stub
 		return 0;
 	}
-
+	
 	@Override
 	public long getTicksPerSpawns(@NotNull SpawnCategory arg0) {
 		// TODO Auto-generated method stub
@@ -2991,6 +3062,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	@Override
 	public void getChunksAtAsync(int minX, int minZ, int maxX, int maxZ, boolean urgent, @NotNull Runnable cb) {
 		// TODO Auto-generated method stub
+		// this.getHandle().loadChunks(minX, minZ, maxX, maxZ, urgent ? Priority.HIGHER : Priority.NORMAL, chunks -> cb.run());
 	}
 
 	@Override

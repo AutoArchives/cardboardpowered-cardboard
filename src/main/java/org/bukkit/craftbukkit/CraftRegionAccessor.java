@@ -142,7 +142,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
         return CraftBlockType.minecraftToBukkit(this.getData(x, y, z).getBlock());
     }
 
-    private net.minecraft.block.BlockState getData(int x, int y, int z) {
+    protected net.minecraft.block.BlockState getData(int x, int y, int z) {
         return this.getHandle().getBlockState(new BlockPos(x, y, z));
     }
 
