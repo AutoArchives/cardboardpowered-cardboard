@@ -2077,13 +2077,13 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	}
 	
 	private LightningStrike strikeLightning0(Location loc, boolean isVisual) {
-	      Preconditions.checkArgument(loc != null, "Location cannot be null");
-	      LightningEntity lightning = net.minecraft.entity.EntityType.LIGHTNING_BOLT.create(this.nms, net.minecraft.entity.SpawnReason.COMMAND);
-	      lightning.refreshPositionAfterTeleport(loc.getX(), loc.getY(), loc.getZ());
-	      // lightning.isEffect = isVisual;
-	      // this.nms.strikeLightning(lightning);
-	      return (LightningStrike)lightning.getBukkitEntity();
-	   }
+		Preconditions.checkArgument(loc != null, "Location cannot be null");
+		LightningEntity lightning = net.minecraft.entity.EntityType.LIGHTNING_BOLT.create(this.nms, net.minecraft.entity.SpawnReason.COMMAND);
+		lightning.refreshPositionAfterTeleport(loc.getX(), loc.getY(), loc.getZ());
+		// lightning.isEffect = isVisual;
+		// this.nms.strikeLightning(lightning);
+		return (LightningStrike) ((IMixinEntity) lightning).getBukkitEntity();
+	}
 
 	@Override
 	public boolean unloadChunk(int x, int z) {
@@ -2328,7 +2328,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 		Preconditions.checkArgument(location != null, "Location cannot be null");
 		Preconditions.checkArgument(item != null, "ItemStack cannot be null");
 		ItemEntity entity = new ItemEntity(this.nms, location.getX(), location.getY(), location.getZ(), CraftItemStack.asNMSCopy(item));
-		Item itemEntity = (Item)entity.getBukkitEntity();
+		Item itemEntity = (Item) ((IMixinEntity) entity).getBukkitEntity();
 		entity.pickupDelay = 10;
 		if (function != null) {
 			function.accept(itemEntity);
