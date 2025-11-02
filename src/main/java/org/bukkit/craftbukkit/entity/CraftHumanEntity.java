@@ -164,6 +164,19 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
         this.inventory = new CardboardPlayerInventory(entity.inventory);
         this.enderChest = new CraftInventory(entity.getEnderChestInventory());
     }
+    
+    public void setHandle(PlayerEntity entity) {
+    	super.setHandle(entity);
+    	this.inventory = new CardboardPlayerInventory(entity.getInventory());
+    }
+    
+    @Override
+    public void setHandle(net.minecraft.entity.Entity entity) {
+    	super.setHandle(entity);
+    	if (entity instanceof PlayerEntity player) {
+    		this.inventory = new CardboardPlayerInventory(player.getInventory());
+    	}
+    }
 
     @Override
     public PlayerEntity getHandle() {

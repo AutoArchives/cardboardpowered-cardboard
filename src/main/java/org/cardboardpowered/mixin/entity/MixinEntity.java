@@ -234,6 +234,11 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
     }
 
     @Override
+    public CraftEntity getBukkitEntityRaw() {
+    	return bukkit;
+    }
+    
+    @Override
     public CraftEntity getBukkitEntity() {
         if (null == bukkit) {
             this.bukkit = getEntity(CraftServer.INSTANCE, (Entity)(Object)this);
@@ -241,6 +246,15 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
         return bukkit;
     }
 
+    @Inject(at = @At("HEAD"), method = "Lnet/minecraft/entity/Entity;copyFrom(Lnet/minecraft/entity/Entity;)V")
+    public void cardboard$setBukkitHandleForCopy(Entity original, CallbackInfo ci) {
+    	CraftEntity bukkitEntity = ((IMixinEntity) original).getBukkitEntityRaw();
+        if (bukkitEntity != null) {
+           bukkitEntity.setHandle((Entity) (Object) this);
+           this.bukkit = bukkitEntity;
+        }
+    }
+    
     @Override
     public void setProjectileSourceBukkit(ProjectileSource source) {
         this.projectileSource = source;

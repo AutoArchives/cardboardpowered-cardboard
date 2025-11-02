@@ -46,4 +46,6 @@ public interface IMixinEntity {
 	
 	boolean cb$getInWorld();
 
+	CraftEntity getBukkitEntityRaw();
+
 }

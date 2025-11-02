@@ -583,3 +583,6 @@ accessible field net/minecraft/entity/LivingEntity damageTracker Lnet/minecraft/
 mutable field net/minecraft/entity/LivingEntity damageTracker Lnet/minecraft/entity/damage/DamageTracker;
 accessible field net/minecraft/entity/LivingEntity experienceDroppingDisabled Z
 accessible field net/minecraft/entity/LivingEntity effectsChanged Z
+accessible field net/minecraft/entity/ai/pathing/EntityNavigation pathNodeNavigator Lnet/minecraft/entity/ai/pathing/PathNodeNavigator;
+accessible field net/minecraft/entity/ai/pathing/PathNodeNavigator pathNodeMaker Lnet/minecraft/entity/ai/pathing/PathNodeMaker;
+accessible field net/minecraft/entity/ai/pathing/Path nodes Ljava/util/List;

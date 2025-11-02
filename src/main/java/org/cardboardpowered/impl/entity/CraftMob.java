@@ -25,6 +25,7 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.loot.LootTable;
 import org.bukkit.util.Vector;
 
+import com.destroystokyo.paper.entity.PaperPathfinder;
 import com.destroystokyo.paper.entity.Pathfinder;
 import com.google.common.base.Preconditions;
 
@@ -36,9 +37,17 @@ import me.isaiah.common.cmixin.IMixinMobEntity;
 public class CraftMob extends LivingEntityImpl implements Mob {
 
     protected final Random random = new Random();
+    private final PaperPathfinder paperPathfinder;
 
     public CraftMob(CraftServer server, MobEntity entity) {
         super(server, entity);
+        this.paperPathfinder = new PaperPathfinder(entity);
+    }
+    
+    @Override
+    public void setHandle(net.minecraft.entity.Entity entity) {
+       super.setHandle(entity);
+       this.paperPathfinder.setHandle(this.getHandle());
     }
 
     @Override
@@ -117,8 +126,7 @@ public class CraftMob extends LivingEntityImpl implements Mob {
 
     @Override
     public Pathfinder getPathfinder() {
-        // TODO Auto-generated method stub
-        return null;
+    	return this.paperPathfinder;
     }
 
     @Override

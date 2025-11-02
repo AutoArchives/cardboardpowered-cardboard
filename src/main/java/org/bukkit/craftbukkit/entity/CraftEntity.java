@@ -1628,4 +1628,8 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 		return entityTracker.listeners.contains(((CraftPlayer)player).getHandle().networkHandler);
 	}
 
+	public void setHandle(net.minecraft.entity.Entity entity) {
+		this.nms = entity;
+	}
+
 }

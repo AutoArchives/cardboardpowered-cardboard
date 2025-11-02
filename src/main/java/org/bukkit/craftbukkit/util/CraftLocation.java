@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.util;
 
+import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.GlobalPos;
@@ -93,6 +94,10 @@ public final class CraftLocation {
 
 	public static Vec3d toVec3(Location loc) {
 		return toVec3D(loc);
+	}
+
+	public static Location toBukkit(PathNode node, net.minecraft.world.World world) {
+		return new Location(((IMixinWorld) world).getCraftWorld(), node.x, node.y, node.z);
 	}
 
 }
