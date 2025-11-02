@@ -1091,6 +1091,26 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     public void setSneaking(boolean sneak) {
         this.getHandle().setSneaking(sneak);
     }
+    
+    public static <T extends net.minecraft.entity.Entity> CraftEntity getEntity_new(CraftServer server, T entity) {
+        Preconditions.checkArgument(entity != null, "Unknown entity");
+        /*
+        if (entity instanceof PlayerEntity && !(entity instanceof ServerPlayerEntity)) {
+           return new CraftHumanEntity(server, (PlayerEntity)entity);
+        } else if (entity instanceof EnderDragonPart complexPart) {
+           return (CraftEntity)(complexPart.owner instanceof EnderDragonEntity
+              ? new CraftEnderDragonPart(server, complexPart)
+              : new CraftComplexPart(server, complexPart));
+        } else {
+       	*/
+           CraftEntityTypes.EntityTypeData<?, T> entityTypeData = CraftEntityTypes.getEntityTypeData(CraftEntityType.minecraftToBukkit(entity.getType()));
+           if (entityTypeData != null) {
+              return (CraftEntity)entityTypeData.convertFunction().apply(server, entity);
+           } else {
+              throw new AssertionError("Unknown entity " + (entity == null ? null : entity.getClass()));
+           }
+        // }
+     }
 
     public static CraftEntity getEntity(CraftServer server, net.minecraft.entity.Entity entity) {
         /*
@@ -1211,7 +1231,10 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
                 else if (entity instanceof MerchantEntity) {
                     if (entity instanceof VillagerEntity) { return new CraftVillager(server, (VillagerEntity) entity); }
                     else if (entity instanceof WanderingTraderEntity) { return new WanderingTraderImpl(server, (WanderingTraderEntity) entity); }
-                    else { return new CraftAbstractVillager(server, (MerchantEntity) entity); }
+                    else { 
+                    	return getEntity_new(server, (MerchantEntity) entity);
+                    	// return new CraftAbstractVillager(server, (MerchantEntity) entity);
+                    }
                 }
                 else { return new CraftCreature(server, (PathAwareEntity) entity); }
             }

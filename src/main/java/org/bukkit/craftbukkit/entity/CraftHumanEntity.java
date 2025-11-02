@@ -36,6 +36,7 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.storage.NbtReadView;
+import net.minecraft.text.Text;
 import net.minecraft.util.Arm;
 import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.Identifier;
@@ -54,7 +55,9 @@ import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
 import org.cardboardpowered.impl.block.CardboardSign;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
+import org.cardboardpowered.impl.entity.CraftAbstractVillager;
 import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.cardboardpowered.impl.entity.CraftVillager;
 import org.cardboardpowered.impl.inventory.CardboardDoubleChestInventory;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.impl.inventory.CardboardPlayerInventory;
@@ -65,6 +68,7 @@ import org.slf4j.Logger;
 import org.bukkit.craftbukkit.inventory.CraftContainer;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.inventory.CraftMerchantCustom;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -150,12 +154,15 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
     protected GameMode gm;
     protected final PermissibleBase perm = new PermissibleBase(this);
     private boolean op;
+    
+    private final CraftInventory enderChest;
 
     public CraftHumanEntity(PlayerEntity entity) {
         super(entity);
         this.nms = entity;
         this.gm = CraftServer.INSTANCE.getDefaultGameMode();
         this.inventory = new CardboardPlayerInventory(entity.inventory);
+        this.enderChest = new CraftInventory(entity.getEnderChestInventory());
     }
 
     @Override
@@ -206,15 +213,15 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
     }
 
     @Override
-    public int getCooldown(Material arg0) {
-        // TODO Auto-generated method stub
-        return 0;
+    public int getCooldown(Material material) {
+    	Preconditions.checkArgument(material != null, "Material cannot be null");
+        Preconditions.checkArgument(material.isItem(), "Material %s is not an item", material);
+        return this.getCooldown(new ItemStack(material));
     }
 
     @Override
     public Inventory getEnderChest() {
-        // TODO Auto-generated method stub
-        return null;
+    	return enderChest;
     }
 
     @Override
@@ -411,9 +418,37 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
     }
 
     @Override
-    public InventoryView openMerchant(Merchant arg0, boolean arg1) {
-        // TODO Auto-generated method stub
-        return null;
+    public InventoryView openMerchant(Merchant merchant, boolean force) {
+    	Preconditions.checkNotNull(merchant, "merchant cannot be null");
+    	if (!force && merchant.isTrading()) {
+    		return null;
+    	} else {
+    		if (merchant.isTrading()) {
+    			merchant.getTrader().closeInventory();
+    		}
+
+    		int level = 1;
+    		net.minecraft.village.Merchant mcMerchant;
+    		Text name;
+    		if (merchant instanceof CraftAbstractVillager) {
+    			mcMerchant = ((CraftAbstractVillager)merchant).getHandle();
+    			name = ((CraftAbstractVillager)merchant).getHandle().getDisplayName();
+    			if (merchant instanceof CraftVillager) {
+    				level = ((CraftVillager)merchant).getHandle().getVillagerData().level();
+    			}
+    		} else {
+    			if (!(merchant instanceof CraftMerchantCustom)) {
+    				throw new IllegalArgumentException("Can't open merchant " + merchant.toString());
+    			}
+
+    			mcMerchant = ((CraftMerchantCustom)merchant).getMerchant();
+    			name = ((CraftMerchantCustom)merchant).getMerchant().getScoreboardDisplayName();
+    		}
+
+    		mcMerchant.setCustomer(this.getHandle());
+    		mcMerchant.sendOffers(this.getHandle(), name, level);
+    		return this.getHandle().currentScreenHandler.getBukkitView();
+    	}
     }
 
     @Override
@@ -686,9 +721,8 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
     }
 
     @Override
-    public void openSign(Sign arg0) {
-        // TODO Auto-generated method stub
-        
+    public void openSign(Sign sign) {
+    	CardboardSign.openSign(sign, (CraftPlayer)this, Side.FRONT);
     }
 
     @Override
@@ -723,14 +757,12 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
     @Override
     public float getExhaustion() {
-        // TODO Auto-generated method stub
-        return 0;
+    	return this.getHandle().getHungerManager().exhaustion;
     }
 
     @Override
     public int getFoodLevel() {
-        // TODO Auto-generated method stub
-        return 0;
+    	return this.getHandle().getHungerManager().getFoodLevel();
     }
 
     @Override
@@ -741,8 +773,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
     @Override
     public float getSaturation() {
-        // TODO Auto-generated method stub
-        return 0;
+    	return this.getHandle().getHungerManager().getSaturationLevel();
     }
 
     @Override
@@ -759,20 +790,17 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
     @Override
     public boolean isDeeplySleeping() {
-        // TODO Auto-generated method stub
-        return false;
+    	return this.getHandle().canResetTimeBySleeping();
     }
 
     @Override
-    public void setExhaustion(float arg0) {
-        // TODO Auto-generated method stub
-        
+    public void setExhaustion(float value) {
+    	this.getHandle().getHungerManager().exhaustion = value;
     }
 
     @Override
-    public void setFoodLevel(int arg0) {
-        // TODO Auto-generated method stub
-        
+    public void setFoodLevel(int value) {
+    	this.getHandle().getHungerManager().setFoodLevel(value);
     }
 
     @Override
@@ -823,17 +851,12 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 	@Override
 	public @Nullable Location getLastDeathLocation() {
 		// TODO Auto-generated method stub
-        return this.getHandle().getLastDeathPos().map(CraftMemoryMapper::fromNms).orElse(null);
-
+        return this.getHandle().getLastDeathPos().map(CraftLocation::fromGlobalPos).orElse(null);
 	}
 
 	@Override
     public void setLastDeathLocation(Location location) {
-        if (location == null) {
-            this.getHandle().setLastDeathPos(Optional.empty());
-        } else {
-           //  this.getHandle().setLastDeathPos(Optional.of(CraftMemoryMapper.toNms(location)));
-        }
+		this.getHandle().setLastDeathPos(Optional.ofNullable(location).map(CraftLocation::toGlobalPos));
     }
 
 	@Override

@@ -367,7 +367,10 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
                 else if (entity instanceof MerchantEntity) {
                     if (entity instanceof VillagerEntity) { return new CraftVillager(server, (VillagerEntity) entity); }
                     else if (entity instanceof WanderingTraderEntity) { return new WanderingTraderImpl(server, (WanderingTraderEntity) entity); }
-                    else { return new CraftAbstractVillager(server, (MerchantEntity) entity); }
+                    else {
+                    	return CraftEntity.getEntity_new(server, (MerchantEntity) entity);
+                    	// return new CraftAbstractVillager(server, (MerchantEntity) entity);
+                    }
                 }
                 else { return new CraftCreature(server, (PathAwareEntity) entity); }
             }
