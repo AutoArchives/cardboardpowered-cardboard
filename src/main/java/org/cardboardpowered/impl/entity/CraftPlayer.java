@@ -157,6 +157,7 @@ import org.cardboardpowered.interfaces.IMixinWorld;
 import com.mojang.authlib.GameProfile;
 
 import io.netty.buffer.Unpooled;
+import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.connection.PlayerGameConnection;
 import io.papermc.paper.entity.LookAnchor;
 import io.papermc.paper.entity.PaperPlayerGiveResult;
@@ -202,6 +203,7 @@ import net.minecraft.network.packet.s2c.play.ExperienceBarUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameStateChangeS2CPacket;
 import net.minecraft.network.packet.s2c.play.HealthUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.ParticleS2CPacket;
+import net.minecraft.network.packet.s2c.play.PlayerListHeaderS2CPacket;
 import net.minecraft.network.packet.s2c.play.StopSoundS2CPacket;
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket;
 import net.minecraft.network.packet.s2c.play.TitleFadeS2CPacket;
@@ -2939,4 +2941,36 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 		return ( (IMixinPlayNetworkHandler) this.getHandle().networkHandler).cardboard$playerGameConnection();
 	}
 
+	// TODO: Support player list header/footer
+	private Component playerListHeader;
+	private Component playerListFooter;
+	
+	@Override
+	public void sendPlayerListHeader(Component header) {
+		this.playerListHeader = header;
+		this.adventure$sendPlayerListHeaderAndFooter();
+	}
+
+	@Override
+	public void sendPlayerListFooter(Component footer) {
+		this.playerListFooter = footer;
+		this.adventure$sendPlayerListHeaderAndFooter();
+	}
+
+	@Override
+	public void sendPlayerListHeaderAndFooter(Component header, Component footer) {
+		this.playerListHeader = header;
+		this.playerListFooter = footer;
+		this.adventure$sendPlayerListHeaderAndFooter();
+	}
+
+	private void adventure$sendPlayerListHeaderAndFooter() {
+		ServerPlayNetworkHandler connection = this.getHandle().networkHandler;
+		if (connection != null) {
+			PlayerListHeaderS2CPacket packet = new PlayerListHeaderS2CPacket(
+					PaperAdventure.asVanillaNullToEmpty(this.playerListHeader), PaperAdventure.asVanillaNullToEmpty(this.playerListFooter)
+					);
+			connection.sendPacket(packet);
+		}
+	}
 }

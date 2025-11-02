@@ -33,7 +33,7 @@ import net.minecraft.stat.StatHandler;
 public class MixinStatHandler {
 
     /**
-     * @reason .
+     * @reason handleStatisticsIncrease
      * @author .
      */
     @Overwrite

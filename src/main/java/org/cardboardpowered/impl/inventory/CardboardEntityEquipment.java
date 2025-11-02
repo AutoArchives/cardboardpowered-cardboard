@@ -3,6 +3,7 @@ package org.cardboardpowered.impl.inventory;
 import com.google.common.base.Preconditions;
 import net.minecraft.entity.mob.MobEntity;
 
+import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.EntityEquipment;
@@ -29,14 +30,14 @@ public class CardboardEntityEquipment implements EntityEquipment {
     @Override
     public void setItem(EquipmentSlot slot, ItemStack item, boolean silent) {
         Preconditions.checkArgument(slot != null, "slot must not be null");
-        net.minecraft.entity.EquipmentSlot nmsSlot = Utils.getNMS(slot);
+        net.minecraft.entity.EquipmentSlot nmsSlot = CraftEquipmentSlot.getNMS(slot);
         setEquipment(nmsSlot, item, silent);
     }
 
     @Override
     public ItemStack getItem(EquipmentSlot slot) {
         Preconditions.checkArgument(slot != null, "slot must not be null");
-        net.minecraft.entity.EquipmentSlot nmsSlot = Utils.getNMS(slot);
+        net.minecraft.entity.EquipmentSlot nmsSlot = CraftEquipmentSlot.getNMS(slot);
         return getEquipment(nmsSlot);
     }
 

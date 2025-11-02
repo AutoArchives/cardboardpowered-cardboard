@@ -1,6 +1,7 @@
 package org.cardboardpowered.mixin.entity;
 
 import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
@@ -86,7 +87,7 @@ public class MixinArmorStandEntity extends MixinEntity implements IMixinArmorSta
         Player player = (Player) ((IMixinEntity) playerEntity).getBukkitEntity();
         ArmorStand self = (ArmorStand) ((IMixinEntity) this).getBukkitEntity();
 
-        EquipmentSlot slot = com.javazilla.bukkitfabric.Utils.getSlot(slotType);
+        EquipmentSlot slot = CraftEquipmentSlot.getSlot(slotType);
         
         EquipmentSlot bukkitHand = EquipmentSlot.HAND;
         if (hand == Hand.OFF_HAND) {

@@ -100,6 +100,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.configuration.serialization.SerializableAs;
+import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.attribute.CraftAttribute;
@@ -122,6 +123,7 @@ import org.bukkit.craftbukkit.util.CraftNBTTagConfigSerializer;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.damage.DamageType;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemRarity;
 import org.bukkit.inventory.ItemStack;
@@ -1249,7 +1251,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                 org.bukkit.inventory.EquipmentSlot slot = null;
                 try {
                     // slot = CraftEquipmentSlot.getSlot(net.minecraft.entity.EquipmentSlot.byName(slotName.toLowerCase(Locale.ROOT)));
-                    slot = Utils.getSlot(net.minecraft.entity.EquipmentSlot.byName(slotName.toLowerCase(Locale.ROOT)));
+                    slot = CraftEquipmentSlot.getSlot(net.minecraft.entity.EquipmentSlot.byName(slotName.toLowerCase(Locale.ROOT)));
 
                 } catch (IllegalArgumentException illegalArgumentException) {
                     // empty catch block
@@ -1376,10 +1378,10 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                     continue;
                 }
 
-                // org.bukkit.inventory.EquipmentSlotGroup slot = null;
-                org.bukkit.inventory.EquipmentSlot slot = null;
+                EquipmentSlotGroup slot = null;
+                
                 try {
-                    slot = Utils.getSlot(slotName);
+                    slot = CraftEquipmentSlot.getSlotGroup(slotName);
                 } catch (IllegalArgumentException ex) {
                     // SPIGOT-4551 - Slot is invalid, should really match nothing but this is undefined behaviour anyway
                 }
@@ -1389,7 +1391,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                     continue;
                 }
 
-                attribMod = new AttributeModifier(attribMod.getKey(), attribMod.getAmount(), attribMod.getOperation(), slot.getGroup());
+                attribMod = new AttributeModifier(attribMod.getKey(), attribMod.getAmount(), attribMod.getOperation(), slot);
             }
             modifiers.put(attribute, attribMod);
         }
