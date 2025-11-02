@@ -127,6 +127,7 @@ import org.cardboardpowered.impl.block.CardboardSign;
 import com.destroystokyo.paper.ClientOption;
 import com.destroystokyo.paper.Title;
 import com.destroystokyo.paper.event.player.PlayerSetSpawnEvent;
+import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.github.bsideup.jabel.Desugar;
 import com.google.common.base.Preconditions;
@@ -1820,8 +1821,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public PlayerProfile getPlayerProfile() {
-        // TODO Auto-generated method stub
-        return null;
+    	return new CraftPlayerProfile(this);
     }
 
     @Override
@@ -1837,9 +1837,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public void giveExp(int arg0, boolean arg1) {
-        // TODO Auto-generated method stub
-        
+    public void giveExp(int exp, boolean applyMending) {
+    	if (applyMending) {
+    		exp = this.applyMending(exp);
+    	}
+
+    	this.getHandle().addExperience(exp);
     }
 
     @Override
@@ -1850,14 +1853,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void hideTitle() {
-        // TODO Auto-generated method stub
-        
+    	this.getHandle().networkHandler.sendPacket(new ClearTitleS2CPacket(false));
     }
 
     @Override
     public void resetCooldown() {
-        // TODO Auto-generated method stub
-        
+    	this.getHandle().resetLastAttackedTicks();
     }
 
     @Override
