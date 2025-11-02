@@ -185,6 +185,7 @@ import net.minecraft.entity.ExperienceOrbEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
@@ -201,6 +202,7 @@ import net.minecraft.network.packet.s2c.play.DamageTiltS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityStatusS2CPacket;
 import net.minecraft.network.packet.s2c.play.ExperienceBarUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameStateChangeS2CPacket;
+import net.minecraft.network.packet.s2c.play.HealthUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.ParticleS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerListHeaderS2CPacket;
 import net.minecraft.network.packet.s2c.play.StopSoundS2CPacket;
@@ -2003,8 +2005,9 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public void sendOpLevel(byte arg0) {
-        // TODO Auto-generated method stub
+    public void sendOpLevel(byte level) {
+    	Preconditions.checkArgument(level >= 0 && level <= 4, "Level must be within [%s, %s]", 0, 4);
+        // super.server.getServer().getPlayerManager().sendPlayerPermissionLevel(this.getHandle(), level, false);
     }
 
     @Override
@@ -2155,17 +2158,26 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 		// TODO Auto-generated method stub
 		
 	}
-
-	@Override
-	public void sendHealthUpdate() {
-		// TODO Auto-generated method stub
-		
+	
+	public float getScaledHealth() {
+		return (float)(this.isHealthScaled() ? this.getHealth() * this.getHealthScale() / this.getMaxHealth() : this.getHealth());
 	}
 
 	@Override
-	public void sendHealthUpdate(double arg0, int arg1, float arg2) {
-		// TODO Auto-generated method stub
+	public void sendHealthUpdate() {
+		HungerManager foodData = this.getHandle().getHungerManager();
+		HealthUpdateS2CPacket packet = new HealthUpdateS2CPacket(this.getScaledHealth(), foodData.getFoodLevel(), foodData.getSaturationLevel());
 		
+		// if (this.getHandle().queueHealthUpdatePacket) {
+		// 	this.getHandle().queuedHealthUpdatePacket = packet;
+		// } else {
+			this.getHandle().networkHandler.sendPacket(packet);
+		// }
+	}
+
+	@Override
+	public void sendHealthUpdate(double health, int foodLevel, float saturation) {
+		this.getHandle().networkHandler.sendPacket(new HealthUpdateS2CPacket((float)health, foodLevel, saturation));
 	}
 
 	// @Override
