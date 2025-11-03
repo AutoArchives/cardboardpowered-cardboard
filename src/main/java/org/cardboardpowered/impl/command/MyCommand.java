@@ -1,9 +1,17 @@
 package org.cardboardpowered.impl.command;
 
 import com.google.common.collect.ImmutableList;
+
+import net.fabricmc.loader.api.FabricLoader;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.CardboardConfig;
+import org.cardboardpowered.library.KnotHelper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,17 +35,61 @@ public class MyCommand extends Command {
 
     @Override
     public boolean execute(CommandSender sender, String currentAlias, String[] args) {
-        if (sender.hasPermission("cardboard.command.admin")) {
-            CardboardConfig.DEBUG_VERBOSE_CALLS = !CardboardConfig.DEBUG_VERBOSE_CALLS;
+    	if (!sender.hasPermission("cardboard.command.admin")) {
+    		return false;
+    	}
+    	
+    	if (args.length == 0) {
+    		sender.sendMessage("Usage: /cardboardtest <arg>: arg = debugverbose; worlds");
+    		return true;
+    	}
+    	
+    	if (args[0].contains("debugverbose")) {
+    		CardboardConfig.DEBUG_VERBOSE_CALLS = !CardboardConfig.DEBUG_VERBOSE_CALLS;
             sender.sendMessage("DEBUG_VERBOSE_CALLS: " +CardboardConfig.DEBUG_VERBOSE_CALLS);
-        } else {
-            sender.sendMessage("No Permission for command.");
-        }
+    	}
+    	
+    	if (args[0].contains("debugevents")) {
+    		CardboardConfig.DEBUG_EVENT_CALL = !CardboardConfig.DEBUG_EVENT_CALL;
+            sender.sendMessage("Logging event calls to console: " +CardboardConfig.DEBUG_EVENT_CALL);
+    	}
+    	
+    	if (args[0].equalsIgnoreCase("worlds")) {
+    		List<World> worlds = Bukkit.getWorlds();
+    		sender.sendMessage("Testing output of \"Bukkit.getWorlds()\":");
+    		for (World w : worlds) {
+    			sender.sendMessage("- WORLD: " + w.getName() + " with player count: " + w.getPlayerCount());
+    		}
+    	}
+    	
+    	if (args[0].equalsIgnoreCase("version")) {
+    		String ver = FabricLoader.getInstance().getModContainer("cardboard").get().getMetadata().getVersion().getFriendlyString();
+            if (ver.contains("version")) ver = CraftServer.INSTANCE.getShortVersion(); // Dev ENV
+
+            String message = ChatColor.GOLD + "Cardboard" + ChatColor.RESET + " version " + ver + ChatColor.ITALIC + " (Implementing Paper API version " /*+ KnotHelper.ver_paper*/ + ")";
+            sender.sendMessage(message);
+    	}
+    	
+    	// Reload Config
+    	if (args[0].equalsIgnoreCase("reload")) {
+    		try {
+				CardboardConfig.setup();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    	
         return true;
     }
 
     @Override
     public List<String> tabComplete(CommandSender sender, String alias, String[] args) {
+    	
+    	if (args.length == 0) {
+    		return ImmutableList.of("debugverbose", "worlds");
+    	}
+    	
         return ImmutableList.of();
     }
 

@@ -417,13 +417,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
                         factory);
                 /*End*/
 
-                //if ( CraftServer.INSTANCE.getMinecraftVersion().contains("1.16") ) {
-                    // 1.16.5
-                //    container.addListener((ScreenHandlerListener) this);
-                //} else {
-                    // 1.17
-                    ((ServerPlayerEntity)(Object)this).onScreenHandlerOpened(container);
-                //}
+                ((ServerPlayerEntity)(Object)this).onScreenHandlerOpened(container);
 
                 fabric_openedScreenHandler.remove();
                 ci.setReturnValue(OptionalInt.of(this.screenHandlerSyncId));
