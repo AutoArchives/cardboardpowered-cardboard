@@ -135,6 +135,7 @@ import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
+import org.bukkit.event.player.PlayerExpCooldownChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.event.player.PlayerItemMendEvent;
@@ -627,7 +628,7 @@ public class CraftEventFactory {
         return event;
     }
     
-    
+    /*
     public int LivingEntity_getExpReward(net.minecraft.entity.LivingEntity thiz) {
 
         if (thiz.getEntityWorld() instanceof ServerWorld && !thiz.isExperienceDroppingDisabled()
@@ -638,6 +639,7 @@ public class CraftEventFactory {
             return 0;
         }
     }
+    */
 
     public static ExpBottleEvent callExpBottleEvent(Entity entity, int exp) {
         ThrownExpBottle bottle = (ThrownExpBottle) ((IMixinEntity)entity).getBukkitEntity();
@@ -724,22 +726,31 @@ public class CraftEventFactory {
      * @see {@link #callPlayerExpChangeEvent(PlayerEntity, ExperienceOrbEntity)}
      */
     @Deprecated
-    public static PlayerExpChangeEvent callPlayerExpChangeEvent(PlayerEntity entity, int expAmount) {
-        Player player = (Player) ((IMixinEntity)entity).getBukkitEntity();
-        PlayerExpChangeEvent event = new PlayerExpChangeEvent(player, expAmount);
-        Bukkit.getPluginManager().callEvent(event);
-        return event;
+    public static PlayerExpChangeEvent callPlayerExpChangeEvent1(PlayerEntity entity, int expAmount) {
+    	Player player = (Player) ((IMixinEntity)entity).getBukkitEntity();
+    	PlayerExpChangeEvent event = new PlayerExpChangeEvent(player, expAmount);
+    	Bukkit.getPluginManager().callEvent(event);
+    	return event;
     }
-    
-    public static PlayerExpChangeEvent callPlayerExpChangeEvent(PlayerEntity entity, ExperienceOrbEntity entityOrb) {
-        Player player = (Player) ((IMixinEntity) entity).getBukkitEntity();
-        ExperienceOrb source = (ExperienceOrb) ((IMixinEntity)entityOrb).getBukkitEntity();
-        int expAmount = source.getExperience();
-        
-        // TODO: 1.21.8 API: new PlayerExpChangeEvent(player, (Entity)source, expAmount);
-        PlayerExpChangeEvent event = new PlayerExpChangeEvent(player, expAmount);
-        Bukkit.getPluginManager().callEvent(event);
-        return event;
+
+    public static PlayerExpChangeEvent callPlayerExpChangeEvent(PlayerEntity entity, ExperienceOrbEntity entityOrb, int expAmount) {
+    	Player player = (Player) ((IMixinEntity)entity).getBukkitEntity();
+    	ExperienceOrb source = (ExperienceOrb) ((IMixinEntity)entityOrb).getBukkitEntity();
+    	PlayerExpChangeEvent event = new PlayerExpChangeEvent(player, source, expAmount);
+    	Bukkit.getPluginManager().callEvent(event);
+    	return event;
+    }
+
+    @Deprecated
+    public static PlayerExpChangeEvent callPlayerExpChangeEvent_old(PlayerEntity entity, ExperienceOrbEntity entityOrb) {
+    	Player player = (Player) ((IMixinEntity) entity).getBukkitEntity();
+    	ExperienceOrb source = (ExperienceOrb) ((IMixinEntity)entityOrb).getBukkitEntity();
+    	int expAmount = source.getExperience();
+
+    	// TODO: 1.21.8 API: new PlayerExpChangeEvent(player, (Entity)source, expAmount);
+    	PlayerExpChangeEvent event = new PlayerExpChangeEvent(player, expAmount);
+    	Bukkit.getPluginManager().callEvent(event);
+    	return event;
     }
 
     public static PlayerItemMendEvent callPlayerItemMendEvent(PlayerEntity entity, ExperienceOrbEntity orb, net.minecraft.item.ItemStack nmsMendedItem, int repairAmount) {
@@ -945,6 +956,15 @@ public class CraftEventFactory {
     	*/
 
     	return disconnectReason;
+    }
+
+    public static PlayerExpCooldownChangeEvent callPlayerXpCooldownEvent(
+    		PlayerEntity entity, int newCooldown, org.bukkit.event.player.PlayerExpCooldownChangeEvent.ChangeReason changeReason
+    		) {
+    	Player player = (Player) ((IMixinServerEntityPlayer) entity).getBukkitEntity();
+    	PlayerExpCooldownChangeEvent event = new PlayerExpCooldownChangeEvent(player, newCooldown, changeReason);
+    	Bukkit.getPluginManager().callEvent(event);
+    	return event;
     }
 
 }
