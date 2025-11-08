@@ -7,9 +7,9 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 
-import com.github.bsideup.jabel.Desugar;
+// import com.github.bsideup.jabel.Desugar;
 
-@Desugar
+// @Desugar
 @NullMarked
 public record PaperPlayerGiveResult(
     @Unmodifiable Collection<ItemStack> leftovers,

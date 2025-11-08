@@ -1,6 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
-import com.github.bsideup.jabel.Desugar;
+// import com.github.bsideup.jabel.Desugar;
 import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -641,11 +641,11 @@ public final class CraftEntityTypes {
     	*/
     }
 
-    @Desugar
+    // @Desugar
     public record EntityTypeData<E extends org.bukkit.entity.Entity, M extends Entity>(org.bukkit.entity.EntityType entityType, Class<E> entityClass, BiFunction<CraftServer, M, E> convertFunction, Function<SpawnData, M> spawnFunction) {
     }
 
-    @Desugar
+    // @Desugar
     public record SpawnData(StructureWorldAccess world, Location location, boolean randomizeData, boolean normalWorld) {
         double x() {
             return this.location().getX();
@@ -673,7 +673,7 @@ public final class CraftEntityTypes {
         }
     }
 
-    @Desugar
+    // @Desugar
     private record HangingData(boolean randomize, BlockPos position, Direction direction) {
     }
 }

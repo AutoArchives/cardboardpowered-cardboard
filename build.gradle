@@ -1,7 +1,7 @@
 import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
 
 plugins {
-    id 'fabric-loom' version '1.11-SNAPSHOT'
+    id 'fabric-loom' version '1.13-SNAPSHOT'
     id 'maven-publish'
     id 'com.gradleup.shadow' version '8.3.6'
     id 'java-library'
@@ -35,7 +35,6 @@ loom {
 }
 
 repositories {
-
     maven { url = 'https://jitpack.io' }
     maven { url = 'https://repo.codemc.io/repository/maven-releases/' }
 	maven { url = 'https://repo.spongepowered.org/maven' }
@@ -78,9 +77,6 @@ dependencies {
 	
 	// TODO: Maven repo this
 	compileOnly fileTree(dir: 'libs', include: 'icommon-configuration-1.0.jar')
-    
-    //modImplementation( project(':iCommon-API') )
-    //include( project(':iCommon-API') )
 
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
@@ -133,12 +129,6 @@ dependencies {
     removeLibs group: 'junit', name: 'junit', version: '4.10'
 
     configurations.api.extendsFrom( (configurations.extraLibs) )
-
-   //  annotationProcessor 'com.github.bsideup.jabel:jabel-javac-plugin:0.4.1'
-   
- 	// TODO:
-   	// annotationProcessor("com.pkware.jabel:jabel-javac-plugin:1.0.1-1")
-    compileOnly("com.pkware.jabel:jabel-javac-plugin:1.0.1-1")
 }
 
 configurations.implementation {
@@ -146,8 +136,8 @@ configurations.implementation {
 }
 
 configure([tasks.compileJava]) {
-    sourceCompatibility = 21//16 // for the IDE support
-    options.release = 21//16
+    sourceCompatibility = 21
+    options.release = 21
 
     javaCompiler = javaToolchains.compilerFor {
         languageVersion = JavaLanguageVersion.of(21)
@@ -201,13 +191,12 @@ shadowJar {
 
 modrinth {
     token = System.getenv("MODRINTH") // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
-    projectId = "MLYQ9VGP" // This can be the project ID or the slug. Either will work!
-    versionNumber = "1.21.10-" + System.env.BUILD_NUMBER // You don't need to set this manually. Will fail if Modrinth has this version already
-    // versionType = "beta" // This is the default -- can also be `beta` or `alpha`
-    versionType = "beta"
+    projectId = "MLYQ9VGP"
+    versionNumber = "1.21.11-" + System.env.BUILD_NUMBER
+    versionType = "alpha"
     uploadFile = remapJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
-    gameVersions = ["1.21.10"] // Must be an array, even with only one version
-    loaders = ["fabric"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
+    gameVersions = ["25w45a"]
+    loaders = ["fabric"]
 }
 
 

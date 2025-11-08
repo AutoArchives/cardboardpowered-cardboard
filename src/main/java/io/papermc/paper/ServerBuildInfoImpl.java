@@ -1,6 +1,6 @@
 package io.papermc.paper;
 
-import com.github.bsideup.jabel.Desugar;
+// import com.github.bsideup.jabel.Desugar;
 import com.google.common.base.Strings;
 import io.papermc.paper.ServerBuildInfo;
 import io.papermc.paper.util.JarManifests;
@@ -14,7 +14,7 @@ import net.minecraft.SharedConstants;
 import org.bukkit.craftbukkit.CraftServer;
 import org.jetbrains.annotations.NotNull;
 
-@Desugar
+// @Desugar
 public record ServerBuildInfoImpl(
 		Key brandId,
 		String brandName,

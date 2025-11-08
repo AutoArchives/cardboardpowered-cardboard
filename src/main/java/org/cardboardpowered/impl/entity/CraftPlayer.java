@@ -129,7 +129,7 @@ import com.destroystokyo.paper.Title;
 import com.destroystokyo.paper.event.player.PlayerSetSpawnEvent;
 import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
-import com.github.bsideup.jabel.Desugar;
+// import com.github.bsideup.jabel.Desugar;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -2540,7 +2540,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
     }
 	
-	@Desugar
+	// @Desugar
 	private record ChunkSectionChanges(ShortSet positions, List<net.minecraft.block.BlockState> blockData) {
 
         public ChunkSectionChanges() {

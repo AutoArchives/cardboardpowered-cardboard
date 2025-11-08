@@ -9,7 +9,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.legacy.fieldrename.FieldRenameData;
 import org.bukkit.craftbukkit.util.ApiVersion;
 
-@com.github.bsideup.jabel.Desugar
+// @com.github.bsideup.jabel.Desugar
 public record FieldRenameData(RenameData<String> renameData, RenameData<NamespacedKey> keyRenameData) {
     
 	public String getReplacement(ApiVersion apiVersion, String from) {
@@ -79,7 +79,7 @@ public record FieldRenameData(RenameData<String> renameData, RenameData<Namespac
         }
     }
 
-    @com.github.bsideup.jabel.Desugar
+    // @com.github.bsideup.jabel.Desugar
     private record RenameData<T>(NavigableMap<ApiVersion, Map<T, T>> versionData, Map<T, T> data) {
         public T getReplacement(ApiVersion apiVersion, T from) {
             from = this.data.getOrDefault(from, from);

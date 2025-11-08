@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.inventory;
 
 import com.destroystokyo.paper.inventory.meta.ArmorStandMeta;
-import com.github.bsideup.jabel.Desugar;
+// import com.github.bsideup.jabel.Desugar;
 
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -246,7 +246,7 @@ public final class CraftItemMetas {
     private CraftItemMetas() {
     }
 
-    @Desugar
+    // @Desugar
     public record ItemMetaData<I extends ItemMeta>(Class<I> metaClass, BiFunction<ItemStack, Set<ComponentType<?>>, I> fromItemStack, BiFunction<ItemType.Typed<I>, CraftMetaItem, I> fromItemMeta) {
     }
 }
