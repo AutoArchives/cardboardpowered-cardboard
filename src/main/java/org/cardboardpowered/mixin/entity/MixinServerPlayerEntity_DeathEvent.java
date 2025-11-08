@@ -32,6 +32,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.rule.GameRules;
 
 @Mixin(ServerPlayerEntity.class)
 public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
@@ -54,7 +55,7 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
     }
 
     @Inject(method = "onDeath", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$Key;)Z",
+            target = "Lnet/minecraft/world/rule/GameRules;getValue(Lnet/minecraft/world/rule/GameRule;)Ljava/lang/Object;",
             ordinal = 0),
             cancellable = true)
     private void cardboard$do_PlayerDeathEvent(DamageSource damageSource, CallbackInfo ci) {
@@ -62,6 +63,7 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
         if (cb$this().isRemoved()) {
             ci.cancel();
         }
+
         java.util.List<org.bukkit.inventory.ItemStack> loot = new java.util.ArrayList<>(cb$this().getInventory().size());
 
         Boolean keepInventory = cb$this().getEntityWorld().getGameRules().getValue(net.minecraft.world.rule.GameRules.KEEP_INVENTORY) || cb$this().isSpectator();
