@@ -14,7 +14,6 @@ import com.mojang.brigadier.LiteralMessage;
 import com.mojang.logging.LogUtils;
 
 import ca.spottedleaf.concurrentutil.executor.standard.PrioritisedExecutor;
-import me.isaiah.common.entity.IRemoveReason;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.util.TriState;
@@ -178,7 +177,6 @@ import io.papermc.paper.entity.LookAnchor;
 import io.papermc.paper.entity.TeleportFlag;
 import io.papermc.paper.threadedregions.scheduler.EntityScheduler;
 import me.isaiah.common.entity.IEntity;
-import me.isaiah.common.entity.IRemoveReason;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.minecraft.entity.ExperienceOrbEntity;
@@ -671,8 +669,10 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public void remove() {
-        me.isaiah.common.cmixin.IMixinEntity common = (me.isaiah.common.cmixin.IMixinEntity)this.nms;
-        common.Iremove(IRemoveReason.DISCARDED);
+        // me.isaiah.common.cmixin.IMixinEntity common = (me.isaiah.common.cmixin.IMixinEntity)this.nms;
+        // common.Iremove(IRemoveReason.DISCARDED);
+        // this.nms.pluginRemoved = true;
+        this.nms.discard();
     }
 
     @Override

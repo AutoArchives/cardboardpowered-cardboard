@@ -21,8 +21,8 @@ import org.cardboardpowered.interfaces.IMixinCommandOutput;
 import org.cardboardpowered.interfaces.IMixinEntity;
 // import com.llamalad7.mixinextras.sugar.Local;
 
-import me.isaiah.common.entity.IRemoveReason;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.Entity.RemovalReason;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.ExperienceOrbEntity;
@@ -517,7 +517,7 @@ public class MixinEntity implements IMixinCommandOutput, IMixinEntity {
     }
 
     public void removeBF() {
-        ((me.isaiah.common.cmixin.IMixinEntity)this).Iremove(IRemoveReason.DISCARDED);
+        ((Entity) (Object) this).remove(RemovalReason.DISCARDED);
     }
 
     @Shadow
