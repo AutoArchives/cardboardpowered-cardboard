@@ -1,12 +1,15 @@
 package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
+
+import net.kyori.adventure.text.Component;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.TranslatableTextContent;
 import org.bukkit.JukeboxSong;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
+import org.bukkit.Sound;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.jetbrains.annotations.NotNull;
@@ -61,5 +64,31 @@ public class CraftJukeboxSong implements JukeboxSong, Handleable<net.minecraft.b
         }
         return ((TranslatableTextContent)this.handle.description().getContent()).getKey();
     }
+    
+    // TODO: Update this:
+
+	@Override
+	public int getComparatorOutput() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public Component getDescription() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public float getLengthInSeconds() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public Sound getSound() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

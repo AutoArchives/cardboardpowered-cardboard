@@ -266,8 +266,6 @@ accessible	field	net/minecraft/server/command/ServerCommandSource	position	Lnet/
 mutable	field	net/minecraft/server/command/ServerCommandSource	position	Lnet/minecraft/util/math/Vec3d;
 accessible	field	net/minecraft/server/command/ServerCommandSource	world	Lnet/minecraft/server/world/ServerWorld;
 mutable	field	net/minecraft/server/command/ServerCommandSource	world	Lnet/minecraft/server/world/ServerWorld;
-accessible	field	net/minecraft/server/command/ServerCommandSource	level	I
-mutable	field	net/minecraft/server/command/ServerCommandSource	level	I
 accessible	field	net/minecraft/server/command/ServerCommandSource	silent	Z
 accessible	field	net/minecraft/server/command/ServerCommandSource	entity	Lnet/minecraft/entity/Entity;
 mutable	field	net/minecraft/server/command/ServerCommandSource	entity	Lnet/minecraft/entity/Entity;
@@ -576,7 +574,6 @@ accessible field net/minecraft/entity/decoration/MannequinEntity DEFAULT_DESCRIP
 accessible method net/minecraft/server/Main createWorld (Lnet/minecraft/server/dedicated/ServerPropertiesLoader;Lnet/minecraft/server/SaveLoading$LoadContextSupplierContext;Lnet/minecraft/registry/Registry;ZZ)Lnet/minecraft/server/SaveLoading$LoadContext;
 accessible field net/minecraft/world/level/LevelInfo name Ljava/lang/String;
 mutable field net/minecraft/world/level/LevelInfo name Ljava/lang/String;
-accessible field net/minecraft/world/GameRules RULE_TYPES Ljava/util/Map;
 accessible field net/minecraft/world/level/storage/LevelStorage$Session directory Lnet/minecraft/world/level/storage/LevelStorage$LevelSave;
 accessible field net/minecraft/entity/LivingEntity attackerReference Lnet/minecraft/entity/LazyEntityReference;
 accessible field net/minecraft/entity/LivingEntity damageTracker Lnet/minecraft/entity/damage/DamageTracker;
@@ -586,3 +583,5 @@ accessible field net/minecraft/entity/LivingEntity effectsChanged Z
 accessible field net/minecraft/entity/ai/pathing/EntityNavigation pathNodeNavigator Lnet/minecraft/entity/ai/pathing/PathNodeNavigator;
 accessible field net/minecraft/entity/ai/pathing/PathNodeNavigator pathNodeMaker Lnet/minecraft/entity/ai/pathing/PathNodeMaker;
 accessible field net/minecraft/entity/ai/pathing/Path nodes Ljava/util/List;
+accessible field net/minecraft/world/rule/GameRules rules Lnet/minecraft/world/rule/ServerGameRules;
+accessible method net/minecraft/server/MinecraftServer getSpawnPos ()Lnet/minecraft/util/math/GlobalPos;

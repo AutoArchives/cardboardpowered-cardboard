@@ -9,11 +9,11 @@ import java.util.Map.Entry;
 import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.resource.featuretoggle.ToggleableFeature;
-import net.minecraft.world.GameRules;
-import net.minecraft.world.GameRules.Type;
+import net.minecraft.world.rule.GameRules;
 
 import org.bukkit.FeatureFlag;
 import org.bukkit.GameRule;
+import org.bukkit.craftbukkit.CraftGameRule;
 import org.bukkit.craftbukkit.entity.CraftEntityType;
 import org.bukkit.craftbukkit.potion.CraftPotionType;
 import org.bukkit.entity.EntityType;
@@ -47,7 +47,20 @@ public class PaperFeatureFlagProviderImpl implements FeatureFlagProvider {
 
       return Collections.unmodifiableSet(flags);
    }
+   
+   static ToggleableFeature getFeatureElement(FeatureDependant dependant) {
+	   if (dependant instanceof EntityType entityType) {
+		   return CraftEntityType.bukkitToMinecraft(entityType);
+	   } else if (dependant instanceof PotionType potionType) {
+		   return CraftPotionType.bukkitToMinecraft(potionType);
+	   } else if (dependant instanceof GameRule<?> gameRule) {
+		   return () -> CraftGameRule.bukkitToMinecraft(gameRule).getRequiredFeatures();
+	   } else {
+		   throw new IllegalArgumentException(dependant + " is not a valid feature dependant");
+	   }
+   }
 
+   /*
    static ToggleableFeature getFeatureElement(FeatureDependant dependant) {
       if (dependant instanceof EntityType entityType) {
          return CraftEntityType.bukkitToMinecraft(entityType);
@@ -74,4 +87,6 @@ public class PaperFeatureFlagProviderImpl implements FeatureFlagProvider {
 
 	   return null;
    }
+   */
+   
 }

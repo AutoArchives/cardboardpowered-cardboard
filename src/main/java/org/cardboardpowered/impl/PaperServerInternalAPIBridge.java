@@ -11,10 +11,10 @@ import io.papermc.paper.world.damagesource.PaperCombatEntryWrapper;
 import io.papermc.paper.world.damagesource.PaperCombatTrackerWrapper;
 
 import java.util.Arrays;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.command.PermissionLevelSource;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageRecord;
 import net.minecraft.entity.damage.FallLocation;
@@ -22,7 +22,10 @@ import net.minecraft.entity.decoration.MannequinEntity;
 import net.minecraft.entity.player.PlayerModelPart;
 import net.minecraft.text.Text;
 import net.minecraft.util.Nullables;
+
+import org.bukkit.GameRule;
 import org.bukkit.block.Biome;
+import org.bukkit.craftbukkit.CraftGameRule;
 import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.damage.CraftDamageEffect;
 import org.bukkit.craftbukkit.damage.CraftDamageSource;
@@ -101,6 +104,13 @@ public class PaperServerInternalAPIBridge implements InternalAPIBridge {
 		// DEFAULT_DESCRIPTION not visible
 		return PaperAdventure.asAdventure(Text.of("Hello, I'm a Mannequin"));
 		// return PaperAdventure.asAdventure(MannequinEntity.DEFAULT_DESCRIPTION);
+	}
+
+	@Override
+	public <MODERN, LEGACY> GameRule<LEGACY> legacyGameRuleBridge(
+			GameRule<MODERN> rule, Function<LEGACY, MODERN> fromLegacyToModern, Function<MODERN, LEGACY> toLegacyFromModern, Class<LEGACY> legacyClass
+			) {
+		return CraftGameRule.wrap(rule, fromLegacyToModern, toLegacyFromModern, legacyClass);
 	}
 
 }

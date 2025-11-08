@@ -31,6 +31,7 @@ import net.minecraft.world.gen.structure.Structure;
 import org.bukkit.Art;
 import org.bukkit.Fluid;
 import org.bukkit.GameEvent;
+import org.bukkit.GameRule;
 import org.bukkit.JukeboxSong;
 import org.bukkit.Keyed;
 import org.bukkit.MusicInstrument;
@@ -42,6 +43,7 @@ import org.bukkit.block.banner.PatternType;
 import org.bukkit.craftbukkit.CraftArt;
 import org.bukkit.craftbukkit.CraftFluid;
 import org.bukkit.craftbukkit.CraftGameEvent;
+import org.bukkit.craftbukkit.CraftGameRule;
 import org.bukkit.craftbukkit.CraftJukeboxSong;
 import org.bukkit.craftbukkit.CraftMusicInstrument;
 import org.bukkit.craftbukkit.CraftSound;
@@ -152,7 +154,10 @@ public final class PaperRegistries {
 	        // RegistryEntryBuilder.start(RegistryKeys.SOUND_EVENT, RegistryKey.SOUND_EVENT).craft(Sound.class, CraftSound::new).build(),
 	        
 			RegistryEntryBuilder.start(RegistryKeys.DATA_COMPONENT_TYPE, RegistryKey.DATA_COMPONENT_TYPE).craft(DataComponentTypes.class, PaperDataComponentType::of).build(),
-	        RegistryEntryBuilder.start(RegistryKeys.BIOME, RegistryKey.BIOME).craft(Biome.class, CraftBiome::new).build().delayed(),
+		    RegistryEntryBuilder.start(RegistryKeys.GAME_RULE, io.papermc.paper.registry.RegistryKey.GAME_RULE).craft(GameRule.class, CraftGameRule::new).build(),
+
+			
+			RegistryEntryBuilder.start(RegistryKeys.BIOME, RegistryKey.BIOME).craft(Biome.class, CraftBiome::new).build().delayed(),
 	        RegistryEntryBuilder.start(RegistryKeys.STRUCTURE, RegistryKey.STRUCTURE).craft(Structure.class, CraftStructure::new).build().delayed(),
 	        RegistryEntryBuilder.start(RegistryKeys.TRIM_MATERIAL, RegistryKey.TRIM_MATERIAL).craft(TrimMaterial.class, CraftTrimMaterial::new).build().delayed(),
 	        RegistryEntryBuilder.start(RegistryKeys.TRIM_PATTERN, RegistryKey.TRIM_PATTERN).craft(TrimPattern.class, CraftTrimPattern::new).build().delayed(),

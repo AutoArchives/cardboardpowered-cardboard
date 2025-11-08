@@ -400,7 +400,8 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public int getMaximumNoDamageTicks() {
-        return nms.defaultMaxHealth;
+    	return 0; // TODO
+    	// return this.getHandle().invulnerableDuration;
     }
 
     @SuppressWarnings("unchecked")

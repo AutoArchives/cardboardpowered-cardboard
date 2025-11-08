@@ -30,6 +30,7 @@ import net.minecraft.world.Heightmap;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.WorldProperties;
+import net.minecraft.world.attribute.EnvironmentAttributeAccess;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.border.WorldBorder;
@@ -281,5 +282,10 @@ implements StructureWorldAccess {
 
     public <T> void getEntitiesByClass(Class<? extends T> clazz, Entity except, Box box, List<? super T> into, Predicate<? super T> predicate) {
     }
+
+	@Override
+	public EnvironmentAttributeAccess getEnvironmentAttributes() {
+		return EnvironmentAttributeAccess.DEFAULT;
+	}
 
 }

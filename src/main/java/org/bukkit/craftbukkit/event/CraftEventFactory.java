@@ -37,6 +37,7 @@ import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.connection.PlayerConnection;
 import io.papermc.paper.event.block.BellRingEvent;
 import io.papermc.paper.event.connection.PlayerConnectionValidateLoginEvent;
+import io.papermc.paper.event.world.PaperWorldGameRuleChangeEvent;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ExperienceOrbEntity;
@@ -71,7 +72,8 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.hit.HitResult.Type;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.GameRules;
+import net.minecraft.world.rule.GameRule;
+import net.minecraft.world.rule.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.explosion.Explosion;
@@ -86,6 +88,8 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.sign.Side;
+import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.CraftGameRule;
 import org.bukkit.craftbukkit.CraftLootTable;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftStatistic;
@@ -155,6 +159,7 @@ import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.entity.UnknownEntity;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.impl.world.CraftWorld;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.InetAddress;
@@ -966,5 +971,25 @@ public class CraftEventFactory {
     	Bukkit.getPluginManager().callEvent(event);
     	return event;
     }
+
+    public static <T> CraftEventFactory.GameRuleSetResult<T> handleGameRuleSet(GameRule<T> rule, T value, ServerWorld level, @Nullable CommandSender sender) {
+		String valueStr = rule.getValueName(value);
+		PaperWorldGameRuleChangeEvent event = new PaperWorldGameRuleChangeEvent(level.getWorld(), sender, CraftGameRule.minecraftToBukkit(rule), valueStr);
+		if (event.callEvent()) {
+			if (!event.getValue().equals(valueStr)) {
+				value = (T)rule.deserialize(event.getValue()).getOrThrow();
+			}
+
+			// TODO: Add Paper's Per world gamerules
+			
+			level.getGameRules().setValue(rule, value, level.getServer());
+			return new CraftEventFactory.GameRuleSetResult<>(value, false);
+		} else {
+			return new CraftEventFactory.GameRuleSetResult<>(level.getGameRules().getValue(rule), true);
+		}
+	}
+
+	public record GameRuleSetResult<T>(T value, boolean cancelled) {
+	}
 
 }

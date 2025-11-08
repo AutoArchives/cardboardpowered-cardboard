@@ -107,6 +107,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -642,8 +643,28 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
     @Override
     public boolean dropItem(boolean dropAll) {
-        return ((ServerPlayerEntity)getHandle()).dropSelectedItem(dropAll);
+        ((ServerPlayerEntity)getHandle()).dropSelectedItem(dropAll);
+        // TODO!
+        return true;
     }
+    
+    /*
+    public boolean dropItem(boolean dropAll) {
+        if (this.getHandle() instanceof ServerPlayerEntity player) {
+           boolean success = player.drop(dropAll);
+           if (!success) {
+              return false;
+           } else {
+              net.minecraft.entity.player.PlayerInventory inv = player.getInventory();
+              OptionalInt optionalSlot = player.currentScreenHandler.getSlotIndex(inv, inv.getSelectedSlot());
+              optionalSlot.ifPresent(slot -> player.screenHandlerSyncHandler.updateSlot(player.currentScreenHandler, slot, inv.getSelectedStack()));
+              return true;
+           }
+        } else {
+           return false;
+        }
+     }
+     */
 
     @Override
     public EntityType getType() {

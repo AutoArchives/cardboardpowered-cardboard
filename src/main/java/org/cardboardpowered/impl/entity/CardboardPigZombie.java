@@ -14,12 +14,14 @@ public class CardboardPigZombie extends CraftZombie implements PigZombie {
 
     @Override
     public int getAnger() {
-        return getHandle().getAngerTime();
+    	return (int)(this.getHandle().getAngerEndTime() - this.getHandle().getEntityWorld().getTime());
+        // return getHandle().getAngerTime();
     }
 
     @Override
     public void setAnger(int level) {
-        getHandle().setAngerTime(level);
+    	this.getHandle().setAngerDuration(level);
+        // getHandle().setAngerTime(level);
     }
 
     @Override

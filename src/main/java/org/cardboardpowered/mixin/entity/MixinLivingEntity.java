@@ -14,7 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Arm;
-import net.minecraft.world.GameRules;
+import net.minecraft.world.rule.GameRules;
 import net.minecraft.world.World;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
@@ -96,7 +96,7 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
 
         boolean flag = get().playerHitTimer > 0;
         this.dropInventory(world);
-        if (!get().isBaby() && world.getGameRules().getBoolean(GameRules.DO_MOB_LOOT)) {
+        if (!get().isBaby() && world.getGameRules().getValue(GameRules.DO_MOB_LOOT)) {
             this.dropLoot(world, damagesource, flag);
             this.dropEquipment((ServerWorld) world, damagesource, flag);
         }
@@ -132,7 +132,7 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
     	
     	if (w instanceof ServerWorld) {
     		ServerWorld sw = (ServerWorld) w;
-            if ((this.shouldAlwaysDropExperience() || get().lastDamageTime > 0 && this.shouldAlwaysDropExperience() && sw.getGameRules().getBoolean(GameRules.DO_MOB_LOOT))) {
+            if ((this.shouldAlwaysDropExperience() || get().lastDamageTime > 0 && this.shouldAlwaysDropExperience() && sw.getGameRules().getValue(GameRules.DO_MOB_LOOT))) {
                 //int i = getXpToDrop(get().attackingPlayer);
             	int i = getExperienceToDrop(sw);
             	return i;

@@ -44,6 +44,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.boss.DragonBattle;
 import org.bukkit.craftbukkit.CraftFeatureFlag;
+import org.bukkit.craftbukkit.CraftGameRule;
 import org.bukkit.craftbukkit.CraftParticle;
 import org.bukkit.craftbukkit.CraftRegionAccessor;
 import org.bukkit.craftbukkit.CraftRegistry;
@@ -54,6 +55,7 @@ import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.generator.structure.CraftGeneratedStructure;
 import org.bukkit.craftbukkit.generator.structure.CraftStructure;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -142,6 +144,7 @@ import net.minecraft.entity.vehicle.TntMinecartEntity;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
 import net.minecraft.network.packet.s2c.play.WorldTimeUpdateS2CPacket;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -162,15 +165,17 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.GameRules;
+import net.minecraft.world.rule.GameRules;
 import net.minecraft.world.Heightmap.Type;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.WorldProperties;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.biome.source.BiomeSource;
 import net.minecraft.world.biome.source.util.MultiNoiseUtil;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.WrapperProtoChunk;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.dimension.DimensionTypes;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
 import net.minecraft.world.level.LevelProperties;
@@ -604,6 +609,18 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public Environment getEnvironment() {
+		
+		RegistryEntry<DimensionType> type = nms.getDimensionEntry();
+		
+		if (type.matchesKey(DimensionTypes.OVERWORLD)) {
+			return Environment.NORMAL;
+		} else if (type.matchesKey(DimensionTypes.THE_NETHER)) {
+			return Environment.NETHER;
+		} else if (type.matchesKey(DimensionTypes.THE_END)) {
+			return Environment.THE_END;
+		}
+		
+		/*
 		Identifier id = nms.getDimension().effects();
 
 		if(DimensionTypes.OVERWORLD_ID.equals(id))
@@ -613,6 +630,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 		else if(DimensionTypes.THE_END_ID.equals(id))
 			return Environment.THE_END;
 		else
+		*/
 			return Environment.CUSTOM;
 	}
 
@@ -630,27 +648,42 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	public long getFullTime() {
 		return nms.getTimeOfDay();
 	}
-
-	@Override
-	public <T> T getGameRuleDefault(GameRule<T> arg0) {
-		return convert(arg0, getGameRuleDefinitions().get(arg0.getName()).createRule());
+	
+	public static <T> T shimLegacyValue(T value, GameRule<?> gameRule) {
+		return (T)(gameRule instanceof CraftGameRule.LegacyGameRuleWrapper legacyGameRuleWrapper
+			? legacyGameRuleWrapper.getToLegacyFromModern().apply(value)
+			: value);
 	}
 
 	@Override
-	public String getGameRuleValue(String arg0) {
-		// In method contract for some reason
-		if(arg0 == null)
+	public <T> T getGameRuleDefault(@NotNull GameRule<T> rule) {
+		Preconditions.checkArgument(rule != null, "GameRule cannot be null");
+		T value = CraftGameRule.<T>bukkitToMinecraft(rule).getDefaultValue();
+		return shimLegacyValue(value, rule);
+	}
+
+	@Override
+	public String getGameRuleValue(String rule) {
+		if (rule == null) {
 			return null;
-
-		GameRules.Rule<?> value = getHandle().getGameRules().get(getGameRulesNMS().get(arg0));
-		return value != null ? value.toString() : "";
+		} else {
+			GameRule<?> bukkit = GameRule.getByName(rule);
+			if (bukkit == null) {
+				throw new IllegalArgumentException("Unknown gamerule: " + rule);
+			} else {
+				return this.getHandle().getGameRules().getRuleValueName(CraftGameRule.bukkitToMinecraft(bukkit));
+			}
+		}
 	}
 
 	@Override
-	public <T> T getGameRuleValue(GameRule<T> arg0) {
-		return convert(arg0, getHandle().getGameRules().get(getGameRulesNMS().get(arg0.getName())));
+	public <T> T getGameRuleValue(@NotNull GameRule<T> rule) {
+		Preconditions.checkArgument(rule != null, "GameRule cannot be null");
+		T value = this.getHandle().getGameRules().getValue(CraftGameRule.bukkitToMinecraft(rule));
+		return shimLegacyValue(value, rule);
 	}
 
+	/*
 	private static Map<String, GameRules.Key<?>> gamerules;
 
 	public synchronized Map<String, GameRules.Key<?>> getGameRulesNMS() {
@@ -699,10 +732,11 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
         return CraftWorld.gameruleDefinitions = gameruleDefinitions;
     }
+    */
 
 	@Override
 	public String[] getGameRules() {
-		return getGameRulesNMS().keySet().toArray(new String[getGameRulesNMS().size()]);
+		return this.getHandle().getGameRules().streamRules().map(net.minecraft.world.rule.GameRule::toShortString).toArray(String[]::new);
 	}
 
 	@Override
@@ -868,7 +902,8 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public boolean getPVP() {
-		return nms.getServer().isPvpEnabled();
+		return this.nms.getGameRules().getValue(GameRules.PVP);
+		// return this.nms.pvpMode.toBooleanOrElseGet(() -> this.world.getGameRules().getValue(GameRules.PVP));
 	}
 
 	@Override
@@ -1049,8 +1084,11 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	}
 
 	@Override
-	public boolean isGameRule(String arg0) {
-		return getGameRulesNMS().containsKey(arg0);
+	public boolean isGameRule(String rule) {
+		Preconditions.checkArgument(rule != null, "String rule cannot be null");
+		Preconditions.checkArgument(!rule.isEmpty(), "String rule cannot be empty");
+		GameRule<?> bukkit = GameRule.getByName(rule);
+		return bukkit == null ? false : this.getHandle().getGameRules().rules.contains(CraftGameRule.bukkitToMinecraft(bukkit));
 	}
 
 	@Override
@@ -1393,29 +1431,25 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 					.getTime(), cp.getHandle().getEntityWorld().getTime(), cp.getHandle()
 					.getEntityWorld()
 					.getGameRules()
-					.getBoolean(GameRules.DO_DAYLIGHT_CYCLE)));
+					.getValue(GameRules.ADVANCE_TIME)));
 		}
 	}
 
 	@Override
-	public <T> boolean setGameRule(GameRule<T> rule, T newValue) {
-	      Preconditions.checkArgument(rule != null, "GameRule cannot be null");
-	      Preconditions.checkArgument(newValue != null, "GameRule value cannot be null");
-	      if (!this.isGameRule(rule.getName())) {
-	         return false;
-	      } else {
-	         WorldGameRuleChangeEvent event = new WorldGameRuleChangeEvent(this, null, rule, String.valueOf(newValue));
-	         if (!event.callEvent()) {
-	            return false;
-	         } else {
-	            GameRules.Rule<?> handle = this.getHandle().getGameRules().get(
-	            		this.getGameRulesNMS().get(rule.getName()));
-	            // handle.deserialize(event.getValue());
-	            // handle.onChanged(this.getHandle());
-	            return true;
-	         }
-	      }
-	   }
+	public <T> boolean setGameRule(GameRule<T> rule, @NotNull T newValue) {
+		Preconditions.checkArgument(rule != null, "GameRule cannot be null");
+		Preconditions.checkArgument(newValue != null, "GameRule value cannot be null");
+		net.minecraft.world.rule.GameRule<T> nms = CraftGameRule.bukkitToMinecraft(rule);
+		if (!this.getHandle().getGameRules().rules.contains(nms)) {
+			return false;
+		} else {
+			if (rule instanceof CraftGameRule.LegacyGameRuleWrapper legacyGameRuleWrapper) {
+				newValue = (T)legacyGameRuleWrapper.getFromLegacyToModern().apply(newValue);
+			}
+
+			return !CraftEventFactory.handleGameRuleSet(nms, newValue, this.getHandle(), null).cancelled();
+		}
+	}
 
 	@Override
 	public boolean setGameRuleValue(String arg0, String arg1) {
@@ -1444,7 +1478,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	
 	@Override
 	public void setPVP(boolean pvp) {
-		if (this.nms.getGameRules().getBoolean(GameRules.PVP) != pvp) {
+		if (this.nms.getGameRules().getValue(GameRules.PVP) != pvp) {
 			this.pvpMode = TriState.byBoolean(pvp);
 		}
 		
@@ -2254,9 +2288,15 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	}
 	*/
 
+	/**
+	 * Removed 1.21.11?
+	 */
 	@Override
 	public MoonPhase getMoonPhase() {
-		return MoonPhase.getPhase(nms.getLunarTime());
+		
+		return MoonPhase.FIRST_QUARTER;
+		
+		// return MoonPhase.getPhase(nms.getLunarTime());
 	}
 
 	@Override
@@ -2383,7 +2423,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public boolean hasRaids() {
-		return this.nms.getDimension().hasRaids();
+		return this.nms.getEnvironmentAttributes().getAttributeValue(EnvironmentAttributes.CAN_START_RAID_GAMEPLAY);
 	}
 
 	// @Override
@@ -2399,17 +2439,23 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public boolean isNatural() {
-		return this.nms.getDimension().natural();
+		throw new UnsupportedOperationException("// TODO - snapshot");
+		// return this.nms.getDimension().natural();
 	}
 
 	@Override
 	public boolean isPiglinSafe() {
-		return this.nms.getDimension().piglinSafe();
+		return !this.nms.getEnvironmentAttributes().getAttributeValue(EnvironmentAttributes.PIGLINS_ZOMBIFY_GAMEPLAY);
 	}
 
 	// @Override
-	public boolean isUltrawarm() {
-		return this.nms.getDimension().ultrawarm();
+	public boolean isUltraWarm() {
+		return this.nms.getEnvironmentAttributes().getAttributeValue(EnvironmentAttributes.WATER_EVAPORATES_GAMEPLAY)
+			&& this.nms.getEnvironmentAttributes().getAttributeValue(EnvironmentAttributes.FAST_LAVA_GAMEPLAY)
+			&& this.nms
+				.getEnvironmentAttributes()
+				.getAttributeValue(EnvironmentAttributes.DEFAULT_DRIPSTONE_PARTICLE_VISUAL)
+				.equals(ParticleTypes.DRIPPING_DRIPSTONE_LAVA);
 	}
 
 	@Override
@@ -2573,17 +2619,11 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public boolean isBedWorks() {
-		return this.nms.getDimension().bedWorks();
+		return this.nms.getEnvironmentAttributes().getAttributeValue(EnvironmentAttributes.BED_RULE_GAMEPLAY).canSleep().test(this.nms);
 	}
 
 	@Override
 	public boolean isRespawnAnchorWorks() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isUltraWarm() {
 		// TODO Auto-generated method stub
 		return false;
 	}

@@ -26,6 +26,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.command.DataCommandStorage;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.scoreboard.ScoreboardState;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.SaveLoading;
 import net.minecraft.server.ServerTask;
@@ -44,7 +45,7 @@ import net.minecraft.util.thread.ReentrantThreadExecutor;
 import net.minecraft.village.ZombieSiegeManager;
 import net.minecraft.world.Difficulty;
 // import net.minecraft.world.ForcedChunkState;
-import net.minecraft.world.GameRules;
+import net.minecraft.world.rule.GameRules;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.PlayerSaveHandler;
 import net.minecraft.world.SaveProperties;
@@ -91,6 +92,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.function.BooleanSupplier;
 
@@ -122,7 +124,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     @Shadow public DataCommandStorage dataCommandStorage;
     @Shadow private int ticks;
 
-    @Shadow public void initScoreboard(PersistentStateManager arg0) {}
+    // @Shadow public void initScoreboard(PersistentStateManager arg0) {}
 
     public void setDataCommandStorage(DataCommandStorage data) {
         this.dataCommandStorage = data;
@@ -397,7 +399,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     	} while (chunkLoadCounter.getNonFullChunks() > 0);
 
     	world.cardboard$levelLoadListener().finish(ChunkLoadProgress.Stage.LOAD_INITIAL_CHUNKS);
-    	serverLevel.setMobSpawnOptions(serverLevel.worldProperties.getDifficulty() != Difficulty.PEACEFUL && serverLevel.getGameRules().getBoolean(GameRules.SPAWN_MONSTERS));
+    	serverLevel.setMobSpawnOptions(serverLevel.worldProperties.getDifficulty() != Difficulty.PEACEFUL && serverLevel.getGameRules().getValue(GameRules.SPAWN_MONSTERS));
     	this.refreshSpawnPoint();
     	this.forceTicks = false;
     	new WorldLoadEvent(serverLevel.getWorld()).callEvent();
@@ -516,9 +518,11 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     private void cardboard$initializedLevel(ServerWorld worldserver, ServerWorldProperties worldProperties, GeneratorOptions generatorsettings) {
         boolean flag = false;
         // TODO Bukkit generators
-        WorldBorder worldborder = worldserver.getWorldBorder();
+        // WorldBorder worldborder = worldserver.getWorldBorder();
 
-        worldborder.load(worldProperties.getWorldBorder().get());
+        // worldborder.load(worldProperties.getWorldBorder().get());
+
+        this.paper$initWorldBorder(worldProperties, worldserver);
         
         Bukkit.getPluginManager().callEvent(new WorldInitEvent(((IMixinWorld) worldserver).getCraftWorld()));
         
@@ -544,6 +548,38 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         */
     }
     
+    private void paper$initWorldBorder(ServerWorldProperties worldProperties, ServerWorld serverLevel) {
+        Optional<WorldBorder.Properties> legacyWorldBorderSettings = worldProperties.getWorldBorder();
+        if (legacyWorldBorderSettings.isPresent()) {
+           WorldBorder.Properties settings = legacyWorldBorderSettings.get();
+           PersistentStateManager dataStorage1 = serverLevel.getPersistentStateManager();
+           if (dataStorage1.get(WorldBorder.TYPE) == null) {
+              double coordinateScale = serverLevel.getDimension().coordinateScale();
+              WorldBorder.Properties settings1 = new WorldBorder.Properties(
+                 settings.centerX() / coordinateScale,
+                 settings.centerZ() / coordinateScale,
+                 settings.damagePerBlock(),
+                 settings.safeZone(),
+                 settings.warningBlocks(),
+                 settings.warningTime(),
+                 settings.size(),
+                 settings.lerpTime(),
+                 settings.lerpTarget()
+              );
+              WorldBorder worldBorder = new WorldBorder(settings1);
+              worldBorder.ensureInitialized(serverLevel.getTime());
+              dataStorage1.set(WorldBorder.TYPE, worldBorder);
+           }
+
+           worldProperties.setWorldBorder(Optional.empty());
+        }
+
+        // TODO
+        // serverLevel.getWorldBorder().world = serverLevel;
+        serverLevel.getWorldBorder().setMaxRadius(this.getServer().getMaxWorldBorderRadius());
+        this.getServer().getPlayerManager().setMainWorld(serverLevel);
+     }
+
     
     @Override
     public void createLevel(
@@ -599,7 +635,11 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
            this.saveProperties = serverLevelData;
            this.saveProperties.setGameMode(((MinecraftDedicatedServer)(Object)this).getProperties().gameMode.get());
            PersistentStateManager dataStorage = serverLevel.getPersistentStateManager();
-           this.initScoreboard(dataStorage);
+           // this.initScoreboard(dataStorage);
+           
+           
+           this.getServer().getScoreboard().read(((ScoreboardState)dataStorage.getOrCreate(ScoreboardState.TYPE)).getPackedState());
+           
            this.dataCommandStorage = new DataCommandStorage(dataStorage);
            CraftServer.INSTANCE.scoreboardManager = new CardboardScoreboardManager(server, serverLevel.getScoreboard());
         } else {

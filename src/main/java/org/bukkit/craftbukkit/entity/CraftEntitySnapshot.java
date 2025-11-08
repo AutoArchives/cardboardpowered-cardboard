@@ -7,6 +7,8 @@ import org.cardboardpowered.interfaces.IMixinEntity;
 import org.slf4j.Logger;
 
 import java.util.function.Function;
+
+import net.minecraft.entity.LoadedEntityProcessor;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.storage.NbtReadView;
 import net.minecraft.storage.NbtWriteView;
@@ -68,7 +70,7 @@ public class CraftEntitySnapshot implements EntitySnapshot {
 
     private net.minecraft.entity.Entity createInternal(World world) {
         net.minecraft.world.World nms = ((CraftWorld) world).getHandle();
-        net.minecraft.entity.Entity internal = net.minecraft.entity.EntityType.loadEntityWithPassengers(this.data, nms, net.minecraft.entity.SpawnReason.LOAD, Function.identity());
+        net.minecraft.entity.Entity internal = net.minecraft.entity.EntityType.loadEntityWithPassengers(this.data, nms, net.minecraft.entity.SpawnReason.LOAD, LoadedEntityProcessor.NOOP);
         if (internal == null) { // Try creating by type
             internal = CraftEntityType.bukkitToMinecraft(this.type).create(nms, net.minecraft.entity.SpawnReason.LOAD);
         }

@@ -513,7 +513,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
     }
 
     public MoonPhase getMoonPhase() {
-        return MoonPhase.getPhase((long)(this.getHandle().getLunarTime() / 24000L));
+        return MoonPhase.getPhase(this.getHandle().toServerWorld().getTimeOfDay() / 24000L);
     }
 
     public NamespacedKey getKey() {

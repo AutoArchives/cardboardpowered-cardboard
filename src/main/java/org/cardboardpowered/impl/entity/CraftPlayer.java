@@ -1888,7 +1888,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void resetCooldown() {
-    	this.getHandle().resetLastAttackedTicks();
+    	this.getHandle().resetTicksSince();
     }
 
     @Override

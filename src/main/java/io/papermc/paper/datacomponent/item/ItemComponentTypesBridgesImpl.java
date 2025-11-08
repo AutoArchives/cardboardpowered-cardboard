@@ -4,6 +4,7 @@ import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.base.Preconditions;
 
 import io.papermc.paper.datacomponent.item.BlocksAttacks.Builder;
+import io.papermc.paper.datacomponent.item.KineticWeapon.Condition;
 import io.papermc.paper.datacomponent.item.ResolvableProfile.SkinPatch;
 import io.papermc.paper.datacomponent.item.ResolvableProfile.SkinPatchBuilder;
 import io.papermc.paper.registry.PaperRegistries;
@@ -267,5 +268,37 @@ public final class ItemComponentTypesBridgesImpl implements ItemComponentTypesBr
 	@Override
 	public SkinPatch emptySkinPatch() {
 		return new PaperResolvableProfile.PaperSkinPatch(null, null, null, null);
+	}
+
+	// TODO: Update this
+	
+	@Override
+	public io.papermc.paper.datacomponent.item.KineticWeapon.Builder kineticWeapon() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Condition kineticWeaponCondition(int arg0, float arg1, float arg2) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public io.papermc.paper.datacomponent.item.PiercingWeapon.Builder piercingWeapon() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public io.papermc.paper.datacomponent.item.SwingAnimation.Builder swingAnimation() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public io.papermc.paper.datacomponent.item.UseEffects.Builder useEffects() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

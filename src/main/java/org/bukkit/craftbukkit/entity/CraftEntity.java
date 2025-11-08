@@ -186,6 +186,7 @@ import net.minecraft.entity.FallingBlockEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.LoadedEntityProcessor;
 import net.minecraft.entity.TntEntity;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.Entity.RemovalReason;
@@ -1456,13 +1457,15 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     }
 
     private net.minecraft.entity.Entity copy(net.minecraft.world.World level) {
-        try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "Entity#copy", LOGGER);){
-            NbtWriteView output = NbtWriteView.create(problemReporter, level.getRegistryManager());
-            this.getHandle().saveSelfData(output);
-            net.minecraft.entity.Entity entity = net.minecraft.entity.EntityType.loadEntityWithPassengers(output.getNbt(), level, net.minecraft.entity.SpawnReason.LOAD, java.util.function.Function.identity());
-            return entity;
+    	net.minecraft.entity.Entity var4;
+        try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "Entity#copy", LOGGER)) {
+           NbtWriteView output = NbtWriteView.create(problemReporter, level.getRegistryManager());
+           this.getHandle().saveSelfData(output);
+           var4 = net.minecraft.entity.EntityType.loadEntityWithPassengers(output.getNbt(), level, net.minecraft.entity.SpawnReason.LOAD, LoadedEntityProcessor.NOOP);
         }
-    }
+
+        return var4;
+     }
     
     /*
     private net.minecraft.entity.Entity copy(net.minecraft.world.World level) {
@@ -1591,6 +1594,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     }
 
 	@Override
+	@Nullable
 	public <T> T getDataOrDefault(@NotNull DataComponentType.Valued<? extends T> type, @Nullable T fallback) {
         return this.nms.getOrDefault(PaperDataComponentType.bukkitToMinecraft(type), fallback);
     }

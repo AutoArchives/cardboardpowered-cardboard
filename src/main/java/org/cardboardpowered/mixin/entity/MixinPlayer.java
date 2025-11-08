@@ -83,7 +83,7 @@ import net.minecraft.util.Arm;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.GameRules;
+import net.minecraft.world.rule.GameRules;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 
@@ -553,7 +553,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
             ((ServerPlayerEntity)(Object)this).totalExperience = entityplayer.totalExperience;
             ((ServerPlayerEntity)(Object)this).experienceProgress = entityplayer.experienceProgress;
             ((ServerPlayerEntity)(Object)this).setScore(entityplayer.getScore());
-        } else if (((ServerPlayerEntity)(Object)this).getEntityWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || entityplayer.isSpectator()) {
+        } else if (((ServerPlayerEntity)(Object)this).getEntityWorld().getGameRules().getValue(GameRules.KEEP_INVENTORY) || entityplayer.isSpectator()) {
             ((ServerPlayerEntity)(Object)this).inventory.clone(entityplayer.inventory);
             ((ServerPlayerEntity)(Object)this).experienceLevel = entityplayer.experienceLevel;
             ((ServerPlayerEntity)(Object)this).totalExperience = entityplayer.totalExperience;

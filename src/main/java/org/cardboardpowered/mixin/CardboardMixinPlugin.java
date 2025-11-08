@@ -70,14 +70,19 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
     	String repository = "https://repo1.maven.org/maven2/"; 
     	new LibraryManager(repository, "lib", true, 2, libraries).run();
     }
-
+    
     public static List<Library> getLibs() {
         String mcver = GameVersion.create().getReleaseTarget();
 
         List<Library> libraries = new ArrayList<>();
 
         // Paper API
-        libraries.add( new Library("io.papermc", "paper-api", "1.21.10-R0.1-20251020.022259-22", SHA1, "ecd306f6c6e7e715ebccb6cb7706c5f932bd639b", "paper"));
+        // libraries.add( new Library("io.papermc", "paper-api", "1.21.10-R0.1-20251020.022259-22", SHA1, "ecd306f6c6e7e715ebccb6cb7706c5f932bd639b", "paper"));
+        
+        libraries.add( new Library("io.papermc", "paper-api", "25w45a", SHA1, "c4fcb1d0b7e4dfe630705540d5379291685a5320", "paper"));
+
+        LibraryManager.OVERRIDE_PAPER_API = true;
+        LibraryManager.PAPER_API_OVERRIDE = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/25w45a-8e0412f/paper-api-25w45a-R0.1-SNAPSHOT.jar";
 
         // Paper API Libraries
         libraries.add( new Library("org.xerial", "sqlite-jdbc", "3.41.0.0", MD5, "0d63ee5b583e9a75ea1717ffce63fed8", null));

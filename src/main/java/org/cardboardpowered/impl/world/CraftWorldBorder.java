@@ -61,12 +61,18 @@ public class CraftWorldBorder implements WorldBorder {
 
     @Override
     public void setSize(double newSize, long time) {
-        newSize = Math.min(6.0E7D, Math.max(1.0D, newSize));
-        time = Math.min(9223372036854775L, Math.max(0L, time));
+    	this.setSize(Math.min(this.getMaxSize(), Math.max(1.0, newSize)), TimeUnit.SECONDS, Math.min(9223372036854775L, Math.max(0L, time)));
+    }
 
-        if (time > 0L)
-            this.handle.interpolateSize(this.handle.getSize(), newSize, time * 1000L);
-        else this.handle.setSize(newSize);
+    public void setSize(double newSize, TimeUnit unit, long time) {
+    	Preconditions.checkArgument(unit != null, "TimeUnit cannot be null.");
+    	Preconditions.checkArgument(time >= 0L, "time cannot be lower than 0");
+    	Preconditions.checkArgument(newSize >= 1.0 && newSize <= this.getMaxSize(), "newSize must be between 1.0D and %s", this.getMaxSize());
+    	if (time > 0L) {
+    		this.handle.interpolateSize(this.handle.getSize(), newSize, unit.toMillis(time), this.getWorld().getGameTime());
+    	} else {
+    		this.handle.setSize(newSize);
+    	}
     }
 
     @Override
@@ -148,12 +154,6 @@ public class CraftWorldBorder implements WorldBorder {
 	public double getMaxSize() {
 		// TODO Auto-generated method stub
 		return 0;
-	}
-
-	@Override
-	public void setSize(double arg0, @NotNull TimeUnit arg1, long arg2) {
-		// TODO Auto-generated method stub
-		
 	}
 
 }

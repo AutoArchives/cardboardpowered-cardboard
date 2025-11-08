@@ -136,6 +136,10 @@ public final class LibraryManager {
         return a.toString();
     }
     
+    // Snapshot Override
+    public static boolean OVERRIDE_PAPER_API = false;
+    public static String PAPER_API_OVERRIDE = "";
+    
     public static void main(String[] args) throws Exception {
     	List<Library> list = CardboardMixinPlugin.getLibs();
     	
@@ -148,13 +152,18 @@ public final class LibraryManager {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+
 			if (s.equalsIgnoreCase("paper")) {
 
 				String ver = l.version.split("-R0.1")[0];
 
             	String paper_jar = PAPER_MAVEN + "/io/papermc/paper/paper-api/" + ver + "-R0.1-SNAPSHOT/paper-api-" + l.version + ".jar";
 
+            	if (OVERRIDE_PAPER_API) {
+            		logger.info("Redirecting Paper-API download to: " + PAPER_API_OVERRIDE);
+            		paper_jar = PAPER_API_OVERRIDE;
+            	}
+            	
             	URL downloadUrl = new URL(paper_jar);
             	
             	File file = new File("papertest.jar");
@@ -212,6 +221,11 @@ public final class LibraryManager {
 
                     	String paper_jar = PAPER_MAVEN + "/io/papermc/paper/paper-api/" + ver + "-R0.1-SNAPSHOT/paper-api-" + library.version + ".jar";
 
+                    	if (OVERRIDE_PAPER_API) {
+                    		logger.info("Redirecting Paper-API download to: " + PAPER_API_OVERRIDE);
+                    		paper_jar = PAPER_API_OVERRIDE;
+                    	}
+                    	
                     	downloadUrl = new URL(paper_jar);
                     	
                     	// downloadUrl = new URL(PAPER_URL);

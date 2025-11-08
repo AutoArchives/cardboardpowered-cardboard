@@ -3,6 +3,7 @@ package org.cardboardpowered.mixin.entity;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import org.bukkit.GameRule;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
@@ -30,7 +31,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 
 @Mixin(ServerPlayerEntity.class)
@@ -64,7 +64,8 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
         }
         java.util.List<org.bukkit.inventory.ItemStack> loot = new java.util.ArrayList<>(cb$this().getInventory().size());
 
-        boolean keepInventory = cb$this().getEntityWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || cb$this().isSpectator();
+        Boolean keepInventory = cb$this().getEntityWorld().getGameRules().getValue(net.minecraft.world.rule.GameRules.KEEP_INVENTORY) || cb$this().isSpectator();
+        // boolean keepInventory = cb$this().getEntityWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || cb$this().isSpectator();
         
         if (!keepInventory) {
             for (net.minecraft.item.ItemStack item : ((IMixinInventory) ((ServerPlayerEntity) (Object) this).getInventory()).getContents()) {

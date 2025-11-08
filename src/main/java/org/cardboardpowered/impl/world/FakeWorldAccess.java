@@ -48,6 +48,7 @@ import net.minecraft.world.Heightmap;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldProperties;
+import net.minecraft.world.attribute.EnvironmentAttributeAccess;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.border.WorldBorder;
@@ -82,7 +83,7 @@ public class FakeWorldAccess implements WorldAccess {
         throw new UnsupportedOperationException("Not supported");
     }
 
-    @Override
+    // @Override
     public LocalDifficulty getLocalDifficulty(BlockPos blockposition) {
         throw new UnsupportedOperationException("Not supported");
     }
@@ -278,6 +279,11 @@ public class FakeWorldAccess implements WorldAccess {
 	public void emitGameEvent(RegistryEntry<GameEvent> event, Vec3d emitterPos, Emitter emitter) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public EnvironmentAttributeAccess getEnvironmentAttributes() {
+		return EnvironmentAttributeAccess.DEFAULT;
 	}
 
 }
