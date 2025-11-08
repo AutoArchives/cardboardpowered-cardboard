@@ -2137,12 +2137,12 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public boolean hasDamage() {
-        return damage > 0;
+    	return this.damage != null && this.damage > 0;
     }
 
     @Override
     public int getDamage() {
-        return damage;
+    	return this.damage == null ? 0 : this.damage;
     }
 
     @Override

@@ -3,11 +3,11 @@ package org.cardboardpowered.mixin.network;
 import org.cardboardpowered.interfaces.IMixinClientConnection;
 import org.cardboardpowered.interfaces.IMixinServerLoginNetworkHandler;
 
-import me.isaiah.common.ConnectionState;
 import me.isaiah.common.GameVersion;
 import me.isaiah.common.ICommonMod;
 import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.minecraft.network.ClientConnection;
+import net.minecraft.network.packet.c2s.handshake.ConnectionIntent;
 import net.minecraft.network.packet.c2s.handshake.HandshakeC2SPacket;
 import net.minecraft.server.network.ServerHandshakeNetworkHandler;
 import net.minecraft.server.network.ServerLoginNetworkHandler;
@@ -32,7 +32,7 @@ public class MixinServerHandshakeNetworkHandler {
     	
     	IMixinMinecraftServer mc = (IMixinMinecraftServer) ICommonMod.getIServer().getMinecraft();
     	
-    	if (mc.IC$get_connection_state(packet) == ConnectionState.LOGIN) {
+    	if (packet.intendedState() == ConnectionIntent.LOGIN) {
             GameVersion ver = GameVersion.INSTANCE;
 
             if (packet.protocolVersion() > ver.getProtocolVersion()) {
