@@ -67,7 +67,7 @@ import org.bukkit.Material;
 import org.bukkit.World.Environment;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.generator.CraftWorldInfo;
-import org.bukkit.craftbukkit.scoreboard.CardboardScoreboardManager;
+import org.bukkit.craftbukkit.scoreboard.CraftScoreboardManager;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.event.world.WorldInitEvent;
@@ -218,6 +218,10 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         CraftMagicNumbers.setupUnknownModdedMaterials();
         fixBukkitWorldEdit();
         CardboardMod.isAfterWorldLoad = true;
+        
+        // if (null != CraftServer.INSTANCE.pluginRemapper) {
+        //	CraftServer.INSTANCE.pluginRemapper.pluginsEnabled();
+        
     }
 
     /*
@@ -510,7 +514,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
 
     private void cardboard$initLevel(ServerWorld serverWorld) {
         if (((CraftServer) Bukkit.getServer()).scoreboardManager == null) {
-            ((CraftServer) Bukkit.getServer()).scoreboardManager = new CardboardScoreboardManager((MinecraftServer) (Object) this, serverWorld.getScoreboard());
+            ((CraftServer) Bukkit.getServer()).scoreboardManager = new CraftScoreboardManager((MinecraftServer) (Object) this, serverWorld.getScoreboard());
         }
         // Bukkit.getPluginManager().callEvent(new WorldInitEvent(((IMixinWorld) serverWorld).getCraftWorld()));
     }
@@ -641,7 +645,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
            this.getServer().getScoreboard().read(((ScoreboardState)dataStorage.getOrCreate(ScoreboardState.TYPE)).getPackedState());
            
            this.dataCommandStorage = new DataCommandStorage(dataStorage);
-           CraftServer.INSTANCE.scoreboardManager = new CardboardScoreboardManager(server, serverLevel.getScoreboard());
+           CraftServer.INSTANCE.scoreboardManager = new CraftScoreboardManager(server, serverLevel.getScoreboard());
         } else {
            List<SpecialSpawner> spawners;
            

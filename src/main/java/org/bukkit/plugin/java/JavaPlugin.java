@@ -255,7 +255,7 @@ public abstract class JavaPlugin extends PluginBase {
      *
      * @param enabled true if enabled, otherwise false
      */
-    protected final void setEnabled(final boolean enabled) {
+    public final void setEnabled(final boolean enabled) {
         if (isEnabled != enabled) {
             isEnabled = enabled;
 

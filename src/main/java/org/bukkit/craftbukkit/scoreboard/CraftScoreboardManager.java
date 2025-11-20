@@ -24,14 +24,14 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public final class CardboardScoreboardManager implements ScoreboardManager {
+public final class CraftScoreboardManager implements ScoreboardManager {
 
     private final CardboardScoreboard mainScoreboard;
     private final MinecraftServer server;
     private final Collection<CardboardScoreboard> scoreboards = new WeakCollection<CardboardScoreboard>();
     private final Map<CraftPlayer, CardboardScoreboard> playerBoards = new HashMap<CraftPlayer, CardboardScoreboard>();
 
-    public CardboardScoreboardManager(MinecraftServer minecraftserver, net.minecraft.scoreboard.Scoreboard scoreboardServer) {
+    public CraftScoreboardManager(MinecraftServer minecraftserver, net.minecraft.scoreboard.Scoreboard scoreboardServer) {
         mainScoreboard = new CardboardScoreboard(scoreboardServer);
         server = minecraftserver;
         scoreboards.add(mainScoreboard);

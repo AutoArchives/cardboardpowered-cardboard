@@ -32,6 +32,9 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.persistence.PersistentDataContainer;
 
+/**
+ * Class: CardboardBlockEntityState
+ */
 public abstract class CardboardBlockEntityState<T extends BlockEntity> extends CraftBlockState implements TileState {
 
 	private static final Logger LOGGER = LogUtils.getLogger();
