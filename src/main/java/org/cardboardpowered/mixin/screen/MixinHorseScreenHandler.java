@@ -19,8 +19,8 @@ import net.minecraft.screen.HorseScreenHandler;
 @Mixin(HorseScreenHandler.class)
 public class MixinHorseScreenHandler extends MixinScreenHandler {
 
-    @Shadow
-    public Inventory inventory;
+    // @Shadow
+    // public Inventory inventory;
 
     private CardboardInventoryView bukkitEntity = null;
     private PlayerInventory playerInv;
@@ -34,7 +34,7 @@ public class MixinHorseScreenHandler extends MixinScreenHandler {
     public CardboardInventoryView getBukkitView() {
         if (bukkitEntity != null)
             return bukkitEntity;
-        return bukkitEntity = new CardboardInventoryView((Player)((IMixinEntity)this.playerInv.player).getBukkitEntity(), ((IMixinInventory)inventory).getOwner().getInventory(), (HorseScreenHandler)(Object)this);
+        return bukkitEntity = new CardboardInventoryView((Player)((IMixinEntity)this.playerInv.player).getBukkitEntity(), ((IMixinInventory)playerInv).getOwner().getInventory(), (HorseScreenHandler)(Object)this);
     }
 
 

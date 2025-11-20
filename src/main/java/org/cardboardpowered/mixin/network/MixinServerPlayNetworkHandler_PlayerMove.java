@@ -134,7 +134,11 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                 if (this.ticks == 0) {
                     this.syncWithPlayerPosition();
                 }
-                if (!this.handlePendingTeleport() && this.player.isLoaded()) {
+                
+                // Cardboard: Mojmap: hasClientLoaded
+                boolean this_player_isLoaded = ((ServerPlayNetworkHandler)(Object)this).method_76685();
+                
+                if (!this.handlePendingTeleport() && this_player_isLoaded) {
                     float f1;
                     float f;
                     double d2;
