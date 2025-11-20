@@ -19,6 +19,9 @@
 package org.cardboardpowered.util.nms;
 
 import org.cardboardpowered.CardboardMod;
+
+import com.mohistmc.banner.bukkit.nms.utils.RemapUtils;
+
 import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerNetworkIo;
@@ -50,19 +53,19 @@ public class ReflectionRemapper {
     	}
 
         if (className.startsWith("org.bukkit.craftbukkit." + NMS_VERSION + "."))
-            return MappingsReader.getIntermedClass("org.bukkit.craftbukkit." + className.substring(23 + NMS_VERSION.length() + 1));
+            return RemapUtils.map("org.bukkit.craftbukkit." + className.substring(23 + NMS_VERSION.length() + 1));
 
         if (className.startsWith("org.bukkit.craftbukkit.CraftServer."))
-            return MappingsReader.getIntermedClass(className.replace("org.bukkit.craftbukkit.CraftServer.", "org.bukkit.craftbukkit."));
+            return RemapUtils.map(className.replace("org.bukkit.craftbukkit.CraftServer.", "org.bukkit.craftbukkit."));
 
         if (className.startsWith("net.minecraft.server." + NMS_VERSION + "."))
-            return MappingsReader.getIntermedClass(className.replace("net.minecraft.server." + NMS_VERSION + ".", "net.minecraft.server."));
+            return RemapUtils.map(className.replace("net.minecraft.server." + NMS_VERSION + ".", "net.minecraft.server."));
 
         if (className.startsWith("net.minecraft.") && !className.startsWith("class_"))
-            return MappingsReader.getIntermedClass(className);
+            return RemapUtils.map(className);
 
         if (className.startsWith("org.bukkit.craftbukkit."))
-            return MappingsReader.getIntermedClass(className); // We are not CraftBukkit, check for our own version of the class.
+            return RemapUtils.map(className); // We are not CraftBukkit, check for our own version of the class.
 
         if (className.startsWith("net.minecraft.server.CraftServer."))
             return MappingsReader.getIntermedClass(className.replace("net.minecraft.server.CraftServer.", "net.minecraft.server."));

@@ -130,7 +130,6 @@ import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.tag.DamageTypeTags;
 import org.cardboardpowered.adventure.CardboardAdventure;
-import org.cardboardpowered.impl.CardboardAttributeInstance;
 import org.cardboardpowered.impl.CardboardEnchantment;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -1354,7 +1353,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                 continue;
             }
 
-            AttributeModifier attribMod = CardboardAttributeInstance.convert(nmsModifier);
+            AttributeModifier attribMod = CraftAttributeInstance.convert(nmsModifier);
 
             Attribute attribute = CraftAttribute.minecraftHolderToBukkit(entry.attribute());
             if (attribute == null) {

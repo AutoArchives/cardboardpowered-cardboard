@@ -63,8 +63,8 @@ import org.bukkit.inventory.meta.components.ToolComponent;
 import org.bukkit.material.MaterialData;
 // import org.bukkit.packs.DataPackManager;
 import org.bukkit.scoreboard.Criteria;
-import org.cardboardpowered.impl.tag.BlockTagImpl;
-import org.cardboardpowered.impl.tag.ItemTagImpl;
+import org.cardboardpowered.impl.tag.CraftBlockTag;
+import org.cardboardpowered.impl.tag.CraftItemTag;
 
 public class MaterialRerouting {
 
@@ -554,9 +554,9 @@ public class MaterialRerouting {
     }
 
     public static <T extends Keyed> boolean isTagged(Tag<T> tag, T item) {
-        if (tag instanceof BlockTagImpl) {
+        if (tag instanceof CraftBlockTag) {
             return tag.isTagged((T) MaterialRerouting.transformToBlockType((Material) item));
-        } else if (tag instanceof ItemTagImpl) {
+        } else if (tag instanceof CraftItemTag) {
             return tag.isTagged((T) MaterialRerouting.transformToItemType((Material) item));
         }
 
@@ -569,9 +569,9 @@ public class MaterialRerouting {
             return values;
         }
 
-        if (tag instanceof BlockTagImpl) {
+        if (tag instanceof CraftBlockTag) {
             return values.stream().map(val -> (Material) val).map(val -> MaterialRerouting.transformFromBlockType(val, version)).map(val -> (T) val).collect(Collectors.toSet());
-        } else if (tag instanceof ItemTagImpl) {
+        } else if (tag instanceof CraftItemTag) {
             return values.stream().map(val -> (Material) val).map(val -> MaterialRerouting.transformFromItemType(val, version)).map(val -> (T) val).collect(Collectors.toSet());
         }
 

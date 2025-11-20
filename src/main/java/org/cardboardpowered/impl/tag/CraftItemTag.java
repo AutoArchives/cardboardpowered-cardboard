@@ -12,7 +12,7 @@ import net.minecraft.registry.Registry;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 
-public class ItemTagImpl extends TagImpl<Item, Material> {
+public class CraftItemTag extends CraftTag<Item, Material> {
 
     /*public ItemTagImpl(TagGroup<Item> registry, Identifier tag) {
         super(registry, tag);
@@ -28,7 +28,7 @@ public class ItemTagImpl extends TagImpl<Item, Material> {
         return Collections.unmodifiableSet(getHandle().values().stream().map((item) -> CraftMagicNumbers.getMaterial(item)).collect(Collectors.toSet()));
     }*/
     
-    public ItemTagImpl(Registry<Item> registry, TagKey<Item> tag) {
+    public CraftItemTag(Registry<Item> registry, TagKey<Item> tag) {
         super(registry, tag);
     }
 

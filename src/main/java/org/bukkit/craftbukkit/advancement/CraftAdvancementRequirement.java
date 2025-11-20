@@ -1,4 +1,4 @@
-package org.cardboardpowered.impl;
+package org.bukkit.craftbukkit.advancement;
 
 import java.util.Collections;
 import java.util.List;

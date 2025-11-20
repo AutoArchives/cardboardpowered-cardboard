@@ -10,7 +10,6 @@ import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.cardboardpowered.impl.CardboardAttributeInstance;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,7 +20,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import com.javazilla.bukkitfabric.Utils;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 
 import io.papermc.paper.datacomponent.DataComponentType;
@@ -31,7 +29,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import net.minecraft.block.ComposterBlock;

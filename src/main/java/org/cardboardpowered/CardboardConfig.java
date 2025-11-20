@@ -81,8 +81,8 @@ public class CardboardConfig {
 				.comments(
 						"# Debug Test Stuff"
 				)
-				.keys("debug_print_event_call", "debug_print_all_calls", "debug_player", "debug_other")
-				.values("false", "false", "false", "false")
+				.keys("debug_print_event_call", "debug_print_all_calls", "debug_player", "debug_other", "debug_print_remaputil")
+				.values("false", "false", "false", "false", "false")
 			);
 
 
@@ -157,6 +157,7 @@ public class CardboardConfig {
     public static boolean DEBUG_VERBOSE_CALLS = false;
     public static boolean DEBUG_OTHER = false;
     public static boolean DEBUG_PLAYER = false;
+    public static boolean DEBUG_LOG_REMAP = false;
 
 	public static boolean addModsCommand = true;
 	public static boolean addPluginPrefixToLogger = true;
@@ -221,6 +222,7 @@ public class CardboardConfig {
         DEBUG_VERBOSE_CALLS =  config.getOrDefault("debug_print_all_calls", false);
         DEBUG_OTHER = config.getOrDefault("debug_other", false);
         DEBUG_PLAYER = config.getOrDefault("debug_player", false);
+        DEBUG_LOG_REMAP = config.getOrDefault("debug_print_remaputil", false);
 
         String extraJar = config.getOrDefault("debug_extra_lib_file", "debug_extra.jar");
         if (extraJar.length() > 2) {

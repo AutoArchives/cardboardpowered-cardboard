@@ -29,6 +29,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
 import org.cardboardpowered.BukkitLogger;
+import org.cardboardpowered.CardboardLogger;
 import org.cardboardpowered.impl.MetadataStoreImpl;
 import org.bukkit.craftbukkit.scheduler.CraftScheduler;
 import org.cardboardpowered.interfaces.IMixinAdvancement;
@@ -49,6 +50,7 @@ import io.papermc.paper.configuration.PaperServerConfiguration;
 import io.papermc.paper.configuration.ServerConfiguration;
 import io.papermc.paper.datapack.DatapackManager;
 import io.papermc.paper.math.Position;
+import io.papermc.paper.pluginremap.PluginRemapper;
 import io.papermc.paper.profile.PaperFilledProfileCache;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
@@ -130,7 +132,7 @@ import org.bukkit.craftbukkit.inventory.CraftItemFactory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.packs.CraftDataPackManager;
 import org.bukkit.craftbukkit.packs.CraftResourcePack;
-import org.bukkit.craftbukkit.scoreboard.CardboardScoreboardManager;
+import org.bukkit.craftbukkit.scoreboard.CraftScoreboardManager;
 import org.bukkit.craftbukkit.scoreboard.CraftCriteria;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -176,7 +178,6 @@ import org.cardboardpowered.RegistryUtil;
 import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.CardboardBossBar;
 import org.cardboardpowered.impl.CraftProfileBanList;
-import org.cardboardpowered.impl.CraftServerLinks;
 import org.cardboardpowered.impl.IpBanList;
 import org.cardboardpowered.impl.ProfileBanList;
 import org.cardboardpowered.impl.command.BukkitCommandWrapper;
@@ -198,16 +199,17 @@ import org.cardboardpowered.impl.inventory.recipe.CardboardStonecuttingRecipe;
 import org.cardboardpowered.impl.inventory.recipe.RecipeInterface;
 import org.cardboardpowered.impl.inventory.recipe.RecipeIterator;
 import org.cardboardpowered.impl.map.MapViewImpl;
-import org.cardboardpowered.impl.tag.BlockTagImpl;
+import org.cardboardpowered.impl.tag.CraftBlockTag;
 import org.cardboardpowered.impl.tag.CraftGameEventTag;
-import org.cardboardpowered.impl.tag.EntityTagImpl;
-import org.cardboardpowered.impl.tag.FluidTagImpl;
-import org.cardboardpowered.impl.tag.ItemTagImpl;
+import org.cardboardpowered.impl.tag.CraftEntityTag;
+import org.cardboardpowered.impl.tag.CraftFluidTag;
+import org.cardboardpowered.impl.tag.CraftItemTag;
 import org.cardboardpowered.impl.util.CommandPermissions;
 import org.cardboardpowered.impl.util.IconCacheImpl;
 import org.cardboardpowered.impl.util.SimpleHelpMap;
 import org.cardboardpowered.impl.world.ChunkDataImpl;
 import org.cardboardpowered.impl.world.CraftWorld;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.cardboardpowered.interfaces.IMixinMapState;
 import org.jetbrains.annotations.NotNull;
@@ -223,6 +225,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -258,7 +261,7 @@ public class CraftServer implements Server {
     private final CommandMapImpl commandMap;
 
     private final SimplePluginManager pluginManager;
-   // public final PaperPluginManagerImpl paperPluginManager;
+    // public final PaperPluginManagerImpl paperPluginManager;
 
     public Set<String> activeCompatibilities = Collections.emptySet();
     
@@ -285,7 +288,7 @@ public class CraftServer implements Server {
     protected final DedicatedPlayerManager playerList;
     
     public static CraftServer INSTANCE;
-    public CardboardScoreboardManager scoreboardManager;
+    public CraftScoreboardManager scoreboardManager;
 
     private final MetadataStoreBase<Entity> entityMetadata = MetadataStoreImpl.newEntityMetadataStore();
     private final MetadataStoreBase<OfflinePlayer> playerMetadata = MetadataStoreImpl.newPlayerMetadataStore();
@@ -307,6 +310,9 @@ public class CraftServer implements Server {
     	return paperProfileCache;
     }
     
+    // @MonotonicNonNull
+    // public final PluginRemapper pluginRemapper;
+    
     public CraftServer(MinecraftDedicatedServer nms) {
         INSTANCE = this;
         String hash = VersionCommand.getGitHash().substring(0,7); // use short hash
@@ -320,7 +326,7 @@ public class CraftServer implements Server {
         
         this.paperProfileCache = new PaperFilledProfileCache();
         
-        scoreboardManager = new CardboardScoreboardManager(nms, server.getScoreboard());
+        scoreboardManager = new CraftScoreboardManager(nms, server.getScoreboard());
 
         configuration = YamlConfiguration.loadConfiguration(new File("bukkit.yml"));
         configuration.options().copyDefaults(true);
@@ -344,6 +350,8 @@ public class CraftServer implements Server {
         ((CraftMagicNumbers) CraftMagicNumbers.INSTANCE).getCommodore().updateReroute(activeCompatibilities::contains);
         
         this.playerList = server.getPlayerManager();
+        
+        // this.pluginRemapper = Boolean.getBoolean("paper.disablePluginRemapping") ? null : PluginRemapper.create(new File("plugins").toPath());
         
         // Register PotionEffectType
         // CardboardMod.registerPotionEffectType();
@@ -429,6 +437,12 @@ public class CraftServer implements Server {
     	
         File pluginFolder = new File("plugins");
         if (pluginFolder.exists()) {
+        	
+        	
+        	//if (pluginRemapper != null) {
+            //    pluginRemapper.loadingPlugins();
+             //}
+        	
             /*for (File f : pluginFolder.listFiles()) {
                 if (f.getName().endsWith(".jar")) {
                     try {
@@ -438,6 +452,31 @@ public class CraftServer implements Server {
                     }
                 }
             }*/
+        	
+        	/*
+        	if (null != CraftServer.INSTANCE.pluginRemapper) {
+            	try {
+            		
+            		List<java.nio.file.Path> jarA = Files.list(pluginFolder.toPath()).toList();
+            		List<Path> jarB = new ArrayList<>();
+            		for (Path p : jarA) {
+            			if (p.toFile().getName().endsWith(".jar")) {
+            				jarB.add(p);
+            			}
+            		}
+            		
+					List<java.nio.file.Path> jars = CraftServer.INSTANCE.pluginRemapper.rewritePluginDirectory(
+							jarB
+							);
+					pluginFolder = jars.getFirst().getParent().toFile();
+					CardboardLogger.getSLF4J().info("DEBUG: pluginFolder=" + pluginFolder);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+            }
+            */
+        	
             Plugin[] plugins = pluginManager.loadPlugins(pluginFolder);
 
             for (Plugin plugin : plugins) {
@@ -1344,7 +1383,7 @@ public class CraftServer implements Server {
     }
 
     @Override
-    public CardboardScoreboardManager getScoreboardManager() {
+    public CraftScoreboardManager getScoreboardManager() {
         return scoreboardManager;
     }
 
@@ -1403,7 +1442,7 @@ public class CraftServer implements Server {
               //  Preconditions.checkArgument((clazz == Material.class ? 1 : 0) != 0, (Object)"Block namespace must have material type");
                 TagKey<Block> blockTagKey = TagKey.of(RegistryKeys.BLOCK, key);
                 if (Registries.BLOCK.getOptional(blockTagKey).isPresent()) {
-                	return (Tag<T>) new BlockTagImpl((Registry<Block>)Registries.BLOCK, blockTagKey);
+                	return (Tag<T>) new CraftBlockTag((Registry<Block>)Registries.BLOCK, blockTagKey);
                 }
                 System.out.println("NULL BLOCKS! " + tag.toString());;
                 break;
@@ -1412,7 +1451,7 @@ public class CraftServer implements Server {
                // Preconditions.checkArgument((clazz == Material.class ? 1 : 0) != 0, (Object)"Item namespace must have material type");
                 TagKey<Item> itemTagKey = TagKey.of(RegistryKeys.ITEM, key);
                 if (Registries.ITEM.getOptional(itemTagKey).isPresent()) {
-                	return (Tag<T>) new ItemTagImpl((Registry<Item>)Registries.ITEM, itemTagKey);
+                	return (Tag<T>) new CraftItemTag((Registry<Item>)Registries.ITEM, itemTagKey);
                 }
                 break;
             }
@@ -1420,7 +1459,7 @@ public class CraftServer implements Server {
               //  Preconditions.checkArgument((clazz == Fluid.class ? 1 : 0) != 0, (Object)"Fluid namespace must have fluid type");
                 TagKey<Fluid> fluidTagKey = TagKey.of(RegistryKeys.FLUID, key);
                 if (Registries.FLUID.getOptional(fluidTagKey).isPresent()) {
-                	return (Tag<T>) new FluidTagImpl((Registry<Fluid>)Registries.FLUID, fluidTagKey);
+                	return (Tag<T>) new CraftFluidTag((Registry<Fluid>)Registries.FLUID, fluidTagKey);
                 }
                 break;
             }
@@ -1428,7 +1467,7 @@ public class CraftServer implements Server {
                // Preconditions.checkArgument((clazz == EntityType.class ? 1 : 0) != 0, (Object)"Entity type namespace must have entity type");
                 TagKey<EntityType<?>> entityTagKey = TagKey.of(RegistryKeys.ENTITY_TYPE, key);
                 if (Registries.ENTITY_TYPE.getOptional(entityTagKey).isPresent()) {
-                	return (Tag<T>) new EntityTagImpl((Registry<EntityType<?>>)Registries.ENTITY_TYPE, entityTagKey);
+                	return (Tag<T>) new CraftEntityTag((Registry<EntityType<?>>)Registries.ENTITY_TYPE, entityTagKey);
                 }
                 break;
             }
@@ -1454,22 +1493,22 @@ public class CraftServer implements Server {
               //  Preconditions.checkArgument((clazz == Material.class ? 1 : 0) != 0, (Object)"Block namespace must have material type");
                 DefaultedRegistry<Block> blockTags = Registries.BLOCK;
                 
-                return (Iterable)(blockTags).streamTags().map(pair -> new BlockTagImpl((Registry<Block>)blockTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
+                return (Iterable)(blockTags).streamTags().map(pair -> new CraftBlockTag((Registry<Block>)blockTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
             }
             case "items": {
               //  Preconditions.checkArgument((clazz == Material.class ? 1 : 0) != 0, (Object)"Item namespace must have material type");
                 DefaultedRegistry<Item> itemTags = Registries.ITEM;
-                return (Iterable)(itemTags).streamTags().map(pair -> new ItemTagImpl((Registry<Item>)itemTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
+                return (Iterable)(itemTags).streamTags().map(pair -> new CraftItemTag((Registry<Item>)itemTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
             }
             case "fluids": {
               //  Preconditions.checkArgument((clazz == Material.class ? 1 : 0) != 0, (Object)"Fluid namespace must have fluid type");
                 DefaultedRegistry<Fluid> fluidTags = Registries.FLUID;
-                return (Iterable)(fluidTags).streamTags().map(pair -> new FluidTagImpl((Registry<Fluid>)fluidTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
+                return (Iterable)(fluidTags).streamTags().map(pair -> new CraftFluidTag((Registry<Fluid>)fluidTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
             }
             case "entity_types": {
               //  Preconditions.checkArgument((clazz == EntityType.class ? 1 : 0) != 0, (Object)"Entity type namespace must have entity type");
                 DefaultedRegistry<EntityType<?>> entityTags = Registries.ENTITY_TYPE;
-                return (Iterable)(entityTags).streamTags().map(pair -> new EntityTagImpl((Registry<EntityType<?>>)entityTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
+                return (Iterable)(entityTags).streamTags().map(pair -> new CraftEntityTag((Registry<EntityType<?>>)entityTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
             }
             case "game_events": {
                 // Preconditions.checkArgument((clazz == GameEvent.class ? 1 : 0) != 0);

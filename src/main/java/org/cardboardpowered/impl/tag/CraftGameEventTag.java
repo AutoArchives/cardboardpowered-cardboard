@@ -16,7 +16,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.Registries;
 
-public class CraftGameEventTag extends TagImpl<net.minecraft.world.event.GameEvent, GameEvent> {
+public class CraftGameEventTag extends CraftTag<net.minecraft.world.event.GameEvent, GameEvent> {
 	
 	public CraftGameEventTag(Registry<net.minecraft.world.event.GameEvent> registry,
 			TagKey<net.minecraft.world.event.GameEvent> tag) {

@@ -1,10 +1,11 @@
 /**
  * Cardboard - The Bukkit for Fabric Project
- * Copyright (C) 2020 Cardboard contributors
+ * Copyright (C) 2020-2025 Cardboard contributors
  */
 package org.cardboardpowered.mixin.entity.ai;
 
 import org.bukkit.event.entity.VillagerCareerChangeEvent;
+import org.bukkit.event.entity.VillagerCareerChangeEvent.ChangeReason;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
@@ -17,7 +18,6 @@ import net.minecraft.entity.ai.brain.task.LoseJobOnSiteLossTask;
 import net.minecraft.entity.ai.brain.task.Task;
 import net.minecraft.entity.ai.brain.task.TaskTriggerer;
 import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.village.VillagerData;
 import net.minecraft.village.VillagerProfession;
 
@@ -31,21 +31,35 @@ public class MixinLoseJobOnSiteLossTask {
      */
     @Overwrite
     public static Task<VillagerEntity> create() {
-        return TaskTriggerer.task(context -> context.group(context.queryMemoryAbsent(MemoryModuleType.JOB_SITE)).apply(context, jobSite -> (world, entity, time) -> {
-            VillagerData lv = entity.getVillagerData();
-            if (lv.profession() != VillagerProfession.NONE && lv.profession() != VillagerProfession.NITWIT && entity.getExperience() == 0 && lv.level() <= 1) {
-                // CraftBukkit start
-                VillagerCareerChangeEvent event = CraftEventFactory.callVillagerCareerChangeEvent(entity, CraftVillager.CraftProfession.minecraftHolderToBukkit(world.getRegistryManager().getEntryOrThrow(VillagerProfession.NONE)), VillagerCareerChangeEvent.ChangeReason.LOSING_JOB);
-                if (event.isCancelled()) {
-                    return false;
-                }
-                entity.setVillagerData(entity.getVillagerData().withProfession(CraftVillager.CraftProfession.bukkitToMinecraftHolder(event.getProfession())));
-                // CraftBukkit end
-                entity.reinitializeBrain(world);
-                return true;
-            }
-            return false;
-        }));
-    }
+        return TaskTriggerer.task(
+           context -> context.group(context.queryMemoryAbsent(MemoryModuleType.JOB_SITE))
+              .apply(
+                 context,
+                 jobSite -> (world, entity, time) -> {
+                    VillagerData villagerData = entity.getVillagerData();
+                    boolean flag = !villagerData.profession().matchesKey(VillagerProfession.NONE)
+                       && !villagerData.profession().matchesKey(VillagerProfession.NITWIT);
+                    if (flag && entity.getExperience() == 0 && villagerData.level() <= 1) {
+                       VillagerCareerChangeEvent event = CraftEventFactory.callVillagerCareerChangeEvent(
+                          entity,
+                          CraftVillager.CraftProfession.minecraftHolderToBukkit(world.getRegistryManager().getEntryOrThrow(VillagerProfession.NONE)),
+                          ChangeReason.LOSING_JOB
+                       );
+                       if (event.isCancelled()) {
+                          return false;
+                       } else {
+                          entity.setVillagerData(
+                             entity.getVillagerData().withProfession(CraftVillager.CraftProfession.bukkitToMinecraftHolder(event.getProfession()))
+                          );
+                          entity.reinitializeBrain(world);
+                          return true;
+                       }
+                    } else {
+                       return false;
+                    }
+                 }
+              )
+        );
+     }
 
 }
