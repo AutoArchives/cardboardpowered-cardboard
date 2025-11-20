@@ -153,7 +153,7 @@ import org.cardboardpowered.impl.entity.CardboardWither;
 import org.cardboardpowered.impl.entity.CraftParrot;
 import org.cardboardpowered.impl.entity.CraftCreature;
 import org.cardboardpowered.impl.entity.CreeperImpl;
-import org.cardboardpowered.impl.entity.EggImpl;
+import org.cardboardpowered.impl.entity.CardboardEgg;
 import org.cardboardpowered.impl.entity.ExperienceOrbImpl;
 import org.cardboardpowered.impl.entity.CraftFallingBlock;
 import org.cardboardpowered.impl.entity.ItemEntityImpl;
@@ -1276,7 +1276,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         }
         //else if (entity instanceof BoatEntity) { return new CraftBoat(server, (BoatEntity) entity); }
         else if (entity instanceof ThrownEntity) {
-            if (entity instanceof EggEntity) { return new EggImpl(server, (EggEntity) entity); }
+            if (entity instanceof EggEntity) { return new CardboardEgg(server, (EggEntity) entity); }
             else if (entity instanceof SnowballEntity) { return new CraftSnowball(server, (SnowballEntity) entity); }
             else if (entity instanceof PotionEntity) { return new CardboardThrownPotion(server, (PotionEntity) entity); }
             else if (entity instanceof EnderPearlEntity) { return new CardboardEnderPearl(server, (EnderPearlEntity) entity); }

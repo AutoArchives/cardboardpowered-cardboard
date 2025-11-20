@@ -1,4 +1,4 @@
-package org.cardboardpowered.impl;
+package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
 import java.net.URI;
@@ -10,6 +10,9 @@ import org.bukkit.ServerLinks;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.cardboardpowered.adventure.CardboardAdventure;
 
+/**
+ * Cardboard Implmentation for {@link org.bukkit.ServerLinks}
+ */
 public class CraftServerLinks implements ServerLinks {
 
     private final MinecraftDedicatedServer server;
@@ -23,9 +26,9 @@ public class CraftServerLinks implements ServerLinks {
         this(null, serverLinks);
     }
 
-    private CraftServerLinks(MinecraftDedicatedServer server, net.minecraft.server.ServerLinks serverLinks) {
+    private CraftServerLinks(MinecraftDedicatedServer server, net.minecraft.server.ServerLinks links) {
         this.server = server;
-        this.serverLinks = serverLinks;
+        this.serverLinks = links;
     }
 
     public ServerLinks.ServerLink getLink(ServerLinks.Type type) {

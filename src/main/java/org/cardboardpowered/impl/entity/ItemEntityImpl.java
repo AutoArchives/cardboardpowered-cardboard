@@ -1,6 +1,5 @@
 package org.cardboardpowered.impl.entity;
 
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.util.TriState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
@@ -12,8 +11,8 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
+import org.cardboardpowered.interfaces.CardboardItemEntity;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -28,6 +27,10 @@ public class ItemEntityImpl extends CraftEntity implements Item {
 
     public ItemEntityImpl(CraftServer server, ItemEntity entity) {
         this(server, entity, entity);
+    }
+    
+    public ItemEntity getHandle() {
+    	return (ItemEntity) this.nms;
     }
 
     @Override
@@ -110,51 +113,35 @@ public class ItemEntityImpl extends CraftEntity implements Item {
     }
 
     @Override
-    public void setWillAge(boolean arg0) {
+    public void setWillAge(boolean willAge) {
         // TODO Auto-generated method stub
-        
+    	( (CardboardItemEntity) this.getHandle() ).cardboard$setItemAge( willAge ? 0 : -32768 );
     }
 
     @Override
     public boolean willAge() {
         // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public @Nullable Component customName() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void customName(@Nullable Component arg0) {
-        // TODO Auto-generated method stub
-        
+        return this.getHandle().getItemAge() != -32768;
     }
 
 	@Override
 	public int getHealth() {
-		// TODO Auto-generated method stub
-		return 0;
+		return ( (CardboardItemEntity) this.getHandle() ).cardboard$getHealth();
 	}
 
 	@Override
 	public boolean isUnlimitedLifetime() {
-		// TODO Auto-generated method stub
-		return false;
+		return this.getHandle().getItemAge() == -32768;
 	}
 
 	@Override
-	public void setHealth(int arg0) {
-		// TODO Auto-generated method stub
-		
+	public void setHealth(int health) {
+		( (CardboardItemEntity) this.getHandle() ).cardboard$setHealth(health);
 	}
 
 	@Override
 	public void setUnlimitedLifetime(boolean arg0) {
-		// TODO Auto-generated method stub
-		
+		( (CardboardItemEntity) this.getHandle() ).cardboard$setUnlimitedAge(arg0);
 	}
 
 	@Override

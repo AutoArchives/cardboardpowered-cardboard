@@ -14,8 +14,7 @@ import net.minecraft.registry.RegistryKeys;
 
 import java.util.Objects;
 
-public class EntityTagImpl
-extends TagImpl<EntityType<?>, org.bukkit.entity.EntityType> {
+public class CraftEntityTag extends CraftTag<EntityType<?>, org.bukkit.entity.EntityType> {
     /*public EntityTagImpl(TagGroup<EntityType<?>> registry, Identifier tag) {
         super(registry, tag);
     }
@@ -30,7 +29,7 @@ extends TagImpl<EntityType<?>, org.bukkit.entity.EntityType> {
         return Collections.unmodifiableSet(this.getHandle().values().stream().map(nms -> Registry.ENTITY_TYPE.get(CraftNamespacedKey.fromMinecraft(EntityType.getId(nms)))).collect(Collectors.toSet()));
     }*/
     
-    public EntityTagImpl(Registry<EntityType<?>> registry, TagKey<EntityType<?>> tag) {
+    public CraftEntityTag(Registry<EntityType<?>> registry, TagKey<EntityType<?>> tag) {
         super(registry, tag);
     }
     

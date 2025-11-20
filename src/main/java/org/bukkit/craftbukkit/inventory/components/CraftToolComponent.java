@@ -21,7 +21,7 @@ import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.inventory.SerializableMeta;
 import org.bukkit.inventory.meta.components.ToolComponent;
-import org.cardboardpowered.impl.tag.BlockTagImpl;
+import org.cardboardpowered.impl.tag.CraftBlockTag;
 
 @SerializableAs("Tool")
 public final class CraftToolComponent implements ToolComponent {
@@ -126,9 +126,9 @@ public final class CraftToolComponent implements ToolComponent {
 
     @Override
     public ToolRule addRule(Tag<Material> tag, Float speed, Boolean correctForDrops) {
-        Preconditions.checkArgument(tag instanceof BlockTagImpl, "tag must be a block tag");
+        Preconditions.checkArgument(tag instanceof CraftBlockTag, "tag must be a block tag");
         Preconditions.checkArgument(speed == null || speed > 0, "speed must be positive"); // Paper - validate speed
-        return this.addRule(((BlockTagImpl) tag).getHandle(), speed, correctForDrops);
+        return this.addRule(((CraftBlockTag) tag).getHandle(), speed, correctForDrops);
     }
 
     private ToolRule addRule(RegistryEntryList<Block> blocks, Float speed, Boolean correctForDrops) {
@@ -249,8 +249,8 @@ public final class CraftToolComponent implements ToolComponent {
 
         @Override
         public void setBlocks(Tag<Material> tag) {
-            Preconditions.checkArgument(tag instanceof BlockTagImpl, "tag must be a block tag");
-            this.handle = new net.minecraft.component.type.ToolComponent.Rule(((BlockTagImpl) tag).getHandle(), this.handle.speed(), this.handle.correctForDrops());
+            Preconditions.checkArgument(tag instanceof CraftBlockTag, "tag must be a block tag");
+            this.handle = new net.minecraft.component.type.ToolComponent.Rule(((CraftBlockTag) tag).getHandle(), this.handle.speed(), this.handle.correctForDrops());
         }
 
         @Override

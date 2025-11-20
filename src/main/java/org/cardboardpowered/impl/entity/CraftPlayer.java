@@ -75,11 +75,15 @@ import org.bukkit.block.sign.Side;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationAbandonedEvent;
+import org.bukkit.craftbukkit.CraftInput;
 import org.bukkit.craftbukkit.CraftOfflinePlayer;
 import org.bukkit.craftbukkit.CraftParticle;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.CraftServerLinks;
 import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.CraftStatistic;
+import org.bukkit.craftbukkit.advancement.CraftAdvancement;
+import org.bukkit.craftbukkit.advancement.CraftAdvancementProgress;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
@@ -118,10 +122,6 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.util.Vector;
 import org.cardboardpowered.adventure.CardboardAdventure;
-import org.cardboardpowered.impl.AdvancementImpl;
-import org.cardboardpowered.impl.AdvancementProgressImpl;
-import org.cardboardpowered.impl.CraftInput;
-import org.cardboardpowered.impl.CraftServerLinks;
 import org.cardboardpowered.impl.block.CardboardSign;
 
 import com.destroystokyo.paper.ClientOption;
@@ -528,11 +528,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public org.bukkit.advancement.AdvancementProgress getAdvancementProgress(org.bukkit.advancement.Advancement advancement) {
         Preconditions.checkArgument(advancement != null, "advancement");
 
-        AdvancementImpl craft = (AdvancementImpl) advancement;
+        CraftAdvancement craft = (CraftAdvancement) advancement;
         PlayerAdvancementTracker data = getHandle().getAdvancementTracker();
         net.minecraft.advancement.AdvancementProgress progress = data.getProgress(craft.getHandle());
 
-        return new AdvancementProgressImpl(craft, data, progress);
+        return new CraftAdvancementProgress(craft, data, progress);
     }
 
     @Override
@@ -2858,7 +2858,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (this.getHandle().networkHandler == null) {
             return;
         }
-        Preconditions.checkArgument(links != null, (Object)"links cannot be null");
+        Preconditions.checkArgument(links != null, "links cannot be null");
         net.minecraft.server.ServerLinks nms = ((CraftServerLinks)links).getServerLinks();
         this.getHandle().networkHandler.sendPacket(new ServerLinksS2CPacket(nms.getLinks()));
     }

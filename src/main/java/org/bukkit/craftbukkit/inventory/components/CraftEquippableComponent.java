@@ -28,7 +28,7 @@ import org.bukkit.craftbukkit.configuration.ConfigSerializationUtil;
 import org.bukkit.craftbukkit.entity.CraftEntityType;
 import org.bukkit.craftbukkit.inventory.SerializableMeta;
 // import org.bukkit.craftbukkit.tag.CraftEntityTag;
-import org.cardboardpowered.impl.tag.EntityTagImpl;
+import org.cardboardpowered.impl.tag.CraftEntityTag;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.EntityType;
 
@@ -135,8 +135,8 @@ implements org.bukkit.inventory.meta.components.EquippableComponent {
     }
 
     public void setAllowedEntities(Tag<EntityType> tag) {
-        Preconditions.checkArgument((tag == null || tag instanceof EntityTagImpl ? 1 : 0) != 0, (Object)"tag must be an entity tag");
-        this.handle = new EquippableComponent(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), tag != null ? Optional.of(((EntityTagImpl)tag).getHandle()) : Optional.empty(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
+        Preconditions.checkArgument((tag == null || tag instanceof CraftEntityTag ? 1 : 0) != 0, "tag must be an entity tag");
+        this.handle = new EquippableComponent(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), tag != null ? Optional.of(((CraftEntityTag)tag).getHandle()) : Optional.empty(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
     }
 
     public boolean isDispensable() {
