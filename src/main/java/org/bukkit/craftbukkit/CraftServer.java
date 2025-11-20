@@ -29,6 +29,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
 import org.cardboardpowered.BukkitLogger;
+import org.cardboardpowered.CardboardLogger;
 import org.cardboardpowered.impl.MetadataStoreImpl;
 import org.bukkit.craftbukkit.scheduler.CraftScheduler;
 import org.cardboardpowered.interfaces.IMixinAdvancement;
@@ -49,6 +50,7 @@ import io.papermc.paper.configuration.PaperServerConfiguration;
 import io.papermc.paper.configuration.ServerConfiguration;
 import io.papermc.paper.datapack.DatapackManager;
 import io.papermc.paper.math.Position;
+import io.papermc.paper.pluginremap.PluginRemapper;
 import io.papermc.paper.profile.PaperFilledProfileCache;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
@@ -130,7 +132,7 @@ import org.bukkit.craftbukkit.inventory.CraftItemFactory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.packs.CraftDataPackManager;
 import org.bukkit.craftbukkit.packs.CraftResourcePack;
-import org.bukkit.craftbukkit.scoreboard.CardboardScoreboardManager;
+import org.bukkit.craftbukkit.scoreboard.CraftScoreboardManager;
 import org.bukkit.craftbukkit.scoreboard.CraftCriteria;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -208,6 +210,7 @@ import org.cardboardpowered.impl.util.IconCacheImpl;
 import org.cardboardpowered.impl.util.SimpleHelpMap;
 import org.cardboardpowered.impl.world.ChunkDataImpl;
 import org.cardboardpowered.impl.world.CraftWorld;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.cardboardpowered.interfaces.IMixinMapState;
 import org.jetbrains.annotations.NotNull;
@@ -223,6 +226,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -258,7 +262,7 @@ public class CraftServer implements Server {
     private final CommandMapImpl commandMap;
 
     private final SimplePluginManager pluginManager;
-   // public final PaperPluginManagerImpl paperPluginManager;
+    // public final PaperPluginManagerImpl paperPluginManager;
 
     public Set<String> activeCompatibilities = Collections.emptySet();
     
@@ -285,7 +289,7 @@ public class CraftServer implements Server {
     protected final DedicatedPlayerManager playerList;
     
     public static CraftServer INSTANCE;
-    public CardboardScoreboardManager scoreboardManager;
+    public CraftScoreboardManager scoreboardManager;
 
     private final MetadataStoreBase<Entity> entityMetadata = MetadataStoreImpl.newEntityMetadataStore();
     private final MetadataStoreBase<OfflinePlayer> playerMetadata = MetadataStoreImpl.newPlayerMetadataStore();
@@ -307,6 +311,9 @@ public class CraftServer implements Server {
     	return paperProfileCache;
     }
     
+    // @MonotonicNonNull
+    // public final PluginRemapper pluginRemapper;
+    
     public CraftServer(MinecraftDedicatedServer nms) {
         INSTANCE = this;
         String hash = VersionCommand.getGitHash().substring(0,7); // use short hash
@@ -320,7 +327,7 @@ public class CraftServer implements Server {
         
         this.paperProfileCache = new PaperFilledProfileCache();
         
-        scoreboardManager = new CardboardScoreboardManager(nms, server.getScoreboard());
+        scoreboardManager = new CraftScoreboardManager(nms, server.getScoreboard());
 
         configuration = YamlConfiguration.loadConfiguration(new File("bukkit.yml"));
         configuration.options().copyDefaults(true);
@@ -344,6 +351,8 @@ public class CraftServer implements Server {
         ((CraftMagicNumbers) CraftMagicNumbers.INSTANCE).getCommodore().updateReroute(activeCompatibilities::contains);
         
         this.playerList = server.getPlayerManager();
+        
+        // this.pluginRemapper = Boolean.getBoolean("paper.disablePluginRemapping") ? null : PluginRemapper.create(new File("plugins").toPath());
         
         // Register PotionEffectType
         // CardboardMod.registerPotionEffectType();
@@ -429,6 +438,12 @@ public class CraftServer implements Server {
     	
         File pluginFolder = new File("plugins");
         if (pluginFolder.exists()) {
+        	
+        	
+        	//if (pluginRemapper != null) {
+            //    pluginRemapper.loadingPlugins();
+             //}
+        	
             /*for (File f : pluginFolder.listFiles()) {
                 if (f.getName().endsWith(".jar")) {
                     try {
@@ -438,6 +453,31 @@ public class CraftServer implements Server {
                     }
                 }
             }*/
+        	
+        	/*
+        	if (null != CraftServer.INSTANCE.pluginRemapper) {
+            	try {
+            		
+            		List<java.nio.file.Path> jarA = Files.list(pluginFolder.toPath()).toList();
+            		List<Path> jarB = new ArrayList<>();
+            		for (Path p : jarA) {
+            			if (p.toFile().getName().endsWith(".jar")) {
+            				jarB.add(p);
+            			}
+            		}
+            		
+					List<java.nio.file.Path> jars = CraftServer.INSTANCE.pluginRemapper.rewritePluginDirectory(
+							jarB
+							);
+					pluginFolder = jars.getFirst().getParent().toFile();
+					CardboardLogger.getSLF4J().info("DEBUG: pluginFolder=" + pluginFolder);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+            }
+            */
+        	
             Plugin[] plugins = pluginManager.loadPlugins(pluginFolder);
 
             for (Plugin plugin : plugins) {
@@ -1344,7 +1384,7 @@ public class CraftServer implements Server {
     }
 
     @Override
-    public CardboardScoreboardManager getScoreboardManager() {
+    public CraftScoreboardManager getScoreboardManager() {
         return scoreboardManager;
     }
 

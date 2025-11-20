@@ -70,7 +70,7 @@ dependencies {
     	"fabric-screen-handler-api-v1"
     ]
 
-    DefaultExternalModuleDependency ic = new DefaultExternalModuleDependency("com.javazilla.mods", "icommon-fabric-1.21.7", "1.21.7", null)
+    DefaultExternalModuleDependency ic = new DefaultExternalModuleDependency("com.javazilla.mods", "icommon-fabric-1.21.9", "1.21.9", null)
     ic.setChanging(true) // Make sure we get the latest version of iCommon
 
     // include(modImplementation(ic))
@@ -117,10 +117,25 @@ dependencies {
     include(modImplementation("net.md-5:SpecialSource:1.11.2"))
 
     compileOnly fileTree(dir: 'libs', include: "srglib-0.1.2.jar")
+    
+    include(modImplementation("net.neoforged:srgutils:1.0.9")) // Mappings handling
+    include(modImplementation("net.neoforged:AutoRenamingTool:2.0.3")) // Remap plugins
+    include(modImplementation('net.neoforged.installertools:cli-utils:2.1.4'))
+    
+    include(modImplementation('net.fabricmc:mapping-io:0.8.0'))
+
+    // Remap reflection
+    include(modImplementation("io.papermc:reflection-rewriter:0.0.3"))
+    include(modImplementation("io.papermc:reflection-rewriter-runtime:0.0.3"))
+    include(modImplementation("io.papermc:reflection-rewriter-proxy-generator:0.0.3"))
 
     // Fabric Permissions API.
     include(modImplementation('me.lucko:fabric-permissions-api:0.5.0'))
-
+    
+    // Configurate
+    include(modImplementation('org.spongepowered:configurate-core:4.2.0'))
+    include(modImplementation('org.spongepowered:configurate-hocon:4.2.0'))
+    
     // Remove parts that are included with Minecraft or Downloaded
     
     removeLibs group: "com.google.guava", name: "guava", version: "21.0"
@@ -239,8 +254,8 @@ ext.getURLofDependencyArtifact = {
 }
 
 ext.downloadPaperFile = {
-//    def fileURL = new URL("https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/" + PAPER_VER_A +"/paper-api-" + PAPER_VER_B + ".jar")
-    def fileURL = new URL("https://web.archive.org/web/20250518123011/https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.21.4-R0.1-SNAPSHOT/paper-api-1.21.4-R0.1-20250511.205801-225.jar")
+	def fileURL = new URL("https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/" + PAPER_VER_A +"/paper-api-" + PAPER_VER_B + ".jar")
+    // def fileURL = new URL("https://web.archive.org/web/20250518123011/https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.21.4-R0.1-SNAPSHOT/paper-api-1.21.4-R0.1-20250511.205801-225.jar")
     def localFile = file("repos/tempp/paper-api-" + PAPER_VER_B + ".jar")
 
     localFile.getParentFile().mkdirs()
