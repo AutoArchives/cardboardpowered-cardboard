@@ -1,9 +1,15 @@
 package org.cardboardpowered.interfaces;
 
-import org.cardboardpowered.impl.AdvancementImpl;
+import org.bukkit.advancement.Advancement;
+import org.bukkit.craftbukkit.advancement.CraftAdvancement;
 
+/**
+ * 
+ */
 public interface IMixinAdvancement {
 
-    AdvancementImpl getBukkitAdvancement();
+    CraftAdvancement getBukkitAdvancement();
+
+	Advancement toBukkit();
 
 }

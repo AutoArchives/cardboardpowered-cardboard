@@ -1,4 +1,4 @@
-package org.cardboardpowered.impl;
+package org.bukkit.craftbukkit.advancement;
 
 import com.google.common.collect.Lists;
 import net.minecraft.advancement.PlayerAdvancementTracker;
@@ -10,13 +10,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 
-public class AdvancementProgressImpl implements AdvancementProgress {
+/**
+ * Cardboard Implementation of AdvancementProgress
+ */
+public class CraftAdvancementProgress implements AdvancementProgress {
 
-    private final AdvancementImpl advancement;
+    private final CraftAdvancement advancement;
     private final PlayerAdvancementTracker playerData;
     private final net.minecraft.advancement.AdvancementProgress handle;
 
-    public AdvancementProgressImpl(AdvancementImpl advancement, PlayerAdvancementTracker player, net.minecraft.advancement.AdvancementProgress handle) {
+    public CraftAdvancementProgress(CraftAdvancement advancement, PlayerAdvancementTracker player, net.minecraft.advancement.AdvancementProgress handle) {
         this.advancement = advancement;
         this.playerData = player;
         this.handle = handle;

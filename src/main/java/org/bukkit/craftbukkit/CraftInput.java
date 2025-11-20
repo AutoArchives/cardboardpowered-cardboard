@@ -1,8 +1,11 @@
-package org.cardboardpowered.impl;
+package org.bukkit.craftbukkit;
 
 import java.util.Objects;
 import org.bukkit.Input;
 
+/**
+ * Cardboard Implementation for {@link org.bukkit.Input}
+ */
 public class CraftInput implements Input {
 
     private final net.minecraft.util.PlayerInput handle;

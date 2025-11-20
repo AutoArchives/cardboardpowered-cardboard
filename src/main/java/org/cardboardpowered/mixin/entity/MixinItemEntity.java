@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.impl.entity.ItemEntityImpl;
+import org.cardboardpowered.interfaces.CardboardItemEntity;
 import org.cardboardpowered.interfaces.IMixinPlayerInventory;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
@@ -23,8 +24,55 @@ import net.minecraft.item.ItemStack;
 
 @Mixin(ItemEntity.class)
 @SuppressWarnings("deprecation")
-public class MixinItemEntity extends MixinEntity {
+public class MixinItemEntity extends MixinEntity implements CardboardItemEntity {
 
+	/**
+	 * net.minecraft.class_1542.field_7201
+	 */
+	@Shadow
+	public int health;
+	
+	/**
+	 * net.minecraft.class_1542.field_7204
+	 */
+	@Shadow
+	public int itemAge;
+	
+	@Override
+	public int cardboard$itemAge() {
+		return itemAge;
+	}
+	
+	@Override
+	public int cardboard$getHealth() {
+		return health;
+	}
+	
+	@Override
+	public void cardboard$setItemAge(int value) {
+		this.itemAge = value;
+	}
+	
+	@Override
+	public void cardboard$setUnlimitedAge(boolean noLimit) {
+		if (noLimit) {
+			this.itemAge = -32768;
+		} else {
+			this.itemAge = ((ItemEntity)(Object)this).age; // TODO: age vs totalEntityAge
+		}
+	}
+	
+	@Override
+	public void cardboard$setHealth(int health) {
+		ItemEntity entity = ((ItemEntity)(Object)this);
+		if (health <= 0) {
+			entity.getStack().onItemEntityDestroyed(entity);
+			entity.discard(); // Cause = Plugin
+		} else {
+			this.health = health;
+		}
+	}
+	
     @Shadow
     public int pickupDelay;
 

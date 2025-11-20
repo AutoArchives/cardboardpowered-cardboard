@@ -15,9 +15,9 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry.Reference;
 
-public class FluidTagImpl extends TagImpl<Fluid, org.bukkit.Fluid> {
+public class CraftFluidTag extends CraftTag<Fluid, org.bukkit.Fluid> {
 
-    public FluidTagImpl(Registry<Fluid> registry, TagKey<Fluid> tag) {
+    public CraftFluidTag(Registry<Fluid> registry, TagKey<Fluid> tag) {
         super(registry, tag);
     }
 

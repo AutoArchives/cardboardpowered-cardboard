@@ -12,7 +12,7 @@ import net.minecraft.registry.Registry;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 
-public class BlockTagImpl extends TagImpl<Block, Material> {
+public class CraftBlockTag extends CraftTag<Block, Material> {
 
     /*public BlockTagImpl(TagGroup<Block> registry, Identifier tag) {
         super(registry, tag);
@@ -39,7 +39,7 @@ public class BlockTagImpl extends TagImpl<Block, Material> {
         return map.keySet();
     }*/
     
-    public BlockTagImpl(Registry<Block> registry, TagKey<Block> tag) {
+    public CraftBlockTag(Registry<Block> registry, TagKey<Block> tag) {
         super(registry, tag);
     }
 

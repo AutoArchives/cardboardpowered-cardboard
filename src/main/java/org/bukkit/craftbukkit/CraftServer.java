@@ -178,7 +178,6 @@ import org.cardboardpowered.RegistryUtil;
 import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.CardboardBossBar;
 import org.cardboardpowered.impl.CraftProfileBanList;
-import org.cardboardpowered.impl.CraftServerLinks;
 import org.cardboardpowered.impl.IpBanList;
 import org.cardboardpowered.impl.ProfileBanList;
 import org.cardboardpowered.impl.command.BukkitCommandWrapper;
@@ -200,11 +199,11 @@ import org.cardboardpowered.impl.inventory.recipe.CardboardStonecuttingRecipe;
 import org.cardboardpowered.impl.inventory.recipe.RecipeInterface;
 import org.cardboardpowered.impl.inventory.recipe.RecipeIterator;
 import org.cardboardpowered.impl.map.MapViewImpl;
-import org.cardboardpowered.impl.tag.BlockTagImpl;
+import org.cardboardpowered.impl.tag.CraftBlockTag;
 import org.cardboardpowered.impl.tag.CraftGameEventTag;
-import org.cardboardpowered.impl.tag.EntityTagImpl;
-import org.cardboardpowered.impl.tag.FluidTagImpl;
-import org.cardboardpowered.impl.tag.ItemTagImpl;
+import org.cardboardpowered.impl.tag.CraftEntityTag;
+import org.cardboardpowered.impl.tag.CraftFluidTag;
+import org.cardboardpowered.impl.tag.CraftItemTag;
 import org.cardboardpowered.impl.util.CommandPermissions;
 import org.cardboardpowered.impl.util.IconCacheImpl;
 import org.cardboardpowered.impl.util.SimpleHelpMap;
@@ -1443,7 +1442,7 @@ public class CraftServer implements Server {
               //  Preconditions.checkArgument((clazz == Material.class ? 1 : 0) != 0, (Object)"Block namespace must have material type");
                 TagKey<Block> blockTagKey = TagKey.of(RegistryKeys.BLOCK, key);
                 if (Registries.BLOCK.getOptional(blockTagKey).isPresent()) {
-                	return (Tag<T>) new BlockTagImpl((Registry<Block>)Registries.BLOCK, blockTagKey);
+                	return (Tag<T>) new CraftBlockTag((Registry<Block>)Registries.BLOCK, blockTagKey);
                 }
                 System.out.println("NULL BLOCKS! " + tag.toString());;
                 break;
@@ -1452,7 +1451,7 @@ public class CraftServer implements Server {
                // Preconditions.checkArgument((clazz == Material.class ? 1 : 0) != 0, (Object)"Item namespace must have material type");
                 TagKey<Item> itemTagKey = TagKey.of(RegistryKeys.ITEM, key);
                 if (Registries.ITEM.getOptional(itemTagKey).isPresent()) {
-                	return (Tag<T>) new ItemTagImpl((Registry<Item>)Registries.ITEM, itemTagKey);
+                	return (Tag<T>) new CraftItemTag((Registry<Item>)Registries.ITEM, itemTagKey);
                 }
                 break;
             }
@@ -1460,7 +1459,7 @@ public class CraftServer implements Server {
               //  Preconditions.checkArgument((clazz == Fluid.class ? 1 : 0) != 0, (Object)"Fluid namespace must have fluid type");
                 TagKey<Fluid> fluidTagKey = TagKey.of(RegistryKeys.FLUID, key);
                 if (Registries.FLUID.getOptional(fluidTagKey).isPresent()) {
-                	return (Tag<T>) new FluidTagImpl((Registry<Fluid>)Registries.FLUID, fluidTagKey);
+                	return (Tag<T>) new CraftFluidTag((Registry<Fluid>)Registries.FLUID, fluidTagKey);
                 }
                 break;
             }
@@ -1468,7 +1467,7 @@ public class CraftServer implements Server {
                // Preconditions.checkArgument((clazz == EntityType.class ? 1 : 0) != 0, (Object)"Entity type namespace must have entity type");
                 TagKey<EntityType<?>> entityTagKey = TagKey.of(RegistryKeys.ENTITY_TYPE, key);
                 if (Registries.ENTITY_TYPE.getOptional(entityTagKey).isPresent()) {
-                	return (Tag<T>) new EntityTagImpl((Registry<EntityType<?>>)Registries.ENTITY_TYPE, entityTagKey);
+                	return (Tag<T>) new CraftEntityTag((Registry<EntityType<?>>)Registries.ENTITY_TYPE, entityTagKey);
                 }
                 break;
             }
@@ -1494,22 +1493,22 @@ public class CraftServer implements Server {
               //  Preconditions.checkArgument((clazz == Material.class ? 1 : 0) != 0, (Object)"Block namespace must have material type");
                 DefaultedRegistry<Block> blockTags = Registries.BLOCK;
                 
-                return (Iterable)(blockTags).streamTags().map(pair -> new BlockTagImpl((Registry<Block>)blockTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
+                return (Iterable)(blockTags).streamTags().map(pair -> new CraftBlockTag((Registry<Block>)blockTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
             }
             case "items": {
               //  Preconditions.checkArgument((clazz == Material.class ? 1 : 0) != 0, (Object)"Item namespace must have material type");
                 DefaultedRegistry<Item> itemTags = Registries.ITEM;
-                return (Iterable)(itemTags).streamTags().map(pair -> new ItemTagImpl((Registry<Item>)itemTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
+                return (Iterable)(itemTags).streamTags().map(pair -> new CraftItemTag((Registry<Item>)itemTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
             }
             case "fluids": {
               //  Preconditions.checkArgument((clazz == Material.class ? 1 : 0) != 0, (Object)"Fluid namespace must have fluid type");
                 DefaultedRegistry<Fluid> fluidTags = Registries.FLUID;
-                return (Iterable)(fluidTags).streamTags().map(pair -> new FluidTagImpl((Registry<Fluid>)fluidTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
+                return (Iterable)(fluidTags).streamTags().map(pair -> new CraftFluidTag((Registry<Fluid>)fluidTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
             }
             case "entity_types": {
               //  Preconditions.checkArgument((clazz == EntityType.class ? 1 : 0) != 0, (Object)"Entity type namespace must have entity type");
                 DefaultedRegistry<EntityType<?>> entityTags = Registries.ENTITY_TYPE;
-                return (Iterable)(entityTags).streamTags().map(pair -> new EntityTagImpl((Registry<EntityType<?>>)entityTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
+                return (Iterable)(entityTags).streamTags().map(pair -> new CraftEntityTag((Registry<EntityType<?>>)entityTags, (TagKey)pair.getTag())).collect(ImmutableList.toImmutableList());
             }
             case "game_events": {
                 // Preconditions.checkArgument((clazz == GameEvent.class ? 1 : 0) != 0);
