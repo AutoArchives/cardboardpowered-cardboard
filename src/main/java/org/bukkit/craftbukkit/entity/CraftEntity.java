@@ -765,7 +765,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     @Override
     public void setVelocity(Vector vec) {
         nms.setVelocity(new Vec3d(vec.getX(), vec.getY(), vec.getZ()));
-        nms.velocityModified = true;
+        nms.knockedBack = true;
     }
 
     @Override
