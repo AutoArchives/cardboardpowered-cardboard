@@ -26,8 +26,10 @@ import java.util.concurrent.TimeUnit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
+import org.checkerframework.checker.index.qual.NonNegative;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
 public class CraftWorldBorder implements WorldBorder {
 
@@ -152,8 +154,29 @@ public class CraftWorldBorder implements WorldBorder {
 
 	@Override
 	public double getMaxSize() {
+		return net.minecraft.world.border.WorldBorder.STATIC_AREA_SIZE;
+	}
+
+	@Override
+	public void changeSize(double newSize, @Range(from = 0, to = 2147483647) long ticks) {
+		 if (ticks > 0L) {
+			 final long startTime = (this.getWorld() != null) ? this.getWorld().getGameTime() : 0; // Virtual Borders don't have a World
+			 this.handle.interpolateSize(this.handle.getSize(), newSize, ticks, startTime);
+		 } else {
+			 this.handle.setSize(newSize);
+		 }
+	}
+
+	@Override
+	public @NonNegative int getWarningTimeTicks() {
 		// TODO Auto-generated method stub
-		return 0;
+		return this.handle.getWarningTime();
+	}
+
+	@Override
+	public void setWarningTimeTicks(@NonNegative int ticks) {
+		// TODO Auto-generated method stub
+		this.handle.setWarningTime(ticks);
 	}
 
 }

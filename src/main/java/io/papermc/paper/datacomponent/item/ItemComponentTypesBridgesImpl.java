@@ -301,4 +301,10 @@ public final class ItemComponentTypesBridgesImpl implements ItemComponentTypesBr
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public io.papermc.paper.datacomponent.item.AttackRange.Builder attackRange() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -79,10 +79,11 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         // Paper API
         // libraries.add( new Library("io.papermc", "paper-api", "1.21.10-R0.1-20251020.022259-22", SHA1, "ecd306f6c6e7e715ebccb6cb7706c5f932bd639b", "paper"));
         
-        libraries.add( new Library("io.papermc", "paper-api", "25w45a", SHA1, "c4fcb1d0b7e4dfe630705540d5379291685a5320", "paper"));
+        libraries.add( new Library("io.papermc", "paper-api", "1.21.11-R0.1-20251209.225848-3", SHA1, "691ee5296d074a64e899f1e8d3d7640fd16bc292", "paper"));
 
-        LibraryManager.OVERRIDE_PAPER_API = true;
-        LibraryManager.PAPER_API_OVERRIDE = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/25w45a-8e0412f/paper-api-25w45a-R0.1-SNAPSHOT.jar";
+        // For Snapshots:
+        // LibraryManager.OVERRIDE_PAPER_API = true;
+        // LibraryManager.PAPER_API_OVERRIDE = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/25w45a-8e0412f/paper-api-25w45a-R0.1-SNAPSHOT.jar";
 
         // Paper API Libraries
         libraries.add( new Library("org.xerial", "sqlite-jdbc", "3.41.0.0", MD5, "0d63ee5b583e9a75ea1717ffce63fed8", null));

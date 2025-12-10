@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import net.minecraft.block.entity.DecoratedPotBlockEntity;
+import net.minecraft.block.entity.DecoratedPotBlockEntity.WobbleType;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -127,6 +128,18 @@ public class CraftDecoratedPot extends CardboardBlockEntityState<DecoratedPotBlo
 	@Override
 	public DecoratedPotInventory getSnapshotInventory() {
 		return new CraftInventoryDecoratedPot((Inventory)this.getSnapshot());
+	}
+
+	@Override
+	public void startWobble(@NotNull WobbleStyle style) {
+		// Preconditions.checkArgument(style != null, "style must not be null");
+        this.requirePlaced();
+
+        WobbleType originalStyle = switch (style) {
+            case POSITIVE -> DecoratedPotBlockEntity.WobbleType.POSITIVE;
+            case NEGATIVE -> DecoratedPotBlockEntity.WobbleType.NEGATIVE;
+        };
+        this.getTileEntity().wobble(originalStyle);
 	}
 
 }
