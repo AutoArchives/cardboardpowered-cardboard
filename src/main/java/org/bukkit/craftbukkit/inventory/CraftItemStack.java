@@ -729,7 +729,6 @@ public final class CraftItemStack extends ItemStack {
             case DAYLIGHT_DETECTOR: 
             case HOPPER: 
             case COMPARATOR: 
-            case SHIELD: 
             case STRUCTURE_BLOCK: 
             case SHULKER_BOX: 
             case WHITE_SHULKER_BOX: 
@@ -772,6 +771,9 @@ public final class CraftItemStack extends ItemStack {
             // case VAULT:
             {
                 return new CraftMetaBlockState(item.getComponentChanges(), CraftItemType.minecraftToBukkit(item.getItem()), extraHandledDcts);
+            }
+            case SHIELD: {
+                return new CraftMetaShield(item.getComponentChanges(), extraHandledDcts);
             }
             case TROPICAL_FISH_BUCKET: {
             	return new CraftMetaItem(item.getComponentChanges(), extraHandledDcts);
