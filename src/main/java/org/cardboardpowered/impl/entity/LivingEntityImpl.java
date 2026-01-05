@@ -680,8 +680,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public Chunk getChunk() {
-        // TODO Auto-generated method stub
-        return null;
+        return super.getChunk();
     }
 
     @Override
