@@ -35,6 +35,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.rule.GameRules;
 
+// TODO: Fix this whole thing as some items don't drop.
 @Mixin(ServerPlayerEntity.class)
 public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
 

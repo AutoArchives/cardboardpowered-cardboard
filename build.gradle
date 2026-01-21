@@ -1,7 +1,7 @@
 import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
 
 plugins {
-    id 'fabric-loom' version '1.13-SNAPSHOT'
+    id 'fabric-loom' version '1.14-SNAPSHOT'
     id 'maven-publish'
     id 'com.gradleup.shadow' version '8.3.6'
     id 'java-library'
@@ -16,10 +16,10 @@ gversion {
 }
 project.compileJava.dependsOn(createVersionFile)
 
-sourceCompatibility = JavaVersion.VERSION_21
-targetCompatibility = JavaVersion.VERSION_21
+//sourceCompatibility = JavaVersion.VERSION_25
+//targetCompatibility = JavaVersion.VERSION_25
 
-archivesBaseName = project.archives_base_name
+//archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
@@ -154,11 +154,11 @@ configurations.implementation {
 }
 
 configure([tasks.compileJava]) {
-    sourceCompatibility = 21
-    options.release = 21
+    sourceCompatibility = 25
+    options.release = 25
 
     javaCompiler = javaToolchains.compilerFor {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -260,7 +260,7 @@ ext.downloadPaperFile = {
 
 // Make sure paper-api on the repo is kept updated.
 publishing {
-	configurations.api.setCanBeResolved(true)
+//	configurations.api.setCanBeResolved(true)
 	downloadPaperFile()
     publications {
         mavenJava(MavenPublication) {

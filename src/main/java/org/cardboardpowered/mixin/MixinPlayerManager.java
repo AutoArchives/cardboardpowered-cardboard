@@ -121,6 +121,7 @@ import net.minecraft.world.WorldProperties;
 import net.minecraft.network.packet.s2c.play.*;
 //>>>>>>> upstream/ver/1.20
 
+// TODO: This breaks many thing like experience drop.
 @Mixin(PlayerManager.class)
 public abstract class MixinPlayerManager implements IMixinPlayerManager {
 
