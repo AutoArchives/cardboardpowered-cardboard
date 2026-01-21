@@ -226,6 +226,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.WorldProperties;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket;
@@ -1396,14 +1397,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         
         System.out.println("Hello! " + from.getWorld() + " / " + to.getWorld());
 
-        if (from.getWorld().equals(to.getWorld()))
-             ((IMixinPlayNetworkHandler)(Object)entity.networkHandler).teleport(to);
-        else {
-            //entity.moveToWorld(toWorld);
-            //entity.teleport
-            
-            ((IMixinPlayerManager)(PlayerManager)CraftServer.server.getPlayerManager()).moveToWorld(entity, toWorld, true, to, true);
-        }
+        Vec3d pos = new Vec3d(location.getX(), location.getY(), location.getZ());
+        Vec3d velocity = new Vec3d(0, 0, 0);
+        float yaw = location.getYaw();
+        float pitch = location.getPitch();
+
+        TeleportTarget target = new TeleportTarget(toWorld, pos, velocity, yaw, pitch, TeleportTarget.NO_OP);
+
+        this.getHandle().teleportTo(target);
 
         return true;
     }

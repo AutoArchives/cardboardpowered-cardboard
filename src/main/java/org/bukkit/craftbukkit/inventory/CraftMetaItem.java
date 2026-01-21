@@ -198,6 +198,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                     // TODO .put(CraftMetaTropicalFishBucket.class, "TROPICAL_FISH_BUCKET")
                     .put(CraftMetaCrossbow.class, "CROSSBOW")
                     .put(CraftMetaSuspiciousStew.class, "SUSPICIOUS_STEW")
+                    .put(CraftMetaShield.class, "SHIELD")
                     .put(CraftMetaItem.class, "UNSPECIFIC")
                     .build();
 

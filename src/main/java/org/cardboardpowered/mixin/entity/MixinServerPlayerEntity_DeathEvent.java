@@ -21,6 +21,7 @@ import com.mojang.authlib.GameProfile;
 
 import net.minecraft.component.EnchantmentEffectComponentTypes;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTracker;
 import net.minecraft.entity.player.PlayerEntity;
@@ -73,6 +74,16 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
             for (net.minecraft.item.ItemStack item : ((IMixinInventory) ((ServerPlayerEntity) (Object) this).getInventory()).getContents()) {
                 if (!item.isEmpty() && !EnchantmentHelper.hasAnyEnchantmentsWith(item, EnchantmentEffectComponentTypes.PREVENT_EQUIPMENT_DROP)) {
                     loot.add(CraftItemStack.asCraftMirror(item));
+                }
+            }
+            net.minecraft.item.ItemStack[] armor = new net.minecraft.item.ItemStack[4];
+            armor[0] = ((ServerPlayerEntity) (Object) this).getEquippedStack(EquipmentSlot.HEAD);
+            armor[1] = ((ServerPlayerEntity) (Object) this).getEquippedStack(EquipmentSlot.BODY);
+            armor[2] = ((ServerPlayerEntity) (Object) this).getEquippedStack(EquipmentSlot.LEGS);
+            armor[3] = ((ServerPlayerEntity) (Object) this).getEquippedStack(EquipmentSlot.FEET);
+            for(net.minecraft.item.ItemStack armorPiece : armor){
+                if(!armorPiece.isEmpty() && !EnchantmentHelper.hasAnyEnchantmentsWith(armorPiece, EnchantmentEffectComponentTypes.PREVENT_EQUIPMENT_DROP)){
+                    loot.add(CraftItemStack.asCraftMirror(armorPiece));
                 }
             }
         }
