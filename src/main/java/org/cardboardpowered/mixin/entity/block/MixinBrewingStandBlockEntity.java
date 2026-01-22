@@ -58,12 +58,12 @@ public class MixinBrewingStandBlockEntity implements IMixinInventory, IMixinBrew
     }
 
     @Override
-    public int getMaxStackSize() {
+    public int getCardboardMaxStackSize() {
         return maxStack;
     }
 
     @Override
-    public void setMaxStackSize(int size) {
+    public void setCardboardMaxStackSize(int size) {
         maxStack = size;
     }
 

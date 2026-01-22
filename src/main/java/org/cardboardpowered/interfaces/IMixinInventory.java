@@ -27,7 +27,7 @@ public interface IMixinInventory {
   
     org.bukkit.inventory.InventoryHolder getOwner();
 
-    void setMaxStackSize(int size);
+    void setCardboardMaxStackSize(int size);
 
     org.bukkit.Location getLocation();
 
@@ -40,7 +40,7 @@ public interface IMixinInventory {
 
     int MAX_STACK = 64;
 
-    int getMaxStackSize();
+    int getCardboardMaxStackSize();
 
     default void cardboard$setOwner(InventoryHolder owner) {
         // TODO

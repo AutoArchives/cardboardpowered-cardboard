@@ -55,11 +55,11 @@ public class MixinHopperBlockEntity implements IMixinInventory {
     }
 
     @Override
-    public int getMaxStackSize() {
+    public int getCardboardMaxStackSize() {
         return maxStack;
     }
 
-    public void setMaxStackSize(int size) {
+    public void setCardboardMaxStackSize(int size) {
         maxStack = size;
     }
 

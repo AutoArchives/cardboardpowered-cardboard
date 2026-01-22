@@ -59,7 +59,7 @@ public class MixinPlayerInventory implements IMixinInventory, IMixinPlayerInvent
     }
 
     @Override
-    public void setMaxStackSize(int size) {
+    public void setCardboardMaxStackSize(int size) {
     }
 
     @Override
@@ -68,7 +68,7 @@ public class MixinPlayerInventory implements IMixinInventory, IMixinPlayerInvent
     }
 
     @Override
-    public int getMaxStackSize() {
+    public int getCardboardMaxStackSize() {
         return get().getMaxStackSize();
     }
 
@@ -80,7 +80,7 @@ public class MixinPlayerInventory implements IMixinInventory, IMixinPlayerInvent
             if (itemstack1.isEmpty()) return itemstack.getCount();
 
             if (get().hasRemainingSpaceForItem(itemstack1, itemstack))
-                remains -= (itemstack1.getMaxStackSize() < getMaxStackSize() ? itemstack1.getMaxStackSize() : getMaxStackSize()) - itemstack1.getCount();
+                remains -= (itemstack1.getMaxStackSize() < getCardboardMaxStackSize() ? itemstack1.getMaxStackSize() : getCardboardMaxStackSize()) - itemstack1.getCount();
             if (remains <= 0) return itemstack.getCount();
         }
 

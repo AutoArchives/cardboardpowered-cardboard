@@ -443,12 +443,12 @@ public class CraftInventory implements Inventory {
 
     @Override
     public int getMaxStackSize() {
-        return ((IMixinInventory)inventory).getMaxStackSize();
+        return ((IMixinInventory)inventory).getCardboardMaxStackSize();
     }
 
     @Override
     public void setMaxStackSize(int size) {
-        ((IMixinInventory)inventory).setMaxStackSize(size);
+        ((IMixinInventory)inventory).setCardboardMaxStackSize(size);
     }
 
     @Override

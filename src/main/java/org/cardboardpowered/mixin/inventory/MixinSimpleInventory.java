@@ -63,7 +63,7 @@ public class MixinSimpleInventory implements IMixinInventory {
     }
 
     @Override
-    public void setMaxStackSize(int size) {
+    public void setCardboardMaxStackSize(int size) {
         maxStack_BF = size;
     }
 
@@ -73,7 +73,7 @@ public class MixinSimpleInventory implements IMixinInventory {
     }
 
     @Override
-    public int getMaxStackSize() {
+    public int getCardboardMaxStackSize() {
         return maxStack_BF;
     }
 

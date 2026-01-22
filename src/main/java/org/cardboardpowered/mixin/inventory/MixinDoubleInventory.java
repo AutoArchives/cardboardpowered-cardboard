@@ -60,9 +60,9 @@ public class MixinDoubleInventory implements IMixinInventory {
     }
 
     @Override
-    public void setMaxStackSize(int size) {
-        ((IMixinInventory)this.container1).setMaxStackSize(size);
-        ((IMixinInventory)this.container2).setMaxStackSize(size);
+    public void setCardboardMaxStackSize(int size) {
+        ((IMixinInventory)this.container1).setCardboardMaxStackSize(size);
+        ((IMixinInventory)this.container2).setCardboardMaxStackSize(size);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class MixinDoubleInventory implements IMixinInventory {
     }
 
     @Override
-    public int getMaxStackSize() {
+    public int getCardboardMaxStackSize() {
         return MAX_STACK;
     }
 

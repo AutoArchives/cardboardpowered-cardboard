@@ -43,12 +43,12 @@ public class MixinShulkerBoxBlockEntity implements IMixinInventory {
     }
 
     @Override
-    public void setMaxStackSize(int size) {
+    public void setCardboardMaxStackSize(int size) {
         this.maxStack = size;
     }
 
     @Override
-    public int getMaxStackSize() {
+    public int getCardboardMaxStackSize() {
         return maxStack;
     }
 

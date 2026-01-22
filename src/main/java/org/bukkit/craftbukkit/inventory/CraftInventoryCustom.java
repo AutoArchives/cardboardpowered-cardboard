@@ -1,7 +1,6 @@
 package org.bukkit.craftbukkit.inventory;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.SimpleContainer;
@@ -109,17 +108,17 @@ public class CraftInventoryCustom extends CraftInventory {
         @Override
         public void setItem(int i, ItemStack itemstack) {
             items.set(i, itemstack);
-            if (itemstack != ItemStack.EMPTY && this.getMaxStackSize() > 0 && itemstack.getCount() > this.getMaxStackSize())
-                itemstack.setCount(this.getMaxStackSize());
+            if (itemstack != ItemStack.EMPTY && this.getCardboardMaxStackSize() > 0 && itemstack.getCount() > this.getCardboardMaxStackSize())
+                itemstack.setCount(this.getCardboardMaxStackSize());
         }
 
         @Override
-        public int getMaxStackSize() {
+        public int getCardboardMaxStackSize() {
             return maxStack;
         }
 
         @Override
-        public void setMaxStackSize(int size) {
+        public void setCardboardMaxStackSize(int size) {
             maxStack = size;
         }
 
@@ -198,6 +197,11 @@ public class CraftInventoryCustom extends CraftInventory {
             } while (itemstack.isEmpty());
 
             return false;
+        }
+
+        @Override
+        public int getMaxStackSize() {
+            return maxStack;
         }
     }
 

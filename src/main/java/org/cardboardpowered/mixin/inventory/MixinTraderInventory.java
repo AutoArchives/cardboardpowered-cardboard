@@ -52,12 +52,12 @@ public class MixinTraderInventory implements IMixinInventory {
     }
 
     @Override
-    public int getMaxStackSize() {
+    public int getCardboardMaxStackSize() {
         return maxStack;
     }
 
     @Override
-    public void setMaxStackSize(int i) {
+    public void setCardboardMaxStackSize(int i) {
         maxStack = i;
     }
 
