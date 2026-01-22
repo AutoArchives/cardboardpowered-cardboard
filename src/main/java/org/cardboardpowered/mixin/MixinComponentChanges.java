@@ -8,27 +8,27 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.Optional;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
 
-@Mixin(ComponentChanges.Builder.class)
+@Mixin(DataComponentPatch.Builder.class)
 public class MixinComponentChanges implements IComponentChanges {
 
-    @Shadow @Final private Reference2ObjectMap<ComponentType<?>, Optional<?>> changes;
+    @Shadow @Final private Reference2ObjectMap<DataComponentType<?>, Optional<?>> map;
 
     @Override
-    public void copy(ComponentChanges orig) {
-        this.changes.putAll(orig.changedComponents);
+    public void copy(DataComponentPatch orig) {
+        this.map.putAll(orig.map);
     }
 
     @Override
-    public void clear(ComponentType<?> type) {
-        this.changes.remove(type);
+    public void clear(DataComponentType<?> type) {
+        this.map.remove(type);
     }
 
     @Override
     public boolean isEmpty() {
-        return this.changes.isEmpty();
+        return this.map.isEmpty();
     }
 
     @Override
@@ -37,8 +37,8 @@ public class MixinComponentChanges implements IComponentChanges {
             return true;
         }
 
-        if (obj instanceof ComponentChanges.Builder patch) {
-            return this.changes.equals(patch.changes);
+        if (obj instanceof DataComponentPatch.Builder patch) {
+            return this.map.equals(patch.map);
         }
 
         return false;
@@ -46,6 +46,6 @@ public class MixinComponentChanges implements IComponentChanges {
 
     @Override
     public int hashCode() {
-        return this.changes.hashCode();
+        return this.map.hashCode();
     }
 }

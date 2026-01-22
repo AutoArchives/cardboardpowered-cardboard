@@ -3,8 +3,8 @@
  */
 package org.bukkit.craftbukkit.block.impl;
 
-import net.minecraft.block.PoweredRailBlock;
-import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.world.level.block.PoweredRailBlock;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 public final class CraftPoweredRail extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.type.RedstoneRail, org.bukkit.block.data.Powerable, org.bukkit.block.data.Rail {
 
@@ -12,13 +12,13 @@ public final class CraftPoweredRail extends org.bukkit.craftbukkit.block.data.Cr
         super();
     }
 
-    public CraftPoweredRail(net.minecraft.block.BlockState state) {
+    public CraftPoweredRail(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftPowerable
 
-    private static final net.minecraft.state.property.BooleanProperty POWERED = getBoolean(net.minecraft.block.PoweredRailBlock.class, "powered");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty POWERED = getBoolean(net.minecraft.world.level.block.PoweredRailBlock.class, "powered");
 
     @Override
     public boolean isPowered() {
@@ -32,7 +32,7 @@ public final class CraftPoweredRail extends org.bukkit.craftbukkit.block.data.Cr
 
     // org.bukkit.craftbukkit.block.data.CraftRail
 
-    private static final net.minecraft.state.property.EnumProperty<?> SHAPE = getEnum(net.minecraft.block.PoweredRailBlock.class, "shape");
+    private static final net.minecraft.world.level.block.state.properties.EnumProperty<?> SHAPE = getEnum(net.minecraft.world.level.block.PoweredRailBlock.class, "shape");
 
     @Override
     public Shape getShape() {

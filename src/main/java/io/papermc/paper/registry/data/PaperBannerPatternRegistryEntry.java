@@ -4,8 +4,8 @@ import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.registry.PaperRegistryBuilder;
 import io.papermc.paper.registry.data.util.Conversions;
 import net.kyori.adventure.key.Key;
-import net.minecraft.block.entity.BannerPattern;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.entity.BannerPattern;
 import org.bukkit.block.banner.PatternType;
 import org.jspecify.annotations.Nullable;
 

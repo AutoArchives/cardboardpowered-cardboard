@@ -3,10 +3,6 @@ package org.cardboardpowered.impl.command;
 import com.google.common.base.Joiner;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.tree.CommandNode;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
-
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -18,13 +14,16 @@ import org.cardboardpowered.impl.entity.CraftPlayer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.server.level.ServerLevel;
 
 public final class MinecraftCommandWrapper extends BukkitCommand {
 
-    private final CommandManager dispatcher;
+    private final Commands dispatcher;
     public final CommandNode<?> vanillaCommand;
 
-    public MinecraftCommandWrapper(CommandManager dispatcher, CommandNode<?> vanillaCommand) {
+    public MinecraftCommandWrapper(Commands dispatcher, CommandNode<?> vanillaCommand) {
         super(vanillaCommand.getName(), "A Minecraft provided command", vanillaCommand.getUsageText(), Collections.emptyList());
         this.dispatcher = dispatcher;
         this.vanillaCommand = vanillaCommand;
@@ -38,16 +37,16 @@ public final class MinecraftCommandWrapper extends BukkitCommand {
         // Lnet/minecraft/server/command/CommandManager;parseAndExecute  (Lnet/minecraft/server/command/ServerCommandSource;Ljava/lang/String;)V
         // Lnet/minecraft/server/command/CommandManager;executeWithPrefix(Lnet/minecraft/server/command/ServerCommandSource;Ljava/lang/String;)V
         
-        ServerCommandSource icommandlistener = MinecraftCommandWrapper.getCommandSource(sender);
-        this.dispatcher.parseAndExecute(icommandlistener, this.toDispatcher(args, this.getName()));
+        CommandSourceStack icommandlistener = MinecraftCommandWrapper.getCommandSource(sender);
+        this.dispatcher.performPrefixedCommand(icommandlistener, this.toDispatcher(args, this.getName()));
         
         return true;
     }
 
     @Override
     public List<String> tabComplete(CommandSender sender, String alias, String[] args, Location location) throws IllegalArgumentException {
-        ServerCommandSource icommandlistener = getCommandSource(sender);
-        ParseResults<ServerCommandSource> parsed = dispatcher.getDispatcher().parse(toDispatcher(args, getName()), icommandlistener);
+        CommandSourceStack icommandlistener = getCommandSource(sender);
+        ParseResults<CommandSourceStack> parsed = dispatcher.getDispatcher().parse(toDispatcher(args, getName()), icommandlistener);
 
         List<String> results = new ArrayList<>();
         dispatcher.getDispatcher().getCompletionSuggestions(parsed).thenAccept(suggestions -> suggestions.getList().forEach(s -> results.add(s.getText())));
@@ -62,13 +61,13 @@ public final class MinecraftCommandWrapper extends BukkitCommand {
         return name + ((args.length > 0) ? " " + Joiner.on(' ').join(args) : "");
     }
 
-    public static ServerCommandSource getCommandSource(CommandSender s) {
+    public static CommandSourceStack getCommandSource(CommandSender s) {
         if (s instanceof CraftPlayer)
-            return ((CraftPlayer)s).getHandle().getCommandSource();
+            return ((CraftPlayer)s).getHandle().createCommandSourceStack();
         if (s instanceof CraftEntity)
-            return ((CraftEntity)s).getHandle().getCommandSource( (ServerWorld) ((CraftEntity)s).getWorld() );
+            return ((CraftEntity)s).getHandle().createCommandSourceStackForNameResolution( (ServerLevel) ((CraftEntity)s).getWorld() );
         if (s instanceof ConsoleCommandSender)
-            return ((CraftServer) s.getServer()).getServer().getCommandSource();
+            return ((CraftServer) s.getServer()).getServer().createCommandSourceStack();
 
         return null;
     }

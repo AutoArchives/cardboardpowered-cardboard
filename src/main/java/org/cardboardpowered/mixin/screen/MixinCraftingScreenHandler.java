@@ -3,23 +3,6 @@ package org.cardboardpowered.mixin.screen;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinScreenHandler;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.CraftingResultInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.RecipeInputInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
-import net.minecraft.recipe.CraftingRecipe;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.recipe.input.CraftingRecipeInput;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.screen.CraftingScreenHandler;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.world.World;
 import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
 import org.bukkit.entity.Player;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
@@ -31,8 +14,23 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Optional;
+import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.inventory.CraftingMenu;
+import net.minecraft.world.inventory.ResultContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
 
-@Mixin(CraftingScreenHandler.class)
+@Mixin(CraftingMenu.class)
 public class MixinCraftingScreenHandler extends MixinScreenHandler {
 
 	// Lnet/minecraft/screen/CraftingScreenHandler;input:Lnet/minecraft/inventory/RecipeInputInventory;
@@ -41,14 +39,14 @@ public class MixinCraftingScreenHandler extends MixinScreenHandler {
 	
     //@Shadow public RecipeInputInventory input;
     // @Shadow public CraftingResultInventory result;
-    @Shadow public ScreenHandlerContext context;
-    @Shadow public PlayerEntity player;
+    @Shadow public ContainerLevelAccess access;
+    @Shadow public net.minecraft.world.entity.player.Player player;
 
     private CardboardInventoryView bukkitEntity = null;
-    private PlayerInventory playerInv;
+    private Inventory playerInv;
 
-    @Inject(method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/screen/ScreenHandlerContext;)V", at = @At("TAIL"))
-    public void setPlayerInv(int i, PlayerInventory playerinventory, ScreenHandlerContext containeraccess, CallbackInfo ci) {
+    @Inject(method = "<init>(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/inventory/ContainerLevelAccess;)V", at = @At("TAIL"))
+    public void setPlayerInv(int i, Inventory playerinventory, ContainerLevelAccess containeraccess, CallbackInfo ci) {
     	this.playerInv = playerinventory;
     }
 
@@ -57,29 +55,29 @@ public class MixinCraftingScreenHandler extends MixinScreenHandler {
         if (bukkitEntity != null)
             return bukkitEntity;
 
-        CraftingScreenHandler thiz = (CraftingScreenHandler) (Object) this;
+        CraftingMenu thiz = (CraftingMenu) (Object) this;
 
-        CraftInventoryCrafting inventory = new CraftInventoryCrafting(thiz.craftingInventory, thiz.craftingResultInventory);
-        bukkitEntity = new CardboardInventoryView((Player)((IMixinEntity)this.playerInv.player).getBukkitEntity(), inventory, (CraftingScreenHandler)(Object)this);
+        CraftInventoryCrafting inventory = new CraftInventoryCrafting(thiz.craftSlots, thiz.resultSlots);
+        bukkitEntity = new CardboardInventoryView((Player)((IMixinEntity)this.playerInv.player).getBukkitEntity(), inventory, (CraftingMenu)(Object)this);
         return bukkitEntity;
     }
 
-    private static void aBF(int i, World world, PlayerEntity entityhuman, RecipeInputInventory inventorycrafting, CraftingResultInventory inventorycraftresult, ScreenHandler container) {
-        if (!world.isClient()) {
-        	CraftingRecipeInput craftinginput = inventorycrafting.createRecipeInput();
-            ServerPlayerEntity entityplayer = (ServerPlayerEntity) entityhuman;
+    private static void aBF(int i, Level world, net.minecraft.world.entity.player.Player entityhuman, CraftingContainer inventorycrafting, ResultContainer inventorycraftresult, AbstractContainerMenu container) {
+        if (!world.isClientSide()) {
+        	CraftingInput craftinginput = inventorycrafting.asCraftInput();
+            ServerPlayer entityplayer = (ServerPlayer) entityhuman;
             ItemStack itemstack = ItemStack.EMPTY;
-            Optional<RecipeEntry<CraftingRecipe>> optional = world.getServer().getRecipeManager().getFirstMatch(
+            Optional<RecipeHolder<CraftingRecipe>> optional = world.getServer().getRecipeManager().getRecipeFor(
                     RecipeType.CRAFTING, craftinginput, world);
 
             if (optional.isPresent()) {
-                RecipeEntry<CraftingRecipe> recipecrafting = optional.get();
-                if (inventorycraftresult.shouldCraftRecipe(entityplayer, recipecrafting))
-                    itemstack = recipecrafting.value().craft(craftinginput, world.getRegistryManager());
+                RecipeHolder<CraftingRecipe> recipecrafting = optional.get();
+                if (inventorycraftresult.setRecipeUsed(entityplayer, recipecrafting))
+                    itemstack = recipecrafting.value().assemble(craftinginput, world.registryAccess());
             }
             itemstack = CraftEventFactory.callPreCraftEvent(inventorycrafting, inventorycraftresult, itemstack, ((IMixinScreenHandler)container).getBukkitView(), false);
-            inventorycraftresult.setStack(0, itemstack);
-            entityplayer.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(i, container.nextRevision(), 0, itemstack));
+            inventorycraftresult.setItem(0, itemstack);
+            entityplayer.connection.send(new ClientboundContainerSetSlotPacket(i, container.incrementStateId(), 0, itemstack));
         }
     }
 
@@ -88,10 +86,10 @@ public class MixinCraftingScreenHandler extends MixinScreenHandler {
      * @author cardboard
      */
     @Overwrite
-    public void onContentChanged(Inventory iinventory) {
-        this.context.run((world, blockposition) -> {
-        	CraftingScreenHandler thiz = (CraftingScreenHandler)(Object)this;
-            aBF(((CraftingScreenHandler)(Object)this).syncId, world, this.player, thiz.craftingInventory, thiz.craftingResultInventory, thiz);
+    public void slotsChanged(Container iinventory) {
+        this.access.execute((world, blockposition) -> {
+        	CraftingMenu thiz = (CraftingMenu)(Object)this;
+            aBF(((CraftingMenu)(Object)this).containerId, world, this.player, thiz.craftSlots, thiz.resultSlots, thiz);
         });
     }
 

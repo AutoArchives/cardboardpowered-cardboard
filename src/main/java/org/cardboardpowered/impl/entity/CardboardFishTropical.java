@@ -2,7 +2,6 @@ package org.cardboardpowered.impl.entity;
 
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.entity.passive.TropicalFishEntity;
 import org.bukkit.DyeColor;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
@@ -15,13 +14,13 @@ import io.papermc.paper.entity.SchoolableFish;
 @SuppressWarnings("deprecation")
 public class CardboardFishTropical extends CardboardFish implements TropicalFish {
 
-    public CardboardFishTropical(CraftServer server, TropicalFishEntity entity) {
+    public CardboardFishTropical(CraftServer server, net.minecraft.world.entity.animal.fish.TropicalFish entity) {
         super(server, entity);
     }
 
     @Override
-    public TropicalFishEntity getHandle() {
-        return (TropicalFishEntity) nms;
+    public net.minecraft.world.entity.animal.fish.TropicalFish getHandle() {
+        return (net.minecraft.world.entity.animal.fish.TropicalFish) nms;
     }
 
     @Override
@@ -36,32 +35,32 @@ public class CardboardFishTropical extends CardboardFish implements TropicalFish
 
     @Override
     public DyeColor getPatternColor() {
-    	return getPatternColor(this.getHandle().getTropicalFishVariant());
+    	return getPatternColor(this.getHandle().getPackedVariant());
     }
 
     @Override
     public void setPatternColor(DyeColor color) {
-    	this.getHandle().setTropicalFishVariant( getData(color, this.getBodyColor(), this.getPattern()));
+    	this.getHandle().setPackedVariant( getData(color, this.getBodyColor(), this.getPattern()));
     }
 
     @Override
     public DyeColor getBodyColor() {
-    	return getBodyColor(this.getHandle().getTropicalFishVariant());
+    	return getBodyColor(this.getHandle().getPackedVariant());
     }
 
     @Override
     public void setBodyColor(DyeColor color) {
-    	 this.getHandle().setTropicalFishVariant( getData(this.getPatternColor(), color, this.getPattern()));
+    	 this.getHandle().setPackedVariant( getData(this.getPatternColor(), color, this.getPattern()));
     }
 
     @Override
     public Pattern getPattern() {
-    	return getPattern(this.getHandle().getTropicalFishVariant());
+    	return getPattern(this.getHandle().getPackedVariant());
     }
 
     @Override
     public void setPattern(Pattern pattern) {
-    	this.getHandle().setTropicalFishVariant( getData(this.getPatternColor(), this.getBodyColor(), pattern));
+    	this.getHandle().setPackedVariant( getData(this.getPatternColor(), this.getBodyColor(), pattern));
     }
 
     public static enum CraftPattern {

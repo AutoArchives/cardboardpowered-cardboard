@@ -15,13 +15,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.WrittenBookContentComponent;
-import net.minecraft.server.filter.FilteredMessage;
-import net.minecraft.text.RawFilteredPair;
-import net.minecraft.text.Text;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.server.network.Filterable;
+import net.minecraft.server.network.FilteredText;
+import net.minecraft.world.item.component.WrittenBookContent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -36,7 +35,7 @@ import org.cardboardpowered.adventure.CardboardAdventure;
 public class CraftMetaBookSigned
 extends CraftMetaItem
 implements BookMeta {
-    static final CraftMetaItem.ItemMetaKeyType<WrittenBookContentComponent> BOOK_CONTENT = new CraftMetaItem.ItemMetaKeyType<WrittenBookContentComponent>(DataComponentTypes.WRITTEN_BOOK_CONTENT);
+    static final CraftMetaItem.ItemMetaKeyType<WrittenBookContent> BOOK_CONTENT = new CraftMetaItem.ItemMetaKeyType<WrittenBookContent>(DataComponents.WRITTEN_BOOK_CONTENT);
     static final CraftMetaItem.ItemMetaKey BOOK_TITLE = new CraftMetaItem.ItemMetaKey("title");
     static final CraftMetaItem.ItemMetaKey BOOK_AUTHOR = new CraftMetaItem.ItemMetaKey("author");
     static final CraftMetaItem.ItemMetaKey BOOK_PAGES = new CraftMetaItem.ItemMetaKey("pages");
@@ -47,7 +46,7 @@ implements BookMeta {
     static final int MAX_TITLE_LENGTH = 32;
     protected String title;
     protected String author;
-    protected List<Text> pages;
+    protected List<net.minecraft.network.chat.Component> pages;
     protected boolean resolved;
     protected int generation;
     private BookMeta.Spigot spigot = new SpigotMeta();
@@ -64,32 +63,32 @@ implements BookMeta {
             this.resolved = bookMeta.resolved;
             this.generation = bookMeta.generation;
             if (bookMeta.pages != null) {
-                this.pages = new ArrayList<Text>(bookMeta.pages.size());
+                this.pages = new ArrayList<net.minecraft.network.chat.Component>(bookMeta.pages.size());
                 this.pages.addAll(bookMeta.pages);
             }
         } else if (meta instanceof CraftMetaBook) {
             CraftMetaBook bookMeta = (CraftMetaBook)meta;
             if (bookMeta.pages != null) {
-                this.pages = new ArrayList<Text>(bookMeta.pages.size());
+                this.pages = new ArrayList<net.minecraft.network.chat.Component>(bookMeta.pages.size());
                 for (String page : bookMeta.pages) {
-                    Text component = CraftChatMessage.fromString(page, true, true)[0];
+                    net.minecraft.network.chat.Component component = CraftChatMessage.fromString(page, true, true)[0];
                     this.pages.add(component);
                 }
             }
         }
     }
 
-    CraftMetaBookSigned(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
+    CraftMetaBookSigned(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaBookSigned.getOrEmpty(tag, BOOK_CONTENT).ifPresent(written -> {
             this.title = written.title().raw();
             this.author = written.author();
             this.resolved = written.resolved();
             this.generation = written.generation();
-            List<RawFilteredPair<Text>> pages = written.pages();
-            this.pages = new ArrayList<Text>(pages.size());
+            List<Filterable<net.minecraft.network.chat.Component>> pages = written.pages();
+            this.pages = new ArrayList<net.minecraft.network.chat.Component>(pages.size());
             for (int i2 = 0; i2 < Math.min(pages.size(), Integer.MAX_VALUE); ++i2) {
-                Text page = pages.get(i2).raw();
+                net.minecraft.network.chat.Component page = pages.get(i2).raw();
                 this.pages.add(page);
             }
         });
@@ -101,7 +100,7 @@ implements BookMeta {
         this.setTitle(org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getString(map, CraftMetaBookSigned.BOOK_TITLE.BUKKIT, true));
         Iterable pages = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(Iterable.class, map, CraftMetaBookSigned.BOOK_PAGES.BUKKIT, true);
         if (pages != null) {
-            this.pages = new ArrayList<Text>();
+            this.pages = new ArrayList<net.minecraft.network.chat.Component>();
             for (Object page : pages) {
                 if (!(page instanceof String)) continue;
                 this.internalAddPage(CraftChatMessage.fromJSON(CraftChatMessage.fromJSONOrStringToJSON((String)page, false, true, 1024, false)));
@@ -115,11 +114,11 @@ implements BookMeta {
     void applyToItem(CraftMetaItem.Applicator itemData) {
         super.applyToItem(itemData);
         if (this.pages != null) {
-            ArrayList<RawFilteredPair<Text>> list = new ArrayList<RawFilteredPair<Text>>();
-            for (Text page : this.pages) {
-                list.add(RawFilteredPair.of(page));
+            ArrayList<Filterable<net.minecraft.network.chat.Component>> list = new ArrayList<Filterable<net.minecraft.network.chat.Component>>();
+            for (net.minecraft.network.chat.Component page : this.pages) {
+                list.add(Filterable.passThrough(page));
             }
-            itemData.put(BOOK_CONTENT, new WrittenBookContentComponent(RawFilteredPair.of(FilteredMessage.permitted(this.title == null ? "" : this.title)), this.author == null ? "" : this.author, this.generation, list, this.resolved));
+            itemData.put(BOOK_CONTENT, new WrittenBookContent(Filterable.from(FilteredText.passThrough(this.title == null ? "" : this.title)), this.author == null ? "" : this.author, this.generation, list, this.resolved));
         }
     }
 
@@ -216,9 +215,9 @@ implements BookMeta {
         return page;
     }
 
-    private void internalAddPage(Text page) {
+    private void internalAddPage(net.minecraft.network.chat.Component page) {
         if (this.pages == null) {
-            this.pages = new ArrayList<Text>();
+            this.pages = new ArrayList<net.minecraft.network.chat.Component>();
         } else if (this.pages.size() >= Integer.MAX_VALUE) {
             return;
         }
@@ -265,7 +264,7 @@ implements BookMeta {
     public CraftMetaBookSigned clone() {
         CraftMetaBookSigned meta = (CraftMetaBookSigned)super.clone();
         if (this.pages != null) {
-            meta.pages = new ArrayList<Text>(this.pages);
+            meta.pages = new ArrayList<net.minecraft.network.chat.Component>(this.pages);
         }
         meta.spigot = meta.new SpigotMeta();
         return meta;
@@ -403,7 +402,7 @@ implements BookMeta {
 
     public void addPages(Component ... pages) {
         if (this.pages == null) {
-            this.pages = new ArrayList<Text>();
+            this.pages = new ArrayList<net.minecraft.network.chat.Component>();
         }
         for (Component page : pages) {
             if (this.pages.size() >= Integer.MAX_VALUE) {
@@ -418,11 +417,11 @@ implements BookMeta {
         private SpigotMeta() {
         }
 
-        private String pageToJSON(Text page) {
+        private String pageToJSON(net.minecraft.network.chat.Component page) {
             return CraftChatMessage.toJSON(page);
         }
 
-        private Text componentsToPage(BaseComponent[] components) {
+        private net.minecraft.network.chat.Component componentsToPage(BaseComponent[] components) {
             return CraftChatMessage.fromJSON(ComponentSerializer.toString((BaseComponent[])components));
         }
 
@@ -460,7 +459,7 @@ implements BookMeta {
             return new AbstractList<BaseComponent[]>(){
                 @Override
                 public BaseComponent[] get(int index) {
-                    return ComponentSerializer.parse((String)SpigotMeta.this.pageToJSON((Text)copy.get(index)));
+                    return ComponentSerializer.parse((String)SpigotMeta.this.pageToJSON((net.minecraft.network.chat.Component)copy.get(index)));
                 }
 
                 @Override

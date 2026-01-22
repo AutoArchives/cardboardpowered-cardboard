@@ -24,7 +24,7 @@ import com.mohistmc.banner.bukkit.nms.utils.RemapUtils;
 
 import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.ServerNetworkIo;
+import net.minecraft.server.network.ServerConnectionListener;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.plugin.PluginLoader;
@@ -141,7 +141,7 @@ public class ReflectionRemapper {
                 Class<?> whyIsAsmBroken = getClassFromJPL(getCallerClassName());
                 try {
                     if (f.contains("connectedChannels")) {
-                        Field a = ServerNetworkIo.class.getDeclaredField("connections");
+                        Field a = ServerConnectionListener.class.getDeclaredField("connections");
                         a.setAccessible(true);
                         return a;
                     }
@@ -283,7 +283,7 @@ public class ReflectionRemapper {
     /**
      */
     public static String getMinecraftServerVersion() {
-        return SharedConstants.getGameVersion().name();
+        return SharedConstants.getCurrentVersion().name();
     }
 
 }

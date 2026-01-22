@@ -1,38 +1,37 @@
 package org.cardboardpowered;
 
 import com.mojang.serialization.Codec;
-
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.TypedEntityData;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.Registries;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.component.TypedEntityData;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 // TODO: mixin this into TypedEntityData
 public class TypedEntityDataExtra {
 
-	public static <IdType> TypedEntityData<IdType> decode(Codec<IdType> idTypeCodec, NbtCompound tag) {
-		return (TypedEntityData<IdType>)(TypedEntityData.createCodec(idTypeCodec).decode(NbtOps.INSTANCE, tag).result().orElseThrow()).getFirst();
+	public static <IdType> TypedEntityData<IdType> decode(Codec<IdType> idTypeCodec, CompoundTag tag) {
+		return (TypedEntityData<IdType>)(TypedEntityData.codec(idTypeCodec).decode(NbtOps.INSTANCE, tag).result().orElseThrow()).getFirst();
 	}
 
-	public static TypedEntityData<EntityType<?>> decodeEntity(NbtCompound tag) {
+	public static TypedEntityData<EntityType<?>> decodeEntity(CompoundTag tag) {
 		return decode(EntityType.CODEC, tag);
 	}
 
-	public static TypedEntityData<BlockEntityType<?>> decodeBlockEntity(NbtCompound tag) {
-		return decode(Registries.BLOCK_ENTITY_TYPE.getCodec(), tag);
+	public static TypedEntityData<BlockEntityType<?>> decodeBlockEntity(CompoundTag tag) {
+		return decode(BuiltInRegistries.BLOCK_ENTITY_TYPE.byNameCodec(), tag);
 	}
 	
-	public static NbtCompound copyTagWithEntityId(TypedEntityData<?> data) {
-		NbtCompound tag = data.copyNbtWithoutId();
-		tag.putString("id", EntityType.getId((EntityType<?>)data.getType()).toString());
+	public static CompoundTag copyTagWithEntityId(TypedEntityData<?> data) {
+		CompoundTag tag = data.copyTagWithoutId();
+		tag.putString("id", EntityType.getKey((EntityType<?>)data.type()).toString());
 		return tag;
 	}
 
-	public static NbtCompound copyTagWithBlockEntityId(TypedEntityData<?> data) {
-		NbtCompound tag = data.copyNbtWithoutId();
-		tag.putString("id", BlockEntityType.getId((BlockEntityType<?>)data.getType()).toString());
+	public static CompoundTag copyTagWithBlockEntityId(TypedEntityData<?> data) {
+		CompoundTag tag = data.copyTagWithoutId();
+		tag.putString("id", BlockEntityType.getKey((BlockEntityType<?>)data.type()).toString());
 		return tag;
 	}
 	

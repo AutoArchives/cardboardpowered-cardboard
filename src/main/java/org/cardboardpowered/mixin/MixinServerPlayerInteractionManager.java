@@ -18,29 +18,28 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import org.cardboardpowered.interfaces.IMixinServerPlayerInteractionManager;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.minecraft.advancement.criterion.Criteria;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.CakeBlock;
-import net.minecraft.block.DoorBlock;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.enums.DoubleBlockHalf;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
-import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.network.ServerPlayerInteractionManager;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.GameMode;
-import net.minecraft.world.World;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerPlayerGameMode;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.CakeBlock;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.phys.BlockHitResult;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.entity.Player;
@@ -59,20 +58,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-@Mixin(value = ServerPlayerInteractionManager.class, priority = 999)
+@Mixin(value = ServerPlayerGameMode.class, priority = 999)
 public class MixinServerPlayerInteractionManager implements IMixinServerPlayerInteractionManager {
 
-    @Shadow public ServerPlayerEntity player;
-    @Shadow public ServerWorld world;
-    @Shadow private GameMode gameMode;
-    @Shadow private boolean mining;
-    @Shadow private int startMiningTime;
-    @Shadow private BlockPos miningPos;
-    @Shadow private int tickCounter;
-    @Shadow private boolean failedToMine;
-    @Shadow private BlockPos failedMiningPos;
-    @Shadow private int failedStartMiningTime;
-    @Shadow private int blockBreakingProgress;
+    @Shadow public ServerPlayer player;
+    @Shadow public ServerLevel level;
+    @Shadow private GameType gameModeForPlayer;
+    @Shadow private boolean isDestroyingBlock;
+    @Shadow private int destroyProgressStart;
+    @Shadow private BlockPos destroyPos;
+    @Shadow private int gameTicks;
+    @Shadow private boolean hasDelayedDestroy;
+    @Shadow private BlockPos delayedDestroyPos;
+    @Shadow private int delayedTickStart;
+    @Shadow private int lastSentState;
 
     private int cb_stat = 0;
     private PlayerInteractEvent cb_ev;
@@ -80,50 +79,50 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
     private BlockPos cb_pos;
     
     @Inject(
-            at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerAbilities;creativeMode:Z"),
-            method = "processBlockBreakingAction", cancellable = true)
-    public void processBlockBreakkingAction_cb1(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, int sequence, CallbackInfo ci) {
+            at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Abilities;instabuild:Z"),
+            method = "handleBlockBreakAction", cancellable = true)
+    public void processBlockBreakkingAction_cb1(BlockPos pos, ServerboundPlayerActionPacket.Action action, Direction direction, int worldHeight, int sequence, CallbackInfo ci) {
     	cb_stat = 0;
-    	PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_BLOCK, pos, direction, this.player.getInventory().getSelectedStack(), Hand.MAIN_HAND);
+    	PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_BLOCK, pos, direction, this.player.getInventory().getSelectedItem(), InteractionHand.MAIN_HAND);
 
     	this.cb_ev = event;
     	// System.out.println("PlayerInteractEvent! " + pos.toString());
         if (event.isCancelled()) {
             for (Direction dir : Direction.values()) {
-                this.player.networkHandler.sendPacket(new BlockUpdateS2CPacket(this.world, pos.offset(dir)));
+                this.player.connection.send(new ClientboundBlockUpdatePacket(this.level, pos.relative(dir)));
             }
-            this.player.networkHandler.sendPacket(new BlockUpdateS2CPacket(this.world, pos));
-            BlockEntity tileentity = this.world.getBlockEntity(pos);
+            this.player.connection.send(new ClientboundBlockUpdatePacket(this.level, pos));
+            BlockEntity tileentity = this.level.getBlockEntity(pos);
             if (tileentity != null) {
-                this.player.networkHandler.sendPacket(tileentity.toUpdatePacket());
+                this.player.connection.send(tileentity.getUpdatePacket());
             }
             ci.cancel();
             return;
         }
     }
     
-    @Redirect(method = "processBlockBreakingAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;calcBlockBreakingDelta(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;)F"))
-    public float cb_2(BlockState instance, PlayerEntity playerEntity, BlockView blockView, BlockPos blockPos) {
+    @Redirect(method = "handleBlockBreakAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getDestroyProgress(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)F"))
+    public float cb_2(BlockState instance, net.minecraft.world.entity.player.Player playerEntity, BlockGetter blockView, BlockPos blockPos) {
     	this.cb_pos = blockPos;
-    	float f2 = instance.calcBlockBreakingDelta(playerEntity, blockView, blockPos);
+    	float f2 = instance.getDestroyProgress(playerEntity, blockView, blockPos);
     	this.cb_f2 = f2;
         return f2;
     }
     
-    @Inject(method = "processBlockBreakingAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;isAir()Z"), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
-    private void cb_3(BlockPos pos, PlayerActionC2SPacket.Action action, Direction direction, int worldHeight, int sequence, CallbackInfo ci) {
+    @Inject(method = "handleBlockBreakAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;isAir()Z"), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
+    private void cb_3(BlockPos pos, ServerboundPlayerActionPacket.Action action, Direction direction, int worldHeight, int sequence, CallbackInfo ci) {
         // System.out.println("A = " + i);
     
     	if (cb_stat == 1) {
             if (cb_ev.useItemInHand() == Event.Result.DENY) {
                 if (cb_f2 > 1.0f) {
-                    this.player.networkHandler.sendPacket(new BlockUpdateS2CPacket(this.world, cb_pos));
+                    this.player.connection.send(new ClientboundBlockUpdatePacket(this.level, cb_pos));
                 }
                 return;
             }
-            BlockDamageEvent blockEvent = CraftEventFactory.callBlockDamageEvent(this.player, cb_pos.getX(), cb_pos.getY(), cb_pos.getZ(), this.player.getInventory().getSelectedStack(), cb_f2 >= 1.0f);
+            BlockDamageEvent blockEvent = CraftEventFactory.callBlockDamageEvent(this.player, cb_pos.getX(), cb_pos.getY(), cb_pos.getZ(), this.player.getInventory().getSelectedItem(), cb_f2 >= 1.0f);
             if (blockEvent.isCancelled()) {
-                this.player.networkHandler.sendPacket(new BlockUpdateS2CPacket(this.world, cb_pos));
+                this.player.connection.send(new ClientboundBlockUpdatePacket(this.level, cb_pos));
                 ci.cancel();
                 return;
             }
@@ -134,7 +133,7 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
     	}
     }
     
-    @Redirect(method = "processBlockBreakingAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;isAir()Z"))
+    @Redirect(method = "handleBlockBreakAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;isAir()Z"))
     public boolean cb_4(BlockState instance) {
     	// CraftBukkit: - Swings at air do *NOT* exist.
     	if (cb_stat == 0 && cb_ev.useInteractedBlock() == Event.Result.DENY) {
@@ -154,21 +153,21 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
             )
     )*/
     @SuppressWarnings("unused")
-	private void block_damage_abort_event(ServerPlayerInteractionManager instance, BlockPos pos, boolean success, int sequence, String reason) {
+	private void block_damage_abort_event(ServerPlayerGameMode instance, BlockPos pos, boolean success, int sequence, String reason) {
     	// TODO: Update our Paper-API
     	// CraftEventFactory.callBlockDamageAbortEvent(this.player, pos, this.player.getInventory().getSelectedStack());
     	// instance.method_41250(pos, success, sequence, reason);
     }
 
-    @Inject(at = @At("HEAD"), method = "tryBreakBlock", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "destroyBlock", cancellable = true)
     public void blockBreak(BlockPos blockposition, CallbackInfoReturnable<Boolean> ci) {
-        org.bukkit.block.Block bblock = CraftBlock.at(world, blockposition);
+        org.bukkit.block.Block bblock = CraftBlock.at(level, blockposition);
 
-        boolean isSwordNoBreak = !this.player.getMainHandStack().canMine(this.world.getBlockState(blockposition), this.world, blockposition, this.player);
-        if (world.getBlockEntity(blockposition) == null && !isSwordNoBreak) {
-            BlockUpdateS2CPacket packet = new BlockUpdateS2CPacket(this.world, blockposition);
+        boolean isSwordNoBreak = !this.player.getMainHandItem().canDestroyBlock(this.level.getBlockState(blockposition), this.level, blockposition, this.player);
+        if (level.getBlockEntity(blockposition) == null && !isSwordNoBreak) {
+            ClientboundBlockUpdatePacket packet = new ClientboundBlockUpdatePacket(this.level, blockposition);
             // TODO 1.17ify packet.state = Blocks.AIR.getDefaultState();
-            this.player.networkHandler.sendPacket(packet);
+            this.player.connection.send(packet);
         }
         BlockBreakEvent event = new BlockBreakEvent(bblock, (Player) ((IMixinServerEntityPlayer)this.player).getBukkitEntity());
         event.setCancelled(isSwordNoBreak);
@@ -179,16 +178,16 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
             if (isSwordNoBreak)
                 ci.setReturnValue(false);
 
-            this.player.networkHandler.sendPacket(new BlockUpdateS2CPacket(this.world, blockposition)); // Let the client know the block still exists
+            this.player.connection.send(new ClientboundBlockUpdatePacket(this.level, blockposition)); // Let the client know the block still exists
 
             // Brute force all possible updates
             for (Direction dir : Direction.values())
-                this.player.networkHandler.sendPacket(new BlockUpdateS2CPacket(world, blockposition.offset(dir)));
+                this.player.connection.send(new ClientboundBlockUpdatePacket(level, blockposition.relative(dir)));
 
             // Update any tile entity data for this block
-            BlockEntity tileentity = this.world.getBlockEntity(blockposition);
+            BlockEntity tileentity = this.level.getBlockEntity(blockposition);
             if (tileentity != null)
-                this.player.networkHandler.sendPacket(tileentity.toUpdatePacket());
+                this.player.connection.send(tileentity.getUpdatePacket());
 
             ci.setReturnValue(false);
             return;
@@ -218,65 +217,65 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
         this.interactResult = b;
     }
 
-    @Inject(at = @At("HEAD"), method = "interactBlock", cancellable = true)
-    public void interactBlock(ServerPlayerEntity entityplayer, World world, ItemStack itemstack, Hand enumhand, BlockHitResult movingobjectpositionblock, CallbackInfoReturnable<ActionResult> ci) {
-        ActionResult result = UseBlockCallback.EVENT.invoker().interact(entityplayer, world, enumhand, movingobjectpositionblock);
+    @Inject(at = @At("HEAD"), method = "useItemOn", cancellable = true)
+    public void interactBlock(ServerPlayer entityplayer, Level world, ItemStack itemstack, InteractionHand enumhand, BlockHitResult movingobjectpositionblock, CallbackInfoReturnable<InteractionResult> ci) {
+        InteractionResult result = UseBlockCallback.EVENT.invoker().interact(entityplayer, world, enumhand, movingobjectpositionblock);
 
-        if (result != ActionResult.PASS) {
+        if (result != InteractionResult.PASS) {
         	ci.setReturnValue(result);
             return;
         }
 
         BlockPos blockposition = movingobjectpositionblock.getBlockPos();
         BlockState iblockdata = world.getBlockState(blockposition);
-        ActionResult enuminteractionresult = result;// ActionResult.PASS;
+        InteractionResult enuminteractionresult = result;// ActionResult.PASS;
         boolean cancelledBlock = false;
 
-        if (this.gameMode == GameMode.SPECTATOR) {
-            NamedScreenHandlerFactory itileinventory = iblockdata.createScreenHandlerFactory(world, blockposition);
-            cancelledBlock = !(itileinventory instanceof NamedScreenHandlerFactory);
+        if (this.gameModeForPlayer == GameType.SPECTATOR) {
+            MenuProvider itileinventory = iblockdata.getMenuProvider(world, blockposition);
+            cancelledBlock = !(itileinventory instanceof MenuProvider);
         }
 
-        if (entityplayer.getItemCooldownManager().isCoolingDown(itemstack))
+        if (entityplayer.getCooldowns().isOnCooldown(itemstack))
             cancelledBlock = true;
 
-        PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(entityplayer, Action.RIGHT_CLICK_BLOCK, blockposition, movingobjectpositionblock.getSide(), itemstack, cancelledBlock, enumhand);
+        PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(entityplayer, Action.RIGHT_CLICK_BLOCK, blockposition, movingobjectpositionblock.getDirection(), itemstack, cancelledBlock, enumhand);
         firedInteract = true;
         interactResult = event.useItemInHand() == Event.Result.DENY;
 
         if (event.useInteractedBlock() == Event.Result.DENY) {
             // If we denied a door from opening, we need to send a correcting update to the client, as it already opened the door.
             if (iblockdata.getBlock() instanceof DoorBlock) {
-                boolean bottom = iblockdata.get(DoorBlock.HALF) == DoubleBlockHalf.LOWER;
-                entityplayer.networkHandler.sendPacket(new BlockUpdateS2CPacket(world, bottom ? blockposition.up() : blockposition.down()));
+                boolean bottom = iblockdata.getValue(DoorBlock.HALF) == DoubleBlockHalf.LOWER;
+                entityplayer.connection.send(new ClientboundBlockUpdatePacket(world, bottom ? blockposition.above() : blockposition.below()));
             } else if (iblockdata.getBlock() instanceof CakeBlock) {
                 // TODO ((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).sendHealthUpdate();
             }
             ((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).updateInventory();
-            enuminteractionresult = (event.useItemInHand() != Event.Result.ALLOW) ? ActionResult.SUCCESS : ActionResult.PASS;
-        } else if (this.gameMode == GameMode.SPECTATOR) {
-            NamedScreenHandlerFactory itileinventory = iblockdata.createScreenHandlerFactory(world, blockposition);
+            enuminteractionresult = (event.useItemInHand() != Event.Result.ALLOW) ? InteractionResult.SUCCESS : InteractionResult.PASS;
+        } else if (this.gameModeForPlayer == GameType.SPECTATOR) {
+            MenuProvider itileinventory = iblockdata.getMenuProvider(world, blockposition);
 
             if (itileinventory != null) {
-                entityplayer.openHandledScreen(itileinventory);
-                ci.setReturnValue(ActionResult.SUCCESS);
-            } else ci.setReturnValue(ActionResult.PASS);
+                entityplayer.openMenu(itileinventory);
+                ci.setReturnValue(InteractionResult.SUCCESS);
+            } else ci.setReturnValue(InteractionResult.PASS);
             return;
         } else {
-            boolean flag = !entityplayer.getMainHandStack().isEmpty() || !entityplayer.getOffHandStack().isEmpty();
-            boolean flag1 = entityplayer.shouldCancelInteraction() && flag;
+            boolean flag = !entityplayer.getMainHandItem().isEmpty() || !entityplayer.getOffhandItem().isEmpty();
+            boolean flag1 = entityplayer.isSecondaryUseActive() && flag;
             ItemStack itemstack1 = itemstack.copy();
 
             if (!flag1) {
             	
-            	 ActionResult enuminteractionresult1 = iblockdata.onUseWithItem(player.getStackInHand(enumhand), world, player, enumhand, movingobjectpositionblock);
-                 if (enuminteractionresult1.isAccepted()) {
-                     Criteria.ITEM_USED_ON_BLOCK.trigger(player, blockposition, itemstack1);
+            	 InteractionResult enuminteractionresult1 = iblockdata.useItemOn(player.getItemInHand(enumhand), world, player, enumhand, movingobjectpositionblock);
+                 if (enuminteractionresult1.consumesAction()) {
+                     CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(player, blockposition, itemstack1);
                      ci.setReturnValue(enuminteractionresult1);
                      return;
                  }
-                 if (enuminteractionresult1 instanceof ActionResult.PassToDefaultBlockAction && enumhand == Hand.MAIN_HAND && (enuminteractionresult = iblockdata.onUse(world, player, movingobjectpositionblock)).isAccepted()) {
-                     Criteria.DEFAULT_BLOCK_USE.trigger(player, blockposition);
+                 if (enuminteractionresult1 instanceof InteractionResult.TryEmptyHandInteraction && enumhand == InteractionHand.MAIN_HAND && (enuminteractionresult = iblockdata.useWithoutItem(world, player, movingobjectpositionblock)).consumesAction()) {
+                     CriteriaTriggers.DEFAULT_BLOCK_USE.trigger(player, blockposition);
                      ci.setReturnValue(enuminteractionresult1);
                      return;
                  }
@@ -308,18 +307,18 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
                 */
             }
 
-            if (!itemstack.isEmpty() && enuminteractionresult != ActionResult.SUCCESS && !interactResult) { // add !interactResult SPIGOT-764
-                ItemUsageContext itemactioncontext = new ItemUsageContext(entityplayer, enumhand, movingobjectpositionblock);
-                ActionResult enuminteractionresult1;
+            if (!itemstack.isEmpty() && enuminteractionresult != InteractionResult.SUCCESS && !interactResult) { // add !interactResult SPIGOT-764
+                UseOnContext itemactioncontext = new UseOnContext(entityplayer, enumhand, movingobjectpositionblock);
+                InteractionResult enuminteractionresult1;
 
-                if (this.gameMode.isCreative()) {
+                if (this.gameModeForPlayer.isCreative()) {
                     int i = itemstack.getCount();
-                    enuminteractionresult1 = itemstack.useOnBlock(itemactioncontext/*, enumhand*/);
+                    enuminteractionresult1 = itemstack.useOn(itemactioncontext/*, enumhand*/);
                     itemstack.setCount(i);
-                } else enuminteractionresult1 = itemstack.useOnBlock(itemactioncontext/*, enumhand*/);
+                } else enuminteractionresult1 = itemstack.useOn(itemactioncontext/*, enumhand*/);
 
-                if (enuminteractionresult1.isAccepted())
-                    Criteria.ITEM_USED_ON_BLOCK.trigger(entityplayer, blockposition, itemstack1);
+                if (enuminteractionresult1.consumesAction())
+                    CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(entityplayer, blockposition, itemstack1);
 
                 ci.setReturnValue(enuminteractionresult1);
                 return;

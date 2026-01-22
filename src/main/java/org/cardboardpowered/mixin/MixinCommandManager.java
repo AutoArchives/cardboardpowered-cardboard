@@ -23,10 +23,6 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
-import net.minecraft.command.CommandSource;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerCommandSendEvent;
 import org.spongepowered.asm.mixin.Mixin;
@@ -39,15 +35,18 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.server.level.ServerPlayer;
 
-@Mixin(CommandManager.class)
+@Mixin(Commands.class)
 public class MixinCommandManager {
 
 	// void makeTreeForSource( CommandNode tree, CommandNode result,  ServerCommandSource source, Map resultNodes) 
 	// void deepCopyNodes    ( CommandNode root, CommandNode newRoot, Object source,              Map nodes) 
 	
     @Shadow
-    public com.mojang.brigadier.CommandDispatcher<ServerCommandSource> dispatcher;
+    public com.mojang.brigadier.CommandDispatcher<CommandSourceStack> dispatcher;
 
     /*
     @Shadow
@@ -56,25 +55,25 @@ public class MixinCommandManager {
     */
     
     @Shadow
-    private static <S> void deepCopyNodes(CommandNode<S> root, CommandNode<S> newRoot, S source, Map<CommandNode<S>, CommandNode<S>> nodes) {    	
+    private static <S> void fillUsableCommands(CommandNode<S> root, CommandNode<S> newRoot, S source, Map<CommandNode<S>, CommandNode<S>> nodes) {    	
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    @Inject(at = @At("HEAD"), method = "sendCommandTree")
-    public void bukkitize(ServerPlayerEntity entityplayer, CallbackInfo ci) {
+    @Inject(at = @At("HEAD"), method = "sendCommands")
+    public void bukkitize(ServerPlayer entityplayer, CallbackInfo ci) {
         //if ( SpigotConfig.tabComplete < 0 ) return; // Spigot
 
-        Map<CommandNode<ServerCommandSource>, CommandNode<ServerCommandSource>> map = Maps.newIdentityHashMap();
+        Map<CommandNode<CommandSourceStack>, CommandNode<CommandSourceStack>> map = Maps.newIdentityHashMap();
         RootCommandNode vanillaRoot = new RootCommandNode();
 
-        RootCommandNode<ServerCommandSource> vanilla = entityplayer.getEntityWorld().getServer().getCommandManager().getDispatcher().getRoot();
+        RootCommandNode<CommandSourceStack> vanilla = entityplayer.level().getServer().getCommands().getDispatcher().getRoot();
         map.put(vanilla, vanillaRoot);
-        this.deepCopyNodes(vanilla, vanillaRoot, entityplayer.getCommandSource(), (Map) map);
+        this.fillUsableCommands(vanilla, vanillaRoot, entityplayer.createCommandSourceStack(), (Map) map);
 
-        RootCommandNode<ServerCommandSource> rootcommandnode = new RootCommandNode();
+        RootCommandNode<CommandSourceStack> rootcommandnode = new RootCommandNode();
 
         map.put(this.dispatcher.getRoot(), rootcommandnode);
-        this.deepCopyNodes(this.dispatcher.getRoot(), rootcommandnode, entityplayer.getCommandSource(), (Map) map);
+        this.fillUsableCommands(this.dispatcher.getRoot(), rootcommandnode, entityplayer.createCommandSourceStack(), (Map) map);
 
         Collection<String> bukkit = new LinkedHashSet<>();
         for (CommandNode node : rootcommandnode.getChildren())

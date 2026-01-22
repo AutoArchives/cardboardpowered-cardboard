@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class CardboardDragonPart extends CardboardComplexPart implements EnderDragonPart {
 
-    public CardboardDragonPart(CraftServer server, net.minecraft.entity.boss.dragon.EnderDragonPart entity) {
+    public CardboardDragonPart(CraftServer server, net.minecraft.world.entity.boss.enderdragon.EnderDragonPart entity) {
         super(server, entity);
     }
 
@@ -20,8 +20,8 @@ public class CardboardDragonPart extends CardboardComplexPart implements EnderDr
     }
 
     @Override
-    public net.minecraft.entity.boss.dragon.EnderDragonPart getHandle() {
-        return (net.minecraft.entity.boss.dragon.EnderDragonPart) nms;
+    public net.minecraft.world.entity.boss.enderdragon.EnderDragonPart getHandle() {
+        return (net.minecraft.world.entity.boss.enderdragon.EnderDragonPart) nms;
     }
 
     @Override

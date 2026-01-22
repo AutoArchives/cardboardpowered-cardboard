@@ -4,23 +4,23 @@ import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import net.minecraft.util.math.Box;
+import net.minecraft.world.phys.AABB;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.VoxelShape;
 
 public class CraftVoxelShape implements VoxelShape {
 
-	private final net.minecraft.util.shape.VoxelShape shape;
+	private final net.minecraft.world.phys.shapes.VoxelShape shape;
 
-    public CraftVoxelShape(net.minecraft.util.shape.VoxelShape shape) {
+    public CraftVoxelShape(net.minecraft.world.phys.shapes.VoxelShape shape) {
         this.shape = shape;
     }
 
     @Override
     public Collection<BoundingBox> getBoundingBoxes() {
-        List<Box> boxes = this.shape.getBoundingBoxes();
+        List<AABB> boxes = this.shape.toAabbs();
         ArrayList<BoundingBox> craftBoxes = new ArrayList<BoundingBox>(boxes.size());
-        for (Box aabb : boxes) {
+        for (AABB aabb : boxes) {
             craftBoxes.add(new BoundingBox(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ));
         }
         return craftBoxes;

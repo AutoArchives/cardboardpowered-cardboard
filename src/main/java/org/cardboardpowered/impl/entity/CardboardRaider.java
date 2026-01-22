@@ -1,10 +1,8 @@
 package org.cardboardpowered.impl.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.entity.raid.RaiderEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import org.bukkit.Raid;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -17,13 +15,13 @@ import org.jetbrains.annotations.Nullable;
 
 public class CardboardRaider extends CraftMonster implements Raider {
 
-    public CardboardRaider(CraftServer server, RaiderEntity entity) {
+    public CardboardRaider(CraftServer server, net.minecraft.world.entity.raid.Raider entity) {
         super(server, entity);
     }
 
     @Override
-    public RaiderEntity getHandle() {
-        return (RaiderEntity) super.getHandle();
+    public net.minecraft.world.entity.raid.Raider getHandle() {
+        return (net.minecraft.world.entity.raid.Raider) super.getHandle();
     }
 
     @Override
@@ -33,7 +31,7 @@ public class CardboardRaider extends CraftMonster implements Raider {
 
     @Override
     public Block getPatrolTarget() {
-        return getHandle().getPatrolTarget() == null ? null : CraftBlock.at((ServerWorld) getHandle().getEntityWorld(), getHandle().getPatrolTarget());
+        return getHandle().getPatrolTarget() == null ? null : CraftBlock.at((ServerLevel) getHandle().level(), getHandle().getPatrolTarget());
     }
 
     @Override
@@ -63,12 +61,12 @@ public class CardboardRaider extends CraftMonster implements Raider {
 
     @Override
     public void setCanJoinRaid(boolean join) {
-        getHandle().setAbleToJoinRaid(join);
+        getHandle().setCanJoinRaid(join);
     }
 
 	@Override
 	public @NotNull Sound getCelebrationSound() {
-        return CraftSound.getBukkit(this.getHandle().getCelebratingSound());
+        return CraftSound.getBukkit(this.getHandle().getCelebrateSound());
 
 	}
 

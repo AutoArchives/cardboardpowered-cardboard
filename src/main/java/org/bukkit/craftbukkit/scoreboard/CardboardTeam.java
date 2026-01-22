@@ -6,8 +6,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import net.minecraft.scoreboard.AbstractTeam;
-import net.minecraft.scoreboard.AbstractTeam.VisibilityRule;
+import net.minecraft.world.scores.Team.Visibility;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -25,9 +24,9 @@ import java.util.Collection;
 import java.util.Set;
 
 public class CardboardTeam extends CardboardScoreboardComponent implements Team {
-    private final net.minecraft.scoreboard.Team team;
+    private final net.minecraft.world.scores.PlayerTeam team;
 
-    CardboardTeam(CardboardScoreboard scoreboard, net.minecraft.scoreboard.Team team) {
+    CardboardTeam(CardboardScoreboard scoreboard, net.minecraft.world.scores.PlayerTeam team) {
         super(scoreboard);
         this.team = team;
     }
@@ -59,7 +58,7 @@ public class CardboardTeam extends CardboardScoreboardComponent implements Team 
     public String getPrefix() throws IllegalStateException {
         CardboardScoreboard scoreboard = checkState();
 
-        return CraftChatMessage.fromComponent(team.getPrefix());
+        return CraftChatMessage.fromComponent(team.getPlayerPrefix());
     }
 
     @Override
@@ -68,14 +67,14 @@ public class CardboardTeam extends CardboardScoreboardComponent implements Team 
         Validate.isTrue(ChatColor.stripColor(prefix).length() <= 64, "Prefix '" + prefix + "' is longer than the limit of 64 characters");
         CardboardScoreboard scoreboard = checkState();
 
-        team.setPrefix(CraftChatMessage.fromStringOrNull(prefix));
+        team.setPlayerPrefix(CraftChatMessage.fromStringOrNull(prefix));
     }
 
     @Override
     public String getSuffix() throws IllegalStateException {
         CardboardScoreboard scoreboard = checkState();
 
-        return CraftChatMessage.fromComponent(team.getSuffix());
+        return CraftChatMessage.fromComponent(team.getPlayerSuffix());
     }
 
     @Override
@@ -84,7 +83,7 @@ public class CardboardTeam extends CardboardScoreboardComponent implements Team 
         Validate.isTrue(ChatColor.stripColor(suffix).length() <= 64, "Suffix '" + suffix + "' is longer than the limit of 64 characters");
         CardboardScoreboard scoreboard = checkState();
 
-        team.setSuffix(CraftChatMessage.fromStringOrNull(suffix));
+        team.setPlayerSuffix(CraftChatMessage.fromStringOrNull(suffix));
     }
 
     @Override
@@ -105,42 +104,42 @@ public class CardboardTeam extends CardboardScoreboardComponent implements Team 
     public boolean allowFriendlyFire() throws IllegalStateException {
         CardboardScoreboard scoreboard = checkState();
 
-        return team.isFriendlyFireAllowed();
+        return team.isAllowFriendlyFire();
     }
 
     @Override
     public void setAllowFriendlyFire(boolean enabled) throws IllegalStateException {
         CardboardScoreboard scoreboard = checkState();
 
-        team.setFriendlyFireAllowed(enabled);
+        team.setAllowFriendlyFire(enabled);
     }
 
     @Override
     public boolean canSeeFriendlyInvisibles() throws IllegalStateException {
         CardboardScoreboard scoreboard = checkState();
 
-        return team.shouldShowFriendlyInvisibles();
+        return team.canSeeFriendlyInvisibles();
     }
 
     @Override
     public void setCanSeeFriendlyInvisibles(boolean enabled) throws IllegalStateException {
         CardboardScoreboard scoreboard = checkState();
 
-        team.setShowFriendlyInvisibles(enabled);
+        team.setSeeFriendlyInvisibles(enabled);
     }
 
     @Override
     public NameTagVisibility getNameTagVisibility() throws IllegalArgumentException {
         CardboardScoreboard scoreboard = checkState();
 
-        return notchToBukkit(team.getNameTagVisibilityRule());
+        return notchToBukkit(team.getNameTagVisibility());
     }
 
     @Override
     public void setNameTagVisibility(NameTagVisibility visibility) throws IllegalArgumentException {
         CardboardScoreboard scoreboard = checkState();
 
-        team.setNameTagVisibilityRule(bukkitToNotch(visibility));
+        team.setNameTagVisibility(bukkitToNotch(visibility));
     }
 
     @Override
@@ -148,7 +147,7 @@ public class CardboardTeam extends CardboardScoreboardComponent implements Team 
         CardboardScoreboard scoreboard = checkState();
 
         ImmutableSet.Builder<OfflinePlayer> players = ImmutableSet.builder();
-        for (String playerName : team.getPlayerList()) {
+        for (String playerName : team.getPlayers()) {
             players.add(Bukkit.getOfflinePlayer(playerName));
         }
         return players.build();
@@ -159,7 +158,7 @@ public class CardboardTeam extends CardboardScoreboardComponent implements Team 
         CardboardScoreboard scoreboard = checkState();
 
         ImmutableSet.Builder<String> entries = ImmutableSet.builder();
-        for (String playerName : team.getPlayerList()) {
+        for (String playerName : team.getPlayers()) {
             entries.add(playerName);
         }
         return entries.build();
@@ -169,7 +168,7 @@ public class CardboardTeam extends CardboardScoreboardComponent implements Team 
     public int getSize() throws IllegalStateException {
         CardboardScoreboard scoreboard = checkState();
 
-        return team.getPlayerList().size();
+        return team.getPlayers().size();
     }
 
     @Override
@@ -183,7 +182,7 @@ public class CardboardTeam extends CardboardScoreboardComponent implements Team 
         Validate.notNull(entry, "Entry cannot be null");
         CardboardScoreboard scoreboard = checkState();
 
-        scoreboard.board.addScoreHolderToTeam(entry, team);
+        scoreboard.board.addPlayerToTeam(entry, team);
     }
 
     @Override
@@ -197,11 +196,11 @@ public class CardboardTeam extends CardboardScoreboardComponent implements Team 
         Validate.notNull(entry, "Entry cannot be null");
         CardboardScoreboard scoreboard = checkState();
 
-        if (!team.getPlayerList().contains(entry)) {
+        if (!team.getPlayers().contains(entry)) {
             return false;
         }
 
-        scoreboard.board.removeScoreHolderFromTeam(entry, team);
+        scoreboard.board.removePlayerFromTeam(entry, team);
         return true;
     }
 
@@ -217,14 +216,14 @@ public class CardboardTeam extends CardboardScoreboardComponent implements Team 
 
         CardboardScoreboard scoreboard = checkState();
 
-        return team.getPlayerList().contains(entry);
+        return team.getPlayers().contains(entry);
     }
 
     @Override
     public void unregister() throws IllegalStateException {
         CardboardScoreboard scoreboard = checkState();
 
-        scoreboard.board.removeTeam(team);
+        scoreboard.board.removePlayerTeam(team);
     }
 
     @Override
@@ -233,9 +232,9 @@ public class CardboardTeam extends CardboardScoreboardComponent implements Team 
 
         switch (option) {
             case NAME_TAG_VISIBILITY:
-                return OptionStatus.values()[team.getNameTagVisibilityRule().ordinal()];
+                return OptionStatus.values()[team.getNameTagVisibility().ordinal()];
             case DEATH_MESSAGE_VISIBILITY:
-                return OptionStatus.values()[team.getDeathMessageVisibilityRule().ordinal()];
+                return OptionStatus.values()[team.getDeathMessageVisibility().ordinal()];
             case COLLISION_RULE:
                 return OptionStatus.values()[team.getCollisionRule().ordinal()];
             default:
@@ -249,35 +248,35 @@ public class CardboardTeam extends CardboardScoreboardComponent implements Team 
 
         switch (option) {
             case NAME_TAG_VISIBILITY:
-                team.setNameTagVisibilityRule(VisibilityRule.values()[status.ordinal()]);
+                team.setNameTagVisibility(Visibility.values()[status.ordinal()]);
                 break;
             case DEATH_MESSAGE_VISIBILITY:
-                team.setDeathMessageVisibilityRule(VisibilityRule.values()[status.ordinal()]);
+                team.setDeathMessageVisibility(Visibility.values()[status.ordinal()]);
                 break;
             case COLLISION_RULE:
-                team.setCollisionRule(AbstractTeam.CollisionRule.values()[status.ordinal()]);
+                team.setCollisionRule(net.minecraft.world.scores.Team.CollisionRule.values()[status.ordinal()]);
                 break;
             default:
                 throw new IllegalArgumentException("Unrecognised option " + option);
         }
     }
 
-    public static VisibilityRule bukkitToNotch(NameTagVisibility visibility) {
+    public static Visibility bukkitToNotch(NameTagVisibility visibility) {
         switch (visibility) {
             case ALWAYS:
-                return VisibilityRule.ALWAYS;
+                return Visibility.ALWAYS;
             case NEVER:
-                return VisibilityRule.NEVER;
+                return Visibility.NEVER;
             case HIDE_FOR_OTHER_TEAMS:
-                return VisibilityRule.HIDE_FOR_OTHER_TEAMS;
+                return Visibility.HIDE_FOR_OTHER_TEAMS;
             case HIDE_FOR_OWN_TEAM:
-                return VisibilityRule.HIDE_FOR_OWN_TEAM;
+                return Visibility.HIDE_FOR_OWN_TEAM;
             default:
                 throw new IllegalArgumentException("Unknown visibility level " + visibility);
         }
     }
 
-    public static NameTagVisibility notchToBukkit(VisibilityRule visibility) {
+    public static NameTagVisibility notchToBukkit(Visibility visibility) {
         switch (visibility) {
             case ALWAYS:
                 return NameTagVisibility.ALWAYS;
@@ -294,7 +293,7 @@ public class CardboardTeam extends CardboardScoreboardComponent implements Team 
 
     @Override
     CardboardScoreboard checkState() throws IllegalStateException {
-        if (getScoreboard().board.getTeam(team.getName()) == null)
+        if (getScoreboard().board.getPlayerTeam(team.getName()) == null)
             throw new IllegalStateException("Unregistered scoreboard component");
         return getScoreboard();
     }
@@ -420,7 +419,7 @@ public class CardboardTeam extends CardboardScoreboardComponent implements Team 
     public Iterable<? extends Audience> audiences() {
         this.checkState();
         ArrayList<Player> audiences = new ArrayList<Player>();
-        for (String playerName : this.team.getPlayerList()) {
+        for (String playerName : this.team.getPlayers()) {
             Player player = Bukkit.getPlayerExact((String)playerName);
             if (player == null) continue;
             audiences.add(player);

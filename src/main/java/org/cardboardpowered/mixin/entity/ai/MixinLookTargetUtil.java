@@ -1,11 +1,11 @@
 package org.cardboardpowered.mixin.entity.ai;
 
 import org.cardboardpowered.interfaces.IMixinEntity;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.brain.task.TargetUtil;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Item;
 import org.bukkit.event.entity.EntityDropItemEvent;
@@ -15,13 +15,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-@Mixin(TargetUtil.class)
+@Mixin(BehaviorUtils.class)
 public class MixinLookTargetUtil {
 
-    @Inject(method = "give(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;F)V",
+    @Inject(method = "throwItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;F)V",
             cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD,
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;spawnEntity(Lnet/minecraft/entity/Entity;)Z"))
-    private static void cardboard$targetutil_entityDropItem(LivingEntity entity, ItemStack stack, Vec3d targetLocation, Vec3d velocityFactor, float yOffset, CallbackInfo ci, double d, ItemEntity itemEntity, Vec3d vec3d) {
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"))
+    private static void cardboard$targetutil_entityDropItem(LivingEntity entity, ItemStack stack, Vec3 targetLocation, Vec3 velocityFactor, float yOffset, CallbackInfo ci, double d, ItemEntity itemEntity, Vec3 vec3d) {
         // CraftBukkit start
         EntityDropItemEvent event = new EntityDropItemEvent(((IMixinEntity)entity).getBukkitEntity(), (Item) ((IMixinEntity)itemEntity).getBukkitEntity());
         Bukkit.getPluginManager().callEvent(event);

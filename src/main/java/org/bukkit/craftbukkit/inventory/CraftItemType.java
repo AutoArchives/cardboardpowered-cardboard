@@ -12,10 +12,6 @@ import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMultimap;
@@ -30,18 +26,17 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import net.minecraft.block.ComposterBlock;
-import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.FuelRegistry;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Rarity;
-
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.ComposterBlock;
+import net.minecraft.world.level.block.entity.FuelValues;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.World;
@@ -104,7 +99,7 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
     }
 
     public static ItemType minecraftToBukkitNew(Item minecraft) {
-        return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.ITEM);
+        return CraftRegistry.minecraftToBukkit(minecraft, Registries.ITEM);
     }
 
     public static Item bukkitToMinecraftNew(ItemType bukkit) {
@@ -157,7 +152,7 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
     }
 
     public ItemStack createItemStack(int amount, @Nullable Consumer<? super M> metaConfigurator) {
-        net.minecraft.item.ItemStack stack = new net.minecraft.item.ItemStack(this.item, amount);
+        net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(this.item, amount);
         CraftItemStack mirror = CraftItemStack.asCraftMirror(stack);
         if (metaConfigurator != null) {
             mirror.editMeta(this.getItemMetaClass(), metaConfigurator);
@@ -217,58 +212,58 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
         if (this == AIR) {
             return 0;
         }
-        return this.item.getComponents().getOrDefault(DataComponentTypes.MAX_STACK_SIZE, 64);
+        return this.item.components().getOrDefault(DataComponents.MAX_STACK_SIZE, 64);
     }
 
     public short getMaxDurability() {
-        return this.item.getComponents().getOrDefault(DataComponentTypes.MAX_DAMAGE, 0).shortValue();
+        return this.item.components().getOrDefault(DataComponents.MAX_DAMAGE, 0).shortValue();
     }
 
     public boolean isEdible() {
-        return this.item.getComponents().contains(DataComponentTypes.FOOD);
+        return this.item.components().has(DataComponents.FOOD);
     }
 
     public boolean isRecord() {
-        return this.item.getComponents().contains(DataComponentTypes.JUKEBOX_PLAYABLE);
+        return this.item.components().has(DataComponents.JUKEBOX_PLAYABLE);
         // old: return this.item instanceof MusicDiscItem;
     }
 
     public boolean isFuel() {
-        return IMixinMinecraftServer.getServer().getFuelRegistry().isFuel(new net.minecraft.item.ItemStack(this.item));
+        return IMixinMinecraftServer.getServer().fuelValues().isFuel(new net.minecraft.world.item.ItemStack(this.item));
         // return AbstractFurnaceBlockEntity.canUseAsFuel(new net.minecraft.item.ItemStack(this.item));
     }
 
     public boolean isCompostable() {
-        return ComposterBlock.ITEM_TO_LEVEL_INCREASE_CHANCE.containsKey(this.item);
+        return ComposterBlock.COMPOSTABLES.containsKey(this.item);
     }
 
     public float getCompostChance() {
         Preconditions.checkArgument(this.isCompostable(), ("The item type " + String.valueOf(this.getKey()) + " is not compostable"));
-        return ComposterBlock.ITEM_TO_LEVEL_INCREASE_CHANCE.getFloat(this.item);
+        return ComposterBlock.COMPOSTABLES.getFloat(this.item);
     }
 
     public ItemType getCraftingRemainingItem() {
-        net.minecraft.item.ItemStack expectedItem = this.item.getRecipeRemainder();
+        net.minecraft.world.item.ItemStack expectedItem = this.item.getCraftingRemainder();
         return expectedItem.isEmpty() ? null : CraftItemType.minecraftToBukkitNew(expectedItem.getItem());
     }
 
     @NotNull
     public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers() {
-        return this.getDefaultAttributeModifiers((AttributeModifierSlot sg) -> true);
+        return this.getDefaultAttributeModifiers((EquipmentSlotGroup sg) -> true);
     }
 
     public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(org.bukkit.inventory.EquipmentSlot slot) {
         EquipmentSlot nmsSlot = CraftEquipmentSlot.getNMS(slot);
-        return this.getDefaultAttributeModifiers((AttributeModifierSlot sg) -> sg.matches(nmsSlot));
+        return this.getDefaultAttributeModifiers((EquipmentSlotGroup sg) -> sg.test(nmsSlot));
     }
     
-    private Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(final java.util.function.Predicate<net.minecraft.component.type.AttributeModifierSlot> slotPredicate) {
+    private Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(final java.util.function.Predicate<net.minecraft.world.entity.EquipmentSlotGroup> slotPredicate) {
         // Paper end - improve/fix item default attribute API
         ImmutableMultimap.Builder<Attribute, AttributeModifier> defaultAttributes = ImmutableMultimap.builder();
 
-        AttributeModifiersComponent nmsDefaultAttributes = this.item.getComponents().getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
+        ItemAttributeModifiers nmsDefaultAttributes = this.item.components().getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
         // Paper start - improve/fix item default attribute API
-        for (final net.minecraft.component.type.AttributeModifiersComponent.Entry entry : nmsDefaultAttributes.modifiers()) {
+        for (final net.minecraft.world.item.component.ItemAttributeModifiers.Entry entry : nmsDefaultAttributes.modifiers()) {
             if (!slotPredicate.test(entry.slot())) continue;
             final Attribute attribute = CraftAttribute.minecraftHolderToBukkit(entry.attribute());
             final AttributeModifier modifier = CraftAttributeInstance.convert(entry.modifier(), entry.slot());
@@ -286,12 +281,12 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
 
     public boolean isEnabledByFeature(@NotNull World world) {
         Preconditions.checkNotNull(world, "World cannot be null");
-        return this.getHandle().isEnabled(((CraftWorld)world).getHandle().getEnabledFeatures());
+        return this.getHandle().isEnabled(((CraftWorld)world).getHandle().enabledFeatures());
     }
 
     @NotNull
     public String getTranslationKey() {
-        return this.item.getTranslationKey();
+        return this.item.getDescriptionId();
     }
 
     public NamespacedKey getKey() {
@@ -303,12 +298,12 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
     }
 
     public String translationKey() {
-        return this.item.getTranslationKey();
+        return this.item.getDescriptionId();
     }
 
 	@Override
 	public ItemRarity getItemRarity() {
-        Rarity rarity = this.item.getComponents().get(DataComponentTypes.RARITY);
+        Rarity rarity = this.item.components().get(DataComponents.RARITY);
         return rarity == null ? null : ItemRarity.valueOf((String)rarity.name());
 	}
 
@@ -320,27 +315,27 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
 
 	@Override
 	public boolean hasDefaultData(@NotNull DataComponentType type) {
-		return this.item.getComponents().contains(PaperDataComponentType_bukkitToMinecraft(type));
+		return this.item.components().has(PaperDataComponentType_bukkitToMinecraft(type));
 	}
 
 	@Override
 	public @Unmodifiable @NotNull Set<DataComponentType> getDefaultDataTypes() {
-		return PaperDataComponentType_minecraftToBukkit(this.item.getComponents().getTypes());
+		return PaperDataComponentType_minecraftToBukkit(this.item.components().keySet());
 	}
 	
 	
 	// TODO: move to PaperDataComponentType
-	public static <T> net.minecraft.component.ComponentType<T> PaperDataComponentType_bukkitToMinecraft(final DataComponentType type) {
+	public static <T> net.minecraft.core.component.DataComponentType<T> PaperDataComponentType_bukkitToMinecraft(final DataComponentType type) {
         return CraftRegistry.bukkitToMinecraft(type);
     }
 	
-	public static DataComponentType PaperDataComponentType_minecraftToBukkit(final net.minecraft.component.ComponentType<?> type) {
-        return CraftRegistry.minecraftToBukkit(type, RegistryKeys.DATA_COMPONENT_TYPE);
+	public static DataComponentType PaperDataComponentType_minecraftToBukkit(final net.minecraft.core.component.DataComponentType<?> type) {
+        return CraftRegistry.minecraftToBukkit(type, Registries.DATA_COMPONENT_TYPE);
     }
 	
-	public static Set<DataComponentType> PaperDataComponentType_minecraftToBukkit(final Set<net.minecraft.component.ComponentType<?>> nmsTypes) {
+	public static Set<DataComponentType> PaperDataComponentType_minecraftToBukkit(final Set<net.minecraft.core.component.DataComponentType<?>> nmsTypes) {
         final Set<DataComponentType> types = new HashSet<>(nmsTypes.size());
-        for (final net.minecraft.component.ComponentType<?> nmsType : nmsTypes) {
+        for (final net.minecraft.core.component.DataComponentType<?> nmsType : nmsTypes) {
             types.add(PaperDataComponentType_minecraftToBukkit(nmsType));
         }
         return Collections.unmodifiableSet(types);
@@ -348,12 +343,12 @@ public class CraftItemType<M extends ItemMeta> implements ItemType.Typed<M>, Han
 
 	@Override
 	public int getBurnDuration() {
-		net.minecraft.item.ItemStack stack;
-        FuelRegistry fuelValues = CraftServer.server.getFuelRegistry();
-        if (!fuelValues.isFuel(stack = new net.minecraft.item.ItemStack((ItemConvertible)this.getHandle()))) {
+		net.minecraft.world.item.ItemStack stack;
+        FuelValues fuelValues = CraftServer.server.fuelValues();
+        if (!fuelValues.isFuel(stack = new net.minecraft.world.item.ItemStack((ItemLike)this.getHandle()))) {
             return 0;
         }
-        return fuelValues.getFuelTicks(stack);
+        return fuelValues.burnDuration(stack);
 	}
 	
 }

@@ -1,7 +1,6 @@
 package org.cardboardpowered.impl.block;
 
-import net.minecraft.block.entity.CampfireBlockEntity;
-
+import net.minecraft.world.level.block.entity.CampfireBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -42,38 +41,38 @@ public class CardboardCampfire extends CardboardBlockEntityState<CampfireBlockEn
 
     @Override
     public int getSize() {
-        return getSnapshot().getItemsBeingCooked().size();
+        return getSnapshot().getItems().size();
     }
 
     @Override
     public ItemStack getItem(int index) {
-        net.minecraft.item.ItemStack item = getSnapshot().getItemsBeingCooked().get(index);
+        net.minecraft.world.item.ItemStack item = getSnapshot().getItems().get(index);
         return item.isEmpty() ? null : CraftItemStack.asCraftMirror(item);
     }
 
     @Override
     public void setItem(int index, ItemStack item) {
-        getSnapshot().getItemsBeingCooked().set(index, CraftItemStack.asNMSCopy(item));
+        getSnapshot().getItems().set(index, CraftItemStack.asNMSCopy(item));
     }
 
     @Override
     public int getCookTime(int index) {
-        return getSnapshot().cookingTimes[index];
+        return getSnapshot().cookingProgress[index];
     }
 
     @Override
     public void setCookTime(int index, int cookTime) {
-        getSnapshot().cookingTimes[index] = cookTime;
+        getSnapshot().cookingProgress[index] = cookTime;
     }
 
     @Override
     public int getCookTimeTotal(int index) {
-        return getSnapshot().cookingTotalTimes[index];
+        return getSnapshot().cookingTime[index];
     }
 
     @Override
     public void setCookTimeTotal(int index, int cookTimeTotal) {
-        getSnapshot().cookingTotalTimes[index] = cookTimeTotal;
+        getSnapshot().cookingTime[index] = cookTimeTotal;
     }
 
 	@Override

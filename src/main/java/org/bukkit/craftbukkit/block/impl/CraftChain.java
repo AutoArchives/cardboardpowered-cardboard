@@ -9,13 +9,13 @@ public final class CraftChain extends org.bukkit.craftbukkit.block.data.CraftBlo
         super();
     }
 
-    public CraftChain(net.minecraft.block.BlockState state) {
+    public CraftChain(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final net.minecraft.state.property.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.block.ChainBlock.class, "waterlogged");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.world.level.block.ChainBlock.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {

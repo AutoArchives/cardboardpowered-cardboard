@@ -1,6 +1,5 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.passive.CodEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Cod;
 import org.bukkit.entity.EntityType;
@@ -11,13 +10,13 @@ import io.papermc.paper.entity.SchoolableFish;
 
 public class CardboardFishCod extends CardboardFish implements Cod {
 
-    public CardboardFishCod(CraftServer server, CodEntity entity) {
+    public CardboardFishCod(CraftServer server, net.minecraft.world.entity.animal.fish.Cod entity) {
         super(server, entity);
     }
 
     @Override
-    public CodEntity getHandle() {
-        return (CodEntity) super.getHandle();
+    public net.minecraft.world.entity.animal.fish.Cod getHandle() {
+        return (net.minecraft.world.entity.animal.fish.Cod) super.getHandle();
     }
 
     @Override

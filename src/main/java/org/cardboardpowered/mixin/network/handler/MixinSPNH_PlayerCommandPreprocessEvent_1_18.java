@@ -1,9 +1,9 @@
 package org.cardboardpowered.mixin.network.handler;
 
-import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(value = ServerPlayNetworkHandler.class, priority = 800)
+@Mixin(value = ServerGamePacketListenerImpl.class, priority = 800)
 @Deprecated
 /**
  * @deprecated leftover 1.18.2

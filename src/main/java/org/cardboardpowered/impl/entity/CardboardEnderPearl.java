@@ -1,7 +1,7 @@
 package org.cardboardpowered.impl.entity;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.EntityType;
@@ -9,13 +9,13 @@ import org.jetbrains.annotations.Nullable;
 
 public class CardboardEnderPearl extends ThrowableProjectileImpl implements EnderPearl {
 
-    public CardboardEnderPearl(CraftServer server, EnderPearlEntity entity) {
+    public CardboardEnderPearl(CraftServer server, ThrownEnderpearl entity) {
         super(server, entity);
     }
 
     @Override
-    public EnderPearlEntity getHandle() {
-        return (EnderPearlEntity) nms;
+    public ThrownEnderpearl getHandle() {
+        return (ThrownEnderpearl) nms;
     }
 
     @Override

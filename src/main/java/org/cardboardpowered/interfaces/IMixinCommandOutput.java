@@ -4,18 +4,17 @@
  */
 package org.cardboardpowered.interfaces;
 
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import org.bukkit.command.CommandSender;
-
-import net.minecraft.server.command.CommandOutput;
-import net.minecraft.server.command.ServerCommandSource;
 
 public interface IMixinCommandOutput {
 
 	/**
 	 */
-    default CommandSender getBukkitSender(ServerCommandSource source) {
+    default CommandSender getBukkitSender(CommandSourceStack source) {
 
-    	if (source.isExecutedByPlayer()) {
+    	if (source.isPlayer()) {
     		// Cardboard Note: Redirect ServerPlayerEntity$3 to ServerPlayerEntity
     		return ( (IMixinCommandOutput) source.getPlayer() ).getBukkitSender(source);
     	}
@@ -24,7 +23,7 @@ public interface IMixinCommandOutput {
     		return ( (IMixinCommandOutput) source.getEntity() ).getBukkitSender(source);
     	}
     	
-    	CommandOutput output = source.output;
+    	CommandSource output = source.source;
     	
     	// Memic Default Error
     	String msg1 = " does not define or inherit an implementation of the resolved method 'org.bukkit.command.CommandSender";

@@ -1,14 +1,8 @@
 package org.cardboardpowered.impl.block;
 
-import net.minecraft.block.entity.ConduitBlockEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-
 import java.util.ArrayList;
 import java.util.Collection;
-
+import net.minecraft.world.level.block.entity.ConduitBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -58,7 +52,7 @@ public class CardboardConduit extends CardboardBlockEntityState<ConduitBlockEnti
     public boolean isHunting() {
         // this.ensureNoWorldGeneration();
         ConduitBlockEntity conduit = (ConduitBlockEntity)this.getTileEntityFromWorld();
-        return conduit != null && conduit.isEyeOpen();
+        return conduit != null && conduit.isHunting();
     }
 
 	@Override

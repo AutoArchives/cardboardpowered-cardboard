@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.logging.Level;
-
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -29,13 +31,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Vec3d;
-
-public class BukkitCommandWrapper implements com.mojang.brigadier.Command<ServerCommandSource>, Predicate<ServerCommandSource>, SuggestionProvider<ServerCommandSource> {
+public class BukkitCommandWrapper implements com.mojang.brigadier.Command<CommandSourceStack>, Predicate<CommandSourceStack>, SuggestionProvider<CommandSourceStack> {
 
     private final Command command;
 
@@ -43,20 +39,20 @@ public class BukkitCommandWrapper implements com.mojang.brigadier.Command<Server
         this.command = command;
     }
 
-    public LiteralCommandNode<ServerCommandSource> register(CommandDispatcher<ServerCommandSource> dispatcher, String label) {
+    public LiteralCommandNode<CommandSourceStack> register(CommandDispatcher<CommandSourceStack> dispatcher, String label) {
         return dispatcher.register(
-                LiteralArgumentBuilder.<ServerCommandSource>literal(label).requires(this).executes(this)
-                .then(RequiredArgumentBuilder.<ServerCommandSource, String>argument("args", StringArgumentType.greedyString()).suggests(this).executes(this))
+                LiteralArgumentBuilder.<CommandSourceStack>literal(label).requires(this).executes(this)
+                .then(RequiredArgumentBuilder.<CommandSourceStack, String>argument("args", StringArgumentType.greedyString()).suggests(this).executes(this))
         );
     }
 
     @Override
-    public boolean test(ServerCommandSource wrapper) {
+    public boolean test(CommandSourceStack wrapper) {
         return true; // Let Bukkit handle permissions
     }
 
     @Override
-    public int run(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         try {
             return Bukkit.getServer().dispatchCommand(getSender(context.getSource()),context.getInput()) ? 1 : 0;
         } catch (Exception e) {
@@ -65,9 +61,9 @@ public class BukkitCommandWrapper implements com.mojang.brigadier.Command<Server
         }
     }
 
-    public CommandSender getSender(ServerCommandSource source) {
+    public CommandSender getSender(CommandSourceStack source) {
         try {
-            ServerPlayerEntity plr = source.getPlayer();
+            ServerPlayer plr = source.getPlayer();
             if (null != plr)
                 return ((IMixinCommandOutput)plr).getBukkitSender(source);
         } catch (Exception ignored) {
@@ -78,8 +74,8 @@ public class BukkitCommandWrapper implements com.mojang.brigadier.Command<Server
     }
 
     @Override
-    public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) {
-        List<String> results = ((CraftServer)Bukkit.getServer()).tabComplete(((IServerCommandSource) context.getSource()).getBukkitSender(), builder.getInput(), context.getSource().getWorld(), context.getSource().getPosition(), true);
+    public CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
+        List<String> results = ((CraftServer)Bukkit.getServer()).tabComplete(((IServerCommandSource) context.getSource()).getBukkitSender(), builder.getInput(), context.getSource().getLevel(), context.getSource().getPosition(), true);
 
         // Defaults to sub nodes, but we have just one giant args node, so offset accordingly
         builder = builder.createOffset(builder.getInput().lastIndexOf(' ') + 1);

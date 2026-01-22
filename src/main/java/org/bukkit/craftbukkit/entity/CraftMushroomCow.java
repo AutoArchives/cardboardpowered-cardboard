@@ -4,11 +4,9 @@ import com.google.common.base.Preconditions;
 
 import io.papermc.paper.potion.SuspiciousEffectEntry;
 import net.kyori.adventure.sound.Sound.Source;
-import net.minecraft.entity.passive.MooshroomEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.world.ServerWorld;
-
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -28,13 +26,13 @@ import org.jetbrains.annotations.Unmodifiable;
 
 public class CraftMushroomCow extends CraftAbstractCow implements MushroomCow {
 
-    public CraftMushroomCow(CraftServer server, MooshroomEntity entity) {
+    public CraftMushroomCow(CraftServer server, net.minecraft.world.entity.animal.cow.MushroomCow entity) {
         super(server, entity);
     }
 
     @Override
-    public MooshroomEntity getHandle() {
-        return (MooshroomEntity) nms;
+    public net.minecraft.world.entity.animal.cow.MushroomCow getHandle() {
+        return (net.minecraft.world.entity.animal.cow.MushroomCow) nms;
     }
 
     @Override
@@ -46,7 +44,7 @@ public class CraftMushroomCow extends CraftAbstractCow implements MushroomCow {
     public void setVariant(Variant variant) {
         Preconditions.checkArgument(variant != null, "variant");
         // getHandle().setVariant(MooshroomEntity.Type.values()[variant.ordinal()]);
-        this.getHandle().setVariant(MooshroomEntity.Variant.values()[variant.ordinal()]);
+        this.getHandle().setVariant(net.minecraft.world.entity.animal.cow.MushroomCow.Variant.values()[variant.ordinal()]);
 
     }
 
@@ -89,15 +87,15 @@ public class CraftMushroomCow extends CraftAbstractCow implements MushroomCow {
 
 	@Override
 	public boolean readyToBeSheared() {
-		return this.getHandle().isShearable();
+		return this.getHandle().readyForShearing();
 	}
 
 	@Override
 	public void shear(@NotNull Source arg0) {
 		// this.getHandle().sheared(net.minecraft.sound.SoundCategory.AMBIENT);
 
-		if (!(this.getHandle().getEntityWorld() instanceof final ServerWorld serverLevel)) return;
-        this.getHandle().sheared(serverLevel, CardboardAdventure.asVanilla(arg0), new ItemStack(Items.SHEARS));
+		if (!(this.getHandle().level() instanceof final ServerLevel serverLevel)) return;
+        this.getHandle().shear(serverLevel, CardboardAdventure.asVanilla(arg0), new ItemStack(Items.SHEARS));
 	}
 	
 	// 1.20.2 API:

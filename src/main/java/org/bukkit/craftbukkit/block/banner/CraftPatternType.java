@@ -1,12 +1,10 @@
 package org.bukkit.craftbukkit.block.banner;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.block.entity.BannerPattern;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-
 import java.util.Locale;
-
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.block.entity.BannerPattern;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.block.banner.PatternType;
@@ -23,10 +21,10 @@ public class CraftPatternType implements PatternType, Handleable<BannerPattern> 
     private final int ordinal;
 
     public static PatternType minecraftToBukkit(BannerPattern minecraft) {
-        return (PatternType)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.BANNER_PATTERN);
+        return (PatternType)CraftRegistry.minecraftToBukkit(minecraft, Registries.BANNER_PATTERN);
     }
 
-    public static PatternType minecraftHolderToBukkit(RegistryEntry<BannerPattern> minecraft) {
+    public static PatternType minecraftHolderToBukkit(Holder<BannerPattern> minecraft) {
         return CraftPatternType.minecraftToBukkit(minecraft.value());
     }
 
@@ -34,12 +32,12 @@ public class CraftPatternType implements PatternType, Handleable<BannerPattern> 
         return (BannerPattern)CraftRegistry.bukkitToMinecraft(bukkit);
     }
 
-    public static RegistryEntry<BannerPattern> bukkitToMinecraftHolder(PatternType bukkit) {
+    public static Holder<BannerPattern> bukkitToMinecraftHolder(PatternType bukkit) {
         Preconditions.checkArgument((bukkit != null ? 1 : 0) != 0);
-        net.minecraft.registry.Registry registry = CraftRegistry.getMinecraftRegistry(RegistryKeys.BANNER_PATTERN);
-        RegistryEntry<BannerPattern> registryEntry = registry.getEntry(CraftPatternType.bukkitToMinecraft(bukkit));
-        if (registryEntry instanceof RegistryEntry.Reference) {
-            RegistryEntry.Reference holder = (RegistryEntry.Reference)registryEntry;
+        net.minecraft.core.Registry registry = CraftRegistry.getMinecraftRegistry(Registries.BANNER_PATTERN);
+        Holder<BannerPattern> registryEntry = registry.wrapAsHolder(CraftPatternType.bukkitToMinecraft(bukkit));
+        if (registryEntry instanceof Holder.Reference) {
+            Holder.Reference holder = (Holder.Reference)registryEntry;
             return holder;
         }
         throw new IllegalArgumentException("No Reference holder found for " + String.valueOf(bukkit) + ", this can happen if a plugin creates its own banner pattern without properly registering it.");

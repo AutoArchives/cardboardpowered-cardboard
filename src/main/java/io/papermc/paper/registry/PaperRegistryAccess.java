@@ -16,8 +16,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import net.minecraft.registry.Registry;
-import net.minecraft.world.gen.structure.Structure;
+import net.minecraft.core.Registry;
 import org.bukkit.Keyed;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -91,15 +90,15 @@ implements RegistryAccess {
         return registry;
     }
 
-    public <M> void registerReloadableRegistry(net.minecraft.registry.RegistryKey<? extends Registry<M>> resourceKey, Registry<M> registry) {
+    public <M> void registerReloadableRegistry(net.minecraft.resources.ResourceKey<? extends Registry<M>> resourceKey, Registry<M> registry) {
         this.registerRegistry(resourceKey, registry, true);
     }
 
-    public <M> void registerRegistry(net.minecraft.registry.RegistryKey<? extends Registry<M>> resourceKey, Registry<M> registry) {
+    public <M> void registerRegistry(net.minecraft.resources.ResourceKey<? extends Registry<M>> resourceKey, Registry<M> registry) {
         this.registerRegistry(resourceKey, registry, false);
     }
 
-    private <M, B extends Keyed, R extends org.bukkit.Registry<B>> void registerRegistry(net.minecraft.registry.RegistryKey<? extends Registry<M>> resourceKey, Registry<M> registry, boolean replace) {
+    private <M, B extends Keyed, R extends org.bukkit.Registry<B>> void registerRegistry(net.minecraft.resources.ResourceKey<? extends Registry<M>> resourceKey, Registry<M> registry, boolean replace) {
     	@Nullable RegistryEntry<M, B> entry = PaperRegistries.getEntry(resourceKey);
         if (entry == null) {
             return;
@@ -120,7 +119,7 @@ implements RegistryAccess {
         return (RegistryKey<T>) LegacyRegistryIdentifiers.CLASS_TO_KEY_MAP.get(type);
     }
 
-	public <M> void lockReferenceHolders(net.minecraft.registry.RegistryKey<? extends Registry<M>> resourceKey) {
+	public <M> void lockReferenceHolders(net.minecraft.resources.ResourceKey<? extends Registry<M>> resourceKey) {
         RegistryEntryMeta.ServerSide serverSide;
         RegistryEntryMeta registryEntryMeta;
         RegistryEntry entry = PaperRegistries.getEntry(resourceKey);

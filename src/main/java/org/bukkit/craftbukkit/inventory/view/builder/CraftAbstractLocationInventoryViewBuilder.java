@@ -2,9 +2,9 @@ package org.bukkit.craftbukkit.inventory.view.builder;
 
 import com.google.common.base.Preconditions;
 import net.kyori.adventure.text.Component;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.level.Level;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.inventory.InventoryView;
@@ -14,10 +14,10 @@ import org.jspecify.annotations.Nullable;
 
 public abstract class CraftAbstractLocationInventoryViewBuilder<V extends InventoryView> extends CraftAbstractInventoryViewBuilder<V> implements LocationInventoryViewBuilder<V> {
 
-    protected @Nullable World world;
+    protected @Nullable Level world;
     protected @Nullable BlockPos position;
 
-    public CraftAbstractLocationInventoryViewBuilder(final ScreenHandlerType<?> handle) {
+    public CraftAbstractLocationInventoryViewBuilder(final MenuType<?> handle) {
         super(handle);
     }
 

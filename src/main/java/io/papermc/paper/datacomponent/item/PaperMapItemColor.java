@@ -4,11 +4,11 @@ import org.bukkit.Color;
 import org.bukkit.craftbukkit.util.Handleable;
 
 public record PaperMapItemColor(
-    net.minecraft.component.type.MapColorComponent impl
-) implements MapItemColor, Handleable<net.minecraft.component.type.MapColorComponent> {
+    net.minecraft.world.item.component.MapItemColor impl
+) implements MapItemColor, Handleable<net.minecraft.world.item.component.MapItemColor> {
 
     @Override
-    public net.minecraft.component.type.MapColorComponent getHandle() {
+    public net.minecraft.world.item.component.MapItemColor getHandle() {
         return this.impl;
     }
 
@@ -19,7 +19,7 @@ public record PaperMapItemColor(
 
     static final class BuilderImpl implements Builder {
 
-        private Color color = Color.fromRGB(net.minecraft.component.type.MapColorComponent.DEFAULT.rgb());
+        private Color color = Color.fromRGB(net.minecraft.world.item.component.MapItemColor.DEFAULT.rgb());
 
         @Override
         public Builder color(final Color color) {
@@ -29,7 +29,7 @@ public record PaperMapItemColor(
 
         @Override
         public MapItemColor build() {
-            return new PaperMapItemColor(new net.minecraft.component.type.MapColorComponent(this.color.asRGB()));
+            return new PaperMapItemColor(new net.minecraft.world.item.component.MapItemColor(this.color.asRGB()));
         }
     }
 }

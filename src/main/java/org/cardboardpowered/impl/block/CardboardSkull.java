@@ -32,19 +32,17 @@ import io.papermc.paper.datacomponent.item.PaperResolvableProfile;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import me.isaiah.common.cmixin.IMixinSkullBlockEntity;
 import net.kyori.adventure.text.Component;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.SkullBlockEntity;
-import net.minecraft.component.type.ProfileComponent;
-import net.minecraft.entity.player.SkinTextures;
-import net.minecraft.server.PlayerConfigEntry;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.util.Util;
+import net.minecraft.world.entity.player.PlayerSkin;
+import net.minecraft.world.level.block.entity.SkullBlockEntity;
 
 @SuppressWarnings("deprecation")
 public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> implements Skull {
 
     private static final int MAX_OWNER_LENGTH = 16;
-    private ProfileComponent profile;
+    private net.minecraft.world.item.component.ResolvableProfile profile;
 
     public CardboardSkull(World world, SkullBlockEntity tileEntity) {
         super(world, tileEntity);
@@ -69,7 +67,7 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
     public void load(SkullBlockEntity skull) {
         super.load(skull);
         
-        ProfileComponent owner = skull.getOwner();
+        net.minecraft.world.item.component.ResolvableProfile owner = skull.getOwnerProfile();
         if (null != owner) {
         	this.profile = owner;
         }
@@ -103,7 +101,7 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
 
     @Override
     public String getOwner() {
-    	return this.hasOwner() ? this.profile.getName().orElse(null) : null;
+    	return this.hasOwner() ? this.profile.name().orElse(null) : null;
     }
 
     /*
@@ -119,7 +117,7 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
     }*/
     
     // PlayerConfigEntry.toUncompletedGameProfile
-    public static GameProfile PlayerConfigEntry_toUncompletedGameProfile(PlayerConfigEntry thiz) {
+    public static GameProfile PlayerConfigEntry_toUncompletedGameProfile(NameAndId thiz) {
         return new GameProfile(thiz.id(), thiz.name());
     }
     
@@ -129,9 +127,9 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
            GameProfile profile = CraftServer.INSTANCE.getPaperFilledProfileCache().getIfCached(name);
            if (profile == null) {
               profile = CraftServer.server
-                 .getApiServices()
+                 .services()
                  .nameToIdCache()
-                 .findByName(name)
+                 .get(name)
                  .map(CardboardSkull::PlayerConfigEntry_toUncompletedGameProfile)
                  .orElse(null);
            }
@@ -139,7 +137,7 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
            if (profile == null) {
               return false;
            } else {
-              this.profile = ProfileComponent.ofStatic(profile);
+              this.profile = net.minecraft.world.item.component.ResolvableProfile.createResolved(profile);
               return true;
            }
         } else {
@@ -150,7 +148,7 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
     @Override
     public OfflinePlayer getOwningPlayer() {
     	if (this.hasOwner()) {
-            GameProfile gameProfile = this.profile.getGameProfile();
+            GameProfile gameProfile = this.profile.partialProfile();
             if (Objects.equals(gameProfile.id(), Util.NIL_UUID)) {
                return Bukkit.getOfflinePlayer(gameProfile.id());
             }
@@ -166,9 +164,9 @@ public class CardboardSkull extends CardboardBlockEntityState<SkullBlockEntity> 
     public void setOwningPlayer(OfflinePlayer player) {
         Preconditions.checkNotNull(player, "player");
         if (player instanceof CraftPlayer craftPlayer) {
-           this.profile = ProfileComponent.ofStatic(craftPlayer.getProfile());
+           this.profile = net.minecraft.world.item.component.ResolvableProfile.createResolved(craftPlayer.getProfile());
         } else {
-           this.profile = new ProfileComponent.Dynamic(Either.right(player.getUniqueId()), SkinTextures.SkinOverride.EMPTY);
+           this.profile = new net.minecraft.world.item.component.ResolvableProfile.Dynamic(Either.right(player.getUniqueId()), PlayerSkin.Patch.EMPTY);
         }
      }
     

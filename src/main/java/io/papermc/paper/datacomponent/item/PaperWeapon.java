@@ -1,13 +1,13 @@
 package io.papermc.paper.datacomponent.item;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.component.type.WeaponComponent;
+import net.minecraft.world.item.component.Weapon;
 import org.bukkit.craftbukkit.util.Handleable;
 
-public record PaperWeapon(WeaponComponent impl) implements Weapon, Handleable<WeaponComponent> {
+public record PaperWeapon(Weapon impl) implements io.papermc.paper.datacomponent.item.Weapon, Handleable<Weapon> {
 
     @Override
-    public WeaponComponent getHandle() {
+    public Weapon getHandle() {
         return this.impl;
     }
 
@@ -19,7 +19,7 @@ public record PaperWeapon(WeaponComponent impl) implements Weapon, Handleable<We
         return this.impl.disableBlockingForSeconds();
     }
 
-    static final class BuilderImpl implements Weapon.Builder {
+    static final class BuilderImpl implements io.papermc.paper.datacomponent.item.Weapon.Builder {
 
         private int itemDamagePerAttack = 1;
         private float disableBlockingForSeconds;
@@ -27,20 +27,20 @@ public record PaperWeapon(WeaponComponent impl) implements Weapon, Handleable<We
         BuilderImpl() {
         }
 
-        public Weapon.Builder itemDamagePerAttack(int dam) {
+        public io.papermc.paper.datacomponent.item.Weapon.Builder itemDamagePerAttack(int dam) {
             Preconditions.checkArgument(dam >= 0, "damage must >= 0, was " + dam);
             this.itemDamagePerAttack = dam;
             return this;
         }
 
-        public Weapon.Builder disableBlockingForSeconds(float sec) {
+        public io.papermc.paper.datacomponent.item.Weapon.Builder disableBlockingForSeconds(float sec) {
             Preconditions.checkArgument(sec >= 0.0f, "seconds must >= 0, was " + sec);
             this.disableBlockingForSeconds = sec;
             return this;
         }
 
-        public Weapon build() {
-            return new PaperWeapon(new WeaponComponent(this.itemDamagePerAttack, this.disableBlockingForSeconds));
+        public io.papermc.paper.datacomponent.item.Weapon build() {
+            return new PaperWeapon(new Weapon(this.itemDamagePerAttack, this.disableBlockingForSeconds));
         }
 
     }

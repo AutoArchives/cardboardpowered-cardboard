@@ -2,14 +2,13 @@ package org.cardboardpowered.mixin.screen;
 
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.impl.inventory.CardboardSmithingInventory;
+import net.minecraft.world.inventory.SmithingMenu;
 import org.bukkit.entity.Player;
 import org.spongepowered.asm.mixin.Mixin;
 
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
-import net.minecraft.screen.SmithingScreenHandler;
-
-@Mixin(SmithingScreenHandler.class)
+@Mixin(SmithingMenu.class)
 public class MixinSmithingScreenHandler extends MixinForgingScreenHandler {
 
     private CardboardInventoryView bukkitEntity;
@@ -18,8 +17,8 @@ public class MixinSmithingScreenHandler extends MixinForgingScreenHandler {
     public CardboardInventoryView getBukkitView() {
         if (bukkitEntity != null) return bukkitEntity;
 
-        CardboardSmithingInventory inventory = new CardboardSmithingInventory(this.input, this.output);
-        bukkitEntity = new CardboardInventoryView((Player)((IMixinServerEntityPlayer)this.player).getBukkitEntity(), inventory, (SmithingScreenHandler)(Object)this);
+        CardboardSmithingInventory inventory = new CardboardSmithingInventory(this.inputSlots, this.resultSlots);
+        bukkitEntity = new CardboardInventoryView((Player)((IMixinServerEntityPlayer)this.player).getBukkitEntity(), inventory, (SmithingMenu)(Object)this);
         return bukkitEntity;
     }
 

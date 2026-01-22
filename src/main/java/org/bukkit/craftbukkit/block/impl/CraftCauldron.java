@@ -9,13 +9,13 @@ public final class CraftCauldron extends org.bukkit.craftbukkit.block.data.Craft
         super();
     }
 
-    public CraftCauldron(net.minecraft.block.BlockState state) {
+    public CraftCauldron(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftLevelled
 
-    private static final net.minecraft.state.property.IntProperty LEVEL = getInteger(net.minecraft.block.AbstractCauldronBlock.class, "level");
+    private static final net.minecraft.world.level.block.state.properties.IntegerProperty LEVEL = getInteger(net.minecraft.world.level.block.AbstractCauldronBlock.class, "level");
 
     @Override
     public int getLevel() {

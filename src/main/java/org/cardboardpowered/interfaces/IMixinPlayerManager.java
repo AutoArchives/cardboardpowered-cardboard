@@ -23,38 +23,37 @@ import org.bukkit.event.player.PlayerRespawnEvent.RespawnReason;
 import org.cardboardpowered.extras.PlayerManager_LoginResult;
 
 import com.mojang.authlib.GameProfile;
-
-import net.minecraft.entity.Entity.RemovalReason;
-import net.minecraft.network.encryption.PlayerPublicKey;
-import net.minecraft.scoreboard.ServerScoreboard;
-import net.minecraft.server.PlayerConfigEntry;
-import net.minecraft.server.network.ServerLoginNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.ServerScoreboard;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerLoginPacketListenerImpl;
+import net.minecraft.server.players.NameAndId;
+import net.minecraft.world.entity.Entity.RemovalReason;
+import net.minecraft.world.entity.player.ProfilePublicKey;
 
 public interface IMixinPlayerManager {
 
 	/**
-	 * Replaced by {@link #respawn(ServerPlayerEntity, boolean, RemovalReason, RespawnReason, Location)}
+	 * Replaced by {@link #respawn(ServerPlayer, boolean, RemovalReason, RespawnReason, Location)}
 	 * 
 	 * @deprecated Use respawn instead
 	 */
-    ServerPlayerEntity moveToWorld(ServerPlayerEntity player, ServerWorld world, boolean flag, Location location, boolean avoidSuffocation);
+    ServerPlayer moveToWorld(ServerPlayer player, ServerLevel world, boolean flag, Location location, boolean avoidSuffocation);
 
-    ServerPlayerEntity attemptLogin(ServerLoginNetworkHandler loginlistener, GameProfile gameprofile, PlayerPublicKey profilepublickey, String hostname);
+    ServerPlayer attemptLogin(ServerLoginPacketListenerImpl loginlistener, GameProfile gameprofile, ProfilePublicKey profilepublickey, String hostname);
 
-    void sendScoreboardBF(ServerScoreboard newboard, ServerPlayerEntity handle);
+    void sendScoreboardBF(ServerScoreboard newboard, ServerPlayer handle);
 
     /**
-     * Replaces {@link #moveToWorld(ServerPlayerEntity, ServerWorld, boolean, Location, boolean)}
+     * Replaces {@link #moveToWorld(ServerPlayer, ServerLevel, boolean, Location, boolean)}
      */
-	ServerPlayerEntity respawn(ServerPlayerEntity player, boolean keepInventory, RemovalReason reason,
+	ServerPlayer respawn(ServerPlayer player, boolean keepInventory, RemovalReason reason,
 			RespawnReason eventReason, Location location);
 
 	/**
 	 * paper login api
 	 */
-	PlayerManager_LoginResult cardboard$canPlayerLogin(Text vanilla, PlayerConfigEntry nameAndId);
+	PlayerManager_LoginResult cardboard$canPlayerLogin(Component vanilla, NameAndId nameAndId);
 
 }

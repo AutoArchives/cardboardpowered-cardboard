@@ -12,11 +12,11 @@ import org.bukkit.craftbukkit.util.Handleable;
 import org.jetbrains.annotations.Unmodifiable;
 
 public record PaperItemLore(
-    net.minecraft.component.type.LoreComponent impl
-) implements ItemLore, Handleable<net.minecraft.component.type.LoreComponent> {
+    net.minecraft.world.item.component.ItemLore impl
+) implements ItemLore, Handleable<net.minecraft.world.item.component.ItemLore> {
 
     @Override
-    public net.minecraft.component.type.LoreComponent getHandle() {
+    public net.minecraft.world.item.component.ItemLore getHandle() {
         return this.impl;
     }
 
@@ -37,9 +37,9 @@ public record PaperItemLore(
         private static void validateLineCount(final int current, final int add) {
             final int newSize = current + add;
             Preconditions.checkArgument(
-                newSize <= net.minecraft.component.type.LoreComponent.MAX_LORES,
+                newSize <= net.minecraft.world.item.component.ItemLore.MAX_LINES,
                 "Cannot have more than %s lines, had %s",
-                net.minecraft.component.type.LoreComponent.MAX_LORES,
+                net.minecraft.world.item.component.ItemLore.MAX_LINES,
                 newSize
             );
         }
@@ -68,10 +68,10 @@ public record PaperItemLore(
         @Override
         public ItemLore build() {
             if (this.lines.isEmpty()) {
-                return new PaperItemLore(net.minecraft.component.type.LoreComponent.DEFAULT);
+                return new PaperItemLore(net.minecraft.world.item.component.ItemLore.EMPTY);
             }
 
-            return new PaperItemLore(new net.minecraft.component.type.LoreComponent(PaperAdventure.asVanilla(this.lines))); // asVanilla does a list clone
+            return new PaperItemLore(new net.minecraft.world.item.component.ItemLore(PaperAdventure.asVanilla(this.lines))); // asVanilla does a list clone
         }
     }
 }

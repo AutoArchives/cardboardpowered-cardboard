@@ -5,7 +5,10 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.cardboardpowered.impl.entity.CraftPlayer;
@@ -20,33 +23,28 @@ import org.cardboardpowered.interfaces.IMixinInventory;
 import org.cardboardpowered.interfaces.IMixinPlayerInventory;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-
-@Mixin(PlayerInventory.class)
+@Mixin(Inventory.class)
 public class MixinPlayerInventory implements IMixinInventory, IMixinPlayerInventory {
 
 	@Unique
-    private PlayerInventory get() {
-        return (PlayerInventory) (Object) this;
+    private Inventory get() {
+        return (Inventory) (Object) this;
     }
 
     @Override
     public List<ItemStack> getContents() {
         // TODO Auto-generated method stub
-        return get().main;
+        return get().items;
     }
 
     @Override
     public void onOpen(CraftHumanEntity who) {
-        get().onOpen((PlayerEntity) who.nms);
+        get().startOpen((Player) who.nms);
     }
 
     @Override
     public void onClose(CraftHumanEntity who) {
-        get().onClose((PlayerEntity) who.nms);
+        get().stopOpen((Player) who.nms);
     }
 
     @Override
@@ -71,30 +69,30 @@ public class MixinPlayerInventory implements IMixinInventory, IMixinPlayerInvent
 
     @Override
     public int getMaxStackSize() {
-        return get().getMaxCountPerStack();
+        return get().getMaxStackSize();
     }
 
     @Override
     public int canHold(ItemStack itemstack) {
         int remains = itemstack.getCount();
-        for (int i = 0; i < get().main.size(); ++i) {
-            ItemStack itemstack1 = get().getStack(i);
+        for (int i = 0; i < get().items.size(); ++i) {
+            ItemStack itemstack1 = get().getItem(i);
             if (itemstack1.isEmpty()) return itemstack.getCount();
 
-            if (get().canStackAddMore(itemstack1, itemstack))
-                remains -= (itemstack1.getMaxCount() < getMaxStackSize() ? itemstack1.getMaxCount() : getMaxStackSize()) - itemstack1.getCount();
+            if (get().hasRemainingSpaceForItem(itemstack1, itemstack))
+                remains -= (itemstack1.getMaxStackSize() < getMaxStackSize() ? itemstack1.getMaxStackSize() : getMaxStackSize()) - itemstack1.getCount();
             if (remains <= 0) return itemstack.getCount();
         }
 
         ItemStack offhandItemStack = get().equipment.get(EquipmentSlot.OFFHAND); // get().getStack(get().main.size() + get().armor.size());
-        if (get().canStackAddMore(offhandItemStack, itemstack))
-            remains -= (offhandItemStack.getMaxCount() < get().getMaxCountPerStack() ? offhandItemStack.getMaxCount() : get().getMaxCountPerStack()) - offhandItemStack.getCount();
+        if (get().hasRemainingSpaceForItem(offhandItemStack, itemstack))
+            remains -= (offhandItemStack.getMaxStackSize() < get().getMaxStackSize() ? offhandItemStack.getMaxStackSize() : get().getMaxStackSize()) - offhandItemStack.getCount();
         if (remains <= 0) return itemstack.getCount();
 
         return itemstack.getCount() - remains;
     }
     
-    private static final EquipmentSlot[] EQUIPMENT_SLOTS_SORTED_BY_INDEX = (EquipmentSlot[])PlayerInventory.EQUIPMENT_SLOTS.int2ObjectEntrySet().stream().sorted(Comparator.comparingInt(Int2ObjectMap.Entry::getIntKey)).map(Map.Entry::getValue).toArray(EquipmentSlot[]::new);
+    private static final EquipmentSlot[] EQUIPMENT_SLOTS_SORTED_BY_INDEX = (EquipmentSlot[])Inventory.EQUIPMENT_SLOT_MAPPING.int2ObjectEntrySet().stream().sorted(Comparator.comparingInt(Int2ObjectMap.Entry::getIntKey)).map(Map.Entry::getValue).toArray(EquipmentSlot[]::new);
     
     @Override
     public List<ItemStack> getArmorContents() {

@@ -4,21 +4,21 @@ package io.papermc.paper.connection;
 import io.papermc.paper.connection.PaperCommonConnection;
 import io.papermc.paper.connection.PlayerGameConnection;
 import java.util.Set;
-import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.level.ClientInformation;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
-public class PaperPlayerGameConnection extends PaperCommonConnection<ServerPlayNetworkHandler> implements PlayerGameConnection {
+public class PaperPlayerGameConnection extends PaperCommonConnection<ServerGamePacketListenerImpl> implements PlayerGameConnection {
 
-    public PaperPlayerGameConnection(ServerPlayNetworkHandler serverConfigurationPacketListenerImpl) {
+    public PaperPlayerGameConnection(ServerGamePacketListenerImpl serverConfigurationPacketListenerImpl) {
         super(serverConfigurationPacketListenerImpl);
     }
 
     @Override
-    public SyncedClientOptions getClientInformation() {
-        return ((ServerPlayNetworkHandler)this.handle).player.getClientOptions();
+    public ClientInformation getClientInformation() {
+        return ((ServerGamePacketListenerImpl)this.handle).player.clientInformation();
     }
     
     @Override
@@ -37,7 +37,7 @@ public class PaperPlayerGameConnection extends PaperCommonConnection<ServerPlayN
     */
 
     public Player getPlayer() {
-        return (Player) ((IMixinServerEntityPlayer) ((ServerPlayNetworkHandler)this.handle).getPlayer() ).getBukkitEntity();
+        return (Player) ((IMixinServerEntityPlayer) ((ServerGamePacketListenerImpl)this.handle).getPlayer() ).getBukkitEntity();
     }
 
     public void sendPluginMessage(Plugin source, String channel, byte[] message) {

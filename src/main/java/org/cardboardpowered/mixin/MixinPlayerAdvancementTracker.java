@@ -20,9 +20,9 @@ package org.cardboardpowered.mixin;
 
 import org.cardboardpowered.interfaces.IMixinAdvancement;
 import org.cardboardpowered.interfaces.IMixinEntity;
-import net.minecraft.advancement.AdvancementEntry;
-import net.minecraft.advancement.PlayerAdvancementTracker;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.server.PlayerAdvancements;
+import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.cardboardpowered.util.MixinInfo;
@@ -35,11 +35,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @MixinInfo(events = {"PlayerAdvancementDoneEvent"})
-@Mixin(PlayerAdvancementTracker.class)
+@Mixin(PlayerAdvancements.class)
 public class MixinPlayerAdvancementTracker {
 
     @Shadow
-    public ServerPlayerEntity owner;
+    public ServerPlayer player;
 
     @Shadow @Final private static Logger LOGGER;
 
@@ -53,9 +53,9 @@ public class MixinPlayerAdvancementTracker {
     }*/
 
     @SuppressWarnings("rawtypes")
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/advancement/AdvancementRewards;apply(Lnet/minecraft/server/network/ServerPlayerEntity;)V"), method = "grantCriterion")
-    public void fireBukkitEvent(AdvancementEntry advancement, String criterionName, CallbackInfoReturnable<Boolean> cir) {
-        Bukkit.getServer().getPluginManager().callEvent(new org.bukkit.event.player.PlayerAdvancementDoneEvent((Player) ((IMixinEntity)this.owner).getBukkitEntity(), ((IMixinAdvancement)(Object) advancement).getBukkitAdvancement())); // Bukkit
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/advancements/AdvancementRewards;grant(Lnet/minecraft/server/level/ServerPlayer;)V"), method = "award")
+    public void fireBukkitEvent(AdvancementHolder advancement, String criterionName, CallbackInfoReturnable<Boolean> cir) {
+        Bukkit.getServer().getPluginManager().callEvent(new org.bukkit.event.player.PlayerAdvancementDoneEvent((Player) ((IMixinEntity)this.player).getBukkitEntity(), ((IMixinAdvancement)(Object) advancement).getBukkitAdvancement())); // Bukkit
     }
 
 }

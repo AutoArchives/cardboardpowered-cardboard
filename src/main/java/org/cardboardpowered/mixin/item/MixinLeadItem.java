@@ -3,16 +3,6 @@ package org.cardboardpowered.mixin.item;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
-import net.minecraft.entity.decoration.LeashKnotEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.LeadItem;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.world.World;
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.block.CraftBlock;
@@ -26,12 +16,21 @@ import org.spongepowered.asm.mixin.Overwrite;
 
 import java.util.Iterator;
 import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.LeadItem;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 
 @MixinInfo(events = {"HangingPlaceEvent"})
 @Mixin(value = LeadItem.class, priority = 900)
 public class MixinLeadItem extends Item {
 
-    public MixinLeadItem(net.minecraft.item.Item.Settings settings) {
+    public MixinLeadItem(net.minecraft.world.item.Item.Properties settings) {
         super(settings);
     }
 
@@ -40,39 +39,39 @@ public class MixinLeadItem extends Item {
      * @reason
      */
     @Overwrite
-    public static ActionResult attachHeldMobsToBlock(PlayerEntity player, World world, BlockPos pos) {
-        LeashKnotEntity leashKnotEntity = null;
+    public static InteractionResult bindPlayerMobs(net.minecraft.world.entity.player.Player player, Level world, BlockPos pos) {
+        LeashFenceKnotEntity leashKnotEntity = null;
         boolean bl = false;
         double d = 7.0;
         int i = pos.getX();
         int j = pos.getY();
         int k = pos.getZ();
-        List<MobEntity> list = world.getNonSpectatingEntities(MobEntity.class, new Box((double)i - 7.0, (double)j - 7.0, (double)k - 7.0, (double)i + 7.0, (double)j + 7.0, (double)k + 7.0));
+        List<Mob> list = world.getEntitiesOfClass(Mob.class, new AABB((double)i - 7.0, (double)j - 7.0, (double)k - 7.0, (double)i + 7.0, (double)j + 7.0, (double)k + 7.0));
         Iterator var11 = list.iterator();
 
         while(var11.hasNext()) {
-            MobEntity mobEntity = (MobEntity)var11.next();
+            Mob mobEntity = (Mob)var11.next();
             if (mobEntity.getLeashHolder() == player) {
                 if (leashKnotEntity == null) {
-                    leashKnotEntity = LeashKnotEntity.getOrCreate(world, pos);
+                    leashKnotEntity = LeashFenceKnotEntity.getOrCreateKnot(world, pos);
 
-                    HangingPlaceEvent event = new HangingPlaceEvent((Hanging) ((IMixinEntity) leashKnotEntity).getBukkitEntity(), player != null ? (Player) ((IMixinServerEntityPlayer) player).getBukkit() : null, CraftBlock.at((ServerWorld) world, pos), BlockFace.SELF, EquipmentSlot.HAND);
+                    HangingPlaceEvent event = new HangingPlaceEvent((Hanging) ((IMixinEntity) leashKnotEntity).getBukkitEntity(), player != null ? (Player) ((IMixinServerEntityPlayer) player).getBukkit() : null, CraftBlock.at((ServerLevel) world, pos), BlockFace.SELF, EquipmentSlot.HAND);
                     Bukkit.getPluginManager().callEvent(event);
 
                     if (event.isCancelled()) {
                         leashKnotEntity.discard();
-                        return ActionResult.PASS;
+                        return InteractionResult.PASS;
                     }
-                    leashKnotEntity.onPlace();
+                    leashKnotEntity.playPlacementSound();
                 }
                 if (CraftEventFactory.callPlayerLeashEntityEvent(mobEntity, leashKnotEntity, player).isCancelled()) {
                     continue;
                 }
-                mobEntity.attachLeash(leashKnotEntity, true);
+                mobEntity.setLeashedTo(leashKnotEntity, true);
                 bl = true;
             }
         }
 
-        return bl ? ActionResult.SUCCESS : ActionResult.PASS;
+        return bl ? InteractionResult.SUCCESS : InteractionResult.PASS;
     }
 }

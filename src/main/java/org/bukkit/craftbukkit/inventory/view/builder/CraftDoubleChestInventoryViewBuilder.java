@@ -1,13 +1,13 @@
 package org.bukkit.craftbukkit.inventory.view.builder;
 
-import net.minecraft.block.Blocks;
-import net.minecraft.block.ChestBlock;
-import net.minecraft.block.DoubleBlockProperties;
-import net.minecraft.block.entity.ChestBlockEntity;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.DoubleBlockCombiner;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.view.builder.LocationInventoryViewBuilder;
 
@@ -15,23 +15,23 @@ import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 public class CraftDoubleChestInventoryViewBuilder<V extends InventoryView> extends CraftAbstractLocationInventoryViewBuilder<V> {
 
-    public CraftDoubleChestInventoryViewBuilder(final ScreenHandlerType<?> handle) {
+    public CraftDoubleChestInventoryViewBuilder(final MenuType<?> handle) {
         super(handle);
     }
 
     @Override
-    protected ScreenHandler buildContainer(final ServerPlayerEntity player) {
+    protected AbstractContainerMenu buildContainer(final ServerPlayer player) {
         if (super.world == null) {
             return handle.create( ((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory());
         }
 
         final ChestBlock chest = (ChestBlock) Blocks.CHEST;
-        final DoubleBlockProperties.PropertySource<? extends ChestBlockEntity> result = chest.getBlockEntitySource(super.world.getBlockState(super.position), super.world, super.position, false);
-        if (result instanceof DoubleBlockProperties.PropertySource.Single<? extends ChestBlockEntity>) {
+        final DoubleBlockCombiner.NeighborCombineResult<? extends ChestBlockEntity> result = chest.combine(super.world.getBlockState(super.position), super.world, super.position, false);
+        if (result instanceof DoubleBlockCombiner.NeighborCombineResult.Single<? extends ChestBlockEntity>) {
             return handle.create(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory());
         }
 
-        final NamedScreenHandlerFactory combined = result.apply(ChestBlock.NAME_RETRIEVER).orElse(null);
+        final MenuProvider combined = result.apply(ChestBlock.MENU_PROVIDER_COMBINER).orElse(null);
         if (combined == null) {
             return handle.create(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory());
         }

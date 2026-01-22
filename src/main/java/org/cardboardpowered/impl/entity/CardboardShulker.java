@@ -1,10 +1,7 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.mob.ShulkerEntity;
-
 import java.lang.reflect.Field;
-
+import net.minecraft.network.syncher.EntityDataAccessor;
 import org.bukkit.DyeColor;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftServer;
@@ -14,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class CardboardShulker extends CardboardGolem implements Shulker {
 
-    public CardboardShulker(CraftServer server, ShulkerEntity entity) {
+    public CardboardShulker(CraftServer server, net.minecraft.world.entity.monster.Shulker entity) {
         super(server, entity);
     }
 
@@ -29,34 +26,34 @@ public class CardboardShulker extends CardboardGolem implements Shulker {
     }
 
     @Override
-    public ShulkerEntity getHandle() {
-        return (ShulkerEntity) nms;
+    public net.minecraft.world.entity.monster.Shulker getHandle() {
+        return (net.minecraft.world.entity.monster.Shulker) nms;
     }
 
     @SuppressWarnings({ "unchecked", "deprecation" })
     @Override
     public DyeColor getColor() {
-        TrackedData<Byte> d = null;
+        EntityDataAccessor<Byte> d = null;
         try {
-            Field f = ShulkerEntity.class.getDeclaredField("field_7343");
+            Field f = net.minecraft.world.entity.monster.Shulker.class.getDeclaredField("field_7343");
             f.setAccessible(true);
-            d = (TrackedData<Byte>) f.get(null);
+            d = (EntityDataAccessor<Byte>) f.get(null);
         } catch (Exception e) {
         }
-        return DyeColor.getByWoolData(getHandle().getDataTracker().get(d));
+        return DyeColor.getByWoolData(getHandle().getEntityData().get(d));
     }
 
     @SuppressWarnings({ "unchecked", "deprecation" })
     @Override
     public void setColor(DyeColor color) {
-        TrackedData<Byte> d = null;
+        EntityDataAccessor<Byte> d = null;
         try {
-            Field f = ShulkerEntity.class.getDeclaredField("field_7343");
+            Field f = net.minecraft.world.entity.monster.Shulker.class.getDeclaredField("field_7343");
             f.setAccessible(true);
-            d = (TrackedData<Byte>) f.get(null);
+            d = (EntityDataAccessor<Byte>) f.get(null);
         } catch (Exception e) {
         }
-        getHandle().getDataTracker().set(d, (color == null) ? 16 : color.getWoolData());
+        getHandle().getEntityData().set(d, (color == null) ? 16 : color.getWoolData());
     }
 
     @Override

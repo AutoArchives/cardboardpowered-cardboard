@@ -3,11 +3,11 @@ package io.papermc.paper.datacomponent.item;
 import org.bukkit.craftbukkit.util.Handleable;
 
 public record PaperEnchantable(
-    net.minecraft.component.type.EnchantableComponent impl
-) implements Enchantable, Handleable<net.minecraft.component.type.EnchantableComponent> {
+    net.minecraft.world.item.enchantment.Enchantable impl
+) implements Enchantable, Handleable<net.minecraft.world.item.enchantment.Enchantable> {
 
     @Override
-    public net.minecraft.component.type.EnchantableComponent getHandle() {
+    public net.minecraft.world.item.enchantment.Enchantable getHandle() {
         return this.impl;
     }
 

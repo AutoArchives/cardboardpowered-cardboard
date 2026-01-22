@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.inventory.view;
 
-import net.minecraft.entity.passive.MerchantEntity;
-import net.minecraft.screen.MerchantScreenHandler;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
+import net.minecraft.world.inventory.MerchantMenu;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.Merchant;
@@ -12,11 +12,11 @@ import org.jetbrains.annotations.NotNull;
 
 import org.cardboardpowered.interfaces.IMixinEntity;
 
-public class CraftMerchantView extends CraftInventoryView<MerchantScreenHandler, MerchantInventory> implements MerchantView {
+public class CraftMerchantView extends CraftInventoryView<MerchantMenu, MerchantInventory> implements MerchantView {
 
-    private final net.minecraft.village.Merchant trader;
+    private final net.minecraft.world.item.trading.Merchant trader;
 
-    public CraftMerchantView(final HumanEntity player, final MerchantInventory viewing, final MerchantScreenHandler container, final net.minecraft.village.Merchant trader) {
+    public CraftMerchantView(final HumanEntity player, final MerchantInventory viewing, final MerchantMenu container, final net.minecraft.world.item.trading.Merchant trader) {
         super(player, viewing, container);
         this.trader = trader;
     }
@@ -25,7 +25,7 @@ public class CraftMerchantView extends CraftInventoryView<MerchantScreenHandler,
     @Override
     public Merchant getMerchant() {
     	
-    	if (this.trader instanceof MerchantEntity) {
+    	if (this.trader instanceof AbstractVillager) {
     		return (CraftAbstractVillager) (((IMixinEntity)this.trader).getBukkitEntity());
     	}
     	

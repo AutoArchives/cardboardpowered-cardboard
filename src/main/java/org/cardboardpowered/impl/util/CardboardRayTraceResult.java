@@ -1,11 +1,11 @@
 package org.cardboardpowered.impl.util;
 
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.hit.HitResult.Type;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.HitResult.Type;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -21,7 +21,7 @@ public final class CardboardRayTraceResult {
     public static RayTraceResult fromNMS(World world, HitResult nmsHitResult) {
         if (nmsHitResult == null || nmsHitResult.getType() == Type.MISS) return null;
 
-        Vec3d nmsHitPos = nmsHitResult.getPos();
+        Vec3 nmsHitPos = nmsHitResult.getLocation();
         Vector hitPosition = new Vector(nmsHitPos.x, nmsHitPos.y, nmsHitPos.z);
         BlockFace hitBlockFace = null;
 
@@ -34,7 +34,7 @@ public final class CardboardRayTraceResult {
         BlockPos nmsBlockPos = null;
         if (nmsHitResult.getType() == Type.BLOCK) {
             BlockHitResult blockHitResult = (BlockHitResult) nmsHitResult;
-            hitBlockFace = CraftBlock.notchToBlockFace(blockHitResult.getSide());
+            hitBlockFace = CraftBlock.notchToBlockFace(blockHitResult.getDirection());
             nmsBlockPos = blockHitResult.getBlockPos();
         }
         if (nmsBlockPos != null && world != null) {

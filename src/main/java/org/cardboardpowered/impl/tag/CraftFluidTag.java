@@ -3,17 +3,13 @@ package org.cardboardpowered.impl.tag;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+import net.minecraft.core.Holder.Reference;
+import net.minecraft.core.Registry;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.material.Fluid;
 import org.bukkit.Tag;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
-
-import net.minecraft.fluid.Fluid;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry.Reference;
 
 public class CraftFluidTag extends CraftTag<Fluid, org.bukkit.Fluid> {
 
@@ -23,12 +19,12 @@ public class CraftFluidTag extends CraftTag<Fluid, org.bukkit.Fluid> {
 
     public boolean isTagged(org.bukkit.Fluid fluid) {
     	 
-    	Optional<Reference<Fluid>> aa = this.registry.getEntry( CraftNamespacedKey.toMinecraft(fluid.getKey()) );
+    	Optional<Reference<Fluid>> aa = this.registry.get( CraftNamespacedKey.toMinecraft(fluid.getKey()) );
     	if (aa.isEmpty()) {
     		return false;
     	}
     	
-    	return aa.get().isIn(this.tag);
+    	return aa.get().is(this.tag);
     	
         // this.registry.entryOf(RegistryKey.of(RegistryKeys.FLUID, CraftNamespacedKey.toMinecraft(fluid.getKey()))).isIn(this.tag);
     }

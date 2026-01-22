@@ -1,11 +1,5 @@
 package org.cardboardpowered.impl;
 
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryEntry.Reference;
-
 import org.bukkit.Color;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -23,14 +17,19 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.Optional;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Holder.Reference;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.effect.MobEffect;
 
-public class CardboardPotionEffectType extends PotionEffectType implements Handleable<StatusEffect> {
+public class CardboardPotionEffectType extends PotionEffectType implements Handleable<MobEffect> {
 
-	public static RegistryEntry<StatusEffect> bukkitToMinecraftHolder(PotionEffectType type) {
+	public static Holder<MobEffect> bukkitToMinecraftHolder(PotionEffectType type) {
 		// TODO Auto-generated method stub
 		// return CraftRegistry.bukkitToMinecraftHolder(..);
 
-		Optional<Reference<StatusEffect>> opt = Registries.STATUS_EFFECT.getEntry(type.getId());
+		Optional<Reference<MobEffect>> opt = BuiltInRegistries.MOB_EFFECT.get(type.getId());
 		
 		if (opt.isPresent()) {
 			return opt.get();
@@ -38,22 +37,22 @@ public class CardboardPotionEffectType extends PotionEffectType implements Handl
 		return null;
 	}
 	
-    public static PotionEffectType minecraftHolderToBukkit(RegistryEntry<StatusEffect> minecraft) {
+    public static PotionEffectType minecraftHolderToBukkit(Holder<MobEffect> minecraft) {
         return CraftPotionEffectType.minecraftToBukkit(minecraft.value());
     }
 
 	
-    public static PotionEffectType minecraftToBukkit(StatusEffect minecraft) {
-        return (PotionEffectType)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.STATUS_EFFECT);
+    public static PotionEffectType minecraftToBukkit(MobEffect minecraft) {
+        return (PotionEffectType)CraftRegistry.minecraftToBukkit(minecraft, Registries.MOB_EFFECT);
     }
 	
 	
     private final NamespacedKey key;
-    private final StatusEffect handle;
+    private final MobEffect handle;
     private final int id;
     
     
-    public CardboardPotionEffectType(NamespacedKey key, StatusEffect handle) {
+    public CardboardPotionEffectType(NamespacedKey key, MobEffect handle) {
     	// super(Registries.STATUS_EFFECT.getRawId(handle), CraftNamespacedKey.fromMinecraft(Registries.STATUS_EFFECT.getId(handle)));
     	this.key = key;
         this.handle = handle;
@@ -62,12 +61,12 @@ public class CardboardPotionEffectType extends PotionEffectType implements Handl
         
         // this.id = Registries.STATUS_EFFECT.getRawId(handle) + 1;
         
-        this.id = CraftRegistry.getMinecraftRegistry(RegistryKeys.STATUS_EFFECT).getRawId(handle) + 1;
+        this.id = CraftRegistry.getMinecraftRegistry(Registries.MOB_EFFECT).getId(handle) + 1;
     }
 
     @Deprecated
-    public CardboardPotionEffectType(StatusEffect handle) {
-        this(CraftNamespacedKey.fromMinecraft(Registries.STATUS_EFFECT.getId(handle)), handle);
+    public CardboardPotionEffectType(MobEffect handle) {
+        this(CraftNamespacedKey.fromMinecraft(BuiltInRegistries.MOB_EFFECT.getKey(handle)), handle);
         
     }
 
@@ -77,7 +76,7 @@ public class CardboardPotionEffectType extends PotionEffectType implements Handl
         return 1.0D;
     }
 
-    public StatusEffect getHandle() {
+    public MobEffect getHandle() {
         return handle;
     }
 
@@ -156,7 +155,7 @@ public class CardboardPotionEffectType extends PotionEffectType implements Handl
 
     @Override
     public boolean isInstant() {
-        return handle.isInstant();
+        return handle.isInstantenous();
     }
 
     @Override
@@ -166,7 +165,7 @@ public class CardboardPotionEffectType extends PotionEffectType implements Handl
 
 	@Override
 	public @NotNull String translationKey() {
-		return this.getHandle().getTranslationKey();
+		return this.getHandle().getDescriptionId();
 	}
 
 	@Override

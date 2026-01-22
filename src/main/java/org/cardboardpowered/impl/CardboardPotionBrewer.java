@@ -5,21 +5,17 @@ import com.google.common.collect.Maps;
 
 import io.papermc.paper.potion.PotionMix;
 import me.isaiah.common.ICommonMod;
-
+import net.minecraft.core.Holder.Reference;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.potion.Potion;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry.Reference;
-import net.minecraft.util.Identifier;
-
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.potion.PotionBrewer;
@@ -39,15 +35,15 @@ public class CardboardPotionBrewer implements PotionBrewer {
 
         String ss = CardboardPotionUtil.fromBukkit(new PotionData(damage, extended, upgraded));
         
-        List<StatusEffectInstance> mcEffects = new ArrayList<>();// Potion.byId(ss).getEffects();
+        List<MobEffectInstance> mcEffects = new ArrayList<>();// Potion.byId(ss).getEffects();
 
-        ICommonMod.getIServer().getMinecraft().getRegistryManager().getOrThrow(RegistryKeys.STATUS_EFFECT);
-        Optional<Reference<StatusEffect>> opt = Registries.STATUS_EFFECT.getEntry(Identifier.of(ss));
+        ICommonMod.getIServer().getMinecraft().registryAccess().lookupOrThrow(Registries.MOB_EFFECT);
+        Optional<Reference<MobEffect>> opt = BuiltInRegistries.MOB_EFFECT.get(Identifier.parse(ss));
         
-        mcEffects.add(new StatusEffectInstance(opt.get()));
+        mcEffects.add(new MobEffectInstance(opt.get()));
         
         ImmutableList.Builder<PotionEffect> builder = new ImmutableList.Builder<PotionEffect>();
-        for (StatusEffectInstance effect : mcEffects) builder.add(CardboardPotionUtil.toBukkit(effect));
+        for (MobEffectInstance effect : mcEffects) builder.add(CardboardPotionUtil.toBukkit(effect));
 
         cache.put(damage, builder.build());
         return cache.get(damage);

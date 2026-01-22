@@ -2,10 +2,6 @@ package org.cardboardpowered.mixin.loot;
 
 import com.google.common.collect.ImmutableMap;
 import org.cardboardpowered.interfaces.IMixinLootManager;
-// import net.minecraft.loot.LootDataKey;
-import net.minecraft.loot.LootDataType;
-// import net.minecraft.loot.LootManager;
-import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
+import net.minecraft.resources.Identifier;
 
 // @Mixin(LootManager.class)
 @Deprecated(forRemoval = true)

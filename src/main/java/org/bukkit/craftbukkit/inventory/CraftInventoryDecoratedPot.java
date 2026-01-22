@@ -1,6 +1,6 @@
 package org.bukkit.craftbukkit.inventory;
 
-import net.minecraft.inventory.Inventory;
+import net.minecraft.world.Container;
 import org.bukkit.block.DecoratedPot;
 import org.bukkit.inventory.DecoratedPotInventory;
 import org.bukkit.inventory.ItemStack;
@@ -9,7 +9,7 @@ import org.cardboardpowered.interfaces.IMixinInventory;
 
 public class CraftInventoryDecoratedPot extends CraftInventory implements DecoratedPotInventory {
 
-    public CraftInventoryDecoratedPot(Inventory inventory) {
+    public CraftInventoryDecoratedPot(Container inventory) {
         super(inventory);
     }
 

@@ -1,11 +1,11 @@
 package org.cardboardpowered.extras;
 
 import javax.annotation.Nullable;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import org.bukkit.event.player.PlayerLoginEvent.Result;
 import org.jetbrains.annotations.NotNull;
 
-public record PlayerManager_LoginResult(@Nullable Text message, @NotNull Result result) {
+public record PlayerManager_LoginResult(@Nullable Component message, @NotNull Result result) {
 
    public static PlayerManager_LoginResult ALLOW = new PlayerManager_LoginResult(null, Result.ALLOWED);
 

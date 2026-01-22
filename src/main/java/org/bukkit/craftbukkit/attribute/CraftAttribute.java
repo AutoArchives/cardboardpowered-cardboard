@@ -5,8 +5,8 @@ import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.util.OldEnumHolderable;
 
 import java.util.Locale;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.craftbukkit.CraftRegistry;
@@ -15,15 +15,15 @@ import org.bukkit.craftbukkit.util.ApiVersion;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftAttribute /*extends OldEnumHolderable<Attribute, net.minecraft.entity.attribute.EntityAttribute>*/ implements Attribute, Handleable<net.minecraft.entity.attribute.EntityAttribute> {
+public class CraftAttribute /*extends OldEnumHolderable<Attribute, net.minecraft.entity.attribute.EntityAttribute>*/ implements Attribute, Handleable<net.minecraft.world.entity.ai.attributes.Attribute> {
 
     private static int count = 0;
 
-    public static Attribute minecraftToBukkit(net.minecraft.entity.attribute.EntityAttribute minecraft) {
-        return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.ATTRIBUTE);
+    public static Attribute minecraftToBukkit(net.minecraft.world.entity.ai.attributes.Attribute minecraft) {
+        return CraftRegistry.minecraftToBukkit(minecraft, Registries.ATTRIBUTE);
     }
 
-    public static Attribute minecraftHolderToBukkit(RegistryEntry<net.minecraft.entity.attribute.EntityAttribute> minecraft) {
+    public static Attribute minecraftHolderToBukkit(Holder<net.minecraft.world.entity.ai.attributes.Attribute> minecraft) {
         return CraftAttribute.minecraftToBukkit(minecraft.value());
     }
 
@@ -41,16 +41,16 @@ public class CraftAttribute /*extends OldEnumHolderable<Attribute, net.minecraft
         return CraftRegistry.get(RegistryKey.ATTRIBUTE, key, ApiVersion.CURRENT);
     }
 
-    public static net.minecraft.entity.attribute.EntityAttribute bukkitToMinecraft(Attribute bukkit) {
+    public static net.minecraft.world.entity.ai.attributes.Attribute bukkitToMinecraft(Attribute bukkit) {
         return CraftRegistry.bukkitToMinecraft(bukkit);
     }
 
-    public static RegistryEntry<net.minecraft.entity.attribute.EntityAttribute> bukkitToMinecraftHolder(Attribute bukkit) {
+    public static Holder<net.minecraft.world.entity.ai.attributes.Attribute> bukkitToMinecraftHolder(Attribute bukkit) {
         Preconditions.checkArgument(bukkit != null);
 
-        net.minecraft.registry.Registry<net.minecraft.entity.attribute.EntityAttribute> registry = CraftRegistry.getMinecraftRegistry(RegistryKeys.ATTRIBUTE);
+        net.minecraft.core.Registry<net.minecraft.world.entity.ai.attributes.Attribute> registry = CraftRegistry.getMinecraftRegistry(Registries.ATTRIBUTE);
 
-        if (registry.getEntry(CraftAttribute.bukkitToMinecraft(bukkit)) instanceof RegistryEntry.Reference<net.minecraft.entity.attribute.EntityAttribute> holder) {
+        if (registry.wrapAsHolder(CraftAttribute.bukkitToMinecraft(bukkit)) instanceof Holder.Reference<net.minecraft.world.entity.ai.attributes.Attribute> holder) {
             return holder;
         }
 
@@ -65,11 +65,11 @@ public class CraftAttribute /*extends OldEnumHolderable<Attribute, net.minecraft
     }
 
     private final NamespacedKey key;
-    private final net.minecraft.entity.attribute.EntityAttribute attributeBase;
+    private final net.minecraft.world.entity.ai.attributes.Attribute attributeBase;
     private final String name;
     private final int ordinal;
 
-    public CraftAttribute(NamespacedKey key, net.minecraft.entity.attribute.EntityAttribute attributeBase) {
+    public CraftAttribute(NamespacedKey key, net.minecraft.world.entity.ai.attributes.Attribute attributeBase) {
         this.key = key;
         this.attributeBase = attributeBase;
         // For backwards compatibility, minecraft values will stile return the uppercase name without the namespace,
@@ -85,7 +85,7 @@ public class CraftAttribute /*extends OldEnumHolderable<Attribute, net.minecraft
     }
 
     @Override
-    public net.minecraft.entity.attribute.EntityAttribute getHandle() {
+    public net.minecraft.world.entity.ai.attributes.Attribute getHandle() {
         return this.attributeBase;
     }
 
@@ -98,12 +98,12 @@ public class CraftAttribute /*extends OldEnumHolderable<Attribute, net.minecraft
     @NotNull
     @Override
     public String getTranslationKey() {
-        return this.attributeBase.getTranslationKey();
+        return this.attributeBase.getDescriptionId();
     }
 
     @Override
     public @NotNull String translationKey() {
-        return this.attributeBase.getTranslationKey();
+        return this.attributeBase.getDescriptionId();
     }
 
     @Override
@@ -148,6 +148,6 @@ public class CraftAttribute /*extends OldEnumHolderable<Attribute, net.minecraft
 
 	@Override
 	public @NotNull Sentiment getSentiment() {
-		return Sentiment.valueOf(this.getHandle().category.name());
+		return Sentiment.valueOf(this.getHandle().sentiment.name());
 	}
 }

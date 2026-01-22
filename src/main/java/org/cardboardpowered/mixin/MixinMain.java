@@ -14,10 +14,10 @@ import com.google.common.io.Files;
 import com.llamalad7.mixinextras.sugar.Local;
 
 import net.minecraft.SharedConstants;
-import net.minecraft.resource.ResourceType;
 import net.minecraft.server.Main;
-import net.minecraft.util.WorldSavePath;
-import net.minecraft.world.level.storage.LevelStorage;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.level.storage.LevelStorageSource;
 
 /**
  * Mixin of {@link net.minecraft.server.Main}
@@ -27,12 +27,12 @@ import net.minecraft.world.level.storage.LevelStorage;
 @Mixin(value = Main.class)
 public class MixinMain {
 
-	@Inject(method = "main", at = @At(value = "INVOKE", target = "Lnet/minecraft/resource/VanillaDataPackProvider;createManager(Lnet/minecraft/world/level/storage/LevelStorage$Session;)Lnet/minecraft/resource/ResourcePackManager;"))
-    private static void cardboard$create_bukkit_datapack(String[] strings, CallbackInfo ci, @Local LevelStorage.Session levelStorageAccess) {
+	@Inject(method = "main", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/packs/repository/ServerPacksSource;createPackRepository(Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;)Lnet/minecraft/server/packs/repository/PackRepository;"))
+    private static void cardboard$create_bukkit_datapack(String[] strings, CallbackInfo ci, @Local LevelStorageSource.LevelStorageAccess levelStorageAccess) {
 
 		// Paper start - Create Bukkit Datapack
 		
-		File bukkitDataPackFolder = new File(levelStorageAccess.getDirectory(WorldSavePath.DATAPACKS).toFile(), "bukkit");
+		File bukkitDataPackFolder = new File(levelStorageAccess.getLevelPath(LevelResource.DATAPACK_DIR).toFile(), "bukkit");
         if (!bukkitDataPackFolder.exists()) {
            bukkitDataPackFolder.mkdirs();
         }
@@ -40,8 +40,8 @@ public class MixinMain {
         File mcMeta = new File(bukkitDataPackFolder, "pack.mcmeta");
 
         try {
-           int major = SharedConstants.getGameVersion().packVersion(ResourceType.SERVER_DATA).major();
-           int minor = SharedConstants.getGameVersion().packVersion(ResourceType.SERVER_DATA).minor();
+           int major = SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA).major();
+           int minor = SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA).minor();
            Files.asCharSink(mcMeta, StandardCharsets.UTF_8, new FileWriteMode[0])
               .write(
                  "{\n    \"pack\": {\n        \"description\": \"Data pack for resources provided by Bukkit plugins\",\n        \"min_format\": [%d, %d],\n        \"max_format\": [%d, %d]\n    }\n}\n"

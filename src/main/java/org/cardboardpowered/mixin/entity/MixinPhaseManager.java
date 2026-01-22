@@ -1,9 +1,8 @@
 package org.cardboardpowered.mixin.entity;
 
+import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhaseManager;
 import org.spongepowered.asm.mixin.Mixin;
 
-import net.minecraft.entity.boss.dragon.phase.PhaseManager;
-
-@Mixin(PhaseManager.class)
+@Mixin(EnderDragonPhaseManager.class)
 public class MixinPhaseManager {
 }

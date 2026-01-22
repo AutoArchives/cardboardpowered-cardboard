@@ -1,18 +1,18 @@
 package org.cardboardpowered.mixin.item;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.MinecartItem;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.RailShape;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.enums.RailShape;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.MinecartItem;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -23,23 +23,23 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(value = MinecartItem.class, priority = 999)
 public class MixinMinecraftItem {
 
-    @Redirect(method = "useOnBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;spawnEntity(Lnet/minecraft/entity/Entity;)Z"))
-    private boolean cardboard$minecart_redirect_vanilla_spawnEntity(ServerWorld instance, Entity entity) {
+    @Redirect(method = "useOn", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"))
+    private boolean cardboard$minecart_redirect_vanilla_spawnEntity(ServerLevel instance, Entity entity) {
         return false;
     }
 
-    @Inject(method = "useOnBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;spawnEntity(Lnet/minecraft/entity/Entity;)Z"),
+    @Inject(method = "useOn", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"),
             locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
-    private void cardboard$minecart_entity_place_event(ItemUsageContext useOnContext, CallbackInfoReturnable<ActionResult> cir,
-                                    World level, BlockPos blockPos, BlockState blockState, ItemStack itemStack,
-                                    RailShape railShape, double d, Vec3d vec,
-                                    AbstractMinecartEntity abstractMinecart, ServerWorld serverLevel) {
+    private void cardboard$minecart_entity_place_event(UseOnContext useOnContext, CallbackInfoReturnable<InteractionResult> cir,
+                                    Level level, BlockPos blockPos, BlockState blockState, ItemStack itemStack,
+                                    RailShape railShape, double d, Vec3 vec,
+                                    AbstractMinecart abstractMinecart, ServerLevel serverLevel) {
         // CraftBukkit start
         if (CraftEventFactory.callEntityPlaceEvent(useOnContext, abstractMinecart).isCancelled()) {
-            cir.setReturnValue(ActionResult.FAIL);
+            cir.setReturnValue(InteractionResult.FAIL);
         }
         // CraftBukkit end
-        if (!level.spawnEntity(abstractMinecart)) cir.setReturnValue(ActionResult.PASS); // CraftBukkit
+        if (!level.addFreshEntity(abstractMinecart)) cir.setReturnValue(InteractionResult.PASS); // CraftBukkit
     }
 	
 }

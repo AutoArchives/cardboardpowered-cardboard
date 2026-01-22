@@ -19,10 +19,8 @@
 package org.cardboardpowered.impl.world;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.util.math.BlockPos;
-
 import java.util.concurrent.TimeUnit;
-
+import net.minecraft.core.BlockPos;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
@@ -34,7 +32,7 @@ import org.jetbrains.annotations.Range;
 public class CraftWorldBorder implements WorldBorder {
 
     private final World world;
-    private final net.minecraft.world.border.WorldBorder handle;
+    private final net.minecraft.world.level.border.WorldBorder handle;
 
     public CraftWorldBorder(CraftWorld world) {
         this.world = world;
@@ -71,7 +69,7 @@ public class CraftWorldBorder implements WorldBorder {
     	Preconditions.checkArgument(time >= 0L, "time cannot be lower than 0");
     	Preconditions.checkArgument(newSize >= 1.0 && newSize <= this.getMaxSize(), "newSize must be between 1.0D and %s", this.getMaxSize());
     	if (time > 0L) {
-    		this.handle.interpolateSize(this.handle.getSize(), newSize, unit.toMillis(time), this.getWorld().getGameTime());
+    		this.handle.lerpSizeBetween(this.handle.getSize(), newSize, unit.toMillis(time), this.getWorld().getGameTime());
     	} else {
     		this.handle.setSize(newSize);
     	}
@@ -135,7 +133,7 @@ public class CraftWorldBorder implements WorldBorder {
     @Override
     public boolean isInside(Location location) {
         Preconditions.checkArgument(location != null, "Null Location");
-        return location.getWorld().equals(this.world) && this.handle.contains(BlockPos.ofFloored(location.getX(), location.getY(), location.getZ()));
+        return location.getWorld().equals(this.world) && this.handle.isWithinBounds(BlockPos.containing(location.getX(), location.getY(), location.getZ()));
     }
 
 	@Override
@@ -154,14 +152,14 @@ public class CraftWorldBorder implements WorldBorder {
 
 	@Override
 	public double getMaxSize() {
-		return net.minecraft.world.border.WorldBorder.STATIC_AREA_SIZE;
+		return net.minecraft.world.level.border.WorldBorder.MAX_SIZE;
 	}
 
 	@Override
 	public void changeSize(double newSize, @Range(from = 0, to = 2147483647) long ticks) {
 		 if (ticks > 0L) {
 			 final long startTime = (this.getWorld() != null) ? this.getWorld().getGameTime() : 0; // Virtual Borders don't have a World
-			 this.handle.interpolateSize(this.handle.getSize(), newSize, ticks, startTime);
+			 this.handle.lerpSizeBetween(this.handle.getSize(), newSize, ticks, startTime);
 		 } else {
 			 this.handle.setSize(newSize);
 		 }

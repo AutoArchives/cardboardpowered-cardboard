@@ -14,28 +14,28 @@ import org.cardboardpowered.interfaces.IMixinInventory;
 import org.cardboardpowered.interfaces.IMixinScreenHandler;
 
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.text.Text;
-import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.core.NonNullList;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
-@Mixin(ScreenHandler.class)
+@Mixin(AbstractContainerMenu.class)
 public abstract class MixinScreenHandler implements IMixinScreenHandler {
 
     public boolean checkReachable = true;
 
     public CardboardInventoryView getBukkitView() {
-        CraftInventory cbi = new CraftInventory(new SimpleInventory( ((ScreenHandler)(Object)this).getStacks().toArray(new ItemStack[0]) ));
-        return new CustomInventoryView(null, cbi, ((ScreenHandler)(Object)this));
+        CraftInventory cbi = new CraftInventory(new SimpleContainer( ((AbstractContainerMenu)(Object)this).getItems().toArray(new ItemStack[0]) ));
+        return new CustomInventoryView(null, cbi, ((AbstractContainerMenu)(Object)this));
     }
 
     @Shadow
     @Final
     @Mutable
-    public DefaultedList<ItemStack> trackedStacks;
+    public NonNullList<ItemStack> lastSlots;
 
     /**
      * field_29206
@@ -45,15 +45,15 @@ public abstract class MixinScreenHandler implements IMixinScreenHandler {
     @Shadow
     @Final
     @Mutable
-    public DefaultedList<ItemStack> trackedSlots;
+    public NonNullList<ItemStack> remoteSlots;
     
     @Shadow
     @Final
     @Mutable
-    public DefaultedList<Slot> slots;
+    public NonNullList<Slot> slots;
 
     @Override
-    public void transferTo(ScreenHandler other, CraftHumanEntity player) {
+    public void transferTo(AbstractContainerMenu other, CraftHumanEntity player) {
         CardboardInventoryView source = this.getBukkitView(), destination = ((IMixinScreenHandler)other).getBukkitView();
         source.setPlayerIfNotSet(player);
         destination.setPlayerIfNotSet(player);
@@ -69,7 +69,7 @@ public abstract class MixinScreenHandler implements IMixinScreenHandler {
         openOrClose( ((CraftInventory) destination.getBottomInventory()).getInventory(), player, true);
     }
 
-    public void openOrClose(Inventory in, CraftHumanEntity plr, boolean open) {
+    public void openOrClose(Container in, CraftHumanEntity plr, boolean open) {
         if (in instanceof IMixinInventory) {
             IMixinInventory imi = (IMixinInventory) in;
             if (open) {
@@ -83,42 +83,42 @@ public abstract class MixinScreenHandler implements IMixinScreenHandler {
         }
     }
 
-    private Text title_cb;
+    private Component title_cb;
 
     @Override
-    public final Text getTitle() {
+    public final Component getTitle() {
         if (null == this.title_cb)
-            this.title_cb = Text.of(" nul ");
+            this.title_cb = Component.nullToEmpty(" nul ");
         return this.title_cb;
     }
 
     @Override
-    public void setTitle(Text title) {
+    public void setTitle(Component title) {
         this.title_cb = title;
     }
 
     @Override
-    public DefaultedList<ItemStack> getTrackedStacksBF() {
-        return trackedStacks;
+    public NonNullList<ItemStack> getTrackedStacksBF() {
+        return lastSlots;
     }
     
     @Override
-    public DefaultedList<ItemStack> cardboard_previousTrackedStacks() {
-        return trackedSlots;
+    public NonNullList<ItemStack> cardboard_previousTrackedStacks() {
+        return remoteSlots;
     }
     
     @Override
-    public void cardboard_previousTrackedStacks(DefaultedList<ItemStack> s) {
-        this.trackedSlots = s;
+    public void cardboard_previousTrackedStacks(NonNullList<ItemStack> s) {
+        this.remoteSlots = s;
     }
 
     @Override
-    public void setTrackedStacksBF(DefaultedList<ItemStack> trackedStacks) {
-       this.trackedStacks = trackedStacks;
+    public void setTrackedStacksBF(NonNullList<ItemStack> trackedStacks) {
+       this.lastSlots = trackedStacks;
     }
 
     @Override
-    public void cardboard_setSlots(DefaultedList<Slot> slots) {
+    public void cardboard_setSlots(NonNullList<Slot> slots) {
         this.slots = slots;
     }
 

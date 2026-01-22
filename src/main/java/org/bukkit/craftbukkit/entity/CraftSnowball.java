@@ -1,7 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Snowball;
@@ -10,13 +9,13 @@ import org.jetbrains.annotations.Nullable;
 
 public class CraftSnowball extends ThrowableProjectileImpl implements Snowball {
 
-    public CraftSnowball(CraftServer server, SnowballEntity entity) {
+    public CraftSnowball(CraftServer server, net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball entity) {
         super(server, entity);
     }
 
     @Override
-    public SnowballEntity getHandle() {
-        return (SnowballEntity) nms;
+    public net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball getHandle() {
+        return (net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball) nms;
     }
 
     @Override

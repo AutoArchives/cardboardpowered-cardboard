@@ -9,19 +9,17 @@ import com.mojang.logging.LogUtils;
 import me.isaiah.common.ICommonMod;
 import me.isaiah.common.cmixin.IMixinBlockEntity;
 import me.isaiah.common.cmixin.IMixinMinecraftServer;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.storage.NbtReadView;
-import net.minecraft.storage.NbtWriteView;
-import net.minecraft.util.ErrorReporter;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.WorldAccess;
-
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -47,7 +45,7 @@ public abstract class CardboardBlockEntityState<T extends BlockEntity> extends C
     public static boolean DISABLE_SNAPSHOT = false;
 
     public CardboardBlockEntityState(World world, T tileEntity) {
-        super(world, ((BlockEntity)tileEntity).getPos(), ((BlockEntity)tileEntity).getCachedState());
+        super(world, ((BlockEntity)tileEntity).getBlockPos(), ((BlockEntity)tileEntity).getBlockState());
         this.tileEntity = tileEntity;
         try {
             this.snapshotDisabled = DISABLE_SNAPSHOT;
@@ -71,16 +69,16 @@ public abstract class CardboardBlockEntityState<T extends BlockEntity> extends C
         this.loadData(state.getSnapshotNBT());
     }
 
-    public void loadData(NbtCompound tag) {
-        try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "CraftBlockEntityState@" + this.getPosition().toShortString(), LOGGER);){
-            ((BlockEntity)this.snapshot).read(NbtReadView.create(problemReporter, ICommonMod.getIServer().getMinecraft().getRegistryManager(), tag));
+    public void loadData(CompoundTag tag) {
+        try (ProblemReporter.ScopedCollector problemReporter = new ProblemReporter.ScopedCollector(() -> "CraftBlockEntityState@" + this.getPosition().toShortString(), LOGGER);){
+            ((BlockEntity)this.snapshot).loadWithComponents(TagValueInput.create(problemReporter, ICommonMod.getIServer().getMinecraft().registryAccess(), tag));
         }
         this.load(this.snapshot);
     }
     
-    public DynamicRegistryManager getRegistryAccess() {
-        WorldAccess worldHandle = this.getWorldHandle();
-        return worldHandle != null ? worldHandle.getRegistryManager() : CraftRegistry.getMinecraftRegistry();
+    public RegistryAccess getRegistryAccess() {
+        LevelAccessor worldHandle = this.getWorldHandle();
+        return worldHandle != null ? worldHandle.registryAccess() : CraftRegistry.getMinecraftRegistry();
     }
     
     /*
@@ -118,7 +116,7 @@ public abstract class CardboardBlockEntityState<T extends BlockEntity> extends C
         if (tileEntity == null) return null;
 
         IMixinBlockEntity ic = (IMixinBlockEntity)tileEntity;
-        NbtCompound nbtTagCompound = ic.I_createNbtWithIdentifyingData();
+        CompoundTag nbtTagCompound = ic.I_createNbtWithIdentifyingData();
 
         IMixinMinecraftServer mc = ((IMixinMinecraftServer)ICommonMod.getIServer().getMinecraft());
         T snapshot = (T) mc.IC$create_blockentity_from_nbt(getPosition(), data, nbtTagCompound);
@@ -126,8 +124,8 @@ public abstract class CardboardBlockEntityState<T extends BlockEntity> extends C
         return snapshot;
     }
     
-    public void applyComponents(ComponentMap datacomponentmap, ComponentChanges datacomponentpatch) {
-        ((BlockEntity)this.snapshot).readComponents(datacomponentmap, datacomponentpatch);
+    public void applyComponents(DataComponentMap datacomponentmap, DataComponentPatch datacomponentpatch) {
+        ((BlockEntity)this.snapshot).applyComponents(datacomponentmap, datacomponentpatch);
         this.load(this.snapshot);
     }
     
@@ -142,29 +140,29 @@ public abstract class CardboardBlockEntityState<T extends BlockEntity> extends C
     }
     */
 
-    public NbtCompound getSnapshotCustomNbtOnly() {
+    public CompoundTag getSnapshotCustomNbtOnly() {
         this.applyTo(this.snapshot);
-        try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "CraftBlockEntityState@" + this.getPosition().toShortString(), LOGGER);){
+        try (ProblemReporter.ScopedCollector problemReporter = new ProblemReporter.ScopedCollector(() -> "CraftBlockEntityState@" + this.getPosition().toShortString(), LOGGER);){
 
 
-        	NbtWriteView output = /*NbtWriteView.*/createWrappingWithContext(problemReporter, this.getRegistryAccess(), ((BlockEntity)this.snapshot).createComponentlessNbt(this.getRegistryAccess()));
-            ((BlockEntity)this.snapshot).removeFromCopiedStackData(output);
+        	TagValueOutput output = /*NbtWriteView.*/createWrappingWithContext(problemReporter, this.getRegistryAccess(), ((BlockEntity)this.snapshot).saveCustomOnly(this.getRegistryAccess()));
+            ((BlockEntity)this.snapshot).removeComponentsFromTag(output);
             if (!output.isEmpty()) {
-                ((BlockEntity)this.snapshot).writeId(output);
+                ((BlockEntity)this.snapshot).saveId(output);
             }
-            NbtCompound nbtCompound = output.getNbt();
+            CompoundTag nbtCompound = output.buildResult();
             return nbtCompound;
         }
     }
 
     // ErrorReporter.Logging, DynamicRegistryManager, NbtCompound
     // Paper start - utility methods
-	public static NbtWriteView createWrappingWithContext(
-			final ErrorReporter.Logging problemReporter,
-			final DynamicRegistryManager lookup,
-			final NbtCompound compoundTag
+	public static TagValueOutput createWrappingWithContext(
+			final ProblemReporter.ScopedCollector problemReporter,
+			final RegistryAccess lookup,
+			final CompoundTag compoundTag
 		) {
-            return new NbtWriteView(problemReporter, lookup.getOps(NbtOps.INSTANCE), compoundTag);
+            return new TagValueOutput(problemReporter, lookup.createSerializationContext(NbtOps.INSTANCE), compoundTag);
         }
 	// Paper end - utility methods
 
@@ -183,20 +181,20 @@ public abstract class CardboardBlockEntityState<T extends BlockEntity> extends C
     }
     */
 
-    public ComponentMap collectComponents() {
-        return ((BlockEntity)this.snapshot).createComponentMap();
+    public DataComponentMap collectComponents() {
+        return ((BlockEntity)this.snapshot).collectComponents();
     }
 
     private void copyData(T from, T to) {
-        BlockPos pos = to.getPos();
+        BlockPos pos = to.getBlockPos();
         IMixinBlockEntity ic = (IMixinBlockEntity)tileEntity;
-        NbtCompound nbtTagCompound = ic.I_createNbtWithIdentifyingData();
-        to.setCachedState(data);
+        CompoundTag nbtTagCompound = ic.I_createNbtWithIdentifyingData();
+        to.setBlockState(data);
         
         IMixinBlockEntity ic2 = (IMixinBlockEntity)to;
         ic2.IC$read_nbt(nbtTagCompound);
         // to.readNbt(nbtTagCompound);
-        to.pos = (pos);
+        to.worldPosition = (pos);
     }
 
     public T getTileEntity() {
@@ -212,7 +210,7 @@ public abstract class CardboardBlockEntityState<T extends BlockEntity> extends C
         return ((CraftWorld) getWorld()).getHandle().getBlockEntity(getPosition());
     }
 
-    public NbtCompound getSnapshotNBT() {
+    public CompoundTag getSnapshotNBT() {
         applyTo(snapshot);
         IMixinBlockEntity ic = (IMixinBlockEntity)snapshot;
         return ic.I_createNbtWithIdentifyingData();
@@ -243,7 +241,7 @@ public abstract class CardboardBlockEntityState<T extends BlockEntity> extends C
         boolean result = super.update(force, applyPhysics);
         if (result && this.isPlaced() && this.isApplicable(tile = this.getTileEntityFromWorld())) {
             this.applyTo((T) tile);
-            tile.markDirty();
+            tile.setChanged();
         }
         return result;
     }

@@ -5,8 +5,8 @@ import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.RenderType;
 
 import java.util.Map;
-import net.minecraft.scoreboard.ScoreboardCriterion;
-import net.minecraft.scoreboard.ScoreboardObjective;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
 public final class CraftCriteria implements Criteria {
     static final Map<String, CraftCriteria> DEFAULTS;
@@ -15,9 +15,9 @@ public final class CraftCriteria implements Criteria {
     static {
         ImmutableMap.Builder<String, CraftCriteria> defaults = ImmutableMap.builder();
 
-        for (Map.Entry<String, ScoreboardCriterion> entry : ScoreboardCriterion.CRITERIA.entrySet()) {
+        for (Map.Entry<String, ObjectiveCriteria> entry : ObjectiveCriteria.CRITERIA_CACHE.entrySet()) {
             String name = entry.getKey();
-            ScoreboardCriterion criteria = entry.getValue();
+            ObjectiveCriteria criteria = entry.getValue();
 
             defaults.put(name, new CraftCriteria(criteria));
         }
@@ -26,7 +26,7 @@ public final class CraftCriteria implements Criteria {
         DUMMY = DEFAULTS.get("dummy");
     }
 
-    final ScoreboardCriterion criteria;
+    final ObjectiveCriteria criteria;
     final String bukkitName;
 
     private CraftCriteria(String bukkitName) {
@@ -34,7 +34,7 @@ public final class CraftCriteria implements Criteria {
         this.criteria = DUMMY.criteria;
     }
 
-    private CraftCriteria(ScoreboardCriterion criteria) {
+    private CraftCriteria(ObjectiveCriteria criteria) {
         this.criteria = criteria;
         this.bukkitName = criteria.getName();
     }
@@ -54,8 +54,8 @@ public final class CraftCriteria implements Criteria {
         return RenderType.values()[criteria.getDefaultRenderType().ordinal()];
     }
 
-    static CraftCriteria getFromNMS(ScoreboardObjective objective) {
-        return DEFAULTS.get(objective.getCriterion().getName());
+    static CraftCriteria getFromNMS(Objective objective) {
+        return DEFAULTS.get(objective.getCriteria().getName());
     }
 
     public static CraftCriteria getFromBukkit(String name) {
@@ -63,7 +63,7 @@ public final class CraftCriteria implements Criteria {
         if (criteria != null) {
             return criteria;
         }
-        return ScoreboardCriterion.getOrCreateStatCriterion(name).map(CraftCriteria::new).orElseGet(() -> new CraftCriteria(name));
+        return ObjectiveCriteria.byName(name).map(CraftCriteria::new).orElseGet(() -> new CraftCriteria(name));
     }
 
     @Override

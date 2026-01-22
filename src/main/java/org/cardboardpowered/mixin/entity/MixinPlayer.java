@@ -59,77 +59,77 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.fabricmc.fabric.impl.screenhandler.Networking;
-import net.minecraft.entity.damage.DamageTracker;
-import net.minecraft.entity.player.HungerManager;
-import net.minecraft.inventory.DoubleInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
-import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.command.CommandOutput;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity.Respawn;
-import net.minecraft.server.network.ServerPlayerEntity.RespawnPos;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.Arm;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.rule.GameRules;
-import net.minecraft.world.TeleportTarget;
-import net.minecraft.world.World;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.Connection;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ClientInformation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerPlayer.RespawnConfig;
+import net.minecraft.server.level.ServerPlayer.RespawnPosAngle;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.CompoundContainer;
+import net.minecraft.world.Container;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.damagesource.CombatTracker;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.food.FoodData;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.phys.Vec3;
 
-@Mixin(value = ServerPlayerEntity.class, priority = 999)
+@Mixin(value = ServerPlayer.class, priority = 999)
 public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCommandOutput, IMixinServerEntityPlayer  {
 
 	@Shadow
-	private CommandOutput commandOutput;
+	private CommandSource commandSource;
 
-	public CommandOutput cb$get_command_output() {
-		return commandOutput;
+	public CommandSource cb$get_command_output() {
+		return commandSource;
 	}
 
-	public void cb$set_command_output(CommandOutput out) {
-		this.commandOutput = out;
+	public void cb$set_command_output(CommandSource out) {
+		this.commandSource = out;
 	}
 
-	public void cb$set_bukkit_command_output(CommandOutput out) {
+	public void cb$set_bukkit_command_output(CommandSource out) {
 		// this.commandOutput = out;
 	
-		this.commandOutput = new CommandOutput() {
+		this.commandSource = new CommandSource() {
 
 			@Override
-			public void sendMessage(Text message) {
-				out.sendMessage(message);
+			public void sendSystemMessage(Component message) {
+				out.sendSystemMessage(message);
 			}
 
 			@Override
-			public boolean shouldBroadcastConsoleToOps() {
-				return out.shouldBroadcastConsoleToOps();
+			public boolean shouldInformAdmins() {
+				return out.shouldInformAdmins();
 			}
 
 			@Override
-			public boolean shouldReceiveFeedback() {
-				return out.shouldReceiveFeedback();
+			public boolean acceptsSuccess() {
+				return out.acceptsSuccess();
 			}
 
 			@Override
-			public boolean shouldTrackOutput() {
+			public boolean acceptsFailure() {
 				// TODO Auto-generated method stub
 				return false;
 			}
 			
 			// @Override
-            public CommandSender getBukkitSender(ServerCommandSource wrapper) {
-                return ( (IMixinEntity)  ((ServerPlayerEntity) (Object) this) ) .getBukkitEntity();
+            public CommandSender getBukkitSender(CommandSourceStack wrapper) {
+                return ( (IMixinEntity)  ((ServerPlayer) (Object) this) ) .getBukkitEntity();
             }
 			
 		};
@@ -137,10 +137,10 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
 	}
 
     private CraftPlayer bukkit;
-    public ClientConnection connectionBF;
+    public Connection connectionBF;
 
     @Shadow
-    public int screenHandlerSyncId;
+    public int containerCounter;
 
     @Override
     public void setBukkit(CraftPlayer plr) {
@@ -153,21 +153,21 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     }
 
     @Override
-    public CommandSender getBukkitSender(ServerCommandSource wrapper) {
+    public CommandSender getBukkitSender(CommandSourceStack wrapper) {
         return bukkit;
     }
 
     @Override
     public CraftPlayer getBukkitEntity() {
     	if (bukkit == null) {
-    		bukkit = (CraftPlayer) CraftEntity.getEntity(CraftServer.INSTANCE, ((ServerPlayerEntity) (Object) this));
+    		bukkit = (CraftPlayer) CraftEntity.getEntity(CraftServer.INSTANCE, ((ServerPlayer) (Object) this));
     	}
         return bukkit;
     }
 
     @Override
     public void reset() {
-        ServerPlayerEntity thiz = (ServerPlayerEntity) (Object) this;
+        ServerPlayer thiz = (ServerPlayer) (Object) this;
     	
     	float exp = 0.0F;
         
@@ -180,24 +180,24 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         */
 
         thiz.setHealth(thiz.getMaxHealth());
-        thiz.clearActiveItem();
-        thiz.setAir(thiz.getMaxAir());
-        thiz.setFireTicks(0);
+        thiz.stopUsingItem();
+        thiz.setAirSupply(thiz.getMaxAirSupply());
+        thiz.setRemainingFireTicks(0);
         thiz.fallDistance = 0.0;
-        thiz.hungerManager = new HungerManager();
+        thiz.foodData = new FoodData();
         // thiz.experienceLevel = thiz.newLevel;
         // thiz.totalExperience = thiz.newTotalExp;
         thiz.experienceProgress = 0.0F;
         thiz.deathTime = 0;
         // thiz.setArrowCount(0, true);
-        thiz.clearStatusEffects();
+        thiz.removeAllEffects();
         // thiz.removeAllEffects(org.bukkit.event.entity.EntityPotionEffectEvent.Cause.DEATH);
-        thiz.effectsChanged = true;
-        thiz.currentScreenHandler = thiz.playerScreenHandler;
-        thiz.attackingPlayer = null;
-        thiz.attackerReference = null;
-        thiz.damageTracker = new DamageTracker(thiz);
-        thiz.syncedExperience = -1;
+        thiz.effectsDirty = true;
+        thiz.containerMenu = thiz.inventoryMenu;
+        thiz.lastHurtByPlayer = null;
+        thiz.lastHurtByMob = null;
+        thiz.combatTracker = new CombatTracker(thiz);
+        thiz.lastSentExp = -1;
         
         /*
         if (thiz.keepLevel) {
@@ -208,35 +208,35 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
 
         thiz.keepLevel = false;
         */
-        thiz.setVelocity(0.0, 0.0, 0.0);
-        thiz.experienceDroppingDisabled = false;
+        thiz.setDeltaMovement(0.0, 0.0, 0.0);
+        thiz.skipDropExperience = false;
     }
 
     @Override
-    public BlockPos getSpawnPoint(World world) {
-        return ((ServerWorld)world).getSpawnPoint().getPos();
+    public BlockPos getSpawnPoint(Level world) {
+        return ((ServerLevel)world).getRespawnData().pos();
     }
 
-    @Inject(at = @At("TAIL"), method = "onDisconnect")
+    @Inject(at = @At("TAIL"), method = "disconnect")
     public void onDisconnect(CallbackInfo ci) {
         // CraftServer.INSTANCE.playerView.remove(this.bukkit);
     }
     
-    private ServerWorld cb$from;
+    private ServerLevel cb$from;
     
     @Inject(cancellable = true, at = @At(
     		value = "INVOKE",
-    		target = "Lnet/minecraft/world/TeleportTarget;world()Lnet/minecraft/server/world/ServerWorld;"
-    ), method = "Lnet/minecraft/server/network/ServerPlayerEntity;teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/server/network/ServerPlayerEntity;")
-    public void cardboard$do_teleport_event(TeleportTarget target, CallbackInfoReturnable<ServerPlayerEntity> ci) {
+    		target = "Lnet/minecraft/world/level/portal/TeleportTransition;newLevel()Lnet/minecraft/server/level/ServerLevel;"
+    ), method = "teleport(Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/server/level/ServerPlayer;")
+    public void cardboard$do_teleport_event(TeleportTransition target, CallbackInfoReturnable<ServerPlayer> ci) {
     	if (CardboardConfig.DEBUG_PLAYER) {
     		CardboardMod.LOGGER.info("DEBUG: ServerPlayerEntity.cardboard$do_teleport_event called");
     	}
     	
-    	ServerPlayerEntity thiz = (ServerPlayerEntity) (Object) this;
-    	cb$from = thiz.getEntityWorld(); // Cardboard - store from world
+    	ServerPlayer thiz = (ServerPlayer) (Object) this;
+    	cb$from = thiz.level(); // Cardboard - store from world
 
-    	Location exit = CraftLocation.toBukkit(target.position(), target.world().getWorld());
+    	Location exit = CraftLocation.toBukkit(target.position(), target.newLevel().getWorld());
 
     	PlayerTeleportEvent tpEvent = new PlayerTeleportEvent(
     			this.getBukkitEntity(),
@@ -260,11 +260,11 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
         
         if (!newExit.equals(exit)) {
         	// Set our new TeleportTarget
-        	target.world = ((CraftWorld)newExit.getWorld()).getHandle();
+        	target.newLevel = ((CraftWorld)newExit.getWorld()).getHandle();
         	target.position = CraftLocation.toVec3D(newExit);
-        	target.velocity = Vec3d.ZERO;
-        	target.yaw = newExit.getYaw();
-        	target.pitch = newExit.getPitch();
+        	target.deltaMovement = Vec3.ZERO;
+        	target.yRot = newExit.getYaw();
+        	target.xRot = newExit.getPitch();
         	
         	if (CardboardConfig.DEBUG_PLAYER) {
         		CardboardMod.LOGGER.info("DEBUG: Teleport: Target=" + target);
@@ -289,18 +289,18 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     
     @Inject(at = @At(
     		value = "RETURN"
-    ), method = "Lnet/minecraft/server/network/ServerPlayerEntity;teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/server/network/ServerPlayerEntity;")
-    public void cardboard$do_world_change(TeleportTarget target, CallbackInfoReturnable<ServerPlayerEntity> e) {
-    	ServerPlayerEntity thiz = (ServerPlayerEntity) (Object) this;
+    ), method = "teleport(Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/server/level/ServerPlayer;")
+    public void cardboard$do_world_change(TeleportTransition target, CallbackInfoReturnable<ServerPlayer> e) {
+    	ServerPlayer thiz = (ServerPlayer) (Object) this;
     	
     	if (thiz.isRemoved()) {
     		return;
     	}
     	
-    	ServerWorld serverWorld = target.world();
-		RegistryKey<World> registryKey = cb$from.getRegistryKey();
+    	ServerLevel serverWorld = target.newLevel();
+		ResourceKey<Level> registryKey = cb$from.dimension();
 
-		if (serverWorld.getRegistryKey() == registryKey) {
+		if (serverWorld.dimension() == registryKey) {
 			return;
 		}
 
@@ -323,10 +323,10 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     // World Standard
     public String locale_BF = "en_us";
 
-    @Inject(at = @At("HEAD"), method = "setClientOptions")
-    public void onUpdateOptions(SyncedClientOptions options, CallbackInfo ci) {
-        if(getMainArm() != options.mainArm()) {
-            PlayerChangedMainHandEvent event = new PlayerChangedMainHandEvent(getBukkitEntity(), ((ServerPlayerEntity) (Object) this).getMainArm() == Arm.LEFT ? MainHand.LEFT : MainHand.RIGHT);
+    @Inject(at = @At("HEAD"), method = "updateOptions")
+    public void onUpdateOptions(ClientInformation options, CallbackInfo ci) {
+        if(getMainArm() != options.mainHand()) {
+            PlayerChangedMainHandEvent event = new PlayerChangedMainHandEvent(getBukkitEntity(), ((ServerPlayer) (Object) this).getMainArm() == HumanoidArm.LEFT ? MainHand.LEFT : MainHand.RIGHT);
             CraftServer.INSTANCE.getPluginManager().callEvent(event);
         }
 
@@ -337,37 +337,37 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     }
 
     @Shadow
-    public void closeHandledScreen() {
+    public void closeContainer() {
     }
 
     @Override
     public int nextContainerCounter() {
-        this.screenHandlerSyncId = this.screenHandlerSyncId % 100 + 1;
-        return screenHandlerSyncId; // CraftBukkit
+        this.containerCounter = this.containerCounter % 100 + 1;
+        return containerCounter; // CraftBukkit
     }
 
     /**/
     @Unique
-    private final ThreadLocal<ScreenHandler> fabric_openedScreenHandler = new ThreadLocal<>();
+    private final ThreadLocal<AbstractContainerMenu> fabric_openedScreenHandler = new ThreadLocal<>();
 
-    private void fabric_replaceVanillaScreenPacket_include(ServerPlayNetworkHandler networkHandler, Packet<?> packet, NamedScreenHandlerFactory factory) {
+    private void fabric_replaceVanillaScreenPacket_include(ServerGamePacketListenerImpl networkHandler, Packet<?> packet, MenuProvider factory) {
         if (factory instanceof ExtendedScreenHandlerFactory) {
-            ScreenHandler handler = fabric_openedScreenHandler.get();
+            AbstractContainerMenu handler = fabric_openedScreenHandler.get();
 
             if (handler.getType() instanceof ExtendedScreenHandlerType) { // TODO: 1.20.5: check ExtendedScreenHandlerType<?>
-                Networking.sendOpenPacket((ServerPlayerEntity) (Object) this, (ExtendedScreenHandlerFactory) factory, handler, screenHandlerSyncId);
+                Networking.sendOpenPacket((ServerPlayer) (Object) this, (ExtendedScreenHandlerFactory) factory, handler, containerCounter);
             } else {
-                Identifier id = Registries.SCREEN_HANDLER.getId(handler.getType());
+                Identifier id = BuiltInRegistries.MENU.getKey(handler.getType());
                 throw new IllegalArgumentException("[Fabric] Non-extended screen handler " + id + " must not be opened with an ExtendedScreenHandlerFactory!");
             }
         } else {
             // Use vanilla logic for non-extended screen handlers
-            networkHandler.sendPacket(packet);
+            networkHandler.send(packet);
         }
     }
 
-    @Inject(method = "openHandledScreen(Lnet/minecraft/screen/NamedScreenHandlerFactory;)Ljava/util/OptionalInt;", at = @At("RETURN"))
-    private void fabric_clearStoredScreenHandler_include(NamedScreenHandlerFactory factory, CallbackInfoReturnable<OptionalInt> info) {
+    @Inject(method = "openMenu(Lnet/minecraft/world/MenuProvider;)Ljava/util/OptionalInt;", at = @At("RETURN"))
+    private void fabric_clearStoredScreenHandler_include(MenuProvider factory, CallbackInfoReturnable<OptionalInt> info) {
         fabric_openedScreenHandler.remove();
     }
 
@@ -375,24 +375,24 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
      * @reason Inventory Open Event
      * @author Cardboard
      */
-    @Inject(at = @At("HEAD"), method = "openHandledScreen", cancellable = true)
-    public void openHandledScreen_c(NamedScreenHandlerFactory factory, CallbackInfoReturnable<OptionalInt> ci) {
+    @Inject(at = @At("HEAD"), method = "openMenu", cancellable = true)
+    public void openHandledScreen_c(MenuProvider factory, CallbackInfoReturnable<OptionalInt> ci) {
         if (factory == null) {
             ci.setReturnValue(OptionalInt.empty());
         } else {
             this.nextContainerCounter();
-            ScreenHandler container = factory.createMenu(this.screenHandlerSyncId, ((ServerPlayerEntity)(Object)this).inventory, ((ServerPlayerEntity)(Object)this));
+            AbstractContainerMenu container = factory.createMenu(this.containerCounter, ((ServerPlayer)(Object)this).inventory, ((ServerPlayer)(Object)this));
 
             if (container != null) {
                 ((IMixinScreenHandler)container).setTitle(factory.getDisplayName());
 
                 boolean cancelled = false;
-                container = CraftEventFactory.callInventoryOpenEvent((ServerPlayerEntity)(Object)this, container, cancelled);
+                container = CraftEventFactory.callInventoryOpenEvent((ServerPlayer)(Object)this, container, cancelled);
                 if (container == null && !cancelled) {
-                    if (factory instanceof Inventory) {
-                        ((Inventory) factory).onClose((ServerPlayerEntity)(Object)this);
-                    } else if (factory instanceof DoubleInventory)
-                        ((DoubleInventory) factory).first.onClose((ServerPlayerEntity)(Object)this);
+                    if (factory instanceof Container) {
+                        ((Container) factory).stopOpen((ServerPlayer)(Object)this);
+                    } else if (factory instanceof CompoundContainer)
+                        ((CompoundContainer) factory).container1.stopOpen((ServerPlayer)(Object)this);
 
                     ci.setReturnValue(OptionalInt.empty());
                 }
@@ -400,25 +400,25 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
             if (container == null) {
                 ci.setReturnValue(OptionalInt.empty());
             } else {
-                ((ServerPlayerEntity)(Object)this).currentScreenHandler = container;
+                ((ServerPlayer)(Object)this).containerMenu = container;
                 
                 /*From FabricAPI*/
                 if (factory instanceof ExtendedScreenHandlerFactory) {
                     fabric_openedScreenHandler.set(container);
                 } else if (container.getType() instanceof ExtendedScreenHandlerType) { // TODO: 1.20.5: check ExtendedScreenHandlerType<?>
-                    Identifier id = Registries.SCREEN_HANDLER.getId(container.getType());
+                    Identifier id = BuiltInRegistries.MENU.getKey(container.getType());
                     throw new IllegalArgumentException("[Fabric] Extended screen handler " + id + " must be opened with an ExtendedScreenHandlerFactory!");
                 }
                 
-                fabric_replaceVanillaScreenPacket_include(((ServerPlayerEntity)(Object)this).networkHandler,
-                        new OpenScreenS2CPacket(container.syncId, container.getType(), factory.getDisplayName()),
+                fabric_replaceVanillaScreenPacket_include(((ServerPlayer)(Object)this).connection,
+                        new ClientboundOpenScreenPacket(container.containerId, container.getType(), factory.getDisplayName()),
                         factory);
                 /*End*/
 
-                ((ServerPlayerEntity)(Object)this).onScreenHandlerOpened(container);
+                ((ServerPlayer)(Object)this).initMenu(container);
 
                 fabric_openedScreenHandler.remove();
-                ci.setReturnValue(OptionalInt.of(this.screenHandlerSyncId));
+                ci.setReturnValue(OptionalInt.of(this.containerCounter));
             }
         }
         ci.cancel();
@@ -512,124 +512,124 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     }*/
 
     @Shadow
-    public void forgiveMobAnger() {}
+    public void tellNeutralMobsThatIDied() {}
 
-    @Shadow public abstract OptionalInt openHandledScreen(@Nullable NamedScreenHandlerFactory factory);
+    @Shadow public abstract OptionalInt openMenu(@Nullable MenuProvider factory);
     @Shadow private String language;
     @Override
-    public void setConnectionBF(ClientConnection connection) {
+    public void setConnectionBF(Connection connection) {
         this.connectionBF = connection;
     }
 
     @Override
-    public ClientConnection getConnectionBF() {
+    public Connection getConnectionBF() {
         return this.connectionBF;
     }
 
     private int oldLevel = -1;
     private float h = 0;
 
-    @Inject(at = @At("TAIL"), method = "playerTick")
+    @Inject(at = @At("TAIL"), method = "doTick")
     public void doBukkitEvent_PlayerLevelChangeEvent(CallbackInfo ci) {
         //ServerPlayerEntity plr = ((ServerPlayerEntity)(Object)this);
 
         try {
-            if (this.oldLevel == -1) this.oldLevel = ((ServerPlayerEntity)(Object)this).experienceLevel;
-            if (this.oldLevel != ((ServerPlayerEntity)(Object)this).experienceLevel) {
-                CraftEventFactory.callPlayerLevelChangeEvent(getBukkitEntity(), this.oldLevel, ((ServerPlayerEntity)(Object)this).experienceLevel);
-                this.oldLevel = ((ServerPlayerEntity)(Object)this).experienceLevel;
+            if (this.oldLevel == -1) this.oldLevel = ((ServerPlayer)(Object)this).experienceLevel;
+            if (this.oldLevel != ((ServerPlayer)(Object)this).experienceLevel) {
+                CraftEventFactory.callPlayerLevelChangeEvent(getBukkitEntity(), this.oldLevel, ((ServerPlayer)(Object)this).experienceLevel);
+                this.oldLevel = ((ServerPlayer)(Object)this).experienceLevel;
             }
         } catch (Throwable throwable) {}
     }
 
     //@Overwrite
     @Override
-    public void copyFrom_unused(ServerPlayerEntity entityplayer, boolean flag) {
+    public void copyFrom_unused(ServerPlayer entityplayer, boolean flag) {
         if (flag) {
-            ((ServerPlayerEntity)(Object)this).inventory.clone(entityplayer.inventory);
-            ((ServerPlayerEntity)(Object)this).setHealth(entityplayer.getHealth());
-            ((ServerPlayerEntity)(Object)this).hungerManager = entityplayer.hungerManager;
-            ((ServerPlayerEntity)(Object)this).experienceLevel = entityplayer.experienceLevel;
-            ((ServerPlayerEntity)(Object)this).totalExperience = entityplayer.totalExperience;
-            ((ServerPlayerEntity)(Object)this).experienceProgress = entityplayer.experienceProgress;
-            ((ServerPlayerEntity)(Object)this).setScore(entityplayer.getScore());
-        } else if (((ServerPlayerEntity)(Object)this).getEntityWorld().getGameRules().getValue(GameRules.KEEP_INVENTORY) || entityplayer.isSpectator()) {
-            ((ServerPlayerEntity)(Object)this).inventory.clone(entityplayer.inventory);
-            ((ServerPlayerEntity)(Object)this).experienceLevel = entityplayer.experienceLevel;
-            ((ServerPlayerEntity)(Object)this).totalExperience = entityplayer.totalExperience;
-            ((ServerPlayerEntity)(Object)this).experienceProgress = entityplayer.experienceProgress;
-            ((ServerPlayerEntity)(Object)this).setScore(entityplayer.getScore());
+            ((ServerPlayer)(Object)this).inventory.replaceWith(entityplayer.inventory);
+            ((ServerPlayer)(Object)this).setHealth(entityplayer.getHealth());
+            ((ServerPlayer)(Object)this).foodData = entityplayer.foodData;
+            ((ServerPlayer)(Object)this).experienceLevel = entityplayer.experienceLevel;
+            ((ServerPlayer)(Object)this).totalExperience = entityplayer.totalExperience;
+            ((ServerPlayer)(Object)this).experienceProgress = entityplayer.experienceProgress;
+            ((ServerPlayer)(Object)this).setScore(entityplayer.getScore());
+        } else if (((ServerPlayer)(Object)this).level().getGameRules().get(GameRules.KEEP_INVENTORY) || entityplayer.isSpectator()) {
+            ((ServerPlayer)(Object)this).inventory.replaceWith(entityplayer.inventory);
+            ((ServerPlayer)(Object)this).experienceLevel = entityplayer.experienceLevel;
+            ((ServerPlayer)(Object)this).totalExperience = entityplayer.totalExperience;
+            ((ServerPlayer)(Object)this).experienceProgress = entityplayer.experienceProgress;
+            ((ServerPlayer)(Object)this).setScore(entityplayer.getScore());
         }
-        ((ServerPlayerEntity)(Object)this).enderChestInventory = entityplayer.enderChestInventory;
-        ((ServerPlayerEntity)(Object)this).syncedExperience = -1;
-        ((ServerPlayerEntity)(Object)this).syncedHealth = -1.0F;
-        ((ServerPlayerEntity)(Object)this).syncedFoodLevel = -1;
-        ((ServerPlayerEntity)(Object)this).seenCredits = entityplayer.seenCredits;
-        ((ServerPlayerEntity)(Object)this).enteredNetherPos = entityplayer.enteredNetherPos;
+        ((ServerPlayer)(Object)this).enderChestInventory = entityplayer.enderChestInventory;
+        ((ServerPlayer)(Object)this).lastSentExp = -1;
+        ((ServerPlayer)(Object)this).lastSentHealth = -1.0F;
+        ((ServerPlayer)(Object)this).lastSentFood = -1;
+        ((ServerPlayer)(Object)this).seenCredits = entityplayer.seenCredits;
+        ((ServerPlayer)(Object)this).enteredNetherPosition = entityplayer.enteredNetherPosition;
     }
     
-    @Inject(at = @At("HEAD"), method = "closeHandledScreen")
+    @Inject(at = @At("HEAD"), method = "closeContainer")
     public void cardboard_doInventoryCloseEvent(CallbackInfo ci) {
-        IMixinScreenHandler handler = (IMixinScreenHandler) ((ServerPlayerEntity)(Object)this).currentScreenHandler;
+        IMixinScreenHandler handler = (IMixinScreenHandler) ((ServerPlayer)(Object)this).containerMenu;
         CardboardInventoryView view = handler.getBukkitView();
         view.setPlayerIfNotSet(getBukkit());
         InventoryCloseEvent event = new InventoryCloseEvent(view);
         Bukkit.getPluginManager().callEvent(event);
-        handler.transferTo(((ServerPlayerEntity)(Object)this).playerScreenHandler, getBukkitEntity());
+        handler.transferTo(((ServerPlayer)(Object)this).inventoryMenu, getBukkitEntity());
     }
 
     @Override
-    public void spawnIn(ServerWorld level) {
+    public void spawnIn(ServerLevel level) {
     	if (level == null) {
     		throw new IllegalArgumentException("level can't be null");
     	} else {
-    		ServerPlayerEntity plr = ((ServerPlayerEntity)(Object)this);
-    		plr.setServerWorld(level);
-    		plr.interactionManager.setWorld(level);
+    		ServerPlayer plr = ((ServerPlayer)(Object)this);
+    		plr.setServerLevel(level);
+    		plr.gameMode.setLevel(level);
     	}
     }
 
 	// SPIGOT-1903, MC-98153
 	@Override
 	public void spigot$forceSetPositionRotation(double x, double y, double z, float yaw, float pitch) {
-		((ServerPlayerEntity)(Object)this).refreshPositionAndAngles(x, y, z, yaw, pitch);
-		((ServerPlayerEntity)(Object)this).networkHandler.syncWithPlayerPosition();
+		((ServerPlayer)(Object)this).snapTo(x, y, z, yaw, pitch);
+		((ServerPlayer)(Object)this).connection.resetPosition();
     }
 	
 	@Nullable
 	@Override
-    public TeleportTarget findRespawnPositionAndUseSpawnBlock(boolean useCharge, TeleportTarget.PostDimensionTransition postTeleportTransition, @Nullable PlayerRespawnEvent.RespawnReason respawnReason) {
+    public TeleportTransition findRespawnPositionAndUseSpawnBlock(boolean useCharge, TeleportTransition.PostTeleportTransition postTeleportTransition, @Nullable PlayerRespawnEvent.RespawnReason respawnReason) {
 		if (CardboardConfig.DEBUG_PLAYER) {
     		CardboardMod.LOGGER.info("findRespawnPosAndUseSpawnBlock");
     	}
-		ServerPlayerEntity thiz = (ServerPlayerEntity) (Object) this;
-		TeleportTarget teleportTransition;
+		ServerPlayer thiz = (ServerPlayer) (Object) this;
+		TeleportTransition teleportTransition;
         boolean isBedSpawn = false;
         boolean isAnchorSpawn = false;
         Runnable consumeAnchorCharge = null;
-        Respawn respawnConfig = thiz.getRespawn();
-        ServerWorld level = CraftServer.server.getWorld(Respawn.getDimension(respawnConfig));
+        RespawnConfig respawnConfig = thiz.getRespawnConfig();
+        ServerLevel level = CraftServer.server.getLevel(RespawnConfig.getDimensionOrDefault(respawnConfig));
         if (level != null && respawnConfig != null) {
-            Optional<RespawnPos> optional = ServerPlayerEntity.findRespawnPosition(level, respawnConfig, useCharge);
+            Optional<RespawnPosAngle> optional = ServerPlayer.findRespawnAndUseSpawnBlock(level, respawnConfig, useCharge);
             if (optional.isPresent()) {
-                RespawnPos respawnPosAngle = optional.get();
+                RespawnPosAngle respawnPosAngle = optional.get();
                 // isBedSpawn = respawnPosAngle.isBedSpawn();
                 // isAnchorSpawn = respawnPosAngle.isAnchorSpawn();
                 // consumeAnchorCharge = respawnPosAngle.consumeAnchorCharge();
-                teleportTransition = new TeleportTarget(level, respawnPosAngle.pos(), Vec3d.ZERO, respawnPosAngle.yaw(), 0.0f, postTeleportTransition);
+                teleportTransition = new TeleportTransition(level, respawnPosAngle.position(), Vec3.ZERO, respawnPosAngle.yaw(), 0.0f, postTeleportTransition);
             } else {
-                teleportTransition = TeleportTarget.missingSpawnBlock(/*thiz.getEntityWorld().getServer().getOverworld(),*/ thiz, postTeleportTransition);
+                teleportTransition = TeleportTransition.missingRespawnBlock(/*thiz.getEntityWorld().getServer().getOverworld(),*/ thiz, postTeleportTransition);
             }
         } else {
-            teleportTransition = TeleportTargetExtra.newTeleportTarget(CraftServer.server.getOverworld(), thiz, postTeleportTransition);
+            teleportTransition = TeleportTargetExtra.newTeleportTarget(CraftServer.server.overworld(), thiz, postTeleportTransition);
         }
         if (respawnReason == null) {
             return teleportTransition;
         }
         CraftPlayer respawnPlayer = this.getBukkitEntity();
-        Location location = CraftLocation.toBukkit(teleportTransition.position(), (org.bukkit.World)teleportTransition.world().getWorld(), teleportTransition.yaw(), teleportTransition.pitch());
+        Location location = CraftLocation.toBukkit(teleportTransition.position(), (org.bukkit.World)teleportTransition.newLevel().getWorld(), teleportTransition.yRot(), teleportTransition.xRot());
         PlayerRespawnEvent respawnEvent = new PlayerRespawnEvent((Player)respawnPlayer, location, isBedSpawn, isAnchorSpawn, teleportTransition.missingRespawnBlock(), respawnReason);
-        thiz.getEntityWorld().getCraftServer().getPluginManager().callEvent(respawnEvent);
+        thiz.level().getCraftServer().getPluginManager().callEvent(respawnEvent);
         
         /*
         if (this.networkHandler.isDisconnected()) {
@@ -648,7 +648,7 @@ public abstract class MixinPlayer extends MixinLivingEntity implements IMixinCom
     		CardboardMod.LOGGER.info("loc = " + location);
     	}
         
-        return new TeleportTarget(((CraftWorld)location.getWorld()).getHandle(), CraftLocation.toVec3(location), teleportTransition.velocity(), location.getYaw(), location.getPitch(), teleportTransition.relatives(), teleportTransition.postTeleportTransition());
+        return new TeleportTransition(((CraftWorld)location.getWorld()).getHandle(), CraftLocation.toVec3(location), teleportTransition.deltaMovement(), location.getYaw(), location.getPitch(), teleportTransition.relatives(), teleportTransition.postTeleportTransition());
     }
 
 }

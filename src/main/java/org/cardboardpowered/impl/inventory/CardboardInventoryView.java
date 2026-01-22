@@ -1,5 +1,8 @@
 package org.cardboardpowered.impl.inventory;
 
+import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import org.bukkit.GameMode;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.inventory.CraftContainer;
@@ -18,22 +21,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.cardboardpowered.interfaces.IMixinScreenHandler;
 
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
-
-import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
-
 // public class CardboardInventoryView extends InventoryView {
-public class CardboardInventoryView<T extends ScreenHandler, I extends Inventory> extends CardboardAbstractInventoryView {
+public class CardboardInventoryView<T extends AbstractContainerMenu, I extends Inventory> extends CardboardAbstractInventoryView {
 
-    public final ScreenHandler container;
+    public final AbstractContainerMenu container;
     public CraftHumanEntity player;
     public final I viewing;
     public final String originalTitle;
     public String title;
 
-    public CardboardInventoryView(HumanEntity player, I viewing, ScreenHandler container) {
+    public CardboardInventoryView(HumanEntity player, I viewing, AbstractContainerMenu container) {
         this.player = (null !=player) ? (CraftHumanEntity) player : null;
         this.viewing = viewing;
         this.container = container;
@@ -68,17 +65,17 @@ public class CardboardInventoryView<T extends ScreenHandler, I extends Inventory
 
     @Override
     public void setItem(int slot, ItemStack item) {
-        net.minecraft.item.ItemStack stack = CraftItemStack.asNMSCopy(item);
+        net.minecraft.world.item.ItemStack stack = CraftItemStack.asNMSCopy(item);
         if (slot >= 0) {
-            this.container.getSlot(slot).setStackNoCallbacks(stack);
+            this.container.getSlot(slot).set(stack);
         } else {
-            this.player.getHandle().dropItem(stack, false);
+            this.player.getHandle().drop(stack, false);
         }
     }
 
     @Override
     public ItemStack getItem(int slot) {
-        return (slot < 0) ? null : CraftItemStack.asCraftMirror(container.getSlot(slot).getStack());
+        return (slot < 0) ? null : CraftItemStack.asCraftMirror(container.getSlot(slot).getItem());
     }
 
     @Override
@@ -90,7 +87,7 @@ public class CardboardInventoryView<T extends ScreenHandler, I extends Inventory
         return rawSlot < viewing.getSize();
     }
 
-    public ScreenHandler getHandle() {
+    public AbstractContainerMenu getHandle() {
         return container;
     }
 
@@ -110,10 +107,10 @@ public class CardboardInventoryView<T extends ScreenHandler, I extends Inventory
         // Preconditions.checkArgument((title != null ? 1 : 0) != 0, (Object)"Title cannot be null");
         // Preconditions.checkArgument((boolean)(view.getPlayer() instanceof Player), (Object)"NPCs are not currently supported for this function");
         // Preconditions.checkArgument((boolean)view.getTopInventory().getType().isCreatable(), (Object)"Only creatable inventories can have their title changed");
-        ServerPlayerEntity entityPlayer = (ServerPlayerEntity)((CraftHumanEntity)view.getPlayer()).getHandle();
-        int containerId = entityPlayer.currentScreenHandler.syncId;
-        ScreenHandlerType windowType = CraftContainer.getNotchInventoryType(view.getTopInventory());
-        entityPlayer.networkHandler.sendPacket(new OpenScreenS2CPacket(containerId, windowType, CraftChatMessage.fromString(title)[0]));
+        ServerPlayer entityPlayer = (ServerPlayer)((CraftHumanEntity)view.getPlayer()).getHandle();
+        int containerId = entityPlayer.containerMenu.containerId;
+        net.minecraft.world.inventory.MenuType windowType = CraftContainer.getNotchInventoryType(view.getTopInventory());
+        entityPlayer.connection.send(new ClientboundOpenScreenPacket(containerId, windowType, CraftChatMessage.fromString(title)[0]));
         ((Player)view.getPlayer()).updateInventory();
     }
 
@@ -124,7 +121,7 @@ public class CardboardInventoryView<T extends ScreenHandler, I extends Inventory
 
 	@Override
 	public @Nullable MenuType getMenuType() {
-		ScreenHandlerType<?> menuType = ((ScreenHandler)this.container).getType();
+		net.minecraft.world.inventory.MenuType<?> menuType = ((AbstractContainerMenu)this.container).getType();
         return menuType != null ? CraftMenuType.minecraftToBukkit(menuType) : null;
 	}
 

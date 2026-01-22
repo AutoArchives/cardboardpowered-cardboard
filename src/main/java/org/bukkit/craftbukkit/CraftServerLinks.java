@@ -5,7 +5,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.Component;
-import net.minecraft.server.dedicated.MinecraftDedicatedServer;
+import net.minecraft.server.dedicated.DedicatedServer;
 import org.bukkit.ServerLinks;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.cardboardpowered.adventure.CardboardAdventure;
@@ -15,10 +15,10 @@ import org.cardboardpowered.adventure.CardboardAdventure;
  */
 public class CraftServerLinks implements ServerLinks {
 
-    private final MinecraftDedicatedServer server;
+    private final DedicatedServer server;
     private net.minecraft.server.ServerLinks serverLinks;
 
-    public CraftServerLinks(MinecraftDedicatedServer server) {
+    public CraftServerLinks(DedicatedServer server) {
         this(server, null);
     }
 
@@ -26,14 +26,14 @@ public class CraftServerLinks implements ServerLinks {
         this(null, serverLinks);
     }
 
-    private CraftServerLinks(MinecraftDedicatedServer server, net.minecraft.server.ServerLinks links) {
+    private CraftServerLinks(DedicatedServer server, net.minecraft.server.ServerLinks links) {
         this.server = server;
         this.serverLinks = links;
     }
 
     public ServerLinks.ServerLink getLink(ServerLinks.Type type) {
         Preconditions.checkArgument((type != null ? 1 : 0) != 0, (Object)"type cannot be null");
-        return this.getServerLinks().getEntryFor(CraftServerLinks.fromBukkit(type)).map(CraftServerLink::new).orElse(null);
+        return this.getServerLinks().findKnownType(CraftServerLinks.fromBukkit(type)).map(CraftServerLink::new).orElse(null);
     }
 
     public List<ServerLinks.ServerLink> getLinks() {
@@ -49,19 +49,19 @@ public class CraftServerLinks implements ServerLinks {
     }
 
     public ServerLinks.ServerLink addLink(ServerLinks.Type type, URI url) {
-        CraftServerLink link = new CraftServerLink(net.minecraft.server.ServerLinks.Entry.create(CraftServerLinks.fromBukkit(type), url));
+        CraftServerLink link = new CraftServerLink(net.minecraft.server.ServerLinks.Entry.knownType(CraftServerLinks.fromBukkit(type), url));
         this.addLink(link);
         return link;
     }
 
     public ServerLinks.ServerLink addLink(Component displayName, URI url) {
-        CraftServerLink link = new CraftServerLink(net.minecraft.server.ServerLinks.Entry.create(CardboardAdventure.asVanilla(displayName), url));
+        CraftServerLink link = new CraftServerLink(net.minecraft.server.ServerLinks.Entry.custom(CardboardAdventure.asVanilla(displayName), url));
         this.addLink(link);
         return link;
     }
 
     public ServerLinks.ServerLink addLink(String displayName, URI url) {
-        CraftServerLink link = new CraftServerLink(net.minecraft.server.ServerLinks.Entry.create(CraftChatMessage.fromStringOrNull(displayName), url));
+        CraftServerLink link = new CraftServerLink(net.minecraft.server.ServerLinks.Entry.custom(CraftChatMessage.fromStringOrNull(displayName), url));
         this.addLink(link);
         return link;
     }
@@ -84,7 +84,7 @@ public class CraftServerLinks implements ServerLinks {
     }
 
     public net.minecraft.server.ServerLinks getServerLinks() {
-        return this.server != null ? this.server.getServerLinks() : this.serverLinks;
+        return this.server != null ? this.server.serverLinks() : this.serverLinks;
     }
 
     private void setLinks(net.minecraft.server.ServerLinks links) {
@@ -95,11 +95,11 @@ public class CraftServerLinks implements ServerLinks {
         }
     }
 
-    private static net.minecraft.server.ServerLinks.Known fromBukkit(ServerLinks.Type type) {
-        return net.minecraft.server.ServerLinks.Known.values()[type.ordinal()];
+    private static net.minecraft.server.ServerLinks.KnownLinkType fromBukkit(ServerLinks.Type type) {
+        return net.minecraft.server.ServerLinks.KnownLinkType.values()[type.ordinal()];
     }
 
-    private static ServerLinks.Type fromNMS(net.minecraft.server.ServerLinks.Known nms) {
+    private static ServerLinks.Type fromNMS(net.minecraft.server.ServerLinks.KnownLinkType nms) {
         return ServerLinks.Type.values()[nms.ordinal()];
     }
 
@@ -115,11 +115,11 @@ public class CraftServerLinks implements ServerLinks {
         }
 
         public String getDisplayName() {
-            return CraftChatMessage.fromComponent(this.handle.getText());
+            return CraftChatMessage.fromComponent(this.handle.displayName());
         }
 
         public Component displayName() {
-            return CardboardAdventure.asAdventure(this.handle.getText());
+            return CardboardAdventure.asAdventure(this.handle.displayName());
         }
 
         public URI getUrl() {

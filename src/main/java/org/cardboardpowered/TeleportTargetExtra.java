@@ -1,22 +1,21 @@
 package org.cardboardpowered;
 
 import java.util.Set;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.TeleportTarget;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.phys.Vec3;
 
 // TODO: Mixin TeleportTarget
 public class TeleportTargetExtra {
 
-	public static TeleportTarget newTeleportTarget(ServerWorld level, Entity entity, TeleportTarget.PostDimensionTransition trans) {
-        return new TeleportTarget(
+	public static TeleportTransition newTeleportTarget(ServerLevel level, Entity entity, TeleportTransition.PostTeleportTransition trans) {
+        return new TeleportTransition(
            level,
            getWorldSpawnPos(level, entity),
-           Vec3d.ZERO,
-           level.getSpawnPoint().yaw(),
-           level.getSpawnPoint().pitch(),
+           Vec3.ZERO,
+           level.getRespawnData().yaw(),
+           level.getRespawnData().pitch(),
            false,
            false,
            Set.of(),
@@ -25,8 +24,8 @@ public class TeleportTargetExtra {
         );
      }
     
-    private static Vec3d getWorldSpawnPos(ServerWorld world, Entity entity) {
-        return entity.getWorldSpawnPos(world, world.getSpawnPoint().getPos()).toBottomCenterPos();
+    private static Vec3 getWorldSpawnPos(ServerLevel world, Entity entity) {
+        return entity.adjustSpawnLocation(world, world.getRespawnData().pos()).getBottomCenter();
      }
 	
 }

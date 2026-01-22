@@ -1,15 +1,15 @@
 package io.papermc.paper.datacomponent.item.blocksattacks;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.component.type.BlocksAttacksComponent;
+import net.minecraft.world.item.component.BlocksAttacks;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.checkerframework.checker.index.qual.NonNegative;
 
-public record PaperItemDamageFunction(BlocksAttacksComponent.ItemDamage impl) implements ItemDamageFunction,
-Handleable<BlocksAttacksComponent.ItemDamage>
+public record PaperItemDamageFunction(BlocksAttacks.ItemDamageFunction impl) implements ItemDamageFunction,
+Handleable<BlocksAttacks.ItemDamageFunction>
 {
     @Override
-    public BlocksAttacksComponent.ItemDamage getHandle() {
+    public BlocksAttacks.ItemDamageFunction getHandle() {
         return this.impl;
     }
 
@@ -26,14 +26,14 @@ Handleable<BlocksAttacksComponent.ItemDamage>
     }
 
     public int damageToApply(float damage) {
-        return this.impl.calculate(damage);
+        return this.impl.apply(damage);
     }
 
     static final class BuilderImpl
     implements ItemDamageFunction.Builder {
-        private float threshold = BlocksAttacksComponent.ItemDamage.DEFAULT.threshold();
-        private float base = BlocksAttacksComponent.ItemDamage.DEFAULT.base();
-        private float factor = BlocksAttacksComponent.ItemDamage.DEFAULT.factor();
+        private float threshold = BlocksAttacks.ItemDamageFunction.DEFAULT.threshold();
+        private float base = BlocksAttacks.ItemDamageFunction.DEFAULT.base();
+        private float factor = BlocksAttacks.ItemDamageFunction.DEFAULT.factor();
 
         BuilderImpl() {
         }
@@ -55,7 +55,7 @@ Handleable<BlocksAttacksComponent.ItemDamage>
         }
 
         public ItemDamageFunction build() {
-            return new PaperItemDamageFunction(new BlocksAttacksComponent.ItemDamage(this.threshold, this.base, this.factor));
+            return new PaperItemDamageFunction(new BlocksAttacks.ItemDamageFunction(this.threshold, this.base, this.factor));
         }
     }
 }

@@ -1,5 +1,18 @@
 package org.cardboardpowered.impl.inventory;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.Container;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
+import net.minecraft.world.level.block.entity.BlastFurnaceBlockEntity;
+import net.minecraft.world.level.block.entity.BrewingStandBlockEntity;
+import net.minecraft.world.level.block.entity.DispenserBlockEntity;
+import net.minecraft.world.level.block.entity.DropperBlockEntity;
+import net.minecraft.world.level.block.entity.FurnaceBlockEntity;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.minecraft.world.level.block.entity.LecternBlockEntity;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.block.entity.SmokerBlockEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
@@ -8,23 +21,9 @@ import org.bukkit.inventory.InventoryHolder;
 import org.cardboardpowered.impl.inventory.CardboardBrewerInventory;
 import org.cardboardpowered.impl.inventory.CardboardFurnaceInventory;
 
-import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
-import net.minecraft.block.entity.BlastFurnaceBlockEntity;
-import net.minecraft.block.entity.BrewingStandBlockEntity;
-import net.minecraft.block.entity.DispenserBlockEntity;
-import net.minecraft.block.entity.DropperBlockEntity;
-import net.minecraft.block.entity.FurnaceBlockEntity;
-import net.minecraft.block.entity.HopperBlockEntity;
-import net.minecraft.block.entity.LecternBlockEntity;
-import net.minecraft.block.entity.LootableContainerBlockEntity;
-import net.minecraft.block.entity.SmokerBlockEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
 public abstract class BlockInventoryConverter implements InventoryCreator.InventoryConverter {
 
-    public abstract Inventory getTileEntity();
+    public abstract Container getTileEntity();
 
     @Override
     public CraftInventory createInventory(InventoryHolder holder, InventoryType type) {
@@ -33,34 +32,34 @@ public abstract class BlockInventoryConverter implements InventoryCreator.Invent
 
     @Override
     public CraftInventory createInventory(InventoryHolder holder, InventoryType type, String title) {
-        Inventory inventory = getTileEntity();
-        if (inventory instanceof LootableContainerBlockEntity)
-            ((LootableContainerBlockEntity) inventory).customName = (CraftChatMessage.fromStringOrNull(title));
+        Container inventory = getTileEntity();
+        if (inventory instanceof RandomizableContainerBlockEntity)
+            ((RandomizableContainerBlockEntity) inventory).name = (CraftChatMessage.fromStringOrNull(title));
         return getInventory(inventory);
     }
 
-    public CraftInventory getInventory(Inventory tileEntity) {
+    public CraftInventory getInventory(Container tileEntity) {
         return new CraftInventory(tileEntity);
     }
 
     public static class Furnace extends BlockInventoryConverter {
 
         @Override
-        public Inventory getTileEntity() {
-            AbstractFurnaceBlockEntity furnace = new FurnaceBlockEntity(BlockPos.ORIGIN, null);
-            furnace.setWorld(CraftServer.server.getWorld(World.OVERWORLD));
+        public Container getTileEntity() {
+            AbstractFurnaceBlockEntity furnace = new FurnaceBlockEntity(BlockPos.ZERO, null);
+            furnace.setLevel(CraftServer.server.getLevel(Level.OVERWORLD));
             return furnace;
         }
 
         @Override
         public CraftInventory createInventory(InventoryHolder owner, InventoryType type, String title) {
-            Inventory tileEntity = getTileEntity();
-            ((AbstractFurnaceBlockEntity) tileEntity).customName = (CraftChatMessage.fromStringOrNull(title));
+            Container tileEntity = getTileEntity();
+            ((AbstractFurnaceBlockEntity) tileEntity).name = (CraftChatMessage.fromStringOrNull(title));
             return getInventory(tileEntity);
         }
 
         @Override
-        public CraftInventory getInventory(Inventory tileEntity) {
+        public CraftInventory getInventory(Container tileEntity) {
             return new CardboardFurnaceInventory((AbstractFurnaceBlockEntity) tileEntity);
         }
     }
@@ -68,63 +67,63 @@ public abstract class BlockInventoryConverter implements InventoryCreator.Invent
     public static class BrewingStand extends BlockInventoryConverter {
 
         @Override
-        public Inventory getTileEntity() {
-            return new BrewingStandBlockEntity(BlockPos.ORIGIN, null);
+        public Container getTileEntity() {
+            return new BrewingStandBlockEntity(BlockPos.ZERO, null);
         }
 
         @Override
         public CraftInventory createInventory(InventoryHolder holder, InventoryType type, String title) {
-            Inventory tileEntity = getTileEntity();
+            Container tileEntity = getTileEntity();
             if (tileEntity instanceof BrewingStandBlockEntity)
-                ((BrewingStandBlockEntity) tileEntity).customName = (CraftChatMessage.fromStringOrNull(title));
+                ((BrewingStandBlockEntity) tileEntity).name = (CraftChatMessage.fromStringOrNull(title));
             return getInventory(tileEntity);
         }
 
         @Override
-        public CraftInventory getInventory(Inventory tileEntity) {
+        public CraftInventory getInventory(Container tileEntity) {
             return new CardboardBrewerInventory(tileEntity);
         }
     }
 
     public static class Dispenser extends BlockInventoryConverter {
         @Override
-        public Inventory getTileEntity() {
-            return new DispenserBlockEntity(BlockPos.ORIGIN, null);
+        public Container getTileEntity() {
+            return new DispenserBlockEntity(BlockPos.ZERO, null);
         }
     }
 
     public static class Dropper extends BlockInventoryConverter {
         @Override
-        public Inventory getTileEntity() {
-            return new DropperBlockEntity(BlockPos.ORIGIN, null);
+        public Container getTileEntity() {
+            return new DropperBlockEntity(BlockPos.ZERO, null);
         }
     }
 
     public static class Hopper extends BlockInventoryConverter {
         @Override
-        public Inventory getTileEntity() {
-            return new HopperBlockEntity(BlockPos.ORIGIN, null);
+        public Container getTileEntity() {
+            return new HopperBlockEntity(BlockPos.ZERO, null);
         }
     }
 
     public static class BlastFurnace extends BlockInventoryConverter {
         @Override
-        public Inventory getTileEntity() {
-            return new BlastFurnaceBlockEntity(BlockPos.ORIGIN, null);
+        public Container getTileEntity() {
+            return new BlastFurnaceBlockEntity(BlockPos.ZERO, null);
         }
     }
 
     public static class Lectern extends BlockInventoryConverter {
         @Override
-        public Inventory getTileEntity() {
-            return new LecternBlockEntity(BlockPos.ORIGIN, null).inventory;
+        public Container getTileEntity() {
+            return new LecternBlockEntity(BlockPos.ZERO, null).bookAccess;
         }
     }
 
     public static class Smoker extends BlockInventoryConverter {
         @Override
-        public Inventory getTileEntity() {
-            return new SmokerBlockEntity(BlockPos.ORIGIN, null);
+        public Container getTileEntity() {
+            return new SmokerBlockEntity(BlockPos.ZERO, null);
         }
     }
 

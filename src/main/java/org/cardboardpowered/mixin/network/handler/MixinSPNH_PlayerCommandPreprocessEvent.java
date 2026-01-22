@@ -4,19 +4,6 @@ import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import com.mojang.brigadier.ParseResults;
-import net.minecraft.command.argument.SignedArgumentList;
-import net.minecraft.network.message.LastSeenMessageList;
-import net.minecraft.network.message.MessageChain;
-import net.minecraft.network.message.MessageChain.MessageChainException;
-import net.minecraft.network.message.MessageChainTaskQueue;
-import net.minecraft.network.message.SignedCommandArguments;
-import net.minecraft.network.message.SignedMessage;
-import net.minecraft.network.packet.c2s.play.ChatCommandSignedC2SPacket;
-import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -30,12 +17,24 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.Collections;
 import java.util.Map;
+import net.minecraft.commands.CommandSigningContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.LastSeenMessages;
+import net.minecraft.network.chat.PlayerChatMessage;
+import net.minecraft.network.chat.SignableCommand;
+import net.minecraft.network.chat.SignedMessageChain;
+import net.minecraft.network.chat.SignedMessageChain.DecodeException;
+import net.minecraft.network.protocol.game.ServerboundChatCommandSignedPacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.util.FutureChain;
 
-@Mixin(value = ServerPlayNetworkHandler.class, priority = 800)
+@Mixin(value = ServerGamePacketListenerImpl.class, priority = 800)
 public abstract class MixinSPNH_PlayerCommandPreprocessEvent implements IMixinPlayNetworkHandler {
 
 	@Shadow
-	public ServerPlayerEntity player;
+	public ServerPlayer player;
 
 	// Lnet/minecraft/server/network/ServerPlayNetworkHandler;handleCommandExecution(Lnet/minecraft/network/packet/c2s/play/ChatCommandSignedC2SPacket;Lnet/minecraft/network/message/LastSeenMessageList;)V
 	
@@ -45,10 +44,10 @@ public abstract class MixinSPNH_PlayerCommandPreprocessEvent implements IMixinPl
 	 * @since 1.21.4
 	 */
 	@Overwrite
-	public void executeCommand(String command) {
+	public void performUnsignedChatCommand(String command) {
         String command1 = "/" + command;
         //if (SpigotConfig.logCommands) {
-        	CardboardMod.LOGGER.info(this.player.getNameForScoreboard() + " issued server command: " + command1);
+        	CardboardMod.LOGGER.info(this.player.getScoreboardName() + " issued server command: " + command1);
         //}
         PlayerCommandPreprocessEvent event = new PlayerCommandPreprocessEvent(this.getPlayer(), command1, new LazyPlayerSet(CraftServer.server));
         CraftServer.INSTANCE.getPluginManager().callEvent(event);
@@ -56,18 +55,18 @@ public abstract class MixinSPNH_PlayerCommandPreprocessEvent implements IMixinPl
             return;
         }
         command = event.getMessage().substring(1);
-        ParseResults<ServerCommandSource> parseresults = this.parse(command);
+        ParseResults<CommandSourceStack> parseresults = this.parseCommand(command);
         
         if(CardboardConfig.REGISTRY_COMMAND_FIX) {
 			Bukkit.dispatchCommand(getPlayer(), command);
 			return;
 		}
         
-        if (CraftServer.server.shouldEnforceSecureProfile() && SignedArgumentList.isNotEmpty(parseresults)) {
+        if (CraftServer.server.enforceSecureProfile() && SignableCommand.hasSignableArguments(parseresults)) {
         	// CardboardMod.LOGGER.error("Received unsigned command packet from {}, but the command requires signable arguments: {}", (Object)this.player.getGameProfile().getName(), (Object)command);
             // this.player.sendMessage(INVALID_COMMAND_SIGNATURE_TEXT);
         } else {
-        	CraftServer.server.getCommandManager().execute(parseresults, command);
+        	CraftServer.server.getCommands().performCommand(parseresults, command);
         }
     }
 	
@@ -78,11 +77,11 @@ public abstract class MixinSPNH_PlayerCommandPreprocessEvent implements IMixinPl
 	@SuppressWarnings("unused")
 	@Overwrite
 	// private void handleCommandExecution(CommandExecutionC2SPacket packet, LastSeenMessageList lastseenmessages) {
-	private void handleCommandExecution(ChatCommandSignedC2SPacket packet, LastSeenMessageList lastSeenMessages) {
+	private void performSignedChatCommand(ServerboundChatCommandSignedPacket packet, LastSeenMessages lastSeenMessages) {
 		
 		CardboardMod.LOGGER.info("HANDLE COMMAND EXEC!");
 		
-		SignedMessage playerchatmessage;
+		PlayerChatMessage playerchatmessage;
 		String command = "/" + packet.command();
 		CardboardMod.LOGGER.info(this.player.getGameProfile().name() + " issued server command: " + command);
 		PlayerCommandPreprocessEvent event = new PlayerCommandPreprocessEvent(this.getPlayer(), command, new LazyPlayerSet(CraftServer.server));
@@ -100,38 +99,38 @@ public abstract class MixinSPNH_PlayerCommandPreprocessEvent implements IMixinPl
 			return;
 		}
 
-		ParseResults<ServerCommandSource> parseresults = this.parse(packet.command());
-		Map<String, SignedMessage> map;
+		ParseResults<CommandSourceStack> parseresults = this.parseCommand(packet.command());
+		Map<String, PlayerChatMessage> map;
 		try {
-			map = (packet.command().equals(command)) ? this.collectArgumentMessages(packet, SignedArgumentList.of(parseresults), lastSeenMessages) : Collections.emptyMap(); // CraftBukkit
-		} catch(MessageChain.MessageChainException e) {
-			this.handleMessageChainException(e);
+			map = (packet.command().equals(command)) ? this.collectSignedArguments(packet, SignableCommand.of(parseresults), lastSeenMessages) : Collections.emptyMap(); // CraftBukkit
+		} catch(SignedMessageChain.DecodeException e) {
+			this.handleMessageDecodeFailure(e);
 			return;
 		}
 
-		SignedCommandArguments.Impl arguments = new SignedCommandArguments.Impl(map);
+		CommandSigningContext.SignedArguments arguments = new CommandSigningContext.SignedArguments(map);
 
-		parseresults = CommandManager.withCommandSource(parseresults, (stack) ->
-				stack.withSignedArguments(arguments, messageChainTaskQueue));
-		CraftServer.server.getCommandManager().execute(parseresults, command);
+		parseresults = Commands.mapSource(parseresults, (stack) ->
+				stack.withSigningContext(arguments, chatMessageChain));
+		CraftServer.server.getCommands().performCommand(parseresults, command);
 	}
 
 	@Shadow
-	public void handleMessageChainException(MessageChain.MessageChainException e) {
+	public void handleMessageDecodeFailure(SignedMessageChain.DecodeException e) {
 	}
 
 	//  private Map<String, SignedMessage> collectArgumentMessages(CommandExecutionC2SPacket packet, DecoratableArgumentList<?> arguments) {
 	@Shadow
-	private Map<String, SignedMessage> collectArgumentMessages(ChatCommandSignedC2SPacket packet, SignedArgumentList<?> a, LastSeenMessageList b) throws MessageChainException {
+	private Map<String, PlayerChatMessage> collectSignedArguments(ServerboundChatCommandSignedPacket packet, SignableCommand<?> a, LastSeenMessages b) throws DecodeException {
 		return null; // Shadow method
 	}
 
 	@Shadow
-	private ParseResults<ServerCommandSource> parse(String command) {
+	private ParseResults<CommandSourceStack> parseCommand(String command) {
 		return null; // Shadow method
 	}
 
-	@Shadow @Final private MessageChainTaskQueue messageChainTaskQueue;
+	@Shadow @Final private FutureChain chatMessageChain;
 	
 	/*
 	public CraftPlayer getPlayer() {

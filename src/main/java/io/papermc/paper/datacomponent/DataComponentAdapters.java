@@ -44,16 +44,15 @@ import io.papermc.paper.util.MCUtil;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.InstrumentComponent;
-import net.minecraft.component.type.MapPostProcessingComponent;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Rarity;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Unit;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.component.InstrumentComponent;
 import org.bukkit.craftbukkit.CraftMusicInstrument;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.inventory.CraftMetaFirework;
@@ -65,104 +64,104 @@ public final class DataComponentAdapters {
     static final Function<Unit, Void> UNIT_TO_API_CONVERTER = $ -> {
         throw new UnsupportedOperationException("Cannot convert the Unit type to an API value");
     };
-    static final Map<RegistryKey<ComponentType<?>>, DataComponentAdapter<?, ?>> ADAPTERS = new HashMap();
+    static final Map<ResourceKey<DataComponentType<?>>, DataComponentAdapter<?, ?>> ADAPTERS = new HashMap();
 
     public static void bootstrap() {
-        DataComponentAdapters.registerIdentity(DataComponentTypes.MAX_STACK_SIZE);
-        DataComponentAdapters.registerIdentity(DataComponentTypes.MAX_DAMAGE);
-        DataComponentAdapters.registerIdentity(DataComponentTypes.DAMAGE);
-        DataComponentAdapters.registerUntyped(DataComponentTypes.UNBREAKABLE);
+        DataComponentAdapters.registerIdentity(DataComponents.MAX_STACK_SIZE);
+        DataComponentAdapters.registerIdentity(DataComponents.MAX_DAMAGE);
+        DataComponentAdapters.registerIdentity(DataComponents.DAMAGE);
+        DataComponentAdapters.registerUntyped(DataComponents.UNBREAKABLE);
         //DataComponentAdapters.register(DataComponentTypes.UNBREAKABLE, PaperUnbreakable::new);
-        DataComponentAdapters.register(DataComponentTypes.CUSTOM_NAME, CardboardAdventure::asAdventure, CardboardAdventure::asVanilla);
-        DataComponentAdapters.register(DataComponentTypes.ITEM_NAME, CardboardAdventure::asAdventure, CardboardAdventure::asVanilla);
-        DataComponentAdapters.register(DataComponentTypes.ITEM_MODEL, CardboardAdventure::asAdventure, CardboardAdventure::asVanilla);
-        DataComponentAdapters.register(DataComponentTypes.LORE, PaperItemLore::new);
-        DataComponentAdapters.register(DataComponentTypes.RARITY, nms -> ItemRarity.valueOf((String)nms.name()), api -> Rarity.valueOf(api.name()));
-        DataComponentAdapters.register(DataComponentTypes.ENCHANTMENTS, PaperItemEnchantments::new);
-        DataComponentAdapters.register(DataComponentTypes.CAN_PLACE_ON, PaperItemAdventurePredicate::new);
-        DataComponentAdapters.register(DataComponentTypes.CAN_BREAK, PaperItemAdventurePredicate::new);
-        DataComponentAdapters.register(DataComponentTypes.ATTRIBUTE_MODIFIERS, PaperItemAttributeModifiers::new);
-        DataComponentAdapters.register(DataComponentTypes.CUSTOM_MODEL_DATA, PaperCustomModelData::new);
+        DataComponentAdapters.register(DataComponents.CUSTOM_NAME, CardboardAdventure::asAdventure, CardboardAdventure::asVanilla);
+        DataComponentAdapters.register(DataComponents.ITEM_NAME, CardboardAdventure::asAdventure, CardboardAdventure::asVanilla);
+        DataComponentAdapters.register(DataComponents.ITEM_MODEL, CardboardAdventure::asAdventure, CardboardAdventure::asVanilla);
+        DataComponentAdapters.register(DataComponents.LORE, PaperItemLore::new);
+        DataComponentAdapters.register(DataComponents.RARITY, nms -> ItemRarity.valueOf((String)nms.name()), api -> Rarity.valueOf(api.name()));
+        DataComponentAdapters.register(DataComponents.ENCHANTMENTS, PaperItemEnchantments::new);
+        DataComponentAdapters.register(DataComponents.CAN_PLACE_ON, PaperItemAdventurePredicate::new);
+        DataComponentAdapters.register(DataComponents.CAN_BREAK, PaperItemAdventurePredicate::new);
+        DataComponentAdapters.register(DataComponents.ATTRIBUTE_MODIFIERS, PaperItemAttributeModifiers::new);
+        DataComponentAdapters.register(DataComponents.CUSTOM_MODEL_DATA, PaperCustomModelData::new);
         // DataComponentAdapters.registerUntyped(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP);
         // DataComponentAdapters.registerUntyped(DataComponentTypes.HIDE_TOOLTIP);
         
         // TODO
         // DataComponentAdapters.register(DataComponentTypes.TOOLTIP_DISPLAY, PaperTooltipDisplay::new);
         
-        DataComponentAdapters.registerIdentity(DataComponentTypes.REPAIR_COST);
-        DataComponentAdapters.registerIdentity(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
-        DataComponentAdapters.registerUntyped(DataComponentTypes.INTANGIBLE_PROJECTILE);
-        DataComponentAdapters.register(DataComponentTypes.FOOD, PaperFoodProperties::new);
-        DataComponentAdapters.register(DataComponentTypes.CONSUMABLE, PaperConsumable::new);
-        DataComponentAdapters.register(DataComponentTypes.USE_REMAINDER, PaperUseRemainder::new);
-        DataComponentAdapters.register(DataComponentTypes.USE_COOLDOWN, PaperUseCooldown::new);
-        DataComponentAdapters.register(DataComponentTypes.DAMAGE_RESISTANT, PaperDamageResistant::new);
-        DataComponentAdapters.register(DataComponentTypes.TOOL, PaperItemTool::new);
-        DataComponentAdapters.register(DataComponentTypes.ENCHANTABLE, PaperEnchantable::new);
-        DataComponentAdapters.register(DataComponentTypes.EQUIPPABLE, PaperEquippable::new);
-        DataComponentAdapters.register(DataComponentTypes.REPAIRABLE, PaperRepairable::new);
-        DataComponentAdapters.registerUntyped(DataComponentTypes.GLIDER);
-        DataComponentAdapters.register(DataComponentTypes.TOOLTIP_STYLE, CardboardAdventure::asAdventure, CardboardAdventure::asVanilla);
-        DataComponentAdapters.register(DataComponentTypes.DEATH_PROTECTION, PaperDeathProtection::new);
-        DataComponentAdapters.register(DataComponentTypes.STORED_ENCHANTMENTS, PaperItemEnchantments::new);
-        DataComponentAdapters.register(DataComponentTypes.DYED_COLOR, PaperDyedItemColor::new);
-        DataComponentAdapters.register(DataComponentTypes.MAP_COLOR, PaperMapItemColor::new);
-        DataComponentAdapters.register(DataComponentTypes.MAP_ID, PaperMapId::new);
-        DataComponentAdapters.register(DataComponentTypes.MAP_DECORATIONS, PaperMapDecorations::new);
-        DataComponentAdapters.register(DataComponentTypes.MAP_POST_PROCESSING, nms -> MapPostProcessing.valueOf((String)nms.name()), api -> MapPostProcessingComponent.valueOf(api.name()));
-        DataComponentAdapters.register(DataComponentTypes.CHARGED_PROJECTILES, PaperChargedProjectiles::new);
-        DataComponentAdapters.register(DataComponentTypes.BUNDLE_CONTENTS, PaperBundleContents::new);
-        DataComponentAdapters.register(DataComponentTypes.POTION_CONTENTS, PaperPotionContents::new);
-        DataComponentAdapters.register(DataComponentTypes.SUSPICIOUS_STEW_EFFECTS, PaperSuspiciousStewEffects::new);
-        DataComponentAdapters.register(DataComponentTypes.WRITTEN_BOOK_CONTENT, PaperWrittenBookContent::new);
-        DataComponentAdapters.register(DataComponentTypes.WRITABLE_BOOK_CONTENT, PaperWritableBookContent::new);
-        DataComponentAdapters.register(DataComponentTypes.TRIM, PaperItemArmorTrim::new);
+        DataComponentAdapters.registerIdentity(DataComponents.REPAIR_COST);
+        DataComponentAdapters.registerIdentity(DataComponents.ENCHANTMENT_GLINT_OVERRIDE);
+        DataComponentAdapters.registerUntyped(DataComponents.INTANGIBLE_PROJECTILE);
+        DataComponentAdapters.register(DataComponents.FOOD, PaperFoodProperties::new);
+        DataComponentAdapters.register(DataComponents.CONSUMABLE, PaperConsumable::new);
+        DataComponentAdapters.register(DataComponents.USE_REMAINDER, PaperUseRemainder::new);
+        DataComponentAdapters.register(DataComponents.USE_COOLDOWN, PaperUseCooldown::new);
+        DataComponentAdapters.register(DataComponents.DAMAGE_RESISTANT, PaperDamageResistant::new);
+        DataComponentAdapters.register(DataComponents.TOOL, PaperItemTool::new);
+        DataComponentAdapters.register(DataComponents.ENCHANTABLE, PaperEnchantable::new);
+        DataComponentAdapters.register(DataComponents.EQUIPPABLE, PaperEquippable::new);
+        DataComponentAdapters.register(DataComponents.REPAIRABLE, PaperRepairable::new);
+        DataComponentAdapters.registerUntyped(DataComponents.GLIDER);
+        DataComponentAdapters.register(DataComponents.TOOLTIP_STYLE, CardboardAdventure::asAdventure, CardboardAdventure::asVanilla);
+        DataComponentAdapters.register(DataComponents.DEATH_PROTECTION, PaperDeathProtection::new);
+        DataComponentAdapters.register(DataComponents.STORED_ENCHANTMENTS, PaperItemEnchantments::new);
+        DataComponentAdapters.register(DataComponents.DYED_COLOR, PaperDyedItemColor::new);
+        DataComponentAdapters.register(DataComponents.MAP_COLOR, PaperMapItemColor::new);
+        DataComponentAdapters.register(DataComponents.MAP_ID, PaperMapId::new);
+        DataComponentAdapters.register(DataComponents.MAP_DECORATIONS, PaperMapDecorations::new);
+        DataComponentAdapters.register(DataComponents.MAP_POST_PROCESSING, nms -> MapPostProcessing.valueOf((String)nms.name()), api -> net.minecraft.world.item.component.MapPostProcessing.valueOf(api.name()));
+        DataComponentAdapters.register(DataComponents.CHARGED_PROJECTILES, PaperChargedProjectiles::new);
+        DataComponentAdapters.register(DataComponents.BUNDLE_CONTENTS, PaperBundleContents::new);
+        DataComponentAdapters.register(DataComponents.POTION_CONTENTS, PaperPotionContents::new);
+        DataComponentAdapters.register(DataComponents.SUSPICIOUS_STEW_EFFECTS, PaperSuspiciousStewEffects::new);
+        DataComponentAdapters.register(DataComponents.WRITTEN_BOOK_CONTENT, PaperWrittenBookContent::new);
+        DataComponentAdapters.register(DataComponents.WRITABLE_BOOK_CONTENT, PaperWritableBookContent::new);
+        DataComponentAdapters.register(DataComponents.TRIM, PaperItemArmorTrim::new);
         //DataComponentAdapters.register(DataComponentTypes.INSTRUMENT, CraftMusicInstrument::minecraftHolderToBukkit, CraftMusicInstrument::bukkitToMinecraftHolder);
-        DataComponentAdapters.register(DataComponentTypes.INSTRUMENT, nms -> CraftMusicInstrument.minecraftHolderToBukkit(nms.instrument().resolveEntry(CraftRegistry.getMinecraftRegistry()).orElseThrow()), api -> new InstrumentComponent(CraftMusicInstrument.bukkitToMinecraftHolder(api)));
-        DataComponentAdapters.register(DataComponentTypes.OMINOUS_BOTTLE_AMPLIFIER, PaperOminousBottleAmplifier::new);
-        DataComponentAdapters.register(DataComponentTypes.JUKEBOX_PLAYABLE, PaperJukeboxPlayable::new);
-        DataComponentAdapters.register(DataComponentTypes.RECIPES, nms -> MCUtil.transformUnmodifiable(nms, CardboardAdventure::asAdventureKey), api -> MCUtil.transformUnmodifiable(api, key -> PaperAdventure.asVanilla(RegistryKeys.RECIPE, key)));
-        DataComponentAdapters.register(DataComponentTypes.LODESTONE_TRACKER, PaperLodestoneTracker::new);
-        DataComponentAdapters.register(DataComponentTypes.FIREWORK_EXPLOSION, CraftMetaFirework::getEffect, CraftMetaFirework::getExplosion);
-        DataComponentAdapters.register(DataComponentTypes.FIREWORKS, PaperFireworks::new);
-        DataComponentAdapters.register(DataComponentTypes.PROFILE, PaperResolvableProfile::new);
-        DataComponentAdapters.register(DataComponentTypes.NOTE_BLOCK_SOUND, CardboardAdventure::asAdventure, CardboardAdventure::asVanilla);
-        DataComponentAdapters.register(DataComponentTypes.BANNER_PATTERNS, PaperBannerPatternLayers::new);
-        DataComponentAdapters.register(DataComponentTypes.BASE_COLOR, nms -> org.bukkit.DyeColor.getByWoolData((byte)((byte)nms.getIndex())), api -> DyeColor.byIndex(api.getWoolData()));
-        DataComponentAdapters.register(DataComponentTypes.POT_DECORATIONS, PaperPotDecorations::new);
-        DataComponentAdapters.register(DataComponentTypes.CONTAINER, PaperItemContainerContents::new);
-        DataComponentAdapters.register(DataComponentTypes.BLOCK_STATE, PaperBlockItemDataProperties::new);
-        DataComponentAdapters.register(DataComponentTypes.CONTAINER_LOOT, PaperSeededContainerLoot::new);
+        DataComponentAdapters.register(DataComponents.INSTRUMENT, nms -> CraftMusicInstrument.minecraftHolderToBukkit(nms.instrument().unwrap(CraftRegistry.getMinecraftRegistry()).orElseThrow()), api -> new InstrumentComponent(CraftMusicInstrument.bukkitToMinecraftHolder(api)));
+        DataComponentAdapters.register(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, PaperOminousBottleAmplifier::new);
+        DataComponentAdapters.register(DataComponents.JUKEBOX_PLAYABLE, PaperJukeboxPlayable::new);
+        DataComponentAdapters.register(DataComponents.RECIPES, nms -> MCUtil.transformUnmodifiable(nms, CardboardAdventure::asAdventureKey), api -> MCUtil.transformUnmodifiable(api, key -> PaperAdventure.asVanilla(Registries.RECIPE, key)));
+        DataComponentAdapters.register(DataComponents.LODESTONE_TRACKER, PaperLodestoneTracker::new);
+        DataComponentAdapters.register(DataComponents.FIREWORK_EXPLOSION, CraftMetaFirework::getEffect, CraftMetaFirework::getExplosion);
+        DataComponentAdapters.register(DataComponents.FIREWORKS, PaperFireworks::new);
+        DataComponentAdapters.register(DataComponents.PROFILE, PaperResolvableProfile::new);
+        DataComponentAdapters.register(DataComponents.NOTE_BLOCK_SOUND, CardboardAdventure::asAdventure, CardboardAdventure::asVanilla);
+        DataComponentAdapters.register(DataComponents.BANNER_PATTERNS, PaperBannerPatternLayers::new);
+        DataComponentAdapters.register(DataComponents.BASE_COLOR, nms -> org.bukkit.DyeColor.getByWoolData((byte)((byte)nms.getId())), api -> DyeColor.byId(api.getWoolData()));
+        DataComponentAdapters.register(DataComponents.POT_DECORATIONS, PaperPotDecorations::new);
+        DataComponentAdapters.register(DataComponents.CONTAINER, PaperItemContainerContents::new);
+        DataComponentAdapters.register(DataComponents.BLOCK_STATE, PaperBlockItemDataProperties::new);
+        DataComponentAdapters.register(DataComponents.CONTAINER_LOOT, PaperSeededContainerLoot::new);
 
-        for (final Map.Entry<RegistryKey<ComponentType<?>>, ComponentType<?>> componentType : Registries.DATA_COMPONENT_TYPE.getEntrySet()) {
+        for (final Map.Entry<ResourceKey<DataComponentType<?>>, DataComponentType<?>> componentType : BuiltInRegistries.DATA_COMPONENT_TYPE.entrySet()) {
             if (!ADAPTERS.containsKey(componentType.getKey())) {
-                registerUntyped((ComponentType<Unit>) componentType.getValue());
+                registerUntyped((DataComponentType<Unit>) componentType.getValue());
             }
         }
     }
 
-    public static void registerUntyped(ComponentType<Unit> type) {
+    public static void registerUntyped(DataComponentType<Unit> type) {
         DataComponentAdapters.registerInternal(type, UNIT_TO_API_CONVERTER, DataComponentAdapter.API_TO_UNIT_CONVERTER, false);
     }
 
-    private static <COMMON> void registerIdentity(ComponentType<COMMON> type) {
+    private static <COMMON> void registerIdentity(DataComponentType<COMMON> type) {
         DataComponentAdapters.registerInternal(type, Function.identity(), Function.identity(), true);
     }
 
-    private static <NMS, API extends Handleable<NMS>> void register(ComponentType<NMS> type, Function<NMS, API> vanillaToApi) {
+    private static <NMS, API extends Handleable<NMS>> void register(DataComponentType<NMS> type, Function<NMS, API> vanillaToApi) {
         DataComponentAdapters.registerInternal(type, vanillaToApi, Handleable::getHandle, false);
     }
 
-    private static <NMS, API> void register(ComponentType<NMS> type, Function<NMS, API> vanillaToApi, Function<API, NMS> apiToVanilla) {
+    private static <NMS, API> void register(DataComponentType<NMS> type, Function<NMS, API> vanillaToApi, Function<API, NMS> apiToVanilla) {
         DataComponentAdapters.registerInternal(type, vanillaToApi, apiToVanilla, false);
     }
 
-    private static <NMS, API> void registerInternal(final ComponentType<NMS> type, final Function<NMS, API> vanillaToApi, final Function<API, NMS> apiToVanilla, final boolean codecValidation) {
-        final RegistryKey<ComponentType<?>> key = Registries.DATA_COMPONENT_TYPE.getKey(type).orElseThrow();
+    private static <NMS, API> void registerInternal(final DataComponentType<NMS> type, final Function<NMS, API> vanillaToApi, final Function<API, NMS> apiToVanilla, final boolean codecValidation) {
+        final ResourceKey<DataComponentType<?>> key = BuiltInRegistries.DATA_COMPONENT_TYPE.getResourceKey(type).orElseThrow();
         if (ADAPTERS.containsKey(key)) {
             throw new IllegalStateException("Duplicate adapter registration for " + key);
         }
-        ADAPTERS.put(key, new DataComponentAdapter<>(type, apiToVanilla, vanillaToApi, codecValidation && !type.shouldSkipSerialization()));
+        ADAPTERS.put(key, new DataComponentAdapter<>(type, apiToVanilla, vanillaToApi, codecValidation && !type.isTransient()));
     }
 
 }

@@ -20,36 +20,34 @@ import java.util.Queue;
 import org.bukkit.craftbukkit.CraftServer;
 
 import io.papermc.paper.world.PaperWorldLoader.WorldLoadingInfo;
+import net.minecraft.commands.Commands;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.SaveLoading.LoadContextSupplierContext;
-// import net.minecraft.server.WorldGenerationProgressListener;
-// import net.minecraft.server.WorldGenerationProgressListenerFactory;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.world.PlayerSaveHandler;
-import net.minecraft.world.SaveProperties;
-import net.minecraft.world.dimension.DimensionOptions;
-import net.minecraft.world.gen.GeneratorOptions;
-import net.minecraft.world.level.LevelProperties;
-import net.minecraft.world.level.ServerWorldProperties;
-import net.minecraft.world.level.storage.LevelStorage.Session;
+import net.minecraft.server.WorldLoader.DataLoadContext;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.levelgen.WorldOptions;
+import net.minecraft.world.level.storage.LevelStorageSource.LevelStorageAccess;
+import net.minecraft.world.level.storage.PlayerDataStorage;
+import net.minecraft.world.level.storage.PrimaryLevelData;
+import net.minecraft.world.level.storage.ServerLevelData;
+import net.minecraft.world.level.storage.WorldData;
 
 public interface IMixinMinecraftServer {
 
-    void removeLevel(ServerWorld level);
+    void removeLevel(ServerLevel level);
 
-    void addLevel(ServerWorld level);
+    void addLevel(ServerLevel level);
 
     Queue<Runnable> getProcessQueue();
 
-    Map<RegistryKey<net.minecraft.world.World>, ServerWorld> getWorldMap();
+    Map<ResourceKey<net.minecraft.world.level.Level>, ServerLevel> getWorldMap();
 
     void convertWorld(String name);
 
     // WorldGenerationProgressListenerFactory getWorldGenerationProgressListenerFactory();
 
-    CommandManager setCommandManager(CommandManager commandManager);
+    Commands setCommandManager(Commands commandManager);
 
     static MinecraftServer getServer() {
         return CraftServer.server;
@@ -57,29 +55,29 @@ public interface IMixinMinecraftServer {
 
     // void loadSpawn(WorldGenerationProgressListener worldGenerationProgressListener, ServerWorld internal);
 
-    void initWorld(ServerWorld worldserver, ServerWorldProperties iworlddataserver, SaveProperties saveData, GeneratorOptions generatorsettings);
+    void initWorld(ServerLevel worldserver, ServerLevelData iworlddataserver, WorldData saveData, WorldOptions generatorsettings);
 
-    PlayerSaveHandler getSaveHandler_BF();
+    PlayerDataStorage getSaveHandler_BF();
 
-    Session getSessionBF();
+    LevelStorageAccess getSessionBF();
 
     void cardboard_runOnMainThread(Runnable r);
 
     /**
      * @since 1.21.9
      */
-	LoadContextSupplierContext cardboard$worldLoaderContext();
+	DataLoadContext cardboard$worldLoaderContext();
 
 	/**
 	 * Prepare Levels 1.21.9
 	 */
-	void cardboard$prepareLevel(ServerWorld serverLevel);
+	void cardboard$prepareLevel(ServerLevel serverLevel);
 
 	/**
 	 * @implNote Paper MinecraftServer.java.patch
 	 * @since 1.21.9
 	 */
-	void createLevel(DimensionOptions levelStem, WorldLoadingInfo loadingInfo, Session levelStorageAccess,
-			LevelProperties serverLevelData);
+	void createLevel(LevelStem levelStem, WorldLoadingInfo loadingInfo, LevelStorageAccess levelStorageAccess,
+			PrimaryLevelData serverLevelData);
 
 }

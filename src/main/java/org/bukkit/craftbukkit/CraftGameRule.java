@@ -2,31 +2,31 @@ package org.bukkit.craftbukkit;
 
 import io.papermc.paper.util.Holderable;
 import java.util.function.Function;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import org.bukkit.GameRule;
 import org.bukkit.NamespacedKey;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class CraftGameRule<T> extends GameRule<T> implements Holderable<net.minecraft.world.rule.GameRule<T>> {
+public class CraftGameRule<T> extends GameRule<T> implements Holderable<net.minecraft.world.level.gamerules.GameRule<T>> {
 
-	private final RegistryEntry<net.minecraft.world.rule.GameRule<T>> holder;
+	private final Holder<net.minecraft.world.level.gamerules.GameRule<T>> holder;
 
-	public static GameRule<?> minecraftToBukkit(net.minecraft.world.rule.GameRule minecraft) {
-		return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.GAME_RULE);
+	public static GameRule<?> minecraftToBukkit(net.minecraft.world.level.gamerules.GameRule minecraft) {
+		return CraftRegistry.minecraftToBukkit(minecraft, Registries.GAME_RULE);
 	}
 
-	public static <T> net.minecraft.world.rule.GameRule<T> bukkitToMinecraft(GameRule<T> bukkit) {
+	public static <T> net.minecraft.world.level.gamerules.GameRule<T> bukkitToMinecraft(GameRule<T> bukkit) {
 		return CraftRegistry.bukkitToMinecraft(bukkit);
 	}
 
-	public static <T> RegistryEntry<net.minecraft.world.rule.GameRule<T>> bukkitToMinecraftHolder(GameRule<T> bukkit) {
+	public static <T> Holder<net.minecraft.world.level.gamerules.GameRule<T>> bukkitToMinecraftHolder(GameRule<T> bukkit) {
 		return CraftRegistry.bukkitToMinecraftHolder(bukkit);
 	}
 
-	public CraftGameRule(RegistryEntry<net.minecraft.world.rule.GameRule<?>> holder) {
-		this.holder = (RegistryEntry) holder;
+	public CraftGameRule(Holder<net.minecraft.world.level.gamerules.GameRule<?>> holder) {
+		this.holder = (Holder) holder;
 	}
 
 	public static <LEGACY, MODERN> GameRule<LEGACY> wrap(
@@ -43,7 +43,7 @@ public class CraftGameRule<T> extends GameRule<T> implements Holderable<net.mine
     */
 
 	@Override
-	public RegistryEntry<net.minecraft.world.rule.GameRule<T>> getHolder() {
+	public Holder<net.minecraft.world.level.gamerules.GameRule<T>> getHolder() {
 		return this.holder;
 	}
 
@@ -68,18 +68,18 @@ public class CraftGameRule<T> extends GameRule<T> implements Holderable<net.mine
 	}
 
 	public String getName() {
-		return this.holder.getIdAsString();
+		return this.holder.getRegisteredName();
 	}
 
 	public Class<T> getType() {
-		return (Class<T>)(switch (this.getHandle().getType()) {
+		return (Class<T>)(switch (this.getHandle().gameRuleType()) {
 		case INT -> Integer.class;
 		case BOOL -> Boolean.class;
 		});
 	}
 
 	public String translationKey() {
-		return this.getHandle().getTranslationKey();
+		return this.getHandle().getDescriptionId();
 	}
 
 	public static class LegacyGameRuleWrapper<LEGACY, MODERN> extends CraftGameRule<LEGACY> {
@@ -88,7 +88,7 @@ public class CraftGameRule<T> extends GameRule<T> implements Holderable<net.mine
 		private final Function<MODERN, LEGACY> toLegacyFromModern;
 
 		public LegacyGameRuleWrapper(
-				RegistryEntry<net.minecraft.world.rule.GameRule<?>> holder,
+				Holder<net.minecraft.world.level.gamerules.GameRule<?>> holder,
 				Function<LEGACY, MODERN> fromLegacyToModern,
 				Function<MODERN, LEGACY> toLegacyFromModern,
 				Class<LEGACY> typeOverride

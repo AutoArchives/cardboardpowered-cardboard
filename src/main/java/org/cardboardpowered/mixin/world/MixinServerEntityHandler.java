@@ -20,26 +20,26 @@ package org.cardboardpowered.mixin.world;
 
 import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
+import net.minecraft.server.level.ServerLevel.EntityCallbacks;
+import net.minecraft.world.entity.Entity;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.server.world.ServerWorld.ServerEntityHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ServerEntityHandler.class)
+@Mixin(EntityCallbacks.class)
 public class MixinServerEntityHandler {
 
-    @Inject(at = @At("TAIL"), method = "stopTracking(Lnet/minecraft/entity/Entity;)V")
+    @Inject(at = @At("TAIL"), method = "onTrackingEnd(Lnet/minecraft/world/entity/Entity;)V")
     public void unvalidateEntityBF(Entity entity, CallbackInfo ci) {
         IMixinEntity bf = (IMixinEntity) entity;
         bf.setValid(false);
-        CraftEventFactory.callEvent( new EntityRemoveFromWorldEvent(bf.getBukkitEntity(), entity.getEntityWorld().getCraftWorld()) );
+        CraftEventFactory.callEvent( new EntityRemoveFromWorldEvent(bf.getBukkitEntity(), entity.level().getCraftWorld()) );
     }
 
-    @Inject(at = @At("TAIL"), method = "startTicking(Lnet/minecraft/entity/Entity;)V")
+    @Inject(at = @At("TAIL"), method = "onTickingStart(Lnet/minecraft/world/entity/Entity;)V")
     public void validateEntityBF(Entity entity, CallbackInfo ci) {
         IMixinEntity bf = (IMixinEntity) entity;
         bf.setValid(true);
@@ -48,7 +48,7 @@ public class MixinServerEntityHandler {
         if (null == bf.getOriginBF() && bf.getBukkitEntity() != null)
             bf.setOriginBF(bf.getBukkitEntity().getLocation()); // Paper Entity Origin API
 
-        CraftEventFactory.callEvent( new EntityAddToWorldEvent(bf.getBukkitEntity(), entity.getEntityWorld().getCraftWorld()) );
+        CraftEventFactory.callEvent( new EntityAddToWorldEvent(bf.getBukkitEntity(), entity.level().getCraftWorld()) );
     } 
 
 }

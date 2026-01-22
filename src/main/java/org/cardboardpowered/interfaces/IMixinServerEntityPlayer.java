@@ -18,45 +18,44 @@
  */
 package org.cardboardpowered.interfaces;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.Connection;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.level.portal.TeleportTransition.PostTeleportTransition;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.network.ClientConnection;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.TeleportTarget;
-import net.minecraft.world.TeleportTarget.PostDimensionTransition;
-import net.minecraft.world.World;
-
 public interface IMixinServerEntityPlayer extends IMixinEntity {
 
     void reset();
 
-    BlockPos getSpawnPoint(World world);
+    BlockPos getSpawnPoint(Level world);
 
     void closeHandledScreen();
 
     int nextContainerCounter();
 
-    void setConnectionBF(ClientConnection connection);
+    void setConnectionBF(Connection connection);
 
-    ClientConnection getConnectionBF();
+    Connection getConnectionBF();
 
     void setBukkit(CraftPlayer plr);
 
     public CraftPlayer getBukkit();
 
-	void spawnIn(ServerWorld worldserver1);
+	void spawnIn(ServerLevel worldserver1);
 
-	void copyFrom_unused(ServerPlayerEntity entityplayer, boolean flag);
+	void copyFrom_unused(ServerPlayer entityplayer, boolean flag);
 
 	void spigot$forceSetPositionRotation(double x, double y, double z, float yaw, float pitch);
 
 	@Nullable
-	TeleportTarget findRespawnPositionAndUseSpawnBlock(boolean useCharge,
-			PostDimensionTransition postTeleportTransition, @Nullable PlayerRespawnEvent.RespawnReason respawnReason);
+	TeleportTransition findRespawnPositionAndUseSpawnBlock(boolean useCharge,
+			PostTeleportTransition postTeleportTransition, @Nullable PlayerRespawnEvent.RespawnReason respawnReason);
 
 }

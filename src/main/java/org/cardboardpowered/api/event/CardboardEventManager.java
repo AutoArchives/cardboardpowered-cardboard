@@ -2,8 +2,8 @@ package org.cardboardpowered.api.event;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ActionResult;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.entity.LivingEntity;
@@ -23,16 +23,16 @@ public class CardboardEventManager {
     private void callCardboardFireworkExplodeEvent() {
         CardboardFireworkExplodeEvent.EVENT.register((firework) -> {
             if (CraftEventFactory.callFireworkExplodeEvent(firework).isCancelled()) {
-                return ActionResult.FAIL;
+                return InteractionResult.FAIL;
             }else {
-                return ActionResult.PASS;
+                return InteractionResult.PASS;
             }
         });
     }
 
     private void callCardboardEntityMountEvent() {
         CardboardEntityMountEvent.EVENT.register((vehicle, entity) -> {
-            if (vehicle.getPassengerList().isEmpty()) {
+            if (vehicle.getPassengers().isEmpty()) {
                 CraftEntity craft = (CraftEntity) ((IMixinEntity) vehicle).getBukkitEntity().getVehicle();
                 Entity orig = craft == null ? null : craft.getHandle();
                 if (((IMixinEntity) vehicle).getBukkitEntity() instanceof Vehicle && ((IMixinEntity) vehicle).getBukkitEntity() instanceof org.bukkit.entity.LivingEntity) {
@@ -46,7 +46,7 @@ public class CardboardEventManager {
                     CraftEntity craftn = (CraftEntity) ((IMixinEntity) vehicle).getBukkitEntity().getVehicle();
                     Entity n = craftn == null ? null : craftn.getHandle();
                     if (CBevent.isCancelled() || n != orig) {
-                        return ActionResult.FAIL;
+                        return InteractionResult.FAIL;
                     }
                 }
 
@@ -55,11 +55,11 @@ public class CardboardEventManager {
                     Bukkit.getPluginManager().callEvent(SPevent);
                 }
                 if (SPevent.isCancelled()) {
-                    return ActionResult.FAIL;
+                    return InteractionResult.FAIL;
                 }
             }
-            if (!vehicle.getPassengerList().isEmpty()) {
-                com.google.common.base.Preconditions.checkState(!vehicle.getPassengerList().contains(vehicle), "Circular entity riding! %s %s", this, entity);
+            if (!vehicle.getPassengers().isEmpty()) {
+                com.google.common.base.Preconditions.checkState(!vehicle.getPassengers().contains(vehicle), "Circular entity riding! %s %s", this, entity);
 
                 CraftEntity craft = (CraftEntity) ((IMixinEntity) vehicle).getBukkitEntity().getVehicle();
                 Entity orig = craft == null ? null : craft.getHandle();
@@ -74,7 +74,7 @@ public class CardboardEventManager {
                     CraftEntity craftn = (CraftEntity) ((IMixinEntity) vehicle).getBukkitEntity().getVehicle();
                     Entity n = craftn == null ? null : craftn.getHandle();
                     if (CBevent.isCancelled() || n != orig) {
-                        return ActionResult.FAIL;
+                        return InteractionResult.FAIL;
                     }
                 }
 
@@ -82,11 +82,11 @@ public class CardboardEventManager {
                 if (((IMixinEntity) entity).isValidBF()) {
                     Bukkit.getPluginManager().callEvent(SPevent);
                     if (SPevent.isCancelled()) {
-                        return ActionResult.FAIL;
+                        return InteractionResult.FAIL;
                     }
                 }
             }
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         });
     }
 }

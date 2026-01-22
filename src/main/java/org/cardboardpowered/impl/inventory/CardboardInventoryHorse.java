@@ -1,12 +1,12 @@
 package org.cardboardpowered.impl.inventory;
 
+import net.minecraft.world.Container;
 import org.bukkit.inventory.HorseInventory;
 import org.bukkit.inventory.ItemStack;
-import net.minecraft.inventory.Inventory;
 
 public class CardboardInventoryHorse extends CardboardInventoryAbstractHorse implements HorseInventory {
 
-    public CardboardInventoryHorse(Inventory inventory) {
+    public CardboardInventoryHorse(Container inventory) {
         super(inventory);
     }
 

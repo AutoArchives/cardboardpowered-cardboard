@@ -5,7 +5,7 @@ import io.papermc.paper.registry.RegistryKey;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import net.minecraft.registry.Registry;
+import net.minecraft.core.Registry;
 // import net.minecraft.registry.entry.RegistryEntry;
 import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
@@ -18,16 +18,16 @@ import static io.papermc.paper.registry.entry.RegistryEntryMeta.RegistryModifica
 public class RegistryEntryBuilder<M, A extends Keyed> { // TODO remove Keyed
 
     public static <M, A extends Keyed> RegistryEntryBuilder<M, A> start( // TODO remove Keyed
-        final net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey,
+        final net.minecraft.resources.ResourceKey<? extends Registry<M>> mcKey,
         final RegistryKey<A> apiKey
     ) {
         return new RegistryEntryBuilder<>(mcKey, apiKey);
     }
 
-    protected final net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey;
+    protected final net.minecraft.resources.ResourceKey<? extends Registry<M>> mcKey;
     protected final RegistryKey<A> apiKey;
 
-    private RegistryEntryBuilder(final net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey, RegistryKey<A> apiKey) {
+    private RegistryEntryBuilder(final net.minecraft.resources.ResourceKey<? extends Registry<M>> mcKey, RegistryKey<A> apiKey) {
         this.mcKey = mcKey;
         this.apiKey = apiKey;
     }
@@ -50,11 +50,11 @@ public class RegistryEntryBuilder<M, A extends Keyed> { // TODO remove Keyed
         return new CraftStage<>(this.mcKey, this.apiKey, classToPreload, new RegistryTypeMapper<>(minecraftToBukkit));
     }
 
-    public CraftStage<M, A> craft(final Class<?> classToPreload, final Function<net.minecraft.registry.entry.RegistryEntry<M>, ? extends A> minecraftToBukkit) {
+    public CraftStage<M, A> craft(final Class<?> classToPreload, final Function<net.minecraft.core.Holder<M>, ? extends A> minecraftToBukkit) {
         return this.craft(classToPreload, minecraftToBukkit, false);
     }
 
-    public CraftStage<M, A> craft(final Class<?> classToPreload, final Function<net.minecraft.registry.entry.RegistryEntry<M>, ? extends A> minecraftToBukkit, final boolean allowDirect) {
+    public CraftStage<M, A> craft(final Class<?> classToPreload, final Function<net.minecraft.core.Holder<M>, ? extends A> minecraftToBukkit, final boolean allowDirect) {
         return new CraftStage<>(this.mcKey, this.apiKey, classToPreload, new RegistryTypeMapper<>(minecraftToBukkit, allowDirect));
     }
 
@@ -67,7 +67,7 @@ public class RegistryEntryBuilder<M, A extends Keyed> { // TODO remove Keyed
         private BiFunction<NamespacedKey, ApiVersion, NamespacedKey> serializationUpdater = EMPTY;
 
         private CraftStage(
-            final net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey,
+            final net.minecraft.resources.ResourceKey<? extends Registry<M>> mcKey,
             final RegistryKey<A> apiKey,
             final Class<?> classToPreload,
             final RegistryTypeMapper<M, A> minecraftToBukkit

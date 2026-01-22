@@ -5,11 +5,10 @@
 package org.cardboardpowered.interfaces;
 
 import java.util.List;
-
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.registry.entry.RegistryEntryList;
+import net.minecraft.core.HolderSet;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 
 public interface IIngredient {
 
@@ -20,14 +19,14 @@ public interface IIngredient {
 	void cardboard$set_itemStacks(List<ItemStack> stacks);
 
 	static Ingredient cb$ofStacks(List<ItemStack> stacks) {
-		Ingredient recipe = Ingredient.ofItems(stacks.stream().map(ItemStack::getItem));
+		Ingredient recipe = Ingredient.of(stacks.stream().map(ItemStack::getItem));
 		((IIngredient)recipe).cardboard$set_itemStacks(stacks);
 		return recipe;
 	}
 
 	boolean cb$isExact();
 
-	RegistryEntryList<Item> cb$entries();
+	HolderSet<Item> cb$entries();
 
 	List<ItemStack> cb$itemStacks();
 

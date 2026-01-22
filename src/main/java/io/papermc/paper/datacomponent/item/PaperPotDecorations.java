@@ -7,8 +7,8 @@ import org.bukkit.inventory.ItemType;
 import org.jspecify.annotations.Nullable;
 
 public record PaperPotDecorations(
-    net.minecraft.block.entity.Sherds impl
-) implements PotDecorations, Handleable<net.minecraft.block.entity.Sherds> {
+    net.minecraft.world.level.block.entity.PotDecorations impl
+) implements PotDecorations, Handleable<net.minecraft.world.level.block.entity.PotDecorations> {
 
     @Override
     public @Nullable ItemType back() {
@@ -31,7 +31,7 @@ public record PaperPotDecorations(
     }
 
     @Override
-    public net.minecraft.block.entity.Sherds getHandle() {
+    public net.minecraft.world.level.block.entity.PotDecorations getHandle() {
         return this.impl;
     }
 
@@ -69,10 +69,10 @@ public record PaperPotDecorations(
         @Override
         public PotDecorations build() {
             if (this.back == null && this.left == null && this.right == null && this.front == null) {
-                return new PaperPotDecorations(net.minecraft.block.entity.Sherds.DEFAULT);
+                return new PaperPotDecorations(net.minecraft.world.level.block.entity.PotDecorations.EMPTY);
             }
 
-            return new PaperPotDecorations(new net.minecraft.block.entity.Sherds(
+            return new PaperPotDecorations(new net.minecraft.world.level.block.entity.PotDecorations(
                 Optional.ofNullable(this.back).map(CraftItemType::bukkitToMinecraftNew),
                 Optional.ofNullable(this.left).map(CraftItemType::bukkitToMinecraftNew),
                 Optional.ofNullable(this.right).map(CraftItemType::bukkitToMinecraftNew),

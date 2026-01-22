@@ -4,14 +4,14 @@ import io.papermc.paper.registry.RegistryHolder;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.entry.RegistryEntry;
 import io.papermc.paper.registry.entry.RegistryEntryMeta;
-import net.minecraft.registry.Registry;
+import net.minecraft.core.Registry;
 import org.bukkit.Keyed;
 
 // @com.github.bsideup.jabel.Desugar
 public record DelayedRegistryEntry<M, T extends Keyed>(RegistryEntry<M, T> delegate) implements RegistryEntry<M, T>
 {
     @Override
-    public net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey() {
+    public net.minecraft.resources.ResourceKey<? extends Registry<M>> mcKey() {
         return this.delegate.mcKey();
     }
 

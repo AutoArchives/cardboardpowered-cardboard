@@ -1,11 +1,9 @@
 package org.cardboardpowered.impl.block;
 
-import net.minecraft.block.entity.StructureBlockBlockEntity;
-import net.minecraft.block.enums.StructureBlockMode;
-import net.minecraft.util.BlockMirror;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.math.BlockPos;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.StructureBlockEntity;
+import net.minecraft.world.level.block.state.properties.StructureMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -18,11 +16,11 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.util.BlockVector;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
 
-public class CardboardStructureBlock extends CardboardBlockEntityState<StructureBlockBlockEntity> implements Structure {
+public class CardboardStructureBlock extends CardboardBlockEntityState<StructureBlockEntity> implements Structure {
 
     private static final int MAX_SIZE = 32;
 
-    public CardboardStructureBlock(World world, StructureBlockBlockEntity tileEntity) {
+    public CardboardStructureBlock(World world, StructureBlockEntity tileEntity) {
         super(world, tileEntity);
     }
 
@@ -42,12 +40,12 @@ public class CardboardStructureBlock extends CardboardBlockEntityState<Structure
 
     @Override
     public String getStructureName() {
-        return getSnapshot().getTemplateName();
+        return getSnapshot().getStructureName();
     }
 
     @Override
     public void setStructureName(String name) {
-        getSnapshot().setTemplateName(name);
+        getSnapshot().setStructureName(name);
     }
 
     @Override
@@ -67,17 +65,17 @@ public class CardboardStructureBlock extends CardboardBlockEntityState<Structure
 
     @Override
     public BlockVector getRelativePosition() {
-        return new BlockVector(getSnapshot().getOffset().getX(), getSnapshot().getOffset().getY(), getSnapshot().getOffset().getZ());
+        return new BlockVector(getSnapshot().getStructurePos().getX(), getSnapshot().getStructurePos().getY(), getSnapshot().getStructurePos().getZ());
     }
 
     @Override
     public void setRelativePosition(BlockVector vector) {
-        getSnapshot().setOffset(new BlockPos(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ()));
+        getSnapshot().setStructurePos(new BlockPos(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ()));
     }
 
     @Override
     public BlockVector getStructureSize() {
-        return new BlockVector(getSnapshot().getSize().getX(), getSnapshot().getSize().getY(), getSnapshot().getSize().getZ());
+        return new BlockVector(getSnapshot().getStructureSize().getX(), getSnapshot().getStructureSize().getY(), getSnapshot().getStructureSize().getZ());
     }
 
     @Override
@@ -87,7 +85,7 @@ public class CardboardStructureBlock extends CardboardBlockEntityState<Structure
 
     @Override
     public void setMirror(Mirror mirror) {
-        getSnapshot().mirror = BlockMirror.valueOf(mirror.name());
+        getSnapshot().mirror = net.minecraft.world.level.block.Mirror.valueOf(mirror.name());
     }
 
     @Override
@@ -97,7 +95,7 @@ public class CardboardStructureBlock extends CardboardBlockEntityState<Structure
 
     @Override
     public void setRotation(StructureRotation rotation) {
-        getSnapshot().setRotation(BlockRotation.valueOf(rotation.name()));
+        getSnapshot().setRotation(Rotation.valueOf(rotation.name()));
     }
 
     @Override
@@ -107,7 +105,7 @@ public class CardboardStructureBlock extends CardboardBlockEntityState<Structure
 
     @Override
     public void setUsageMode(UsageMode mode) {
-        getSnapshot().setMode(StructureBlockMode.valueOf(mode.name()));
+        getSnapshot().setMode(StructureMode.valueOf(mode.name()));
     }
 
     @Override
@@ -122,7 +120,7 @@ public class CardboardStructureBlock extends CardboardBlockEntityState<Structure
 
     @Override
     public boolean isIgnoreEntities() {
-        return getSnapshot().shouldIgnoreEntities();
+        return getSnapshot().isIgnoreEntities();
     }
 
     @Override
@@ -132,7 +130,7 @@ public class CardboardStructureBlock extends CardboardBlockEntityState<Structure
 
     @Override
     public boolean isShowAir() {
-        return getSnapshot().shouldShowAir();
+        return getSnapshot().getShowAir();
     }
 
     @Override
@@ -142,7 +140,7 @@ public class CardboardStructureBlock extends CardboardBlockEntityState<Structure
 
     @Override
     public boolean isBoundingBoxVisible() {
-        return getSnapshot().shouldShowBoundingBox();
+        return getSnapshot().getShowBoundingBox();
     }
 
     @Override
@@ -167,16 +165,16 @@ public class CardboardStructureBlock extends CardboardBlockEntityState<Structure
 
     @Override
     public void setMetadata(String metadata) {
-        if (getUsageMode() == UsageMode.DATA) getSnapshot().metadata = metadata;
+        if (getUsageMode() == UsageMode.DATA) getSnapshot().metaData = metadata;
     }
 
     @Override
     public String getMetadata() {
-        return getSnapshot().getMetadata();
+        return getSnapshot().getMetaData();
     }
 
     @Override
-    public void applyTo(StructureBlockBlockEntity tileEntity) {
+    public void applyTo(StructureBlockEntity tileEntity) {
         super.applyTo(tileEntity);
         tileEntity.setMode(tileEntity.getMode());
     }

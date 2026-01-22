@@ -5,12 +5,10 @@ import com.google.common.collect.ImmutableBiMap;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import net.minecraft.world.flag.FeatureElement;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlags;
 import java.util.Map.Entry;
-import net.minecraft.resource.featuretoggle.FeatureFlags;
-import net.minecraft.resource.featuretoggle.FeatureSet;
-import net.minecraft.resource.featuretoggle.ToggleableFeature;
-import net.minecraft.world.rule.GameRules;
-
 import org.bukkit.FeatureFlag;
 import org.bukkit.GameRule;
 import org.bukkit.craftbukkit.CraftGameRule;
@@ -20,7 +18,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.potion.PotionType;
 
 public class PaperFeatureFlagProviderImpl implements FeatureFlagProvider {
-   public static final BiMap<FeatureFlag, net.minecraft.resource.featuretoggle.FeatureFlag> FLAGS = ImmutableBiMap.of(
+   public static final BiMap<FeatureFlag, net.minecraft.world.flag.FeatureFlag> FLAGS = ImmutableBiMap.of(
       FeatureFlag.MINECART_IMPROVEMENTS,
       FeatureFlags.MINECART_IMPROVEMENTS,
       FeatureFlag.REDSTONE_EXPERIMENTS,
@@ -32,14 +30,14 @@ public class PaperFeatureFlagProviderImpl implements FeatureFlagProvider {
    );
 
    public Set<FeatureFlag> requiredFeatures(FeatureDependant dependant) {
-      FeatureSet requiredFeatures = getFeatureElement(dependant).getRequiredFeatures();
+      FeatureFlagSet requiredFeatures = getFeatureElement(dependant).requiredFeatures();
       return fromNms(requiredFeatures);
    }
 
-   public static Set<FeatureFlag> fromNms(FeatureSet flagSet) {
+   public static Set<FeatureFlag> fromNms(FeatureFlagSet flagSet) {
       Set<FeatureFlag> flags = new HashSet<>();
 
-      for (net.minecraft.resource.featuretoggle.FeatureFlag nmsFlag : FeatureFlags.FEATURE_MANAGER.featureFlags.values()) {
+      for (net.minecraft.world.flag.FeatureFlag nmsFlag : FeatureFlags.REGISTRY.names.values()) {
          if (flagSet.contains(nmsFlag)) {
             flags.add((FeatureFlag)FLAGS.inverse().get(nmsFlag));
          }
@@ -48,13 +46,13 @@ public class PaperFeatureFlagProviderImpl implements FeatureFlagProvider {
       return Collections.unmodifiableSet(flags);
    }
    
-   static ToggleableFeature getFeatureElement(FeatureDependant dependant) {
+   static FeatureElement getFeatureElement(FeatureDependant dependant) {
 	   if (dependant instanceof EntityType entityType) {
 		   return CraftEntityType.bukkitToMinecraft(entityType);
 	   } else if (dependant instanceof PotionType potionType) {
 		   return CraftPotionType.bukkitToMinecraft(potionType);
 	   } else if (dependant instanceof GameRule<?> gameRule) {
-		   return () -> CraftGameRule.bukkitToMinecraft(gameRule).getRequiredFeatures();
+		   return () -> CraftGameRule.bukkitToMinecraft(gameRule).requiredFeatures();
 	   } else {
 		   throw new IllegalArgumentException(dependant + " is not a valid feature dependant");
 	   }

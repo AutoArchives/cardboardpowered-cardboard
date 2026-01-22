@@ -1,24 +1,22 @@
 package org.cardboardpowered.mixin.item;
 
 import java.util.List;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
+import net.minecraft.world.item.EndCrystalItem;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.phys.AABB;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.boss.dragon.EnderDragonFight;
-import net.minecraft.entity.decoration.EndCrystalEntity;
-import net.minecraft.item.EndCrystalItem;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.world.World;
 
 @Mixin(value = EndCrystalItem.class, priority = 900)
 public class MixinEndCrystalItem {
@@ -28,34 +26,34 @@ public class MixinEndCrystalItem {
      * @author .
      */
     @Overwrite
-    public ActionResult useOnBlock(ItemUsageContext itemactioncontext) {
-        World world = itemactioncontext.getWorld();
-        BlockPos blockpos = itemactioncontext.getBlockPos();
+    public InteractionResult useOn(UseOnContext itemactioncontext) {
+        Level world = itemactioncontext.getLevel();
+        BlockPos blockpos = itemactioncontext.getClickedPos();
         BlockState iblockdata = world.getBlockState(blockpos);
 
-        if (!iblockdata.isOf(Blocks.BEDROCK) && !iblockdata.isOf(Blocks.OBSIDIAN)) return ActionResult.FAIL;
+        if (!iblockdata.is(Blocks.BEDROCK) && !iblockdata.is(Blocks.OBSIDIAN)) return InteractionResult.FAIL;
 
-        BlockPos blockpos1 = blockpos.up();
-        if (!world.isAir(blockpos1)) return ActionResult.FAIL;
+        BlockPos blockpos1 = blockpos.above();
+        if (!world.isEmptyBlock(blockpos1)) return InteractionResult.FAIL;
         double x = (double) blockpos1.getX();
         double y = (double) blockpos1.getY();
         double z = (double) blockpos1.getZ();
-        List<Entity> list = world.getOtherEntities((Entity) null, new Box(x, y, z, x + 1.0D, y + 2.0D, z + 1.0D));
+        List<Entity> list = world.getEntities((Entity) null, new AABB(x, y, z, x + 1.0D, y + 2.0D, z + 1.0D));
 
         if (!list.isEmpty())
-        return ActionResult.FAIL;
+        return InteractionResult.FAIL;
 
-        if (world instanceof ServerWorld) {
-            EndCrystalEntity entityendercrystal = new EndCrystalEntity(world, x + 0.5D, y, z + 0.5D);
+        if (world instanceof ServerLevel) {
+            EndCrystal entityendercrystal = new EndCrystal(world, x + 0.5D, y, z + 0.5D);
 
             entityendercrystal.setShowBottom(false);
-            if (CraftEventFactory.callEntityPlaceEvent(itemactioncontext, entityendercrystal).isCancelled()) return ActionResult.FAIL;
-            world.spawnEntity(entityendercrystal);
-            EnderDragonFight enderdragonbattle = ((ServerWorld) world).getEnderDragonFight();
-            if (enderdragonbattle != null) enderdragonbattle.respawnDragon();
+            if (CraftEventFactory.callEntityPlaceEvent(itemactioncontext, entityendercrystal).isCancelled()) return InteractionResult.FAIL;
+            world.addFreshEntity(entityendercrystal);
+            EndDragonFight enderdragonbattle = ((ServerLevel) world).getDragonFight();
+            if (enderdragonbattle != null) enderdragonbattle.tryRespawn();
         }
-        itemactioncontext.getStack().decrement(1);
-        return ActionResult.SUCCESS;
+        itemactioncontext.getItemInHand().shrink(1);
+        return InteractionResult.SUCCESS;
         //return ActionResult.success(world.isClient);
     }
 

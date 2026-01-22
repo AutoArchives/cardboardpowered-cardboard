@@ -3,6 +3,18 @@ package org.cardboardpowered.mixin.entity;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.CombatTracker;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRules;
 import org.bukkit.GameRule;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -19,27 +31,10 @@ import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinInventory;
 import com.mojang.authlib.GameProfile;
 
-import net.minecraft.component.EnchantmentEffectComponentTypes;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageTracker;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardCriterion;
-// import net.minecraft.scoreboard.ScoreboardPlayerScore;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.rule.GameRules;
-
 // TODO: Fix this whole thing as some items don't drop.
-@Mixin(ServerPlayerEntity.class)
-public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
-
-	public MixinServerPlayerEntity_DeathEvent(World w, GameProfile gp) {
+@Mixin(ServerPlayer.class)
+public abstract class MixinServerPlayerEntity_DeathEvent extends Player {
+	public MixinServerPlayerEntity_DeathEvent(Level w, GameProfile gp) {
 		super(w, gp);
 	}
 
@@ -52,12 +47,12 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
 
     private AtomicReference<PlayerDeathEvent> cardboard$deathEvent = new AtomicReference<>();
 
-    private ServerPlayerEntity cb$this() {
-    	return (ServerPlayerEntity)(Object)this;
+    private ServerPlayer cb$this() {
+    	return (ServerPlayer)(Object)this;
     }
 
-    @Inject(method = "onDeath", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/world/rule/GameRules;getValue(Lnet/minecraft/world/rule/GameRule;)Ljava/lang/Object;",
+    @Inject(method = "die", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/world/level/gamerules/GameRules;get(Lnet/minecraft/world/level/gamerules/GameRule;)Ljava/lang/Object;",
             ordinal = 0),
             cancellable = true)
     private void cardboard$do_PlayerDeathEvent(DamageSource damageSource, CallbackInfo ci) {
@@ -66,30 +61,30 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
             ci.cancel();
         }
 
-        java.util.List<org.bukkit.inventory.ItemStack> loot = new java.util.ArrayList<>(cb$this().getInventory().size());
+        java.util.List<org.bukkit.inventory.ItemStack> loot = new java.util.ArrayList<>(cb$this().getInventory().getContainerSize());
 
-        Boolean keepInventory = cb$this().getEntityWorld().getGameRules().getValue(net.minecraft.world.rule.GameRules.KEEP_INVENTORY) || cb$this().isSpectator();
+        Boolean keepInventory = cb$this().level().getGameRules().get(GameRules.KEEP_INVENTORY) || cb$this().isSpectator();
         // boolean keepInventory = cb$this().getEntityWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || cb$this().isSpectator();
         
         if (!keepInventory) {
-            for (net.minecraft.item.ItemStack item : ((IMixinInventory) ((ServerPlayerEntity) (Object) this).getInventory()).getContents()) {
-                if (!item.isEmpty() && !EnchantmentHelper.hasAnyEnchantmentsWith(item, EnchantmentEffectComponentTypes.PREVENT_EQUIPMENT_DROP)) {
+            for (ItemStack item : ((IMixinInventory) ((ServerPlayer) (Object) this).getInventory()).getContents()) {
+                if (!item.isEmpty() && !EnchantmentHelper.has(item, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
                     loot.add(CraftItemStack.asCraftMirror(item));
                 }
             }
-            net.minecraft.item.ItemStack[] armor = new net.minecraft.item.ItemStack[4];
-            armor[0] = ((ServerPlayerEntity) (Object) this).getEquippedStack(EquipmentSlot.HEAD);
-            armor[1] = ((ServerPlayerEntity) (Object) this).getEquippedStack(EquipmentSlot.BODY);
-            armor[2] = ((ServerPlayerEntity) (Object) this).getEquippedStack(EquipmentSlot.LEGS);
-            armor[3] = ((ServerPlayerEntity) (Object) this).getEquippedStack(EquipmentSlot.FEET);
-            for(net.minecraft.item.ItemStack armorPiece : armor){
-                if(!armorPiece.isEmpty() && !EnchantmentHelper.hasAnyEnchantmentsWith(armorPiece, EnchantmentEffectComponentTypes.PREVENT_EQUIPMENT_DROP)){
+            ItemStack[] armor = new ItemStack[4];
+            armor[0] = ((ServerPlayer) (Object) this).getItemBySlot(EquipmentSlot.HEAD);
+            armor[1] = ((ServerPlayer) (Object) this).getItemBySlot(EquipmentSlot.BODY);
+            armor[2] = ((ServerPlayer) (Object) this).getItemBySlot(EquipmentSlot.LEGS);
+            armor[3] = ((ServerPlayer) (Object) this).getItemBySlot(EquipmentSlot.FEET);
+            for(ItemStack armorPiece : armor){
+                if(!armorPiece.isEmpty() && !EnchantmentHelper.has(armorPiece, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)){
                     loot.add(CraftItemStack.asCraftMirror(armorPiece));
                 }
             }
         }
         // SPIGOT-5071: manually add player loot tables (SPIGOT-5195 - ignores keepInventory rule)
-        this.dropLoot(cb$this().getEntityWorld(), damageSource, cb$this().playerHitTimer > 0);
+        this.dropFromLootTable(cb$this().level(), damageSource, cb$this().lastHurtByPlayerMemoryTime > 0);
 
         ((IMixinEntity)(Object)this).cardboard_getDrops();
 
@@ -99,24 +94,24 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
         // SPIGOT-5188: make sure to clear
         ((IMixinEntity)(Object)this).cardboard_getDrops().clear();
 
-        Text defaultMessage = cb$this().getDamageTracker().getDeathMessage();
+        Component defaultMessage = cb$this().getCombatTracker().getDeathMessage();
         String deathmessage = defaultMessage.getString();
         cardboard$deathMsg.set(deathmessage);
         keepLevel = keepInventory; // SPIGOT-2222: pre-set keepLevel
-        org.bukkit.event.entity.PlayerDeathEvent event = CraftEventFactory.callPlayerDeathEvent(((ServerPlayerEntity) (Object) this), damageSource, loot, deathmessage, keepInventory);
+        org.bukkit.event.entity.PlayerDeathEvent event = CraftEventFactory.callPlayerDeathEvent(((ServerPlayer) (Object) this), damageSource, loot, deathmessage, keepInventory);
         cardboard$deathEvent.set(event);
 
         // SPIGOT-943 - only call if they have an inventory open
-        if (cb$this().currentScreenHandler != cb$this().playerScreenHandler) {
-            this.closeHandledScreen();
+        if (cb$this().containerMenu != cb$this().inventoryMenu) {
+            this.closeContainer();
         }
 
         String deathMessage = event.getDeathMessage();
         cardboard$deathString.set(deathMessage);
     }
 
-    @Inject(method = "onDeath", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/entity/damage/DamageTracker;getDeathMessage()Lnet/minecraft/text/Text;"),
+    @Inject(method = "die", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/world/damagesource/CombatTracker;getDeathMessage()Lnet/minecraft/network/chat/Component;"),
             cancellable = true)
     private void cardboard$check_if_dead(DamageSource damageSource, CallbackInfo ci) {
         boolean cardboard$flag = cardboard$deathString.get() != null && !cardboard$deathString.get().isEmpty();
@@ -125,10 +120,10 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
         }
     }
 
-    @Redirect(method = "onDeath", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/entity/damage/DamageTracker;getDeathMessage()Lnet/minecraft/text/Text;"))
-    private Text cardboard$redirect_death_message(DamageTracker instance) {
-        Text cardboard$component;
+    @Redirect(method = "die", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/world/damagesource/CombatTracker;getDeathMessage()Lnet/minecraft/network/chat/Component;"))
+    private Component cardboard$redirect_death_message(CombatTracker instance) {
+        Component cardboard$component;
         if (cardboard$deathString.get().equals(cardboard$deathMsg.get())) {
             cardboard$component = instance.getDeathMessage();
         } else {
@@ -137,24 +132,24 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends PlayerEntity {
         return cardboard$component;
     }
 
-    @Inject(method = "onDeath", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/server/network/ServerPlayerEntity;isSpectator()Z"))
+    @Inject(method = "die", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/server/level/ServerPlayer;isSpectator()Z"))
     private void cardboard$check_event_drops(DamageSource damageSource, CallbackInfo ci) {
         // SPIGOT-5478 must be called manually now
     	// cb$this().dropXp(damageSource.getAttacker());
     	
-    	this.dropExperience(cb$this().getEntityWorld(), damageSource.getAttacker());
+    	this.dropExperience(cb$this().level(), damageSource.getEntity());
     	
         // we clean the player's inventory after the EntityDeathEvent is called so plugins can get the exact state of the inventory.
         if (!cardboard$deathEvent.get().getKeepInventory()) {
-        	cb$this().getInventory().clear();
+        	cb$this().getInventory().clearContent();
         }
     }
 
-    @Redirect(method = "onDeath",
+    @Redirect(method = "die",
             at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/server/network/ServerPlayerEntity;drop(Lnet/minecraft/server/world/ServerWorld; Lnet/minecraft/entity/damage/DamageSource;)V"))
-    private void cardboard$cancel_vanilla_drop(ServerPlayerEntity instance, ServerWorld world, DamageSource damageSource) {
+            target = "Lnet/minecraft/server/level/ServerPlayer;dropAllDeathLoot(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;)V"))
+    private void cardboard$cancel_vanilla_drop(ServerPlayer instance, ServerLevel world, DamageSource damageSource) {
     }
     
     // Lnet/minecraft/world/entity/LivingEntity;dropAllDeathLoot(Lnet/minecraft/world/damagesource/DamageSource;)V

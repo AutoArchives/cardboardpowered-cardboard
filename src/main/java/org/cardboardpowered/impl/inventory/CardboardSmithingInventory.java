@@ -1,7 +1,6 @@
 package org.cardboardpowered.impl.inventory;
 
-import net.minecraft.inventory.Inventory;
-
+import net.minecraft.world.Container;
 import org.bukkit.craftbukkit.inventory.CraftResultInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -10,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class CardboardSmithingInventory extends CraftResultInventory implements SmithingInventory {
 
-    public CardboardSmithingInventory(Inventory inventory, Inventory resultInventory) {
+    public CardboardSmithingInventory(Container inventory, Container resultInventory) {
         super(inventory, resultInventory);
     }
 

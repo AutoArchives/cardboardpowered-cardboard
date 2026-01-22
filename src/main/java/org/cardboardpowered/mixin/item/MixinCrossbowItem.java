@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.item;
 
-import net.minecraft.item.CrossbowItem;
+import net.minecraft.world.item.CrossbowItem;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
 

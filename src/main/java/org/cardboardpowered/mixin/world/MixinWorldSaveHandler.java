@@ -4,14 +4,10 @@ import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import org.cardboardpowered.interfaces.IMixinWorldSaveHandler;
 import com.mojang.datafixers.DataFixer;
-import net.minecraft.datafixer.DataFixTypes;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.NbtSizeTracker;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.world.PlayerSaveHandler;
+import net.minecraft.world.level.storage.PlayerDataStorage;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -23,16 +19,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.Optional;
 
-@Mixin(value = PlayerSaveHandler.class, priority = 999)
+@Mixin(value = PlayerDataStorage.class, priority = 999)
 public class MixinWorldSaveHandler implements IMixinWorldSaveHandler {
 
     @Shadow
     @Final
-    private File playerDataDir;
+    private File playerDir;
 
     @Shadow
     @Final
-    protected DataFixer dataFixer;
+    protected DataFixer fixerUpper;
 
     
     /**
@@ -149,11 +145,11 @@ public class MixinWorldSaveHandler implements IMixinWorldSaveHandler {
 
     @SuppressWarnings("resource")
     @Override
-    public NbtCompound getPlayerData(String s) {
+    public CompoundTag getPlayerData(String s) {
         try {
-            File file1 = new File(this.playerDataDir, s + ".dat");
+            File file1 = new File(this.playerDir, s + ".dat");
             if (file1.exists()) {
-                return NbtIo.readCompressed(new FileInputStream(file1), NbtSizeTracker.ofUnlimitedBytes());
+                return NbtIo.readCompressed(new FileInputStream(file1), NbtAccounter.unlimitedHeap());
             }
         } catch (Exception exception) {
             CardboardMod.LOGGER.warning("Failed to load player data for " + s);

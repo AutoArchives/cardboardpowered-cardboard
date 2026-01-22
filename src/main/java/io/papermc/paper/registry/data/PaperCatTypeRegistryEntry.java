@@ -5,22 +5,22 @@ import io.papermc.paper.registry.data.CatTypeRegistryEntry;
 import io.papermc.paper.registry.data.client.ClientTextureAsset;
 import io.papermc.paper.registry.data.util.Checks;
 import io.papermc.paper.registry.data.util.Conversions;
-import net.minecraft.entity.passive.CatVariant;
-import net.minecraft.entity.spawn.SpawnConditionSelectors;
-import net.minecraft.util.AssetInfo;
+import net.minecraft.core.ClientAsset;
+import net.minecraft.world.entity.animal.feline.CatVariant;
+import net.minecraft.world.entity.variant.SpawnPrioritySelectors;
 import org.bukkit.entity.Cat;
 import org.jspecify.annotations.Nullable;
 
 public class PaperCatTypeRegistryEntry
 implements CatTypeRegistryEntry {
-	protected AssetInfo.TextureAssetInfo clientTextureAsset;
-    protected SpawnConditionSelectors spawnConditions;
+	protected ClientAsset.ResourceTexture clientTextureAsset;
+    protected SpawnPrioritySelectors spawnConditions;
     protected final Conversions conversions;
 
     public PaperCatTypeRegistryEntry(Conversions conversions, @Nullable CatVariant internal) {
         this.conversions = conversions;
         if (internal == null) {
-            this.spawnConditions = SpawnConditionSelectors.EMPTY;
+            this.spawnConditions = SpawnPrioritySelectors.EMPTY;
             return;
         }
         this.clientTextureAsset = internal.assetInfo();

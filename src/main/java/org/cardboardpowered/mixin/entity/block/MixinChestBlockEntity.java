@@ -17,13 +17,13 @@ import org.cardboardpowered.interfaces.IMixinInventory;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
 import me.isaiah.common.cmixin.IMixinChestBlockEntity;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.ChestBlockEntity;
-import net.minecraft.block.entity.ViewerCountManager;
-import net.minecraft.entity.ContainerUser;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.entity.ContainerUser;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 
 /**
  * @see {@link me.isaiah.common.cmixin.IMixinChestBlockEntity}
@@ -32,16 +32,16 @@ import net.minecraft.util.math.BlockPos;
 public class MixinChestBlockEntity implements IMixinInventory {
 	
     @Shadow
-    private ViewerCountManager stateManager;
+    private ContainerOpenersCounter openersCounter;
 
-    @Shadow public DefaultedList<ItemStack> inventory;
+    @Shadow public NonNullList<ItemStack> items;
 
     public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
     private int maxStack = MAX_STACK;
 
     @Override
     public List<ItemStack> getContents() {
-        return inventory;
+        return items;
     }
 
     @Override
@@ -77,8 +77,8 @@ public class MixinChestBlockEntity implements IMixinInventory {
 
     @Override
     public Location getLocation() {
-        BlockPos pos = ((ChestBlockEntity)(Object)this).pos;
-        return new Location(((IMixinWorld)(((ChestBlockEntity)(Object)this).world)).getCraftWorld(), pos.x, pos.y, pos.z);
+        BlockPos pos = ((ChestBlockEntity)(Object)this).worldPosition;
+        return new Location(((IMixinWorld)(((ChestBlockEntity)(Object)this).level)).getCraftWorld(), pos.x, pos.y, pos.z);
     }
 
     private int oldPower_B;
@@ -86,20 +86,20 @@ public class MixinChestBlockEntity implements IMixinInventory {
     /**
      * @reason Redstone Event - store old power value
      */
-    @Inject(at = @At("HEAD"), method = "onOpen")
+    @Inject(at = @At("HEAD"), method = "startOpen")
     public void doBukkitEvent_RedstoneChange_1(ContainerUser e, CallbackInfo ci) {
-        oldPower_B = Math.max(0, Math.min(15, stateManager.getViewerCount())); // CraftBukkit - Get power before new viewer is added
+        oldPower_B = Math.max(0, Math.min(15, openersCounter.getOpenerCount())); // CraftBukkit - Get power before new viewer is added
     }
 
     /**
      * @reason Redstone Event
      */
-    @Inject(at = @At("TAIL"), method = "onOpen")
+    @Inject(at = @At("TAIL"), method = "startOpen")
     public void doBukkitEvent_RedstoneChange_2(ContainerUser e, CallbackInfo ci) {
-        if (((ChestBlockEntity)(Object)this).getCachedState().getBlock() == Blocks.TRAPPED_CHEST) {
-            int newPower = Math.max(0, Math.min(15, stateManager.getViewerCount()));
+        if (((ChestBlockEntity)(Object)this).getBlockState().getBlock() == Blocks.TRAPPED_CHEST) {
+            int newPower = Math.max(0, Math.min(15, openersCounter.getOpenerCount()));
             if (oldPower_B != newPower)
-                CraftEventFactory.callRedstoneChange(((ChestBlockEntity)(Object)this).world, ((ChestBlockEntity)(Object)this).pos, oldPower_B, newPower);
+                CraftEventFactory.callRedstoneChange(((ChestBlockEntity)(Object)this).level, ((ChestBlockEntity)(Object)this).worldPosition, oldPower_B, newPower);
         }
     }
 

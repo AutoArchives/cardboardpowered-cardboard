@@ -9,11 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import me.isaiah.common.events.LeavesDecayCallback;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.LeavesBlock;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.LeavesBlock;
 
 @MixinInfo(events = {"LeavesDecayEvent"})
 @Mixin(LeavesBlock.class)

@@ -1,7 +1,10 @@
 package org.cardboardpowered.mixin.inventory;
 
 import java.util.List;
-
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.TransientCraftingContainer;
+import net.minecraft.world.item.ItemStack;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.entity.HumanEntity;
@@ -11,23 +14,18 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import org.cardboardpowered.interfaces.IMixinInventory;
 
-import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.util.collection.DefaultedList;
-
-@Mixin(CraftingInventory.class)
+@Mixin(TransientCraftingContainer.class)
 public class MixinCraftingInventory implements IMixinInventory {
 
-    @Shadow public ScreenHandler handler;
-    @Shadow public DefaultedList<ItemStack> stacks;
+    @Shadow public AbstractContainerMenu menu;
+    @Shadow public NonNullList<ItemStack> items;
 
     public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
     public int maxStack = MAX_STACK;
 
     @Override
     public List<ItemStack> getContents() {
-        return stacks;
+        return items;
     }
 
     @Override

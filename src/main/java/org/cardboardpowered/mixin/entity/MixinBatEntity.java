@@ -1,5 +1,8 @@
 package org.cardboardpowered.mixin.entity;
 
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Bat;
 import org.bukkit.event.entity.BatToggleSleepEvent;
@@ -11,33 +14,28 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import org.cardboardpowered.interfaces.IMixinEntity;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.passive.BatEntity;
-import net.minecraft.server.world.ServerWorld;
-
-@Mixin(BatEntity.class)
+@Mixin(net.minecraft.world.entity.ambient.Bat.class)
 public class MixinBatEntity {
 
     
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/passive/BatEntity;setRoosting(Z)V"),
-            method = "mobTick")
-    public void mobTick_doBatSleepEvent(BatEntity bat, boolean sleep) {
-        if (handleBatToggleSleepEvent((BatEntity)(Object)this, !sleep)) {
-            this.setRoosting(sleep);
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ambient/Bat;setResting(Z)V"),
+            method = "customServerAiStep")
+    public void mobTick_doBatSleepEvent(net.minecraft.world.entity.ambient.Bat bat, boolean sleep) {
+        if (handleBatToggleSleepEvent((net.minecraft.world.entity.ambient.Bat)(Object)this, !sleep)) {
+            this.setResting(sleep);
         }
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/passive/BatEntity;setRoosting(Z)V"),
-            method = "damage")
-    public void damage_doBatSleepEvent(BatEntity bat, boolean sleep, ServerWorld world, DamageSource source, float amount) {
-        if (handleBatToggleSleepEvent((BatEntity)(Object)this, true)) {
-            this.setRoosting(false);
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ambient/Bat;setResting(Z)V"),
+            method = "hurtServer")
+    public void damage_doBatSleepEvent(net.minecraft.world.entity.ambient.Bat bat, boolean sleep, ServerLevel world, DamageSource source, float amount) {
+        if (handleBatToggleSleepEvent((net.minecraft.world.entity.ambient.Bat)(Object)this, true)) {
+            this.setResting(false);
         }
     }
 
     @Shadow
-    public void setRoosting(boolean b) {}
+    public void setResting(boolean b) {}
 
     // note: 1.21.4: awake is always == true.
     private static boolean handleBatToggleSleepEvent(Entity bat, boolean awake) {

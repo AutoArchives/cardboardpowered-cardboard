@@ -1,16 +1,13 @@
 package org.cardboardpowered.impl.block;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.block.entity.BeaconBlockEntity;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.inventory.ContainerLock;
-import net.minecraft.predicate.NumberRange;
-import net.minecraft.predicate.component.ComponentMapPredicate;
-import net.minecraft.predicate.component.ComponentsPredicate;
-import net.minecraft.predicate.item.ItemPredicate;
-import net.minecraft.registry.Registries;
-import net.minecraft.text.Text;
-
+import net.minecraft.advancements.criterion.DataComponentMatchers;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.core.component.DataComponentExactPredicate;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.LockCode;
+import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -59,7 +56,7 @@ public class CardboardBeacon extends CardboardBlockEntityState<BeaconBlockEntity
 
     @Override
     public int getTier() {
-        return this.getSnapshot().level;
+        return this.getSnapshot().levels;
     }
 
     @Override
@@ -91,7 +88,7 @@ public class CardboardBeacon extends CardboardBlockEntityState<BeaconBlockEntity
     @Override
     public String getCustomName() {
         BeaconBlockEntity beacon = this.getSnapshot();
-        return beacon.customName != null ? CraftChatMessage.fromComponent(beacon.customName) : null;
+        return beacon.name != null ? CraftChatMessage.fromComponent(beacon.name) : null;
     }
 
     @Override
@@ -101,12 +98,12 @@ public class CardboardBeacon extends CardboardBlockEntityState<BeaconBlockEntity
 
     @Override
     public boolean isLocked() {
-    	return this.getSnapshot().lock != ContainerLock.EMPTY;
+    	return this.getSnapshot().lockKey != LockCode.NO_LOCK;
     }
 
     @Override
     public String getLock() {
-        Optional<? extends Text> customName = this.getSnapshot().lock.predicate().components().exact().toChanges().get(DataComponentTypes.CUSTOM_NAME);
+        Optional<? extends net.minecraft.network.chat.Component> customName = this.getSnapshot().lockKey.predicate().components().exact().asPatch().get(DataComponents.CUSTOM_NAME);
 
         return (customName != null) ? customName.map(CraftChatMessage::fromComponent).orElse("") : "";
     }
@@ -114,19 +111,19 @@ public class CardboardBeacon extends CardboardBlockEntityState<BeaconBlockEntity
     @Override
     public void setLock(String key) {
         if (key == null) {
-            this.getSnapshot().lock = ContainerLock.EMPTY;
+            this.getSnapshot().lockKey = LockCode.NO_LOCK;
         } else {
-        	ComponentMapPredicate predicate = ComponentMapPredicate.builder().add(DataComponentTypes.CUSTOM_NAME, CraftChatMessage.fromStringOrNull(key)).build();
-            this.getSnapshot().lock = new ContainerLock(new ItemPredicate(Optional.empty(), NumberRange.IntRange.ANY, new ComponentsPredicate(predicate, Collections.emptyMap())));
+        	DataComponentExactPredicate predicate = DataComponentExactPredicate.builder().expect(DataComponents.CUSTOM_NAME, CraftChatMessage.fromStringOrNull(key)).build();
+            this.getSnapshot().lockKey = new LockCode(new ItemPredicate(Optional.empty(), MinMaxBounds.Ints.ANY, new DataComponentMatchers(predicate, Collections.emptyMap())));
         }
     }
     
     @Override
     public void setLockItem(ItemStack key) {
         if (key == null) {
-            this.getSnapshot().lock = ContainerLock.EMPTY;
+            this.getSnapshot().lockKey = LockCode.NO_LOCK;
         } else {
-            this.getSnapshot().lock = new ContainerLock(CraftItemStack.asCriterionConditionItem(key));
+            this.getSnapshot().lockKey = new LockCode(CraftItemStack.asCriterionConditionItem(key));
         }
     }
 

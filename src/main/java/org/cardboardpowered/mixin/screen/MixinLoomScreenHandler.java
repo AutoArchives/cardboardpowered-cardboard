@@ -2,6 +2,10 @@ package org.cardboardpowered.mixin.screen;
 
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.impl.inventory.CardboardLoomInventory;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.LoomMenu;
 import org.bukkit.entity.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -11,22 +15,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.cardboardpowered.interfaces.IMixinEntity;
 
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.screen.LoomScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
-
-@Mixin(LoomScreenHandler.class)
+@Mixin(LoomMenu.class)
 public class MixinLoomScreenHandler extends MixinScreenHandler {
 
-    @Shadow public Inventory input;
-    @Shadow public Inventory output;
+    @Shadow public Container inputContainer;
+    @Shadow public Container outputContainer;
 
     private CardboardInventoryView bukkitEntity = null;
     private Player player;
 
-    @Inject(method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/screen/ScreenHandlerContext;)V", at = @At("TAIL"))
-    public void setPlayerInv(int i, PlayerInventory playerinventory, ScreenHandlerContext containeraccesss, CallbackInfo ci) {
+    @Inject(method = "<init>(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/inventory/ContainerLevelAccess;)V", at = @At("TAIL"))
+    public void setPlayerInv(int i, Inventory playerinventory, ContainerLevelAccess containeraccesss, CallbackInfo ci) {
         this.player = (Player)((IMixinEntity)playerinventory.player).getBukkitEntity();
     }
 
@@ -34,8 +33,8 @@ public class MixinLoomScreenHandler extends MixinScreenHandler {
     public CardboardInventoryView getBukkitView() {
         if (bukkitEntity != null) return bukkitEntity;
 
-        CardboardLoomInventory inventory = new CardboardLoomInventory(this.input, this.output);
-        bukkitEntity = new CardboardInventoryView(this.player, inventory, (LoomScreenHandler)(Object)this);
+        CardboardLoomInventory inventory = new CardboardLoomInventory(this.inputContainer, this.outputContainer);
+        bukkitEntity = new CardboardInventoryView(this.player, inventory, (LoomMenu)(Object)this);
         return bukkitEntity;
     }
 

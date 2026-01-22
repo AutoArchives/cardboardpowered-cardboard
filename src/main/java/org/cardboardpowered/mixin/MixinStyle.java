@@ -1,9 +1,8 @@
 package org.cardboardpowered.mixin;
 
+import net.minecraft.network.chat.Style;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-
-import net.minecraft.text.Style;
 
 @Mixin(Style.class)
 public class MixinStyle {
@@ -18,7 +17,7 @@ public class MixinStyle {
     }
 
     public Style setUnderline(Boolean obool) {
-        return ((Style)(Object)this).withBold(this.bold).withUnderline(obool);
+        return ((Style)(Object)this).withBold(this.bold).withUnderlined(obool);
     }
 
     public Style setRandom(Boolean obool) {

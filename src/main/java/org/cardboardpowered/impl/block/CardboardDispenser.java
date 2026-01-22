@@ -1,11 +1,10 @@
 package org.cardboardpowered.impl.block;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.DispenserBlock;
-import net.minecraft.block.entity.DispenserBlockEntity;
-
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.entity.DispenserBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -61,7 +60,7 @@ public class CardboardDispenser extends CardboardLootableBlock<DispenserBlockEnt
 		if(block.getType() != Material.DISPENSER) return false;
 
 		BlockState state = world.getHandle().getBlockState(getPosition());
-		((DispenserBlock) Blocks.DISPENSER).dispense(((CraftWorld) this.getWorld()).getHandle(), state, this.getPosition());
+		((DispenserBlock) Blocks.DISPENSER).dispenseFrom(((CraftWorld) this.getWorld()).getHandle(), state, this.getPosition());
 		return true;
 	}
 

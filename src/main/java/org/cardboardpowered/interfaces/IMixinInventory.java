@@ -9,11 +9,10 @@
  */
 package org.cardboardpowered.interfaces;
 
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.inventory.InventoryHolder;
-
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Recipe;
 
 public interface IMixinInventory {
 

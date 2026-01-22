@@ -1,22 +1,20 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.passive.AbstractDonkeyEntity;
-
 import java.util.UUID;
-
+import net.minecraft.world.entity.animal.equine.AbstractChestedHorse;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.ChestedHorse;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class CardboardChestedHorse extends CardboardAbstractHorse implements ChestedHorse {
 
-    public CardboardChestedHorse(CraftServer server, AbstractDonkeyEntity entity) {
+    public CardboardChestedHorse(CraftServer server, AbstractChestedHorse entity) {
         super(server, entity);
     }
 
     @Override
-    public AbstractDonkeyEntity getHandle() {
-        return (AbstractDonkeyEntity)super.getHandle();
+    public AbstractChestedHorse getHandle() {
+        return (AbstractChestedHorse)super.getHandle();
     }
 
     @Override
@@ -28,7 +26,7 @@ public abstract class CardboardChestedHorse extends CardboardAbstractHorse imple
     public void setCarryingChest(boolean chest) {
         if (chest == isCarryingChest()) return;
 
-        this.getHandle().setHasChest(chest);
+        this.getHandle().setChest(chest);
         // this.getHandle().onChestedStatusChanged();
     }
 

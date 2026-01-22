@@ -3,7 +3,11 @@ package org.cardboardpowered.mixin.screen;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.DataSlot;
+import net.minecraft.world.inventory.EnchantmentMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -25,48 +29,27 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinScreenHandlerContext;
 
-import net.minecraft.advancement.criterion.Criteria;
-import net.minecraft.block.Blocks;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.EnchantmentLevelEntry;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-// import net.minecraft.item.EnchantedBookItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.screen.EnchantmentScreenHandler;
-import net.minecraft.screen.Property;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
-import net.minecraft.registry.Registries;
-
 // MixinInfo(events = {"PrepareItemEnchantEvent", "EnchantItemEvent"})
-@Mixin(EnchantmentScreenHandler.class)
+@Mixin(EnchantmentMenu.class)
 public class MixinEnchantmentScreenHandler extends MixinScreenHandler {
 
 	// TODO: Update!
 	// TODO: 1.20.5
 	
-    @Shadow public Inventory inventory;
-    @Shadow public ScreenHandlerContext context;
+    @Shadow public Container enchantSlots;
+    @Shadow public ContainerLevelAccess access;
     //@Shadow public Random random;
-    @Shadow public Property seed;
+    @Shadow public DataSlot enchantmentSeed;
 
-    @Shadow public int[] enchantmentPower;
-    @Shadow public int[] enchantmentId;
-    @Shadow public int[] enchantmentLevel;
+    @Shadow public int[] costs;
+    @Shadow public int[] enchantClue;
+    @Shadow public int[] levelClue;
 
     private CardboardInventoryView bukkitEntity = null;
     private Player player;
 
-    @Inject(method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/screen/ScreenHandlerContext;)V", at = @At("TAIL"))
-    public void setPlayerInv(int i, PlayerInventory playerinventory, ScreenHandlerContext containeraccesss, CallbackInfo ci) {
+    @Inject(method = "<init>(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/inventory/ContainerLevelAccess;)V", at = @At("TAIL"))
+    public void setPlayerInv(int i, Inventory playerinventory, ContainerLevelAccess containeraccesss, CallbackInfo ci) {
         this.player = (Player)((IMixinEntity)playerinventory.player).getBukkitEntity();
     }
 
@@ -242,8 +225,8 @@ public class MixinEnchantmentScreenHandler extends MixinScreenHandler {
     public CardboardInventoryView getBukkitView() {
         if (bukkitEntity != null) return bukkitEntity;
 
-        CardboardEnchantingInventory inventory = new CardboardEnchantingInventory(this.inventory);
-        bukkitEntity = new CardboardInventoryView(this.player, inventory, (EnchantmentScreenHandler)(Object)this);
+        CardboardEnchantingInventory inventory = new CardboardEnchantingInventory(this.enchantSlots);
+        bukkitEntity = new CardboardInventoryView(this.player, inventory, (EnchantmentMenu)(Object)this);
         return bukkitEntity;
     }
 

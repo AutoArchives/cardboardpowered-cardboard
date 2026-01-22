@@ -3,7 +3,9 @@ package org.cardboardpowered;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.dedicated.DedicatedServer;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.potion.PotionType;
@@ -11,9 +13,6 @@ import org.bukkit.potion.PotionType;
 import org.cardboardpowered.CardboardMod;
 
 import io.izzel.arclight.api.EnumHelper;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.dedicated.MinecraftDedicatedServer;
-import net.minecraft.util.Identifier;
 
 /**
  * Registry API Util
@@ -28,7 +27,7 @@ public class RegistryUtil {
 	 * @see {@link org.bukkit.craftbukkit.CraftRegistry}
 	 * @see {@link io.papermc.paper.registry.PaperRegistries}
 	 */
-	public static void inject_into_bukkit_registry(MinecraftDedicatedServer server) {
+	public static void inject_into_bukkit_registry(DedicatedServer server) {
 		register_potions();
 	}
 	
@@ -42,8 +41,8 @@ public class RegistryUtil {
 	private static void register_potions() {
 		List<PotionType> newTypes = new ArrayList<>();
 
-		for (var potion : Registries.POTION) {
-			Identifier location = Registries.POTION.getId(potion);
+		for (var potion : BuiltInRegistries.POTION) {
+			Identifier location = BuiltInRegistries.POTION.getKey(potion);
 			String name = normalizeName(location.toString());
 			try {
 				PotionType.valueOf(name);

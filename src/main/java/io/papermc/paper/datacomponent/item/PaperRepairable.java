@@ -7,11 +7,11 @@ import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.inventory.ItemType;
 
 public record PaperRepairable(
-    net.minecraft.component.type.RepairableComponent impl
-) implements Repairable, Handleable<net.minecraft.component.type.RepairableComponent> {
+    net.minecraft.world.item.enchantment.Repairable impl
+) implements Repairable, Handleable<net.minecraft.world.item.enchantment.Repairable> {
 
     @Override
-    public net.minecraft.component.type.RepairableComponent getHandle() {
+    public net.minecraft.world.item.enchantment.Repairable getHandle() {
         return this.impl;
     }
 

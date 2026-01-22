@@ -1,16 +1,16 @@
 package org.cardboardpowered.mixin.block;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BambooSaplingBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import net.minecraft.block.BambooShootBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(BambooShootBlock.class)
+@Mixin(BambooSaplingBlock.class)
 public class MixinBambooSaplingBlock {
 
-    public boolean bukkitSpreadEvent(World world, BlockPos pos, BlockState newState, int flags) {
-        return CraftEventFactory.handleBlockSpreadEvent(world, pos.down(), pos, newState, flags);
+    public boolean bukkitSpreadEvent(Level world, BlockPos pos, BlockState newState, int flags) {
+        return CraftEventFactory.handleBlockSpreadEvent(world, pos.below(), pos, newState, flags);
     }
 }

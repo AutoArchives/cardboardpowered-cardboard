@@ -1,10 +1,9 @@
 package org.cardboardpowered.impl.entity;
 
 import net.kyori.adventure.util.TriState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.LazyEntityReference;
-
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.item.ItemEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -35,12 +34,12 @@ public class ItemEntityImpl extends CraftEntity implements Item {
 
     @Override
     public ItemStack getItemStack() {
-        return CraftItemStack.asCraftMirror(item.getStack());
+        return CraftItemStack.asCraftMirror(item.getItem());
     }
 
     @Override
     public void setItemStack(ItemStack stack) {
-        item.setStack(CraftItemStack.asNMSCopy(stack));
+        item.setItem(CraftItemStack.asNMSCopy(stack));
     }
 
     @Override
@@ -70,34 +69,34 @@ public class ItemEntityImpl extends CraftEntity implements Item {
     }
 
     public void setOwner(UUID uuid) {
-        item.setOwner(uuid);
+        item.setTarget(uuid);
     }
 
 
     // Spigot #758
     public UUID getOwner() {
-        return item.getOwner().getUuid();
+        return item.getOwner().getUUID();
     }
 
     // Spigot #758
     public void setThrower(UUID uuid) {
-        item.thrower = uuid != null ? new LazyEntityReference<Entity>(uuid) : null;;
+        item.thrower = uuid != null ? new EntityReference<Entity>(uuid) : null;;
     }
 
     // Spigot #758
     public UUID getThrower() {
-    	LazyEntityReference<Entity> thrower = item.thrower;
-    	return thrower != null ? thrower.getUuid() : null;
+    	EntityReference<Entity> thrower = item.thrower;
+    	return thrower != null ? thrower.getUUID() : null;
     }
 
     @Override
     public boolean canMobPickup() {
-        return !item.cannotPickup();
+        return !item.hasPickUpDelay();
     }
 
     @Override
     public boolean canPlayerPickup() {
-        return !item.cannotPickup();
+        return !item.hasPickUpDelay();
     }
 
     @Override
@@ -121,7 +120,7 @@ public class ItemEntityImpl extends CraftEntity implements Item {
     @Override
     public boolean willAge() {
         // TODO Auto-generated method stub
-        return this.getHandle().getItemAge() != -32768;
+        return this.getHandle().getAge() != -32768;
     }
 
 	@Override
@@ -131,7 +130,7 @@ public class ItemEntityImpl extends CraftEntity implements Item {
 
 	@Override
 	public boolean isUnlimitedLifetime() {
-		return this.getHandle().getItemAge() == -32768;
+		return this.getHandle().getAge() == -32768;
 	}
 
 	@Override

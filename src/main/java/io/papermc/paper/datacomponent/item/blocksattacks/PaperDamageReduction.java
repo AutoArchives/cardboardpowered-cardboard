@@ -6,19 +6,19 @@ import io.papermc.paper.registry.data.util.Conversions;
 import io.papermc.paper.registry.set.PaperRegistrySets;
 import io.papermc.paper.registry.set.RegistryKeySet;
 import java.util.Optional;
-import net.minecraft.component.type.BlocksAttacksComponent;
-import net.minecraft.entity.damage.DamageType;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntryList;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.item.component.BlocksAttacks;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.checkerframework.checker.index.qual.Positive;
 import org.jspecify.annotations.Nullable;
 
-public record PaperDamageReduction(BlocksAttacksComponent.DamageReduction impl) implements DamageReduction,
-Handleable<BlocksAttacksComponent.DamageReduction>
+public record PaperDamageReduction(BlocksAttacks.DamageReduction impl) implements DamageReduction,
+Handleable<BlocksAttacks.DamageReduction>
 {
     @Override
-    public BlocksAttacksComponent.DamageReduction getHandle() {
+    public BlocksAttacks.DamageReduction getHandle() {
         return this.impl;
     }
 
@@ -40,7 +40,7 @@ Handleable<BlocksAttacksComponent.DamageReduction>
 
     static final class BuilderImpl
     implements DamageReduction.Builder {
-        private Optional<RegistryEntryList<DamageType>> type = Optional.empty();
+        private Optional<HolderSet<DamageType>> type = Optional.empty();
         private float horizontalBlockingAngle = 90.0f;
         private float base = 0.0f;
         private float factor = 1.0f;
@@ -49,7 +49,7 @@ Handleable<BlocksAttacksComponent.DamageReduction>
         }
 
         public DamageReduction.Builder type(@Nullable RegistryKeySet<org.bukkit.damage.DamageType> type) {
-            this.type = Optional.ofNullable(type).map(set -> PaperRegistrySets.convertToNms(RegistryKeys.DAMAGE_TYPE, Conversions.global().lookup(), set));
+            this.type = Optional.ofNullable(type).map(set -> PaperRegistrySets.convertToNms(Registries.DAMAGE_TYPE, Conversions.global().lookup(), set));
             return this;
         }
 
@@ -70,7 +70,7 @@ Handleable<BlocksAttacksComponent.DamageReduction>
         }
 
         public DamageReduction build() {
-            return new PaperDamageReduction(new BlocksAttacksComponent.DamageReduction(this.horizontalBlockingAngle, this.type, this.base, this.factor));
+            return new PaperDamageReduction(new BlocksAttacks.DamageReduction(this.horizontalBlockingAngle, this.type, this.base, this.factor));
         }
     }
 }

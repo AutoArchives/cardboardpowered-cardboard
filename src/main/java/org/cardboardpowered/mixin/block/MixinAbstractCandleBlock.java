@@ -1,11 +1,11 @@
 package org.cardboardpowered.mixin.block;
 
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.AbstractCandleBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import net.minecraft.block.AbstractCandleBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.world.World;
 import org.bukkit.event.block.BlockIgniteEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,11 +16,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinAbstractCandleBlock {
 
     @Inject(method = "onProjectileHit", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/block/AbstractCandleBlock;" +
-                    "setLit(Lnet/minecraft/world/WorldAccess;" +
-                    "Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Z)V"),
+            target = "Lnet/minecraft/world/level/block/AbstractCandleBlock;setLit(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Z)V"),
             cancellable = true)
-    private void callBlockIgniteEvent(World world, BlockState state, BlockHitResult hit, ProjectileEntity projectile, CallbackInfo ci) {
+    private void callBlockIgniteEvent(Level world, BlockState state, BlockHitResult hit, Projectile projectile, CallbackInfo ci) {
         // CraftBukkit start
         if (CraftEventFactory.callBlockIgniteEvent(world, hit.getBlockPos(), BlockIgniteEvent.IgniteCause.ARROW, projectile).isCancelled()) {
             ci.cancel();

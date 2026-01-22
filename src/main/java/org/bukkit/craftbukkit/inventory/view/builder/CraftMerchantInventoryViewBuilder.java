@@ -6,10 +6,10 @@ import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 import io.papermc.paper.adventure.PaperAdventure;
 import net.kyori.adventure.text.Component;
-import net.minecraft.screen.MerchantScreenHandler;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.MerchantMenu;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.inventory.CraftMerchant;
 // import org.bukkit.craftbukkit.inventory.CraftMerchantCustom;
@@ -21,9 +21,9 @@ import org.jspecify.annotations.Nullable;
 
 public class CraftMerchantInventoryViewBuilder<V extends InventoryView> extends CraftAbstractInventoryViewBuilder<V> implements MerchantInventoryViewBuilder<V> {
 
-    private net.minecraft.village.@Nullable Merchant merchant;
+    private net.minecraft.world.item.trading.@Nullable Merchant merchant;
 
-    public CraftMerchantInventoryViewBuilder(final ScreenHandlerType<?> handle) {
+    public CraftMerchantInventoryViewBuilder(final MenuType<?> handle) {
         super(handle);
     }
 
@@ -50,16 +50,16 @@ public class CraftMerchantInventoryViewBuilder<V extends InventoryView> extends 
         Preconditions.checkArgument(this.title != null, "The given title must not be null");
         Preconditions.checkArgument(player instanceof CraftHumanEntity, "The given player must be a CraftHumanEntity");
         final CraftHumanEntity craftHuman = (CraftHumanEntity) player;
-        Preconditions.checkArgument(craftHuman.getHandle() instanceof ServerPlayerEntity, "The given player must be an EntityPlayer");
-        final ServerPlayerEntity serverPlayer = (ServerPlayerEntity) craftHuman.getHandle();
+        Preconditions.checkArgument(craftHuman.getHandle() instanceof ServerPlayer, "The given player must be an EntityPlayer");
+        final ServerPlayer serverPlayer = (ServerPlayer) craftHuman.getHandle();
 
-        final MerchantScreenHandler container;
+        final MerchantMenu container;
         if (this.merchant == null) {
             // TODO
         	return null;
         	// container = new MerchantScreenHandler(serverPlayer.nextContainerCounter(), serverPlayer.getInventory(), new CraftMerchantCustom(title).getMerchant());
         } else {
-            container = new MerchantScreenHandler(((IMixinServerEntityPlayer)serverPlayer).nextContainerCounter(), serverPlayer.getInventory(), this.merchant);
+            container = new MerchantMenu(((IMixinServerEntityPlayer)serverPlayer).nextContainerCounter(), serverPlayer.getInventory(), this.merchant);
         }
         
         IMixinScreenHandler sh = (IMixinScreenHandler) container;
@@ -74,7 +74,7 @@ public class CraftMerchantInventoryViewBuilder<V extends InventoryView> extends 
     }
 
     @Override
-    protected ScreenHandler buildContainer(final ServerPlayerEntity player) {
+    protected AbstractContainerMenu buildContainer(final ServerPlayer player) {
         throw new UnsupportedOperationException("buildContainer is not supported for CraftMerchantInventoryViewBuilder");
     }
 

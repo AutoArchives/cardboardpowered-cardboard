@@ -2,9 +2,6 @@ package org.cardboardpowered.impl.inventory.recipe;
 
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinRecipeManager;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.collection.DefaultedList;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
@@ -15,16 +12,18 @@ import org.bukkit.inventory.recipe.CraftingBookCategory;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.crafting.Ingredient;
 
 public class CardboardShapelessRecipe extends ShapelessRecipe implements RecipeInterface {
 
-    private net.minecraft.recipe.ShapelessRecipe recipe;
+    private net.minecraft.world.item.crafting.ShapelessRecipe recipe;
 
     public CardboardShapelessRecipe(NamespacedKey key, ItemStack result) {
         super(key, result);
     }
 
-    public CardboardShapelessRecipe(Identifier id, ItemStack result, net.minecraft.recipe.ShapelessRecipe recipe) {
+    public CardboardShapelessRecipe(Identifier id, ItemStack result, net.minecraft.world.item.crafting.ShapelessRecipe recipe) {
         this(CraftNamespacedKey.fromMinecraft(id), result);
         this.recipe = recipe;
     }
@@ -50,7 +49,7 @@ public class CardboardShapelessRecipe extends ShapelessRecipe implements RecipeI
             data.add(this.toNMS(i, true));
         }
         
-        ((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(getKey(), new net.minecraft.recipe.ShapelessRecipe(this.getGroup(), RecipeInterface.getCategory(this.getCategory()), CraftItemStack.asNMSCopy(this.getResult()), data));
+        ((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(getKey(), new net.minecraft.world.item.crafting.ShapelessRecipe(this.getGroup(), RecipeInterface.getCategory(this.getCategory()), CraftItemStack.asNMSCopy(this.getResult()), data));
     }
     
     // TODO: Update API to 1.19.4

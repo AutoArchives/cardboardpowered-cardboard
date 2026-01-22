@@ -1,19 +1,18 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.passive.IronGolemEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.IronGolem;
 
 public class CardboardIronGolem extends CardboardGolem implements IronGolem {
 
-    public CardboardIronGolem(CraftServer server, IronGolemEntity entity) {
+    public CardboardIronGolem(CraftServer server, net.minecraft.world.entity.animal.golem.IronGolem entity) {
         super(server, entity);
     }
 
     @Override
-    public IronGolemEntity getHandle() {
-        return (IronGolemEntity) nms;
+    public net.minecraft.world.entity.animal.golem.IronGolem getHandle() {
+        return (net.minecraft.world.entity.animal.golem.IronGolem) nms;
     }
 
     @Override

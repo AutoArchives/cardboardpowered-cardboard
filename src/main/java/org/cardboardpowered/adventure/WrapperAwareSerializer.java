@@ -12,11 +12,9 @@ import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
-import net.minecraft.registry.RegistryOps;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextCodecs;
+import net.minecraft.resources.RegistryOps;
 
-public class WrapperAwareSerializer implements ComponentSerializer<Component, Component, Text> {
+public class WrapperAwareSerializer implements ComponentSerializer<Component, Component, net.minecraft.network.chat.Component> {
 
 	private final Supplier<RegistryOps<Object>> javaOps;
 	
@@ -35,7 +33,7 @@ public class WrapperAwareSerializer implements ComponentSerializer<Component, Co
     }
     */
 
-    public Component deserialize(Text input) {
+    public Component deserialize(net.minecraft.network.chat.Component input) {
         if (input instanceof CardboardAdventureComponent) {
             return ((CardboardAdventureComponent)input).adventure;
         }
@@ -68,7 +66,7 @@ public class WrapperAwareSerializer implements ComponentSerializer<Component, Co
     }*/
 
     @Override
-    public Text serialize(final Component component) {
+    public net.minecraft.network.chat.Component serialize(final Component component) {
     	
     	IMixinMinecraftServer mc = (IMixinMinecraftServer) ICommonMod.getIServer().getMinecraft();
     	

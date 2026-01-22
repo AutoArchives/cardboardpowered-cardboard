@@ -6,16 +6,16 @@ import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import java.util.Optional;
-import net.minecraft.text.RawFilteredPair;
+import net.minecraft.server.network.Filterable;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.jetbrains.annotations.Unmodifiable;
 
 public record PaperWritableBookContent(
-    net.minecraft.component.type.WritableBookContentComponent impl
-) implements WritableBookContent, Handleable<net.minecraft.component.type.WritableBookContentComponent> {
+    net.minecraft.world.item.component.WritableBookContent impl
+) implements WritableBookContent, Handleable<net.minecraft.world.item.component.WritableBookContent> {
 
     @Override
-    public net.minecraft.component.type.WritableBookContentComponent getHandle() {
+    public net.minecraft.world.item.component.WritableBookContent getHandle() {
         return this.impl;
     }
 
@@ -26,13 +26,13 @@ public record PaperWritableBookContent(
 
     static final class BuilderImpl implements WritableBookContent.Builder {
 
-        private final List<RawFilteredPair<String>> pages = new ObjectArrayList<>();
+        private final List<Filterable<String>> pages = new ObjectArrayList<>();
 
         private static void validatePageLength(final String page) {
             Preconditions.checkArgument(
-                page.length() <= net.minecraft.component.type.WritableBookContentComponent.MAX_PAGE_LENGTH,
+                page.length() <= net.minecraft.world.item.component.WritableBookContent.PAGE_EDIT_LENGTH,
                 "Cannot have page length more than %s, had %s",
-                net.minecraft.component.type.WritableBookContentComponent.MAX_PAGE_LENGTH,
+                net.minecraft.world.item.component.WritableBookContent.PAGE_EDIT_LENGTH,
                 page.length()
             );
         }
@@ -40,9 +40,9 @@ public record PaperWritableBookContent(
         private static void validatePageCount(final int current, final int add) {
             final int newSize = current + add;
             Preconditions.checkArgument(
-                newSize <= net.minecraft.component.type.WritableBookContentComponent.MAX_PAGE_COUNT,
+                newSize <= net.minecraft.world.item.component.WritableBookContent.MAX_PAGES,
                 "Cannot have more than %s pages, had %s",
-                net.minecraft.component.type.WritableBookContentComponent.MAX_PAGE_COUNT,
+                net.minecraft.world.item.component.WritableBookContent.MAX_PAGES,
                 newSize
             );
         }
@@ -51,7 +51,7 @@ public record PaperWritableBookContent(
         public WritableBookContent.Builder addPage(final String page) {
             validatePageLength(page);
             validatePageCount(this.pages.size(), 1);
-            this.pages.add(RawFilteredPair.of(page));
+            this.pages.add(Filterable.passThrough(page));
             return this;
         }
 
@@ -60,7 +60,7 @@ public record PaperWritableBookContent(
             validatePageCount(this.pages.size(), pages.size());
             for (final String page : pages) {
                 validatePageLength(page);
-                this.pages.add(RawFilteredPair.of(page));
+                this.pages.add(Filterable.passThrough(page));
             }
             return this;
         }
@@ -72,7 +72,7 @@ public record PaperWritableBookContent(
                 validatePageLength(page.filtered());
             }
             validatePageCount(this.pages.size(), 1);
-            this.pages.add(new RawFilteredPair<>(page.raw(), Optional.ofNullable(page.filtered())));
+            this.pages.add(new Filterable<>(page.raw(), Optional.ofNullable(page.filtered())));
             return this;
         }
 
@@ -84,7 +84,7 @@ public record PaperWritableBookContent(
                 if (page.filtered() != null) {
                     validatePageLength(page.filtered());
                 }
-                this.pages.add(new RawFilteredPair<>(page.raw(), Optional.ofNullable(page.filtered())));
+                this.pages.add(new Filterable<>(page.raw(), Optional.ofNullable(page.filtered())));
             }
             return this;
         }
@@ -92,11 +92,11 @@ public record PaperWritableBookContent(
         @Override
         public WritableBookContent build() {
             if (this.pages.isEmpty()) {
-                return new PaperWritableBookContent(net.minecraft.component.type.WritableBookContentComponent.DEFAULT);
+                return new PaperWritableBookContent(net.minecraft.world.item.component.WritableBookContent.EMPTY);
             }
 
             return new PaperWritableBookContent(
-                new net.minecraft.component.type.WritableBookContentComponent(new ObjectArrayList<>(this.pages))
+                new net.minecraft.world.item.component.WritableBookContent(new ObjectArrayList<>(this.pages))
             );
         }
     }

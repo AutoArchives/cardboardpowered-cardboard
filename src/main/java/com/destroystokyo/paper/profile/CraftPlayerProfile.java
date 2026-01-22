@@ -13,13 +13,12 @@ import com.mojang.authlib.yggdrasil.ProfileResult;
 import com.mojang.datafixers.util.Either;
 
 import io.papermc.paper.profile.MutablePropertyMap;
-import net.minecraft.component.type.ProfileComponent;
-import net.minecraft.entity.player.SkinTextures;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerConfigEntry;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.util.Util;
-import net.minecraft.util.Uuids;
-
+import net.minecraft.world.entity.player.PlayerSkin;
+import net.minecraft.world.item.component.ResolvableProfile;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.craftbukkit.CraftServer;
@@ -66,13 +65,13 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
         this.profile = profile;
     }
     
-	public CraftPlayerProfile(PlayerConfigEntry nameAndId) {
+	public CraftPlayerProfile(NameAndId nameAndId) {
 		this(nameAndId.id(), nameAndId.name());
 	}
 
-	public CraftPlayerProfile(ProfileComponent resolvableProfile) {
-	      this(resolvableProfile.get().map(GameProfile::id, p -> p.id().orElse(null)), resolvableProfile.get().map(GameProfile::name, p -> p.name().orElse(null)));
-	      copyProfileProperties(resolvableProfile.getGameProfile(), this.profile);
+	public CraftPlayerProfile(ResolvableProfile resolvableProfile) {
+	      this(resolvableProfile.unpack().map(GameProfile::id, p -> p.id().orElse(null)), resolvableProfile.unpack().map(GameProfile::name, p -> p.name().orElse(null)));
+	      copyProfileProperties(resolvableProfile.partialProfile(), this.profile);
 	}
 	
 	private static GameProfile createAuthLibProfile(UUID uniqueId, String name) {
@@ -181,7 +180,7 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
     @Override
     public boolean completeFromCache() {
         MinecraftServer server = CraftServer.INSTANCE.getServer();
-        return completeFromCache(false, server.isOnlineMode() || (SpigotConfig.bungee /*&& PaperConfig.bungeeOnlineMode*/));
+        return completeFromCache(false, server.usesAuthentication() || (SpigotConfig.bungee /*&& PaperConfig.bungeeOnlineMode*/));
     }
 
     public boolean completeFromCache(boolean onlineMode) {
@@ -225,7 +224,7 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
     */
     
     // PlayerConfigEntry.toUncompletedGameProfile
-    public GameProfile PlayerConfigEntry_toUncompletedGameProfile(PlayerConfigEntry thiz) {
+    public GameProfile PlayerConfigEntry_toUncompletedGameProfile(NameAndId thiz) {
         return new GameProfile(thiz.id(), thiz.name());
     }
     
@@ -238,14 +237,14 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
               profile = /*server.getApiServices().paper().filledProfileCache()*/
             		  CraftServer.INSTANCE.getPaperFilledProfileCache().getIfCached(name);
               if (profile == null && lookupUUID) {
-                 PlayerConfigEntry nameAndId = server.getApiServices().nameToIdCache().findByName(name).orElse(null);
+                 NameAndId nameAndId = server.services().nameToIdCache().get(name).orElse(null);
                  if (nameAndId != null) {
                 	 profile = PlayerConfigEntry_toUncompletedGameProfile(nameAndId);
                     // profile = nameAndId.toUncompletedGameProfile();
                  }
               }
            } else {
-              profile = Uuids.getOfflinePlayerProfile(name);
+              profile = UUIDUtil.createOfflineProfile(name);
            }
 
            if (profile != null) {
@@ -261,7 +260,7 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
            GameProfile profilex = /*server.getApiServices().paper().filledProfileCache()*/
         		   CraftServer.INSTANCE.getPaperFilledProfileCache().getIfCached(this.profile.id());
            if (profilex == null) {
-              Optional<PlayerConfigEntry> nameAndId = server.getApiServices().nameToIdCache().getByUuid(this.profile.id());
+              Optional<NameAndId> nameAndId = server.services().nameToIdCache().get(this.profile.id());
               if (nameAndId.isPresent()) {
                  profilex = PlayerConfigEntry_toUncompletedGameProfile(nameAndId.get());
               }
@@ -285,7 +284,7 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
 
     public boolean complete(boolean textures) {
         MinecraftServer server = CraftServer.INSTANCE.getServer();
-        return complete(textures, server.isOnlineMode() || (SpigotConfig.bungee /*&& PaperConfig.bungeeOnlineMode*/));
+        return complete(textures, server.usesAuthentication() || (SpigotConfig.bungee /*&& PaperConfig.bungeeOnlineMode*/));
     }
 
     /*
@@ -311,7 +310,7 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
            MinecraftServer server = CraftServer.server;// MinecraftServer.getServer();
            boolean isCompleteFromCache = this.completeFromCache(true, onlineMode);
            if (onlineMode && (!isCompleteFromCache || textures && !this.hasTextures())) {
-              ProfileResult result = server.getApiServices().sessionService().fetchProfile(this.profile.id(), true);
+              ProfileResult result = server.services().sessionService().fetchProfile(this.profile.id(), true);
               if (result != null && result.profile() != null) {
                  copyProfileProperties(result.profile(), this.profile, true);
               }
@@ -444,7 +443,7 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
             final CraftPlayerProfile clone = clone();
             clone.complete(true);
             return clone;
-        }, Util.getMainWorkerExecutor());
+        }, Util.backgroundExecutor());
     }
 
 
@@ -517,13 +516,13 @@ public class CraftPlayerProfile implements PlayerProfile, SharedPlayerProfile {
 	// accessible method net/minecraft/component/type/ProfileComponent$Dynamic <init> (Lcom/mojang/datafixers/util/Either;Lnet/minecraft/entity/player/SkinTextures$SkinOverride;)V
 	
 	@Override
-	public @NotNull ProfileComponent buildResolvableProfile() {
-		return (ProfileComponent)(this.emptyName != this.emptyUUID && this.properties.isEmpty()
-		         ? new ProfileComponent.Dynamic(this.emptyName ? Either.right(this.profile.id()) : Either.left(this.profile.name()), SkinTextures.SkinOverride.EMPTY)
-		         : ProfileComponent.ofStatic(this.buildGameProfile()));
+	public @NotNull ResolvableProfile buildResolvableProfile() {
+		return (ResolvableProfile)(this.emptyName != this.emptyUUID && this.properties.isEmpty()
+		         ? new ResolvableProfile.Dynamic(this.emptyName ? Either.right(this.profile.id()) : Either.left(this.profile.name()), PlayerSkin.Patch.EMPTY)
+		         : ResolvableProfile.createResolved(this.buildGameProfile()));
 	}
 
-	public static ProfileComponent asResolvableProfileCopy(@Nullable PlayerProfile profile2) {
+	public static ResolvableProfile asResolvableProfileCopy(@Nullable PlayerProfile profile2) {
 		return ((SharedPlayerProfile)profile2).buildResolvableProfile();
 	}
 

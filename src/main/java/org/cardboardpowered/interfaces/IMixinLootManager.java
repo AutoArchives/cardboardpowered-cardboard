@@ -1,8 +1,7 @@
 package org.cardboardpowered.interfaces;
 
 import java.util.Map;
-
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 /**
  */

@@ -1,11 +1,10 @@
 package org.cardboardpowered.impl.block;
 
-import net.minecraft.block.BellBlock;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BellBlockEntity;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.util.math.Direction;
-
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.BellBlock;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BellBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -50,12 +49,12 @@ public class CardboardBell extends CardboardBlockEntityState<BellBlockEntity> im
 
 	@Override
 	public int getResonatingTicks() {
-        return this.isResonating() ? ((BellBlockEntity)this.getSnapshot()).ringTicks : 0;
+        return this.isResonating() ? ((BellBlockEntity)this.getSnapshot()).ticks : 0;
 	}
 
 	@Override
 	public int getShakingTicks() {
-        return ((BellBlockEntity)this.getSnapshot()).ringTicks;
+        return ((BellBlockEntity)this.getSnapshot()).ticks;
 	}
 
 	@Override
@@ -65,7 +64,7 @@ public class CardboardBell extends CardboardBlockEntityState<BellBlockEntity> im
 
 	@Override
 	public boolean isShaking() {
-        return ((BellBlockEntity)this.getSnapshot()).ringing;
+        return ((BellBlockEntity)this.getSnapshot()).shaking;
 	}
 
     public boolean ring(org.bukkit.entity.Entity entity, BlockFace direction) {
@@ -74,9 +73,9 @@ public class CardboardBell extends CardboardBlockEntityState<BellBlockEntity> im
         if (tileEntity == null) {
             return false;
         }
-        net.minecraft.entity.Entity nmsEntity = entity != null ? ((CraftEntity)entity).getHandle() : null;
+        net.minecraft.world.entity.Entity nmsEntity = entity != null ? ((CraftEntity)entity).getHandle() : null;
         Direction enumDirection = CraftBlock.blockFaceToNotch(direction);
-        return ((BellBlock)Blocks.BELL).ring(nmsEntity, this.world.getHandle(), this.getPosition(), enumDirection);
+        return ((BellBlock)Blocks.BELL).attemptToRing(nmsEntity, this.world.getHandle(), this.getPosition(), enumDirection);
     }
 
     public boolean ring(org.bukkit.entity.Entity entity) {

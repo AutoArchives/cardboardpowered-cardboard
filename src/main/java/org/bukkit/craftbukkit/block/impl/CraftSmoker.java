@@ -9,13 +9,13 @@ public final class CraftSmoker extends org.bukkit.craftbukkit.block.data.CraftBl
         super();
     }
 
-    public CraftSmoker(net.minecraft.block.BlockState state) {
+    public CraftSmoker(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftDirectional
 
-    private static final net.minecraft.state.property.EnumProperty<?> FACING = getEnum(net.minecraft.block.SmokerBlock.class, "facing");
+    private static final net.minecraft.world.level.block.state.properties.EnumProperty<?> FACING = getEnum(net.minecraft.world.level.block.SmokerBlock.class, "facing");
 
     @Override
     public org.bukkit.block.BlockFace getFacing() {
@@ -34,7 +34,7 @@ public final class CraftSmoker extends org.bukkit.craftbukkit.block.data.CraftBl
 
     // org.bukkit.craftbukkit.block.data.CraftLightable
 
-    private static final net.minecraft.state.property.BooleanProperty LIT = getBoolean(net.minecraft.block.SmokerBlock.class, "lit");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty LIT = getBoolean(net.minecraft.world.level.block.SmokerBlock.class, "lit");
 
     @Override
     public boolean isLit() {

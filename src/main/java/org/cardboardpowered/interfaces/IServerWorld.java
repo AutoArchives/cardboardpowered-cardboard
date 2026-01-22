@@ -1,16 +1,14 @@
 package org.cardboardpowered.interfaces;
 
 import java.util.UUID;
-
+import net.minecraft.server.level.progress.LevelLoadListener;
+import net.minecraft.world.level.storage.ServerLevelData;
 import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.impl.world.CraftWorld;
 
-import net.minecraft.world.chunk.ChunkLoadProgress;
-import net.minecraft.world.level.ServerWorldProperties;
-
 public interface IServerWorld {
 
-    ServerWorldProperties cardboard_worldProperties();
+    ServerLevelData cardboard_worldProperties();
 
 	default CraftWorld getWorld() {
 		return null;
@@ -26,6 +24,6 @@ public interface IServerWorld {
 
 	/**
 	 */
-	ChunkLoadProgress cardboard$levelLoadListener();
+	LevelLoadListener cardboard$levelLoadListener();
 
 }

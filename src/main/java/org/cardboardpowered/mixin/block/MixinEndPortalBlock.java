@@ -1,5 +1,14 @@
 package org.cardboardpowered.mixin.block;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.EndPortalBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.BooleanOp;
+import net.minecraft.world.phys.shapes.Shapes;
 import org.bukkit.Bukkit;
 import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.cardboardpowered.util.MixinInfo;
@@ -11,23 +20,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.EndPortalBlock;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCollisionHandler;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.function.BooleanBiFunction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.World;
-
 @MixinInfo(events = {"EntityPortalEnterEvent"})
 @Mixin(EndPortalBlock.class)
 public class MixinEndPortalBlock {
 
-    @Inject(at = @At("HEAD"), method = "onEntityCollision")
-    public void callBukkitEvent_EntityPortalEnterEvent(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler ech, boolean b, CallbackInfo ci) {
-        if (world instanceof ServerWorld && !entity.hasVehicle() && !entity.hasPassengers() && entity.canUsePortals(true) && VoxelShapes.matchesAnywhere(VoxelShapes.cuboid(entity.getBoundingBox().offset(-pos.getX(), -pos.getY(), -pos.getZ())), state.getOutlineShape(world, pos), BooleanBiFunction.AND)) {
+    @Inject(at = @At("HEAD"), method = "entityInside")
+    public void callBukkitEvent_EntityPortalEnterEvent(BlockState state, Level world, BlockPos pos, Entity entity, InsideBlockEffectApplier ech, boolean b, CallbackInfo ci) {
+        if (world instanceof ServerLevel && !entity.isPassenger() && !entity.isVehicle() && entity.canUsePortal(true) && Shapes.joinIsNotEmpty(Shapes.create(entity.getBoundingBox().move(-pos.getX(), -pos.getY(), -pos.getZ())), state.getShape(world, pos), BooleanOp.AND)) {
             EntityPortalEnterEvent event = new EntityPortalEnterEvent(((IMixinEntity)entity).getBukkitEntity(), new org.bukkit.Location(((IMixinWorld)world).getCraftWorld(), pos.getX(), pos.getY(), pos.getZ()));
             Bukkit.getPluginManager().callEvent(event);
         }

@@ -1,14 +1,13 @@
 package org.cardboardpowered.impl.entity;
 
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.minecart.RideableMinecart;
 
-import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-
 public class CardboardMinecartRideable extends CardboardMinecart implements RideableMinecart {
 
-    public CardboardMinecartRideable(CraftServer server, AbstractMinecartEntity entity) {
+    public CardboardMinecartRideable(CraftServer server, AbstractMinecart entity) {
         super(server, entity);
     }
 

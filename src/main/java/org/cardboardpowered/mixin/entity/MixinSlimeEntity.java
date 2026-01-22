@@ -3,7 +3,7 @@ package org.cardboardpowered.mixin.entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
+import net.minecraft.world.entity.monster.Slime;
 import org.bukkit.Bukkit;
 import org.bukkit.event.entity.EntityTransformEvent;
 import org.bukkit.event.entity.SlimeSplitEvent;
@@ -16,12 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.ISlimeEntity;
 
-
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.mob.SlimeEntity;
-import net.minecraft.world.World;
-
-@Mixin(SlimeEntity.class)
+@Mixin(Slime.class)
 public class MixinSlimeEntity extends MixinEntity implements ISlimeEntity {
 
     @Shadow public int getSize() {return 0;}
@@ -33,7 +28,7 @@ public class MixinSlimeEntity extends MixinEntity implements ISlimeEntity {
     }
 
     private boolean cancelRemove_B;
-    private List<net.minecraft.entity.LivingEntity> slimes_B = new ArrayList<>();
+    private List<net.minecraft.world.entity.LivingEntity> slimes_B = new ArrayList<>();
 
     private final Random randoms = new Random();
 

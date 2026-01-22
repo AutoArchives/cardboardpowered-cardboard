@@ -3,13 +3,13 @@ package org.cardboardpowered.mixin.network;
 import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
-import net.minecraft.network.message.MessageType;
-import net.minecraft.network.message.SentMessage;
-import net.minecraft.network.message.SignedMessage;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.OutgoingChatMessage;
+import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
@@ -32,25 +32,25 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 
-@Mixin(PlayerManager.class)
+@Mixin(PlayerList.class)
 public class MixinPlayerManager_ChatEvent {
 	
 	// 1.19.2:
 	
     @Shadow
-    public List<ServerPlayerEntity> players;
+    public List<ServerPlayer> players;
 	
     @Shadow
     @Final
     private MinecraftServer server;
     
     
-    public CraftPlayer getPlayer_0(ServerPlayerEntity e) {
+    public CraftPlayer getPlayer_0(ServerPlayer e) {
         return (CraftPlayer) ((IMixinServerEntityPlayer)(Object)e).getBukkitEntity();
     }
     
-    @Inject(method = "broadcast(Lnet/minecraft/network/message/SignedMessage;Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/network/message/MessageType$Parameters;)V", at = @At("HEAD"), cancellable = true)
-	private void onSendChatMessage(SignedMessage message, ServerPlayerEntity sender, MessageType.Parameters params, CallbackInfo ci) {
+    @Inject(method = "broadcastChatMessage(Lnet/minecraft/network/chat/PlayerChatMessage;Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/network/chat/ChatType$Bound;)V", at = @At("HEAD"), cancellable = true)
+	private void onSendChatMessage(PlayerChatMessage message, ServerPlayer sender, ChatType.Bound params, CallbackInfo ci) {
     	
 		 // CardboardMod.LOGGER.info("onSendChatMessage: " + message.getContent().getString());
 	}
@@ -63,12 +63,12 @@ public class MixinPlayerManager_ChatEvent {
      * @reason Alternative chat events
      */
     @Overwrite
-    public void broadcast(SignedMessage message, Predicate<ServerPlayerEntity> shouldSendFiltered, ServerPlayerEntity sender/*, MessageSourceProfile sourceProfile*/, MessageType.Parameters params) {
-        CardboardMod.LOGGER.info("BROADCAST DEBUG: " + message.getContent().getString());
+    public void broadcastChatMessage(PlayerChatMessage message, Predicate<ServerPlayer> shouldSendFiltered, ServerPlayer sender/*, MessageSourceProfile sourceProfile*/, ChatType.Bound params) {
+        CardboardMod.LOGGER.info("BROADCAST DEBUG: " + message.decoratedContent().getString());
         
-    	boolean bl = this.verify(message);
-        this.server.logChatMessage(message.getContent(), params, null);
-        SentMessage sentMessage = SentMessage.of(message);
+    	boolean bl = this.verifyChatTrusted(message);
+        this.server.logChatMessage(message.decoratedContent(), params, null);
+        OutgoingChatMessage sentMessage = OutgoingChatMessage.create(message);
         boolean bl2 = message.isFullyFiltered();
         boolean bl3 = false;
         /*for (ServerPlayerEntity serverPlayerEntity : this.players) {
@@ -82,7 +82,7 @@ public class MixinPlayerManager_ChatEvent {
         }*/
         
         
-        String s = message.getContent().getString();
+        String s = message.decoratedContent().getString();
 		boolean async = false; // TODO: allow async
 
 		Player player = getPlayer_0(sender);
@@ -107,9 +107,9 @@ public class MixinPlayerManager_ChatEvent {
                 //for (Text txt : CraftChatMessage.fromString(message))
                 //    CraftServer.server.sendSystemMessage(txt, queueEvent.getPlayer().getUniqueId());
                 if (((LazyPlayerSet) queueEvent.getRecipients()).isLazy()) {
-                    for (ServerPlayerEntity plr : CraftServer.server.getPlayerManager().getPlayerList())
-                        for (Text txt : CraftChatMessage.fromString(messag))
-                            plr.sendMessage(txt, false);
+                    for (ServerPlayer plr : CraftServer.server.getPlayerList().getPlayers())
+                        for (Component txt : CraftChatMessage.fromString(messag))
+                            plr.displayClientMessage(txt, false);
                 } else for (Player plr : queueEvent.getRecipients())
                     plr.sendMessage(messag);
             });
@@ -130,9 +130,9 @@ public class MixinPlayerManager_ChatEvent {
             s = String.format(event.getFormat(), event.getPlayer().getDisplayName(), event.getMessage());
             // server.sendMessage(new LiteralTextContent(s));
             if (((LazyPlayerSet) event.getRecipients()).isLazy()) {
-                for (ServerPlayerEntity recipient : server.getPlayerManager().players)
-                    for (Text txt : CraftChatMessage.fromString(s))
-                        recipient.sendMessage(txt);
+                for (ServerPlayer recipient : server.getPlayerList().players)
+                    for (Component txt : CraftChatMessage.fromString(s))
+                        recipient.sendSystemMessage(txt);
             } else for (Player recipient : event.getRecipients())
                 recipient.sendMessage(s);
         }
@@ -140,7 +140,7 @@ public class MixinPlayerManager_ChatEvent {
     }
 
     @Shadow
-    private boolean verify(SignedMessage message/*, MessageSourceProfile profile*/) {
+    private boolean verifyChatTrusted(PlayerChatMessage message/*, MessageSourceProfile profile*/) {
         return true;
     }
 

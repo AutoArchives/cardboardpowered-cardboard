@@ -1,56 +1,54 @@
 package org.cardboardpowered.mixin.world;
 
 import java.nio.file.Path;
-
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.storage.LevelStorageSource;
 import org.cardboardpowered.interfaces.ILevelStorageSession;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionOptions;
-import net.minecraft.world.dimension.DimensionType;
-import net.minecraft.world.level.storage.LevelStorage;
-
-@Mixin(LevelStorage.Session.class)
+@Mixin(LevelStorageSource.LevelStorageAccess.class)
 public class MixinLevelStorageSession implements ILevelStorageSession {
 	
 	@Shadow
-	public LevelStorage.LevelSave directory;
+	public LevelStorageSource.LevelDirectory levelDirectory;
 
 	// Paper - Add dimensionType
-	public RegistryKey<DimensionOptions> dimensionType;
+	public ResourceKey<LevelStem> dimensionType;
 	
 	@Override
-	public void cardboard$set_dimensionType(RegistryKey<DimensionOptions> value) {
+	public void cardboard$set_dimensionType(ResourceKey<LevelStem> value) {
 		this.dimensionType = value;
 	}
 	
 	@Override
-	public RegistryKey<DimensionOptions> cardboard$get_dimensionType() {
+	public ResourceKey<LevelStem> cardboard$get_dimensionType() {
 		return this.dimensionType;
 	}
 
 	@Overwrite
-	public Path getWorldDirectory(RegistryKey<World> key) {
+	public Path getDimensionPath(ResourceKey<Level> key) {
 		if (null == this.dimensionType) {
 			// Non-Bukkit
-			return DimensionType.getSaveDirectory(key, this.directory.path());
+			return DimensionType.getStorageFolder(key, this.levelDirectory.path());
 		}
 		
-		return LevelStorage_getStorageFolder(this.directory.path(), this.dimensionType);
+		return LevelStorage_getStorageFolder(this.levelDirectory.path(), this.dimensionType);
 	}
 
-	private Path LevelStorage_getStorageFolder(Path path, RegistryKey<DimensionOptions> dimensionType) {
-		if (dimensionType == DimensionOptions.OVERWORLD) {
+	private Path LevelStorage_getStorageFolder(Path path, ResourceKey<LevelStem> dimensionType) {
+		if (dimensionType == LevelStem.OVERWORLD) {
 			return path;
-		} else if (dimensionType == DimensionOptions.NETHER) {
+		} else if (dimensionType == LevelStem.NETHER) {
 			return path.resolve("DIM-1");
 		} else {
-			return dimensionType == DimensionOptions.END
+			return dimensionType == LevelStem.END
 					? path.resolve("DIM1")
-							: path.resolve("dimensions").resolve(dimensionType.getValue().getNamespace()).resolve(dimensionType.getValue().getPath());
+							: path.resolve("dimensions").resolve(dimensionType.identifier().getNamespace()).resolve(dimensionType.identifier().getPath());
 		}
 	}
 	

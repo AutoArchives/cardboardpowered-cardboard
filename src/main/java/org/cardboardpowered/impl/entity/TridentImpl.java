@@ -1,7 +1,6 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.projectile.TridentEntity;
-
+import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftAbstractArrow;
 import org.bukkit.entity.EntityType;
@@ -10,13 +9,13 @@ import org.bukkit.inventory.ItemStack;
 
 public class TridentImpl extends CraftAbstractArrow  implements Trident {
 
-    public TridentImpl(CraftServer server, TridentEntity entity) {
+    public TridentImpl(CraftServer server, ThrownTrident entity) {
         super(server, entity);
     }
 
     @Override
-    public TridentEntity getHandle() {
-        return (TridentEntity) super.getHandle();
+    public ThrownTrident getHandle() {
+        return (ThrownTrident) super.getHandle();
     }
 
     @Override
@@ -60,7 +59,7 @@ public class TridentImpl extends CraftAbstractArrow  implements Trident {
 
 	@Override
     public boolean hasGlint() {
-        return this.getHandle().isEnchanted();
+        return this.getHandle().isFoil();
     }
 
 	@Override

@@ -1,11 +1,11 @@
 package org.cardboardpowered.mixin.item;
 
+import net.minecraft.world.item.MapItem;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
-import net.minecraft.item.FilledMapItem;
 
 @MixinInfo(events = {"MapInitializeEvent"})
-@Mixin(FilledMapItem.class)
+@Mixin(MapItem.class)
 public class MixinFilledMapItem {
 
     /**

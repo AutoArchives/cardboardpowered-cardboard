@@ -21,13 +21,11 @@ import java.util.function.Consumer;
 
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.object.PlayerHeadObjectContents;
-import net.minecraft.component.type.ProfileComponent;
-import net.minecraft.entity.player.PlayerSkinType;
-import net.minecraft.entity.player.SkinTextures;
-import net.minecraft.entity.player.SkinTextures.SkinOverride;
-import net.minecraft.util.AssetInfo;
-import net.minecraft.util.StringHelper;
-
+import net.minecraft.core.ClientAsset;
+import net.minecraft.util.StringUtil;
+import net.minecraft.world.entity.player.PlayerModelType;
+import net.minecraft.world.entity.player.PlayerSkin;
+import net.minecraft.world.entity.player.PlayerSkin.Patch;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.profile.PlayerTextures.SkinModel;
@@ -36,8 +34,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
 public record PaperResolvableProfile(
-    net.minecraft.component.type.ProfileComponent impl
-) implements ResolvableProfile, Handleable<net.minecraft.component.type.ProfileComponent> {
+    net.minecraft.world.item.component.ResolvableProfile impl
+) implements ResolvableProfile, Handleable<net.minecraft.world.item.component.ResolvableProfile> {
 
 	static PaperResolvableProfile toApi(PlayerProfile profile) {
 		return new PaperResolvableProfile(((SharedPlayerProfile)profile).buildResolvableProfile());
@@ -50,34 +48,34 @@ public record PaperResolvableProfile(
     */
 
     @Override
-    public net.minecraft.component.type.ProfileComponent getHandle() {
+    public net.minecraft.world.item.component.ResolvableProfile getHandle() {
         return this.impl;
     }
 
     @Override
     public @Nullable UUID uuid() {
-    	return this.impl.get().map(GameProfile::id, p -> p.id().orElse(null));
+    	return this.impl.unpack().map(GameProfile::id, p -> p.id().orElse(null));
     }
 
     @Override
     public @Nullable String name() {
-    	return this.impl.get().map(GameProfile::name, p -> p.name().orElse(null));
+    	return this.impl.unpack().map(GameProfile::name, p -> p.name().orElse(null));
     }
 
     @Unmodifiable
     public Collection<ProfileProperty> properties() {
        return MCUtil.transformUnmodifiable(
-          this.impl.get().map(GameProfile::properties, ProfileComponent.Data::properties).values(),
+          this.impl.unpack().map(GameProfile::properties, net.minecraft.world.item.component.ResolvableProfile.Partial::properties).values(),
           input -> new ProfileProperty(input.name(), input.value(), input.signature())
        );
     }
 
     @Override
     public CompletableFuture<PlayerProfile> resolve() {
-    	return this.impl.resolve(CraftServer.server.getApiServices().profileResolver()).thenApply(CraftPlayerProfile::asBukkitCopy);
+    	return this.impl.resolveProfile(CraftServer.server.services().profileResolver()).thenApply(CraftPlayerProfile::asBukkitCopy);
     }
 
-    static final class BuilderImpl implements ResolvableProfile.Builder {
+    static final class BuilderImpl implements io.papermc.paper.datacomponent.item.ResolvableProfile.Builder {
 
         private final PropertyMap propertyMap = new MutablePropertyMap();
         private @Nullable String name;
@@ -85,23 +83,23 @@ public record PaperResolvableProfile(
         private PaperResolvableProfile.PaperSkinPatch skinPatch = (PaperResolvableProfile.PaperSkinPatch)SkinPatch.empty();
 
         @Override
-        public ResolvableProfile.Builder name(final @Nullable String name) {
+        public io.papermc.paper.datacomponent.item.ResolvableProfile.Builder name(final @Nullable String name) {
             if (name != null) {
                 Preconditions.checkArgument(name.length() <= 16, "name cannot be more than 16 characters, was %s", name.length());
-                Preconditions.checkArgument(StringHelper.isValidPlayerName(name), "name cannot include invalid characters, was %s", name);
+                Preconditions.checkArgument(StringUtil.isValidPlayerName(name), "name cannot include invalid characters, was %s", name);
             }
             this.name = name;
             return this;
         }
 
         @Override
-        public ResolvableProfile.Builder uuid(final @Nullable UUID uuid) {
+        public io.papermc.paper.datacomponent.item.ResolvableProfile.Builder uuid(final @Nullable UUID uuid) {
             this.uuid = uuid;
             return this;
         }
 
         @Override
-        public ResolvableProfile.Builder addProperty(final ProfileProperty property) {
+        public io.papermc.paper.datacomponent.item.ResolvableProfile.Builder addProperty(final ProfileProperty property) {
             // ProfileProperty constructor already has specific validations
             final Property newProperty = new Property(property.getName(), property.getValue(), property.getSignature());
             if (!this.propertyMap.containsEntry(property.getName(), newProperty)) { // underlying map is a multimap that doesn't allow duplicate key-value pair
@@ -114,7 +112,7 @@ public record PaperResolvableProfile(
         }
 
         @Override
-        public ResolvableProfile.Builder addProperties(final Collection<ProfileProperty> properties) {
+        public io.papermc.paper.datacomponent.item.ResolvableProfile.Builder addProperties(final Collection<ProfileProperty> properties) {
         	properties.forEach(this::addProperty);
         	return this;
         }
@@ -138,17 +136,17 @@ public record PaperResolvableProfile(
         	return this;
         }
 
-        public ResolvableProfile build() {
+        public io.papermc.paper.datacomponent.item.ResolvableProfile build() {
         	
-        	SkinOverride todoAddThis = SkinOverride.EMPTY; // this.skinPatch.asVanilla()
+        	Patch todoAddThis = Patch.EMPTY; // this.skinPatch.asVanilla()
 
             return this.propertyMap.isEmpty() && this.uuid == null != (this.name == null)
                ? new PaperResolvableProfile(
-                  new ProfileComponent.Dynamic(this.name != null ? Either.left(this.name) : Either.right(this.uuid), todoAddThis)
+                  new net.minecraft.world.item.component.ResolvableProfile.Dynamic(this.name != null ? Either.left(this.name) : Either.right(this.uuid), todoAddThis)
                )
                : new PaperResolvableProfile(
-                  new ProfileComponent.Static(
-                     Either.right(new ProfileComponent.Data(Optional.ofNullable(this.name), Optional.ofNullable(this.uuid), new PropertyMap(this.propertyMap))),
+                  new net.minecraft.world.item.component.ResolvableProfile.Static(
+                     Either.right(new net.minecraft.world.item.component.ResolvableProfile.Partial(Optional.ofNullable(this.name), Optional.ofNullable(this.uuid), new PropertyMap(this.propertyMap))),
                      todoAddThis // this.skinPatch.asVanilla()
                   )
                );
@@ -183,45 +181,45 @@ public record PaperResolvableProfile(
     		.name(this.name())
     		.profileProperties(
     				this.impl
-    				.get()
-    				.map(GameProfile::properties, ProfileComponent.Data::properties)
+    				.unpack()
+    				.map(GameProfile::properties, net.minecraft.world.item.component.ResolvableProfile.Partial::properties)
     				.values()
     				.stream()
     				.map(prop -> PlayerHeadObjectContents.property(prop.name(), prop.value(), prop.signature()))
     				.toList()
     				)
-    		.texture(this.impl.getOverride().body().map(AssetInfo.TextureAssetInfo::id).map(PaperAdventure::asAdventure).orElse(null));
+    		.texture(this.impl.skinPatch().body().map(ClientAsset.ResourceTexture::id).map(PaperAdventure::asAdventure).orElse(null));
     	}
     }
 
     @Override
     public boolean dynamic() {
-    	return this.impl instanceof ProfileComponent.Dynamic;
+    	return this.impl instanceof net.minecraft.world.item.component.ResolvableProfile.Dynamic;
     }
 
     @Override
     public SkinPatch skinPatch() {
-    	return PaperResolvableProfile.PaperSkinPatch.asPaper(this.getHandle().getOverride());
+    	return PaperResolvableProfile.PaperSkinPatch.asPaper(this.getHandle().skinPatch());
     }
 
     record PaperSkinPatch(@Nullable Key body, @Nullable Key cape, @Nullable Key elytra, @Nullable SkinModel model) implements SkinPatch {
-    	static PaperResolvableProfile.PaperSkinPatch asPaper(SkinTextures.SkinOverride patch) {
-    		return patch == SkinTextures.SkinOverride.EMPTY
+    	static PaperResolvableProfile.PaperSkinPatch asPaper(PlayerSkin.Patch patch) {
+    		return patch == PlayerSkin.Patch.EMPTY
     				? (PaperResolvableProfile.PaperSkinPatch)SkinPatch.empty()
     						: new PaperResolvableProfile.PaperSkinPatch(
-    								patch.body().map(AssetInfo.TextureAssetInfo::id).map(PaperAdventure::asAdventure).orElse(null),
-    								patch.cape().map(AssetInfo.TextureAssetInfo::id).map(PaperAdventure::asAdventure).orElse(null),
-    								patch.elytra().map(AssetInfo.TextureAssetInfo::id).map(PaperAdventure::asAdventure).orElse(null),
-    								patch.model().map(m -> m == PlayerSkinType.SLIM ? SkinModel.SLIM : SkinModel.CLASSIC).orElse(null)
+    								patch.body().map(ClientAsset.ResourceTexture::id).map(PaperAdventure::asAdventure).orElse(null),
+    								patch.cape().map(ClientAsset.ResourceTexture::id).map(PaperAdventure::asAdventure).orElse(null),
+    								patch.elytra().map(ClientAsset.ResourceTexture::id).map(PaperAdventure::asAdventure).orElse(null),
+    								patch.model().map(m -> m == PlayerModelType.SLIM ? SkinModel.SLIM : SkinModel.CLASSIC).orElse(null)
     								);
     	}
 
-    	SkinTextures.SkinOverride asVanilla() {
-    		return SkinTextures.SkinOverride.create(
-    				Optional.ofNullable(this.body).map(key -> new AssetInfo.TextureAssetInfo(PaperAdventure.asVanilla(key))),
-    				Optional.ofNullable(this.cape).map(key -> new AssetInfo.TextureAssetInfo(PaperAdventure.asVanilla(key))),
-    				Optional.ofNullable(this.elytra).map(key -> new AssetInfo.TextureAssetInfo(PaperAdventure.asVanilla(key))),
-    				Optional.ofNullable(this.model).map(m -> m == SkinModel.SLIM ? PlayerSkinType.SLIM : PlayerSkinType.WIDE)
+    	PlayerSkin.Patch asVanilla() {
+    		return PlayerSkin.Patch.create(
+    				Optional.ofNullable(this.body).map(key -> new ClientAsset.ResourceTexture(PaperAdventure.asVanilla(key))),
+    				Optional.ofNullable(this.cape).map(key -> new ClientAsset.ResourceTexture(PaperAdventure.asVanilla(key))),
+    				Optional.ofNullable(this.elytra).map(key -> new ClientAsset.ResourceTexture(PaperAdventure.asVanilla(key))),
+    				Optional.ofNullable(this.model).map(m -> m == SkinModel.SLIM ? PlayerModelType.SLIM : PlayerModelType.WIDE)
     				);
     	}
     }

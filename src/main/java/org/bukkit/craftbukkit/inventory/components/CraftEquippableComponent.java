@@ -6,16 +6,16 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import net.minecraft.component.type.EquippableComponent;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.item.equipment.EquipmentAssetKeys;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.equipment.EquipmentAssets;
+import net.minecraft.world.item.equipment.Equippable;
 import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -35,9 +35,9 @@ import org.bukkit.entity.EntityType;
 @SerializableAs(value="Equippable")
 public final class CraftEquippableComponent
 implements org.bukkit.inventory.meta.components.EquippableComponent {
-    private EquippableComponent handle;
+    private Equippable handle;
 
-    public CraftEquippableComponent(EquippableComponent handle) {
+    public CraftEquippableComponent(Equippable handle) {
         this.handle = handle;
     }
 
@@ -54,16 +54,16 @@ implements org.bukkit.inventory.meta.components.EquippableComponent {
         }
         String model = SerializableMeta.getString(map, "model", true);
         String cameraOverlay = SerializableMeta.getString(map, "camera-overlay", true);
-        RegistryEntryList allowedEntities = null;
+        HolderSet allowedEntities = null;
         Object allowed = SerializableMeta.getObject(Object.class, map, "allowed-entities", true);
         if (allowed != null) {
-            allowedEntities = ConfigSerializationUtil.getHolderSet(allowed, RegistryKeys.ENTITY_TYPE);
+            allowedEntities = ConfigSerializationUtil.getHolderSet(allowed, Registries.ENTITY_TYPE);
         }
         Boolean dispensable = SerializableMeta.getObject(Boolean.class, map, "dispensable", true);
         Boolean swappable = SerializableMeta.getObject(Boolean.class, map, "swappable", true);
         Boolean damageOnHurt = SerializableMeta.getObject(Boolean.class, map, "damage-on-hurt", true);
         Boolean equipOnInteract = SerializableMeta.getObject(Boolean.class, map, "equip-on-interact", true);
-        this.handle = new EquippableComponent(slot, equipSound != null ? CraftSound.bukkitToMinecraftHolder(equipSound) : SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, Optional.ofNullable(model).map(Identifier::of).map(k -> RegistryKey.of(EquipmentAssetKeys.REGISTRY_KEY, k)), Optional.ofNullable(cameraOverlay).map(Identifier::of), Optional.ofNullable(allowedEntities), dispensable != null ? dispensable : true, swappable != null ? swappable : true, damageOnHurt != null ? damageOnHurt : true, equipOnInteract != null ? equipOnInteract : false, false, Registries.SOUND_EVENT.getEntry(SoundEvents.ITEM_SHEARS_SNIP));
+        this.handle = new Equippable(slot, equipSound != null ? CraftSound.bukkitToMinecraftHolder(equipSound) : SoundEvents.ARMOR_EQUIP_GENERIC, Optional.ofNullable(model).map(Identifier::parse).map(k -> ResourceKey.create(EquipmentAssets.ROOT_ID, k)), Optional.ofNullable(cameraOverlay).map(Identifier::parse), Optional.ofNullable(allowedEntities), dispensable != null ? dispensable : true, swappable != null ? swappable : true, damageOnHurt != null ? damageOnHurt : true, equipOnInteract != null ? equipOnInteract : false, false, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.SHEARS_SNIP));
     }
 
     public Map<String, Object> serialize() {
@@ -86,7 +86,7 @@ implements org.bukkit.inventory.meta.components.EquippableComponent {
         return result;
     }
 
-    public EquippableComponent getHandle() {
+    public Equippable getHandle() {
         return this.handle;
     }
 
@@ -95,7 +95,7 @@ implements org.bukkit.inventory.meta.components.EquippableComponent {
     }
 
     public void setSlot(org.bukkit.inventory.EquipmentSlot slot) {
-        this.handle = new EquippableComponent(CraftEquipmentSlot.getNMS(slot), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), this.handle.allowedEntities(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
+        this.handle = new Equippable(CraftEquipmentSlot.getNMS(slot), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), this.handle.allowedEntities(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
     }
 
     public Sound getEquipSound() {
@@ -103,15 +103,15 @@ implements org.bukkit.inventory.meta.components.EquippableComponent {
     }
 
     public void setEquipSound(Sound sound) {
-        this.handle = new EquippableComponent(this.handle.slot(), sound != null ? CraftSound.bukkitToMinecraftHolder(sound) : SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, this.handle.assetId(), this.handle.cameraOverlay(), this.handle.allowedEntities(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
+        this.handle = new Equippable(this.handle.slot(), sound != null ? CraftSound.bukkitToMinecraftHolder(sound) : SoundEvents.ARMOR_EQUIP_GENERIC, this.handle.assetId(), this.handle.cameraOverlay(), this.handle.allowedEntities(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
     }
 
     public NamespacedKey getModel() {
-        return this.handle.assetId().map(a2 -> CraftNamespacedKey.fromMinecraft(a2.getValue())).orElse(null);
+        return this.handle.assetId().map(a2 -> CraftNamespacedKey.fromMinecraft(a2.identifier())).orElse(null);
     }
 
     public void setModel(NamespacedKey key) {
-        this.handle = new EquippableComponent(this.handle.slot(), this.handle.equipSound(), Optional.ofNullable(key).map(CraftNamespacedKey::toMinecraft).map(k -> RegistryKey.of(EquipmentAssetKeys.REGISTRY_KEY, k)), this.handle.cameraOverlay(), this.handle.allowedEntities(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
+        this.handle = new Equippable(this.handle.slot(), this.handle.equipSound(), Optional.ofNullable(key).map(CraftNamespacedKey::toMinecraft).map(k -> ResourceKey.create(EquipmentAssets.ROOT_ID, k)), this.handle.cameraOverlay(), this.handle.allowedEntities(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
     }
 
     public NamespacedKey getCameraOverlay() {
@@ -119,24 +119,24 @@ implements org.bukkit.inventory.meta.components.EquippableComponent {
     }
 
     public void setCameraOverlay(NamespacedKey key) {
-        this.handle = new EquippableComponent(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), Optional.ofNullable(key).map(CraftNamespacedKey::toMinecraft), this.handle.allowedEntities(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
+        this.handle = new Equippable(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), Optional.ofNullable(key).map(CraftNamespacedKey::toMinecraft), this.handle.allowedEntities(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
     }
 
     public Collection<EntityType> getAllowedEntities() {
-        return this.handle.allowedEntities().map(RegistryEntryList::stream).map(stream -> stream.map(RegistryEntry::value).map(CraftEntityType::minecraftToBukkit).collect(Collectors.toList())).orElse(null);
+        return this.handle.allowedEntities().map(HolderSet::stream).map(stream -> stream.map(Holder::value).map(CraftEntityType::minecraftToBukkit).collect(Collectors.toList())).orElse(null);
     }
 
     public void setAllowedEntities(EntityType entities) {
-        this.handle = new EquippableComponent(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), entities != null ? Optional.of(RegistryEntryList.of(CraftEntityType.bukkitToMinecraftHolder(entities))) : Optional.empty(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
+        this.handle = new Equippable(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), entities != null ? Optional.of(HolderSet.direct(CraftEntityType.bukkitToMinecraftHolder(entities))) : Optional.empty(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
     }
 
     public void setAllowedEntities(Collection<EntityType> entities) {
-        this.handle = new EquippableComponent(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), entities != null ? Optional.of(RegistryEntryList.of(entities.stream().map(CraftEntityType::bukkitToMinecraftHolder).collect(Collectors.toList()))) : Optional.empty(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
+        this.handle = new Equippable(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), entities != null ? Optional.of(HolderSet.direct(entities.stream().map(CraftEntityType::bukkitToMinecraftHolder).collect(Collectors.toList()))) : Optional.empty(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
     }
 
     public void setAllowedEntities(Tag<EntityType> tag) {
         Preconditions.checkArgument((tag == null || tag instanceof CraftEntityTag ? 1 : 0) != 0, "tag must be an entity tag");
-        this.handle = new EquippableComponent(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), tag != null ? Optional.of(((CraftEntityTag)tag).getHandle()) : Optional.empty(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
+        this.handle = new Equippable(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), tag != null ? Optional.of(((CraftEntityTag)tag).getHandle()) : Optional.empty(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
     }
 
     public boolean isDispensable() {
@@ -144,7 +144,7 @@ implements org.bukkit.inventory.meta.components.EquippableComponent {
     }
 
     public void setDispensable(boolean dispensable) {
-        this.handle = new EquippableComponent(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), this.handle.allowedEntities(), dispensable, this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
+        this.handle = new Equippable(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), this.handle.allowedEntities(), dispensable, this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
     }
 
     public boolean isSwappable() {
@@ -152,7 +152,7 @@ implements org.bukkit.inventory.meta.components.EquippableComponent {
     }
 
     public void setSwappable(boolean swappable) {
-        this.handle = new EquippableComponent(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), this.handle.allowedEntities(), this.handle.dispensable(), swappable, this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
+        this.handle = new Equippable(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), this.handle.allowedEntities(), this.handle.dispensable(), swappable, this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
     }
 
     public boolean isDamageOnHurt() {
@@ -160,7 +160,7 @@ implements org.bukkit.inventory.meta.components.EquippableComponent {
     }
 
     public void setDamageOnHurt(boolean damage) {
-        this.handle = new EquippableComponent(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), this.handle.allowedEntities(), this.handle.dispensable(), this.handle.swappable(), damage, this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
+        this.handle = new Equippable(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), this.handle.allowedEntities(), this.handle.dispensable(), this.handle.swappable(), damage, this.handle.equipOnInteract(), this.handle.canBeSheared(), this.handle.shearingSound());
     }
 
     public boolean isEquipOnInteract() {
@@ -168,7 +168,7 @@ implements org.bukkit.inventory.meta.components.EquippableComponent {
     }
 
     public void setEquipOnInteract(boolean equip) {
-        this.handle = new EquippableComponent(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), this.handle.allowedEntities(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), equip, this.handle.canBeSheared(), this.handle.shearingSound());
+        this.handle = new Equippable(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), this.handle.allowedEntities(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), equip, this.handle.canBeSheared(), this.handle.shearingSound());
     }
 
     public int hashCode() {

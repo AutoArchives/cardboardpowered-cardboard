@@ -16,8 +16,8 @@ gversion {
 }
 project.compileJava.dependsOn(createVersionFile)
 
-//sourceCompatibility = JavaVersion.VERSION_25
-//targetCompatibility = JavaVersion.VERSION_25
+//sourceCompatibility = JavaVersion.VERSION_21
+//targetCompatibility = JavaVersion.VERSION_21
 
 //archivesBaseName = project.archives_base_name
 version = project.mod_version
@@ -58,7 +58,7 @@ dependencies {
     minecraft("com.mojang:minecraft:${project.minecraft_version}") {
     	exclude module: 'commons-logging'
     }
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    mappings loom.officialMojangMappings()
     modImplementation("net.fabricmc:fabric-loader:${project.loader_version}")
     // modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
     
@@ -154,11 +154,11 @@ configurations.implementation {
 }
 
 configure([tasks.compileJava]) {
-    sourceCompatibility = 25
-    options.release = 25
+    sourceCompatibility = 21
+    options.release = 21
 
     javaCompiler = javaToolchains.compilerFor {
-        languageVersion = JavaLanguageVersion.of(25)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 

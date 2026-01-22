@@ -3,16 +3,16 @@ package io.papermc.paper.datacomponent.item;
 import io.papermc.paper.adventure.PaperAdventure;
 import java.util.Optional;
 import net.kyori.adventure.key.Key;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.jspecify.annotations.Nullable;
 
 public record PaperUseCooldown(
-    net.minecraft.component.type.UseCooldownComponent impl
-) implements UseCooldown, Handleable<net.minecraft.component.type.UseCooldownComponent> {
+    net.minecraft.world.item.component.UseCooldown impl
+) implements UseCooldown, Handleable<net.minecraft.world.item.component.UseCooldown> {
 
     @Override
-    public net.minecraft.component.type.UseCooldownComponent getHandle() {
+    public net.minecraft.world.item.component.UseCooldown getHandle() {
         return this.impl;
     }
 
@@ -49,7 +49,7 @@ public record PaperUseCooldown(
         @Override
         public UseCooldown build() {
             return new PaperUseCooldown(
-                new net.minecraft.component.type.UseCooldownComponent(this.seconds, this.cooldownGroup)
+                new net.minecraft.world.item.component.UseCooldown(this.seconds, this.cooldownGroup)
             );
         }
     }

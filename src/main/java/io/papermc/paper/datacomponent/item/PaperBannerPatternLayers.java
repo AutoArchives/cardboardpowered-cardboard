@@ -14,18 +14,18 @@ import org.bukkit.craftbukkit.util.Handleable;
 import org.jetbrains.annotations.Unmodifiable;
 
 public record PaperBannerPatternLayers(
-    net.minecraft.component.type.BannerPatternsComponent impl
-) implements BannerPatternLayers, Handleable<net.minecraft.component.type.BannerPatternsComponent> {
+    net.minecraft.world.level.block.entity.BannerPatternLayers impl
+) implements BannerPatternLayers, Handleable<net.minecraft.world.level.block.entity.BannerPatternLayers> {
 
-    private static List<Pattern> convert(final net.minecraft.component.type.BannerPatternsComponent nmsPatterns) {
+    private static List<Pattern> convert(final net.minecraft.world.level.block.entity.BannerPatternLayers nmsPatterns) {
     	return MCUtil.transformUnmodifiable(nmsPatterns.layers(), input -> {
             final Optional<PatternType> type = CraftRegistry.unwrapAndConvertHolder(RegistryKey.BANNER_PATTERN, input.pattern());
-            return new Pattern(Objects.requireNonNull(DyeColor.getByWoolData((byte) input.color().getIndex())), type.orElseThrow(() -> new IllegalStateException("Inlined banner patterns are not supported yet in the API!")));
+            return new Pattern(Objects.requireNonNull(DyeColor.getByWoolData((byte) input.color().getId())), type.orElseThrow(() -> new IllegalStateException("Inlined banner patterns are not supported yet in the API!")));
         });
     }
 
     @Override
-    public net.minecraft.component.type.BannerPatternsComponent getHandle() {
+    public net.minecraft.world.level.block.entity.BannerPatternLayers getHandle() {
         return this.impl;
     }
 
@@ -36,13 +36,13 @@ public record PaperBannerPatternLayers(
 
     static final class BuilderImpl implements BannerPatternLayers.Builder {
 
-        private final net.minecraft.component.type.BannerPatternsComponent.Builder builder = new net.minecraft.component.type.BannerPatternsComponent.Builder();
+        private final net.minecraft.world.level.block.entity.BannerPatternLayers.Builder builder = new net.minecraft.world.level.block.entity.BannerPatternLayers.Builder();
 
         @Override
         public BannerPatternLayers.Builder add(final Pattern pattern) {
             this.builder.add(
                 CraftPatternType.bukkitToMinecraftHolder(pattern.getPattern()),
-                net.minecraft.util.DyeColor.byIndex(pattern.getColor().getWoolData())
+                net.minecraft.world.item.DyeColor.byId(pattern.getColor().getWoolData())
             );
             return this;
         }

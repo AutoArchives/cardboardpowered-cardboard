@@ -1,22 +1,21 @@
 package org.cardboardpowered.mixin.entity.block;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import org.bukkit.Location;
 import org.spongepowered.asm.mixin.Mixin;
 
 import org.cardboardpowered.interfaces.IMixinLockableContainerBlockEntity;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
-import net.minecraft.block.entity.LockableContainerBlockEntity;
-import net.minecraft.util.math.BlockPos;
-
-@Mixin(LockableContainerBlockEntity.class)
+@Mixin(BaseContainerBlockEntity.class)
 public class MixinLockableContainerBlockEntity implements IMixinLockableContainerBlockEntity {
 
     @Override
     public Location getLocation() {
-        LockableContainerBlockEntity lc = (LockableContainerBlockEntity)(Object)this;
-        BlockPos pos = lc.getPos();
-        return new Location(((IMixinWorld)lc.world).getCraftWorld(), pos.getX(), pos.getY(), pos.getZ());
+        BaseContainerBlockEntity lc = (BaseContainerBlockEntity)(Object)this;
+        BlockPos pos = lc.getBlockPos();
+        return new Location(((IMixinWorld)lc.level).getCraftWorld(), pos.getX(), pos.getY(), pos.getZ());
     }
 
 }

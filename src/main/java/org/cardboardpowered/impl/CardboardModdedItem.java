@@ -1,7 +1,7 @@
 package org.cardboardpowered.impl;
 
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.item.Item;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.Item;
 
 public class CardboardModdedItem implements CardboardModdedMaterial {
 
@@ -10,7 +10,7 @@ public class CardboardModdedItem implements CardboardModdedMaterial {
 
     public CardboardModdedItem(String id) {
         this.id = id;
-        this.item = net.minecraft.registry.Registries.ITEM.get(net.minecraft.util.Identifier.of(id));
+        this.item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(net.minecraft.resources.Identifier.parse(id));
     }
 
     public CardboardModdedItem(Item item) {
@@ -20,7 +20,7 @@ public class CardboardModdedItem implements CardboardModdedMaterial {
     @Override
     public short getDamage() {
     	
-    	return item.getComponents().get(DataComponentTypes.MAX_DAMAGE).shortValue();
+    	return item.components().get(DataComponents.MAX_DAMAGE).shortValue();
     	
         // return (short) item.getMaxDamage();
     }

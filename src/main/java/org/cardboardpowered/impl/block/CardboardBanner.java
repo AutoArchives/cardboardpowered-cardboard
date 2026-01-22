@@ -19,18 +19,11 @@ import com.mojang.datafixers.util.Pair;
 import me.isaiah.common.cmixin.IMixinBlockEntity;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.minecraft.block.AbstractBannerBlock;
-import net.minecraft.block.entity.BannerBlockEntity;
-import net.minecraft.block.entity.BannerPattern;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BannerPatternsComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.text.Text;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.world.level.block.AbstractBannerBlock;
+import net.minecraft.world.level.block.entity.BannerBlockEntity;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 
 @SuppressWarnings("deprecation")
 public class CardboardBanner extends CardboardBlockEntityState<BannerBlockEntity> implements Banner {
@@ -70,7 +63,7 @@ public class CardboardBanner extends CardboardBlockEntityState<BannerBlockEntity
     public void load(BannerBlockEntity banner) {
         super.load(banner);
 
-        base = DyeColor.getByWoolData((byte) ((AbstractBannerBlock) this.data.getBlock()).getColor().getIndex());
+        base = DyeColor.getByWoolData((byte) ((AbstractBannerBlock) this.data.getBlock()).getColor().getId());
         patterns = new ArrayList<Pattern>();
 
         /*for (int i = 0; i < banner.getPatterns().size(); i++) {
@@ -80,9 +73,9 @@ public class CardboardBanner extends CardboardBlockEntityState<BannerBlockEntity
         
         if (banner.getPatterns() != null) {
             for (int i = 0; i < banner.getPatterns().layers().size(); i++) {
-            	BannerPatternsComponent.Layer p = banner.getPatterns().layers().get(i);
+            	BannerPatternLayers.Layer p = banner.getPatterns().layers().get(i);
                 // TODO this.patterns.add(new Pattern(DyeColor.getByWoolData((byte) p.color().getId()), CraftPatternType.minecraftHolderToBukkit(p.pattern())));
-            	this.patterns.add(new Pattern(DyeColor.getByWoolData((byte) p.color().getIndex()), PatternType.getByIdentifier(p.pattern().getIdAsString()) ));
+            	this.patterns.add(new Pattern(DyeColor.getByWoolData((byte) p.color().getId()), PatternType.getByIdentifier(p.pattern().getRegisteredName()) ));
             }
         }
 
@@ -138,12 +131,12 @@ public class CardboardBanner extends CardboardBlockEntityState<BannerBlockEntity
     public void applyTo(BannerBlockEntity banner) {
         super.applyTo(banner);
 
-        banner.baseColor = net.minecraft.util.DyeColor.byIndex(base.getWoolData());
-        NbtCompound bannerNbt = new NbtCompound();
-        NbtList newPatterns = new NbtList();
+        banner.baseColor = net.minecraft.world.item.DyeColor.byId(base.getWoolData());
+        CompoundTag bannerNbt = new CompoundTag();
+        ListTag newPatterns = new ListTag();
 
         for (Pattern p : patterns) {
-            NbtCompound compound = new NbtCompound();
+            CompoundTag compound = new CompoundTag();
             compound.putInt("Color", p.getColor().getWoolData());
             compound.putString("Pattern", p.getPattern().getIdentifier());
             newPatterns.add(compound);
@@ -162,13 +155,13 @@ public class CardboardBanner extends CardboardBlockEntityState<BannerBlockEntity
     }
 
     public void customName(Component customName) {
-        set_name(((BannerBlockEntity)this.getSnapshot()), Text.of(customName.toString()));
+        set_name(((BannerBlockEntity)this.getSnapshot()), net.minecraft.network.chat.Component.nullToEmpty(customName.toString()));
 
     }
     
-	public static void set_name(BannerBlockEntity b, Text name) {
+	public static void set_name(BannerBlockEntity b, net.minecraft.network.chat.Component name) {
 		
-		b.customName = name;
+		b.name = name;
 	}
 
     public String getCustomName() {

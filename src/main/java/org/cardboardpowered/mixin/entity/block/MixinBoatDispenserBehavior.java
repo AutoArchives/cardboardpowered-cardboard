@@ -5,26 +5,24 @@
 package org.cardboardpowered.mixin.entity.block;
 
 import org.cardboardpowered.interfaces.IMixinWorld;
-import net.minecraft.block.DispenserBlock;
-import net.minecraft.block.dispenser.BoatDispenserBehavior;
-import net.minecraft.block.dispenser.DispenserBehavior;
-import net.minecraft.block.dispenser.ItemDispenserBehavior;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.vehicle.AbstractBoatEntity;
-import net.minecraft.entity.vehicle.BoatEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPointer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.dispenser.BlockSource;
+import net.minecraft.core.dispenser.BoatDispenseItemBehavior;
+import net.minecraft.core.dispenser.DispenseItemBehavior;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.DispenserBlock;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.event.block.BlockDispenseEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(BoatDispenserBehavior.class)
+@Mixin(BoatDispenseItemBehavior.class)
 public class MixinBoatDispenserBehavior {
 
     // @Shadow
@@ -34,15 +32,15 @@ public class MixinBoatDispenserBehavior {
     // public BoatEntity.Type boatType;
 
     @Shadow
-    private EntityType<? extends AbstractBoatEntity> boatType;
+    private EntityType<? extends AbstractBoat> type;
 
-    public ItemStack dispenseSilently(BlockPointer isourceblock, ItemStack itemstack) {
-        Direction enumdirection = (Direction) isourceblock.state().get(DispenserBlock.FACING);
-        ServerWorld worldserver = isourceblock.world();
-        double d0 = isourceblock.pos().getX() + (double) ((float) enumdirection.getOffsetX() * 1.125F);
-        double d1 = isourceblock.pos().getY() + (double) ((float) enumdirection.getOffsetY() * 1.125F);
-        double d2 = isourceblock.pos().getZ() + (double) ((float) enumdirection.getOffsetZ() * 1.125F);
-        BlockPos blockposition = isourceblock.pos().offset(enumdirection);
+    public ItemStack dispenseSilently(BlockSource isourceblock, ItemStack itemstack) {
+        Direction enumdirection = (Direction) isourceblock.state().getValue(DispenserBlock.FACING);
+        ServerLevel worldserver = isourceblock.level();
+        double d0 = isourceblock.pos().getX() + (double) ((float) enumdirection.getStepX() * 1.125F);
+        double d1 = isourceblock.pos().getY() + (double) ((float) enumdirection.getStepY() * 1.125F);
+        double d2 = isourceblock.pos().getZ() + (double) ((float) enumdirection.getStepZ() * 1.125F);
+        BlockPos blockposition = isourceblock.pos().relative(enumdirection);
         double d3;
 
         // FIXME: 1.18.2
@@ -63,16 +61,16 @@ public class MixinBoatDispenserBehavior {
             CraftServer.INSTANCE.getPluginManager().callEvent(event);
 
         if (event.isCancelled()) {
-            itemstack.increment(1);
+            itemstack.grow(1);
             return itemstack;
         }
 
         if (!event.getItem().equals(craftItem)) {
-            itemstack.increment(1);
+            itemstack.grow(1);
             // Chain to handler for new item
             ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
-            DispenserBehavior idispensebehavior = (DispenserBehavior) DispenserBlock.BEHAVIORS.get(eventStack.getItem());
-            if (idispensebehavior != DispenserBehavior.NOOP && idispensebehavior != this) {
+            DispenseItemBehavior idispensebehavior = (DispenseItemBehavior) DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
+            if (idispensebehavior != DispenseItemBehavior.NOOP && idispensebehavior != this) {
                 idispensebehavior.dispense(isourceblock, eventStack);
                 return itemstack;
             }
@@ -80,17 +78,17 @@ public class MixinBoatDispenserBehavior {
 
         // BoatEntity entityboat = new BoatEntity(worldserver, event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ());
 
-        AbstractBoatEntity entityboat = this.boatType.create(worldserver, SpawnReason.DISPENSER);
+        AbstractBoat entityboat = this.type.create(worldserver, EntitySpawnReason.DISPENSER);
         
         if (null != entityboat) {
-        	entityboat.initPosition(event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ());
-        	EntityType.copier(worldserver, itemstack, null).accept(entityboat);
-        	entityboat.setYaw(enumdirection.getPositiveHorizontalDegrees());
+        	entityboat.setInitialPos(event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ());
+        	EntityType.createDefaultStackConfig(worldserver, itemstack, null).accept(entityboat);
+        	entityboat.setYRot(enumdirection.toYRot());
         }
 
         
         // entityboat.setVariant(this.boatType);
-        if (!worldserver.spawnEntity(entityboat)) itemstack.increment(1); // CraftBukkit
+        if (!worldserver.addFreshEntity(entityboat)) itemstack.grow(1); // CraftBukkit
         return itemstack;
     }
 

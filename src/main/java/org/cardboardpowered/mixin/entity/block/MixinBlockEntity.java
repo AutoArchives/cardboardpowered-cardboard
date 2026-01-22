@@ -10,13 +10,15 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.cardboardpowered.interfaces.IMixinBlockEntity;
 import org.cardboardpowered.interfaces.IMixinWorld;
-
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.component.*;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.component.PatchedDataComponentMap;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 @Mixin(BlockEntity.class)
 public class MixinBlockEntity implements IMixinBlockEntity {
@@ -25,10 +27,10 @@ public class MixinBlockEntity implements IMixinBlockEntity {
     public CraftPersistentDataContainer persistentDataContainer;
 
     @Shadow
-    private ComponentMap components = ComponentMap.EMPTY;
+    private DataComponentMap components = DataComponentMap.EMPTY;
     
-    @Shadow public World world;
-    @Shadow public BlockPos pos;
+    @Shadow public Level level;
+    @Shadow public BlockPos worldPosition;
 
     @Override
     public CraftPersistentDataContainer getPersistentDataContainer() {
@@ -41,11 +43,11 @@ public class MixinBlockEntity implements IMixinBlockEntity {
     }
 
     public InventoryHolder getOwner(boolean useSnapshot) {
-        if (world == null) return null;
+        if (level == null) return null;
 
-        org.bukkit.block.Block block = ((IMixinWorld)this.world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
+        org.bukkit.block.Block block = ((IMixinWorld)this.level).getCraftWorld().getBlockAt(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
         if (block == null) {
-            org.bukkit.Bukkit.getLogger().warning("No block for owner at " + world + ", pos: " + pos);
+            org.bukkit.Bukkit.getLogger().warning("No block for owner at " + level + ", pos: " + worldPosition);
             return null;
         }
         org.bukkit.block.BlockState state = block.getState(useSnapshot); // Paper: useSnapshot
@@ -65,34 +67,34 @@ public class MixinBlockEntity implements IMixinBlockEntity {
     }
     
     @Shadow
-    public void readComponents(ComponentsAccess components) {
+    public void applyImplicitComponents(DataComponentGetter components) {
 	}
     
     @Override
-    public Set<ComponentType<?>> applyComponentsSet(ComponentMap defaultComponents, ComponentChanges components) {
-		final Set<ComponentType<?>> set = new HashSet<>();
-		set.add(DataComponentTypes.BLOCK_ENTITY_DATA);
-		set.add(DataComponentTypes.BLOCK_STATE);
-		final ComponentMap componentMap = MergedComponentMap.create(defaultComponents, components);
-		this.readComponents(new ComponentsAccess() {
+    public Set<DataComponentType<?>> applyComponentsSet(DataComponentMap defaultComponents, DataComponentPatch components) {
+		final Set<DataComponentType<?>> set = new HashSet<>();
+		set.add(DataComponents.BLOCK_ENTITY_DATA);
+		set.add(DataComponents.BLOCK_STATE);
+		final DataComponentMap componentMap = PatchedDataComponentMap.fromPatch(defaultComponents, components);
+		this.applyImplicitComponents(new DataComponentGetter() {
 
 			@Override
-			public <T> T get(ComponentType<? extends T> type) {
+			public <T> T get(DataComponentType<? extends T> type) {
 				set.add(type);
 				return componentMap.get(type);
 			}
 
 			@Override
-			public <T> T getOrDefault(ComponentType<? extends T> type, T fallback) {
+			public <T> T getOrDefault(DataComponentType<? extends T> type, T fallback) {
 				set.add(type);
 				return componentMap.getOrDefault(type, fallback);
 			}
 		});
-		ComponentChanges componentChanges = components.withRemovedIf(set::contains);
-		this.components = componentChanges.toAddedRemovedPair().added();
+		DataComponentPatch componentChanges = components.forget(set::contains);
+		this.components = componentChanges.split().added();
 		
 		// Paper - start
-		set.remove(DataComponentTypes.BLOCK_ENTITY_DATA); // Remove as never actually added by applyImplicitComponents
+		set.remove(DataComponents.BLOCK_ENTITY_DATA); // Remove as never actually added by applyImplicitComponents
 		return set;
 		// Paper - end
 	}

@@ -1,9 +1,7 @@
 package org.bukkit.craftbukkit.scoreboard;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardDisplaySlot;
-import net.minecraft.scoreboard.ScoreboardObjective;
+import net.minecraft.world.scores.Scoreboard;
 import org.apache.commons.lang.Validate;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
@@ -23,16 +21,16 @@ import java.util.Objects;
 
 public class CardboardObjective extends CardboardScoreboardComponent implements Objective {
 
-    private final ScoreboardObjective objective;
+    private final net.minecraft.world.scores.Objective objective;
     private final CardboardCriteria criteria;
 
-    CardboardObjective(CardboardScoreboard scoreboard, ScoreboardObjective objective) {
+    CardboardObjective(CardboardScoreboard scoreboard, net.minecraft.world.scores.Objective objective) {
         super(scoreboard);
         this.objective = objective;
         this.criteria = CardboardCriteria.getFromNMS(objective);
     }
 
-    ScoreboardObjective getHandle() {
+    net.minecraft.world.scores.Objective getHandle() {
         return objective;
     }
 
@@ -72,16 +70,16 @@ public class CardboardObjective extends CardboardScoreboardComponent implements 
     public void setDisplaySlot(DisplaySlot slot) throws IllegalStateException {
         CardboardScoreboard scoreboard = checkState();
         Scoreboard board = scoreboard.board;
-        ScoreboardObjective objective = this.objective;
+        net.minecraft.world.scores.Objective objective = this.objective;
 
-        for(ScoreboardDisplaySlot nmsSlot : ScoreboardDisplaySlot.values()) {
-            if(board.getObjectiveForSlot(nmsSlot) == objective)
-                board.setObjectiveSlot(nmsSlot, null);
+        for(net.minecraft.world.scores.DisplaySlot nmsSlot : net.minecraft.world.scores.DisplaySlot.values()) {
+            if(board.getDisplayObjective(nmsSlot) == objective)
+                board.setDisplayObjective(nmsSlot, null);
         }
 
         if (slot != null) {
-            ScoreboardDisplaySlot nmsSlot = CardboardScoreboardTranslations.fromBukkitSlot(slot);
-            board.setObjectiveSlot(nmsSlot, objective);
+            net.minecraft.world.scores.DisplaySlot nmsSlot = CardboardScoreboardTranslations.fromBukkitSlot(slot);
+            board.setDisplayObjective(nmsSlot, objective);
         }
     }
 
@@ -89,10 +87,10 @@ public class CardboardObjective extends CardboardScoreboardComponent implements 
     public DisplaySlot getDisplaySlot() throws IllegalStateException {
         CardboardScoreboard scoreboard = checkState();
         Scoreboard board = scoreboard.board;
-        ScoreboardObjective objective = this.objective;
+        net.minecraft.world.scores.Objective objective = this.objective;
 
-        for(ScoreboardDisplaySlot slot : ScoreboardDisplaySlot.values()) {
-            if(board.getObjectiveForSlot(slot) == objective) {
+        for(net.minecraft.world.scores.DisplaySlot slot : net.minecraft.world.scores.DisplaySlot.values()) {
+            if(board.getDisplayObjective(slot) == objective) {
                 return CardboardScoreboardTranslations.toBukkitSlot(slot);
             }
         }
@@ -136,7 +134,7 @@ public class CardboardObjective extends CardboardScoreboardComponent implements 
 
     @Override
     public CardboardScoreboard checkState() throws IllegalStateException {
-        if (getScoreboard().board.getNullableObjective(objective.getName()) == null)
+        if (getScoreboard().board.getObjective(objective.getName()) == null)
             throw new IllegalStateException("Unregistered scoreboard component");
         return getScoreboard();
     }
@@ -190,7 +188,7 @@ public class CardboardObjective extends CardboardScoreboardComponent implements 
 	@Override
 	public boolean willAutoUpdateDisplay() {
         this.checkState();
-        return this.objective.shouldDisplayAutoUpdate();
+        return this.objective.displayAutoUpdate();
 	}
 
 	@Override
@@ -202,7 +200,7 @@ public class CardboardObjective extends CardboardScoreboardComponent implements 
 	@Override
 	public @Nullable NumberFormat numberFormat() {
 		this.checkState();
-        net.minecraft.scoreboard.number.NumberFormat vanilla = this.objective.getNumberFormat();
+        net.minecraft.network.chat.numbers.NumberFormat vanilla = this.objective.numberFormat();
         if (vanilla == null) {
             return null;
         }

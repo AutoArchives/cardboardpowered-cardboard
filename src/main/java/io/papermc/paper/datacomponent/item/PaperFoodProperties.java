@@ -4,8 +4,8 @@ import com.google.common.base.Preconditions;
 import org.bukkit.craftbukkit.util.Handleable;
 
 public record PaperFoodProperties(
-    net.minecraft.component.type.FoodComponent impl
-) implements FoodProperties, Handleable<net.minecraft.component.type.FoodComponent> {
+    net.minecraft.world.food.FoodProperties impl
+) implements FoodProperties, Handleable<net.minecraft.world.food.FoodProperties> {
 
     @Override
     public int nutrition() {
@@ -31,7 +31,7 @@ public record PaperFoodProperties(
     }
 
     @Override
-    public net.minecraft.component.type.FoodComponent getHandle() {
+    public net.minecraft.world.food.FoodProperties getHandle() {
         return this.impl;
     }
 
@@ -62,7 +62,7 @@ public record PaperFoodProperties(
 
         @Override
         public FoodProperties build() {
-            return new PaperFoodProperties(new net.minecraft.component.type.FoodComponent(
+            return new PaperFoodProperties(new net.minecraft.world.food.FoodProperties(
                 this.nutrition,
                 this.saturation,
                 this.canAlwaysEat

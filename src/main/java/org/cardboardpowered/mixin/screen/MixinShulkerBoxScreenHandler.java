@@ -1,5 +1,8 @@
 package org.cardboardpowered.mixin.screen;
 
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ShulkerBoxMenu;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.bukkit.entity.Player;
@@ -11,22 +14,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.screen.ShulkerBoxScreenHandler;
-
-@Mixin(ShulkerBoxScreenHandler.class)
+@Mixin(ShulkerBoxMenu.class)
 public class MixinShulkerBoxScreenHandler extends MixinScreenHandler {
 
     @Shadow
-    public Inventory inventory;
+    public Container container;
 
     private CardboardInventoryView bukkitEntity;
-    private PlayerInventory player;
+    private Inventory player;
 
-    @Inject(method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/inventory/Inventory;)V", at = @At("TAIL"))
-    public void setPlayerInv(int i, PlayerInventory playerinventory, Inventory iinventory, CallbackInfo ci) {
-        this.player = (PlayerInventory) playerinventory;
+    @Inject(method = "<init>(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/Container;)V", at = @At("TAIL"))
+    public void setPlayerInv(int i, Inventory playerinventory, Container iinventory, CallbackInfo ci) {
+        this.player = (Inventory) playerinventory;
     }
 
     @Override
@@ -34,7 +33,7 @@ public class MixinShulkerBoxScreenHandler extends MixinScreenHandler {
         if (bukkitEntity != null)
             return bukkitEntity;
 
-        bukkitEntity = new CardboardInventoryView((Player)((IMixinServerEntityPlayer)this.player.player).getBukkitEntity(), new CraftInventory(this.inventory), (ShulkerBoxScreenHandler)(Object)this);
+        bukkitEntity = new CardboardInventoryView((Player)((IMixinServerEntityPlayer)this.player.player).getBukkitEntity(), new CraftInventory(this.container), (ShulkerBoxMenu)(Object)this);
         return bukkitEntity;
     }
 }

@@ -1,6 +1,6 @@
 package org.cardboardpowered.impl.block;
 
-import net.minecraft.block.entity.BedBlockEntity;
+import net.minecraft.world.level.block.entity.BedBlockEntity;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;

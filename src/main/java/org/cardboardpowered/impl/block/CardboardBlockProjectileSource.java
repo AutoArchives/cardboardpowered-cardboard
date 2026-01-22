@@ -1,32 +1,26 @@
 package org.cardboardpowered.impl.block;
 
-import net.minecraft.block.entity.DispenserBlockEntity;
-import net.minecraft.util.math.BlockPointer;
-
 import org.bukkit.block.Block;
 import org.bukkit.entity.Projectile;
 import org.bukkit.projectiles.BlockProjectileSource;
 // import org.bukkit.util.Consumer;
 import org.bukkit.util.Vector;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Position;
-import net.minecraft.world.World;
-
 import org.cardboardpowered.interfaces.IMixinWorld;
 
 
 import com.google.common.base.Preconditions;
-
-import net.minecraft.block.BlockState;
-import net.minecraft.block.DispenserBlock;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.item.ProjectileItem;
-
 import java.util.function.Consumer;
-
+import net.minecraft.core.Direction;
+import net.minecraft.core.Position;
+import net.minecraft.core.dispenser.BlockSource;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ProjectileItem;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.entity.DispenserBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.Material;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Egg;
@@ -49,7 +43,7 @@ public class CardboardBlockProjectileSource implements BlockProjectileSource {
 
     @Override
     public Block getBlock() {
-        return ((IMixinWorld)(Object)dispenserBlock.getWorld()).getCraftWorld().getBlockAt(dispenserBlock.getPos().getX(), dispenserBlock.getPos().getY(), dispenserBlock.getPos().getZ());
+        return ((IMixinWorld)(Object)dispenserBlock.getLevel()).getCraftWorld().getBlockAt(dispenserBlock.getBlockPos().getX(), dispenserBlock.getBlockPos().getY(), dispenserBlock.getBlockPos().getZ());
     }
 
     @Override
@@ -95,14 +89,14 @@ public class CardboardBlockProjectileSource implements BlockProjectileSource {
             throw new IllegalArgumentException("Projectile '%s' is not supported".formatted(projectile.getSimpleName()));
         }
         ProjectileItem projectileItem = (ProjectileItem)((Object)item);
-        ProjectileItem.Settings config = projectileItem.getProjectileSettings();
-        BlockState state = this.dispenserBlock.getCachedState();
-        World world = this.dispenserBlock.getWorld();
-        BlockPointer pointer = new BlockPointer((ServerWorld)world, this.dispenserBlock.getPos(), state, this.dispenserBlock);
-        Direction facing = state.get(DispenserBlock.FACING);
+        ProjectileItem.DispenseConfig config = projectileItem.createDispenseConfig();
+        BlockState state = this.dispenserBlock.getBlockState();
+        Level world = this.dispenserBlock.getLevel();
+        BlockSource pointer = new BlockSource((ServerLevel)world, this.dispenserBlock.getBlockPos(), state, this.dispenserBlock);
+        Direction facing = state.getValue(DispenserBlock.FACING);
         Position pos = config.positionFunction().getDispensePosition(pointer, facing);
-        ProjectileEntity launch = projectileItem.createEntity(world, pos, new net.minecraft.item.ItemStack(item), facing);
-        projectileItem.initializeProjectile(launch, facing.getOffsetX(), facing.getOffsetY(), facing.getOffsetZ(), config.power(), config.uncertainty());
+        net.minecraft.world.entity.projectile.Projectile launch = projectileItem.asProjectile(world, pos, new net.minecraft.world.item.ItemStack(item), facing);
+        projectileItem.shoot(launch, facing.getStepX(), facing.getStepY(), facing.getStepZ(), config.power(), config.uncertainty());
 
         launch.setProjectileSourceBukkit(this);
         
@@ -112,7 +106,7 @@ public class CardboardBlockProjectileSource implements BlockProjectileSource {
         if (function != null) {
             function.accept((T) (Projectile) launch.getBukkitEntity());
         }
-        world.spawnEntity(launch);
+        world.addFreshEntity(launch);
         return (T)((Projectile)launch.getBukkitEntity());
     }
 

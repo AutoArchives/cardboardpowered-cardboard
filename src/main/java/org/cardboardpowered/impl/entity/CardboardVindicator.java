@@ -1,6 +1,5 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.mob.VindicatorEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftIllager;
 import org.bukkit.entity.EntityType;
@@ -8,13 +7,13 @@ import org.bukkit.entity.Vindicator;
 
 public class CardboardVindicator extends CraftIllager implements Vindicator {
 
-    public CardboardVindicator(CraftServer server, VindicatorEntity entity) {
+    public CardboardVindicator(CraftServer server, net.minecraft.world.entity.monster.illager.Vindicator entity) {
         super(server, entity);
     }
 
     @Override
-    public VindicatorEntity getHandle() {
-        return (VindicatorEntity) super.getHandle();
+    public net.minecraft.world.entity.monster.illager.Vindicator getHandle() {
+        return (net.minecraft.world.entity.monster.illager.Vindicator) super.getHandle();
     }
 
     @Override

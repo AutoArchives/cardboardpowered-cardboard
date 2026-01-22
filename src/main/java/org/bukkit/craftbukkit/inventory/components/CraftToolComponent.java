@@ -10,11 +10,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import net.minecraft.block.Block;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryEntryList;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.block.Block;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -26,9 +26,9 @@ import org.cardboardpowered.impl.tag.CraftBlockTag;
 @SerializableAs("Tool")
 public final class CraftToolComponent implements ToolComponent {
 
-    private net.minecraft.component.type.ToolComponent handle;
+    private net.minecraft.world.item.component.Tool handle;
 
-    public CraftToolComponent(net.minecraft.component.type.ToolComponent tool) {
+    public CraftToolComponent(net.minecraft.world.item.component.Tool tool) {
         this.handle = tool;
     }
 
@@ -53,7 +53,7 @@ public final class CraftToolComponent implements ToolComponent {
             }
         }
 
-        this.handle = new net.minecraft.component.type.ToolComponent(rules.build().stream().map(CraftToolRule::new).map(CraftToolRule::getHandle).toList(), speed.floatValue(), damage, true);
+        this.handle = new net.minecraft.world.item.component.Tool(rules.build().stream().map(CraftToolRule::new).map(CraftToolRule::getHandle).toList(), speed.floatValue(), damage, true);
     }
 
     @Override
@@ -65,7 +65,7 @@ public final class CraftToolComponent implements ToolComponent {
         return result;
     }
 
-    public net.minecraft.component.type.ToolComponent getHandle() {
+    public net.minecraft.world.item.component.Tool getHandle() {
         return this.handle;
     }
 
@@ -76,7 +76,7 @@ public final class CraftToolComponent implements ToolComponent {
 
     @Override
     public void setDefaultMiningSpeed(float speed) {
-        this.handle = new net.minecraft.component.type.ToolComponent(this.handle.rules(), speed, this.handle.damagePerBlock(), this.handle.canDestroyBlocksInCreative());
+        this.handle = new net.minecraft.world.item.component.Tool(this.handle.rules(), speed, this.handle.damagePerBlock(), this.handle.canDestroyBlocksInCreative());
     }
 
     @Override
@@ -87,7 +87,7 @@ public final class CraftToolComponent implements ToolComponent {
     @Override
     public void setDamagePerBlock(int damage) {
         Preconditions.checkArgument(damage >= 0, "damage must be >= 0, was %d", damage);
-        this.handle = new net.minecraft.component.type.ToolComponent(this.handle.rules(), this.handle.defaultMiningSpeed(), damage, this.handle.canDestroyBlocksInCreative());
+        this.handle = new net.minecraft.world.item.component.Tool(this.handle.rules(), this.handle.defaultMiningSpeed(), damage, this.handle.canDestroyBlocksInCreative());
     }
 
     @Override
@@ -98,7 +98,7 @@ public final class CraftToolComponent implements ToolComponent {
     @Override
     public void setRules(List<ToolRule> rules) {
         Preconditions.checkArgument(rules != null, "rules must not be null");
-        this.handle = new net.minecraft.component.type.ToolComponent(rules.stream().map(CraftToolRule::new).map(CraftToolRule::getHandle).toList(), this.handle.defaultMiningSpeed(), this.handle.damagePerBlock(), this.handle.canDestroyBlocksInCreative());
+        this.handle = new net.minecraft.world.item.component.Tool(rules.stream().map(CraftToolRule::new).map(CraftToolRule::getHandle).toList(), this.handle.defaultMiningSpeed(), this.handle.damagePerBlock(), this.handle.canDestroyBlocksInCreative());
     }
 
     @Override
@@ -107,21 +107,21 @@ public final class CraftToolComponent implements ToolComponent {
         Preconditions.checkArgument(block.isBlock(), "block must be a block type, given %s", block.getKey());
         Preconditions.checkArgument(speed == null || speed > 0, "speed must be positive"); // Paper - validate speed
 
-        RegistryEntry.Reference<Block> nmsBlock = CraftBlockType.bukkitToMinecraft(block).getRegistryEntry();
-        return this.addRule(RegistryEntryList.of(nmsBlock), speed, correctForDrops);
+        Holder.Reference<Block> nmsBlock = CraftBlockType.bukkitToMinecraft(block).builtInRegistryHolder();
+        return this.addRule(HolderSet.direct(nmsBlock), speed, correctForDrops);
     }
 
     @Override
     public ToolRule addRule(Collection<Material> blocks, Float speed, Boolean correctForDrops) {
         Preconditions.checkArgument(speed == null || speed > 0, "speed must be positive"); // Paper - validate speed
-        List<RegistryEntry.Reference<Block>> nmsBlocks = new ArrayList<>(blocks.size());
+        List<Holder.Reference<Block>> nmsBlocks = new ArrayList<>(blocks.size());
 
         for (Material material : blocks) {
             Preconditions.checkArgument(material.isBlock(), "blocks contains non-block type: %s", material.getKey());
-            nmsBlocks.add(CraftBlockType.bukkitToMinecraft(material).getRegistryEntry());
+            nmsBlocks.add(CraftBlockType.bukkitToMinecraft(material).builtInRegistryHolder());
         }
 
-        return this.addRule(RegistryEntryList.of(nmsBlocks), speed, correctForDrops);
+        return this.addRule(HolderSet.direct(nmsBlocks), speed, correctForDrops);
     }
 
     @Override
@@ -131,14 +131,14 @@ public final class CraftToolComponent implements ToolComponent {
         return this.addRule(((CraftBlockTag) tag).getHandle(), speed, correctForDrops);
     }
 
-    private ToolRule addRule(RegistryEntryList<Block> blocks, Float speed, Boolean correctForDrops) {
-        net.minecraft.component.type.ToolComponent.Rule rule = new net.minecraft.component.type.ToolComponent.Rule(blocks, Optional.ofNullable(speed), Optional.ofNullable(correctForDrops));
+    private ToolRule addRule(HolderSet<Block> blocks, Float speed, Boolean correctForDrops) {
+        net.minecraft.world.item.component.Tool.Rule rule = new net.minecraft.world.item.component.Tool.Rule(blocks, Optional.ofNullable(speed), Optional.ofNullable(correctForDrops));
 
-        List<net.minecraft.component.type.ToolComponent.Rule> rules = new ArrayList<>(this.handle.rules().size() + 1);
+        List<net.minecraft.world.item.component.Tool.Rule> rules = new ArrayList<>(this.handle.rules().size() + 1);
         rules.addAll(this.handle.rules());
         rules.add(rule);
 
-        this.handle = new net.minecraft.component.type.ToolComponent(rules, this.handle.defaultMiningSpeed(), this.handle.damagePerBlock(), this.handle.canDestroyBlocksInCreative());
+        this.handle = new net.minecraft.world.item.component.Tool(rules, this.handle.defaultMiningSpeed(), this.handle.damagePerBlock(), this.handle.canDestroyBlocksInCreative());
         return new CraftToolRule(rule);
     }
 
@@ -146,9 +146,9 @@ public final class CraftToolComponent implements ToolComponent {
     public boolean removeRule(ToolRule rule) {
         Preconditions.checkArgument(rule != null, "rule must not be null");
 
-        List<net.minecraft.component.type.ToolComponent.Rule> rules = new ArrayList<>(this.handle.rules());
+        List<net.minecraft.world.item.component.Tool.Rule> rules = new ArrayList<>(this.handle.rules());
         boolean removed = rules.remove(((CraftToolRule) rule).handle);
-        this.handle = new net.minecraft.component.type.ToolComponent(rules, this.handle.defaultMiningSpeed(), this.handle.damagePerBlock(), this.handle.canDestroyBlocksInCreative());
+        this.handle = new net.minecraft.world.item.component.Tool(rules, this.handle.defaultMiningSpeed(), this.handle.damagePerBlock(), this.handle.canDestroyBlocksInCreative());
 
         return removed;
     }
@@ -183,23 +183,23 @@ public final class CraftToolComponent implements ToolComponent {
     @SerializableAs("ToolRule")
     public static class CraftToolRule implements ToolRule {
 
-        private net.minecraft.component.type.ToolComponent.Rule handle;
+        private net.minecraft.world.item.component.Tool.Rule handle;
 
-        public CraftToolRule(net.minecraft.component.type.ToolComponent.Rule handle) {
+        public CraftToolRule(net.minecraft.world.item.component.Tool.Rule handle) {
             this.handle = handle;
         }
 
         public CraftToolRule(ToolRule bukkit) {
-            net.minecraft.component.type.ToolComponent.Rule toCopy = ((CraftToolRule) bukkit).handle;
-            this.handle = new net.minecraft.component.type.ToolComponent.Rule(toCopy.blocks(), toCopy.speed(), toCopy.correctForDrops());
+            net.minecraft.world.item.component.Tool.Rule toCopy = ((CraftToolRule) bukkit).handle;
+            this.handle = new net.minecraft.world.item.component.Tool.Rule(toCopy.blocks(), toCopy.speed(), toCopy.correctForDrops());
         }
 
         public CraftToolRule(Map<String, Object> map) {
             Float speed = SerializableMeta.getObject(Float.class, map, "speed", true);
             Boolean correct = SerializableMeta.getObject(Boolean.class, map, "correct-for-drops", true);
-            RegistryEntryList<Block> blocks = CraftHolderUtil.parse(SerializableMeta.getObject(Object.class, map, "blocks", false), RegistryKeys.BLOCK, Registries.BLOCK);
+            HolderSet<Block> blocks = CraftHolderUtil.parse(SerializableMeta.getObject(Object.class, map, "blocks", false), Registries.BLOCK, BuiltInRegistries.BLOCK);
 
-            this.handle = new net.minecraft.component.type.ToolComponent.Rule(blocks, Optional.ofNullable(speed), Optional.ofNullable(correct));
+            this.handle = new net.minecraft.world.item.component.Tool.Rule(blocks, Optional.ofNullable(speed), Optional.ofNullable(correct));
         }
 
         @Override
@@ -221,20 +221,20 @@ public final class CraftToolComponent implements ToolComponent {
             return result;
         }
 
-        public net.minecraft.component.type.ToolComponent.Rule getHandle() {
+        public net.minecraft.world.item.component.Tool.Rule getHandle() {
             return this.handle;
         }
 
         @Override
         public Collection<Material> getBlocks() {
-            return this.handle.blocks().stream().map(RegistryEntry::value).map(CraftBlockType::minecraftToBukkit).collect(Collectors.toList());
+            return this.handle.blocks().stream().map(Holder::value).map(CraftBlockType::minecraftToBukkit).collect(Collectors.toList());
         }
 
         @Override
         public void setBlocks(Material block) {
             Preconditions.checkArgument(block != null, "block must not be null");
             Preconditions.checkArgument(block.isBlock(), "block must be a block type, given %s", block.getKey());
-            this.handle = new net.minecraft.component.type.ToolComponent.Rule(RegistryEntryList.of(CraftBlockType.bukkitToMinecraft(block).getRegistryEntry()), this.handle.speed(), this.handle.correctForDrops());
+            this.handle = new net.minecraft.world.item.component.Tool.Rule(HolderSet.direct(CraftBlockType.bukkitToMinecraft(block).builtInRegistryHolder()), this.handle.speed(), this.handle.correctForDrops());
         }
 
         @Override
@@ -244,13 +244,13 @@ public final class CraftToolComponent implements ToolComponent {
                 Preconditions.checkArgument(material.isBlock(), "blocks contains non-block type: %s", material.getKey());
             }
 
-            this.handle = new net.minecraft.component.type.ToolComponent.Rule(RegistryEntryList.of((List) blocks.stream().map(CraftBlockType::bukkitToMinecraft).map(Block::getRegistryEntry).collect(Collectors.toList())), this.handle.speed(), this.handle.correctForDrops());
+            this.handle = new net.minecraft.world.item.component.Tool.Rule(HolderSet.direct((List) blocks.stream().map(CraftBlockType::bukkitToMinecraft).map(Block::builtInRegistryHolder).collect(Collectors.toList())), this.handle.speed(), this.handle.correctForDrops());
         }
 
         @Override
         public void setBlocks(Tag<Material> tag) {
             Preconditions.checkArgument(tag instanceof CraftBlockTag, "tag must be a block tag");
-            this.handle = new net.minecraft.component.type.ToolComponent.Rule(((CraftBlockTag) tag).getHandle(), this.handle.speed(), this.handle.correctForDrops());
+            this.handle = new net.minecraft.world.item.component.Tool.Rule(((CraftBlockTag) tag).getHandle(), this.handle.speed(), this.handle.correctForDrops());
         }
 
         @Override
@@ -261,7 +261,7 @@ public final class CraftToolComponent implements ToolComponent {
         @Override
         public void setSpeed(Float speed) {
             Preconditions.checkArgument(speed == null || speed > 0, "speed must be positive"); // Paper - validate speed
-            this.handle = new net.minecraft.component.type.ToolComponent.Rule(this.handle.blocks(), Optional.ofNullable(speed), this.handle.correctForDrops());
+            this.handle = new net.minecraft.world.item.component.Tool.Rule(this.handle.blocks(), Optional.ofNullable(speed), this.handle.correctForDrops());
         }
 
         @Override
@@ -271,7 +271,7 @@ public final class CraftToolComponent implements ToolComponent {
 
         @Override
         public void setCorrectForDrops(Boolean correct) {
-            this.handle = new net.minecraft.component.type.ToolComponent.Rule(this.handle.blocks(), this.handle.speed(), Optional.ofNullable(correct));
+            this.handle = new net.minecraft.world.item.component.Tool.Rule(this.handle.blocks(), this.handle.speed(), Optional.ofNullable(correct));
         }
 
         @Override

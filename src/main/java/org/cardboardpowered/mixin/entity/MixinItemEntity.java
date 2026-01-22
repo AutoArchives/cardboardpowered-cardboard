@@ -1,7 +1,9 @@
 package org.cardboardpowered.mixin.entity;
 
 import java.util.UUID;
-
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.event.entity.EntityPickupItemEvent;
@@ -18,10 +20,6 @@ import org.cardboardpowered.interfaces.CardboardItemEntity;
 import org.cardboardpowered.interfaces.IMixinPlayerInventory;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-
 @Mixin(ItemEntity.class)
 @SuppressWarnings("deprecation")
 public class MixinItemEntity extends MixinEntity implements CardboardItemEntity {
@@ -36,11 +34,11 @@ public class MixinItemEntity extends MixinEntity implements CardboardItemEntity 
 	 * net.minecraft.class_1542.field_7204
 	 */
 	@Shadow
-	public int itemAge;
+	public int age;
 	
 	@Override
 	public int cardboard$itemAge() {
-		return itemAge;
+		return age;
 	}
 	
 	@Override
@@ -50,15 +48,15 @@ public class MixinItemEntity extends MixinEntity implements CardboardItemEntity 
 	
 	@Override
 	public void cardboard$setItemAge(int value) {
-		this.itemAge = value;
+		this.age = value;
 	}
 	
 	@Override
 	public void cardboard$setUnlimitedAge(boolean noLimit) {
 		if (noLimit) {
-			this.itemAge = -32768;
+			this.age = -32768;
 		} else {
-			this.itemAge = ((ItemEntity)(Object)this).age; // TODO: age vs totalEntityAge
+			this.age = ((ItemEntity)(Object)this).tickCount; // TODO: age vs totalEntityAge
 		}
 	}
 	
@@ -66,7 +64,7 @@ public class MixinItemEntity extends MixinEntity implements CardboardItemEntity 
 	public void cardboard$setHealth(int health) {
 		ItemEntity entity = ((ItemEntity)(Object)this);
 		if (health <= 0) {
-			entity.getStack().onItemEntityDestroyed(entity);
+			entity.getItem().onDestroyed(entity);
 			entity.discard(); // Cause = Plugin
 		} else {
 			this.health = health;
@@ -85,7 +83,7 @@ public class MixinItemEntity extends MixinEntity implements CardboardItemEntity 
             this.bukkit = new ItemEntityImpl(CraftServer.INSTANCE, (ItemEntity) (Object) this, (ItemEntity) (Object) this);
     }
 
-    @Inject(at = @At("HEAD"), method = "merge(Lnet/minecraft/entity/ItemEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/ItemEntity;Lnet/minecraft/item/ItemStack;)V", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "merge(Lnet/minecraft/world/entity/item/ItemEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/item/ItemEntity;Lnet/minecraft/world/item/ItemStack;)V", cancellable = true)
     private static void fireMergeEvent(ItemEntity entityitem, ItemStack itemstack, ItemEntity entityitem1, ItemStack itemstack1, CallbackInfo ci) {
         if (CraftEventFactory.callItemMergeEvent(entityitem1, entityitem).isCancelled()) {
             ci.cancel();
@@ -96,10 +94,10 @@ public class MixinItemEntity extends MixinEntity implements CardboardItemEntity 
     /**
      * @reason EntityPickupItemEvent
      */
-    @Inject(at = @At("HEAD"), method = "onPlayerCollision", cancellable = true)
-    public void fireEntityPickupItemEvent(PlayerEntity entityhuman, CallbackInfo ci) {
-        if (this.mc_world().isClient()) return;
-        ItemStack itemstack = ((ItemEntity)(Object)this).getStack();
+    @Inject(at = @At("HEAD"), method = "playerTouch", cancellable = true)
+    public void fireEntityPickupItemEvent(Player entityhuman, CallbackInfo ci) {
+        if (this.mc_world().isClientSide()) return;
+        ItemStack itemstack = ((ItemEntity)(Object)this).getItem();
         int i = itemstack.getCount();
 
         // CraftBukkit start - fire PlayerPickupItemEvent

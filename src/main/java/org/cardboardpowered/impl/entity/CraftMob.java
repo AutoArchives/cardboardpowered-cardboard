@@ -1,11 +1,9 @@
 package org.cardboardpowered.impl.entity;
 
 import net.kyori.adventure.util.TriState;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.vehicle.BoatEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.vehicle.boat.Boat;
 import java.util.Random;
 import java.util.function.Consumer;
 
@@ -39,13 +37,13 @@ public class CraftMob extends LivingEntityImpl implements Mob {
     protected final Random random = new Random();
     private final PaperPathfinder paperPathfinder;
 
-    public CraftMob(CraftServer server, MobEntity entity) {
+    public CraftMob(CraftServer server, net.minecraft.world.entity.Mob entity) {
         super(server, entity);
         this.paperPathfinder = new PaperPathfinder(entity);
     }
     
     @Override
-    public void setHandle(net.minecraft.entity.Entity entity) {
+    public void setHandle(net.minecraft.world.entity.Entity entity) {
        super.setHandle(entity);
        this.paperPathfinder.setHandle(this.getHandle());
     }
@@ -73,8 +71,8 @@ public class CraftMob extends LivingEntityImpl implements Mob {
     }
 
     @Override
-    public MobEntity getHandle() {
-        return (MobEntity) nms;
+    public net.minecraft.world.entity.Mob getHandle() {
+        return (net.minecraft.world.entity.Mob) nms;
     }
 
     @Override
@@ -116,10 +114,10 @@ public class CraftMob extends LivingEntityImpl implements Mob {
 
     // Paper start
     public boolean isInDaylight() {
-        if (getHandle().getEntityWorld().isDay()) {
-            float f = getHandle().getBrightnessAtEyes();
-            BlockPos blockPos = getHandle().getVehicle() instanceof BoatEntity ? BlockPos.ofFloored(getHandle().getX(), Math.round(getHandle().getY()), getHandle().getZ()).up() : BlockPos.ofFloored(getHandle().getX(), Math.round(getHandle().getY()), getHandle().getZ());
-            if (f > 0.5f && CardboardMod.random.nextFloat() * 30.0f < (f - 0.4f) * 2.0f && getHandle().getEntityWorld().isSkyVisible(blockPos)) return true;
+        if (getHandle().level().isBrightOutside()) {
+            float f = getHandle().getLightLevelDependentMagicValue();
+            BlockPos blockPos = getHandle().getVehicle() instanceof Boat ? BlockPos.containing(getHandle().getX(), Math.round(getHandle().getY()), getHandle().getZ()).above() : BlockPos.containing(getHandle().getX(), Math.round(getHandle().getY()), getHandle().getZ());
+            if (f > 0.5f && CardboardMod.random.nextFloat() * 30.0f < (f - 0.4f) * 2.0f && getHandle().level().canSeeSky(blockPos)) return true;
         }
         return false;
     }
@@ -131,50 +129,50 @@ public class CraftMob extends LivingEntityImpl implements Mob {
 
     @Override
     public int getHeadRotationSpeed() {
-    	return this.getHandle().getMaxLookYawChange();
+    	return this.getHandle().getHeadRotSpeed();
     }
 
     @Override
     public int getMaxHeadPitch() {
-    	return this.getHandle().getMaxLookPitchChange();
+    	return this.getHandle().getMaxHeadXRot();
     }
 
     @Override
     public void lookAt(@NotNull Location location) {
     	Preconditions.checkNotNull(location, "location cannot be null");
     	Preconditions.checkArgument(location.getWorld().equals(this.getWorld()), "location in a different world");
-    	this.getHandle().getLookControl().lookAt(location.getX(), location.getY(), location.getZ());
+    	this.getHandle().getLookControl().setLookAt(location.getX(), location.getY(), location.getZ());
     }
 
     @Override
     public void lookAt(@NotNull Location location, float headRotationSpeed, float maxHeadPitch) {
     	Preconditions.checkNotNull(location, "location cannot be null");
     	Preconditions.checkArgument(location.getWorld().equals(this.getWorld()), "location in a different world");
-    	this.getHandle().getLookControl().lookAt(location.getX(), location.getY(), location.getZ(), headRotationSpeed, maxHeadPitch);
+    	this.getHandle().getLookControl().setLookAt(location.getX(), location.getY(), location.getZ(), headRotationSpeed, maxHeadPitch);
     }
 
     @Override
     public void lookAt(@NotNull org.bukkit.entity.Entity entity) {
     	Preconditions.checkNotNull(entity, "entity cannot be null");
     	Preconditions.checkArgument(entity.getWorld().equals(this.getWorld()), "entity in a different world");
-    	this.getHandle().getLookControl().lookAt(((CraftEntity)entity).getHandle());
+    	this.getHandle().getLookControl().setLookAt(((CraftEntity)entity).getHandle());
     }
 
     @Override
     public void lookAt(@NotNull org.bukkit.entity.Entity entity, float headRotationSpeed, float maxHeadPitch) {
     	Preconditions.checkNotNull(entity, "entity cannot be null");
     	Preconditions.checkArgument(entity.getWorld().equals(this.getWorld()), "entity in a different world");
-    	this.getHandle().getLookControl().lookAt(((CraftEntity)entity).getHandle(), headRotationSpeed, maxHeadPitch);
+    	this.getHandle().getLookControl().setLookAt(((CraftEntity)entity).getHandle(), headRotationSpeed, maxHeadPitch);
     }
 
     @Override
     public void lookAt(double x, double y, double z) {
-    	this.getHandle().getLookControl().lookAt(x, y, z);
+    	this.getHandle().getLookControl().setLookAt(x, y, z);
     }
 
     @Override
     public void lookAt(double x, double y, double z, float headRotationSpeed, float maxHeadPitch) {
-    	this.getHandle().getLookControl().lookAt(x, y, z, headRotationSpeed, maxHeadPitch);
+    	this.getHandle().getLookControl().setLookAt(x, y, z, headRotationSpeed, maxHeadPitch);
     }
 
     @Override
@@ -194,16 +192,16 @@ public class CraftMob extends LivingEntityImpl implements Mob {
 
 	@Override
 	public int getPossibleExperienceReward() {
-        return this.getHandle().getExperienceToDrop((ServerWorld) this.getHandle().getEntityWorld()); // getXpToDrop();
+        return this.getHandle().getBaseExperienceReward((ServerLevel) this.getHandle().level()); // getXpToDrop();
 	}
 	// 1.20.2 API:
 	
 	public boolean isAggressive() {
-        return this.getHandle().isAttacking();
+        return this.getHandle().isAggressive();
     }
 
     public void setAggressive(boolean aggressive) {
-        this.getHandle().setAttacking(aggressive);
+        this.getHandle().setAggressive(aggressive);
     }
 
 	@Override

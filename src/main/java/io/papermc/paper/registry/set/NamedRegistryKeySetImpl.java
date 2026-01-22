@@ -11,8 +11,8 @@ import io.papermc.paper.registry.tag.TagKey;
 import java.util.Collection;
 import java.util.Set;
 import net.kyori.adventure.key.Key;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryEntryList;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -23,18 +23,18 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public record NamedRegistryKeySetImpl<T extends Keyed, M>( // TODO remove Keyed
     TagKey<T> tagKey,
-    RegistryEntryList.Named<M> namedSet
+    HolderSet.Named<M> namedSet
 ) implements Tag<T>, org.bukkit.Tag<T> {
 
-    public NamedRegistryKeySetImpl(final RegistryEntryList.Named<M> namedSet) {
-        this(PaperRegistries.fromNms(namedSet.getTag()), namedSet);
+    public NamedRegistryKeySetImpl(final HolderSet.Named<M> namedSet) {
+        this(PaperRegistries.fromNms(namedSet.key()), namedSet);
     }
 
     @Override
     public @Unmodifiable Collection<TypedKey<T>> values() {
         final ImmutableList.Builder<TypedKey<T>> builder = ImmutableList.builder();
-        for (final RegistryEntry<M> holder : this.namedSet) {
-            builder.add(TypedKey.create(this.tagKey.registryKey(), CraftNamespacedKey.fromMinecraft(((RegistryEntry.Reference<?>) holder).registryKey().getValue())));
+        for (final Holder<M> holder : this.namedSet) {
+            builder.add(TypedKey.create(this.tagKey.registryKey(), CraftNamespacedKey.fromMinecraft(((Holder.Reference<?>) holder).key().identifier())));
         }
         return builder.build();
     }
@@ -47,15 +47,15 @@ public record NamedRegistryKeySetImpl<T extends Keyed, M>( // TODO remove Keyed
     @Override
     public boolean contains(final TypedKey<T> valueKey) {
         return Iterables.any(this.namedSet, h -> {
-            return PaperRegistries.fromNms(((RegistryEntry.Reference<?>) h).registryKey()).equals(valueKey);
+            return PaperRegistries.fromNms(((Holder.Reference<?>) h).key()).equals(valueKey);
         });
     }
 
     @Override
     public @Unmodifiable Collection<T> resolve(final Registry<T> registry) {
         final ImmutableList.Builder<T> builder = ImmutableList.builder();
-        for (final RegistryEntry<M> holder : this.namedSet) {
-            builder.add(registry.getOrThrow(CraftNamespacedKey.fromMinecraft(((RegistryEntry.Reference<?>) holder).registryKey().getValue())));
+        for (final Holder<M> holder : this.namedSet) {
+            builder.add(registry.getOrThrow(CraftNamespacedKey.fromMinecraft(((Holder.Reference<?>) holder).key().identifier())));
         }
         return builder.build();
     }

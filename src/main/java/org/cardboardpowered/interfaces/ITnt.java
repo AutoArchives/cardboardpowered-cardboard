@@ -1,6 +1,6 @@
 package org.cardboardpowered.interfaces;
 
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.entity.LivingEntity;
 
 public interface ITnt {
 

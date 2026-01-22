@@ -2,9 +2,8 @@ package org.cardboardpowered.interfaces;
 
 import java.util.Map;
 import java.util.Optional;
-
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 
 public interface ISimpleRegistry<T> {
 
@@ -14,6 +13,6 @@ public interface ISimpleRegistry<T> {
 
 	/**
 	 */
-	Optional<T> getValueForCopying(RegistryKey<T> resourceKey);
+	Optional<T> getValueForCopying(ResourceKey<T> resourceKey);
 
 }

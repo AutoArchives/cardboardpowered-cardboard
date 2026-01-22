@@ -1,7 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.world.entity.LivingEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.impl.entity.AbstractProjectile;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
@@ -12,7 +11,7 @@ import org.cardboardpowered.interfaces.IMixinEntity;
 
 public abstract class CraftProjectile extends AbstractProjectile implements Projectile {
 
-    public CraftProjectile(CraftServer server, net.minecraft.entity.projectile.ProjectileEntity entity) {
+    public CraftProjectile(CraftServer server, net.minecraft.world.entity.projectile.Projectile entity) {
         super(server, entity);
     }
 
@@ -29,8 +28,8 @@ public abstract class CraftProjectile extends AbstractProjectile implements Proj
     }
 
     @Override
-    public ProjectileEntity getHandle() {
-        return (ProjectileEntity) nms;
+    public net.minecraft.world.entity.projectile.Projectile getHandle() {
+        return (net.minecraft.world.entity.projectile.Projectile) nms;
     }
 
     @Override

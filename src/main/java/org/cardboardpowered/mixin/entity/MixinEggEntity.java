@@ -1,7 +1,11 @@
 package org.cardboardpowered.mixin.entity;
 
 import java.util.Random;
-
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.HitResult;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.EntityType;
@@ -19,24 +23,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.destroystokyo.paper.event.entity.ThrownEggHatchEvent;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinWorld;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.projectile.thrown.EggEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.world.World;
 
 @MixinInfo(events = {"ThrownEggHatchEvent", "PlayerEggThrowEvent"})
-@Mixin(value = EggEntity.class, priority = 999)
+@Mixin(value = ThrownEgg.class, priority = 999)
 public abstract class MixinEggEntity {
 
     private final Random random = new Random();
 
-    @Inject(at = @At(shift = Shift.AFTER, value = "HEAD"), method = "onCollision", cancellable = true)
+    @Inject(at = @At(shift = Shift.AFTER, value = "HEAD"), method = "onHit", cancellable = true)
     public void cardboard_doEggThrowEvent(HitResult res, CallbackInfo ci) {
-        EggEntity egg = (EggEntity)(Object)this;
-        World world = egg.getEntityWorld();
+        ThrownEgg egg = (ThrownEgg)(Object)this;
+        Level world = egg.level();
 
-        if (!world.isClient()) {
+        if (!world.isClientSide()) {
             boolean hatching = this.random.nextInt(8) == 0; // Spigot
             byte b0 = 1;
             if (this.random.nextInt(32) == 0) b0 = 4;
@@ -46,7 +45,7 @@ public abstract class MixinEggEntity {
             EntityType hatchingType = EntityType.CHICKEN;
 
             Entity shooter = egg.getOwner();
-            if (shooter instanceof ServerPlayerEntity) {
+            if (shooter instanceof ServerPlayer) {
                 PlayerEggThrowEvent event = new PlayerEggThrowEvent((Player) ((IMixinEntity)shooter).getBukkitEntity(), (org.bukkit.entity.Egg) ((IMixinEntity)egg).getBukkitEntity(), hatching, b0, hatchingType);
                 CraftServer.INSTANCE.getPluginManager().callEvent(event);
 
@@ -66,7 +65,7 @@ public abstract class MixinEggEntity {
             if (hatching) {
                 for (int i = 0; i < b0; ++i) {
                     CraftWorld cw = ((IMixinWorld)world).getCraftWorld();
-                    Entity entity = cw.createEntity_Old(new org.bukkit.Location(cw, egg.getX(), egg.getY(), egg.getZ(), egg.getYaw(), 0.0F), hatchingType.getEntityClass());
+                    Entity entity = cw.createEntity_Old(new org.bukkit.Location(cw, egg.getX(), egg.getY(), egg.getZ(), egg.getYRot(), 0.0F), hatchingType.getEntityClass());
                     if (((IMixinEntity)entity).getBukkitEntity() instanceof Ageable)
                         ((Ageable) ((IMixinEntity)entity).getBukkitEntity()).setBaby();
                     cw.addEntity(entity, SpawnReason.EGG);
@@ -74,7 +73,7 @@ public abstract class MixinEggEntity {
             }
             // Spigot end
 
-            world.sendEntityStatus(egg, (byte) 3);
+            world.broadcastEntityEvent(egg, (byte) 3);
             egg.discard();
         }
         ci.cancel();

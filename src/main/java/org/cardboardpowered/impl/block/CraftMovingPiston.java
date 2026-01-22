@@ -2,7 +2,7 @@ package org.cardboardpowered.impl.block;
 
 
 import io.papermc.paper.block.MovingPiston;
-import net.minecraft.block.entity.PistonBlockEntity;
+import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
@@ -10,9 +10,9 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 
-public class CraftMovingPiston extends CardboardBlockEntityState<PistonBlockEntity> implements MovingPiston {
+public class CraftMovingPiston extends CardboardBlockEntityState<PistonMovingBlockEntity> implements MovingPiston {
 
-    public CraftMovingPiston(World world, PistonBlockEntity tileEntity) {
+    public CraftMovingPiston(World world, PistonMovingBlockEntity tileEntity) {
         super(world, tileEntity);
     }
 
@@ -31,19 +31,19 @@ public class CraftMovingPiston extends CardboardBlockEntityState<PistonBlockEnti
     }
 
     public BlockData getMovingBlock() {
-        return CraftBlockData.fromData(((PistonBlockEntity)this.getTileEntity()).getPushedBlock());
+        return CraftBlockData.fromData(((PistonMovingBlockEntity)this.getTileEntity()).getMovedState());
     }
 
     public BlockFace getDirection() {
-        return CraftBlock.notchToBlockFace(((PistonBlockEntity)this.getTileEntity()).getFacing());
+        return CraftBlock.notchToBlockFace(((PistonMovingBlockEntity)this.getTileEntity()).getDirection());
     }
 
     public boolean isExtending() {
-        return ((PistonBlockEntity)this.getTileEntity()).isExtending();
+        return ((PistonMovingBlockEntity)this.getTileEntity()).isExtending();
     }
 
     public boolean isPistonHead() {
-        return ((PistonBlockEntity)this.getTileEntity()).isSource();
+        return ((PistonMovingBlockEntity)this.getTileEntity()).isSourcePiston();
     }
 
 }

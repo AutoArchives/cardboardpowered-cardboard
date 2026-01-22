@@ -3,12 +3,7 @@ package org.cardboardpowered.mixin.entity.block;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
 import org.cardboardpowered.interfaces.IMixinWorld;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.EndGatewayBlockEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.cardboardpowered.impl.entity.CraftPlayer;
@@ -18,7 +13,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(EndGatewayBlockEntity.class)
+@Mixin(TheEndGatewayBlockEntity.class)
 public class MixinEndGatewayBlockEntity {
 
 	/*

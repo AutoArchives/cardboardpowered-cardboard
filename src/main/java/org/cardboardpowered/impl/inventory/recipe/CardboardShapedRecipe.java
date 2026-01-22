@@ -2,10 +2,6 @@ package org.cardboardpowered.impl.inventory.recipe;
 
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinRecipeManager;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.RawShapedRecipe;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.collection.DefaultedList;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
@@ -18,17 +14,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import net.minecraft.core.NonNullList;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.ShapedRecipePattern;
 
 public class CardboardShapedRecipe extends ShapedRecipe implements RecipeInterface {
 
     // TODO: Could eventually use this to add a matches() method or some such
-    private net.minecraft.recipe.ShapedRecipe recipe;
+    private net.minecraft.world.item.crafting.ShapedRecipe recipe;
 
     public CardboardShapedRecipe(NamespacedKey key, ItemStack result) {
         super(key, result);
     }
 
-    public CardboardShapedRecipe(Identifier id, ItemStack result, net.minecraft.recipe.ShapedRecipe recipe) {
+    public CardboardShapedRecipe(Identifier id, ItemStack result, net.minecraft.world.item.crafting.ShapedRecipe recipe) {
         this(CraftNamespacedKey.fromMinecraft(id), result);
         this.recipe = recipe;
     }
@@ -54,7 +54,7 @@ public class CardboardShapedRecipe extends ShapedRecipe implements RecipeInterfa
         String[] shape = this.getShape();
         Map<Character, org.bukkit.inventory.RecipeChoice> ingred = this.getChoiceMap();
         int width = shape[0].length();
-        DefaultedList<Optional<Ingredient>> data = DefaultedList.ofSize(shape.length * width, Optional.empty()); // Ingredient.EMPTY
+        NonNullList<Optional<Ingredient>> data = NonNullList.withSize(shape.length * width, Optional.empty()); // Ingredient.EMPTY
 
         for (int i = 0; i < shape.length; i++) {
             String row = shape[i];
@@ -64,10 +64,10 @@ public class CardboardShapedRecipe extends ShapedRecipe implements RecipeInterfa
 
         ((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(
         		getKey(),
-        		new net.minecraft.recipe.ShapedRecipe(
+        		new net.minecraft.world.item.crafting.ShapedRecipe(
         				this.getGroup(),
         				RecipeInterface.getCategory(this.getCategory()),
-        				new RawShapedRecipe(width, shape.length, data, Optional.empty()),
+        				new ShapedRecipePattern(width, shape.length, data, Optional.empty()),
         				CraftItemStack.asNMSCopy(this.getResult())
         		)
         );

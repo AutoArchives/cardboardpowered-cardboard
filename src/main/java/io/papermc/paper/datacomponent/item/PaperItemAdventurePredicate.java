@@ -8,25 +8,23 @@ import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import net.minecraft.component.type.BlockPredicatesComponent;
-import net.minecraft.predicate.component.ComponentsPredicate;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.advancements.criterion.DataComponentMatchers;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.AdventureModePredicate;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.cardboardpowered.Registries_Bridge;
 
 public record PaperItemAdventurePredicate(
-		BlockPredicatesComponent impl
-) implements ItemAdventurePredicate, Handleable<BlockPredicatesComponent> {
+		AdventureModePredicate impl
+) implements ItemAdventurePredicate, Handleable<AdventureModePredicate> {
 
-    private static List<BlockPredicate> convert(final BlockPredicatesComponent nmsModifiers) {
+    private static List<BlockPredicate> convert(final AdventureModePredicate nmsModifiers) {
         return MCUtil.transformUnmodifiable(nmsModifiers.predicates, nms -> BlockPredicate.predicate()
             .blocks(nms.blocks().map(blocks -> PaperRegistrySets.convertToApi(RegistryKey.BLOCK, blocks)).orElse(null)).build());
     }
 
     @Override
-    public BlockPredicatesComponent getHandle() {
+    public AdventureModePredicate getHandle() {
         return this.impl;
     }
 
@@ -37,12 +35,12 @@ public record PaperItemAdventurePredicate(
 
     static final class BuilderImpl implements ItemAdventurePredicate.Builder {
 
-        private final List<net.minecraft.predicate.BlockPredicate> predicates = new ObjectArrayList<>();
+        private final List<net.minecraft.advancements.criterion.BlockPredicate> predicates = new ObjectArrayList<>();
         private boolean showInTooltip = true;
 
         @Override
         public ItemAdventurePredicate.Builder addPredicate(BlockPredicate predicate) {
-            this.predicates.add(new net.minecraft.predicate.BlockPredicate(Optional.ofNullable(predicate.blocks()).map(blocks -> PaperRegistrySets.convertToNms(RegistryKeys.BLOCK, Conversions.global().lookup(), blocks)), Optional.empty(), Optional.empty(), ComponentsPredicate.EMPTY));
+            this.predicates.add(new net.minecraft.advancements.criterion.BlockPredicate(Optional.ofNullable(predicate.blocks()).map(blocks -> PaperRegistrySets.convertToNms(Registries.BLOCK, Conversions.global().lookup(), blocks)), Optional.empty(), Optional.empty(), DataComponentMatchers.ANY));
             return this;
         }
 
@@ -56,7 +54,7 @@ public record PaperItemAdventurePredicate(
 
         @Override
         public ItemAdventurePredicate build() {
-            return new PaperItemAdventurePredicate(new BlockPredicatesComponent(new ObjectArrayList<>(this.predicates)/*, this.showInTooltip*/));
+            return new PaperItemAdventurePredicate(new AdventureModePredicate(new ObjectArrayList<>(this.predicates)/*, this.showInTooltip*/));
         }
     }
 }

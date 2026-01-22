@@ -1,7 +1,7 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftProjectile;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -12,16 +12,16 @@ import org.cardboardpowered.interfaces.IMixinThrownItemEntity;
 
 public class ThrowableProjectileImpl extends CraftProjectile implements ThrowableProjectile {
 
-    public ThrowableProjectileImpl(CraftServer server, ProjectileEntity entity) {
+    public ThrowableProjectileImpl(CraftServer server, Projectile entity) {
         super(server, entity);
     }
 
     @Override
     public ItemStack getItem() {
-        if (this.getHandle().getStack().isEmpty()) {
-        	return CraftItemStack.asBukkitCopy(new net.minecraft.item.ItemStack(((IMixinThrownItemEntity)getHandle()).getDefaultItemPublic()));
+        if (this.getHandle().getItem().isEmpty()) {
+        	return CraftItemStack.asBukkitCopy(new net.minecraft.world.item.ItemStack(((IMixinThrownItemEntity)getHandle()).getDefaultItemPublic()));
         } else {
-        	return CraftItemStack.asBukkitCopy(this.getHandle().getStack());
+        	return CraftItemStack.asBukkitCopy(this.getHandle().getItem());
         }
         
     }
@@ -32,8 +32,8 @@ public class ThrowableProjectileImpl extends CraftProjectile implements Throwabl
     }
 
     @Override
-    public ThrownItemEntity getHandle() {
-        return (ThrownItemEntity) nms;
+    public ThrowableItemProjectile getHandle() {
+        return (ThrowableItemProjectile) nms;
     }
 
 

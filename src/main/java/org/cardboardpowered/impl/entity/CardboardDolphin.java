@@ -1,7 +1,5 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.passive.DolphinEntity;
-
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Dolphin;
@@ -10,13 +8,13 @@ import org.jetbrains.annotations.NotNull;
 
 public class CardboardDolphin extends CraftAgeable implements Dolphin {
 
-    public CardboardDolphin(CraftServer server, DolphinEntity entity) {
+    public CardboardDolphin(CraftServer server, net.minecraft.world.entity.animal.dolphin.Dolphin entity) {
         super(server, entity);
     }
 
     @Override
-    public DolphinEntity getHandle() {
-        return (DolphinEntity) super.getHandle();
+    public net.minecraft.world.entity.animal.dolphin.Dolphin getHandle() {
+        return (net.minecraft.world.entity.animal.dolphin.Dolphin) super.getHandle();
     }
 
     @Override

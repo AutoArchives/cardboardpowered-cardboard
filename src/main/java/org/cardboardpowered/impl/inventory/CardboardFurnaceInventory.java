@@ -1,6 +1,6 @@
 package org.cardboardpowered.impl.inventory;
 
-import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
+import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import org.bukkit.block.Furnace;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.FurnaceInventory;
