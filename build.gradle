@@ -78,6 +78,8 @@ dependencies {
 	// TODO: Maven repo this
 	compileOnly fileTree(dir: 'libs', include: 'icommon-configuration-1.0.jar')
 
+	modImplementation fileTree(dir: 'libs', include: 'icommon-configuration-1.0.jar')
+
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     modImplementation fileTree(dir: 'libs', include: 'MohistRemapper-0.3-1.20.x.jar')

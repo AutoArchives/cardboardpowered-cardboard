@@ -17,6 +17,10 @@ import org.bukkit.plugin.Plugin;
 import com.destroystokyo.paper.Metrics_Cardboard;
 
 public class PaperMetrics {
+	
+	// NAME: cardboard
+	// ID: 28476
+	
     public static void startMetrics_Cardboard() {
         // Get the config file
         File configFile = new File(new File(new File("plugins"), "bStats"), "config.yml");
@@ -49,7 +53,10 @@ public class PaperMetrics {
         boolean logFailedRequests = config.getBoolean("logFailedRequests", false);
         // Only start Metrics_Cardboard, if it's enabled in the config
         if (config.getBoolean("enabled", true)) {
-            Metrics_Cardboard Metrics_Cardboard = new Metrics_Cardboard("Paper", serverUUID, logFailedRequests, Bukkit.getLogger());
+        	
+        	String name = "Paper"; // "cardboard"
+        	
+            Metrics_Cardboard Metrics_Cardboard = new Metrics_Cardboard(name, serverUUID, logFailedRequests, Bukkit.getLogger());
 
             Metrics_Cardboard.addCustomChart(new Metrics_Cardboard.SimplePie("minecraft_version", () -> {
                 String minecraftVersion = Bukkit.getVersion();
