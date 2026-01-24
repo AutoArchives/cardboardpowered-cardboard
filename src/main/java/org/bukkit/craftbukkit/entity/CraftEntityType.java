@@ -14,6 +14,7 @@ import org.bukkit.craftbukkit.legacy.FieldRename;
 import org.bukkit.craftbukkit.util.ApiVersion;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.EntityType;
+import org.cardboardpowered.RegistryUtil;
 
 public class CraftEntityType {
 
@@ -23,6 +24,12 @@ public class CraftEntityType {
         net.minecraft.core.Registry<net.minecraft.world.entity.EntityType<?>> registry = CraftRegistry.getMinecraftRegistry(Registries.ENTITY_TYPE);
         EntityType bukkit = Registry.ENTITY_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().identifier()));
 
+        if (null == bukkit) {
+        	// Cardboard:
+        	// Check if Added from non-vanilla identifier.
+        	bukkit = RegistryUtil.getCraftTypeFromMinecraft(minecraft);
+        }
+        
         Preconditions.checkArgument(bukkit != null);
 
         return bukkit;

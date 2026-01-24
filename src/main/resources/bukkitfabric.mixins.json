@@ -56,6 +56,7 @@
     "bukkit.MixinRegisteredListener",
     "bukkit.MixinYamlConfiguration",
     "bukkit.MixinBukkit",
+    "bukkit.MixinEntityType",
     "entity.MixinAbstractTraderEntity",
     "entity.MixinAnimalEntity",
     "entity.MixinArmorStandEntity",
