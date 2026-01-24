@@ -9,11 +9,10 @@
  */
 package org.cardboardpowered.interfaces;
 
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.inventory.InventoryHolder;
-
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Recipe;
 
 public interface IMixinInventory {
 
@@ -28,7 +27,7 @@ public interface IMixinInventory {
   
     org.bukkit.inventory.InventoryHolder getOwner();
 
-    void setMaxStackSize(int size);
+    void setCardboardMaxStackSize(int size);
 
     org.bukkit.Location getLocation();
 
@@ -41,7 +40,7 @@ public interface IMixinInventory {
 
     int MAX_STACK = 64;
 
-    int getMaxStackSize();
+    int getCardboardMaxStackSize();
 
     default void cardboard$setOwner(InventoryHolder owner) {
         // TODO

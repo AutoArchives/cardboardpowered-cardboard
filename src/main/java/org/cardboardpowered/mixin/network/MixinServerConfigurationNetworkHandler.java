@@ -1,21 +1,21 @@
 package org.cardboardpowered.mixin.network;
 
+import net.minecraft.server.level.ClientInformation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
 import org.cardboardpowered.interfaces.INetworkConfiguration;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
-import net.minecraft.server.network.ServerConfigurationNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
 
-@Mixin(ServerConfigurationNetworkHandler.class)
+@Mixin(ServerConfigurationPacketListenerImpl.class)
 public class MixinServerConfigurationNetworkHandler implements INetworkConfiguration {
 
 	@Unique
-	private ServerPlayerEntity cardboard$replacementPlayer;
+	private ServerPlayer cardboard$replacementPlayer;
 	
 	@Shadow
-	private SyncedClientOptions syncedOptions;
+	private ClientInformation clientInformation;
 	
 	/*
 	@Redirect(at = @At(value = "INVOKE",
@@ -46,7 +46,7 @@ public class MixinServerConfigurationNetworkHandler implements INetworkConfigura
 	*/
 
 	@Override
-	public void cardboard_setPlayer(ServerPlayerEntity entity) {
+	public void cardboard_setPlayer(ServerPlayer entity) {
 		this.cardboard$replacementPlayer = entity;
 	}
 	

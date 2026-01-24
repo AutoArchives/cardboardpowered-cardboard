@@ -1,10 +1,7 @@
 package org.cardboardpowered.mixin.item;
 
 import org.cardboardpowered.interfaces.IMixinLivingEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.PotionItem;
-import net.minecraft.world.World;
+import net.minecraft.world.item.PotionItem;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

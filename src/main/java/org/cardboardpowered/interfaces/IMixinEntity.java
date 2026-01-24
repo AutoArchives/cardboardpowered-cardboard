@@ -4,14 +4,14 @@
  */
 package org.cardboardpowered.interfaces;
 
-import net.minecraft.world.World;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
 
 import java.util.ArrayList;
-import net.minecraft.util.math.Box;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 
 
 public interface IMixinEntity {
@@ -38,9 +38,9 @@ public interface IMixinEntity {
 
     void cardboard_setForceDrops(boolean forceDrops);
 
-	World mc_world();
+	Level mc_world();
 
-	Box cardboad_getBoundingBoxAt(double x2, double y2, double z2);
+	AABB cardboad_getBoundingBoxAt(double x2, double y2, double z2);
 
 	void cb$setInWorld(boolean b);
 	

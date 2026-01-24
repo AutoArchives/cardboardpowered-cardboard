@@ -3,11 +3,10 @@ package org.cardboardpowered.impl;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
-
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -92,22 +91,22 @@ public class CardboardPotionUtil {
         return new PotionData(PotionType.AWKWARD, false, false);
     }
     
-    public static StatusEffectInstance fromBukkit_New(PotionEffect effect) {
-    	RegistryEntry<StatusEffect>  type = CardboardPotionEffectType.bukkitToMinecraftHolder(effect.getType());
-        return new StatusEffectInstance(type, effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles());
+    public static MobEffectInstance fromBukkit_New(PotionEffect effect) {
+    	Holder<MobEffect>  type = CardboardPotionEffectType.bukkitToMinecraftHolder(effect.getType());
+        return new MobEffectInstance(type, effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles());
     }
 
-    public static StatusEffectInstance fromBukkit(PotionEffect effect) {
-        return new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(effect.getType().getId()).get(), effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles());
+    public static MobEffectInstance fromBukkit(PotionEffect effect) {
+        return new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.get(effect.getType().getId()).get(), effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles());
     }
 
-    public static PotionEffect toBukkit(StatusEffectInstance effect) {
-        PotionEffectType type = PotionEffectType.getById(Registries.STATUS_EFFECT.getRawId(effect.getEffectType().value()));
-        return new PotionEffect(type, effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.shouldShowParticles());
+    public static PotionEffect toBukkit(MobEffectInstance effect) {
+        PotionEffectType type = PotionEffectType.getById(BuiltInRegistries.MOB_EFFECT.getId(effect.getEffect().value()));
+        return new PotionEffect(type, effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.isVisible());
     }
 
-    public static boolean equals(StatusEffect mobEffect, PotionEffectType type) {
-        return PotionEffectType.getById(Registries.STATUS_EFFECT.getRawId(mobEffect)).equals(type);
+    public static boolean equals(MobEffect mobEffect, PotionEffectType type) {
+        return PotionEffectType.getById(BuiltInRegistries.MOB_EFFECT.getId(mobEffect)).equals(type);
     }
 
 }

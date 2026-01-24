@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import org.apache.commons.lang.Validate;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.util.CraftNBTTagConfigSerializer;
@@ -19,11 +19,11 @@ import org.jetbrains.annotations.NotNull;
 
 public final class CraftPersistentDataContainer implements PersistentDataContainer {
 
-    private final Map<String, NbtElement> customDataTags = new HashMap<>();
+    private final Map<String, Tag> customDataTags = new HashMap<>();
     private final CraftPersistentDataTypeRegistry registry;
     private final CraftPersistentDataAdapterContext adapterContext;
 
-    public CraftPersistentDataContainer(Map<String, NbtElement> customTags, CraftPersistentDataTypeRegistry registry) {
+    public CraftPersistentDataContainer(Map<String, Tag> customTags, CraftPersistentDataTypeRegistry registry) {
         this(registry);
         this.customDataTags.putAll(customTags);
     }
@@ -33,7 +33,7 @@ public final class CraftPersistentDataContainer implements PersistentDataContain
         this.adapterContext = new CraftPersistentDataAdapterContext(this.registry);
     }
     
-    public NbtElement getTag(String key) {
+    public Tag getTag(String key) {
         return this.customDataTags.get(key);
     }
 
@@ -44,7 +44,7 @@ public final class CraftPersistentDataContainer implements PersistentDataContain
 
     @Override
     public <P, C> boolean has(NamespacedKey key, PersistentDataType<P, C> type) {
-        NbtElement value = this.getTag(key.toString());
+        Tag value = this.getTag(key.toString());
         if (value == null) {
             return false;
         }
@@ -53,7 +53,7 @@ public final class CraftPersistentDataContainer implements PersistentDataContain
 
     @Override
     public <P, C> C get(NamespacedKey key, PersistentDataType<P, C> type) {
-        NbtElement value = this.getTag(key.toString());
+        Tag value = this.getTag(key.toString());
         if (value == null) {
             return null;
         }
@@ -88,26 +88,26 @@ public final class CraftPersistentDataContainer implements PersistentDataContain
         return Objects.equals(getRaw(), ((CraftPersistentDataContainer) obj).getRaw());
     }
 
-    public NbtCompound toTagCompound() {
-        NbtCompound tag = new NbtCompound();
-        for (Entry<String, NbtElement> entry : this.customDataTags.entrySet())
+    public CompoundTag toTagCompound() {
+        CompoundTag tag = new CompoundTag();
+        for (Entry<String, Tag> entry : this.customDataTags.entrySet())
             tag.put(entry.getKey(), entry.getValue());
         return tag;
     }
 
-    public void put(String key, NbtElement base) {
+    public void put(String key, Tag base) {
         this.customDataTags.put(key, base);
     }
 
-    public void putAll(Map<String, NbtElement> map) {
+    public void putAll(Map<String, Tag> map) {
         this.customDataTags.putAll(map);
     }
 
-    public void putAll(NbtCompound compound) {
-        for (String key : compound.getKeys()) this.customDataTags.put(key, compound.get(key));
+    public void putAll(CompoundTag compound) {
+        for (String key : compound.keySet()) this.customDataTags.put(key, compound.get(key));
     }
 
-    public Map<String, NbtElement> getRaw() {
+    public Map<String, Tag> getRaw() {
         return this.customDataTags;
     }
 
@@ -142,7 +142,7 @@ public final class CraftPersistentDataContainer implements PersistentDataContain
 	public boolean has(@NotNull NamespacedKey arg0) {
 		// TODO Auto-generated method stub
 
-        NbtElement value = this.customDataTags.get(arg0.toString());
+        Tag value = this.customDataTags.get(arg0.toString());
         if (value == null) {
             return false;
         }

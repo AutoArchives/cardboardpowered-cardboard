@@ -1,15 +1,14 @@
 package org.cardboardpowered.mixin.network;
 
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
 
-@Mixin(PacketByteBuf.class)
+@Mixin(FriendlyByteBuf.class)
 public class MixinPacketByteBuf {
 
     /**
@@ -39,7 +38,7 @@ public class MixinPacketByteBuf {
     }
 
     @Shadow
-    public NbtCompound readNbt() {
+    public CompoundTag readNbt() {
         return null;
     }
 

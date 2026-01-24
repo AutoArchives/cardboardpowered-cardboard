@@ -1,9 +1,9 @@
 package org.cardboardpowered.mixin.entity;
 
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import net.minecraft.entity.projectile.FireworkRocketEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
 import org.cardboardpowered.api.event.CardboardFireworkExplodeEvent;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,20 +17,20 @@ public class MixinFireworkRocketEntity extends MixinEntity{
 
     @Inject(method = "tick", cancellable = true, at = @At("HEAD"))
     private void bukkitFireworksExplode(CallbackInfo ci) {
-        ActionResult result = CardboardFireworkExplodeEvent.EVENT.invoker().interact((FireworkRocketEntity) (Object) this);
+        InteractionResult result = CardboardFireworkExplodeEvent.EVENT.invoker().interact((FireworkRocketEntity) (Object) this);
 
-        if (result == ActionResult.FAIL) {
+        if (result == InteractionResult.FAIL) {
             ci.cancel();
         }
     }
 
-    @Inject(method = "explode", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;damage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;F)Z"))
-    private void bukkitDamageSource(ServerWorld world, CallbackInfo ci) {
+    @Inject(method = "dealExplosionDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;hurtServer(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
+    private void bukkitDamageSource(ServerLevel world, CallbackInfo ci) {
         CraftEventFactory.entityDamage = (FireworkRocketEntity) (Object) this;
     }
 
-    @Inject(method = "explode", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/entity/LivingEntity;damage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;F)Z"))
-    private void bukkitDamageSourceReset(ServerWorld world, CallbackInfo ci) {
+    @Inject(method = "dealExplosionDamage", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/world/entity/LivingEntity;hurtServer(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
+    private void bukkitDamageSourceReset(ServerLevel world, CallbackInfo ci) {
         CraftEventFactory.entityDamage = null;
     }
 }

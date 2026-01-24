@@ -3,7 +3,19 @@ package org.cardboardpowered.mixin.network;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
-
+import net.minecraft.network.protocol.PacketUtils;
+import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.PositionMoveRotation;
+import net.minecraft.world.entity.Relative;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftLocation;
@@ -21,23 +33,8 @@ import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 import io.papermc.paper.event.player.PlayerFailMoveEvent;
-import net.minecraft.entity.EntityPosition;
-import net.minecraft.entity.MovementType;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.network.NetworkThreadUtils;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.network.packet.s2c.play.PositionFlag;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.GameMode;
 
-@Mixin(value = ServerPlayNetworkHandler.class, priority = 801)
+@Mixin(value = ServerGamePacketListenerImpl.class, priority = 801)
 public class MixinServerPlayNetworkHandler_PlayerMove {
 
 	// Cardboard - start
@@ -52,27 +49,27 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
 	private boolean justTeleported = false;
 	// Cardboard - end
 	
-	@Shadow public double lastTickX;
-    @Shadow public double lastTickY;
-    @Shadow public double lastTickZ;
-    @Shadow public double updatedX;
-    @Shadow public double updatedY;
-    @Shadow public double updatedZ;
-    @Shadow private boolean floating;
-    @Shadow private int movePacketsCount;
-    @Shadow private int lastTickMovePacketsCount;
+	@Shadow public double firstGoodX;
+    @Shadow public double firstGoodY;
+    @Shadow public double firstGoodZ;
+    @Shadow public double lastGoodX;
+    @Shadow public double lastGoodY;
+    @Shadow public double lastGoodZ;
+    @Shadow private boolean clientIsFloating;
+    @Shadow private int receivedMovePacketCount;
+    @Shadow private int knownMovePacketCount;
 	
-	@Shadow public ServerPlayerEntity player;
-	@Shadow public void syncWithPlayerPosition() {}
-	@Shadow private void handleMovement(Vec3d movement) {}
-	@Shadow private boolean handlePendingTeleport() {return false;}
-	@Shadow private boolean isEntityOnAir(net.minecraft.entity.Entity entity) { return false; }
-	@Shadow private boolean shouldCheckMovement(boolean elytra) {return false;}
+	@Shadow public ServerPlayer player;
+	@Shadow public void resetPosition() {}
+	@Shadow private void handlePlayerKnownMovement(Vec3 movement) {}
+	@Shadow private boolean updateAwaitingTeleport() {return false;}
+	@Shadow private boolean noBlocksAround(net.minecraft.world.entity.Entity entity) { return false; }
+	@Shadow private boolean shouldCheckPlayerMovement(boolean elytra) {return false;}
 	// @Shadow private boolean hasNewCollision(ServerWorld world, net.minecraft.entity.Entity entity, Box oldBox, Box newBox) {return false;}
 	// @Shadow private void internalTeleport(double d0, double d1, double d2, float f, float f1) {};
-	@Shadow private static boolean isMovementInvalid(double x, double y, double z, float yaw, float pitch) {return false;}
+	@Shadow private static boolean containsInvalidValues(double x, double y, double z, float yaw, float pitch) {return false;}
 	
-	private boolean hasNewCollision(ServerWorld world, net.minecraft.entity.Entity entity, Box oldBox, Box newBox) {
+	private boolean hasNewCollision(ServerLevel world, net.minecraft.world.entity.Entity entity, AABB oldBox, AABB newBox) {
         /*int i;
         ArrayList<Box> collisionsBB = new ArrayList<Box>();
         ArrayList<VoxelShape> collisionsVoxel = new ArrayList<VoxelShape>();
@@ -93,16 +90,16 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
     }
 	
 	@Shadow
-	public void requestTeleport( EntityPosition pos, Set<PositionFlag> flags) {}
+	public void teleport( PositionMoveRotation pos, Set<Relative> flags) {}
 	
 	@Shadow
-    public void requestTeleport(double d0, double d1, double d2, float f, float f1) {}
+    public void teleport(double d0, double d1, double d2, float f, float f1) {}
 	
 	@Shadow
-    public int ticks;
+    public int tickCount;
 	
 	@Shadow
-    public Vec3d requestedTeleportPos;
+    public Vec3 awaitingPositionFromClient;
 	
 	public CraftPlayer getCraftPlayer() {
         return this.player == null ? null : (CraftPlayer) ((IMixinEntity)this.player).getBukkitEntity();
@@ -124,70 +121,70 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
 	 * @reason Bukkit Teleport
 	 */
 	@Overwrite
-	public void onPlayerMove(PlayerMoveC2SPacket packet) {
-        NetworkThreadUtils.forceMainThread(packet, (ServerPlayNetworkHandler)(Object)this, this.player.getEntityWorld());
-        if (isMovementInvalid(packet.getX(0.0), packet.getY(0.0), packet.getZ(0.0), packet.getYaw(0.0f), packet.getPitch(0.0f))) {
+	public void handleMovePlayer(ServerboundMovePlayerPacket packet) {
+        PacketUtils.ensureRunningOnSameThread(packet, (ServerGamePacketListenerImpl)(Object)this, this.player.level());
+        if (containsInvalidValues(packet.getX(0.0), packet.getY(0.0), packet.getZ(0.0), packet.getYRot(0.0f), packet.getXRot(0.0f))) {
             // this.disconnect(Text.translatable("multiplayer.disconnect.invalid_player_movement"), PlayerKickEvent.Cause.INVALID_PLAYER_MOVEMENT);
         } else {
-            ServerWorld worldserver = this.player.getEntityWorld();
-            if (!this.player.notInAnyWorld /*&& !this.player.isImmobile()*/) {
-                if (this.ticks == 0) {
-                    this.syncWithPlayerPosition();
+            ServerLevel worldserver = this.player.level();
+            if (!this.player.wonGame /*&& !this.player.isImmobile()*/) {
+                if (this.tickCount == 0) {
+                    this.resetPosition();
                 }
                 
                 // Cardboard: Mojmap: hasClientLoaded
-                boolean this_player_isLoaded = ((ServerPlayNetworkHandler)(Object)this).canInteractWithGame();
+                boolean this_player_isLoaded = ((ServerGamePacketListenerImpl)(Object)this).hasClientLoaded();
                 
-                if (!this.handlePendingTeleport() && this_player_isLoaded) {
+                if (!this.updateAwaitingTeleport() && this_player_isLoaded) {
                     float f1;
                     float f;
                     double d2;
                     double d1;
                     double d0;
-                    double toX = d0 = ServerPlayNetworkHandler.clampHorizontal(packet.getX(this.player.getX()));
-                    double toY = d1 = ServerPlayNetworkHandler.clampVertical(packet.getY(this.player.getY()));
-                    double toZ = d2 = ServerPlayNetworkHandler.clampHorizontal(packet.getZ(this.player.getZ()));
-                    float toYaw = f = MathHelper.wrapDegrees(packet.getYaw(this.player.getYaw()));
-                    float toPitch = f1 = MathHelper.wrapDegrees(packet.getPitch(this.player.getPitch()));
-                    if (this.player.hasVehicle()) {
-                        this.player.updatePositionAndAngles(this.player.getX(), this.player.getY(), this.player.getZ(), f, f1);
-                        this.player.getEntityWorld().getChunkManager().updatePosition(this.player);
+                    double toX = d0 = ServerGamePacketListenerImpl.clampHorizontal(packet.getX(this.player.getX()));
+                    double toY = d1 = ServerGamePacketListenerImpl.clampVertical(packet.getY(this.player.getY()));
+                    double toZ = d2 = ServerGamePacketListenerImpl.clampHorizontal(packet.getZ(this.player.getZ()));
+                    float toYaw = f = Mth.wrapDegrees(packet.getYRot(this.player.getYRot()));
+                    float toPitch = f1 = Mth.wrapDegrees(packet.getXRot(this.player.getXRot()));
+                    if (this.player.isPassenger()) {
+                        this.player.absSnapTo(this.player.getX(), this.player.getY(), this.player.getZ(), f, f1);
+                        this.player.level().getChunkSource().move(this.player);
                         this.allowedPlayerTicks = 20;
                     } else {
                         double prevX = this.player.getX();
                         double prevY = this.player.getY();
                         double prevZ = this.player.getZ();
-                        float prevYaw = this.player.getYaw();
-                        float prevPitch = this.player.getPitch();
+                        float prevYaw = this.player.getYRot();
+                        float prevPitch = this.player.getXRot();
                         double d3 = this.player.getX();
                         double d4 = this.player.getY();
                         double d5 = this.player.getZ();
-                        double d6 = d0 - this.lastTickX;
-                        double d7 = d1 - this.lastTickY;
-                        double d8 = d2 - this.lastTickZ;
-                        double d9 = this.player.getVelocity().lengthSquared();
+                        double d6 = d0 - this.firstGoodX;
+                        double d7 = d1 - this.firstGoodY;
+                        double d8 = d2 - this.firstGoodZ;
+                        double d9 = this.player.getDeltaMovement().lengthSqr();
                         double currDeltaX = toX - prevX;
                         double currDeltaY = toY - prevY;
                         double currDeltaZ = toZ - prevZ;
                         double d10 = Math.max(d6 * d6 + d7 * d7 + d8 * d8, currDeltaX * currDeltaX + currDeltaY * currDeltaY + currDeltaZ * currDeltaZ - 1.0);
-                        double otherFieldX = d0 - this.updatedX;
-                        double otherFieldY = d1 - this.updatedY;
-                        double otherFieldZ = d2 - this.updatedZ;
+                        double otherFieldX = d0 - this.lastGoodX;
+                        double otherFieldY = d1 - this.lastGoodY;
+                        double otherFieldZ = d2 - this.lastGoodZ;
                         d10 = Math.max(d10, otherFieldX * otherFieldX + otherFieldY * otherFieldY + otherFieldZ * otherFieldZ - 1.0);
                         if (this.player.isSleeping()) {
                             if (d10 > 1.0) {
-                                this.requestTeleport(this.player.getX(), this.player.getY(), this.player.getZ(), f, f1);
+                                this.teleport(this.player.getX(), this.player.getY(), this.player.getZ(), f, f1);
                             }
                         } else {
                             PlayerFailMoveEvent event;
                             PlayerFailMoveEvent event2;
                             boolean didCollide;
                             boolean flag1;
-                            boolean flag = this.player.isGliding();
-                            if (worldserver.getTickManager().shouldTick()) {
+                            boolean flag = this.player.isFallFlying();
+                            if (worldserver.tickRateManager().runsNormally()) {
                                 PlayerFailMoveEvent event3;
-                                ++this.movePacketsCount;
-                                int i = this.movePacketsCount - this.lastTickMovePacketsCount;
+                                ++this.receivedMovePacketCount;
+                                int i = this.receivedMovePacketCount - this.knownMovePacketCount;
                                 this.allowedPlayerTicks = (int)((long)this.allowedPlayerTicks + (System.currentTimeMillis() / 50L - (long)this.lastTick));
                                 this.allowedPlayerTicks = Math.max(this.allowedPlayerTicks, 1);
                                 this.lastTick = (int)(System.currentTimeMillis() / 50L);
@@ -195,8 +192,8 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                                     // LOGGER.debug("{} is sending move packets too frequently ({} packets since last tick)", (Object)this.player.getName().getString(), (Object)i);
                                     i = 1;
                                 }
-                                this.allowedPlayerTicks = packet.changeLook || d10 > 0.0 ? --this.allowedPlayerTicks : 20;
-                                double speed = this.player.getAbilities().flying ? (double)(this.player.getAbilities().flySpeed * 20.0f) : (double)(this.player.getAbilities().walkSpeed * 10.0f);
+                                this.allowedPlayerTicks = packet.hasRot || d10 > 0.0 ? --this.allowedPlayerTicks : 20;
+                                double speed = this.player.getAbilities().flying ? (double)(this.player.getAbilities().flyingSpeed * 20.0f) : (double)(this.player.getAbilities().walkingSpeed * 10.0f);
                                 /*
                                 if (
                                 		!(
@@ -206,7 +203,7 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                                     this.internalTeleport(PlayerPosition.fromEntity(this.player), Collections.emptySet());
                                     return;
                                 }*/
-                                if (this.shouldCheckMovement(flag)) {
+                                if (this.shouldCheckPlayerMovement(flag)) {
                                     PlayerFailMoveEvent event4;
                                     float f2;
                                     float f3 = f2 = flag ? 300.0f : 100.0f;
@@ -214,43 +211,43 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                                         if (event4.getLogWarning()) {
                                             // LOGGER.warn("{} moved too quickly! {},{},{}", new Object[]{this.player.getName().getString(), d6, d7, d8});
                                         }
-                                        this.requestTeleport(this.player.getX(), this.player.getY(), this.player.getZ(), this.player.getYaw(), this.player.getPitch());
+                                        this.teleport(this.player.getX(), this.player.getY(), this.player.getZ(), this.player.getYRot(), this.player.getXRot());
                                         return;
                                     }
                                 }
                             }
-                            Box axisalignedbb = this.player.getBoundingBox();
-                            d6 = d0 - this.updatedX;
-                            d7 = d1 - this.updatedY;
-                            d8 = d2 - this.updatedZ;
+                            AABB axisalignedbb = this.player.getBoundingBox();
+                            d6 = d0 - this.lastGoodX;
+                            d7 = d1 - this.lastGoodY;
+                            d8 = d2 - this.lastGoodZ;
                             boolean bl = flag1 = d7 > 0.0;
-                            if (this.player.isOnGround() && !packet.isOnGround() && flag1) {
+                            if (this.player.onGround() && !packet.isOnGround() && flag1) {
                                 PlayerJumpEvent event5;
                                 CraftPlayer player = this.getCraftPlayer();
                                 Location from = new Location(player.getWorld(), this.lastPosX, this.lastPosY, this.lastPosZ, this.lastYaw, this.lastPitch);
                                 Location to = player.getLocation().clone();
-                                if (packet.changesPosition()) {
+                                if (packet.hasPosition()) {
                                     to.setX(packet.x);
                                     to.setY(packet.y);
                                     to.setZ(packet.z);
                                 }
-                                if (packet.changesLook()) {
-                                    to.setYaw(packet.yaw);
-                                    to.setPitch(packet.pitch);
+                                if (packet.hasRotation()) {
+                                    to.setYaw(packet.yRot);
+                                    to.setPitch(packet.xRot);
                                 }
                                 if ((event5 = new PlayerJumpEvent((Player)player, from, to)).callEvent()) {
-                                    this.player.jump();
+                                    this.player.jumpFromGround();
                                 } else {
                                     from = event5.getFrom();
-                                    ((IMixinPlayNetworkHandler)(Object)this).internalTeleport(new EntityPosition(CraftLocation.toVec3D(from), Vec3d.ZERO, from.getYaw(), from.getPitch()), Collections.emptySet());
+                                    ((IMixinPlayNetworkHandler)(Object)this).internalTeleport(new PositionMoveRotation(CraftLocation.toVec3D(from), Vec3.ZERO, from.getYaw(), from.getPitch()), Collections.emptySet());
                                     return;
                                 }
                             }
-                            boolean flag2 = this.player.groundCollision;
-                            this.player.move(MovementType.PLAYER, new Vec3d(d6, d7, d8));
+                            boolean flag2 = this.player.verticalCollisionBelow;
+                            this.player.move(MoverType.PLAYER, new Vec3(d6, d7, d8));
                             this.player.onGround = packet.isOnGround();
                             boolean bl2 = didCollide = toX != this.player.getX() || toY != this.player.getY() || toZ != this.player.getZ();
-                            if (this.requestedTeleportPos != null) {
+                            if (this.awaitingPositionFromClient != null) {
                                 return;
                             }
                             double d11 = d7;
@@ -262,16 +259,16 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                             d8 = d2 - this.player.getZ();
                             d10 = d6 * d6 + d7 * d7 + d8 * d8;
                             boolean movedWrongly = false;
-                            if (!(this.player.isInTeleportationState() || !(d10 > SpigotConfig.movedWronglyThreshold) || this.player.isSleeping() || this.player.interactionManager.isCreative() || this.player.interactionManager.getGameMode() == GameMode.SPECTATOR || (event2 = this.fireFailMove(PlayerFailMoveEvent.FailReason.MOVED_WRONGLY, toX, toY, toZ, toYaw, toPitch, true)).isAllowed())) {
+                            if (!(this.player.isChangingDimension() || !(d10 > SpigotConfig.movedWronglyThreshold) || this.player.isSleeping() || this.player.gameMode.isCreative() || this.player.gameMode.getGameModeForPlayer() == GameType.SPECTATOR || (event2 = this.fireFailMove(PlayerFailMoveEvent.FailReason.MOVED_WRONGLY, toX, toY, toZ, toYaw, toPitch, true)).isAllowed())) {
                                 movedWrongly = true;
                                 if (event2.getLogWarning()) {
                                     // LOGGER.warn("{} moved wrongly!", (Object)this.player.getName().getString());
                                 }
                             }
-                            boolean teleportBack = !this.player.noClip && !this.player.isSleeping() && movedWrongly;
-                            this.player.updatePositionAndAngles(d0, d1, d2, f, f1);
-                            if (!(this.player.noClip || this.player.isSleeping() || teleportBack)) {
-                                Box newBox = this.player.getBoundingBox();
+                            boolean teleportBack = !this.player.noPhysics && !this.player.isSleeping() && movedWrongly;
+                            this.player.absSnapTo(d0, d1, d2, f, f1);
+                            if (!(this.player.noPhysics || this.player.isSleeping() || teleportBack)) {
+                                AABB newBox = this.player.getBoundingBox();
                                 if (didCollide || !axisalignedbb.equals(newBox)) {
                                     teleportBack = this.hasNewCollision(worldserver, this.player, axisalignedbb, newBox);
                                 }
@@ -282,17 +279,17 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                             if (teleportBack) {
                                 
                             	
-                            	ServerPlayNetworkHandler thiz = (ServerPlayNetworkHandler)(Object)this;
+                            	ServerGamePacketListenerImpl thiz = (ServerGamePacketListenerImpl)(Object)this;
                             	
                             	// thiz.teleport
                             	
-                            	thiz.requestTeleport(d3, d4, d5, f, f1);
+                            	thiz.teleport(d3, d4, d5, f, f1);
                                 
                                 
                                 
-                                this.player.handleFall(this.player.getX() - d3, this.player.getY() - d4, this.player.getZ() - d5, packet.isOnGround());
+                                this.player.doCheckFallDamage(this.player.getX() - d3, this.player.getY() - d4, this.player.getZ() - d5, packet.isOnGround());
                             } else {
-                                this.player.updatePositionAndAngles(prevX, prevY, prevZ, prevYaw, prevPitch);
+                                this.player.absSnapTo(prevX, prevY, prevZ, prevYaw, prevPitch);
                                 CraftPlayer player = this.getCraftPlayer();
                                 if (!this.hasMoved) {
                                     this.lastPosX = prevX;
@@ -304,14 +301,14 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                                 }
                                 Location from = new Location(player.getWorld(), this.lastPosX, this.lastPosY, this.lastPosZ, this.lastYaw, this.lastPitch);
                                 Location to = player.getLocation().clone();
-                                if (packet.changePosition) {
+                                if (packet.hasPos) {
                                     to.setX(packet.x);
                                     to.setY(packet.y);
                                     to.setZ(packet.z);
                                 }
-                                if (packet.changeLook) {
-                                    to.setYaw(packet.yaw);
-                                    to.setPitch(packet.pitch);
+                                if (packet.hasRot) {
+                                    to.setYaw(packet.yRot);
+                                    to.setPitch(packet.xRot);
                                 }
                                 double delta = Math.pow(this.lastPosX - to.getX(), 2.0) + Math.pow(this.lastPosY - to.getY(), 2.0) + Math.pow(this.lastPosZ - to.getZ(), 2.0);
                                 float deltaAngle = Math.abs(this.lastYaw - to.getYaw()) + Math.abs(this.lastPitch - to.getPitch());
@@ -337,33 +334,33 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                                         return;
                                     }
                                 }
-                                this.player.updatePositionAndAngles(d0, d1, d2, f, f1);
-                                boolean flag4 = this.player.isUsingRiptide();
-                                this.floating = d11 >= -0.03125 && !flag2 &&
-                                		this.player.interactionManager.getGameMode() != GameMode.SPECTATOR &&
-                                		!CraftServer.server.isFlightEnabled() &&
-                                		!this.player.getAbilities().allowFlying &&
-                                		!this.player.hasStatusEffect(StatusEffects.LEVITATION) &&
-                                		!flag && !flag4 && this.isEntityOnAir(this.player);
-                                this.player.getEntityWorld().getChunkManager().updatePosition(this.player);
-                                Vec3d vec3d = new Vec3d(this.player.getX() - d3, this.player.getY() - d4, this.player.getZ() - d5);
-                                this.player.setMovement(packet.isOnGround(), packet.horizontalCollision(), vec3d);
-                                this.player.handleFall(vec3d.x, vec3d.y, vec3d.z, packet.isOnGround());
+                                this.player.absSnapTo(d0, d1, d2, f, f1);
+                                boolean flag4 = this.player.isAutoSpinAttack();
+                                this.clientIsFloating = d11 >= -0.03125 && !flag2 &&
+                                		this.player.gameMode.getGameModeForPlayer() != GameType.SPECTATOR &&
+                                		!CraftServer.server.allowFlight() &&
+                                		!this.player.getAbilities().mayfly &&
+                                		!this.player.hasEffect(MobEffects.LEVITATION) &&
+                                		!flag && !flag4 && this.noBlocksAround(this.player);
+                                this.player.level().getChunkSource().move(this.player);
+                                Vec3 vec3d = new Vec3(this.player.getX() - d3, this.player.getY() - d4, this.player.getZ() - d5);
+                                this.player.setOnGroundWithMovement(packet.isOnGround(), packet.horizontalCollision(), vec3d);
+                                this.player.doCheckFallDamage(vec3d.x, vec3d.y, vec3d.z, packet.isOnGround());
                                 
                                 // TODO: 1.21.8: Seems this is gone?
                                 // this.player.queueBlockCollisionCheck(new Vec3d(d3, d4, d5), this.player.getPos());
                                 
-                                this.handleMovement(vec3d);
+                                this.handlePlayerKnownMovement(vec3d);
                                 if (flag1) {
-                                    this.player.onLanding();
+                                    this.player.resetFallDistance();
                                 }
-                                if (packet.isOnGround() || this.player.hasLandedInFluid() || this.player.isClimbing() || this.player.isSpectator() || flag || flag4) {
-                                    this.player.tryClearCurrentExplosion();
+                                if (packet.isOnGround() || this.player.hasLandedInLiquid() || this.player.onClimbable() || this.player.isSpectator() || flag || flag4) {
+                                    this.player.tryResetCurrentImpulseContext();
                                 }
-                                this.player.increaseTravelMotionStats(this.player.getX() - d3, this.player.getY() - d4, this.player.getZ() - d5);
-                                this.updatedX = this.player.getX();
-                                this.updatedY = this.player.getY();
-                                this.updatedZ = this.player.getZ();
+                                this.player.checkMovementStatistics(this.player.getX() - d3, this.player.getY() - d4, this.player.getZ() - d5);
+                                this.lastGoodX = this.player.getX();
+                                this.lastGoodY = this.player.getY();
+                                this.lastGoodZ = this.player.getZ();
                             }
                         }
                     }

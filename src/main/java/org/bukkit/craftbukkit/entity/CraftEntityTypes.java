@@ -9,149 +9,21 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import net.minecraft.block.AbstractRedstoneGateBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.AreaEffectCloudEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ExperienceOrbEntity;
-import net.minecraft.entity.EyeOfEnderEntity;
-import net.minecraft.entity.FallingBlockEntity;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.LightningEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MarkerEntity;
-import net.minecraft.entity.OminousItemSpawnerEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.TntEntity;
-import net.minecraft.entity.boss.WitherEntity;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.decoration.AbstractDecorationEntity;
-import net.minecraft.entity.decoration.ArmorStandEntity;
-import net.minecraft.entity.decoration.EndCrystalEntity;
-import net.minecraft.entity.decoration.GlowItemFrameEntity;
-import net.minecraft.entity.decoration.InteractionEntity;
-import net.minecraft.entity.decoration.ItemFrameEntity;
-import net.minecraft.entity.decoration.LeashKnotEntity;
-import net.minecraft.entity.decoration.painting.PaintingEntity;
-import net.minecraft.entity.mob.BlazeEntity;
-import net.minecraft.entity.mob.BoggedEntity;
-import net.minecraft.entity.mob.BreezeEntity;
-import net.minecraft.entity.mob.CaveSpiderEntity;
-import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.entity.mob.DrownedEntity;
-import net.minecraft.entity.mob.ElderGuardianEntity;
-import net.minecraft.entity.mob.EndermanEntity;
-import net.minecraft.entity.mob.EndermiteEntity;
-import net.minecraft.entity.mob.EvokerEntity;
-import net.minecraft.entity.mob.EvokerFangsEntity;
-import net.minecraft.entity.mob.GhastEntity;
-import net.minecraft.entity.mob.GiantEntity;
-import net.minecraft.entity.mob.GuardianEntity;
-import net.minecraft.entity.mob.HoglinEntity;
-import net.minecraft.entity.mob.HuskEntity;
-import net.minecraft.entity.mob.IllusionerEntity;
-import net.minecraft.entity.mob.MagmaCubeEntity;
-import net.minecraft.entity.mob.PhantomEntity;
-import net.minecraft.entity.mob.PiglinBruteEntity;
-import net.minecraft.entity.mob.PiglinEntity;
-import net.minecraft.entity.mob.PillagerEntity;
-import net.minecraft.entity.mob.RavagerEntity;
-import net.minecraft.entity.mob.ShulkerEntity;
-import net.minecraft.entity.mob.SilverfishEntity;
-import net.minecraft.entity.mob.SkeletonEntity;
-import net.minecraft.entity.mob.SkeletonHorseEntity;
-import net.minecraft.entity.mob.SlimeEntity;
-import net.minecraft.entity.mob.SpiderEntity;
-import net.minecraft.entity.mob.StrayEntity;
-import net.minecraft.entity.mob.VexEntity;
-import net.minecraft.entity.mob.VindicatorEntity;
-import net.minecraft.entity.mob.WardenEntity;
-import net.minecraft.entity.mob.WitchEntity;
-import net.minecraft.entity.mob.WitherSkeletonEntity;
-import net.minecraft.entity.mob.ZoglinEntity;
-import net.minecraft.entity.mob.ZombieEntity;
-import net.minecraft.entity.mob.ZombieHorseEntity;
-import net.minecraft.entity.mob.ZombieVillagerEntity;
-import net.minecraft.entity.mob.ZombifiedPiglinEntity;
-import net.minecraft.entity.passive.AllayEntity;
-import net.minecraft.entity.passive.ArmadilloEntity;
-import net.minecraft.entity.passive.AxolotlEntity;
-import net.minecraft.entity.passive.BatEntity;
-import net.minecraft.entity.passive.BeeEntity;
-import net.minecraft.entity.passive.CamelEntity;
-import net.minecraft.entity.passive.CatEntity;
-import net.minecraft.entity.passive.ChickenEntity;
-import net.minecraft.entity.passive.CodEntity;
-import net.minecraft.entity.passive.CowEntity;
-import net.minecraft.entity.passive.DolphinEntity;
-import net.minecraft.entity.passive.DonkeyEntity;
-import net.minecraft.entity.passive.FoxEntity;
-import net.minecraft.entity.passive.FrogEntity;
-import net.minecraft.entity.passive.GlowSquidEntity;
-import net.minecraft.entity.passive.GoatEntity;
-import net.minecraft.entity.passive.HorseEntity;
-import net.minecraft.entity.passive.IronGolemEntity;
-import net.minecraft.entity.passive.LlamaEntity;
-import net.minecraft.entity.passive.MooshroomEntity;
-import net.minecraft.entity.passive.MuleEntity;
-import net.minecraft.entity.passive.OcelotEntity;
-import net.minecraft.entity.passive.PandaEntity;
-import net.minecraft.entity.passive.ParrotEntity;
-import net.minecraft.entity.passive.PigEntity;
-import net.minecraft.entity.passive.PolarBearEntity;
-import net.minecraft.entity.passive.PufferfishEntity;
-import net.minecraft.entity.passive.RabbitEntity;
-import net.minecraft.entity.passive.SalmonEntity;
-import net.minecraft.entity.passive.SheepEntity;
-import net.minecraft.entity.passive.SnifferEntity;
-import net.minecraft.entity.passive.SnowGolemEntity;
-import net.minecraft.entity.passive.SquidEntity;
-import net.minecraft.entity.passive.StriderEntity;
-import net.minecraft.entity.passive.TadpoleEntity;
-import net.minecraft.entity.passive.TraderLlamaEntity;
-import net.minecraft.entity.passive.TropicalFishEntity;
-import net.minecraft.entity.passive.TurtleEntity;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.entity.passive.WanderingTraderEntity;
-import net.minecraft.entity.passive.WolfEntity;
-import net.minecraft.entity.projectile.ArrowEntity;
-import net.minecraft.entity.projectile.BreezeWindChargeEntity;
-import net.minecraft.entity.projectile.DragonFireballEntity;
-import net.minecraft.entity.projectile.ExplosiveProjectileEntity;
-import net.minecraft.entity.projectile.FireballEntity;
-import net.minecraft.entity.projectile.FireworkRocketEntity;
-import net.minecraft.entity.projectile.FishingBobberEntity;
-import net.minecraft.entity.projectile.LlamaSpitEntity;
-import net.minecraft.entity.projectile.ShulkerBulletEntity;
-import net.minecraft.entity.projectile.SmallFireballEntity;
-import net.minecraft.entity.projectile.SpectralArrowEntity;
-import net.minecraft.entity.projectile.TridentEntity;
-import net.minecraft.entity.projectile.WindChargeEntity;
-import net.minecraft.entity.projectile.WitherSkullEntity;
-import net.minecraft.entity.projectile.thrown.EggEntity;
-import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
-import net.minecraft.entity.projectile.thrown.ExperienceBottleEntity;
-import net.minecraft.entity.projectile.thrown.PotionEntity;
-import net.minecraft.entity.projectile.thrown.SnowballEntity;
-import net.minecraft.entity.vehicle.BoatEntity;
-import net.minecraft.entity.vehicle.ChestBoatEntity;
-import net.minecraft.entity.vehicle.ChestMinecartEntity;
-import net.minecraft.entity.vehicle.CommandBlockMinecartEntity;
-import net.minecraft.entity.vehicle.FurnaceMinecartEntity;
-import net.minecraft.entity.vehicle.HopperMinecartEntity;
-import net.minecraft.entity.vehicle.MinecartEntity;
-import net.minecraft.entity.vehicle.SpawnerMinecartEntity;
-import net.minecraft.entity.vehicle.TntMinecartEntity;
-import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.StructureWorldAccess;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.decoration.HangingEntity;
+import net.minecraft.world.entity.projectile.hurtingprojectile.AbstractHurtingProjectile;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.DiodeBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -294,22 +166,22 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 public final class CraftEntityTypes {
-    private static final BiConsumer<SpawnData, Entity> POS = (spawnData, entity) -> entity.setPosition(spawnData.x(), spawnData.y(), spawnData.z());
+    private static final BiConsumer<SpawnData, Entity> POS = (spawnData, entity) -> entity.setPos(spawnData.x(), spawnData.y(), spawnData.z());
     private static final BiConsumer<SpawnData, Entity> ABS_MOVE = (spawnData, entity) -> {
-        entity.updatePositionAndAngles(spawnData.x(), spawnData.y(), spawnData.z(), spawnData.yaw(), spawnData.pitch());
-        entity.setHeadYaw(spawnData.yaw());
+        entity.absSnapTo(spawnData.x(), spawnData.y(), spawnData.z(), spawnData.yaw(), spawnData.pitch());
+        entity.setYHeadRot(spawnData.yaw());
     };
-    private static final BiConsumer<SpawnData, Entity> MOVE = (spawnData, entity) -> entity.refreshPositionAndAngles(spawnData.x(), spawnData.y(), spawnData.z(), spawnData.yaw(), spawnData.pitch());
-    private static final BiConsumer<SpawnData, Entity> MOVE_EMPTY_ROT = (spawnData, entity) -> entity.refreshPositionAndAngles(spawnData.x(), spawnData.y(), spawnData.z(), 0.0f, 0.0f);
-    private static final BiConsumer<SpawnData, ExplosiveProjectileEntity> DIRECTION = (spawnData, entity) -> {
+    private static final BiConsumer<SpawnData, Entity> MOVE = (spawnData, entity) -> entity.snapTo(spawnData.x(), spawnData.y(), spawnData.z(), spawnData.yaw(), spawnData.pitch());
+    private static final BiConsumer<SpawnData, Entity> MOVE_EMPTY_ROT = (spawnData, entity) -> entity.snapTo(spawnData.x(), spawnData.y(), spawnData.z(), 0.0f, 0.0f);
+    private static final BiConsumer<SpawnData, AbstractHurtingProjectile> DIRECTION = (spawnData, entity) -> {
         Vector direction = spawnData.location().getDirection().multiply(10);
         // TODO
         // entity.setPower(direction.getX(), direction.getY(), direction.getZ());
     };
-    private static final BiConsumer<SpawnData, Entity> ROT = (spawnData, entity) -> entity.setRotation(spawnData.yaw(), spawnData.pitch());
+    private static final BiConsumer<SpawnData, Entity> ROT = (spawnData, entity) -> entity.setRot(spawnData.yaw(), spawnData.pitch());
     private static final BiConsumer<SpawnData, Entity> CLEAR_MOVE_IF_NOT_RANDOMIZED = (spawnData, entity) -> {
         if (!spawnData.randomizeData()) {
-            entity.setVelocity(Vec3d.ZERO);
+            entity.setDeltaMovement(Vec3.ZERO);
         }
     };
     private static final Map<Class<?>, EntityTypeData<?, ?>> CLASS_TYPE_DATA = new HashMap();
@@ -326,14 +198,14 @@ public final class CraftEntityTypes {
     }
 
     private static <R extends Entity> Function<SpawnData, R> fromEntityType(EntityType<R> entityTypes) {
-        return spawnData -> entityTypes.create(spawnData.minecraftWorld(), SpawnReason.COMMAND);
+        return spawnData -> entityTypes.create(spawnData.minecraftWorld(), EntitySpawnReason.COMMAND);
     }
 
     private static <R extends LivingEntity> Function<SpawnData, R> createLiving(EntityType<R> entityTypes) {
         return CraftEntityTypes.combine(CraftEntityTypes.fromEntityType(entityTypes), ABS_MOVE);
     }
 
-    private static <R extends ExplosiveProjectileEntity> Function<SpawnData, R> createFireball(EntityType<R> entityTypes) {
+    private static <R extends AbstractHurtingProjectile> Function<SpawnData, R> createFireball(EntityType<R> entityTypes) {
         return CraftEntityTypes.combine(CraftEntityTypes.createAndMove(entityTypes), DIRECTION);
     }
 
@@ -349,7 +221,7 @@ public final class CraftEntityTypes {
         return CraftEntityTypes.combine(CraftEntityTypes.fromEntityType(entityTypes), POS);
     }
 
-    private static <E extends Hanging, R extends AbstractDecorationEntity> Function<SpawnData, R> createHanging(Class<E> clazz, BiFunction<SpawnData, HangingData, R> spawnFunction) {
+    private static <E extends Hanging, R extends HangingEntity> Function<SpawnData, R> createHanging(Class<E> clazz, BiFunction<SpawnData, HangingData, R> spawnFunction) {
         return spawnData -> {
             boolean randomizeData = spawnData.randomizeData();
             BlockFace face = BlockFace.SELF;
@@ -361,23 +233,23 @@ public final class CraftEntityTypes {
                 height = 12;
                 faces = new BlockFace[]{BlockFace.EAST, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH, BlockFace.UP, BlockFace.DOWN};
             }
-            BlockPos pos = BlockPos.ofFloored(spawnData.x(), spawnData.y(), spawnData.z());
+            BlockPos pos = BlockPos.containing(spawnData.x(), spawnData.y(), spawnData.z());
             for (BlockFace dir : faces) {
-                Box bb;
-                BlockState nmsBlock = spawnData.world().getBlockState(pos.offset(CraftBlock.blockFaceToNotch(dir)));
-                if (!nmsBlock.isSolid() && !AbstractRedstoneGateBlock.isRedstoneGate(nmsBlock)) continue;
+                AABB bb;
+                BlockState nmsBlock = spawnData.world().getBlockState(pos.relative(CraftBlock.blockFaceToNotch(dir)));
+                if (!nmsBlock.isSolid() && !DiodeBlock.isDiode(nmsBlock)) continue;
                 boolean taken = false;
                 
-                Box box = bb = ItemFrame.class.isAssignableFrom(clazz)
+                AABB box = bb = ItemFrame.class.isAssignableFrom(clazz)
                 		? ItemFrameEntity_calculateBoundingBox(null, pos, CraftBlock.blockFaceToNotch(dir).getOpposite(), width, height)
                 		: AbstractDecorationEntity_calculateBoundingBox(null, pos, CraftBlock.blockFaceToNotch(dir).getOpposite(), width, height);
 
-                if (!spawnData.world.isSpaceEmpty(bb)) continue;
-                List<Entity> list = spawnData.world().getOtherEntities(null, bb);
+                if (!spawnData.world.noCollision(bb)) continue;
+                List<Entity> list = spawnData.world().getEntities(null, bb);
                 Iterator<Entity> it = list.iterator();
                 while (!taken && it.hasNext()) {
                     Entity e2 = it.next();
-                    if (!(e2 instanceof AbstractDecorationEntity)) continue;
+                    if (!(e2 instanceof HangingEntity)) continue;
                     taken = true;
                 }
                 if (taken) continue;
@@ -393,13 +265,13 @@ public final class CraftEntityTypes {
         };
     }
     
-    private static Box ItemFrameEntity_calculateBoundingBox(Entity entity, BlockPos blockPosition, Direction direction, int width, int height) {
+    private static AABB ItemFrameEntity_calculateBoundingBox(Entity entity, BlockPos blockPosition, Direction direction, int width, int height) {
         double d0 = 0.46875;
-        double locX = blockPosition.getX() + 0.5 - direction.getOffsetX() * 0.46875;
-        double locY = blockPosition.getY() + 0.5 - direction.getOffsetY() * 0.46875;
-        double locZ = blockPosition.getZ() + 0.5 - direction.getOffsetZ() * 0.46875;
+        double locX = blockPosition.getX() + 0.5 - direction.getStepX() * 0.46875;
+        double locY = blockPosition.getY() + 0.5 - direction.getStepY() * 0.46875;
+        double locZ = blockPosition.getZ() + 0.5 - direction.getStepZ() * 0.46875;
         if (entity != null) {
-            entity.setPos(locX, locY, locZ);
+            entity.setPosRaw(locX, locY, locZ);
         }
         double d2 = width;
         double d3 = height;
@@ -413,28 +285,28 @@ public final class CraftEntityTypes {
         d2 /= 32.0;
         d3 /= 32.0;
         d4 /= 32.0;
-        return new Box(locX - d2, locY - d3, locZ - d4, locX + d2, locY + d3, locZ + d4);
+        return new AABB(locX - d2, locY - d3, locZ - d4, locX + d2, locY + d3, locZ + d4);
     }
     
     private static double a(int i) {
         return i % 32 == 0 ? 0.5D : 0.0D;
     }
     
-    private static Box AbstractDecorationEntity_calculateBoundingBox(Entity entity, BlockPos blockPosition, Direction direction, int width, int height) {
+    private static AABB AbstractDecorationEntity_calculateBoundingBox(Entity entity, BlockPos blockPosition, Direction direction, int width, int height) {
         double d0 = blockPosition.getX() + 0.5;
         double d2 = blockPosition.getY() + 0.5;
         double d3 = blockPosition.getZ() + 0.5;
         double d4 = 0.46875;
         double d5 = a(width);
         double d6 = a(height);
-        d0 -= direction.getOffsetX() * 0.46875;
-        d3 -= direction.getOffsetZ() * 0.46875;
+        d0 -= direction.getStepX() * 0.46875;
+        d3 -= direction.getStepZ() * 0.46875;
         d2 += d6;
-        Direction enumdirection = direction.rotateYCounterclockwise();
-        d0 += d5 * enumdirection.getOffsetX();
-        d3 += d5 * enumdirection.getOffsetZ();
+        Direction enumdirection = direction.getCounterClockWise();
+        d0 += d5 * enumdirection.getStepX();
+        d3 += d5 * enumdirection.getStepZ();
         if (entity != null) {
-            entity.setPos(d0, d2, d3);
+            entity.setPosRaw(d0, d2, d3);
         }
         double d7 = width;
         double d8 = height;
@@ -447,7 +319,7 @@ public final class CraftEntityTypes {
         d7 /= 32.0;
         d8 /= 32.0;
         d9 /= 32.0;
-        return new Box(d0 - d7, d2 - d8, d3 - d9, d0 + d7, d2 + d8, d3 + d9);
+        return new AABB(d0 - d7, d2 - d8, d3 - d9, d0 + d7, d2 + d8, d3 + d9);
     }
 
     private static <T, R> Function<T, R> combine(Function<T, R> before, BiConsumer<T, ? super R> after) {
@@ -646,7 +518,7 @@ public final class CraftEntityTypes {
     }
 
     // @Desugar
-    public record SpawnData(StructureWorldAccess world, Location location, boolean randomizeData, boolean normalWorld) {
+    public record SpawnData(WorldGenLevel world, Location location, boolean randomizeData, boolean normalWorld) {
         double x() {
             return this.location().getX();
         }
@@ -667,8 +539,8 @@ public final class CraftEntityTypes {
             return this.location().getPitch();
         }
 
-        World minecraftWorld() {
-            return (ServerWorld) this.world();
+        Level minecraftWorld() {
+            return (ServerLevel) this.world();
         	//return this.world().getMinecraftWorld();
         }
     }

@@ -3,9 +3,6 @@ package org.cardboardpowered.mixin.registry;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-
-import net.minecraft.registry.ReloadableRegistries;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -21,26 +18,26 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import net.minecraft.loot.LootDataType;
-import net.minecraft.registry.MutableRegistry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryOps;
-import net.minecraft.registry.SimpleRegistry;
-import net.minecraft.registry.entry.RegistryEntryInfo;
-import net.minecraft.registry.tag.TagGroupLoader;
-import net.minecraft.resource.JsonDataLoader;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.RegistrationInfo;
+import net.minecraft.core.WritableRegistry;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.ReloadableServerRegistries;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.tags.TagLoader;
+import net.minecraft.world.level.storage.loot.LootDataType;
 
-@Mixin(ReloadableRegistries.class)
+@Mixin(ReloadableServerRegistries.class)
 public class MixinReloadableRegistries {
 
 	// @Shadow
     // private static final Gson GSON = new GsonBuilder().create();
 	
 	@Shadow
-    private static final RegistryEntryInfo DEFAULT_REGISTRY_ENTRY_INFO = new RegistryEntryInfo(Optional.empty(), Lifecycle.experimental());
+    private static final RegistrationInfo DEFAULT_REGISTRATION_INFO = new RegistrationInfo(Optional.empty(), Lifecycle.experimental());
 	
 	/**
 	 * @author Cardboard
@@ -48,21 +45,21 @@ public class MixinReloadableRegistries {
 	 */
     @SuppressWarnings("unchecked")
     @Overwrite
-	private static <T> CompletableFuture<MutableRegistry<?>> prepare(LootDataType<T> type, RegistryOps<JsonElement> ops, ResourceManager resourceManager, Executor prepareExecutor) {
+	private static <T> CompletableFuture<WritableRegistry<?>> scheduleRegistryLoad(LootDataType<T> type, RegistryOps<JsonElement> ops, ResourceManager resourceManager, Executor prepareExecutor) {
         return CompletableFuture.supplyAsync(() -> {
-            SimpleRegistry writableRegistry = new SimpleRegistry(type.registryKey(), Lifecycle.experimental());
+            MappedRegistry writableRegistry = new MappedRegistry(type.registryKey(), Lifecycle.experimental());
             PaperRegistryAccess.instance().registerReloadableRegistry(type.registryKey(), writableRegistry);
             HashMap<Identifier, T> map = new HashMap<Identifier, T>();
-            JsonDataLoader.load(resourceManager, type.registryKey(), ops, type.codec(), map);
+            SimpleJsonResourceReloadListener.scanDirectory(resourceManager, type.registryKey(), ops, type.codec(), map);
            
             // TODO Paper has conversions in reload instead of prepare
-            Conversions conversions = new Conversions(ops.registryInfoGetter);
+            Conversions conversions = new Conversions(ops.lookupProvider);
             
-            map.forEach((id, value) -> PaperRegistryListenerManager.INSTANCE.registerWithListeners(writableRegistry, RegistryKey.of(type.registryKey(), id), value, DEFAULT_REGISTRY_ENTRY_INFO, conversions));
+            map.forEach((id, value) -> PaperRegistryListenerManager.INSTANCE.registerWithListeners(writableRegistry, ResourceKey.create(type.registryKey(), id), value, DEFAULT_REGISTRATION_INFO, conversions));
             // TODO
             // TagGroupLoader.loadTagsForRegistry(resourceManager, writableRegistry, ReloadableRegistrarEvent.Cause.RELOAD);
             
-            TagGroupLoader.loadInitial(resourceManager, writableRegistry);
+            TagLoader.loadTagsForRegistry(resourceManager, writableRegistry);
             
             return writableRegistry;
         }, prepareExecutor);

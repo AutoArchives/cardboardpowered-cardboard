@@ -3,12 +3,12 @@ package org.cardboardpowered.mixin.network.handler;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import org.cardboardpowered.interfaces.IMixinSignBlockEntity;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.network.packet.c2s.play.UpdateSignC2SPacket;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.protocol.game.ServerboundSignUpdatePacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.SignChangeEvent;
@@ -21,17 +21,17 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @MixinInfo(events = {"SignChangeEvent"})
-@Mixin(value = ServerPlayNetworkHandler.class, priority = 800)
+@Mixin(value = ServerGamePacketListenerImpl.class, priority = 800)
 public class MixinSPNH_SignUpdateEvent {
 
     @Shadow 
-    public ServerPlayerEntity player;
+    public ServerPlayer player;
 
     @SuppressWarnings("deprecation")
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/network/packet/c2s/play/UpdateSignC2SPacket;getText()[Ljava/lang/String;"), method = "onUpdateSign", cancellable = true)
-    public void fireSignUpdateEvent(UpdateSignC2SPacket packet, CallbackInfo ci) {
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/game/ServerboundSignUpdatePacket;getLines()[Ljava/lang/String;"), method = "handleSignUpdate", cancellable = true)
+    public void fireSignUpdateEvent(ServerboundSignUpdatePacket packet, CallbackInfo ci) {
         try {
-            String[] astring = packet.getText();
+            String[] astring = packet.getLines();
     
             Player player = (Player) ((IMixinServerEntityPlayer)this.player).getBukkitEntity();
             int x = packet.getPos().getX();
@@ -40,14 +40,14 @@ public class MixinSPNH_SignUpdateEvent {
             String[] lines = new String[4];
     
             for (int i = 0; i < astring.length; ++i)
-                lines[i] = Formatting.strip(Formatting.strip(astring[i]));
+                lines[i] = ChatFormatting.stripFormatting(ChatFormatting.stripFormatting(astring[i]));
             ((IMixinMinecraftServer)CraftServer.server).cardboard_runOnMainThread(() -> {
                 try {
                     SignChangeEvent event = new SignChangeEvent((org.bukkit.craftbukkit.block.CraftBlock) player.getWorld().getBlockAt(x, y, z), player, lines);
                     CraftServer.INSTANCE.getPluginManager().callEvent(event);
             
                     if (!event.isCancelled()) {
-                        BlockEntity tileentity = this.player.getEntityWorld().getBlockEntity(packet.getPos());
+                        BlockEntity tileentity = this.player.level().getBlockEntity(packet.getPos());
                         SignBlockEntity tileentitysign = (SignBlockEntity) tileentity;
                         System.arraycopy(CardboardSign.sanitizeLines(event.getLines()), 0, ((IMixinSignBlockEntity)tileentitysign).getTextBF(), 0, 4);
                         //tileentitysign.editable = false;

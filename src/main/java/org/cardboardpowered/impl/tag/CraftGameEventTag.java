@@ -5,35 +5,34 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 import org.bukkit.GameEvent;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.Registries;
-
-public class CraftGameEventTag extends CraftTag<net.minecraft.world.event.GameEvent, GameEvent> {
+public class CraftGameEventTag extends CraftTag<net.minecraft.world.level.gameevent.GameEvent, GameEvent> {
 	
-	public CraftGameEventTag(Registry<net.minecraft.world.event.GameEvent> registry,
-			TagKey<net.minecraft.world.event.GameEvent> tag) {
+	public CraftGameEventTag(Registry<net.minecraft.world.level.gameevent.GameEvent> registry,
+			TagKey<net.minecraft.world.level.gameevent.GameEvent> tag) {
 		super(registry, tag);
 	}
 
-	private static final Map<GameEvent, RegistryKey<net.minecraft.world.event.GameEvent>> KEY_CACHE = Collections.synchronizedMap(new IdentityHashMap<>());
+	private static final Map<GameEvent, ResourceKey<net.minecraft.world.level.gameevent.GameEvent>> KEY_CACHE = Collections.synchronizedMap(new IdentityHashMap<>());
 	
 	@Override
 	public boolean isTagged(@NotNull GameEvent gameEvent) {
-	    return registry.getOrThrow(KEY_CACHE.computeIfAbsent(gameEvent, event -> RegistryKey.of(RegistryKeys.GAME_EVENT, CraftNamespacedKey.toMinecraft(event.getKey())))).isIn(tag);
+	    return registry.getOrThrow(KEY_CACHE.computeIfAbsent(gameEvent, event -> ResourceKey.create(Registries.GAME_EVENT, CraftNamespacedKey.toMinecraft(event.getKey())))).is(tag);
 	}
 
 	@Override
     public Set<GameEvent> getValues() {
         return getHandle().stream().map(nms -> {
-        	NamespacedKey key = CraftNamespacedKey.fromMinecraft(Registries.GAME_EVENT.getId(nms.value()));
+        	NamespacedKey key = CraftNamespacedKey.fromMinecraft(BuiltInRegistries.GAME_EVENT.getKey(nms.value()));
         	return GameEvent.getByKey(key);
         }).collect(Collectors.toUnmodifiableSet());
 	}

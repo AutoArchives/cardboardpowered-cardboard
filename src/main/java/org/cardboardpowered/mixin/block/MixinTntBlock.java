@@ -1,12 +1,12 @@
 package org.cardboardpowered.mixin.block;
 
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.TntBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.TntBlock;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.world.World;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,13 +18,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinTntBlock {
 
     @Inject (method = "onProjectileHit", at = @At (value = "INVOKE",
-            target = "Lnet/minecraft/block/TntBlock;primeTnt" +
-                    "(Lnet/minecraft/world/World;" +
-                    "Lnet/minecraft/util/math/BlockPos;" +
-                    "Lnet/minecraft/entity/LivingEntity;)Z"),
+            target = "Lnet/minecraft/world/level/block/TntBlock;prime(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/LivingEntity;)Z"),
             cancellable = true)
-    private void bukkit_entityChangeBlockEvent(World world, BlockState state, BlockHitResult hit, ProjectileEntity projectile, CallbackInfo ci) {
-        if (CraftEventFactory.callEntityChangeBlockEvent(projectile, hit.getBlockPos(), Blocks.AIR.getDefaultState())
+    private void bukkit_entityChangeBlockEvent(Level world, BlockState state, BlockHitResult hit, Projectile projectile, CallbackInfo ci) {
+        if (CraftEventFactory.callEntityChangeBlockEvent(projectile, hit.getBlockPos(), Blocks.AIR.defaultBlockState())
                 .isCancelled()) { ci.cancel(); }
     }
 }

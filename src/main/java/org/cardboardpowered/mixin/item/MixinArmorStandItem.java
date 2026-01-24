@@ -1,12 +1,12 @@
 package org.cardboardpowered.mixin.item;
 
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.item.ArmorStandItem;
+import net.minecraft.world.item.context.UseOnContext;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.util.ActionResult;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
-import net.minecraft.entity.decoration.ArmorStandEntity;
-import net.minecraft.item.ArmorStandItem;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -16,18 +16,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(value = ArmorStandItem.class, priority = 900)
 public class MixinArmorStandItem {
 
-    private transient ArmorStandEntity bukkitEntity;
+    private transient ArmorStand bukkitEntity;
 
-    @Redirect(method = "useOnBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/decoration/ArmorStandEntity;refreshPositionAndAngles(DDDFF)V"))
-    private void bukkitCaptureEntity(ArmorStandEntity instance, double x, double y, double z, float yaw, float pitch) {
-        instance.refreshPositionAndAngles(x, y, z, yaw, pitch);
+    @Redirect(method = "useOn", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/decoration/ArmorStand;snapTo(DDDFF)V"))
+    private void bukkitCaptureEntity(ArmorStand instance, double x, double y, double z, float yaw, float pitch) {
+        instance.snapTo(x, y, z, yaw, pitch);
         bukkitEntity = instance;
     }
 
-    @Inject(method = "useOnBlock", cancellable = true, at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;spawnEntityAndPassengers(Lnet/minecraft/entity/Entity;)V"))
-    public void bukkitEntityPlace(ItemUsageContext context, CallbackInfoReturnable<ActionResult> cir) {
+    @Inject(method = "useOn", cancellable = true, at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;addFreshEntityWithPassengers(Lnet/minecraft/world/entity/Entity;)V"))
+    public void bukkitEntityPlace(UseOnContext context, CallbackInfoReturnable<InteractionResult> cir) {
         if (CraftEventFactory.callEntityPlaceEvent(context, bukkitEntity).isCancelled()) {
-            cir.setReturnValue(ActionResult.FAIL);
+            cir.setReturnValue(InteractionResult.FAIL);
         }
         bukkitEntity = null;
     }

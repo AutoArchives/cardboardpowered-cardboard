@@ -1,6 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.entity.mob.AbstractSkeletonEntity;
+import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -10,13 +10,13 @@ import org.cardboardpowered.impl.entity.CraftMonster;
 @SuppressWarnings("deprecation")
 public class CraftSkeleton extends CraftMonster implements Skeleton {
 
-    public CraftSkeleton(CraftServer server, AbstractSkeletonEntity entity) {
+    public CraftSkeleton(CraftServer server, AbstractSkeleton entity) {
         super(server, entity);
     }
 
     @Override
-    public AbstractSkeletonEntity getHandle() {
-        return (AbstractSkeletonEntity) nms;
+    public AbstractSkeleton getHandle() {
+        return (AbstractSkeleton) nms;
     }
 
     @Override

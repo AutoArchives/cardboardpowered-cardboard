@@ -5,20 +5,18 @@ import io.papermc.paper.registry.data.util.Conversions;
 
 import java.util.Optional;
 import java.util.function.Function;
-
-import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Registry;
 import org.bukkit.Keyed;
 import org.jspecify.annotations.Nullable;
 
 public class PaperRegistryBuilderFactory<M, A extends Keyed, B extends PaperRegistryBuilder<M, A>> implements RegistryBuilderFactory<A, B> { // TODO remove Keyed
 
-	private final net.minecraft.registry.RegistryKey<? extends Registry<M>> registryKey;
+	private final net.minecraft.resources.ResourceKey<? extends Registry<M>> registryKey;
 	
     private final Conversions conversions;
     private final PaperRegistryBuilder.Filler<M, A, B> builderFiller;
     // private final Function<? super Identifier, ? extends @Nullable M> existingValueGetter;
-    private final Function<net.minecraft.registry.RegistryKey<M>, Optional<M>> existingValueGetter;
+    private final Function<net.minecraft.resources.ResourceKey<M>, Optional<M>> existingValueGetter;
     
     private @Nullable B builder;
 
@@ -30,7 +28,7 @@ public class PaperRegistryBuilderFactory<M, A extends Keyed, B extends PaperRegi
     }
     */
     
-    public PaperRegistryBuilderFactory(net.minecraft.registry.RegistryKey<? extends Registry<M>> registryKey, Conversions conversions, PaperRegistryBuilder.Filler<M, A, B> builderFiller, Function<net.minecraft.registry.RegistryKey<M>, Optional<M>> existingValueGetter) {
+    public PaperRegistryBuilderFactory(net.minecraft.resources.ResourceKey<? extends Registry<M>> registryKey, Conversions conversions, PaperRegistryBuilder.Filler<M, A, B> builderFiller, Function<net.minecraft.resources.ResourceKey<M>, Optional<M>> existingValueGetter) {
         this.registryKey = registryKey;
         this.conversions = conversions;
         this.builderFiller = builderFiller;

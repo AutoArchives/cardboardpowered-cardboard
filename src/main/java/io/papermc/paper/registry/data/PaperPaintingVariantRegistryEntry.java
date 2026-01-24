@@ -8,9 +8,8 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import net.minecraft.entity.decoration.painting.PaintingVariant;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.decoration.painting.PaintingVariant;
 import org.bukkit.Art;
 import org.cardboardpowered.adventure.CardboardAdventure;
 import org.jetbrains.annotations.Range;
@@ -20,8 +19,8 @@ public class PaperPaintingVariantRegistryEntry
 implements PaintingVariantRegistryEntry {
     protected OptionalInt width = OptionalInt.empty();
     protected OptionalInt height = OptionalInt.empty();
-    protected @Nullable Text title;
-    protected @Nullable Text author;
+    protected net.minecraft.network.chat.@Nullable Component title;
+    protected net.minecraft.network.chat.@Nullable Component author;
     protected @Nullable Identifier assetId;
     protected final Conversions conversions;
 

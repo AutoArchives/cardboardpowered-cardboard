@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -27,7 +27,7 @@ import org.bukkit.inventory.meta.trim.TrimPattern;
 public class CraftMetaArmor
 extends CraftMetaItem
 implements ArmorMeta {
-    static final CraftMetaItem.ItemMetaKeyType<net.minecraft.item.equipment.trim.ArmorTrim> TRIM = new CraftMetaItem.ItemMetaKeyType<net.minecraft.item.equipment.trim.ArmorTrim>(DataComponentTypes.TRIM, "trim");
+    static final CraftMetaItem.ItemMetaKeyType<net.minecraft.world.item.equipment.trim.ArmorTrim> TRIM = new CraftMetaItem.ItemMetaKeyType<net.minecraft.world.item.equipment.trim.ArmorTrim>(DataComponents.TRIM, "trim");
     static final CraftMetaItem.ItemMetaKey TRIM_MATERIAL = new CraftMetaItem.ItemMetaKey("material");
     static final CraftMetaItem.ItemMetaKey TRIM_PATTERN = new CraftMetaItem.ItemMetaKey("pattern");
     private ArmorTrim trim;
@@ -40,7 +40,7 @@ implements ArmorMeta {
         }
     }
 
-    CraftMetaArmor(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
+    CraftMetaArmor(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaArmor.getOrEmpty(tag, TRIM).ifPresent(trimCompound -> {
             TrimMaterial trimMaterial = CraftRegistry.unwrapAndConvertHolder(RegistryKey.TRIM_MATERIAL, trimCompound.material()).orElse(null);
@@ -57,10 +57,10 @@ implements ArmorMeta {
 
     CraftMetaArmor(Map<String, Object> map) {
         super(map);
-        Map trimData = SerializableMeta.getObject(Map.class, map, CraftMetaArmor.TRIM.BUKKIT, true);
+        Map trimData = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(Map.class, map, CraftMetaArmor.TRIM.BUKKIT, true);
         if (trimData != null) {
-            String materialKeyString = SerializableMeta.getString(trimData, CraftMetaArmor.TRIM_MATERIAL.BUKKIT, true);
-            String patternKeyString = SerializableMeta.getString(trimData, CraftMetaArmor.TRIM_PATTERN.BUKKIT, true);
+            String materialKeyString = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getString(trimData, CraftMetaArmor.TRIM_MATERIAL.BUKKIT, true);
+            String patternKeyString = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getString(trimData, CraftMetaArmor.TRIM_PATTERN.BUKKIT, true);
             if (materialKeyString != null && patternKeyString != null) {
                 NamespacedKey materialKey = NamespacedKey.fromString((String)materialKeyString);
                 NamespacedKey patternKey = NamespacedKey.fromString((String)patternKeyString);
@@ -79,7 +79,7 @@ implements ArmorMeta {
     void applyToItem(CraftMetaItem.Applicator itemTag) {
         super.applyToItem(itemTag);
         if (this.hasTrim()) {
-        	itemTag.put(TRIM, new net.minecraft.item.equipment.trim.ArmorTrim(CraftTrimMaterial.bukkitToMinecraftHolder(this.trim.getMaterial()), CraftTrimPattern.bukkitToMinecraftHolder(this.trim.getPattern())));
+        	itemTag.put(TRIM, new net.minecraft.world.item.equipment.trim.ArmorTrim(CraftTrimMaterial.bukkitToMinecraftHolder(this.trim.getMaterial()), CraftTrimPattern.bukkitToMinecraftHolder(this.trim.getPattern())));
         }
     }
 

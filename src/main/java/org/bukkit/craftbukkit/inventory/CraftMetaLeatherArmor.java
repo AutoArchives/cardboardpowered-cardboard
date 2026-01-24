@@ -4,10 +4,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.DyedColorComponent;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.DyedItemColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -32,7 +32,7 @@ implements LeatherArmorMeta {
     				// Material.WOLF_ARMOR
     			}
     	);
-    static final CraftMetaItem.ItemMetaKeyType<DyedColorComponent> COLOR = new CraftMetaItem.ItemMetaKeyType<DyedColorComponent>(DataComponentTypes.DYED_COLOR, "color");
+    static final CraftMetaItem.ItemMetaKeyType<DyedItemColor> COLOR = new CraftMetaItem.ItemMetaKeyType<DyedItemColor>(DataComponents.DYED_COLOR, "color");
     private Color color = CraftItemFactory.DEFAULT_LEATHER_COLOR;
 
     CraftMetaLeatherArmor(CraftMetaItem meta) {
@@ -40,7 +40,7 @@ implements LeatherArmorMeta {
         CraftMetaLeatherArmor.readColor((LeatherArmorMeta)this, meta);
     }
 
-    CraftMetaLeatherArmor(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
+    CraftMetaLeatherArmor(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaLeatherArmor.readColor((LeatherArmorMeta)this, tag);
     }
@@ -129,7 +129,7 @@ implements LeatherArmorMeta {
         meta.setColor(armorMeta.color);
     }
 
-    static void readColor(LeatherArmorMeta meta, ComponentChanges tag) {
+    static void readColor(LeatherArmorMeta meta, DataComponentPatch tag) {
         CraftMetaLeatherArmor.getOrEmpty(tag, COLOR).ifPresent(dyedItemColor -> {
         	/*
         	if (!dyedItemColor.showInTooltip()) {
@@ -155,7 +155,7 @@ implements LeatherArmorMeta {
 
     static void applyColor(LeatherArmorMeta meta, CraftMetaItem.Applicator tag) {
         if (CraftMetaLeatherArmor.hasColor(meta)) {
-            tag.put(COLOR, new DyedColorComponent(meta.getColor().asRGB()/*, !meta.hasItemFlag(ItemFlag.HIDE_DYE)*/));
+            tag.put(COLOR, new DyedItemColor(meta.getColor().asRGB()/*, !meta.hasItemFlag(ItemFlag.HIDE_DYE)*/));
         }
     }
 

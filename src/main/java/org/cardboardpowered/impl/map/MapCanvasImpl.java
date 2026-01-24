@@ -50,7 +50,7 @@ public class MapCanvasImpl implements MapCanvas {
             return;
         if (buffer[y * 128 + x] != color) {
             buffer[y * 128 + x] = color;
-            mapView.worldMap.markDirty();// TODO .markDirty(x, y);
+            mapView.worldMap.setDirty();// TODO .markDirty(x, y);
         }
     }
 

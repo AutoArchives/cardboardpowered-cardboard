@@ -1,14 +1,14 @@
 package org.bukkit.craftbukkit.advancement;
 
 import com.google.common.collect.Lists;
-import net.minecraft.advancement.PlayerAdvancementTracker;
-import net.minecraft.advancement.criterion.CriterionProgress;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import net.minecraft.advancements.CriterionProgress;
+import net.minecraft.server.PlayerAdvancements;
 
 /**
  * Cardboard Implementation of AdvancementProgress
@@ -16,10 +16,10 @@ import java.util.Date;
 public class CraftAdvancementProgress implements AdvancementProgress {
 
     private final CraftAdvancement advancement;
-    private final PlayerAdvancementTracker playerData;
-    private final net.minecraft.advancement.AdvancementProgress handle;
+    private final PlayerAdvancements playerData;
+    private final net.minecraft.advancements.AdvancementProgress handle;
 
-    public CraftAdvancementProgress(CraftAdvancement advancement, PlayerAdvancementTracker player, net.minecraft.advancement.AdvancementProgress handle) {
+    public CraftAdvancementProgress(CraftAdvancement advancement, PlayerAdvancements player, net.minecraft.advancements.AdvancementProgress handle) {
         this.advancement = advancement;
         this.playerData = player;
         this.handle = handle;
@@ -37,28 +37,28 @@ public class CraftAdvancementProgress implements AdvancementProgress {
 
     @Override
     public boolean awardCriteria(String criteria) {
-        return playerData.grantCriterion(advancement.getHandle(), criteria);
+        return playerData.award(advancement.getHandle(), criteria);
     }
 
     @Override
     public boolean revokeCriteria(String criteria) {
-        return playerData.revokeCriterion(advancement.getHandle(), criteria);
+        return playerData.revoke(advancement.getHandle(), criteria);
     }
 
     @Override
     public Date getDateAwarded(String criteria) {
-        CriterionProgress criterion = handle.getCriterionProgress(criteria);
-        return (criterion == null) ? null : Date.from(criterion.getObtainedTime());
+        CriterionProgress criterion = handle.getCriterion(criteria);
+        return (criterion == null) ? null : Date.from(criterion.getObtained());
     }
 
     @Override
     public Collection<String> getRemainingCriteria() {
-        return Collections.unmodifiableCollection(Lists.newArrayList(handle.getUnobtainedCriteria()));
+        return Collections.unmodifiableCollection(Lists.newArrayList(handle.getRemainingCriteria()));
     }
 
     @Override
     public Collection<String> getAwardedCriteria() {
-        return Collections.unmodifiableCollection(Lists.newArrayList(handle.getObtainedCriteria()));
+        return Collections.unmodifiableCollection(Lists.newArrayList(handle.getCompletedCriteria()));
     }
 
 }

@@ -2,14 +2,10 @@ package org.cardboardpowered.impl.entity;
 
 import com.google.common.base.Preconditions;
 import org.cardboardpowered.CardboardMod;
-
-import net.minecraft.entity.passive.CatEntity;
-import net.minecraft.entity.passive.CatVariant;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-
 import java.util.Locale;
-
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.entity.animal.feline.CatVariant;
 import org.bukkit.DyeColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -32,10 +28,10 @@ public class CardboardCat extends CraftTameableAnimal implements Cat {
         private final int ordinal;
 
         public static Cat.Type minecraftToBukkit(CatVariant minecraft) {
-            return (Cat.Type)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.CAT_VARIANT);
+            return (Cat.Type)CraftRegistry.minecraftToBukkit(minecraft, Registries.CAT_VARIANT);
         }
 
-        public static Cat.Type minecraftHolderToBukkit(RegistryEntry<CatVariant> minecraft) {
+        public static Cat.Type minecraftHolderToBukkit(Holder<CatVariant> minecraft) {
             return CraftType.minecraftToBukkit(minecraft.value());
         }
 
@@ -43,8 +39,8 @@ public class CardboardCat extends CraftTameableAnimal implements Cat {
             return (CatVariant)CraftRegistry.bukkitToMinecraft(bukkit);
         }
 
-        public static RegistryEntry<CatVariant> bukkitToMinecraftHolder(Cat.Type bukkit) {
-            return CraftRegistry.bukkitToMinecraftHolder(bukkit, RegistryKeys.CAT_VARIANT);
+        public static Holder<CatVariant> bukkitToMinecraftHolder(Cat.Type bukkit) {
+            return CraftRegistry.bukkitToMinecraftHolder(bukkit, Registries.CAT_VARIANT);
         }
 
         public CraftType(NamespacedKey key, CatVariant catVariant) {
@@ -94,13 +90,13 @@ public class CardboardCat extends CraftTameableAnimal implements Cat {
         }
     }
 
-	public CardboardCat(CraftServer server, CatEntity entity) {
+	public CardboardCat(CraftServer server, net.minecraft.world.entity.animal.feline.Cat entity) {
         super(server, entity);
     }
 
     @Override
-    public CatEntity getHandle() {
-        return (CatEntity) super.getHandle();
+    public net.minecraft.world.entity.animal.feline.Cat getHandle() {
+        return (net.minecraft.world.entity.animal.feline.Cat) super.getHandle();
     }
 
     @Override
@@ -131,33 +127,33 @@ public class CardboardCat extends CraftTameableAnimal implements Cat {
     @SuppressWarnings("deprecation")
     @Override
     public DyeColor getCollarColor() {
-        return DyeColor.getByWoolData((byte) getHandle().getCollarColor().getIndex());
+        return DyeColor.getByWoolData((byte) getHandle().getCollarColor().getId());
     }
 
     @SuppressWarnings("deprecation")
     @Override
     public void setCollarColor(DyeColor color) {
-        getHandle().setCollarColor(net.minecraft.util.DyeColor.byIndex(color.getWoolData()));
+        getHandle().setCollarColor(net.minecraft.world.item.DyeColor.byId(color.getWoolData()));
     }
 
     @Override
     public boolean isHeadUp() {
-        return !getHandle().isHeadDown();
+        return !getHandle().isRelaxStateOne();
     }
 
     @Override
     public boolean isLyingDown() {
-        return getHandle().isSitting();
+        return getHandle().isOrderedToSit();
     }
 
     @Override
     public void setHeadUp(boolean bl) {
-        getHandle().setHeadDown(!bl);
+        getHandle().setRelaxStateOne(!bl);
     }
 
     @Override
     public void setLyingDown(boolean bl) {
-        getHandle().setSitting(bl);
+        getHandle().setOrderedToSit(bl);
     }
 
 }

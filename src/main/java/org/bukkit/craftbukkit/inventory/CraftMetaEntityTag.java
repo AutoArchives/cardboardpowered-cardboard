@@ -4,13 +4,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.entity.TypedEntityData;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.item.component.TypedEntityData;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.cardboardpowered.TypedEntityDataExtra;
@@ -30,8 +29,8 @@ public class CraftMetaEntityTag extends CraftMetaItem {
     	}
     );
 
-    static final CraftMetaItem.ItemMetaKeyType<TypedEntityData<net.minecraft.entity.EntityType<?>>> ENTITY_TAG = new CraftMetaItem.ItemMetaKeyType<>(DataComponentTypes.ENTITY_DATA, "EntityTag", "entity-tag");
-    NbtCompound entityTag;
+    static final CraftMetaItem.ItemMetaKeyType<TypedEntityData<net.minecraft.world.entity.EntityType<?>>> ENTITY_TAG = new CraftMetaItem.ItemMetaKeyType<>(DataComponents.ENTITY_DATA, "EntityTag", "entity-tag");
+    CompoundTag entityTag;
 
     CraftMetaEntityTag(CraftMetaItem meta) {
         super(meta);
@@ -42,7 +41,7 @@ public class CraftMetaEntityTag extends CraftMetaItem {
         this.entityTag = entity.entityTag;
     }
 
-    CraftMetaEntityTag(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
+    CraftMetaEntityTag(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaEntityTag.getOrEmpty(tag, ENTITY_TAG).ifPresent(nbt -> {
             this.entityTag = TypedEntityDataExtra.copyTagWithEntityId(nbt); // nbt.copyNbt();
@@ -54,7 +53,7 @@ public class CraftMetaEntityTag extends CraftMetaItem {
     }
 
     @Override
-    void deserializeInternal(NbtCompound tag, Object context) {
+    void deserializeInternal(CompoundTag tag, Object context) {
         super.deserializeInternal(tag, context);
         if (tag.contains(CraftMetaEntityTag.ENTITY_TAG.NBT)) {
             this.entityTag = tag.getCompound(CraftMetaEntityTag.ENTITY_TAG.NBT).orElse(this.entityTag);
@@ -62,7 +61,7 @@ public class CraftMetaEntityTag extends CraftMetaItem {
     }
 
     @Override
-    void serializeInternal(Map<String, NbtElement> internalTags) {
+    void serializeInternal(Map<String, Tag> internalTags) {
         if (this.entityTag != null && !this.entityTag.isEmpty()) {
             internalTags.put(CraftMetaEntityTag.ENTITY_TAG.NBT, this.entityTag);
         }

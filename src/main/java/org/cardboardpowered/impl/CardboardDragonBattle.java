@@ -1,11 +1,9 @@
 package org.cardboardpowered.impl;
 
-import net.minecraft.entity.boss.dragon.EnderDragonFight;
-import net.minecraft.entity.boss.dragon.EnderDragonSpawnState;
-
 import java.util.Collection;
 import java.util.List;
-
+import net.minecraft.world.level.dimension.end.DragonRespawnAnimation;
+import net.minecraft.world.level.dimension.end.EndDragonFight;
 import org.bukkit.Location;
 import org.bukkit.boss.BossBar;
 import org.bukkit.boss.DragonBattle;
@@ -19,9 +17,9 @@ import io.papermc.paper.math.Position;
 
 public class CardboardDragonBattle implements DragonBattle {
 
-    private final EnderDragonFight handle;
+    private final EndDragonFight handle;
 
-    public CardboardDragonBattle(EnderDragonFight handle) {
+    public CardboardDragonBattle(EndDragonFight handle) {
         this.handle = handle;
     }
 
@@ -48,12 +46,12 @@ public class CardboardDragonBattle implements DragonBattle {
 
     @Override
     public boolean hasBeenPreviouslyKilled() {
-        return handle.hasPreviouslyKilled();
+        return handle.hasPreviouslyKilledDragon();
     }
 
     @Override
     public void initiateRespawn() {
-        this.handle.respawnDragon();
+        this.handle.tryRespawn();
     }
 
     @Override
@@ -69,7 +67,7 @@ public class CardboardDragonBattle implements DragonBattle {
 
     @Override
     public void resetCrystals() {
-        this.handle.resetEndCrystals();
+        this.handle.resetSpikeCrystals();
     }
 
     @Override
@@ -82,12 +80,12 @@ public class CardboardDragonBattle implements DragonBattle {
         return obj instanceof CardboardDragonBattle && ((CardboardDragonBattle) obj).handle == this.handle;
     }
 
-    private RespawnPhase toBukkitRespawnPhase(EnderDragonSpawnState phase) {
+    private RespawnPhase toBukkitRespawnPhase(DragonRespawnAnimation phase) {
         return (phase != null) ? RespawnPhase.values()[phase.ordinal()] : RespawnPhase.NONE;
     }
 
-    private EnderDragonSpawnState toNMSRespawnPhase(RespawnPhase phase) {
-        return (phase != RespawnPhase.NONE) ? EnderDragonSpawnState.values()[phase.ordinal()] : null;
+    private DragonRespawnAnimation toNMSRespawnPhase(RespawnPhase phase) {
+        return (phase != RespawnPhase.NONE) ? DragonRespawnAnimation.values()[phase.ordinal()] : null;
     }
 
 	@Override

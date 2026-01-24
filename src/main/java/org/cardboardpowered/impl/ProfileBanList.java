@@ -1,6 +1,6 @@
 package org.cardboardpowered.impl;
 
-import net.minecraft.server.BannedPlayerList;
+import net.minecraft.server.players.UserBanList;
 
 /**
  * @deprecated Use CraftProfileBanList
@@ -8,7 +8,7 @@ import net.minecraft.server.BannedPlayerList;
 @Deprecated
 public class ProfileBanList extends CraftProfileBanList {
 
-	public ProfileBanList(BannedPlayerList list) {
+	public ProfileBanList(UserBanList list) {
 		super(list);
 	}
 }

@@ -2,12 +2,6 @@ package org.bukkit.craftbukkit.packs;
 
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import net.minecraft.resource.ResourcePackProfile;
-import net.minecraft.resource.ResourcePackSource;
-import net.minecraft.resource.metadata.PackResourceMetadata;
-import net.minecraft.util.dynamic.Range;
-
 import org.bukkit.FeatureFlag;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.CraftFeatureFlag;
@@ -16,6 +10,8 @@ import org.bukkit.craftbukkit.util.CraftChatMessage;
 
 import me.isaiah.common.ICommonMod;
 import me.isaiah.common.IDatapack;
+import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
+import net.minecraft.server.packs.repository.Pack;
 
 /**
  * Removed in Paper 1.21.9+
@@ -23,12 +19,12 @@ import me.isaiah.common.IDatapack;
 @Deprecated
 public class CraftDataPack /* implements DataPack */ {
 
-    private final ResourcePackProfile handle;
-    private PackResourceMetadata resourcePackInfo;
+    private final Pack handle;
+    private PackMetadataSection resourcePackInfo;
     
     private IDatapack ipack;
 
-    public CraftDataPack(ResourcePackProfile handler) {
+    public CraftDataPack(Pack handler) {
         this.handle = handler;
         
         this.ipack = ICommonMod.getIServer().get_datapack(handler);
@@ -45,7 +41,7 @@ public class CraftDataPack /* implements DataPack */ {
     	return ipack;
     }
 
-    public ResourcePackProfile getHandle() {
+    public Pack getHandle() {
         return this.handle;
     }
 
@@ -55,7 +51,7 @@ public class CraftDataPack /* implements DataPack */ {
 
     // @Override
     public String getTitle() {
-        return CraftChatMessage.fromComponent(this.getHandle().getDisplayName());
+        return CraftChatMessage.fromComponent(this.getHandle().getTitle());
     }
 
     // @Override

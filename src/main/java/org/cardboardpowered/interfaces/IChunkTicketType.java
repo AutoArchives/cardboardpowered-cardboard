@@ -1,6 +1,6 @@
 package org.cardboardpowered.interfaces;
 
-import net.minecraft.server.world.ChunkTicketType;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.util.Unit;
 
 /**
@@ -12,6 +12,6 @@ public interface IChunkTicketType {
 
 	/**
 	 */
-    ChunkTicketType getBukkitPluginTicketType();
+    TicketType getBukkitPluginTicketType();
 
 }

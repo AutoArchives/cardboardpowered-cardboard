@@ -4,7 +4,7 @@
  */
 package org.cardboardpowered.interfaces;
 
-import net.minecraft.text.Style;
+import net.minecraft.network.chat.Style;
 
 // TODO
 public interface IMixinStyle {

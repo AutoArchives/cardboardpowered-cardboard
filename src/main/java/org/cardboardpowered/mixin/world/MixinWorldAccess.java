@@ -1,15 +1,14 @@
 package org.cardboardpowered.mixin.world;
 
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.LevelAccessor;
 import org.spongepowered.asm.mixin.Mixin;
 
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.WorldAccess;
-
-@Mixin(WorldAccess.class)
+@Mixin(LevelAccessor.class)
 public interface MixinWorldAccess {
 
-    default ServerWorld getMinecraftWorld() {
-        return (ServerWorld)(WorldAccess)(Object)this;
+    default ServerLevel getMinecraftWorld() {
+        return (ServerLevel)(LevelAccessor)(Object)this;
     }
 
 }

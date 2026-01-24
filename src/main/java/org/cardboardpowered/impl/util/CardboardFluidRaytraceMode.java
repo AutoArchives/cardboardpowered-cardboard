@@ -1,21 +1,20 @@
 package org.cardboardpowered.impl.util;
 
+import net.minecraft.world.level.ClipContext.Fluid;
 import org.bukkit.FluidCollisionMode;
-
-import net.minecraft.world.RaycastContext.FluidHandling;
 
 public class CardboardFluidRaytraceMode {
 
-    public static FluidHandling toMc(FluidCollisionMode mode) {
+    public static Fluid toMc(FluidCollisionMode mode) {
         if (mode == null) return null;
 
         switch (mode) {
             case ALWAYS:
-                return FluidHandling.ANY;
+                return Fluid.ANY;
             case SOURCE_ONLY:
-                return FluidHandling.SOURCE_ONLY;
+                return Fluid.SOURCE_ONLY;
             case NEVER:
-                return FluidHandling.NONE;
+                return Fluid.NONE;
             default:
                 return null;
         }

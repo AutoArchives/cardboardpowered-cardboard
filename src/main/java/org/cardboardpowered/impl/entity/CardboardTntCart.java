@@ -5,12 +5,12 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.minecart.ExplosiveMinecart;
 
 import net.kyori.adventure.util.TriState;
-import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-import net.minecraft.entity.vehicle.TntMinecartEntity;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.MinecartTNT;
 
 public class CardboardTntCart extends CardboardMinecart implements ExplosiveMinecart {
 
-    public CardboardTntCart(CraftServer server, AbstractMinecartEntity entity) {
+    public CardboardTntCart(CraftServer server, AbstractMinecart entity) {
         super(server, entity);
     }
 
@@ -21,24 +21,24 @@ public class CardboardTntCart extends CardboardMinecart implements ExplosiveMine
 
 	@Override
     public int getFuseTicks() {
-        return this.getHandle().getFireTicks();
+        return this.getHandle().getRemainingFireTicks();
     }
 
 	@Override
 	public void setFuseTicks(int arg0) {
-        this.getHandle().fireTicks = arg0;
+        this.getHandle().remainingFireTicks = arg0;
 	}
 	
 	// 1.19.4:
 	
     @Override
-    public TntMinecartEntity getHandle() {
-        return (TntMinecartEntity)super.getHandle();
+    public MinecartTNT getHandle() {
+        return (MinecartTNT)super.getHandle();
     }
 
 	@Override
 	public void explode() {
-        this.getHandle().explode(null, this.getHandle().getVelocity().horizontalLengthSquared());
+        this.getHandle().explode(null, this.getHandle().getDeltaMovement().horizontalDistanceSqr());
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class CardboardTntCart extends CardboardMinecart implements ExplosiveMine
 
 	@Override
 	public void ignite() {
-        this.getHandle().prime(null);
+        this.getHandle().primeFuse(null);
 	}
 
 	@Override
@@ -70,12 +70,12 @@ public class CardboardTntCart extends CardboardMinecart implements ExplosiveMine
 
 	@Override
 	public void setYield(float yield) {
-		this.getHandle().explosionPower = yield;
+		this.getHandle().explosionPowerBase = yield;
 	}
 
 	@Override
 	public float getYield() {
-		return this.getHandle().explosionPower;
+		return this.getHandle().explosionPowerBase;
 	}
 
 	@Override

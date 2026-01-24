@@ -3,8 +3,8 @@ package org.bukkit.craftbukkit.inventory;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import java.util.function.Supplier;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
@@ -16,20 +16,20 @@ import org.bukkit.inventory.MenuType;
 import org.bukkit.inventory.view.builder.InventoryViewBuilder;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftMenuType<V extends InventoryView, B extends InventoryViewBuilder<V>> implements MenuType.Typed<V, B>, Handleable<net.minecraft.screen.ScreenHandlerType<?>>, io.papermc.paper.world.flag.PaperFeatureDependent { // Paper - make FeatureDependant
+public class CraftMenuType<V extends InventoryView, B extends InventoryViewBuilder<V>> implements MenuType.Typed<V, B>, Handleable<net.minecraft.world.inventory.MenuType<?>>, io.papermc.paper.world.flag.PaperFeatureDependent { // Paper - make FeatureDependant
 
     private final NamespacedKey key;
-    private final net.minecraft.screen.ScreenHandlerType<?> handle;
+    private final net.minecraft.world.inventory.MenuType<?> handle;
     private final Supplier<CraftMenus.MenuTypeData<V, B>> typeData;
 
-    public CraftMenuType(NamespacedKey key, net.minecraft.screen.ScreenHandlerType<?> handle) {
+    public CraftMenuType(NamespacedKey key, net.minecraft.world.inventory.MenuType<?> handle) {
         this.key = key;
         this.handle = handle;
         this.typeData = Suppliers.memoize(() -> CraftMenus.getMenuTypeData(this));
     }
 
     @Override
-    public net.minecraft.screen.ScreenHandlerType<?> getHandle() {
+    public net.minecraft.world.inventory.MenuType<?> getHandle() {
         return this.handle;
     }
 
@@ -73,15 +73,15 @@ public class CraftMenuType<V extends InventoryView, B extends InventoryViewBuild
         return this.key;
     }
 
-    public static net.minecraft.screen.ScreenHandlerType<?> bukkitToMinecraft(MenuType bukkit) {
+    public static net.minecraft.world.inventory.MenuType<?> bukkitToMinecraft(MenuType bukkit) {
         return CraftRegistry.bukkitToMinecraft(bukkit);
     }
 
-    public static MenuType minecraftToBukkit(net.minecraft.screen.ScreenHandlerType<?> minecraft) {
-        return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.SCREEN_HANDLER);
+    public static MenuType minecraftToBukkit(net.minecraft.world.inventory.MenuType<?> minecraft) {
+        return CraftRegistry.minecraftToBukkit(minecraft, Registries.MENU);
     }
 
-    public static MenuType minecraftHolderToBukkit(RegistryEntry<net.minecraft.screen.ScreenHandlerType<?>> minecraft) {
+    public static MenuType minecraftHolderToBukkit(Holder<net.minecraft.world.inventory.MenuType<?>> minecraft) {
         return CraftMenuType.minecraftToBukkit(minecraft.value());
     }
 }

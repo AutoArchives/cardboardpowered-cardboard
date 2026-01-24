@@ -2,17 +2,15 @@ package org.bukkit.craftbukkit.advancement;
 
 import io.papermc.paper.advancement.AdvancementDisplay;
 import io.papermc.paper.adventure.PaperAdventure;
-import net.minecraft.advancement.AdvancementEntry;
-import net.minecraft.advancement.PlacedAdvancement;
-import net.minecraft.server.ServerAdvancementLoader;
-import net.minecraft.text.Text;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 
 import net.kyori.adventure.text.Component;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.AdvancementNode;
+import net.minecraft.server.ServerAdvancementManager;
 import org.bukkit.NamespacedKey;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementRequirements;
@@ -33,17 +31,17 @@ public class CraftAdvancement implements org.bukkit.advancement.Advancement {
 	/**
 	 * Convenience method 
 	 */
-	private static ServerAdvancementLoader cardboard$getAdvancements() {
-		return CraftServer.server.getAdvancementLoader();
+	private static ServerAdvancementManager cardboard$getAdvancements() {
+		return CraftServer.server.getAdvancements();
 	}
 	
-    private final AdvancementEntry handle;
+    private final AdvancementHolder handle;
 
-    public CraftAdvancement(AdvancementEntry handle) {
+    public CraftAdvancement(AdvancementHolder handle) {
         this.handle = handle;
     }
 
-    public AdvancementEntry getHandle() {
+    public AdvancementHolder getHandle() {
         return handle;
     }
 
@@ -60,10 +58,10 @@ public class CraftAdvancement implements org.bukkit.advancement.Advancement {
     @Override
     public @NotNull @Unmodifiable Collection<org.bukkit.advancement.Advancement> getChildren() {
     	ImmutableList.Builder<Advancement> children = ImmutableList.builder();
-    	PlacedAdvancement advancementNode = cardboard$getAdvancements().getManager().get(this.handle);
+    	AdvancementNode advancementNode = cardboard$getAdvancements().tree().get(this.handle);
     	if (advancementNode != null) {
-    		for (PlacedAdvancement child : advancementNode.getChildren()) {
-    			AdvancementEntry entry = child.getAdvancementEntry();
+    		for (AdvancementNode child : advancementNode.children()) {
+    			AdvancementHolder entry = child.holder();
     			Advancement cardboard = ((IMixinAdvancement) (Object) entry).toBukkit();
     			children.add(cardboard);
     		}
@@ -80,7 +78,7 @@ public class CraftAdvancement implements org.bukkit.advancement.Advancement {
 
     @Override
     public org.bukkit.advancement.@Nullable Advancement getParent() {
-    	Optional<AdvancementEntry> entry = this.handle.value().parent().map(cardboard$getAdvancements()::get);
+    	Optional<AdvancementHolder> entry = this.handle.value().parent().map(cardboard$getAdvancements()::get);
     	if (entry.isEmpty()) {
     		return null;
     	}
@@ -90,18 +88,18 @@ public class CraftAdvancement implements org.bukkit.advancement.Advancement {
     @Override
     public org.bukkit.advancement.@NotNull Advancement getRoot() {
 
-    	PlacedAdvancement node = cardboard$getAdvancements().getManager().get(this.handle);
+    	AdvancementNode node = cardboard$getAdvancements().tree().get(this.handle);
     	
     	Objects.requireNonNull(node, "Could not find Advancement node! " + this.handle.id());
     	
-    	AdvancementEntry entry = node.getRoot().getAdvancementEntry();
+    	AdvancementHolder entry = node.root().holder();
     	Advancement cardboard = ((IMixinAdvancement) (Object) entry).toBukkit();
         return cardboard;
     }
 
 	@Override
 	public @NotNull Component displayName() {
-		Text name = net.minecraft.advancement.Advancement.getNameFromIdentity(this.handle);
+		net.minecraft.network.chat.Component name = net.minecraft.advancements.Advancement.name(this.handle);
 		Component paperName = PaperAdventure.asAdventure(name);
 		
 		return paperName;

@@ -1,8 +1,8 @@
 package org.cardboardpowered.impl.entity;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.entity.decoration.AbstractDecorationEntity;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.decoration.HangingEntity;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.CraftBlock;
@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class CardboardHanging extends CraftEntity implements Hanging {
 
-    public CardboardHanging(CraftServer server, AbstractDecorationEntity entity) {
+    public CardboardHanging(CraftServer server, HangingEntity entity) {
         super(entity);
     }
 
@@ -29,25 +29,25 @@ public class CardboardHanging extends CraftEntity implements Hanging {
 
     @Override
     public boolean setFacingDirection(BlockFace face, boolean force) {
-        AbstractDecorationEntity hanging = getHandle();
-        Direction dir = hanging.getHorizontalFacing();
+        HangingEntity hanging = getHandle();
+        Direction dir = hanging.getDirection();
         switch (face) {
             case SOUTH:
             default:
-                getHandle().setFacing(Direction.SOUTH);
+                getHandle().setDirection(Direction.SOUTH);
                 break;
             case WEST:
-                getHandle().setFacing(Direction.WEST);
+                getHandle().setDirection(Direction.WEST);
                 break;
             case NORTH:
-                getHandle().setFacing(Direction.NORTH);
+                getHandle().setDirection(Direction.NORTH);
                 break;
             case EAST:
-                getHandle().setFacing(Direction.EAST);
+                getHandle().setDirection(Direction.EAST);
                 break;
         }
-        if (!force && !hanging.canStayAttached()) {
-            hanging.setFacing(dir); // Revert since it doesn't fit
+        if (!force && !hanging.survives()) {
+            hanging.setDirection(dir); // Revert since it doesn't fit
             return false;
         }
         return true;
@@ -55,14 +55,14 @@ public class CardboardHanging extends CraftEntity implements Hanging {
 
     @Override
     public BlockFace getFacing() {
-        Direction direction = this.getHandle().getHorizontalFacing();
+        Direction direction = this.getHandle().getDirection();
         if (direction == null) return BlockFace.SELF;
         return CraftBlock.notchToBlockFace(direction);
     }
 
     @Override
-    public AbstractDecorationEntity getHandle() {
-        return (AbstractDecorationEntity) nms;
+    public HangingEntity getHandle() {
+        return (HangingEntity) nms;
     }
 
     @Override

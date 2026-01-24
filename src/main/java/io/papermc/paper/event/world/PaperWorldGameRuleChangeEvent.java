@@ -16,7 +16,7 @@ public class PaperWorldGameRuleChangeEvent extends WorldGameRuleChangeEvent {
 
    public void setValue(String value) {
 	   CraftGameRule craftRule = (CraftGameRule) this.gameRule;
-	   net.minecraft.world.rule.GameRule<?> handle = (net.minecraft.world.rule.GameRule) craftRule.getHandle();
+	   net.minecraft.world.level.gamerules.GameRule<?> handle = (net.minecraft.world.level.gamerules.GameRule) craftRule.getHandle();
 
 	   handle.deserialize(value).ifError(error -> {
 		   throw new IllegalArgumentException("Invalid value: %s (%s)".formatted(value, error.message()));

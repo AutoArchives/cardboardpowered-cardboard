@@ -1,19 +1,19 @@
 package io.papermc.paper.registry;
 
 import io.papermc.paper.util.Holderable;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
 import org.bukkit.NamespacedKey;
 
 public abstract class HolderableBase<M> implements Holderable<M> {
 
-    protected final RegistryEntry<M> holder;
+    protected final Holder<M> holder;
 
-    protected HolderableBase(RegistryEntry<M> holder) {
+    protected HolderableBase(Holder<M> holder) {
         this.holder = holder;
     }
 
     @Override
-    public final RegistryEntry<M> getHolder() {
+    public final Holder<M> getHolder() {
         return this.holder;
     }
 

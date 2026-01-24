@@ -9,19 +9,19 @@ public final class CraftChorusFruit extends org.bukkit.craftbukkit.block.data.Cr
         super();
     }
 
-    public CraftChorusFruit(net.minecraft.block.BlockState state) {
+    public CraftChorusFruit(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftMultipleFacing
 
-    private static final net.minecraft.state.property.BooleanProperty[] FACES = new net.minecraft.state.property.BooleanProperty[]{
-        getBoolean(net.minecraft.block.ChorusPlantBlock.class, "north", true), getBoolean(net.minecraft.block.ChorusPlantBlock.class, "east", true), getBoolean(net.minecraft.block.ChorusPlantBlock.class, "south", true), getBoolean(net.minecraft.block.ChorusPlantBlock.class, "west", true), getBoolean(net.minecraft.block.ChorusPlantBlock.class, "up", true), getBoolean(net.minecraft.block.ChorusPlantBlock.class, "down", true)
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty[] FACES = new net.minecraft.world.level.block.state.properties.BooleanProperty[]{
+        getBoolean(net.minecraft.world.level.block.ChorusPlantBlock.class, "north", true), getBoolean(net.minecraft.world.level.block.ChorusPlantBlock.class, "east", true), getBoolean(net.minecraft.world.level.block.ChorusPlantBlock.class, "south", true), getBoolean(net.minecraft.world.level.block.ChorusPlantBlock.class, "west", true), getBoolean(net.minecraft.world.level.block.ChorusPlantBlock.class, "up", true), getBoolean(net.minecraft.world.level.block.ChorusPlantBlock.class, "down", true)
     };
 
     @Override
     public boolean hasFace(org.bukkit.block.BlockFace face) {
-        net.minecraft.state.property.BooleanProperty state = FACES[face.ordinal()];
+        net.minecraft.world.level.block.state.properties.BooleanProperty state = FACES[face.ordinal()];
         if (state == null) {
             throw new IllegalArgumentException("Non-allowed face " + face + ". Check MultipleFacing.getAllowedFaces.");
         }
@@ -30,7 +30,7 @@ public final class CraftChorusFruit extends org.bukkit.craftbukkit.block.data.Cr
 
     @Override
     public void setFace(org.bukkit.block.BlockFace face, boolean has) {
-        net.minecraft.state.property.BooleanProperty state = FACES[face.ordinal()];
+        net.minecraft.world.level.block.state.properties.BooleanProperty state = FACES[face.ordinal()];
         if (state == null) {
             throw new IllegalArgumentException("Non-allowed face " + face + ". Check MultipleFacing.getAllowedFaces.");
         }

@@ -5,9 +5,9 @@ import org.cardboardpowered.interfaces.IMixinScreenHandler;
 
 import io.papermc.paper.adventure.PaperAdventure;
 import net.kyori.adventure.text.Component;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.InventoryView;
@@ -16,12 +16,12 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 public abstract class CraftAbstractInventoryViewBuilder<V extends InventoryView> implements InventoryViewBuilder<V> {
 
-    protected final ScreenHandlerType<?> handle;
+    protected final MenuType<?> handle;
 
     protected boolean checkReachable = false;
     protected @MonotonicNonNull Component title = null;
 
-    public CraftAbstractInventoryViewBuilder(final ScreenHandlerType<?> handle) {
+    public CraftAbstractInventoryViewBuilder(final MenuType<?> handle) {
         this.handle = handle;
     }
 
@@ -38,9 +38,9 @@ public abstract class CraftAbstractInventoryViewBuilder<V extends InventoryView>
         Preconditions.checkArgument(this.title != null, "The given title must not be null");
         Preconditions.checkArgument(player instanceof CraftHumanEntity, "The given player must be a CraftHumanEntity");
         final CraftHumanEntity craftHuman = (CraftHumanEntity) player;
-        Preconditions.checkArgument(craftHuman.getHandle() instanceof ServerPlayerEntity, "The given player must be an EntityPlayer");
-        final ServerPlayerEntity serverPlayer = (ServerPlayerEntity) craftHuman.getHandle();
-        final ScreenHandler container = buildContainer(serverPlayer);
+        Preconditions.checkArgument(craftHuman.getHandle() instanceof ServerPlayer, "The given player must be an EntityPlayer");
+        final ServerPlayer serverPlayer = (ServerPlayer) craftHuman.getHandle();
+        final AbstractContainerMenu container = buildContainer(serverPlayer);
         
         
         IMixinScreenHandler sh = (IMixinScreenHandler) container;
@@ -53,5 +53,5 @@ public abstract class CraftAbstractInventoryViewBuilder<V extends InventoryView>
         return (V) ((IMixinScreenHandler)container).getBukkitView();
     }
 
-    protected abstract ScreenHandler buildContainer(ServerPlayerEntity player);
+    protected abstract AbstractContainerMenu buildContainer(ServerPlayer player);
 }

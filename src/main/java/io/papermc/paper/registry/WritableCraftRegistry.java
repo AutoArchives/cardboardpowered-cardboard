@@ -6,21 +6,21 @@ import io.papermc.paper.registry.entry.RegistryEntryMeta;
 import io.papermc.paper.registry.event.WritableRegistry;
 import java.util.Optional;
 import java.util.function.Consumer;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntryInfo;
+import net.minecraft.core.RegistrationInfo;
+import net.minecraft.resources.ResourceKey;
 import org.bukkit.Keyed;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.cardboardpowered.interfaces.ISimpleRegistry;
 
 public class WritableCraftRegistry<M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> extends CraftRegistry<T, M> {
 
-    private static final RegistryEntryInfo FROM_PLUGIN = new RegistryEntryInfo(Optional.empty(), Lifecycle.experimental());
+    private static final RegistrationInfo FROM_PLUGIN = new RegistrationInfo(Optional.empty(), Lifecycle.experimental());
 
     private final RegistryEntryMeta.Buildable<M, T, B> meta;
-    private final net.minecraft.registry.SimpleRegistry<M> registry;
+    private final net.minecraft.core.MappedRegistry<M> registry;
 
     public WritableCraftRegistry(
-        final net.minecraft.registry.SimpleRegistry<M> registry,
+        final net.minecraft.core.MappedRegistry<M> registry,
         final RegistryEntryMeta.Buildable<M, T, B> meta
     ) {
         super(meta, registry);
@@ -29,12 +29,12 @@ public class WritableCraftRegistry<M, T extends Keyed, B extends PaperRegistryBu
     }
 
     public void register(final TypedKey<T> key, final Consumer<RegistryBuilderFactory<T, B>> value, final Conversions conversions) {
-        final RegistryKey<M> resourceKey = PaperRegistries.toNms(key);
-        this.registry.assertNotFrozen(resourceKey);
+        final ResourceKey<M> resourceKey = PaperRegistries.toNms(key);
+        this.registry.validateWrite(resourceKey);
         
         ISimpleRegistry<M> cbr = (ISimpleRegistry<M>) this.registry;
         
-        final PaperRegistryBuilderFactory<M, T, B> builderFactory = new PaperRegistryBuilderFactory<M, T, B>(this.registry.getKey(), conversions, this.meta.builderFiller(), cbr::getValueForCopying); // new PaperRegistryBuilderFactory<M, T, B>(conversions, this.meta.builderFiller(), cbr.cb$temporaryUnfrozenMap()::get);
+        final PaperRegistryBuilderFactory<M, T, B> builderFactory = new PaperRegistryBuilderFactory<M, T, B>(this.registry.key(), conversions, this.meta.builderFiller(), cbr::getValueForCopying); // new PaperRegistryBuilderFactory<M, T, B>(conversions, this.meta.builderFiller(), cbr.cb$temporaryUnfrozenMap()::get);
         value.accept(builderFactory);
         PaperRegistryListenerManager.INSTANCE.registerWithListeners(
             this.registry,

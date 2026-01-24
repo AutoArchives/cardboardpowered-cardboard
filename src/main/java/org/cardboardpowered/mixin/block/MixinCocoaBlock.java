@@ -1,10 +1,10 @@
 package org.cardboardpowered.mixin.block;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.CocoaBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.CocoaBlock;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,18 +15,14 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class MixinCocoaBlock {
 
     @Redirect (method = "randomTick", at = @At (value = "INVOKE",
-            target = "Lnet/minecraft/server/world/ServerWorld;setBlockState" +
-                    "(Lnet/minecraft/util/math/BlockPos;" +
-                    "Lnet/minecraft/block/BlockState;I)Z"))
-    private boolean bukkit_grow0(ServerWorld world, BlockPos pos, BlockState state, int flags) {
+            target = "Lnet/minecraft/server/level/ServerLevel;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z"))
+    private boolean bukkit_grow0(ServerLevel world, BlockPos pos, BlockState state, int flags) {
         return CraftEventFactory.handleBlockGrowEvent(world, pos, state, flags);
     }
 
-    @Redirect (method = "grow", at = @At (value = "INVOKE",
-            target = "Lnet/minecraft/server/world/ServerWorld;setBlockState" +
-                    "(Lnet/minecraft/util/math/BlockPos;" +
-                    "Lnet/minecraft/block/BlockState;I)Z"))
-    private boolean bukkit_grow1(ServerWorld world, BlockPos pos, BlockState state, int flags) {
+    @Redirect (method = "performBonemeal", at = @At (value = "INVOKE",
+            target = "Lnet/minecraft/server/level/ServerLevel;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z"))
+    private boolean bukkit_grow1(ServerLevel world, BlockPos pos, BlockState state, int flags) {
         return CraftEventFactory.handleBlockGrowEvent(world, pos, state, flags);
     }
 }

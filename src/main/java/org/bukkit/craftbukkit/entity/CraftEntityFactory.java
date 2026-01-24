@@ -3,15 +3,13 @@ package org.bukkit.craftbukkit.entity;
 import com.google.common.base.Preconditions;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
-
-import net.minecraft.entity.EntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.storage.NbtReadView;
-import net.minecraft.storage.ReadView;
-import net.minecraft.util.ErrorReporter;
-
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.ValueInput;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityFactory;
 import org.bukkit.entity.EntitySnapshot;
@@ -26,17 +24,17 @@ public class CraftEntityFactory implements EntityFactory {
     }
 
     public EntitySnapshot createEntitySnapshot(String input) {
-        NbtCompound tag;
+        CompoundTag tag;
         Preconditions.checkArgument(input != null, "Input string cannot be null");
         try {
-            tag = StringNbtReader.readCompound(input);
+            tag = TagParser.parseCompoundFully(input);
         }  catch (CommandSyntaxException e2) {
             throw new IllegalArgumentException("Could not parse Entity: " + input, e2);
         }
         
         EntityType<?> type;
-        try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "createEntitySnapshot", LOGGER);){
-            type = EntityType.fromData(NbtReadView_createGlobal(problemReporter, tag)).orElse(null);
+        try (ProblemReporter.ScopedCollector problemReporter = new ProblemReporter.ScopedCollector(() -> "createEntitySnapshot", LOGGER);){
+            type = EntityType.by(NbtReadView_createGlobal(problemReporter, tag)).orElse(null);
         }
 
         if (type == null) {
@@ -50,8 +48,8 @@ public class CraftEntityFactory implements EntityFactory {
     }
     
     // TODO: Move to NbtReadView
-    public static ReadView NbtReadView_createGlobal(ErrorReporter problemReporter, NbtCompound compoundTag) {
-        return NbtReadView.create(problemReporter, CraftServer.server.getRegistryManager(), compoundTag);
+    public static ValueInput NbtReadView_createGlobal(ProblemReporter problemReporter, CompoundTag compoundTag) {
+        return TagValueInput.create(problemReporter, CraftServer.server.registryAccess(), compoundTag);
     }
 
 }

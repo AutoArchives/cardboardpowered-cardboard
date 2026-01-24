@@ -1,12 +1,12 @@
 package io.papermc.paper.datacomponent.item.attribute;
 
-import net.minecraft.component.type.AttributeModifiersComponent;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 
-public record PaperDefaultDisplay(AttributeModifiersComponent.Display.Default impl) implements AttributeModifierDisplay.Default,
-PaperAttributeModifierDisplay<AttributeModifiersComponent.Display.Default>
+public record PaperDefaultDisplay(ItemAttributeModifiers.Display.Default impl) implements AttributeModifierDisplay.Default,
+PaperAttributeModifierDisplay<ItemAttributeModifiers.Display.Default>
 {
     @Override
-    public AttributeModifiersComponent.Display.Default getHandle() {
+    public ItemAttributeModifiers.Display.Default getHandle() {
         return this.impl;
     }
 }

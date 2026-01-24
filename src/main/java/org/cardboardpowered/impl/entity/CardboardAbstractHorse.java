@@ -1,7 +1,9 @@
 package org.cardboardpowered.impl.entity;
 
 import java.util.UUID;
-
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.AbstractHorse;
@@ -11,22 +13,17 @@ import org.bukkit.inventory.AbstractHorseInventory;
 import org.cardboardpowered.impl.inventory.CardboardInventoryAbstractHorse;
 import org.cardboardpowered.interfaces.IHorseBaseEntity;
 
-import net.minecraft.entity.LazyEntityReference;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.passive.AbstractHorseEntity;
-
 public abstract class CardboardAbstractHorse
 extends CraftAnimals
 implements AbstractHorse {
 
-    public CardboardAbstractHorse(CraftServer server, AbstractHorseEntity  entity) {
+    public CardboardAbstractHorse(CraftServer server, net.minecraft.world.entity.animal.equine.AbstractHorse  entity) {
         super(server, entity);
     }
 
     @Override
-    public AbstractHorseEntity getHandle() {
-        return (AbstractHorseEntity)this.nms;
+    public net.minecraft.world.entity.animal.equine.AbstractHorse getHandle() {
+        return (net.minecraft.world.entity.animal.equine.AbstractHorse)this.nms;
     }
 
     @Override
@@ -60,7 +57,7 @@ implements AbstractHorse {
     @Override
     public double getJumpStrength() {
         // \return this.getHandle().getJumpStrength();
-    	return this.getHandle().getAttributeValue(EntityAttributes.JUMP_STRENGTH);
+    	return this.getHandle().getAttributeValue(Attributes.JUMP_STRENGTH);
     }
 
     @Override
@@ -71,17 +68,17 @@ implements AbstractHorse {
         // <=1.20.4: HORSE_JUMP_STRENGTH
         // >=1.20.5: GENERIC_JUMP_STRENGTH
         
-        this.getHandle().getAttributeInstance(EntityAttributes.JUMP_STRENGTH).setBaseValue(strength);
+        this.getHandle().getAttribute(Attributes.JUMP_STRENGTH).setBaseValue(strength);
     }
 
     @Override
     public boolean isTamed() {
-        return this.getHandle().isTame();
+        return this.getHandle().isTamed();
     }
 
     @Override
     public void setTamed(boolean tamed) {
-        this.getHandle().setTame(tamed);
+        this.getHandle().setTamed(tamed);
     }
 
     @Override
@@ -105,13 +102,13 @@ implements AbstractHorse {
     }
 
     public UUID getOwnerUUID() {
-    	LazyEntityReference<LivingEntity> owner = this.getHandle().getOwnerReference();
-        return owner != null ? owner.getUuid() : null;
+    	EntityReference<LivingEntity> owner = this.getHandle().getOwnerReference();
+        return owner != null ? owner.getUUID() : null;
     }
 
     public void setOwnerUUID(UUID uuid) {
         // this.getHandle().setOwnerUuid(uuid);
-        this.getHandle().ownerReference = uuid != null ? new LazyEntityReference(uuid) : null;
+        this.getHandle().owner = uuid != null ? new EntityReference(uuid) : null;
     }
 
     @Override

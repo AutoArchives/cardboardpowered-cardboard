@@ -1,21 +1,17 @@
 package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.Identifier;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.Sound;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
 
 import io.papermc.paper.util.OldEnumHolderable;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.sound.SoundEvent;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvent;
 import org.bukkit.Sound;
 
 public class CraftSound extends OldEnumHolderable<Sound, SoundEvent> implements Sound {
@@ -23,18 +19,18 @@ public class CraftSound extends OldEnumHolderable<Sound, SoundEvent> implements 
     private static int count = 0;
 
     public static Sound minecraftToBukkit(SoundEvent minecraft) {
-        return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.SOUND_EVENT);
+        return CraftRegistry.minecraftToBukkit(minecraft, Registries.SOUND_EVENT);
     }
 
     public static SoundEvent bukkitToMinecraft(Sound bukkit) {
         return CraftRegistry.bukkitToMinecraft(bukkit);
     }
 
-    public static RegistryEntry<SoundEvent> bukkitToMinecraftHolder(Sound bukkit) {
-        return CraftRegistry.bukkitToMinecraftHolder(bukkit, RegistryKeys.SOUND_EVENT);
+    public static Holder<SoundEvent> bukkitToMinecraftHolder(Sound bukkit) {
+        return CraftRegistry.bukkitToMinecraftHolder(bukkit, Registries.SOUND_EVENT);
     }
 
-    public CraftSound(RegistryEntry<SoundEvent> soundEffect) {
+    public CraftSound(Holder<SoundEvent> soundEffect) {
         super(soundEffect, count++);
     }
 
@@ -49,7 +45,7 @@ public class CraftSound extends OldEnumHolderable<Sound, SoundEvent> implements 
     }
 
 	public static SoundEvent getSoundEffect(String str) {
-		SoundEvent effect = Registries.SOUND_EVENT.get(Identifier.of(str));
+		SoundEvent effect = BuiltInRegistries.SOUND_EVENT.getValue(Identifier.parse(str));
 		return effect;
 	}
     

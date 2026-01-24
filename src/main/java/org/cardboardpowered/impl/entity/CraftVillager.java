@@ -3,7 +3,15 @@ package org.cardboardpowered.impl.entity;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.entity.npc.villager.VillagerProfession;
+import net.minecraft.world.entity.npc.villager.VillagerTrades;
+import net.minecraft.world.entity.npc.villager.VillagerType;
+import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -21,17 +29,6 @@ import com.google.common.base.Preconditions;
 
 import io.papermc.paper.util.OldEnumHolderable;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import net.minecraft.block.BedBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.util.math.BlockPos;
-
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.village.TradeOffers;
-import net.minecraft.village.VillagerProfession;
-import net.minecraft.village.VillagerType;
 
 public class CraftVillager extends CraftAbstractVillager implements Villager {
 
@@ -40,23 +37,23 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
     implements Villager.Profession {
         private static int count = 0;
 
-        public static Villager.Profession minecraftHolderToBukkit(RegistryEntry<VillagerProfession> minecraft) {
-            return (Villager.Profession)CraftRegistry.minecraftHolderToBukkit(minecraft, RegistryKeys.VILLAGER_PROFESSION);
+        public static Villager.Profession minecraftHolderToBukkit(Holder<VillagerProfession> minecraft) {
+            return (Villager.Profession)CraftRegistry.minecraftHolderToBukkit(minecraft, Registries.VILLAGER_PROFESSION);
         }
 
-        public static RegistryEntry<VillagerProfession> bukkitToMinecraftHolder(Villager.Profession bukkit) {
+        public static Holder<VillagerProfession> bukkitToMinecraftHolder(Villager.Profession bukkit) {
             return CraftRegistry.bukkitToMinecraftHolder(bukkit);
         }
 
         public static Villager.Profession minecraftToBukkit(VillagerProfession minecraft) {
-            return (Villager.Profession)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.VILLAGER_PROFESSION);
+            return (Villager.Profession)CraftRegistry.minecraftToBukkit(minecraft, Registries.VILLAGER_PROFESSION);
         }
 
         public static VillagerProfession bukkitToMinecraft(Villager.Profession bukkit) {
             return (VillagerProfession)CraftRegistry.bukkitToMinecraft(bukkit);
         }
 
-        public CraftProfession(RegistryEntry<VillagerProfession> holder) {
+        public CraftProfession(Holder<VillagerProfession> holder) {
             super(holder, count++);
         }
     }
@@ -199,33 +196,33 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         private static int count = 0;
 
         public static Villager.Type minecraftToBukkit(VillagerType minecraft) {
-            return (Villager.Type)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.VILLAGER_TYPE);
+            return (Villager.Type)CraftRegistry.minecraftToBukkit(minecraft, Registries.VILLAGER_TYPE);
         }
 
-        public static Villager.Type minecraftHolderToBukkit(RegistryEntry<VillagerType> minecraft) {
-            return (Villager.Type)CraftRegistry.minecraftHolderToBukkit(minecraft, RegistryKeys.VILLAGER_TYPE);
+        public static Villager.Type minecraftHolderToBukkit(Holder<VillagerType> minecraft) {
+            return (Villager.Type)CraftRegistry.minecraftHolderToBukkit(minecraft, Registries.VILLAGER_TYPE);
         }
 
         public static VillagerType bukkitToMinecraft(Villager.Type bukkit) {
             return (VillagerType)CraftRegistry.bukkitToMinecraft(bukkit);
         }
 
-        public static RegistryEntry<VillagerType> bukkitToMinecraftHolder(Villager.Type bukkit) {
+        public static Holder<VillagerType> bukkitToMinecraftHolder(Villager.Type bukkit) {
             return CraftRegistry.bukkitToMinecraftHolder(bukkit);
         }
 
-        public CraftType(RegistryEntry<VillagerType> holder) {
+        public CraftType(Holder<VillagerType> holder) {
             super(holder, count++);
         }
     }
 
-	public CraftVillager(CraftServer server, VillagerEntity entity) {
+	public CraftVillager(CraftServer server, net.minecraft.world.entity.npc.villager.Villager entity) {
         super(server, entity);
     }
 
     @Override
-    public VillagerEntity getHandle() {
-        return (VillagerEntity) nms;
+    public net.minecraft.world.entity.npc.villager.Villager getHandle() {
+        return (net.minecraft.world.entity.npc.villager.Villager) nms;
     }
 
     @Override
@@ -251,7 +248,7 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
 
     @Override
     public Type getVillagerType() {
-        return Type.valueOf(Registries.VILLAGER_TYPE.getId(getHandle().getVillagerData().type().value()).getPath().toUpperCase(Locale.ROOT));
+        return Type.valueOf(BuiltInRegistries.VILLAGER_TYPE.getKey(getHandle().getVillagerData().type().value()).getPath().toUpperCase(Locale.ROOT));
     }
 
     @Override
@@ -273,13 +270,13 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
 
     @Override
     public int getVillagerExperience() {
-        return getHandle().getExperience();
+        return getHandle().getVillagerXp();
     }
 
     @Override
     public void setVillagerExperience(int experience) {
         Preconditions.checkArgument(experience >= 0, "Experience must be positive");
-        getHandle().setExperience(experience);
+        getHandle().setVillagerXp(experience);
     }
 
     @Override
@@ -289,25 +286,25 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         Preconditions.checkArgument(location.getWorld().equals(getWorld()), "Cannot sleep across worlds");
 
         BlockPos position = new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-        BlockState iblockdata = getHandle().getEntityWorld().getBlockState(position);
+        BlockState iblockdata = getHandle().level().getBlockState(position);
         if (!(iblockdata.getBlock() instanceof BedBlock)) return false;
 
-        getHandle().sleep(position);
+        getHandle().startSleeping(position);
         return true;
     }
 
     @Override
     public void wakeup() {
         Preconditions.checkState(isSleeping(), "Cannot wakeup if not sleeping");
-        getHandle().wakeUp();
+        getHandle().stopSleeping();
     }
 
     public static Profession nmsToBukkitProfession(VillagerProfession nms) {
-        return Profession.valueOf(Registries.VILLAGER_PROFESSION.getId(nms).getPath().toUpperCase(Locale.ROOT));
+        return Profession.valueOf(BuiltInRegistries.VILLAGER_PROFESSION.getKey(nms).getPath().toUpperCase(Locale.ROOT));
     }
 
     public static VillagerProfession bukkitToNmsProfession(Profession bukkit) {
-        return Registries.VILLAGER_PROFESSION.get(CraftNamespacedKey.toMinecraft(bukkit.getKey()));
+        return BuiltInRegistries.VILLAGER_PROFESSION.getValue(CraftNamespacedKey.toMinecraft(bukkit.getKey()));
     }
 
     // Paper start
@@ -372,7 +369,7 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         Preconditions.checkArgument((amount > 0 ? 1 : 0) != 0, (Object)"Level earned must be positive");
         int supposedFinalLevel = this.getVillagerLevel() + amount;
         Preconditions.checkArgument((1 <= supposedFinalLevel && supposedFinalLevel <= 5 ? 1 : 0) != 0, (Object)"Final level reached after the donation (%d) must be between [%d, %d]".formatted(supposedFinalLevel, 1, 5));
-        Int2ObjectMap<TradeOffers.Factory[]> trades = TradeOffers.PROFESSION_TO_LEVELED_TRADE.get(this.getHandle().getVillagerData().profession());
+        Int2ObjectMap<VillagerTrades.ItemListing[]> trades = VillagerTrades.TRADES.get(this.getHandle().getVillagerData().profession());
         if (trades == null || trades.isEmpty()) {
             this.getHandle().setVillagerData(this.getHandle().getVillagerData().withLevel(supposedFinalLevel));
             return false;

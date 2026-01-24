@@ -6,13 +6,11 @@ import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinPersistentProjectileEntity;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.item.Items;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.world.BlockCollisionSpliterator;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.BlockCollisions;
+import net.minecraft.world.phys.AABB;
 import java.util.List;
 
 import org.apache.commons.lang.Validate;
@@ -36,7 +34,7 @@ import org.jetbrains.annotations.Unmodifiable;
 
 public class CraftAbstractArrow extends AbstractProjectile implements AbstractArrow {
 
-    public CraftAbstractArrow(CraftServer server, PersistentProjectileEntity entity) {
+    public CraftAbstractArrow(CraftServer server, net.minecraft.world.entity.projectile.arrow.AbstractArrow entity) {
         super(server, entity);
     }
 
@@ -55,13 +53,13 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
 
     @Override
     public double getDamage() {
-        return getHandle().damage;
+        return getHandle().baseDamage;
     }
 
     @Override
     public void setDamage(double damage) {
         Preconditions.checkArgument(damage >= 0, "Damage must be positive");
-        getHandle().setDamage(damage);
+        getHandle().setBaseDamage(damage);
     }
 
     @Override
@@ -78,12 +76,12 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
 
     @Override
     public boolean isCritical() {
-        return getHandle().isCritical();
+        return getHandle().isCritArrow();
     }
 
     @Override
     public void setCritical(boolean critical) {
-        getHandle().setCritical(critical);
+        getHandle().setCritArrow(critical);
     }
 
     @Override
@@ -110,19 +108,19 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
     public Block getAttachedBlock() {
         if (!isInBlock()) return null;
 
-        BlockPos pos = getHandle().getBlockPos();
+        BlockPos pos = getHandle().blockPosition();
         return getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
     }
 
     @Override
     public PickupStatus getPickupStatus() {
-        return PickupStatus.values()[getHandle().pickupType.ordinal()];
+        return PickupStatus.values()[getHandle().pickup.ordinal()];
     }
 
     @Override
     public void setPickupStatus(PickupStatus status) {
         Preconditions.checkNotNull(status, "status");
-        getHandle().pickupType = PersistentProjectileEntity.PickupPermission.fromOrdinal(status.ordinal());
+        getHandle().pickup = net.minecraft.world.entity.projectile.arrow.AbstractArrow.Pickup.byOrdinal(status.ordinal());
     }
 
     @Override
@@ -135,8 +133,8 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
 
     @Override
     public boolean isShotFromCrossbow() {
-        net.minecraft.item.ItemStack firedFromWeapon = this.getHandle().getWeaponStack();
-        return firedFromWeapon != null && firedFromWeapon.isOf(Items.CROSSBOW);
+        net.minecraft.world.item.ItemStack firedFromWeapon = this.getHandle().getWeaponItem();
+        return firedFromWeapon != null && firedFromWeapon.is(Items.CROSSBOW);
     }
 
     @Override
@@ -146,8 +144,8 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
     }
 
     @Override
-    public PersistentProjectileEntity getHandle() {
-        return (PersistentProjectileEntity) nms;
+    public net.minecraft.world.entity.projectile.arrow.AbstractArrow getHandle() {
+        return (net.minecraft.world.entity.projectile.arrow.AbstractArrow) nms;
     }
 
     @Override
@@ -217,12 +215,12 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
 
 	@Override
 	public boolean hasNoPhysics() {
-		return this.getHandle().isNoClip();
+		return this.getHandle().isNoPhysics();
 	}
 
 	@Override
 	public void setNoPhysics(boolean arg0) {
-		this.getHandle().setNoClip(arg0);
+		this.getHandle().setNoPhysics(arg0);
 	}
 
 	@Override
@@ -253,7 +251,7 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
 
 	@Override
 	public ItemStack getItem() {
-        return CraftItemStack.asBukkitCopy(this.getHandle().getItemStack());
+        return CraftItemStack.asBukkitCopy(this.getHandle().getPickupItemStackOrigin());
 	}
 
 	@Override
@@ -270,15 +268,15 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
 
 	@Override
 	public ItemStack getWeapon() {
-		if (this.getHandle().getWeaponStack() == null) {
+		if (this.getHandle().getWeaponItem() == null) {
 			return null;
 		}
-		return CraftItemStack.asBukkitCopy(this.getHandle().getWeaponStack());
+		return CraftItemStack.asBukkitCopy(this.getHandle().getWeaponItem());
 	}
 
 	@Override
 	public void setWeapon(@NotNull ItemStack item) {
-		this.getHandle().weapon = CraftItemStack.asNMSCopy(item);
+		this.getHandle().firedFromWeapon = CraftItemStack.asNMSCopy(item);
 	}
 
 	@Override
@@ -299,10 +297,10 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
         }
 
         return ImmutableList.copyOf(
-        		new BlockCollisionSpliterator<>(
-        				this.getHandle().getEntityWorld(), (net.minecraft.entity.Entity) null,
-        				new Box(this.getHandle().getEntityPos(), this.getHandle().getEntityPos()).expand(0.06), false,
-        				(mutableBlockPos, voxelShape) -> CraftBlock.at((ServerWorld) this.getHandle().getEntityWorld(), (BlockPos) mutableBlockPos)
+        		new BlockCollisions<>(
+        				this.getHandle().level(), (net.minecraft.world.entity.Entity) null,
+        				new AABB(this.getHandle().position(), this.getHandle().position()).inflate(0.06), false,
+        				(mutableBlockPos, voxelShape) -> CraftBlock.at((ServerLevel) this.getHandle().level(), (BlockPos) mutableBlockPos)
         		)
         );
 		

@@ -2,7 +2,7 @@ package com.destroystokyo.paper;
 
 import com.google.common.base.Objects;
 import java.util.StringJoiner;
-import net.minecraft.entity.player.PlayerModelPart;
+import net.minecraft.world.entity.player.PlayerModelPart;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -15,14 +15,14 @@ public final class PaperSkinParts implements SkinParts {
 	}
 
 	private static boolean isPartShown(int raw, PlayerModelPart part) {
-		return ((byte) raw & part.getBitFlag()) == part.getBitFlag();
+		return ((byte) raw & part.getMask()) == part.getMask();
 	}
 
 	private static int setPartShown(int raw, PlayerModelPart part, boolean shown) {
 		if (shown) {
-			raw |= part.getBitFlag();
+			raw |= part.getMask();
 		} else {
-			raw &= ~part.getBitFlag();
+			raw &= ~part.getMask();
 		}
 
 		return raw;

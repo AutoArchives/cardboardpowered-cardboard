@@ -2,7 +2,9 @@ package org.cardboardpowered.mixin.inventory;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import net.minecraft.world.CompoundContainer;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.entity.HumanEntity;
@@ -12,42 +14,38 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import org.cardboardpowered.interfaces.IMixinInventory;
 
-import net.minecraft.inventory.DoubleInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-
-@Mixin(DoubleInventory.class)
+@Mixin(CompoundContainer.class)
 public class MixinDoubleInventory implements IMixinInventory {
 
-    @Shadow public Inventory first;
-    @Shadow public Inventory second;
+    @Shadow public Container container1;
+    @Shadow public Container container2;
 
     public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
 
     @Override
     public List<ItemStack> getContents() {
-        List<ItemStack> result = new ArrayList<ItemStack>(this.first.size() + this.second.size());
-        for (int i = 0; i < (this.first.size() + this.second.size()); i++)
-            result.add(this.getStack(i));
+        List<ItemStack> result = new ArrayList<ItemStack>(this.container1.getContainerSize() + this.container2.getContainerSize());
+        for (int i = 0; i < (this.container1.getContainerSize() + this.container2.getContainerSize()); i++)
+            result.add(this.getItem(i));
         return result;
     }
 
     @Shadow
-    public ItemStack getStack(int i) {
+    public ItemStack getItem(int i) {
         return null;
     }
 
     @Override
     public void onOpen(CraftHumanEntity who) {
-        this.first.onOpen(who.getHandle());
-        this.second.onOpen(who.getHandle());
+        this.container1.startOpen(who.getHandle());
+        this.container2.startOpen(who.getHandle());
         transaction.add(who);
     }
 
     @Override
     public void onClose(CraftHumanEntity who) {
-        this.first.onClose(who.getHandle());
-        this.second.onClose(who.getHandle());
+        this.container1.stopOpen(who.getHandle());
+        this.container2.stopOpen(who.getHandle());
         transaction.remove(who);
     }
 
@@ -62,18 +60,18 @@ public class MixinDoubleInventory implements IMixinInventory {
     }
 
     @Override
-    public void setMaxStackSize(int size) {
-        ((IMixinInventory)this.first).setMaxStackSize(size);
-        ((IMixinInventory)this.second).setMaxStackSize(size);
+    public void setCardboardMaxStackSize(int size) {
+        ((IMixinInventory)this.container1).setCardboardMaxStackSize(size);
+        ((IMixinInventory)this.container2).setCardboardMaxStackSize(size);
     }
 
     @Override
     public Location getLocation() {
-        return ((IMixinInventory)this.first).getLocation();
+        return ((IMixinInventory)this.container1).getLocation();
     }
 
     @Override
-    public int getMaxStackSize() {
+    public int getCardboardMaxStackSize() {
         return MAX_STACK;
     }
 

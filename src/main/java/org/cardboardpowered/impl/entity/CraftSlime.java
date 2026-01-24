@@ -1,6 +1,5 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.mob.SlimeEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Slime;
@@ -8,7 +7,7 @@ import org.cardboardpowered.interfaces.ISlimeEntity;
 
 public class CraftSlime extends CraftMob implements Slime {
 
-    public CraftSlime(CraftServer server, SlimeEntity entity) {
+    public CraftSlime(CraftServer server, net.minecraft.world.entity.monster.Slime entity) {
         super(server, entity);
     }
 
@@ -23,8 +22,8 @@ public class CraftSlime extends CraftMob implements Slime {
     }
 
     @Override
-    public SlimeEntity getHandle() {
-        return (SlimeEntity) nms;
+    public net.minecraft.world.entity.monster.Slime getHandle() {
+        return (net.minecraft.world.entity.monster.Slime) nms;
     }
 
     @Override

@@ -2,7 +2,7 @@ package org.cardboardpowered.mixin.network;
 
 import java.net.InetAddress;
 import java.util.List;
-
+import net.minecraft.server.network.ServerConnectionListener;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -13,9 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.cardboardpowered.interfaces.INetworkIo;
 
 import io.netty.channel.ChannelFuture;
-import net.minecraft.server.ServerNetworkIo;
 
-@Mixin(ServerNetworkIo.class)
+@Mixin(ServerConnectionListener.class)
 public class MixinServerNetworkIo implements INetworkIo {
 
     @Shadow
@@ -30,7 +29,7 @@ public class MixinServerNetworkIo implements INetworkIo {
         }
     }
 
-    @Inject(at = @At("TAIL"), method = "bind")
+    @Inject(at = @At("TAIL"), method = "startTcpServerListener")
     public void cardboard_setAutoreadFalse(InetAddress ina, int i, CallbackInfo ci) {
         synchronized (channels) {
             for (ChannelFuture future : channels)

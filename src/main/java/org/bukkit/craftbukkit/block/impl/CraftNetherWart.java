@@ -9,13 +9,13 @@ public final class CraftNetherWart extends org.bukkit.craftbukkit.block.data.Cra
         super();
     }
 
-    public CraftNetherWart(net.minecraft.block.BlockState state) {
+    public CraftNetherWart(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftAgeable
 
-    private static final net.minecraft.state.property.IntProperty AGE = getInteger(net.minecraft.block.NetherWartBlock.class, "age");
+    private static final net.minecraft.world.level.block.state.properties.IntegerProperty AGE = getInteger(net.minecraft.world.level.block.NetherWartBlock.class, "age");
 
     @Override
     public int getAge() {

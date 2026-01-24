@@ -3,12 +3,9 @@ package org.cardboardpowered.impl.tag;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.block.Block;
-//import net.minecraft.tag.TagGroup;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
-import net.minecraft.registry.Registry;
-
+import net.minecraft.core.Registry;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.block.Block;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 
@@ -48,7 +45,7 @@ public class CraftBlockTag extends CraftTag<Block, Material> {
         if (block == null) {
             return false;
         }
-        return block.getRegistryEntry().isIn(this.tag);
+        return block.builtInRegistryHolder().is(this.tag);
     }
 
     public Set<Material> getValues() {

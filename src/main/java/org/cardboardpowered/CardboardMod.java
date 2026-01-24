@@ -56,19 +56,19 @@ import me.isaiah.common.event.server.ServerWorldInitEvent;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
-import net.minecraft.block.LeavesBlock;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.level.ServerWorldProperties;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.storage.ServerLevelData;
 
 /**
  * Cardbord Mod - Spigot/Paper API for Fabric
@@ -105,8 +105,8 @@ public class CardboardMod implements ModInitializer {
 		
 		// Check for FabricBetterConsole
 		if (CardboardConfig.isBetterConsole()) {
-			Text message = Text.literal("Cardboard " + mc)
-		            .formatted(Formatting.GOLD).append(details);
+			Component message = Component.literal("Cardboard " + mc)
+		            .withStyle(ChatFormatting.GOLD).append(details);
 			LOGGER.info(message.getString());
 		} else {
 		
@@ -116,7 +116,7 @@ public class CardboardMod implements ModInitializer {
         CardboardEventManager.INSTANCE.callCardboardEvents();
     }
 
-    public CraftPlayer getPlayer_0(ServerPlayerEntity e) {
+    public CraftPlayer getPlayer_0(ServerPlayer e) {
         return (CraftPlayer) ((IMixinServerEntityPlayer)(Object)e).getBukkitEntity();
     }
 
@@ -147,23 +147,23 @@ public class CardboardMod implements ModInitializer {
         */
     }
 
-    public static void on_world_init_mc(ServerWorld nms) {
+    public static void on_world_init_mc(ServerLevel nms) {
     	// Check if Server is null
     	if (null == CraftServer.INSTANCE) {
     		MinecraftServer mc = nms.getServer();
-    		if (!mc.isDedicated()) {
+    		if (!mc.isDedicatedServer()) {
     			LOGGER.info("----------------------------------------");
     			LOGGER.info("Cardboard currently only supports the Dedicated Server.");
     			LOGGER.info("(Although Pull Requests to add support are Welcome :) )");
     			LOGGER.info("Server will now shutdown");
     			LOGGER.info("----------------------------------------");
-    			mc.stop(true);
+    			mc.halt(true);
     		}
     		return;
     	}
     	
     	
-        String name = ((ServerWorldProperties) nms.getLevelProperties()).getLevelName();
+        String name = ((ServerLevelData) nms.getLevelData()).getLevelName();
 
         File fi = new File(name + "_the_end");
         File van = new File(new File(name), "DIM1");
@@ -200,18 +200,18 @@ public class CardboardMod implements ModInitializer {
         }
 
         if (CraftServer.INSTANCE.worlds.containsKey(name)) {
-            if (nms.getRegistryKey() == World.NETHER) {
+            if (nms.dimension() == Level.NETHER) {
                 name = name + "_nether";
                 fi2.mkdirs(); // Keep empty directory to fool plugins, ex. Multiverse.
             }
-            if (nms.getRegistryKey() == World.END) {
+            if (nms.dimension() == Level.END) {
                 name = name + "_the_end";
                 fi.mkdirs();
             }
 
             if (CraftServer.INSTANCE.worlds.containsKey(name)) {
                 // Fabric-mod added world
-                name = nms.getRegistryKey().getValue().toUnderscoreSeparatedString();
+                name = nms.dimension().identifier().toDebugFileName();
                 new File(name).mkdirs();
             }
             
@@ -257,7 +257,7 @@ public class CardboardMod implements ModInitializer {
 
         mc.setCardboardPersistentDataContainer( new CraftPersistentDataContainer(mc.getCardboardDTR()) );
 
-        NbtCompound tag = (NbtCompound) ev.getElement();
+        CompoundTag tag = (CompoundTag) ev.getElement();
         CraftPersistentDataContainer pdc = mc.getPersistentDataContainer();
         tag.getCompound("PublicBukkitValues").ifPresent(pdc::putAll);;
     }
@@ -266,7 +266,7 @@ public class CardboardMod implements ModInitializer {
     public void onBlockEntitySaveEnd(BlockEntityWriteNbtEvent ev) {
         IMixinBlockEntity mc = (IMixinBlockEntity) ((BlockEntity) ev.getMC());
 
-        NbtCompound tag = (NbtCompound) ev.getElement();
+        CompoundTag tag = (CompoundTag) ev.getElement();
         CraftPersistentDataContainer persistentDataContainer = mc.getPersistentDataContainer();
         if (persistentDataContainer != null && !persistentDataContainer.isEmpty())
             tag.put("PublicBukkitValues", persistentDataContainer.toTagCompound());
@@ -278,7 +278,7 @@ public class CardboardMod implements ModInitializer {
 	@EventHandler
     public void onCampfireCook(CampfireBlockEntityCookEvent ev) {
         Object[] ob = ev.getMcObjects();
-        World w = (World) ob[0];
+        Level w = (Level) ob[0];
         BlockPos pos = (BlockPos) ob[1];
         ItemStack itemstack = (ItemStack) ob[2];
         ItemStack itemstack1 = (ItemStack) ob[3];
@@ -286,7 +286,7 @@ public class CardboardMod implements ModInitializer {
         CraftItemStack source = CraftItemStack.asCraftMirror(itemstack);
         org.bukkit.inventory.ItemStack result = CraftItemStack.asBukkitCopy(itemstack1);
 
-        BlockCookEvent blockCookEvent = new BlockCookEvent(CraftBlock.at((ServerWorld) w, pos), source, result);
+        BlockCookEvent blockCookEvent = new BlockCookEvent(CraftBlock.at((ServerLevel) w, pos), source, result);
         CraftServer.INSTANCE.getPluginManager().callEvent(blockCookEvent);
 
         if (blockCookEvent.isCancelled()) {
@@ -305,9 +305,9 @@ public class CardboardMod implements ModInitializer {
     public void onNetherPortalEnter(EntityPortalCollideEvent ev) {
     	Entity entity = ev.getEntity();
     	BlockPos pos = ev.getBlockPos();
-    	World world = ev.getEntity().getEntityWorld(); // TODO: should we add EntityPortalCollideEvent.getWorld() ?
+    	Level world = ev.getEntity().level(); // TODO: should we add EntityPortalCollideEvent.getWorld() ?
 
-    	if (!entity.hasVehicle() && !entity.hasPassengers() && entity.canUsePortals(true)) {
+    	if (!entity.isPassenger() && !entity.isVehicle() && entity.canUsePortal(true)) {
             EntityPortalEnterEvent event = new EntityPortalEnterEvent(((IMixinEntity)entity).getBukkitEntity(), new org.bukkit.Location(((IMixinWorld)world).getCraftWorld(), pos.getX(), pos.getY(), pos.getZ()));
             Bukkit.getPluginManager().callEvent(event);
         }

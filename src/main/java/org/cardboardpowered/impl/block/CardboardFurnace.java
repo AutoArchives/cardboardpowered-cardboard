@@ -1,9 +1,8 @@
 package org.cardboardpowered.impl.block;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.block.AbstractFurnaceBlock;
-import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
-
+import net.minecraft.world.level.block.AbstractFurnaceBlock;
+import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import java.util.Map;
 
 import org.bukkit.Location;
@@ -53,17 +52,17 @@ public abstract class CardboardFurnace<T extends AbstractFurnaceBlockEntity> ext
     @Override
     public void setBurnTime(short burnTime) {
         this.getSnapshot().litTimeRemaining = burnTime;
-        this.data = this.data.with(AbstractFurnaceBlock.LIT, burnTime > 0);
+        this.data = this.data.setValue(AbstractFurnaceBlock.LIT, burnTime > 0);
     }
 
     @Override
     public short getCookTime() {
-        return (short) this.getSnapshot().cookingTimeSpent;
+        return (short) this.getSnapshot().cookingTimer;
     }
 
     @Override
     public void setCookTime(short cookTime) {
-        this.getSnapshot().cookingTimeSpent = cookTime;
+        this.getSnapshot().cookingTimer = cookTime;
     }
 
     @Override

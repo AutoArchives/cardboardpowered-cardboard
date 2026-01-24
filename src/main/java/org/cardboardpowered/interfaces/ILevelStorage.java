@@ -2,17 +2,16 @@ package org.cardboardpowered.interfaces;
 
 import java.io.IOException;
 import java.nio.file.Path;
-
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.util.path.SymlinkValidationException;
-import net.minecraft.world.dimension.DimensionOptions;
-import net.minecraft.world.level.storage.LevelStorage.Session;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.storage.LevelStorageSource.LevelStorageAccess;
+import net.minecraft.world.level.validation.ContentValidationException;
 
 public interface ILevelStorage {
 
-	Path getStorageFolder(Path path, RegistryKey<DimensionOptions> dimensionType);
+	Path getStorageFolder(Path path, ResourceKey<LevelStem> dimensionType);
 
-	Session validateAndCreateAccess(String saveName, RegistryKey<DimensionOptions> dimensionType)
-			throws IOException, SymlinkValidationException;
+	LevelStorageAccess validateAndCreateAccess(String saveName, ResourceKey<LevelStem> dimensionType)
+			throws IOException, ContentValidationException;
 
 }

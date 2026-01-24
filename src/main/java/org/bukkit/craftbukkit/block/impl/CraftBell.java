@@ -9,13 +9,13 @@ public final class CraftBell extends org.bukkit.craftbukkit.block.data.CraftBloc
         super();
     }
 
-    public CraftBell(net.minecraft.block.BlockState state) {
+    public CraftBell(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftBell
 
-    private static final net.minecraft.state.property.EnumProperty<?> ATTACHMENT = getEnum(net.minecraft.block.BellBlock.class, "attachment");
+    private static final net.minecraft.world.level.block.state.properties.EnumProperty<?> ATTACHMENT = getEnum(net.minecraft.world.level.block.BellBlock.class, "attachment");
 
     @Override
     public Attachment getAttachment() {
@@ -29,7 +29,7 @@ public final class CraftBell extends org.bukkit.craftbukkit.block.data.CraftBloc
 
     // org.bukkit.craftbukkit.block.data.CraftDirectional
 
-    private static final net.minecraft.state.property.EnumProperty<?> FACING = getEnum(net.minecraft.block.BellBlock.class, "facing");
+    private static final net.minecraft.world.level.block.state.properties.EnumProperty<?> FACING = getEnum(net.minecraft.world.level.block.BellBlock.class, "facing");
 
     @Override
     public org.bukkit.block.BlockFace getFacing() {

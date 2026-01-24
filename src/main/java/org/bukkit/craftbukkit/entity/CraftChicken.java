@@ -7,20 +7,19 @@ import org.bukkit.entity.EntityType;
 import org.cardboardpowered.impl.entity.CraftAnimals;
 
 import io.papermc.paper.registry.HolderableBase;
-import net.minecraft.entity.passive.ChickenEntity;
-import net.minecraft.entity.passive.ChickenVariant;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.entity.animal.chicken.ChickenVariant;
 
 public class CraftChicken extends CraftAnimals implements Chicken {
 
-    public CraftChicken(CraftServer server, ChickenEntity entity) {
+    public CraftChicken(CraftServer server, net.minecraft.world.entity.animal.chicken.Chicken entity) {
         super(server, entity);
     }
 
     @Override
-    public ChickenEntity getHandle() {
-        return (ChickenEntity) nms;
+    public net.minecraft.world.entity.animal.chicken.Chicken getHandle() {
+        return (net.minecraft.world.entity.animal.chicken.Chicken) nms;
     }
 
     @Override
@@ -35,22 +34,22 @@ public class CraftChicken extends CraftAnimals implements Chicken {
 
 	@Override
 	public int getEggLayTime() {
-		return this.getHandle().eggLayTime;
+		return this.getHandle().eggTime;
 	}
 
 	@Override
 	public boolean isChickenJockey() {
-		return this.getHandle().hasJockey();
+		return this.getHandle().isChickenJockey();
 	}
 
 	@Override
 	public void setEggLayTime(int arg0) {
-        this.getHandle().eggLayTime = arg0;
+        this.getHandle().eggTime = arg0;
 	}
 
 	@Override
 	public void setIsChickenJockey(boolean arg0) {
-		this.getHandle().setHasJockey(arg0);
+		this.getHandle().setChickenJockey(arg0);
 	}
 	
 	public Chicken.Variant getVariant() {
@@ -63,22 +62,22 @@ public class CraftChicken extends CraftAnimals implements Chicken {
     
     public static class CraftVariant extends HolderableBase<ChickenVariant> implements Chicken.Variant {
         public static Chicken.Variant minecraftToBukkit(ChickenVariant minecraft) {
-            return (Chicken.Variant)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.CHICKEN_VARIANT);
+            return (Chicken.Variant)CraftRegistry.minecraftToBukkit(minecraft, Registries.CHICKEN_VARIANT);
         }
 
-        public static Chicken.Variant minecraftHolderToBukkit(RegistryEntry<ChickenVariant> minecraft) {
-            return (Chicken.Variant)CraftRegistry.minecraftHolderToBukkit(minecraft, RegistryKeys.CHICKEN_VARIANT);
+        public static Chicken.Variant minecraftHolderToBukkit(Holder<ChickenVariant> minecraft) {
+            return (Chicken.Variant)CraftRegistry.minecraftHolderToBukkit(minecraft, Registries.CHICKEN_VARIANT);
         }
 
         public static ChickenVariant bukkitToMinecraft(Chicken.Variant bukkit) {
             return (ChickenVariant)CraftRegistry.bukkitToMinecraft(bukkit);
         }
 
-        public static RegistryEntry<ChickenVariant> bukkitToMinecraftHolder(Chicken.Variant bukkit) {
+        public static Holder<ChickenVariant> bukkitToMinecraftHolder(Chicken.Variant bukkit) {
             return CraftRegistry.bukkitToMinecraftHolder(bukkit);
         }
 
-        public CraftVariant(RegistryEntry<ChickenVariant> holder) {
+        public CraftVariant(Holder<ChickenVariant> holder) {
             super(holder);
         }
     }

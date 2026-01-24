@@ -14,11 +14,12 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import com.mojang.serialization.Lifecycle;
 
 import io.papermc.paper.registry.PaperRegistryAccess;
-import net.minecraft.registry.RegistryLoader.Loader;
-import net.minecraft.registry.*;
+import net.minecraft.core.WritableRegistry;
 //import net.minecraft.registry.RegistryLoader.Loader;
+import net.minecraft.resources.RegistryDataLoader;
+import net.minecraft.resources.ResourceKey;
 
-@Mixin(RegistryLoader.Entry.class)
+@Mixin(RegistryDataLoader.RegistryData.class)
 public class MixinRegistryLoader {
 
 	/*
@@ -34,11 +35,11 @@ public class MixinRegistryLoader {
 	
     @Inject(
     		at = @At(value = "RETURN"),
-    		method = "Lnet/minecraft/registry/RegistryLoader$Entry;getLoader(Lcom/mojang/serialization/Lifecycle;Ljava/util/Map;)Lnet/minecraft/registry/RegistryLoader$Loader;",
+    		method = "create(Lcom/mojang/serialization/Lifecycle;Ljava/util/Map;)Lnet/minecraft/resources/RegistryDataLoader$Loader;",
     		locals = LocalCapture.CAPTURE_FAILHARD
     )
-    public void cardboard$register_paper_registry(Lifecycle lifecycle, Map<RegistryKey<?>, Exception> errors, CallbackInfoReturnable ci, MutableRegistry writableRegistry) {
-    	RegistryLoader.Entry thiz = (RegistryLoader.Entry) (Object) this;
+    public void cardboard$register_paper_registry(Lifecycle lifecycle, Map<ResourceKey<?>, Exception> errors, CallbackInfoReturnable ci, WritableRegistry writableRegistry) {
+    	RegistryDataLoader.RegistryData thiz = (RegistryDataLoader.RegistryData) (Object) this;
     	PaperRegistryAccess.instance().registerRegistry(thiz.key(), writableRegistry);
     	
     }

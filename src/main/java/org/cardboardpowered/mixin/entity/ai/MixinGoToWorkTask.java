@@ -1,31 +1,15 @@
 package org.cardboardpowered.mixin.entity.ai;
 
-import net.minecraft.village.VillagerData;
 import org.bukkit.event.entity.VillagerCareerChangeEvent;
 import org.cardboardpowered.impl.entity.CraftVillager;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
+import net.minecraft.world.entity.ai.behavior.AssignProfessionFromJobSite;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 
-import net.minecraft.entity.ai.brain.MemoryModuleType;
-import net.minecraft.entity.ai.brain.task.UpdateJobSiteTask;
-/*
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.GlobalPos;
-import net.minecraft.village.VillagerProfession;
-
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-*/
-
 @MixinInfo(events = {"VillagerCareerChangeEvent"})
-@Mixin(value = UpdateJobSiteTask.class, priority = 999)
+@Mixin(value = AssignProfessionFromJobSite.class, priority = 999)
 public class MixinGoToWorkTask {
 
 	/*

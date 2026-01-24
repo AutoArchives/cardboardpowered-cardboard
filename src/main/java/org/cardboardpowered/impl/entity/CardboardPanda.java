@@ -1,7 +1,6 @@
 package org.cardboardpowered.impl.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.entity.passive.PandaEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Panda;
@@ -9,13 +8,13 @@ import org.jetbrains.annotations.NotNull;
 
 public class CardboardPanda extends CraftAnimals implements Panda {
 
-    public CardboardPanda(CraftServer server, PandaEntity entity) {
+    public CardboardPanda(CraftServer server, net.minecraft.world.entity.animal.panda.Panda entity) {
         super(server, entity);
     }
 
     @Override
-    public PandaEntity getHandle() {
-        return (PandaEntity) super.getHandle();
+    public net.minecraft.world.entity.animal.panda.Panda getHandle() {
+        return (net.minecraft.world.entity.animal.panda.Panda) super.getHandle();
     }
 
     @Override
@@ -48,14 +47,14 @@ public class CardboardPanda extends CraftAnimals implements Panda {
         getHandle().setHiddenGene(toNms(gene));
     }
 
-    public static Gene fromNms(PandaEntity.Gene gene) {
+    public static Gene fromNms(net.minecraft.world.entity.animal.panda.Panda.Gene gene) {
         Preconditions.checkArgument(gene != null, "Gene must not be null");
         return Gene.values()[gene.ordinal()];
     }
 
-    public static PandaEntity.Gene toNms(Gene gene) {
+    public static net.minecraft.world.entity.animal.panda.Panda.Gene toNms(Gene gene) {
         Preconditions.checkArgument(gene != null, "Gene must not be null");
-        return PandaEntity.Gene.values()[gene.ordinal()];
+        return net.minecraft.world.entity.animal.panda.Panda.Gene.values()[gene.ordinal()];
     }
 
 	@Override
@@ -66,7 +65,7 @@ public class CardboardPanda extends CraftAnimals implements Panda {
 
 	@Override
 	public int getSneezeTicks() {
-		return this.getHandle().getSneezeProgress();
+		return this.getHandle().getSneezeCounter();
 	}
 
 	@Override
@@ -83,7 +82,7 @@ public class CardboardPanda extends CraftAnimals implements Panda {
 
 	@Override
 	public boolean isRolling() {
-		return this.getHandle().isPlaying();
+		return this.getHandle().isRolling();
 	}
 
 	@Override
@@ -110,27 +109,27 @@ public class CardboardPanda extends CraftAnimals implements Panda {
 
 	@Override
 	public void setRolling(boolean arg0) {
-		this.getHandle().setPlaying(arg0);
+		this.getHandle().roll(arg0);
 	}
 
 	@Override
 	public void setSitting(boolean arg0) {
-		this.getHandle().setSitting(arg0);
+		this.getHandle().sit(arg0);
 	}
 
 	@Override
 	public void setSneezeTicks(int arg0) {
-		this.getHandle().setSneezeProgress(arg0);
+		this.getHandle().setSneezeCounter(arg0);
 	}
 
 	@Override
 	public void setSneezing(boolean arg0) {
-		this.getHandle().setSneezing(arg0);
+		this.getHandle().sneeze(arg0);
 	}
 
 	@Override
 	public void setUnhappyTicks(int arg0) {
-		this.getHandle().setAskForBambooTicks(arg0);
+		this.getHandle().setUnhappyCounter(arg0);
 	}
 	
 	// 1.19.2:
@@ -142,24 +141,24 @@ public class CardboardPanda extends CraftAnimals implements Panda {
 
 	@Override
 	public boolean isScared() {
-		return this.getHandle().isScaredByThunderstorm();
+		return this.getHandle().isScared();
 	}
 
 	@Override
 	public void setEating(boolean arg0) {
-		this.getHandle().setEating(arg0);
+		this.getHandle().eat(arg0);
 	}
 
 	@Override
 	public void setOnBack(boolean arg0) {
-		this.getHandle().setLyingOnBack(arg0);
+		this.getHandle().setOnBack(arg0);
 	}
 
 	// 1.20.2 API:
 	
 	@Override
 	public Panda.Gene getCombinedGene() {
-        return CardboardPanda.fromNms(this.getHandle().getProductGene());
+        return CardboardPanda.fromNms(this.getHandle().getVariant());
     }
 
 }

@@ -3,10 +3,9 @@ package org.bukkit.craftbukkit.inventory.trim;
 import com.google.common.base.Preconditions;
 import java.util.Objects;
 import net.kyori.adventure.text.Component;
-import net.minecraft.item.equipment.trim.ArmorTrimPattern;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.text.TranslatableTextContent;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -16,41 +15,41 @@ import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.cardboardpowered.adventure.CardboardAdventure;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftTrimPattern implements TrimPattern, Handleable<ArmorTrimPattern> {
+public class CraftTrimPattern implements TrimPattern, Handleable<net.minecraft.world.item.equipment.trim.TrimPattern> {
 
     private final NamespacedKey key;
-    private final ArmorTrimPattern handle;
+    private final net.minecraft.world.item.equipment.trim.TrimPattern handle;
 
-    public static TrimPattern minecraftToBukkit(ArmorTrimPattern minecraft) {
-        return (TrimPattern)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.TRIM_PATTERN);
+    public static TrimPattern minecraftToBukkit(net.minecraft.world.item.equipment.trim.TrimPattern minecraft) {
+        return (TrimPattern)CraftRegistry.minecraftToBukkit(minecraft, Registries.TRIM_PATTERN);
     }
 
-    public static TrimPattern minecraftHolderToBukkit(RegistryEntry<ArmorTrimPattern> minecraft) {
+    public static TrimPattern minecraftHolderToBukkit(Holder<net.minecraft.world.item.equipment.trim.TrimPattern> minecraft) {
         return CraftTrimPattern.minecraftToBukkit(minecraft.value());
     }
 
-    public static ArmorTrimPattern bukkitToMinecraft(TrimPattern bukkit) {
-        return (ArmorTrimPattern)CraftRegistry.bukkitToMinecraft(bukkit);
+    public static net.minecraft.world.item.equipment.trim.TrimPattern bukkitToMinecraft(TrimPattern bukkit) {
+        return (net.minecraft.world.item.equipment.trim.TrimPattern)CraftRegistry.bukkitToMinecraft(bukkit);
     }
 
-    public static RegistryEntry<ArmorTrimPattern> bukkitToMinecraftHolder(TrimPattern bukkit) {
+    public static Holder<net.minecraft.world.item.equipment.trim.TrimPattern> bukkitToMinecraftHolder(TrimPattern bukkit) {
         Preconditions.checkArgument((bukkit != null ? 1 : 0) != 0);
-        net.minecraft.registry.Registry registry = CraftRegistry.getMinecraftRegistry(RegistryKeys.TRIM_PATTERN);
-        RegistryEntry<ArmorTrimPattern> registryEntry = registry.getEntry(CraftTrimPattern.bukkitToMinecraft(bukkit));
-        if (registryEntry instanceof RegistryEntry.Reference) {
-            RegistryEntry.Reference holder = (RegistryEntry.Reference)registryEntry;
+        net.minecraft.core.Registry registry = CraftRegistry.getMinecraftRegistry(Registries.TRIM_PATTERN);
+        Holder<net.minecraft.world.item.equipment.trim.TrimPattern> registryEntry = registry.wrapAsHolder(CraftTrimPattern.bukkitToMinecraft(bukkit));
+        if (registryEntry instanceof Holder.Reference) {
+            Holder.Reference holder = (Holder.Reference)registryEntry;
             return holder;
         }
         throw new IllegalArgumentException("No Reference holder found for " + String.valueOf(bukkit) + ", this can happen if a plugin creates its own trim pattern without properly registering it.");
     }
 
-    public CraftTrimPattern(NamespacedKey key, ArmorTrimPattern handle) {
+    public CraftTrimPattern(NamespacedKey key, net.minecraft.world.item.equipment.trim.TrimPattern handle) {
         this.key = key;
         this.handle = handle;
     }
 
     @Override
-    public ArmorTrimPattern getHandle() {
+    public net.minecraft.world.item.equipment.trim.TrimPattern getHandle() {
         return this.handle;
     }
 
@@ -62,10 +61,10 @@ public class CraftTrimPattern implements TrimPattern, Handleable<ArmorTrimPatter
 
     @NotNull
     public String getTranslationKey() {
-        if (!(this.handle.description().getContent() instanceof TranslatableTextContent)) {
+        if (!(this.handle.description().getContents() instanceof TranslatableContents)) {
             throw new UnsupportedOperationException("Description isn't translatable!");
         }
-        return ((TranslatableTextContent)this.handle.description().getContent()).getKey();
+        return ((TranslatableContents)this.handle.description().getContents()).getKey();
     }
 
     public Component description() {

@@ -4,18 +4,16 @@ import com.google.common.base.Preconditions;
 
 import me.isaiah.common.ICommonMod;
 import me.isaiah.common.cmixin.IMixinTradeOffer;
-import net.minecraft.village.TradeOffer;
-
 import java.util.List;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantRecipe;
 
 public class CraftMerchantRecipe extends MerchantRecipe {
 
-    private final net.minecraft.village.TradeOffer handle;
+    private final net.minecraft.world.item.trading.MerchantOffer handle;
 
-    public CraftMerchantRecipe(net.minecraft.village.TradeOffer merchantRecipe) {
-        super(CraftItemStack.asBukkitCopy(merchantRecipe.sellItem), 0);
+    public CraftMerchantRecipe(net.minecraft.world.item.trading.MerchantOffer merchantRecipe) {
+        super(CraftItemStack.asBukkitCopy(merchantRecipe.result), 0);
         this.handle = merchantRecipe;
         
         IMixinTradeOffer ic = (IMixinTradeOffer) (Object) merchantRecipe;
@@ -63,22 +61,22 @@ public class CraftMerchantRecipe extends MerchantRecipe {
 
     @Override
     public boolean hasExperienceReward() {
-        return handle.rewardingPlayerExperience;
+        return handle.rewardExp;
     }
 
     @Override
     public void setExperienceReward(boolean flag) {
-        handle.rewardingPlayerExperience = flag;
+        handle.rewardExp = flag;
     }
 
     @Override
     public int getVillagerExperience() {
-        return handle.merchantExperience;
+        return handle.xp;
     }
 
     @Override
     public void setVillagerExperience(int villagerExperience) {
-        handle.merchantExperience = villagerExperience;
+        handle.xp = villagerExperience;
     }
 
     @Override
@@ -91,7 +89,7 @@ public class CraftMerchantRecipe extends MerchantRecipe {
         handle.priceMultiplier = priceMultiplier;
     }
 
-    public net.minecraft.village.TradeOffer toMinecraft() {
+    public net.minecraft.world.item.trading.MerchantOffer toMinecraft() {
         List<ItemStack> ingredients = getIngredients();
         Preconditions.checkState(!ingredients.isEmpty(), "No offered ingredients");
         

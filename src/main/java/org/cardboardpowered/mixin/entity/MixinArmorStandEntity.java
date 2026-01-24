@@ -1,5 +1,9 @@
 package org.cardboardpowered.mixin.entity;
 
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -16,21 +20,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.cardboardpowered.interfaces.IMixinArmorStandEntity;
 import org.cardboardpowered.interfaces.IMixinEntity;
 
-import net.minecraft.entity.MovementType;
-import net.minecraft.entity.decoration.ArmorStandEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.Vec3d;
-
-@Mixin(ArmorStandEntity.class)
+@Mixin(net.minecraft.world.entity.decoration.ArmorStand.class)
 public class MixinArmorStandEntity extends MixinEntity implements IMixinArmorStandEntity {
 
     public boolean canMove = true; // Paper
 
     @Override
     public void setHideBasePlateBF(boolean b) {
-        setHideBasePlate(b);
+        setNoBasePlate(b);
     }
 
     @Override
@@ -58,28 +55,28 @@ public class MixinArmorStandEntity extends MixinEntity implements IMixinArmorSta
         this.canMove = b;
     }
 
-    @Shadow public void setHideBasePlate(boolean flag) {}
+    @Shadow public void setNoBasePlate(boolean flag) {}
     @Shadow public void setMarker(boolean flag) {}
     @Shadow public void setShowArms(boolean flag) {}
     @Shadow public void setSmall(boolean flag) {}
 
     // Paper start
     @Override
-    public void move(MovementType moveType, Vec3d vec3d) {
+    public void move(MoverType moveType, Vec3 vec3d) {
         if (this.canMove) super.move(moveType, vec3d);
     }
     // Paper end
 
 
     @Inject(
-    		method = "equip", cancellable = true,
+    		method = "swapItem", cancellable = true,
     		at = @At(
     				value = "INVOKE",
-    				target = "Lnet/minecraft/entity/player/PlayerEntity;isInCreativeMode()Z"
+    				target = "Lnet/minecraft/world/entity/player/Player;hasInfiniteMaterials()Z"
     			)
     	)
-    public void cardboard$armorstand_PlayerArmorStandManipulateEvent(net.minecraft.entity.player.PlayerEntity playerEntity, net.minecraft.entity.EquipmentSlot slotType, ItemStack itemStack, Hand hand, CallbackInfoReturnable<Boolean> cir) {
-    	ItemStack itemStack1 = ((ArmorStandEntity)(Object)this).getEquippedStack(slotType);
+    public void cardboard$armorstand_PlayerArmorStandManipulateEvent(net.minecraft.world.entity.player.Player playerEntity, net.minecraft.world.entity.EquipmentSlot slotType, ItemStack itemStack, InteractionHand hand, CallbackInfoReturnable<Boolean> cir) {
+    	ItemStack itemStack1 = ((net.minecraft.world.entity.decoration.ArmorStand)(Object)this).getItemBySlot(slotType);
 
         org.bukkit.inventory.ItemStack armorStandItem = CraftItemStack.asCraftMirror(itemStack1);
         org.bukkit.inventory.ItemStack playerHeldItem = CraftItemStack.asCraftMirror(itemStack);
@@ -90,7 +87,7 @@ public class MixinArmorStandEntity extends MixinEntity implements IMixinArmorSta
         EquipmentSlot slot = CraftEquipmentSlot.getSlot(slotType);
         
         EquipmentSlot bukkitHand = EquipmentSlot.HAND;
-        if (hand == Hand.OFF_HAND) {
+        if (hand == InteractionHand.OFF_HAND) {
         	bukkitHand = EquipmentSlot.OFF_HAND;
         }
 

@@ -1,9 +1,8 @@
 package org.bukkit.craftbukkit;
 
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.world.event.Vibrations;
-
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
 import org.bukkit.GameEvent;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -12,28 +11,28 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftGameEvent extends GameEvent implements Handleable<net.minecraft.world.event.GameEvent> {
+public class CraftGameEvent extends GameEvent implements Handleable<net.minecraft.world.level.gameevent.GameEvent> {
 
     private final NamespacedKey key;
-    private final RegistryKey<net.minecraft.world.event.GameEvent> handleKey;
-    private final net.minecraft.world.event.GameEvent handle;
+    private final ResourceKey<net.minecraft.world.level.gameevent.GameEvent> handleKey;
+    private final net.minecraft.world.level.gameevent.GameEvent handle;
 
-    public static GameEvent minecraftToBukkit(net.minecraft.world.event.GameEvent minecraft) {
-        return (GameEvent)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.GAME_EVENT);
+    public static GameEvent minecraftToBukkit(net.minecraft.world.level.gameevent.GameEvent minecraft) {
+        return (GameEvent)CraftRegistry.minecraftToBukkit(minecraft, Registries.GAME_EVENT);
     }
 
-    public static net.minecraft.world.event.GameEvent bukkitToMinecraft(GameEvent bukkit) {
-        return (net.minecraft.world.event.GameEvent)CraftRegistry.bukkitToMinecraft(bukkit);
+    public static net.minecraft.world.level.gameevent.GameEvent bukkitToMinecraft(GameEvent bukkit) {
+        return (net.minecraft.world.level.gameevent.GameEvent)CraftRegistry.bukkitToMinecraft(bukkit);
     }
 
-    public CraftGameEvent(NamespacedKey key, net.minecraft.world.event.GameEvent handle) {
+    public CraftGameEvent(NamespacedKey key, net.minecraft.world.level.gameevent.GameEvent handle) {
         this.key = key;
-        this.handleKey = RegistryKey.of(RegistryKeys.GAME_EVENT, CraftNamespacedKey.toMinecraft(key));
+        this.handleKey = ResourceKey.create(Registries.GAME_EVENT, CraftNamespacedKey.toMinecraft(key));
         this.handle = handle;
     }
 
     @Override
-    public net.minecraft.world.event.GameEvent getHandle() {
+    public net.minecraft.world.level.gameevent.GameEvent getHandle() {
         return this.handle;
     }
 
@@ -67,7 +66,7 @@ public class CraftGameEvent extends GameEvent implements Handleable<net.minecraf
 
 	@Override
 	public int getVibrationLevel() {
-        return Vibrations.getFrequency(this.handleKey);
+        return VibrationSystem.getGameEventFrequency(this.handleKey);
 	}
 
 }

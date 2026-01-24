@@ -3,10 +3,10 @@ package org.bukkit.craftbukkit.inventory;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.FireworkExplosionComponent;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.FireworkExplosion;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -19,7 +19,7 @@ import org.bukkit.inventory.meta.FireworkEffectMeta;
 class CraftMetaCharge
 extends CraftMetaItem
 implements FireworkEffectMeta {
-    static final CraftMetaItem.ItemMetaKeyType<FireworkExplosionComponent> EXPLOSION = new CraftMetaItem.ItemMetaKeyType<FireworkExplosionComponent>(DataComponentTypes.FIREWORK_EXPLOSION, "firework-effect");
+    static final CraftMetaItem.ItemMetaKeyType<FireworkExplosion> EXPLOSION = new CraftMetaItem.ItemMetaKeyType<FireworkExplosion>(DataComponents.FIREWORK_EXPLOSION, "firework-effect");
     private FireworkEffect effect;
 
     CraftMetaCharge(CraftMetaItem meta) {
@@ -34,7 +34,7 @@ implements FireworkEffectMeta {
         this.setEffect(org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(FireworkEffect.class, map, CraftMetaCharge.EXPLOSION.BUKKIT, true));
     }
 
-    CraftMetaCharge(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
+    CraftMetaCharge(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaCharge.getOrEmpty(tag, EXPLOSION).ifPresent(f2 -> {
             try {

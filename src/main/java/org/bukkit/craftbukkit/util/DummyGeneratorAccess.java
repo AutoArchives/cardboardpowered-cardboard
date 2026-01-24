@@ -3,50 +3,50 @@ package org.bukkit.craftbukkit.util;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.resource.featuretoggle.FeatureSet;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.TypeFilter;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.LocalDifficulty;
-import net.minecraft.world.StructureWorldAccess;
-import net.minecraft.world.WorldProperties;
-import net.minecraft.world.attribute.EnvironmentAttributeAccess;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.source.BiomeAccess;
-import net.minecraft.world.border.WorldBorder;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkManager;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.chunk.light.LightingProvider;
-import net.minecraft.world.dimension.DimensionType;
-import net.minecraft.world.event.GameEvent;
-import net.minecraft.world.tick.EmptyTickSchedulers;
-import net.minecraft.world.tick.QueryableTickScheduler;
-import net.minecraft.world.tick.TickPriority;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.attribute.EnvironmentAttributeReader;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.ChunkSource;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.lighting.LevelLightEngine;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.LevelData;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.ticks.BlackholeTickAccess;
+import net.minecraft.world.ticks.LevelTickAccess;
+import net.minecraft.world.ticks.TickPriority;
 
 public class DummyGeneratorAccess
-implements StructureWorldAccess {
-    public static final StructureWorldAccess INSTANCE = new DummyGeneratorAccess();
+implements WorldGenLevel {
+    public static final WorldGenLevel INSTANCE = new DummyGeneratorAccess();
 
     protected DummyGeneratorAccess() {
     }
@@ -57,36 +57,36 @@ implements StructureWorldAccess {
     }
 
     @Override
-    public ServerWorld toServerWorld() {
+    public ServerLevel getLevel() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public long getTickOrder() {
+    public long nextSubTickCount() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public QueryableTickScheduler<Block> getBlockTickScheduler() {
-        return EmptyTickSchedulers.getClientTickScheduler();
+    public LevelTickAccess<Block> getBlockTicks() {
+        return BlackholeTickAccess.emptyLevelList();
     }
 
     @Override
-    public void scheduleBlockTick(BlockPos pos, Block block, int delay) {
+    public void scheduleTick(BlockPos pos, Block block, int delay) {
     }
 
     @Override
-    public QueryableTickScheduler<Fluid> getFluidTickScheduler() {
-        return EmptyTickSchedulers.getClientTickScheduler();
+    public LevelTickAccess<Fluid> getFluidTicks() {
+        return BlackholeTickAccess.emptyLevelList();
     }
 
     @Override
-    public WorldProperties getLevelProperties() {
+    public LevelData getLevelData() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public LocalDifficulty getLocalDifficulty(BlockPos pos) {
+    public DifficultyInstance getCurrentDifficultyAt(BlockPos pos) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -96,78 +96,78 @@ implements StructureWorldAccess {
     }
 
     @Override
-    public ChunkManager getChunkManager() {
+    public ChunkSource getChunkSource() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Random getRandom() {
+    public RandomSource getRandom() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
 	@Override
-	public void addParticleClient(ParticleEffect parameters, double x, double y, double z, double velocityX,
+	public void addParticle(ParticleOptions parameters, double x, double y, double z, double velocityX,
 			double velocityY, double velocityZ) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
 	@Override
-	public void playSound(Entity arg0, BlockPos arg1, SoundEvent arg2, SoundCategory arg3, float arg4, float arg5) {
+	public void playSound(Entity arg0, BlockPos arg1, SoundEvent arg2, SoundSource arg3, float arg4, float arg5) {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 
 	@Override
-	public void syncWorldEvent(Entity arg0, int arg1, BlockPos arg2, int arg3) {
+	public void levelEvent(Entity arg0, int arg1, BlockPos arg2, int arg3) {
 		// TODO Auto-generated method stub
 		
 	}
 
     @Override
-    public void emitGameEvent(RegistryEntry<GameEvent> event, Vec3d emitterPos, GameEvent.Emitter emitter) {
+    public void gameEvent(Holder<GameEvent> event, Vec3 emitterPos, GameEvent.Context emitter) {
     }
 
     @Override
-    public List<Entity> getOtherEntities(Entity except, Box box, Predicate<? super Entity> predicate) {
+    public List<Entity> getEntities(Entity except, AABB box, Predicate<? super Entity> predicate) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public <T extends Entity> List<T> getEntitiesByType(TypeFilter<Entity, T> filter, Box box, Predicate<? super T> predicate) {
+    public <T extends Entity> List<T> getEntities(EntityTypeTest<Entity, T> filter, AABB box, Predicate<? super T> predicate) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public List<? extends PlayerEntity> getPlayers() {
+    public List<? extends Player> players() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Chunk getChunk(int chunkX, int chunkZ, ChunkStatus leastStatus, boolean create) {
+    public ChunkAccess getChunk(int chunkX, int chunkZ, ChunkStatus leastStatus, boolean create) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public int getTopY(Heightmap.Type heightmap, int x, int z) {
+    public int getHeight(Heightmap.Types heightmap, int x, int z) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public int getAmbientDarkness() {
+    public int getSkyDarken() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public BiomeAccess getBiomeAccess() {
+    public BiomeManager getBiomeManager() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public RegistryEntry<Biome> getGeneratorStoredBiome(int biomeX, int biomeY, int biomeZ) {
+    public Holder<Biome> getUncachedNoiseBiome(int biomeX, int biomeY, int biomeZ) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public boolean isClient() {
+    public boolean isClientSide() {
         return false;
     }
 
@@ -177,27 +177,27 @@ implements StructureWorldAccess {
     }
 
     @Override
-    public DimensionType getDimension() {
+    public DimensionType dimensionType() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public DynamicRegistryManager getRegistryManager() {
+    public RegistryAccess registryAccess() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public FeatureSet getEnabledFeatures() {
+    public FeatureFlagSet enabledFeatures() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public float getBrightness(Direction direction, boolean shaded) {
+    public float getShade(Direction direction, boolean shaded) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public LightingProvider getLightingProvider() {
+    public LevelLightEngine getLightEngine() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -208,15 +208,15 @@ implements StructureWorldAccess {
 
     @Override
     public BlockState getBlockState(BlockPos pos) {
-        return Blocks.AIR.getDefaultState();
+        return Blocks.AIR.defaultBlockState();
     }
 
     @Override
     public FluidState getFluidState(BlockPos pos) {
-        return Fluids.EMPTY.getDefaultState();
+        return Fluids.EMPTY.defaultFluidState();
     }
 
-    public Chunk getChunkIfLoadedImmediately(int x, int z) {
+    public ChunkAccess getChunkIfLoadedImmediately(int x, int z) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -234,17 +234,17 @@ implements StructureWorldAccess {
     }
 
     @Override
-    public boolean testBlockState(BlockPos pos, Predicate<BlockState> state) {
+    public boolean isStateAtPosition(BlockPos pos, Predicate<BlockState> state) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public boolean testFluidState(BlockPos pos, Predicate<FluidState> state) {
+    public boolean isFluidAtPosition(BlockPos pos, Predicate<FluidState> state) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public boolean setBlockState(BlockPos pos, BlockState state, int flags, int maxUpdateDepth) {
+    public boolean setBlock(BlockPos pos, BlockState state, int flags, int maxUpdateDepth) {
         return false;
     }
 
@@ -254,38 +254,38 @@ implements StructureWorldAccess {
     }
 
     @Override
-    public boolean breakBlock(BlockPos pos, boolean drop, Entity breakingEntity, int maxUpdateDepth) {
+    public boolean destroyBlock(BlockPos pos, boolean drop, Entity breakingEntity, int maxUpdateDepth) {
         return false;
     }
 
     @Override
-    public void scheduleFluidTick(BlockPos pos, Fluid fluid, int delay) {
+    public void scheduleTick(BlockPos pos, Fluid fluid, int delay) {
     }
 
     @Override
-    public void scheduleBlockTick(BlockPos pos, Block block, int delay, TickPriority priority) {
+    public void scheduleTick(BlockPos pos, Block block, int delay, TickPriority priority) {
     }
 
     @Override
-    public void scheduleFluidTick(BlockPos pos, Fluid fluid, int delay, TickPriority priority) {
+    public void scheduleTick(BlockPos pos, Fluid fluid, int delay, TickPriority priority) {
     }
 
-    public List<Entity> getHardCollidingEntities(Entity except, Box box, Predicate<? super Entity> predicate) {
+    public List<Entity> getHardCollidingEntities(Entity except, AABB box, Predicate<? super Entity> predicate) {
         return Collections.emptyList();
     }
 
-    public void getEntities(Entity except, Box box, Predicate<? super Entity> predicate, List<Entity> into) {
+    public void getEntities(Entity except, AABB box, Predicate<? super Entity> predicate, List<Entity> into) {
     }
 
-    public void getHardCollidingEntities(Entity except, Box box, Predicate<? super Entity> predicate, List<Entity> into) {
+    public void getHardCollidingEntities(Entity except, AABB box, Predicate<? super Entity> predicate, List<Entity> into) {
     }
 
-    public <T> void getEntitiesByClass(Class<? extends T> clazz, Entity except, Box box, List<? super T> into, Predicate<? super T> predicate) {
+    public <T> void getEntitiesByClass(Class<? extends T> clazz, Entity except, AABB box, List<? super T> into, Predicate<? super T> predicate) {
     }
 
 	@Override
-	public EnvironmentAttributeAccess getEnvironmentAttributes() {
-		return EnvironmentAttributeAccess.DEFAULT;
+	public EnvironmentAttributeReader environmentAttributes() {
+		return EnvironmentAttributeReader.EMPTY;
 	}
 
 }

@@ -1,7 +1,14 @@
 package org.cardboardpowered.mixin.item;
 
 import java.util.List;
-
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.level.Level;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.cardboardpowered.util.MixinInfo;
@@ -10,21 +17,11 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
-
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.RangedWeaponItem;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Hand;
-import net.minecraft.world.World;
-
 import org.cardboardpowered.interfaces.IMixinEntity;
 
 @MixinInfo(events = {"EntityShootBowEvent"})
 // @Mixin(BowItem.class)
-@Mixin(value = RangedWeaponItem.class, priority = 900)
+@Mixin(value = ProjectileWeaponItem.class, priority = 900)
 /**
  * TODO: Rename class, 1.20.6 moved
  * functionality to RangedWeaponItem
@@ -35,16 +32,16 @@ public class MixinBowItem {
 
     
     @Shadow
-    public ProjectileEntity createArrowEntity( World world, LivingEntity shooter, ItemStack weaponStack, ItemStack projectileStack, boolean critical) {
+    public Projectile createProjectile( Level world, LivingEntity shooter, ItemStack weaponStack, ItemStack projectileStack, boolean critical) {
     	return null; // Shadowed
     }
     
     @Shadow
-    public void shoot( LivingEntity shooter, ProjectileEntity projectile, int index, float speed, float divergence, float yaw, LivingEntity target) {
+    public void shootProjectile( LivingEntity shooter, Projectile projectile, int index, float speed, float divergence, float yaw, LivingEntity target) {
     }
     
     @Shadow
-    public int getWeaponStackDamage( ItemStack projectile) {
+    public int getDurabilityUse( ItemStack projectile) {
     	return 0; // Shadowed
     }
     
@@ -55,7 +52,7 @@ public class MixinBowItem {
      * TODO: use inject
      */
     @Overwrite
-    public void shootAll(ServerWorld world, LivingEntity shooter, Hand hand, ItemStack stack, List<ItemStack> projectiles, float speed, float divergence, boolean critical, LivingEntity target) {
+    public void shoot(ServerLevel world, LivingEntity shooter, InteractionHand hand, ItemStack stack, List<ItemStack> projectiles, float speed, float divergence, boolean critical, LivingEntity target) {
         float f = 10.0f;
         float g = projectiles.size() == 1 ? 0.0f : 20.0f / (float)(projectiles.size() - 1);
         float h = (float)((projectiles.size() - 1) % 2) * g / 2.0f;
@@ -65,17 +62,17 @@ public class MixinBowItem {
             if (itemStack.isEmpty()) continue;
             float k = h + i * (float)((j + 1) / 2) * g;
             i = -i;
-            ProjectileEntity projectileEntity = this.createArrowEntity(world, shooter, stack, itemStack, critical);
-            this.shoot(shooter, projectileEntity, j, speed, divergence, k, target);
+            Projectile projectileEntity = this.createProjectile(world, shooter, stack, itemStack, critical);
+            this.shootProjectile(shooter, projectileEntity, j, speed, divergence, k, target);
             EntityShootBowEvent event = CraftEventFactory.callEntityShootBowEvent(shooter, stack, itemStack, projectileEntity, hand, speed, true);
             if (event.isCancelled()) {
                 event.getProjectile().remove();
                 return;
             }
-            stack.damage(this.getWeaponStackDamage(itemStack), shooter, hand.getEquipmentSlot());
-            if (event.getProjectile() != ((IMixinEntity)projectileEntity).getBukkitEntity() || world.spawnEntity(projectileEntity)) continue;
-            if (shooter instanceof ServerPlayerEntity) {
-            	((Player) ((IMixinServerEntityPlayer)  ((ServerPlayerEntity)shooter) ).getBukkitEntity()).updateInventory();
+            stack.hurtAndBreak(this.getDurabilityUse(itemStack), shooter, hand.asEquipmentSlot());
+            if (event.getProjectile() != ((IMixinEntity)projectileEntity).getBukkitEntity() || world.addFreshEntity(projectileEntity)) continue;
+            if (shooter instanceof ServerPlayer) {
+            	((Player) ((IMixinServerEntityPlayer)  ((ServerPlayer)shooter) ).getBukkitEntity()).updateInventory();
             }
             return;
         }

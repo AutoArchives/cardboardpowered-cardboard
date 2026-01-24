@@ -1,12 +1,11 @@
 package org.cardboardpowered.mixin.block;
 
+import net.minecraft.world.level.block.state.BlockBehaviour.BlockStateBase;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.cardboardpowered.interfaces.IBlockState;
 import org.spongepowered.asm.mixin.Mixin;
 
-import net.minecraft.block.AbstractBlock.AbstractBlockState;
-
-@Mixin(AbstractBlockState.class)
+@Mixin(BlockStateBase.class)
 public class MixinAbstractBlockState implements IBlockState {
 
 	private CraftBlockData cachedCraftBlockData;
@@ -14,8 +13,8 @@ public class MixinAbstractBlockState implements IBlockState {
 	@Override
 	public CraftBlockData createCraftBlockData() {
         if (this.cachedCraftBlockData == null) {
-        	AbstractBlockState thiz = (AbstractBlockState) (Object) this;
-            this.cachedCraftBlockData = CraftBlockData.createData(thiz.asBlockState());
+        	BlockStateBase thiz = (BlockStateBase) (Object) this;
+            this.cachedCraftBlockData = CraftBlockData.createData(thiz.asState());
         }
         return (CraftBlockData)this.cachedCraftBlockData.clone();
     }

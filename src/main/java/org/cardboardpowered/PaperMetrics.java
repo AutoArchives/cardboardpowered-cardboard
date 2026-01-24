@@ -66,7 +66,7 @@ public class PaperMetrics {
 
             Metrics_Cardboard.addCustomChart(new Metrics_Cardboard.SingleLineChart("players", () -> Bukkit.getOnlinePlayers().size()));
             Metrics_Cardboard.addCustomChart(new Metrics_Cardboard.SimplePie("online_mode", () -> Bukkit.getOnlineMode() ? "online" : "offline"));
-            Metrics_Cardboard.addCustomChart(new Metrics_Cardboard.SimplePie("paper_version", () -> "git-Cardboard-" + CraftServer.server.getVersion()));
+            Metrics_Cardboard.addCustomChart(new Metrics_Cardboard.SimplePie("paper_version", () -> "git-Cardboard-" + CraftServer.server.getServerVersion()));
 
             
             Metrics_Cardboard.addCustomChart(new Metrics_Cardboard.DrilldownPie("java_version", () -> {

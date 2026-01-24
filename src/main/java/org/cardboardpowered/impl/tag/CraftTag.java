@@ -2,40 +2,38 @@ package org.cardboardpowered.impl.tag;
 
 import java.util.Objects;
 import java.util.Optional;
-
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.Registry;
+import net.minecraft.tags.TagKey;
 import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
-
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.registry.tag.TagKey;
 
 /**
  * Cardboard Implementation of {@link org.bukkit.Tag}
  */
 public abstract class CraftTag<N, B extends Keyed> implements Tag<B> {
 
-	protected final net.minecraft.registry.Registry<N> registry;
+	protected final net.minecraft.core.Registry<N> registry;
 	protected final TagKey<N> tag;
-	private RegistryEntryList.Named<N> handle;
+	private HolderSet.Named<N> handle;
 
 	public CraftTag(Registry<N> registry, TagKey<N> tag) {
 		this.registry = registry;
 		this.tag = tag;
 		
-		Optional< RegistryEntryList.Named<N> > handleOptional = registry.getOptional(this.tag);
+		Optional< HolderSet.Named<N> > handleOptional = registry.get(this.tag);
 		this.handle = handleOptional.orElseThrow();
 	}
 
-	public RegistryEntryList.Named<N> getHandle() {
+	public HolderSet.Named<N> getHandle() {
 		return handle;
 	}
 
 	@Override
 	public NamespacedKey getKey() {
-		return CraftNamespacedKey.fromMinecraft(tag.id());
+		return CraftNamespacedKey.fromMinecraft(tag.location());
 	}
 
 	@Override

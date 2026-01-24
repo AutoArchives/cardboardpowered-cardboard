@@ -9,22 +9,22 @@ import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.inventory.ItemStack;
 
 public record PaperChargedProjectiles(
-    net.minecraft.component.type.ChargedProjectilesComponent impl
-) implements ChargedProjectiles, Handleable<net.minecraft.component.type.ChargedProjectilesComponent> {
+    net.minecraft.world.item.component.ChargedProjectiles impl
+) implements ChargedProjectiles, Handleable<net.minecraft.world.item.component.ChargedProjectiles> {
 
     @Override
-    public net.minecraft.component.type.ChargedProjectilesComponent getHandle() {
+    public net.minecraft.world.item.component.ChargedProjectiles getHandle() {
         return this.impl;
     }
 
     @Override
     public List<ItemStack> projectiles() {
-        return MCUtil.transformUnmodifiable(this.impl.getProjectiles() /*makes copies internally*/, CraftItemStack::asCraftMirror);
+        return MCUtil.transformUnmodifiable(this.impl.getItems() /*makes copies internally*/, CraftItemStack::asCraftMirror);
     }
 
     static final class BuilderImpl implements ChargedProjectiles.Builder {
 
-        private final List<net.minecraft.item.ItemStack> items = new ArrayList<>();
+        private final List<net.minecraft.world.item.ItemStack> items = new ArrayList<>();
 
         @Override
         public ChargedProjectiles.Builder add(final ItemStack stack) {
@@ -43,9 +43,9 @@ public record PaperChargedProjectiles(
         @Override
         public ChargedProjectiles build() {
             if (this.items.isEmpty()) {
-                return new PaperChargedProjectiles(net.minecraft.component.type.ChargedProjectilesComponent.DEFAULT);
+                return new PaperChargedProjectiles(net.minecraft.world.item.component.ChargedProjectiles.EMPTY);
             }
-            return new PaperChargedProjectiles(net.minecraft.component.type.ChargedProjectilesComponent.of(this.items));
+            return new PaperChargedProjectiles(net.minecraft.world.item.component.ChargedProjectiles.of(this.items));
         }
     }
 }

@@ -4,11 +4,10 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftSkeleton;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.WitherSkeleton;
-import net.minecraft.entity.mob.WitherSkeletonEntity;
 
 public class WitherSkeletonImpl extends CraftSkeleton implements WitherSkeleton {
 
-    public WitherSkeletonImpl(CraftServer server, WitherSkeletonEntity entity) {
+    public WitherSkeletonImpl(CraftServer server, net.minecraft.world.entity.monster.skeleton.WitherSkeleton entity) {
         super(server, entity);
     }
 

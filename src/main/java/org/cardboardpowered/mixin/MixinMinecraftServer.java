@@ -23,45 +23,45 @@ import org.bukkit.craftbukkit.scheduler.CraftScheduler;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinWorld;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
-import net.minecraft.command.DataCommandStorage;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.scoreboard.ScoreboardState;
+import net.minecraft.CrashReport;
+import net.minecraft.ReportedException;
+import net.minecraft.commands.Commands;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.SaveLoading;
-import net.minecraft.server.ServerTask;
-// import net.minecraft.server.WorldGenerationProgressListener;
-// import net.minecraft.server.WorldGenerationProgressListenerFactory;
-import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.ServerInterface;
+import net.minecraft.server.TickTask;
+import net.minecraft.server.WorldLoader;
 import net.minecraft.server.dedicated.DedicatedServer;
-import net.minecraft.server.dedicated.MinecraftDedicatedServer;
-import net.minecraft.server.world.ChunkTicketManager;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.crash.CrashException;
-import net.minecraft.util.crash.CrashReport;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.GlobalPos;
-import net.minecraft.util.thread.ReentrantThreadExecutor;
-import net.minecraft.village.ZombieSiegeManager;
-import net.minecraft.world.Difficulty;
-// import net.minecraft.world.ForcedChunkState;
-import net.minecraft.world.rule.GameRules;
-import net.minecraft.world.PersistentStateManager;
-import net.minecraft.world.PlayerSaveHandler;
-import net.minecraft.world.SaveProperties;
-import net.minecraft.world.biome.source.BiomeAccess;
-import net.minecraft.world.border.WorldBorder;
-import net.minecraft.world.chunk.ChunkLoadProgress;
-import net.minecraft.world.chunk.ChunkLoadingCounter;
-import net.minecraft.world.dimension.DimensionOptions;
-import net.minecraft.world.dimension.DimensionTypes;
-import net.minecraft.world.gen.GeneratorOptions;
-import net.minecraft.world.level.LevelProperties;
-import net.minecraft.world.level.ServerWorldProperties;
-import net.minecraft.world.level.storage.LevelStorage;
-import net.minecraft.world.spawner.*;
+import net.minecraft.server.level.ChunkLoadCounter;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.progress.LevelLoadListener;
+import net.minecraft.util.thread.ReentrantBlockableEventLoop;
 import net.minecraft.world.*;
-
+import net.minecraft.world.entity.ai.village.VillageSiege;
+import net.minecraft.world.entity.npc.CatSpawner;
+import net.minecraft.world.entity.npc.wanderingtrader.WanderingTraderSpawner;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.CustomSpawner;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.TicketStorage;
+import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
+import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.levelgen.PatrolSpawner;
+import net.minecraft.world.level.levelgen.PhantomSpawner;
+import net.minecraft.world.level.levelgen.WorldOptions;
+import net.minecraft.world.level.storage.CommandStorage;
+import net.minecraft.world.level.storage.DimensionDataStorage;
+import net.minecraft.world.level.storage.LevelStorageSource;
+import net.minecraft.world.level.storage.PlayerDataStorage;
+import net.minecraft.world.level.storage.PrimaryLevelData;
+import net.minecraft.world.level.storage.ServerLevelData;
+import net.minecraft.world.level.storage.WorldData;
+import net.minecraft.world.scores.ScoreboardSaveData;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World.Environment;
@@ -97,42 +97,42 @@ import java.util.Queue;
 import java.util.function.BooleanSupplier;
 
 @Mixin(value=MinecraftServer.class)
-public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<ServerTask> implements IMixinMinecraftServer {
+public abstract class MixinMinecraftServer extends ReentrantBlockableEventLoop<TickTask> implements IMixinMinecraftServer {
 
 	// public final WorldLoader.DataLoadContext worldLoaderContext;
-	public SaveLoading.LoadContextSupplierContext worldLoaderContext;
+	public WorldLoader.DataLoadContext worldLoaderContext;
 	
 	@Override
-	public SaveLoading.LoadContextSupplierContext cardboard$worldLoaderContext() {
+	public WorldLoader.DataLoadContext cardboard$worldLoaderContext() {
 		return worldLoaderContext;
 	}
 	
-    @Shadow private long tickStartTimeNanos;
-    @Shadow @Final @Mutable protected SaveProperties saveProperties;
-    @Shadow public abstract ServerWorld getOverworld();
+    @Shadow private long nextTickTimeNanos;
+    @Shadow @Final @Mutable protected WorldData worldData;
+    @Shadow public abstract ServerLevel overworld();
 
-    @Shadow public abstract boolean save(boolean suppressLogs, boolean flush, boolean force);
+    @Shadow public abstract boolean saveAllChunks(boolean suppressLogs, boolean flush, boolean force);
 
     public MixinMinecraftServer(String string) {
         super(string);
     }
 
-    @Shadow @Final public PlayerSaveHandler saveHandler;
-    @Shadow public Map<RegistryKey<net.minecraft.world.World>, ServerWorld> worlds;
-    @Shadow public MinecraftServer.ResourceManagerHolder resourceManagerHolder;
-    @Shadow public LevelStorage.Session session;
-    @Shadow public DataCommandStorage dataCommandStorage;
-    @Shadow private int ticks;
+    @Shadow @Final public PlayerDataStorage playerDataStorage;
+    @Shadow public Map<ResourceKey<net.minecraft.world.level.Level>, ServerLevel> levels;
+    @Shadow public MinecraftServer.ReloadableResources resources;
+    @Shadow public LevelStorageSource.LevelStorageAccess storageSource;
+    @Shadow public CommandStorage commandStorage;
+    @Shadow private int tickCount;
 
     // @Shadow public void initScoreboard(PersistentStateManager arg0) {}
 
-    public void setDataCommandStorage(DataCommandStorage data) {
-        this.dataCommandStorage = data;
+    public void setDataCommandStorage(CommandStorage data) {
+        this.commandStorage = data;
     }
 
     @Override
-    public LevelStorage.Session getSessionBF() {
-        return session;
+    public LevelStorageSource.LevelStorageAccess getSessionBF() {
+        return storageSource;
     }
 
     public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
@@ -140,8 +140,8 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     private boolean forceTicks;
 
     @Override
-    public PlayerSaveHandler getSaveHandler_BF() {
-        return saveHandler;
+    public PlayerDataStorage getSaveHandler_BF() {
+        return playerDataStorage;
     }
 
     @Inject(at = @At("HEAD"), method = "getServerModName", remap=false, cancellable = true)
@@ -151,8 +151,8 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     }
 
     @Override
-    public Map<RegistryKey<net.minecraft.world.World>, ServerWorld> getWorldMap() {
-        return worlds;
+    public Map<ResourceKey<net.minecraft.world.level.Level>, ServerLevel> getWorldMap() {
+        return levels;
     }
 
     @Override
@@ -166,8 +166,8 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     }
 
     @Override
-    public CommandManager setCommandManager(CommandManager commandManager) {
-        return (this.resourceManagerHolder.dataPackContents().commandManager = commandManager);
+    public Commands setCommandManager(Commands commandManager) {
+        return (this.resources.managers().commands = commandManager);
     }
 
     public MinecraftServer getServer() {
@@ -197,14 +197,14 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
      * @author Cardboard
      */
     @SuppressWarnings({ "resource", "deprecation" })
-    @Inject(at = @At("TAIL"), method = "loadWorld")
+    @Inject(at = @At("TAIL"), method = "loadLevel")
     public void afterWorldLoad(CallbackInfo ci) {
-        for (ServerWorld worldserver : ((MinecraftServer)(Object)this).getWorlds()) {
-            if (worldserver != getOverworld()) {
+        for (ServerLevel worldserver : ((MinecraftServer)(Object)this).getAllLevels()) {
+            if (worldserver != overworld()) {
                 // TODO IMPORTANT
             	
             	// ServerWorld world, ServerWorldProperties worldProperties, boolean bonusChest, boolean debugWorld, ChunkLoadProgress loadProgress
-            	setupSpawn(worldserver, worldserver.worldProperties, false, false, ((IServerWorld) worldserver).cardboard$levelLoadListener());
+            	setInitialSpawn(worldserver, worldserver.serverLevelData, false, false, ((IServerWorld) worldserver).cardboard$levelLoadListener());
             	
             	// this.loadSpawn(worldserver.getChunkManager().chunkLoadingManager.worldGenerationProgressListener, worldserver);
                 CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldLoadEvent(((IMixinWorld)worldserver).getCraftWorld()));
@@ -213,7 +213,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
 
         CraftServer.INSTANCE.enablePlugins(org.bukkit.plugin.PluginLoadOrder.POSTWORLD);
         CraftServer.INSTANCE.getPluginManager().callEvent(new ServerLoadEvent(ServerLoadEvent.LoadType.STARTUP));
-        ((INetworkIo)(Object)getServer().getNetworkIo()).acceptConnections();
+        ((INetworkIo)(Object)getServer().getConnection()).acceptConnections();
 
         CraftMagicNumbers.setupUnknownModdedMaterials();
         fixBukkitWorldEdit();
@@ -266,18 +266,18 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     */
 
     @Override
-    public void addLevel(ServerWorld level) {
-        this.worlds.put(level.getRegistryKey(), level);
+    public void addLevel(ServerLevel level) {
+        this.levels.put(level.dimension(), level);
     }
 
     @Override
-    public void removeLevel(ServerWorld level) {
+    public void removeLevel(ServerLevel level) {
         ServerWorldEvents.UNLOAD.invoker().onWorldUnload(((MinecraftServer) (Object) this), level);
-        this.worlds.remove(level.getRegistryKey());
+        this.levels.remove(level.dimension());
     }
 
     public void updateDifficulty() {
-        ((MinecraftServer)(Object)this).setDifficulty(((DedicatedServer)(Object)this).getProperties().difficulty.get(), true);
+        ((MinecraftServer)(Object)this).setDifficulty(((ServerInterface)(Object)this).getProperties().difficulty.get(), true);
     }
 
     /**
@@ -382,35 +382,35 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
      * Prepare Levels 1.21.9
      */
     @Override
-    public void cardboard$prepareLevel(ServerWorld serverLevel) {
+    public void cardboard$prepareLevel(ServerLevel serverLevel) {
     	this.forceTicks = true;
-    	ChunkLoadingCounter chunkLoadCounter = new ChunkLoadingCounter();
-    	chunkLoadCounter.load(serverLevel, () -> {
-    		ChunkTicketManager ticketStorage = serverLevel.getPersistentStateManager().get(ChunkTicketManager.STATE_TYPE);
+    	ChunkLoadCounter chunkLoadCounter = new ChunkLoadCounter();
+    	chunkLoadCounter.track(serverLevel, () -> {
+    		TicketStorage ticketStorage = serverLevel.getDataStorage().get(TicketStorage.TYPE);
     		if (ticketStorage != null) {
-    			ticketStorage.promoteToRealTickets();
+    			ticketStorage.activateAllDeactivatedTickets();
     		}
     	});
 
     	IServerWorld world = (IServerWorld) serverLevel;
 
-    	world.cardboard$levelLoadListener().init(ChunkLoadProgress.Stage.LOAD_INITIAL_CHUNKS, chunkLoadCounter.getTotalChunks());
+    	world.cardboard$levelLoadListener().start(LevelLoadListener.Stage.LOAD_INITIAL_CHUNKS, chunkLoadCounter.totalChunks());
 
     	do {
     		world.cardboard$levelLoadListener()
-    		.progress(ChunkLoadProgress.Stage.LOAD_INITIAL_CHUNKS, chunkLoadCounter.getFullChunks(), chunkLoadCounter.getTotalChunks());
+    		.update(LevelLoadListener.Stage.LOAD_INITIAL_CHUNKS, chunkLoadCounter.readyChunks(), chunkLoadCounter.totalChunks());
     		this.executeModerately();
-    	} while (chunkLoadCounter.getNonFullChunks() > 0);
+    	} while (chunkLoadCounter.pendingChunks() > 0);
 
-    	world.cardboard$levelLoadListener().finish(ChunkLoadProgress.Stage.LOAD_INITIAL_CHUNKS);
-    	serverLevel.setMobSpawnOptions(serverLevel.worldProperties.getDifficulty() != Difficulty.PEACEFUL && serverLevel.getGameRules().getValue(GameRules.SPAWN_MONSTERS));
-    	this.refreshSpawnPoint();
+    	world.cardboard$levelLoadListener().finish(LevelLoadListener.Stage.LOAD_INITIAL_CHUNKS);
+    	serverLevel.setSpawnSettings(serverLevel.serverLevelData.getDifficulty() != Difficulty.PEACEFUL && serverLevel.getGameRules().get(GameRules.SPAWN_MONSTERS));
+    	this.updateEffectiveRespawnData();
     	this.forceTicks = false;
     	new WorldLoadEvent(serverLevel.getWorld()).callEvent();
     }
 
     @Shadow
-    public void refreshSpawnPoint() {
+    public void updateEffectiveRespawnData() {
     	// Shadowed
     }
     
@@ -444,7 +444,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     */
     
     @Shadow
-    private void updateMobSpawnOptions() {
+    private void updateMobSpawningFlags() {
     	
     }
 
@@ -460,23 +460,23 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
                     ((MinecraftServer)(Object)this).shouldSpawnAnimals());
         }
         */
-    	this.updateMobSpawnOptions();
+    	this.updateMobSpawningFlags();
     }
 
     private void executeModerately() {
-        this.runTasks();
+        this.runAllTasks();
         java.util.concurrent.locks.LockSupport.parkNanos("executing tasks", 1000L);
     }
 
-    @Inject(at = @At("HEAD"), method = "shouldKeepTicking", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "haveTime", cancellable = true)
     public void shouldKeepTicking_BF(CallbackInfoReturnable<Boolean> ci) {
         boolean bl = this.forceTicks;
         if (bl) ci.setReturnValue(bl);
     }
 
-    @Inject(at = @At("HEAD"), method = "tickWorlds")
+    @Inject(at = @At("HEAD"), method = "tickChildren")
     public void doBukkitRunnables(BooleanSupplier b, CallbackInfo ci) {
-        ((CraftScheduler)CraftServer.INSTANCE.getScheduler()).mainThreadHeartbeat(ticks);
+        ((CraftScheduler)CraftServer.INSTANCE.getScheduler()).mainThreadHeartbeat(tickCount);
         while (!processQueue.isEmpty())
             processQueue.remove().run();
     }
@@ -495,7 +495,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "shutdown")
+    @Inject(at = @At("HEAD"), method = "stopServer")
     public void doStop(CallbackInfo ci) {
         synchronized(stopLock) {
             if (hasStopped) return;
@@ -507,19 +507,19 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     }
 
     // public void initWorld(ServerWorld worldserver, ServerWorldProperties worldProperties, SaveProperties saveData, GeneratorOptions generatorsettings) {
-    public void initWorld(ServerWorld serverLevel, LevelProperties serverLevelData, GeneratorOptions worldOptions) {
+    public void initWorld(ServerLevel serverLevel, PrimaryLevelData serverLevelData, WorldOptions worldOptions) {
         cardboard$initLevel(serverLevel);
         cardboard$initializedLevel(serverLevel, serverLevelData, worldOptions);
     }
 
-    private void cardboard$initLevel(ServerWorld serverWorld) {
+    private void cardboard$initLevel(ServerLevel serverWorld) {
         if (((CraftServer) Bukkit.getServer()).scoreboardManager == null) {
             ((CraftServer) Bukkit.getServer()).scoreboardManager = new CraftScoreboardManager((MinecraftServer) (Object) this, serverWorld.getScoreboard());
         }
         // Bukkit.getPluginManager().callEvent(new WorldInitEvent(((IMixinWorld) serverWorld).getCraftWorld()));
     }
 
-    private void cardboard$initializedLevel(ServerWorld worldserver, ServerWorldProperties worldProperties, GeneratorOptions generatorsettings) {
+    private void cardboard$initializedLevel(ServerLevel worldserver, ServerLevelData worldProperties, WorldOptions generatorsettings) {
         boolean flag = false;
         // TODO Bukkit generators
         // WorldBorder worldborder = worldserver.getWorldBorder();
@@ -533,18 +533,18 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         if (!worldProperties.isInitialized()) {
             try {
             	// TODO IMPORTANT
-                setupSpawn(worldserver, worldProperties, generatorsettings.hasBonusChest(), flag, ((IServerWorld) worldserver).cardboard$levelLoadListener());
+                setInitialSpawn(worldserver, worldProperties, generatorsettings.generateBonusChest(), flag, ((IServerWorld) worldserver).cardboard$levelLoadListener());
                 worldProperties.setInitialized(true);
             } catch (Throwable throwable) {
-                CrashReport crashreport = CrashReport.create(throwable, "Exception initializing level");
-                throw new CrashException(crashreport);
+                CrashReport crashreport = CrashReport.forThrowable(throwable, "Exception initializing level");
+                throw new ReportedException(crashreport);
             }
 
             worldProperties.setInitialized(true);
         }
         
-        GlobalPos globalPos = ((MinecraftServer) (Object) this).getSpawnPos();
-        ((IServerWorld) worldserver).cardboard$levelLoadListener().initSpawnPos(globalPos.dimension(), new ChunkPos(globalPos.pos()));
+        GlobalPos globalPos = ((MinecraftServer) (Object) this).selectLevelLoadFocusPos();
+        ((IServerWorld) worldserver).cardboard$levelLoadListener().updateFocus(globalPos.dimension(), new ChunkPos(globalPos.pos()));
         /*
         if (worldProperties.getCustomBossEvents() != null) {
            this.getBossBarManager().readNbt(serverLevelData.getCustomBossEvents(), this.getRegistryManager());
@@ -552,14 +552,14 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         */
     }
     
-    private void paper$initWorldBorder(ServerWorldProperties worldProperties, ServerWorld serverLevel) {
-        Optional<WorldBorder.Properties> legacyWorldBorderSettings = worldProperties.getWorldBorder();
+    private void paper$initWorldBorder(ServerLevelData worldProperties, ServerLevel serverLevel) {
+        Optional<WorldBorder.Settings> legacyWorldBorderSettings = worldProperties.getLegacyWorldBorderSettings();
         if (legacyWorldBorderSettings.isPresent()) {
-           WorldBorder.Properties settings = legacyWorldBorderSettings.get();
-           PersistentStateManager dataStorage1 = serverLevel.getPersistentStateManager();
+           WorldBorder.Settings settings = legacyWorldBorderSettings.get();
+           DimensionDataStorage dataStorage1 = serverLevel.getDataStorage();
            if (dataStorage1.get(WorldBorder.TYPE) == null) {
-              double coordinateScale = serverLevel.getDimension().coordinateScale();
-              WorldBorder.Properties settings1 = new WorldBorder.Properties(
+              double coordinateScale = serverLevel.dimensionType().coordinateScale();
+              WorldBorder.Settings settings1 = new WorldBorder.Settings(
                  settings.centerX() / coordinateScale,
                  settings.centerZ() / coordinateScale,
                  settings.damagePerBlock(),
@@ -571,32 +571,32 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
                  settings.lerpTarget()
               );
               WorldBorder worldBorder = new WorldBorder(settings1);
-              worldBorder.ensureInitialized(serverLevel.getTime());
+              worldBorder.applyInitialSettings(serverLevel.getGameTime());
               dataStorage1.set(WorldBorder.TYPE, worldBorder);
            }
 
-           worldProperties.setWorldBorder(Optional.empty());
+           worldProperties.setLegacyWorldBorderSettings(Optional.empty());
         }
 
         // TODO
         // serverLevel.getWorldBorder().world = serverLevel;
-        serverLevel.getWorldBorder().setMaxRadius(this.getServer().getMaxWorldBorderRadius());
-        this.getServer().getPlayerManager().setMainWorld(serverLevel);
+        serverLevel.getWorldBorder().setAbsoluteMaxSize(this.getServer().getAbsoluteMaxWorldSize());
+        this.getServer().getPlayerList().addWorldborderListener(serverLevel);
      }
 
     
     @Override
     public void createLevel(
-    	      DimensionOptions levelStem, PaperWorldLoader.WorldLoadingInfo loadingInfo, LevelStorage.Session levelStorageAccess, LevelProperties serverLevelData
+    	      LevelStem levelStem, PaperWorldLoader.WorldLoadingInfo loadingInfo, LevelStorageSource.LevelStorageAccess levelStorageAccess, PrimaryLevelData serverLevelData
     	   ) {
     	
     	MinecraftServer server = (MinecraftServer) (Object) this;
     	
-    	GeneratorOptions worldOptions = serverLevelData.getGeneratorOptions();
-        long seed = worldOptions.getSeed();
-        long l = BiomeAccess.hashSeed(seed);
-        List<SpecialSpawner> list = ImmutableList.of(
-           new PhantomSpawner(), new PatrolSpawner(), new CatSpawner(), new ZombieSiegeManager(), new WanderingTraderManager(serverLevelData)
+    	WorldOptions worldOptions = serverLevelData.worldGenOptions();
+        long seed = worldOptions.seed();
+        long l = BiomeManager.obfuscateSeed(seed);
+        List<CustomSpawner> list = ImmutableList.of(
+           new PhantomSpawner(), new PatrolSpawner(), new CatSpawner(), new VillageSiege(), new WanderingTraderSpawner(serverLevelData)
         );
 
         // ChunkGenerator chunkGenerator = this..getGenerator(loadingInfo.name());
@@ -606,9 +606,9 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
            serverLevelData,
            levelStorageAccess,
            Environment.getEnvironment(loadingInfo.dimension()),
-           levelStem.dimensionTypeEntry().value(),
-           levelStem.chunkGenerator(),
-           server.getRegistryManager()
+           levelStem.type().value(),
+           levelStem.generator(),
+           server.registryAccess()
         );
         /*
         if (biomeProvider == null && chunkGenerator != null) {
@@ -616,12 +616,12 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
         }
         */
 
-        RegistryKey<World> dimensionKey = RegistryKey.of(RegistryKeys.WORLD, loadingInfo.stemKey().getValue());
-        ServerWorld serverLevel;
-        if (loadingInfo.stemKey() == DimensionOptions.OVERWORLD) {
-           serverLevel = new ServerWorld(
+        ResourceKey<Level> dimensionKey = ResourceKey.create(Registries.DIMENSION, loadingInfo.stemKey().identifier());
+        ServerLevel serverLevel;
+        if (loadingInfo.stemKey() == LevelStem.OVERWORLD) {
+           serverLevel = new ServerLevel(
               server,
-              server.workerExecutor,
+              server.executor,
               levelStorageAccess,
               serverLevelData,
               dimensionKey,
@@ -636,39 +636,39 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
               chunkGenerator,
               biomeProvider */
            );
-           this.saveProperties = serverLevelData;
-           this.saveProperties.setGameMode(((MinecraftDedicatedServer)(Object)this).getProperties().gameMode.get());
-           PersistentStateManager dataStorage = serverLevel.getPersistentStateManager();
+           this.worldData = serverLevelData;
+           this.worldData.setGameType(((DedicatedServer)(Object)this).getProperties().gameMode.get());
+           DimensionDataStorage dataStorage = serverLevel.getDataStorage();
            // this.initScoreboard(dataStorage);
            
            
-           this.getServer().getScoreboard().read(((ScoreboardState)dataStorage.getOrCreate(ScoreboardState.TYPE)).getPackedState());
+           this.getServer().getScoreboard().load(((ScoreboardSaveData)dataStorage.computeIfAbsent(ScoreboardSaveData.TYPE)).getData());
            
-           this.dataCommandStorage = new DataCommandStorage(dataStorage);
+           this.commandStorage = new CommandStorage(dataStorage);
            CraftServer.INSTANCE.scoreboardManager = new CraftScoreboardManager(server, serverLevel.getScoreboard());
         } else {
-           List<SpecialSpawner> spawners;
+           List<CustomSpawner> spawners;
            
            // Note: add useDimensionTypeForCustomSpawners (default = false)
            
-           if (false && levelStem.dimensionTypeEntry().matchesKey(DimensionTypes.OVERWORLD)) {
+           if (false && levelStem.type().is(BuiltinDimensionTypes.OVERWORLD)) {
               spawners = list;
            } else {
               spawners = Collections.emptyList();
            }
 
-           serverLevel = new ServerWorld(
+           serverLevel = new ServerLevel(
               server,
-              server.workerExecutor,
+              server.executor,
               levelStorageAccess,
               serverLevelData,
               dimensionKey,
               levelStem,
-              this.saveProperties.isDebugWorld(),
+              this.worldData.isDebugWorld(),
               l,
               spawners,
               true,
-              server.getOverworld().getRandomSequences()/*,
+              server.overworld().getRandomSequences()/*,
               Environment.getEnvironment(loadingInfo.dimension()),
               chunkGenerator,
               biomeProvider
@@ -694,7 +694,7 @@ public abstract class MixinMinecraftServer extends ReentrantThreadExecutor<Serve
     */
     
     @Shadow
-    private static void setupSpawn( ServerWorld world, ServerWorldProperties worldProperties, boolean bonusChest, boolean debugWorld, ChunkLoadProgress loadProgress) {
+    private static void setInitialSpawn( ServerLevel world, ServerLevelData worldProperties, boolean bonusChest, boolean debugWorld, LevelLoadListener loadProgress) {
     	// Shadowed
     }
 

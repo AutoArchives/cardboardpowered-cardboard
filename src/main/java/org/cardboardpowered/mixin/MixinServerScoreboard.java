@@ -1,11 +1,6 @@
 package org.cardboardpowered.mixin;
 
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.scoreboard.ServerScoreboard;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,12 +10,17 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.server.ServerScoreboard;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Scoreboard;
 
 @Mixin(value = ServerScoreboard.class, priority = 900)
 public class MixinServerScoreboard extends Scoreboard {
 
     @Shadow
-    public Set<ScoreboardObjective> syncableObjectives;
+    public Set<Objective> trackedObjectives;
 
     /*
     public void addScoreboardObjective(ScoreboardObjective scoreboardobjective) {
@@ -71,15 +71,15 @@ public class MixinServerScoreboard extends Scoreboard {
      * @reason bukkitize scoreboard
      */
     @Overwrite
-    public void startSyncing(ScoreboardObjective objective) {
-        List<Packet<?>> list = ((ServerScoreboard)(Object)this).createChangePackets(objective);
-        for (ServerPlayerEntity entityplayer : CraftServer.INSTANCE.getHandle().getPlayerManager().getPlayerList()) {
+    public void startTrackingObjective(Objective objective) {
+        List<Packet<?>> list = ((ServerScoreboard)(Object)this).getStartTrackingPackets(objective);
+        for (ServerPlayer entityplayer : CraftServer.INSTANCE.getHandle().getPlayerList().getPlayers()) {
             if (((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue;
             for (Packet<?> packet : list) {
-                entityplayer.networkHandler.sendPacket(packet);
+                entityplayer.connection.send(packet);
             }
         }
-        this.syncableObjectives.add(objective);
+        this.trackedObjectives.add(objective);
     }
     
     /**
@@ -87,15 +87,15 @@ public class MixinServerScoreboard extends Scoreboard {
      * @reason bukkitize scoreboard
      */
     @Overwrite
-    public void stopSyncing(ScoreboardObjective objective) {
-        List<Packet<?>> list = ((ServerScoreboard)(Object)this).createRemovePackets(objective);
-        for (ServerPlayerEntity entityplayer : CraftServer.INSTANCE.getHandle().getPlayerManager().getPlayerList()) {
+    public void stopTrackingObjective(Objective objective) {
+        List<Packet<?>> list = ((ServerScoreboard)(Object)this).getStopTrackingPackets(objective);
+        for (ServerPlayer entityplayer : CraftServer.INSTANCE.getHandle().getPlayerList().getPlayers()) {
             if (((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue;
             for (Packet<?> packet : list) {
-                entityplayer.networkHandler.sendPacket(packet);
+                entityplayer.connection.send(packet);
             }
         }
-        this.syncableObjectives.remove(objective);
+        this.trackedObjectives.remove(objective);
     }
     
     /**
@@ -103,9 +103,9 @@ public class MixinServerScoreboard extends Scoreboard {
      * @reason bukkitize scoreboard
      */
     private void broadcastAll(Packet packet) {
-        for (ServerPlayerEntity entityplayer : CraftServer.INSTANCE.getHandle().getPlayerManager().players) {
+        for (ServerPlayer entityplayer : CraftServer.INSTANCE.getHandle().getPlayerList().players) {
             if (((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != this) continue;
-            entityplayer.networkHandler.sendPacket(packet);
+            entityplayer.connection.send(packet);
         }
     }
 

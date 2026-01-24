@@ -1,5 +1,10 @@
 package org.cardboardpowered.mixin.screen;
 
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.InventoryMenu;
 import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
 import org.bukkit.entity.Player;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
@@ -11,29 +16,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.RecipeInputInventory;
-import net.minecraft.inventory.CraftingResultInventory;
-import net.minecraft.screen.CraftingScreenHandler;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.PlayerScreenHandler;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.text.Text;
-// import net.minecraft.text.TranslatableText;
-
-@Mixin(PlayerScreenHandler.class)
-public class MixinPlayerScreenHandler extends MixinScreenHandler implements NamedScreenHandlerFactory {
+@Mixin(InventoryMenu.class)
+public class MixinPlayerScreenHandler extends MixinScreenHandler implements MenuProvider {
 
 	// @Shadow public RecipeInputInventory craftingInput;
     // @Shadow private CraftingResultInventory craftingResult;
     private CardboardInventoryView bukkitEntity = null;
-    private PlayerInventory player;
+    private Inventory player;
 
     @Inject(method = "<init>", at = @At("TAIL"))
     
     
-    public void setPlayerInv(PlayerInventory playerinventory, boolean flag, PlayerEntity entityhuman, CallbackInfo ci) {
+    public void setPlayerInv(Inventory playerinventory, boolean flag, net.minecraft.world.entity.player.Player entityhuman, CallbackInfo ci) {
        // this.craftingResult = new CraftingResultInventory();
        // this.craftingInput = new CraftingInventory((PlayerScreenHandler)(Object)this, 2, 2);
         this.player = playerinventory;
@@ -47,20 +41,20 @@ public class MixinPlayerScreenHandler extends MixinScreenHandler implements Name
         if (bukkitEntity != null)
             return bukkitEntity;
         
-        PlayerScreenHandler thiz = (PlayerScreenHandler)(Object)this;
+        InventoryMenu thiz = (InventoryMenu)(Object)this;
 
-        CraftInventoryCrafting inventory = new CraftInventoryCrafting(thiz.craftingInventory, thiz.craftingResultInventory);
-        bukkitEntity = new CardboardInventoryView((Player)((IMixinServerEntityPlayer)this.player.player).getBukkitEntity(), inventory, (PlayerScreenHandler)(Object)this);
+        CraftInventoryCrafting inventory = new CraftInventoryCrafting(thiz.craftSlots, thiz.resultSlots);
+        bukkitEntity = new CardboardInventoryView((Player)((IMixinServerEntityPlayer)this.player.player).getBukkitEntity(), inventory, (InventoryMenu)(Object)this);
         return bukkitEntity;
     }
 
     @Override
-    public ScreenHandler createMenu(int arg0, PlayerInventory arg1, PlayerEntity arg2) {
-        return new PlayerScreenHandler(arg1, true, arg2);
+    public AbstractContainerMenu createMenu(int arg0, Inventory arg1, net.minecraft.world.entity.player.Player arg2) {
+        return new InventoryMenu(arg1, true, arg2);
     }
 
     @Override
-    public Text getDisplayName() {
+    public Component getDisplayName() {
         return this.getTitle();
     }
 

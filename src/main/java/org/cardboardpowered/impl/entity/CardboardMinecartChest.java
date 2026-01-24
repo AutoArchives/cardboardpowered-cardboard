@@ -1,9 +1,7 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.vehicle.ChestMinecartEntity;
-
 import java.util.UUID;
-
+import net.minecraft.world.entity.vehicle.minecart.MinecartChest;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.entity.Entity;
@@ -16,7 +14,7 @@ public class CardboardMinecartChest extends CardboardMinecartSH implements Stora
 
     public CraftInventory inventory;
 
-    public CardboardMinecartChest(CraftServer server, ChestMinecartEntity entity) {
+    public CardboardMinecartChest(CraftServer server, MinecartChest entity) {
         super(server, entity);
         inventory = new CraftInventory(entity);
     }

@@ -1,34 +1,14 @@
 package org.cardboardpowered.mixin.item;
 
+import net.minecraft.world.item.EnderEyeItem;
+import net.minecraft.world.item.Item;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
-
-import net.minecraft.advancement.criterion.Criteria;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.EyeOfEnderEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.EnderEyeItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-// import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.RaycastContext;
-import net.minecraft.world.World;
-// import net.minecraft.world.gen.feature.StructureFeature;
-import net.minecraft.util.hit.HitResult;
 
 @Mixin(EnderEyeItem.class)
 public class MixinEnderEyeItem extends Item {
 
-    public MixinEnderEyeItem(net.minecraft.item.Item.Settings settings) {
+    public MixinEnderEyeItem(net.minecraft.world.item.Item.Properties settings) {
         super(settings);
     }
 

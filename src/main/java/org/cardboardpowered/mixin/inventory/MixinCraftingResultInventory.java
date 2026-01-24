@@ -2,7 +2,9 @@ package org.cardboardpowered.mixin.inventory;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.inventory.ResultContainer;
+import net.minecraft.world.item.ItemStack;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.entity.HumanEntity;
@@ -12,20 +14,16 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import org.cardboardpowered.interfaces.IMixinInventory;
 
-import net.minecraft.inventory.CraftingResultInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.collection.DefaultedList;
-
-@Mixin(CraftingResultInventory.class)
+@Mixin(ResultContainer.class)
 public class MixinCraftingResultInventory implements IMixinInventory {
 
-    @Shadow public DefaultedList<ItemStack> stacks;
+    @Shadow public NonNullList<ItemStack> itemStacks;
 
     private int maxStack = MAX_STACK;
 
     @Override
     public List<ItemStack> getContents() {
-        return stacks;
+        return itemStacks;
     }
 
     // MixinCraftingInventory takes care of this
@@ -39,7 +37,7 @@ public class MixinCraftingResultInventory implements IMixinInventory {
     }
 
     @Override
-    public void setMaxStackSize(int size) {
+    public void setCardboardMaxStackSize(int size) {
         maxStack = size;
     }
 
@@ -49,7 +47,7 @@ public class MixinCraftingResultInventory implements IMixinInventory {
     }
 
     @Override
-    public int getMaxStackSize() {
+    public int getCardboardMaxStackSize() {
         return maxStack;
     }
 

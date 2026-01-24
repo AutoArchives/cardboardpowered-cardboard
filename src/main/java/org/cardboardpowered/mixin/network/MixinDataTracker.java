@@ -1,23 +1,22 @@
 package org.cardboardpowered.mixin.network;
 
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.SynchedEntityData;
 import org.cardboardpowered.interfaces.IMixinDataTracker;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(DataTracker.class)
+@Mixin(SynchedEntityData.class)
 public abstract class MixinDataTracker implements IMixinDataTracker {
 
-    @Shadow protected abstract <T> DataTracker.Entry<T> getEntry(TrackedData<T> trackedData);
+    @Shadow protected abstract <T> SynchedEntityData.DataItem<T> getItem(EntityDataAccessor<T> trackedData);
 
-    @Shadow private boolean dirty;
+    @Shadow private boolean isDirty;
 
     @Override
-    public <T> void markDirty(TrackedData<T> key) {
-        DataTracker.Entry entry = this.getEntry(key);
+    public <T> void markDirty(EntityDataAccessor<T> key) {
+        SynchedEntityData.DataItem entry = this.getItem(key);
         entry.setDirty(true);
-        this.dirty = true;
+        this.isDirty = true;
     }
 }

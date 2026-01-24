@@ -5,15 +5,15 @@ import com.destroystokyo.paper.inventory.meta.ArmorStandMeta;
 
 import java.util.Set;
 import java.util.function.BiFunction;
-import net.minecraft.block.Block;
-import net.minecraft.block.ShulkerBoxBlock;
-import net.minecraft.component.ComponentType;
-import net.minecraft.item.BannerItem;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.SignItem;
-import net.minecraft.item.SpawnEggItem;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.world.item.BannerItem;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SignItem;
+import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.ShulkerBoxBlock;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ArmorMeta;
 import org.bukkit.inventory.meta.BannerMeta;
@@ -35,18 +35,18 @@ import org.bukkit.inventory.meta.SuspiciousStewMeta;
 
 public final class CraftItemMetas {
     private static final ItemMetaData<ItemMeta> EMPTY_META_DATA = new ItemMetaData<ItemMeta>(ItemMeta.class, (item, extras) -> null, (type, meta) -> null);
-    private static final ItemMetaData<ItemMeta> ITEM_META_DATA = new ItemMetaData<ItemMeta>(ItemMeta.class, (item, extras) -> new CraftMetaItem(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> new CraftMetaItem((CraftMetaItem)meta));
-    private static final ItemMetaData<BookMeta> SIGNED_BOOK_META_DATA = new ItemMetaData<BookMeta>(BookMeta.class, (item, extras) -> new CraftMetaBookSigned(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> {
+    private static final ItemMetaData<ItemMeta> ITEM_META_DATA = new ItemMetaData<ItemMeta>(ItemMeta.class, (item, extras) -> new CraftMetaItem(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> new CraftMetaItem((CraftMetaItem)meta));
+    private static final ItemMetaData<BookMeta> SIGNED_BOOK_META_DATA = new ItemMetaData<BookMeta>(BookMeta.class, (item, extras) -> new CraftMetaBookSigned(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> {
         CraftMetaBookSigned signed;
         return meta instanceof CraftMetaBookSigned ? (signed = (CraftMetaBookSigned)meta) : new CraftMetaBookSigned((CraftMetaItem)meta);
     });
-    private static final ItemMetaData<BookMeta> WRITABLE_BOOK_META_DATA = new ItemMetaData<BookMeta>(BookMeta.class, (item, extras) -> new CraftMetaBook(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> meta != null && meta.getClass().equals(CraftMetaBook.class) ? (BookMeta)meta : new CraftMetaBook((CraftMetaItem)meta));
-    private static final ItemMetaData<SkullMeta> SKULL_META_DATA = new ItemMetaData<SkullMeta>(SkullMeta.class, (item, extras) -> new CraftMetaSkull(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> {
+    private static final ItemMetaData<BookMeta> WRITABLE_BOOK_META_DATA = new ItemMetaData<BookMeta>(BookMeta.class, (item, extras) -> new CraftMetaBook(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> meta != null && meta.getClass().equals(CraftMetaBook.class) ? (BookMeta)meta : new CraftMetaBook((CraftMetaItem)meta));
+    private static final ItemMetaData<SkullMeta> SKULL_META_DATA = new ItemMetaData<SkullMeta>(SkullMeta.class, (item, extras) -> new CraftMetaSkull(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> {
         CraftMetaSkull skull;
         return meta instanceof CraftMetaSkull ? (skull = (CraftMetaSkull)meta) : new CraftMetaSkull((CraftMetaItem)meta);
     });
-    private static final ItemMetaData<ArmorMeta> ARMOR_META_DATA = new ItemMetaData<ArmorMeta>(ArmorMeta.class, (item, extras) -> new CraftMetaArmor(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> meta != null && meta.getClass().equals(CraftMetaArmor.class) ? (ArmorMeta)meta : new CraftMetaArmor((CraftMetaItem)meta));
-    private static final ItemMetaData<ColorableArmorMeta> COLORABLE_ARMOR_META_DATA = new ItemMetaData<ColorableArmorMeta>(ColorableArmorMeta.class, (item, extras) -> new CraftMetaColorableArmor(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> {
+    private static final ItemMetaData<ArmorMeta> ARMOR_META_DATA = new ItemMetaData<ArmorMeta>(ArmorMeta.class, (item, extras) -> new CraftMetaArmor(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> meta != null && meta.getClass().equals(CraftMetaArmor.class) ? (ArmorMeta)meta : new CraftMetaArmor((CraftMetaItem)meta));
+    private static final ItemMetaData<ColorableArmorMeta> COLORABLE_ARMOR_META_DATA = new ItemMetaData<ColorableArmorMeta>(ColorableArmorMeta.class, (item, extras) -> new CraftMetaColorableArmor(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> {
         CraftMetaColorableArmor craftMetaColorableArmor;
         if (meta instanceof ColorableArmorMeta) {
             ColorableArmorMeta colorable = (ColorableArmorMeta)meta;
@@ -56,47 +56,47 @@ public final class CraftItemMetas {
         }
         return craftMetaColorableArmor;
     });
-    private static final ItemMetaData<LeatherArmorMeta> LEATHER_ARMOR_META_DATA = new ItemMetaData<LeatherArmorMeta>(LeatherArmorMeta.class, (item, extras) -> new CraftMetaLeatherArmor(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> {
+    private static final ItemMetaData<LeatherArmorMeta> LEATHER_ARMOR_META_DATA = new ItemMetaData<LeatherArmorMeta>(LeatherArmorMeta.class, (item, extras) -> new CraftMetaLeatherArmor(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> {
         CraftMetaLeatherArmor leather;
         return meta instanceof CraftMetaLeatherArmor ? (leather = (CraftMetaLeatherArmor)meta) : new CraftMetaLeatherArmor((CraftMetaItem)meta);
     });
-    private static final ItemMetaData<PotionMeta> POTION_META_DATA = new ItemMetaData<PotionMeta>(PotionMeta.class, (item, extras) -> new CraftMetaPotion(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> {
+    private static final ItemMetaData<PotionMeta> POTION_META_DATA = new ItemMetaData<PotionMeta>(PotionMeta.class, (item, extras) -> new CraftMetaPotion(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> {
         CraftMetaPotion potion;
         return meta instanceof CraftMetaPotion ? (potion = (CraftMetaPotion)meta) : new CraftMetaPotion((CraftMetaItem)meta);
     });
-    private static final ItemMetaData<MapMeta> MAP_META_DATA = new ItemMetaData<MapMeta>(MapMeta.class, (item, extras) -> new CraftMetaMap(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> {
+    private static final ItemMetaData<MapMeta> MAP_META_DATA = new ItemMetaData<MapMeta>(MapMeta.class, (item, extras) -> new CraftMetaMap(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> {
         CraftMetaMap map;
         return meta instanceof CraftMetaMap ? (map = (CraftMetaMap)meta) : new CraftMetaMap((CraftMetaItem)meta);
     });
-    private static final ItemMetaData<FireworkMeta> FIREWORK_META_DATA = new ItemMetaData<FireworkMeta>(FireworkMeta.class, (item, extras) -> new CraftMetaFirework(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> {
+    private static final ItemMetaData<FireworkMeta> FIREWORK_META_DATA = new ItemMetaData<FireworkMeta>(FireworkMeta.class, (item, extras) -> new CraftMetaFirework(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> {
         CraftMetaFirework firework;
         return meta instanceof CraftMetaFirework ? (firework = (CraftMetaFirework)meta) : new CraftMetaFirework((CraftMetaItem)meta);
     });
-    private static final ItemMetaData<FireworkEffectMeta> CHARGE_META_DATA = new ItemMetaData<FireworkEffectMeta>(FireworkEffectMeta.class, (item, extras) -> new CraftMetaCharge(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> {
+    private static final ItemMetaData<FireworkEffectMeta> CHARGE_META_DATA = new ItemMetaData<FireworkEffectMeta>(FireworkEffectMeta.class, (item, extras) -> new CraftMetaCharge(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> {
         CraftMetaCharge charge;
         return meta instanceof CraftMetaCharge ? (charge = (CraftMetaCharge)meta) : new CraftMetaCharge((CraftMetaItem)meta);
     });
-    private static final ItemMetaData<EnchantmentStorageMeta> ENCHANTED_BOOK_META_DATA = new ItemMetaData<EnchantmentStorageMeta>(EnchantmentStorageMeta.class, (item, extras) -> new CraftMetaEnchantedBook(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> {
+    private static final ItemMetaData<EnchantmentStorageMeta> ENCHANTED_BOOK_META_DATA = new ItemMetaData<EnchantmentStorageMeta>(EnchantmentStorageMeta.class, (item, extras) -> new CraftMetaEnchantedBook(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> {
         CraftMetaEnchantedBook enchantedBook;
         return meta instanceof CraftMetaEnchantedBook ? (enchantedBook = (CraftMetaEnchantedBook)meta) : new CraftMetaEnchantedBook((CraftMetaItem)meta);
     });
-    private static final ItemMetaData<BannerMeta> BANNER_META_DATA = new ItemMetaData<BannerMeta>(BannerMeta.class, (item, extras) -> new CraftMetaBanner(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> {
+    private static final ItemMetaData<BannerMeta> BANNER_META_DATA = new ItemMetaData<BannerMeta>(BannerMeta.class, (item, extras) -> new CraftMetaBanner(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> {
         CraftMetaBanner banner;
         return meta instanceof CraftMetaBanner ? (banner = (CraftMetaBanner)meta) : new CraftMetaBanner((CraftMetaItem)meta);
     });
-    private static final ItemMetaData<SpawnEggMeta> SPAWN_EGG_META_DATA = new ItemMetaData<SpawnEggMeta>(SpawnEggMeta.class, (item, extras) -> new CraftMetaSpawnEgg(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> {
+    private static final ItemMetaData<SpawnEggMeta> SPAWN_EGG_META_DATA = new ItemMetaData<SpawnEggMeta>(SpawnEggMeta.class, (item, extras) -> new CraftMetaSpawnEgg(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> {
         CraftMetaSpawnEgg spawnEgg;
         return meta instanceof CraftMetaSpawnEgg ? (spawnEgg = (CraftMetaSpawnEgg)meta) : new CraftMetaSpawnEgg((CraftMetaItem)meta);
     });
-    private static final ItemMetaData<ArmorStandMeta> ARMOR_STAND_META_DATA = new ItemMetaData<ArmorStandMeta>(ArmorStandMeta.class, (item, extras) -> new CraftMetaArmorStand(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> {
+    private static final ItemMetaData<ArmorStandMeta> ARMOR_STAND_META_DATA = new ItemMetaData<ArmorStandMeta>(ArmorStandMeta.class, (item, extras) -> new CraftMetaArmorStand(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> {
         CraftMetaArmorStand armorStand;
         return meta instanceof CraftMetaArmorStand ? (armorStand = (CraftMetaArmorStand)meta) : new CraftMetaArmorStand((CraftMetaItem)meta);
     });
-    private static final ItemMetaData<KnowledgeBookMeta> KNOWLEDGE_BOOK_META_DATA = new ItemMetaData<KnowledgeBookMeta>(KnowledgeBookMeta.class, (item, extras) -> new CraftMetaKnowledgeBook(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> {
+    private static final ItemMetaData<KnowledgeBookMeta> KNOWLEDGE_BOOK_META_DATA = new ItemMetaData<KnowledgeBookMeta>(KnowledgeBookMeta.class, (item, extras) -> new CraftMetaKnowledgeBook(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> {
         CraftMetaKnowledgeBook knowledgeBook;
         return meta instanceof CraftMetaKnowledgeBook ? (knowledgeBook = (CraftMetaKnowledgeBook)meta) : new CraftMetaKnowledgeBook((CraftMetaItem)meta);
     });
-    private static final ItemMetaData<BlockStateMeta> BLOCK_STATE_META_DATA = new ItemMetaData<BlockStateMeta>(BlockStateMeta.class, (item, extras) -> new CraftMetaBlockState(item.getComponentChanges(), CraftItemType.minecraftToBukkit(item.getItem()), (Set<ComponentType<?>>)extras), (type, meta) -> new CraftMetaBlockState((CraftMetaItem)meta, type.asMaterial()));
+    private static final ItemMetaData<BlockStateMeta> BLOCK_STATE_META_DATA = new ItemMetaData<BlockStateMeta>(BlockStateMeta.class, (item, extras) -> new CraftMetaBlockState(item.getComponentsPatch(), CraftItemType.minecraftToBukkit(item.getItem()), (Set<DataComponentType<?>>)extras), (type, meta) -> new CraftMetaBlockState((CraftMetaItem)meta, type.asMaterial()));
     
     /*
     private static final ItemMetaData<ShieldMeta> SHIELD_META_DATA = new ItemMetaData<ShieldMeta>(ShieldMeta.class, (item, extras) -> new CraftMetaShield(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> new CraftMetaShield((CraftMetaItem)meta));
@@ -110,15 +110,15 @@ public final class CraftItemMetas {
     });
     */
     
-    private static final ItemMetaData<CrossbowMeta> CROSSBOW_META_DATA = new ItemMetaData<CrossbowMeta>(CrossbowMeta.class, (item, extras) -> new CraftMetaCrossbow(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> {
+    private static final ItemMetaData<CrossbowMeta> CROSSBOW_META_DATA = new ItemMetaData<CrossbowMeta>(CrossbowMeta.class, (item, extras) -> new CraftMetaCrossbow(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> {
         CraftMetaCrossbow crossbow;
         return meta instanceof CraftMetaCrossbow ? (crossbow = (CraftMetaCrossbow)meta) : new CraftMetaCrossbow((CraftMetaItem)meta);
     });
-    private static final ItemMetaData<SuspiciousStewMeta> SUSPICIOUS_STEW_META_DATA = new ItemMetaData<SuspiciousStewMeta>(SuspiciousStewMeta.class, (item, extras) -> new CraftMetaSuspiciousStew(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> {
+    private static final ItemMetaData<SuspiciousStewMeta> SUSPICIOUS_STEW_META_DATA = new ItemMetaData<SuspiciousStewMeta>(SuspiciousStewMeta.class, (item, extras) -> new CraftMetaSuspiciousStew(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> {
         CraftMetaSuspiciousStew suspiciousStew;
         return meta instanceof CraftMetaSuspiciousStew ? (suspiciousStew = (CraftMetaSuspiciousStew)meta) : new CraftMetaSuspiciousStew((CraftMetaItem)meta);
     });
-    private static final ItemMetaData<ItemMeta> ENTITY_TAG_META_DATA = new ItemMetaData<ItemMeta>(ItemMeta.class, (item, extras) -> new CraftMetaEntityTag(item.getComponentChanges(), (Set<ComponentType<?>>)extras), (type, meta) -> {
+    private static final ItemMetaData<ItemMeta> ENTITY_TAG_META_DATA = new ItemMetaData<ItemMeta>(ItemMeta.class, (item, extras) -> new CraftMetaEntityTag(item.getComponentsPatch(), (Set<DataComponentType<?>>)extras), (type, meta) -> {
         CraftMetaEntityTag entityTag;
         return meta instanceof CraftMetaEntityTag ? (entityTag = (CraftMetaEntityTag)meta) : new CraftMetaEntityTag((CraftMetaItem)meta);
     });
@@ -247,7 +247,7 @@ public final class CraftItemMetas {
     }
 
     // @Desugar
-    public record ItemMetaData<I extends ItemMeta>(Class<I> metaClass, BiFunction<ItemStack, Set<ComponentType<?>>, I> fromItemStack, BiFunction<ItemType.Typed<I>, CraftMetaItem, I> fromItemMeta) {
+    public record ItemMetaData<I extends ItemMeta>(Class<I> metaClass, BiFunction<ItemStack, Set<DataComponentType<?>>, I> fromItemStack, BiFunction<ItemType.Typed<I>, CraftMetaItem, I> fromItemMeta) {
     }
 }
 

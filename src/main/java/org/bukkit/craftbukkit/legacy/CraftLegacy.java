@@ -1,13 +1,12 @@
 package org.bukkit.craftbukkit.legacy;
 
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.util.CraftLegacyMaterials;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.material.MaterialData;
-
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.Item;
 
 public class CraftLegacy extends CraftLegacyMaterials {
 
@@ -26,7 +25,7 @@ public class CraftLegacy extends CraftLegacyMaterials {
 
 	        if (mappedData == null && material.isBlock()) {
 	            Block block = CraftMagicNumbers.getBlock(material);
-	            BlockState blockData = block.getDefaultState();
+	            BlockState blockData = block.defaultBlockState();
 
 	            // Try exact match first
 	            mappedData = CraftLegacy.dataToMaterial.get(blockData);

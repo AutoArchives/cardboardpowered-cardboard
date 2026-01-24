@@ -1,14 +1,13 @@
 package org.cardboardpowered.impl.inventory;
 
-import net.minecraft.inventory.Inventory;
-
+import net.minecraft.world.Container;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.EnchantingInventory;
 import org.bukkit.inventory.ItemStack;
 
 public class CardboardEnchantingInventory extends CraftInventory implements EnchantingInventory {
 
-    public CardboardEnchantingInventory(Inventory inventory) {
+    public CardboardEnchantingInventory(Container inventory) {
         super(inventory);
     }
 

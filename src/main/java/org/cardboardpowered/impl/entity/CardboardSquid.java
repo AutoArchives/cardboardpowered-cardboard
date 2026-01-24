@@ -5,13 +5,13 @@ import org.bukkit.entity.Squid;
 
 public class CardboardSquid extends CraftAgeable implements Squid {
 
-    public CardboardSquid(CraftServer server, net.minecraft.entity.passive.SquidEntity entity) {
+    public CardboardSquid(CraftServer server, net.minecraft.world.entity.animal.squid.Squid entity) {
         super(server, entity);
     }
 
     @Override
-    public net.minecraft.entity.passive.SquidEntity getHandle() {
-        return (net.minecraft.entity.passive.SquidEntity) this.nms;
+    public net.minecraft.world.entity.animal.squid.Squid getHandle() {
+        return (net.minecraft.world.entity.animal.squid.Squid) this.nms;
     }
 
     @Override

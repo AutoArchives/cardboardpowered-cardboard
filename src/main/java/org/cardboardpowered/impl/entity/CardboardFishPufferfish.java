@@ -1,19 +1,19 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.passive.PufferfishEntity;
+import net.minecraft.world.entity.animal.fish.Pufferfish;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.PufferFish;
 
 public class CardboardFishPufferfish extends CardboardFish implements PufferFish {
 
-    public CardboardFishPufferfish(CraftServer server, PufferfishEntity entity) {
+    public CardboardFishPufferfish(CraftServer server, Pufferfish entity) {
         super(server, entity);
     }
 
     @Override
-    public PufferfishEntity getHandle() {
-        return (PufferfishEntity) super.getHandle();
+    public Pufferfish getHandle() {
+        return (Pufferfish) super.getHandle();
     }
 
     @Override

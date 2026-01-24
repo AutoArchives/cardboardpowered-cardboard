@@ -39,25 +39,23 @@ import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.util.Codec;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.WrittenBookContentComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.equipment.EquipmentAsset;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.text.RawFilteredPair;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Language;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.locale.Language;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.network.Filterable;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.WrittenBookContent;
 
 // Paper Adventure
 public class PaperAdventure {
@@ -66,7 +64,7 @@ public class PaperAdventure {
     private static final Pattern LOCALIZATION_PATTERN = Pattern.compile("%(?:(\\d+)\\$)?s");
     public static final ComponentFlattener FLATTENER = ComponentFlattener.basic().toBuilder()
         .complexMapper(TranslatableComponent.class, (translatable, consumer) -> {
-            final @NonNull String translated = Language.getInstance().get(translatable.key());
+            final @NonNull String translated = Language.getInstance().getOrDefault(translatable.key());
 
             final Matcher matcher = LOCALIZATION_PATTERN.matcher(translated);
             final List<Component> args = translatable.args();
@@ -113,24 +111,24 @@ public class PaperAdventure {
         .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
         .downsampleColors()
         .build();
-    private static final Codec<NbtCompound, String, IOException, IOException> NBT_CODEC = new Codec<NbtCompound, String, IOException, IOException>() {
+    private static final Codec<CompoundTag, String, IOException, IOException> NBT_CODEC = new Codec<CompoundTag, String, IOException, IOException>() {
         @Override
-        public @NonNull NbtCompound decode(final @NonNull String encoded) throws IOException {
+        public @NonNull CompoundTag decode(final @NonNull String encoded) throws IOException {
             try {
-                return StringNbtReader.readCompound(encoded);
+                return TagParser.parseCompoundFully(encoded);
             } catch (final CommandSyntaxException e) {
                 throw new IOException(e);
             }
         }
 
         @Override
-        public @NonNull String encode(final @NonNull NbtCompound decoded) {
+        public @NonNull String encode(final @NonNull CompoundTag decoded) {
             return decoded.toString();
         }
     };
 
     //static final WrapperAwareSerializer WRAPPER_AWARE_SERIALIZER = new WrapperAwareSerializer();
-    public static final ComponentSerializer<Component, Component, Text> WRAPPER_AWARE_SERIALIZER = new WrapperAwareSerializer(() -> CraftRegistry.getMinecraftRegistry().getOps(JavaOps.INSTANCE));
+    public static final ComponentSerializer<Component, Component, net.minecraft.network.chat.Component> WRAPPER_AWARE_SERIALIZER = new WrapperAwareSerializer(() -> CraftRegistry.getMinecraftRegistry().createSerializationContext(JavaOps.INSTANCE));
 
     
     public PaperAdventure() {
@@ -139,26 +137,26 @@ public class PaperAdventure {
     // Key
 
     public static Identifier asVanilla(final Key key) {
-        return Identifier.of(key.namespace(), key.value());
+        return Identifier.fromNamespaceAndPath(key.namespace(), key.value());
     }
 
     public static Identifier asVanillaNullable(final Key key) {
         if (key == null) {
             return null;
         }
-        return Identifier.of(key.namespace(), key.value());
+        return Identifier.fromNamespaceAndPath(key.namespace(), key.value());
     }
 
     // Component
 
-    public static Component asAdventure(final Text component) {
+    public static Component asAdventure(final net.minecraft.network.chat.Component component) {
         return component == null ? Component.empty() : WRAPPER_AWARE_SERIALIZER.deserialize(component);
     	// return component == null ? Component.empty() : GSON.serializer().fromJson(Text.Serialization.toJsonTree(component), Component.class);
     }
 
-    public static ArrayList<Component> asAdventure(final List<Text> vanillas) {
+    public static ArrayList<Component> asAdventure(final List<net.minecraft.network.chat.Component> vanillas) {
         final ArrayList<Component> adventures = new ArrayList<>(vanillas.size());
-        for (final Text vanilla : vanillas) {
+        for (final net.minecraft.network.chat.Component vanilla : vanillas) {
             adventures.add(asAdventure(vanilla));
         }
         return adventures;
@@ -180,13 +178,13 @@ public class PaperAdventure {
         return jsons;
     }
 
-    public static Text asVanilla(final Component component) {
+    public static net.minecraft.network.chat.Component asVanilla(final Component component) {
         if (true) return new CardboardAdventureComponent(component);
         return ((IMixinMinecraftServer)CraftServer.server).IC$from_json(String.valueOf(GSON.serializer().toJsonTree(component)));
     }
 
-    public static List<Text> asVanilla(final List<Component> adventures) {
-        final List<Text> vanillas = new ArrayList<>(adventures.size());
+    public static List<net.minecraft.network.chat.Component> asVanilla(final List<Component> adventures) {
+        final List<net.minecraft.network.chat.Component> vanillas = new ArrayList<>(adventures.size());
         for (final Component adventure : adventures) {
             vanillas.add(asVanilla(adventure));
         }
@@ -205,7 +203,7 @@ public class PaperAdventure {
         );
     }
 
-    public static String asJsonString(final Text component, final Locale locale) {
+    public static String asJsonString(final net.minecraft.network.chat.Component component, final Locale locale) {
         if ((Object)component instanceof CardboardAdventureComponent) {
             return asJsonString(((CardboardAdventureComponent)(Object) component).adventure, locale);
         }
@@ -220,69 +218,69 @@ public class PaperAdventure {
 
     // BossBar
 
-    public static net.minecraft.entity.boss.BossBar.Color asVanilla(final BossBar.Color color) {
+    public static net.minecraft.world.BossEvent.BossBarColor asVanilla(final BossBar.Color color) {
         if (color == BossBar.Color.PINK) {
-            return net.minecraft.entity.boss.BossBar.Color.PINK;
+            return net.minecraft.world.BossEvent.BossBarColor.PINK;
         } else if (color == BossBar.Color.BLUE) {
-            return net.minecraft.entity.boss.BossBar.Color.BLUE;
+            return net.minecraft.world.BossEvent.BossBarColor.BLUE;
         } else if (color == BossBar.Color.RED) {
-            return net.minecraft.entity.boss.BossBar.Color.RED;
+            return net.minecraft.world.BossEvent.BossBarColor.RED;
         } else if (color == BossBar.Color.GREEN) {
-            return net.minecraft.entity.boss.BossBar.Color.GREEN;
+            return net.minecraft.world.BossEvent.BossBarColor.GREEN;
         } else if (color == BossBar.Color.YELLOW) {
-            return net.minecraft.entity.boss.BossBar.Color.YELLOW;
+            return net.minecraft.world.BossEvent.BossBarColor.YELLOW;
         } else if (color == BossBar.Color.PURPLE) {
-            return net.minecraft.entity.boss.BossBar.Color.PURPLE;
+            return net.minecraft.world.BossEvent.BossBarColor.PURPLE;
         } else if (color == BossBar.Color.WHITE) {
-            return net.minecraft.entity.boss.BossBar.Color.WHITE;
+            return net.minecraft.world.BossEvent.BossBarColor.WHITE;
         }
         throw new IllegalArgumentException(color.name());
     }
 
-    public static BossBar.Color asAdventure(final net.minecraft.entity.boss.BossBar.Color color) {
-        if(color == net.minecraft.entity.boss.BossBar.Color.PINK) {
+    public static BossBar.Color asAdventure(final net.minecraft.world.BossEvent.BossBarColor color) {
+        if(color == net.minecraft.world.BossEvent.BossBarColor.PINK) {
             return BossBar.Color.PINK;
-        } else if(color == net.minecraft.entity.boss.BossBar.Color.BLUE) {
+        } else if(color == net.minecraft.world.BossEvent.BossBarColor.BLUE) {
             return BossBar.Color.BLUE;
-        } else if(color == net.minecraft.entity.boss.BossBar.Color.RED) {
+        } else if(color == net.minecraft.world.BossEvent.BossBarColor.RED) {
             return BossBar.Color.RED;
-        } else if(color == net.minecraft.entity.boss.BossBar.Color.GREEN) {
+        } else if(color == net.minecraft.world.BossEvent.BossBarColor.GREEN) {
             return BossBar.Color.GREEN;
-        } else if(color == net.minecraft.entity.boss.BossBar.Color.YELLOW) {
+        } else if(color == net.minecraft.world.BossEvent.BossBarColor.YELLOW) {
             return BossBar.Color.YELLOW;
-        } else if(color == net.minecraft.entity.boss.BossBar.Color.PURPLE) {
+        } else if(color == net.minecraft.world.BossEvent.BossBarColor.PURPLE) {
             return BossBar.Color.PURPLE;
-        } else if(color == net.minecraft.entity.boss.BossBar.Color.WHITE) {
+        } else if(color == net.minecraft.world.BossEvent.BossBarColor.WHITE) {
             return BossBar.Color.WHITE;
         }
         throw new IllegalArgumentException(color.name());
     }
 
-    public static net.minecraft.entity.boss.BossBar.Style asVanilla(final BossBar.Overlay overlay) {
+    public static net.minecraft.world.BossEvent.BossBarOverlay asVanilla(final BossBar.Overlay overlay) {
         if (overlay == BossBar.Overlay.PROGRESS) {
-            return net.minecraft.entity.boss.BossBar.Style.PROGRESS;
+            return net.minecraft.world.BossEvent.BossBarOverlay.PROGRESS;
         } else if (overlay == BossBar.Overlay.NOTCHED_6) {
-            return net.minecraft.entity.boss.BossBar.Style.NOTCHED_6;
+            return net.minecraft.world.BossEvent.BossBarOverlay.NOTCHED_6;
         } else if (overlay == BossBar.Overlay.NOTCHED_10) {
-            return net.minecraft.entity.boss.BossBar.Style.NOTCHED_10;
+            return net.minecraft.world.BossEvent.BossBarOverlay.NOTCHED_10;
         } else if (overlay == BossBar.Overlay.NOTCHED_12) {
-            return net.minecraft.entity.boss.BossBar.Style.NOTCHED_12;
+            return net.minecraft.world.BossEvent.BossBarOverlay.NOTCHED_12;
         } else if (overlay == BossBar.Overlay.NOTCHED_20) {
-            return net.minecraft.entity.boss.BossBar.Style.NOTCHED_20;
+            return net.minecraft.world.BossEvent.BossBarOverlay.NOTCHED_20;
         }
         throw new IllegalArgumentException(overlay.name());
     }
 
-    public static BossBar.Overlay asAdventure(final net.minecraft.entity.boss.BossBar.Style overlay) {
-        if (overlay == net.minecraft.entity.boss.BossBar.Style.PROGRESS) {
+    public static BossBar.Overlay asAdventure(final net.minecraft.world.BossEvent.BossBarOverlay overlay) {
+        if (overlay == net.minecraft.world.BossEvent.BossBarOverlay.PROGRESS) {
             return BossBar.Overlay.PROGRESS;
-        } else if (overlay == net.minecraft.entity.boss.BossBar.Style.NOTCHED_6) {
+        } else if (overlay == net.minecraft.world.BossEvent.BossBarOverlay.NOTCHED_6) {
             return BossBar.Overlay.NOTCHED_6;
-        } else if (overlay == net.minecraft.entity.boss.BossBar.Style.NOTCHED_10) {
+        } else if (overlay == net.minecraft.world.BossEvent.BossBarOverlay.NOTCHED_10) {
             return BossBar.Overlay.NOTCHED_10;
-        } else if (overlay == net.minecraft.entity.boss.BossBar.Style.NOTCHED_12) {
+        } else if (overlay == net.minecraft.world.BossEvent.BossBarOverlay.NOTCHED_12) {
             return BossBar.Overlay.NOTCHED_12;
-        } else if (overlay == net.minecraft.entity.boss.BossBar.Style.NOTCHED_20) {
+        } else if (overlay == net.minecraft.world.BossEvent.BossBarOverlay.NOTCHED_20) {
             return BossBar.Overlay.NOTCHED_20;
         }
         throw new IllegalArgumentException(overlay.name());
@@ -313,11 +311,11 @@ public class PaperAdventure {
     
     public static ItemStack asItemStack(final Book book, final Locale locale) {
     	        final ItemStack item = new ItemStack(Items.WRITTEN_BOOK, 1);
-    	        item.set(DataComponentTypes.WRITTEN_BOOK_CONTENT, new WrittenBookContentComponent(
-    	        		RawFilteredPair.of(validateField(asPlain(book.title(), locale), WrittenBookContentComponent.MAX_TITLE_LENGTH, "title")),
+    	        item.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(
+    	        		Filterable.passThrough(validateField(asPlain(book.title(), locale), WrittenBookContent.TITLE_MAX_LENGTH, "title")),
     	            asPlain(book.author(), locale),
     	            0,
-    	            book.pages().stream().map(c -> RawFilteredPair.of(PaperAdventure.asVanilla(c))).toList(), // TODO should we validate legnth?
+    	            book.pages().stream().map(c -> Filterable.passThrough(PaperAdventure.asVanilla(c))).toList(), // TODO should we validate legnth?
     	            false
     	        ));
     	        return item;
@@ -348,32 +346,32 @@ public class PaperAdventure {
 
     // Sounds
 
-    public static net.minecraft.sound.SoundCategory asVanilla(final Sound.Source source) {
+    public static net.minecraft.sounds.SoundSource asVanilla(final Sound.Source source) {
         if (source == Sound.Source.MASTER) {
-            return SoundCategory.MASTER;
+            return SoundSource.MASTER;
         } else if (source == Sound.Source.MUSIC) {
-            return SoundCategory.MUSIC;
+            return SoundSource.MUSIC;
         } else if (source == Sound.Source.RECORD) {
-            return SoundCategory.RECORDS;
+            return SoundSource.RECORDS;
         } else if (source == Sound.Source.WEATHER) {
-            return SoundCategory.WEATHER;
+            return SoundSource.WEATHER;
         } else if (source == Sound.Source.BLOCK) {
-            return SoundCategory.BLOCKS;
+            return SoundSource.BLOCKS;
         } else if (source == Sound.Source.HOSTILE) {
-            return SoundCategory.HOSTILE;
+            return SoundSource.HOSTILE;
         } else if (source == Sound.Source.NEUTRAL) {
-            return SoundCategory.NEUTRAL;
+            return SoundSource.NEUTRAL;
         } else if (source == Sound.Source.PLAYER) {
-            return SoundCategory.PLAYERS;
+            return SoundSource.PLAYERS;
         } else if (source == Sound.Source.AMBIENT) {
-            return SoundCategory.AMBIENT;
+            return SoundSource.AMBIENT;
         } else if (source == Sound.Source.VOICE) {
-            return SoundCategory.VOICE;
+            return SoundSource.VOICE;
         }
         throw new IllegalArgumentException(source.name());
     }
 
-    public static @Nullable SoundCategory asVanillaNullable(final Sound.@Nullable Source source) {
+    public static @Nullable SoundSource asVanillaNullable(final Sound.@Nullable Source source) {
         if (source == null) {
             return null;
         }
@@ -382,7 +380,7 @@ public class PaperAdventure {
 
     // NBT
 
-    public static @Nullable BinaryTagHolder asBinaryTagHolder(final @Nullable NbtCompound tag) {
+    public static @Nullable BinaryTagHolder asBinaryTagHolder(final @Nullable CompoundTag tag) {
         if (tag == null) {
             return null;
         }
@@ -395,20 +393,20 @@ public class PaperAdventure {
 
     // Colors
 
-    public static @NonNull TextColor asAdventure(Formatting minecraftColor) {
-        if (minecraftColor.getColorValue() == null) {
+    public static @NonNull TextColor asAdventure(ChatFormatting minecraftColor) {
+        if (minecraftColor.getColor() == null) {
             throw new IllegalArgumentException("Not a valid color");
         }
-        return TextColor.color(minecraftColor.getColorValue());
+        return TextColor.color(minecraftColor.getColor());
     }
 
-    public static @Nullable Formatting asVanilla(TextColor color) {
-        return Formatting.byColorIndex(color.value());
+    public static @Nullable ChatFormatting asVanilla(TextColor color) {
+        return ChatFormatting.getById(color.value());
     }
 
-    public static Text asVanillaNullToEmpty(Component component) {
+    public static net.minecraft.network.chat.Component asVanillaNullToEmpty(Component component) {
         if (component == null) {
-            return ScreenTexts.EMPTY;
+            return CommonComponents.EMPTY;
         }
         return asVanilla(component);
     }
@@ -417,21 +415,21 @@ public class PaperAdventure {
         return Key.key((String)key.getNamespace(), (String)key.getPath());
     }
 	
-	public static Key asAdventureKey(RegistryKey<?> key) {
-        return PaperAdventure.asAdventure(key.getValue());
+	public static Key asAdventureKey(ResourceKey<?> key) {
+        return PaperAdventure.asAdventure(key.identifier());
     }
 	
-	public static RegistryEntry<SoundEvent> resolveSound(Key key) {
+	public static Holder<SoundEvent> resolveSound(Key key) {
         Identifier id = PaperAdventure.asVanilla(key);
-        Optional<RegistryEntry.Reference<SoundEvent>> vanilla = Registries.SOUND_EVENT.getEntry(id);
+        Optional<Holder.Reference<SoundEvent>> vanilla = BuiltInRegistries.SOUND_EVENT.get(id);
         if (vanilla.isPresent()) {
             return vanilla.get();
         }
-        return RegistryEntry.of(SoundEvent.of(id));
+        return Holder.direct(SoundEvent.createVariableRangeEvent(id));
     }
 
-	public static <T> RegistryKey<T> asVanilla(RegistryKey<? extends Registry<T>> registry, Key key) {
-        return RegistryKey.of(registry, PaperAdventure.asVanilla(key));
+	public static <T> ResourceKey<T> asVanilla(ResourceKey<? extends Registry<T>> registry, Key key) {
+        return ResourceKey.create(registry, PaperAdventure.asVanilla(key));
     }
 
 }

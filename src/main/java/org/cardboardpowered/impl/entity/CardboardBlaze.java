@@ -1,19 +1,18 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.mob.BlazeEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.EntityType;
 
 public class CardboardBlaze extends CraftMonster implements Blaze {
 
-    public CardboardBlaze(CraftServer server, BlazeEntity entity) {
+    public CardboardBlaze(CraftServer server, net.minecraft.world.entity.monster.Blaze entity) {
         super(server, entity);
     }
 
     @Override
-    public BlazeEntity getHandle() {
-        return (BlazeEntity) nms;
+    public net.minecraft.world.entity.monster.Blaze getHandle() {
+        return (net.minecraft.world.entity.monster.Blaze) nms;
     }
 
     @Override

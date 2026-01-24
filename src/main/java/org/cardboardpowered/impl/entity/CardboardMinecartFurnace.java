@@ -1,13 +1,13 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.vehicle.FurnaceMinecartEntity;
+import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.minecart.PoweredMinecart;
 
 public class CardboardMinecartFurnace extends CardboardMinecart implements PoweredMinecart {
 
-    public CardboardMinecartFurnace(CraftServer server, FurnaceMinecartEntity entity) {
+    public CardboardMinecartFurnace(CraftServer server, MinecartFurnace entity) {
         super(server, entity);
     }
 

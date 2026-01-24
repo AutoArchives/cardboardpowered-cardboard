@@ -1,5 +1,7 @@
 package org.cardboardpowered.mixin.entity;
 
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.command.CommandSender;
 import org.spongepowered.asm.mixin.Mixin;
 
@@ -7,20 +9,17 @@ import org.cardboardpowered.interfaces.IMixinCommandOutput;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-
-@Mixin(targets = "net/minecraft/server/network/ServerPlayerEntity$3")
+@Mixin(targets = "net/minecraft/server/level/ServerPlayer$3")
 public class MixinServerPlayerEntityCommandSender implements IMixinCommandOutput {
 
 	/**
 	 */
 	@Override
-    public CommandSender getBukkitSender(ServerCommandSource source) {
+    public CommandSender getBukkitSender(CommandSourceStack source) {
 		// System.out.println("DEBUG: getBukkitSender!");
 		
-		if (source.isExecutedByPlayer()) {
-			ServerPlayerEntity plr = source.getPlayer();
+		if (source.isPlayer()) {
+			ServerPlayer plr = source.getPlayer();
 			return ((IMixinServerEntityPlayer) plr) .getBukkit();
 		}
 		

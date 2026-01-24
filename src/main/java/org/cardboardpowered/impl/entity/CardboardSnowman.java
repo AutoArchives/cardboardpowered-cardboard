@@ -1,7 +1,7 @@
 package org.cardboardpowered.impl.entity;
 
 import net.kyori.adventure.sound.Sound.Source;
-import net.minecraft.entity.passive.SnowGolemEntity;
+import net.minecraft.world.entity.animal.golem.SnowGolem;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class CardboardSnowman extends CardboardGolem implements Snowman {
 
-    public CardboardSnowman(CraftServer server, SnowGolemEntity entity) {
+    public CardboardSnowman(CraftServer server, SnowGolem entity) {
         super(server, entity);
     }
 
@@ -21,12 +21,12 @@ public class CardboardSnowman extends CardboardGolem implements Snowman {
 
     @Override
     public void setDerp(boolean derpMode) {
-        getHandle().setHasPumpkin(!derpMode);
+        getHandle().setPumpkin(!derpMode);
     }
 
     @Override
-    public SnowGolemEntity getHandle() {
-        return (SnowGolemEntity) nms;
+    public SnowGolem getHandle() {
+        return (SnowGolem) nms;
     }
 
     @Override

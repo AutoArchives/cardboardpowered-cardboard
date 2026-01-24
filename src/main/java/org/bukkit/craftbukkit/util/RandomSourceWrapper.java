@@ -1,9 +1,9 @@
 package org.bukkit.craftbukkit.util;
 
 import java.util.Random;
-import net.minecraft.util.math.random.RandomSplitter;
+import net.minecraft.world.level.levelgen.PositionalRandomFactory;
 
-public final class RandomSourceWrapper implements net.minecraft.util.math.random.Random {
+public final class RandomSourceWrapper implements net.minecraft.util.RandomSource {
 
     private final Random random;
 
@@ -12,12 +12,12 @@ public final class RandomSourceWrapper implements net.minecraft.util.math.random
     }
 
     @Override
-    public net.minecraft.util.math.random.Random split() {
+    public net.minecraft.util.RandomSource fork() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public RandomSplitter nextSplitter() {
+    public PositionalRandomFactory forkPositional() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -63,9 +63,9 @@ public final class RandomSourceWrapper implements net.minecraft.util.math.random
 
     public static final class RandomWrapper extends Random {
 
-        private final net.minecraft.util.math.random.Random random;
+        private final net.minecraft.util.RandomSource random;
 
-        public RandomWrapper(net.minecraft.util.math.random.Random random) {
+        public RandomWrapper(net.minecraft.util.RandomSource random) {
             this.random = random;
         }
 
@@ -113,7 +113,7 @@ public final class RandomSourceWrapper implements net.minecraft.util.math.random
 
         // @Override
         public int nextInt(int var0, int var1) {
-            return this.random.nextBetweenExclusive(var0, var1);
+            return this.random.nextInt(var0, var1);
         }
     }
 

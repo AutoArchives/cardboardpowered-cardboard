@@ -11,11 +11,7 @@ import io.papermc.paper.registry.data.util.Conversions;
 import io.papermc.paper.registry.legacy.DelayedRegistryEntry;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
-
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.registry.Registry;
-import net.minecraft.world.gen.structure.StructureType;
-
+import net.minecraft.core.Registry;
 import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.util.ApiVersion;
@@ -34,7 +30,7 @@ public interface RegistryEntry<M, A extends Keyed> { // TODO remove Keyed
         return this.meta().apiKey();
     }
 
-    default net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey() {
+    default net.minecraft.resources.ResourceKey<? extends Registry<M>> mcKey() {
         return this.meta().mcKey();
     }
 

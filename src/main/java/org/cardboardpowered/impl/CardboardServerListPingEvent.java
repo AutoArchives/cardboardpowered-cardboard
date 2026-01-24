@@ -11,10 +11,9 @@ import org.bukkit.event.server.ServerListPingEvent;
 import org.cardboardpowered.impl.util.IconCacheImpl;
 
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
-
-import net.minecraft.network.ClientConnection;
+import net.minecraft.network.Connection;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 public class CardboardServerListPingEvent extends ServerListPingEvent {
     
@@ -23,9 +22,9 @@ public class CardboardServerListPingEvent extends ServerListPingEvent {
     
     //      public ServerListPingEvent(@NotNull InetAddress address, @NotNull String motd, boolean shouldSendChatPreviews, int numPlayers, int maxPlayers) {
 
-    public CardboardServerListPingEvent(ClientConnection connection, MinecraftServer server) {
-        super("", ((InetSocketAddress) connection.getAddress()).getAddress(), server.getServerMotd(), server.getPlayerManager().getCurrentPlayerCount(), server.getPlayerManager().getMaxPlayerCount());
-        this.players = server.getPlayerManager().players.toArray();
+    public CardboardServerListPingEvent(Connection connection, MinecraftServer server) {
+        super("", ((InetSocketAddress) connection.getRemoteAddress()).getAddress(), server.getMotd(), server.getPlayerList().getPlayerCount(), server.getPlayerList().getMaxPlayers());
+        this.players = server.getPlayerList().players.toArray();
         this.icon = CraftServer.INSTANCE.getServerIcon();
     }
 
@@ -38,7 +37,7 @@ public class CardboardServerListPingEvent extends ServerListPingEvent {
         return new Iterator<Player>() {
             int i;
             int ret = Integer.MIN_VALUE;
-            ServerPlayerEntity player;
+            ServerPlayer player;
 
             @Override
             public boolean hasNext() {
@@ -47,7 +46,7 @@ public class CardboardServerListPingEvent extends ServerListPingEvent {
                 }
                 final Object[] currentPlayers = players;
                 for (int length = currentPlayers.length, i = this.i; i < length; i++) {
-                    final ServerPlayerEntity player = (ServerPlayerEntity) currentPlayers[i];
+                    final ServerPlayer player = (ServerPlayer) currentPlayers[i];
                     if (player != null) {
                         this.i = i + 1;
                         this.player = player;
@@ -62,7 +61,7 @@ public class CardboardServerListPingEvent extends ServerListPingEvent {
                 if (!hasNext()) {
                     throw new java.util.NoSuchElementException();
                 }
-                final ServerPlayerEntity player = this.player;
+                final ServerPlayer player = this.player;
                 this.player = null;
                 this.ret = this.i - 1;
                 return (Player) ((IMixinServerEntityPlayer)player).getBukkitEntity();

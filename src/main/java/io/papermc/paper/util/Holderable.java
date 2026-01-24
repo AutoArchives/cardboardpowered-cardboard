@@ -7,8 +7,8 @@ import com.mojang.serialization.JsonOps;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import net.kyori.adventure.key.Key;
-import net.minecraft.registry.RegistryOps;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.RegistryOps;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public interface Holderable<M> extends Handleable<M> {
 
-    RegistryEntry<M> getHolder();
+    Holder<M> getHolder();
 
     @Override
     default M getHandle() {
@@ -36,13 +36,13 @@ public interface Holderable<M> extends Handleable<M> {
                 }
                 yield registry.get(Key.key(string));
             }
-            case JsonObjectWrapper(final JsonObject element) -> {
+            case JsonObjectWrapper(JsonObject element) -> {
                 if (!(registry instanceof final CraftRegistry<?, ?> craftRegistry) || !craftRegistry.supportsDirectHolders()) {
                     throw new IllegalArgumentException("Cannot deserialize direct holders for " + registry);
                 }
-                final RegistryOps<JsonElement> ops = CraftRegistry.getMinecraftRegistry().getOps(JsonOps.INSTANCE);
+                final RegistryOps<JsonElement> ops = CraftRegistry.getMinecraftRegistry().createSerializationContext(JsonOps.INSTANCE);
                 final M holder = directCodec.decode(ops, element).getOrThrow().getFirst();
-                yield ((CraftRegistry<T, M>) registry).createBukkit(RegistryEntry.of(holder));
+                yield ((CraftRegistry<T, M>) registry).createBukkit(Holder.direct(holder));
             }
             default -> throw new IllegalArgumentException("Cannot deserialize " + deserialized);
         };
@@ -50,11 +50,11 @@ public interface Holderable<M> extends Handleable<M> {
 
     default Object toBukkitSerializationObject(final Codec<? super M> directCodec) {
         return switch (this.getHolder()) {
-            case final RegistryEntry.Direct<M> direct -> {
-                final RegistryOps<JsonElement> ops = CraftRegistry.getMinecraftRegistry().getOps(JsonOps.INSTANCE);
+            case final Holder.Direct<M> direct -> {
+                final RegistryOps<JsonElement> ops = CraftRegistry.getMinecraftRegistry().createSerializationContext(JsonOps.INSTANCE);
                 yield new JsonObjectWrapper(directCodec.encodeStart(ops, direct.value()).getOrThrow().getAsJsonObject());
             }
-            case final RegistryEntry.Reference<M> reference -> reference.registryKey().getValue().toString();
+            case final Holder.Reference<M> reference -> reference.key().identifier().toString();
             default -> throw new IllegalArgumentException("Cannot serialize " + this.getHolder());
         };
     }
@@ -80,10 +80,10 @@ public interface Holderable<M> extends Handleable<M> {
     }
 
     default @Nullable NamespacedKey getKeyOrNull() {
-        return this.getHolder().getKey().map(MCUtil::fromResourceKey).orElse(null);
+        return this.getHolder().unwrapKey().map(MCUtil::fromResourceKey).orElse(null);
     }
 
     default NamespacedKey getKey() {
-        return MCUtil.fromResourceKey(this.getHolder().getKey().orElseThrow(() -> new IllegalStateException("Cannot get key for this registry item, because it is not registered.")));
+        return MCUtil.fromResourceKey(this.getHolder().unwrapKey().orElseThrow(() -> new IllegalStateException("Cannot get key for this registry item, because it is not registered.")));
     }
 }

@@ -8,10 +8,8 @@ import org.cardboardpowered.interfaces.IMixinEntity;
 import java.util.Set;
 
 import net.kyori.adventure.util.TriState;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.boss.dragon.EnderDragonPart;
-import net.minecraft.entity.boss.dragon.phase.PhaseType;
-
+import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
+import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.boss.BossBar;
@@ -29,21 +27,21 @@ import org.jetbrains.annotations.Nullable;
 
 public class CardboardEnderdragon extends CardboardComplexEntity implements EnderDragon {
 
-    public CardboardEnderdragon(CraftServer server, EnderDragonEntity entity) {
+    public CardboardEnderdragon(CraftServer server, net.minecraft.world.entity.boss.enderdragon.EnderDragon entity) {
         super(server, entity);
     }
 
     @Override
     public Set<ComplexEntityPart> getParts() {
         Builder<ComplexEntityPart> builder = ImmutableSet.builder();
-        for (EnderDragonPart part : getHandle().parts)
+        for (EnderDragonPart part : getHandle().subEntities)
             builder.add((ComplexEntityPart) ((IMixinEntity)part).getBukkitEntity());
         return builder.build();
     }
 
     @Override
-    public EnderDragonEntity getHandle() {
-        return (EnderDragonEntity) nms;
+    public net.minecraft.world.entity.boss.enderdragon.EnderDragon getHandle() {
+        return (net.minecraft.world.entity.boss.enderdragon.EnderDragon) nms;
     }
 
     @Override
@@ -58,7 +56,7 @@ public class CardboardEnderdragon extends CardboardComplexEntity implements Ende
 
     @Override
     public Phase getPhase() {
-        return Phase.values()[getHandle().getDataTracker().get(EnderDragonEntity.PHASE_TYPE)];
+        return Phase.values()[getHandle().getEntityData().get(net.minecraft.world.entity.boss.enderdragon.EnderDragon.DATA_PHASE)];
     }
 
     @Override
@@ -66,12 +64,12 @@ public class CardboardEnderdragon extends CardboardComplexEntity implements Ende
         getHandle().getPhaseManager().setPhase(getMinecraftPhase(phase));
     }
 
-    public static Phase getBukkitPhase(PhaseType phase) {
-        return Phase.values()[phase.getTypeId()];
+    public static Phase getBukkitPhase(EnderDragonPhase phase) {
+        return Phase.values()[phase.getId()];
     }
 
-    public static PhaseType getMinecraftPhase(Phase phase) {
-        return PhaseType.getFromId(phase.ordinal());
+    public static EnderDragonPhase getMinecraftPhase(Phase phase) {
+        return EnderDragonPhase.getById(phase.ordinal());
     }
 
     @Override
@@ -81,12 +79,12 @@ public class CardboardEnderdragon extends CardboardComplexEntity implements Ende
 
     @Override
     public DragonBattle getDragonBattle() {
-        return new CardboardDragonBattle(getHandle().getFight());
+        return new CardboardDragonBattle(getHandle().getDragonFight());
     }
 
     @Override
     public int getDeathAnimationTicks() {
-        return getHandle().ticksSinceDeath;
+        return getHandle().dragonDeathTime;
     }
 
     @Override
@@ -227,19 +225,19 @@ public class CardboardEnderdragon extends CardboardComplexEntity implements Ende
 	}
 	
     public int getPossibleExperienceReward() {
-        return this.getHandle().getExperienceToDrop((net.minecraft.server.world.ServerWorld) this.getHandle().getEntityWorld(), null);
+        return this.getHandle().getExperienceReward((net.minecraft.server.level.ServerLevel) this.getHandle().level(), null);
     }
 
     // 1.20.2 API
     
 	@Override
 	public boolean isAggressive() {
-        return this.getHandle().isAttacking();
+        return this.getHandle().isAggressive();
 	}
 
 	@Override
 	public void setAggressive(boolean aggressive) {
-        this.getHandle().setAttacking(aggressive);
+        this.getHandle().setAggressive(aggressive);
 	}
 	
 	// TODO Check extend CraftMob:

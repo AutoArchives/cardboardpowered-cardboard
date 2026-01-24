@@ -1,5 +1,7 @@
 package org.cardboardpowered.impl.inventory;
 
+import net.minecraft.world.CompoundContainer;
+import net.minecraft.world.MenuProvider;
 import org.bukkit.Location;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
@@ -7,27 +9,24 @@ import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import net.minecraft.inventory.DoubleInventory;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-
 public class CardboardDoubleChestInventory extends CraftInventory implements DoubleChestInventory {
 
-    public NamedScreenHandlerFactory tile;
+    public MenuProvider tile;
     private final CraftInventory left;
     private final CraftInventory right;
 
     public CardboardDoubleChestInventory(CardboardChestBlockDoubleInventory block) {
         super(block.inventorylargechest);
         this.tile = block;
-        this.left = new CraftInventory(block.inventorylargechest.first);
-        this.right = new CraftInventory(block.inventorylargechest.second);
+        this.left = new CraftInventory(block.inventorylargechest.container1);
+        this.right = new CraftInventory(block.inventorylargechest.container2);
     }
 
-    public CardboardDoubleChestInventory(DoubleInventory largeChest) {
+    public CardboardDoubleChestInventory(CompoundContainer largeChest) {
         super(largeChest);
 
-        left = (largeChest.first instanceof DoubleInventory) ? new CardboardDoubleChestInventory((DoubleInventory) largeChest.first) : new CraftInventory(largeChest.first);
-        right = (largeChest.second instanceof DoubleInventory) ? new CardboardDoubleChestInventory((DoubleInventory) largeChest.second) : new CraftInventory(largeChest.second);
+        left = (largeChest.container1 instanceof CompoundContainer) ? new CardboardDoubleChestInventory((CompoundContainer) largeChest.container1) : new CraftInventory(largeChest.container1);
+        right = (largeChest.container2 instanceof CompoundContainer) ? new CardboardDoubleChestInventory((CompoundContainer) largeChest.container2) : new CraftInventory(largeChest.container2);
     }
 
     @Override
@@ -42,7 +41,7 @@ public class CardboardDoubleChestInventory extends CraftInventory implements Dou
 
     @Override
     public void setContents(ItemStack[] items) {
-        if (getInventory().size() < items.length)  throw new IllegalArgumentException("Invalid inventory size! expected <= " + getInventory().size());
+        if (getInventory().getContainerSize() < items.length)  throw new IllegalArgumentException("Invalid inventory size! expected <= " + getInventory().getContainerSize());
 
         ItemStack[] leftItems = new ItemStack[left.getSize()], rightItems = new ItemStack[right.getSize()];
         System.arraycopy(items, 0, leftItems, 0, Math.min(left.getSize(), items.length));

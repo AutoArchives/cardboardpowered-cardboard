@@ -1,9 +1,8 @@
 package org.cardboardpowered.impl.block;
 
 
-import net.minecraft.block.ChiseledBookshelfBlock;
-import net.minecraft.block.entity.ChiseledBookshelfBlockEntity;
-import net.minecraft.util.math.Vec2f;
+import net.minecraft.world.level.block.entity.ChiseledBookShelfBlockEntity;
+import net.minecraft.world.phys.Vec2;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
@@ -13,9 +12,9 @@ import org.bukkit.inventory.ChiseledBookshelfInventory;
 import org.bukkit.util.Vector;
 
 public class CraftChiseledBookshelf
-extends CardboardBlockEntityState<ChiseledBookshelfBlockEntity>
+extends CardboardBlockEntityState<ChiseledBookShelfBlockEntity>
 implements ChiseledBookshelf {
-    public CraftChiseledBookshelf(World world, ChiseledBookshelfBlockEntity tileEntity) {
+    public CraftChiseledBookshelf(World world, ChiseledBookShelfBlockEntity tileEntity) {
         super(world, tileEntity);
     }
 
@@ -24,7 +23,7 @@ implements ChiseledBookshelf {
     }
 
     public int getLastInteractedSlot() {
-        return ((ChiseledBookshelfBlockEntity)this.getSnapshot()).getLastInteractedSlot();
+        return ((ChiseledBookShelfBlockEntity)this.getSnapshot()).getLastInteractedSlot();
     }
 
     public void setLastInteractedSlot(int lastInteractedSlot) {
@@ -46,23 +45,23 @@ implements ChiseledBookshelf {
     }
 
     public int getSlot(Vector clickVector) {
-        Vec2f faceVector;
+        Vec2 faceVector;
         BlockFace facing = ((Directional)this.getBlockData()).getFacing();
         switch (facing) {
             case NORTH: {
-                faceVector = new Vec2f((float)(1.0 - clickVector.getX()), (float)clickVector.getY());
+                faceVector = new Vec2((float)(1.0 - clickVector.getX()), (float)clickVector.getY());
                 break;
             }
             case SOUTH: {
-                faceVector = new Vec2f((float)clickVector.getX(), (float)clickVector.getY());
+                faceVector = new Vec2((float)clickVector.getX(), (float)clickVector.getY());
                 break;
             }
             case WEST: {
-                faceVector = new Vec2f((float)clickVector.getZ(), (float)clickVector.getY());
+                faceVector = new Vec2((float)clickVector.getZ(), (float)clickVector.getY());
                 break;
             }
             case EAST: {
-                faceVector = new Vec2f((float)(1.0 - clickVector.getZ()), (float)clickVector.getY());
+                faceVector = new Vec2((float)(1.0 - clickVector.getZ()), (float)clickVector.getY());
                 break;
             }
             default: {
@@ -72,7 +71,7 @@ implements ChiseledBookshelf {
         return CraftChiseledBookshelf.getHitSlot(faceVector);
     }
 
-    private static int getHitSlot(Vec2f vec2f) {
+    private static int getHitSlot(Vec2 vec2f) {
         // int i2 = vec2f.y >= 0.5f ? 0 : 1;
         // int j = ChiseledBookshelfBlock.getColumn(vec2f.x);
         // return j + i2 * 3;

@@ -12,11 +12,11 @@ import org.jetbrains.annotations.Unmodifiable;
 import static io.papermc.paper.potion.SuspiciousEffectEntry.create;
 
 public record PaperSuspiciousStewEffects(
-    net.minecraft.component.type.SuspiciousStewEffectsComponent impl
-) implements SuspiciousStewEffects, Handleable<net.minecraft.component.type.SuspiciousStewEffectsComponent> {
+    net.minecraft.world.item.component.SuspiciousStewEffects impl
+) implements SuspiciousStewEffects, Handleable<net.minecraft.world.item.component.SuspiciousStewEffects> {
 
     @Override
-    public net.minecraft.component.type.SuspiciousStewEffectsComponent getHandle() {
+    public net.minecraft.world.item.component.SuspiciousStewEffects getHandle() {
         return this.impl;
     }
 
@@ -27,11 +27,11 @@ public record PaperSuspiciousStewEffects(
 
     static final class BuilderImpl implements Builder {
 
-        private final List<net.minecraft.component.type.SuspiciousStewEffectsComponent.StewEffect> effects = new ObjectArrayList<>();
+        private final List<net.minecraft.world.item.component.SuspiciousStewEffects.Entry> effects = new ObjectArrayList<>();
 
         @Override
         public Builder add(final SuspiciousEffectEntry entry) {
-            this.effects.add(new net.minecraft.component.type.SuspiciousStewEffectsComponent.StewEffect(
+            this.effects.add(new net.minecraft.world.item.component.SuspiciousStewEffects.Entry(
                 org.bukkit.craftbukkit.potion.CraftPotionEffectType.bukkitToMinecraftHolder(entry.effect()),
                 entry.duration()
             ));
@@ -47,11 +47,11 @@ public record PaperSuspiciousStewEffects(
         @Override
         public SuspiciousStewEffects build() {
             if (this.effects.isEmpty()) {
-                return new PaperSuspiciousStewEffects(net.minecraft.component.type.SuspiciousStewEffectsComponent.DEFAULT);
+                return new PaperSuspiciousStewEffects(net.minecraft.world.item.component.SuspiciousStewEffects.EMPTY);
             }
 
             return new PaperSuspiciousStewEffects(
-                new net.minecraft.component.type.SuspiciousStewEffectsComponent(new ObjectArrayList<>(this.effects))
+                new net.minecraft.world.item.component.SuspiciousStewEffects(new ObjectArrayList<>(this.effects))
             );
         }
     }

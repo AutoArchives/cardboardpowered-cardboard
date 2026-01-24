@@ -2,24 +2,24 @@ package io.papermc.paper.datacomponent.item;
 
 import io.papermc.paper.adventure.PaperAdventure;
 import net.kyori.adventure.key.Key;
-import net.minecraft.loot.LootTable;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.storage.loot.LootTable;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.Handleable;
 
 public record PaperSeededContainerLoot(
-    net.minecraft.component.type.ContainerLootComponent impl
-) implements SeededContainerLoot, Handleable<net.minecraft.component.type.ContainerLootComponent> {
+    net.minecraft.world.item.component.SeededContainerLoot impl
+) implements SeededContainerLoot, Handleable<net.minecraft.world.item.component.SeededContainerLoot> {
 
     @Override
-    public net.minecraft.component.type.ContainerLootComponent getHandle() {
+    public net.minecraft.world.item.component.SeededContainerLoot getHandle() {
         return this.impl;
     }
 
     @Override
     public Key lootTable() {
-        return CraftNamespacedKey.fromMinecraft(this.impl.lootTable().getValue());
+        return CraftNamespacedKey.fromMinecraft(this.impl.lootTable().identifier());
     }
 
     @Override
@@ -29,7 +29,7 @@ public record PaperSeededContainerLoot(
 
     static final class BuilderImpl implements SeededContainerLoot.Builder {
 
-        private long seed = LootTable.DEFAULT_SEED;
+        private long seed = LootTable.RANDOMIZE_SEED;
         private Key key;
 
         BuilderImpl(final Key key) {
@@ -50,8 +50,8 @@ public record PaperSeededContainerLoot(
 
         @Override
         public SeededContainerLoot build() {
-            return new PaperSeededContainerLoot(new net.minecraft.component.type.ContainerLootComponent(
-                RegistryKey.of(RegistryKeys.LOOT_TABLE, PaperAdventure.asVanilla(this.key)),
+            return new PaperSeededContainerLoot(new net.minecraft.world.item.component.SeededContainerLoot(
+                ResourceKey.create(Registries.LOOT_TABLE, PaperAdventure.asVanilla(this.key)),
                 this.seed
             ));
         }

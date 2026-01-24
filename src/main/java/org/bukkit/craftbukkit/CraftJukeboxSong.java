@@ -3,9 +3,9 @@ package org.bukkit.craftbukkit;
 import com.google.common.base.Preconditions;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.text.TranslatableTextContent;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import org.bukkit.JukeboxSong;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -14,41 +14,41 @@ import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftJukeboxSong implements JukeboxSong, Handleable<net.minecraft.block.jukebox.JukeboxSong> {
+public class CraftJukeboxSong implements JukeboxSong, Handleable<net.minecraft.world.item.JukeboxSong> {
 
     private final NamespacedKey key;
-    private final net.minecraft.block.jukebox.JukeboxSong handle;
+    private final net.minecraft.world.item.JukeboxSong handle;
 
-    public static JukeboxSong minecraftToBukkit(net.minecraft.block.jukebox.JukeboxSong minecraft) {
-        return (JukeboxSong)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.JUKEBOX_SONG);
+    public static JukeboxSong minecraftToBukkit(net.minecraft.world.item.JukeboxSong minecraft) {
+        return (JukeboxSong)CraftRegistry.minecraftToBukkit(minecraft, Registries.JUKEBOX_SONG);
     }
 
-    public static JukeboxSong minecraftHolderToBukkit(RegistryEntry<net.minecraft.block.jukebox.JukeboxSong> minecraft) {
+    public static JukeboxSong minecraftHolderToBukkit(Holder<net.minecraft.world.item.JukeboxSong> minecraft) {
         return CraftJukeboxSong.minecraftToBukkit(minecraft.value());
     }
 
-    public static net.minecraft.block.jukebox.JukeboxSong bukkitToMinecraft(JukeboxSong bukkit) {
-        return (net.minecraft.block.jukebox.JukeboxSong)CraftRegistry.bukkitToMinecraft(bukkit);
+    public static net.minecraft.world.item.JukeboxSong bukkitToMinecraft(JukeboxSong bukkit) {
+        return (net.minecraft.world.item.JukeboxSong)CraftRegistry.bukkitToMinecraft(bukkit);
     }
 
-    public static RegistryEntry<net.minecraft.block.jukebox.JukeboxSong> bukkitToMinecraftHolder(JukeboxSong bukkit) {
+    public static Holder<net.minecraft.world.item.JukeboxSong> bukkitToMinecraftHolder(JukeboxSong bukkit) {
         Preconditions.checkArgument((bukkit != null ? 1 : 0) != 0);
-        net.minecraft.registry.Registry registry = CraftRegistry.getMinecraftRegistry(RegistryKeys.JUKEBOX_SONG);
-        RegistryEntry<net.minecraft.block.jukebox.JukeboxSong> registryEntry = registry.getEntry(CraftJukeboxSong.bukkitToMinecraft(bukkit));
-        if (registryEntry instanceof RegistryEntry.Reference) {
-            RegistryEntry.Reference holder = (RegistryEntry.Reference)registryEntry;
+        net.minecraft.core.Registry registry = CraftRegistry.getMinecraftRegistry(Registries.JUKEBOX_SONG);
+        Holder<net.minecraft.world.item.JukeboxSong> registryEntry = registry.wrapAsHolder(CraftJukeboxSong.bukkitToMinecraft(bukkit));
+        if (registryEntry instanceof Holder.Reference) {
+            Holder.Reference holder = (Holder.Reference)registryEntry;
             return holder;
         }
         throw new IllegalArgumentException("No Reference holder found for " + String.valueOf(bukkit) + ", this can happen if a plugin creates its own trim pattern without properly registering it.");
     }
 
-    public CraftJukeboxSong(NamespacedKey key, net.minecraft.block.jukebox.JukeboxSong handle) {
+    public CraftJukeboxSong(NamespacedKey key, net.minecraft.world.item.JukeboxSong handle) {
         this.key = key;
         this.handle = handle;
     }
 
     @Override
-    public net.minecraft.block.jukebox.JukeboxSong getHandle() {
+    public net.minecraft.world.item.JukeboxSong getHandle() {
         return this.handle;
     }
 
@@ -59,10 +59,10 @@ public class CraftJukeboxSong implements JukeboxSong, Handleable<net.minecraft.b
 
     @NotNull
     public String getTranslationKey() {
-        if (!(this.handle.description().getContent() instanceof TranslatableTextContent)) {
+        if (!(this.handle.description().getContents() instanceof TranslatableContents)) {
             throw new UnsupportedOperationException("Description isn't translatable!");
         }
-        return ((TranslatableTextContent)this.handle.description().getContent()).getKey();
+        return ((TranslatableContents)this.handle.description().getContents()).getKey();
     }
     
     // TODO: Update this:

@@ -1,6 +1,5 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.mob.IllusionerEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Illusioner;
@@ -8,13 +7,13 @@ import org.bukkit.entity.LivingEntity;
 
 public class CardboardIllusioner extends CardboardSpellcaster implements Illusioner {
 
-    public CardboardIllusioner(CraftServer server, IllusionerEntity entity) {
+    public CardboardIllusioner(CraftServer server, net.minecraft.world.entity.monster.illager.Illusioner entity) {
         super(server, entity);
     }
 
     @Override
-    public IllusionerEntity getHandle() {
-        return (IllusionerEntity) super.getHandle();
+    public net.minecraft.world.entity.monster.illager.Illusioner getHandle() {
+        return (net.minecraft.world.entity.monster.illager.Illusioner) super.getHandle();
     }
 
     @Override

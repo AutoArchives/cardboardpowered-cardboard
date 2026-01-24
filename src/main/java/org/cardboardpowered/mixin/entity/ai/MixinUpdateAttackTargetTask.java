@@ -1,12 +1,6 @@
 package org.cardboardpowered.mixin.entity.ai;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.brain.MemoryQueryResult;
-import net.minecraft.entity.ai.brain.task.UpdateAttackTargetTask;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,8 +12,9 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import net.minecraft.world.entity.ai.behavior.StartAttacking;
 
-@Mixin(UpdateAttackTargetTask.class)
+@Mixin(StartAttacking.class)
 public class MixinUpdateAttackTargetTask {
    
    // TODO: Fix 1.20.4 merge conflict

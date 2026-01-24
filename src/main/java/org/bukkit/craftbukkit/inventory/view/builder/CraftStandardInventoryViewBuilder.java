@@ -1,8 +1,8 @@
 package org.bukkit.craftbukkit.inventory.view.builder;
 
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.view.builder.InventoryViewBuilder;
 
@@ -10,12 +10,12 @@ import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 public class CraftStandardInventoryViewBuilder<V extends InventoryView> extends CraftAbstractInventoryViewBuilder<V> {
 
-    public CraftStandardInventoryViewBuilder(final ScreenHandlerType<?> handle) {
+    public CraftStandardInventoryViewBuilder(final MenuType<?> handle) {
         super(handle);
     }
 
     @Override
-    protected ScreenHandler buildContainer(final ServerPlayerEntity player) {
+    protected AbstractContainerMenu buildContainer(final ServerPlayer player) {
         return super.handle.create(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory());
     }
 

@@ -3,8 +3,8 @@ package org.cardboardpowered.impl.block;
 import com.google.common.base.Preconditions;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.block.entity.CrafterBlockEntity;
-import net.minecraft.inventory.Inventory;
+import net.minecraft.world.Container;
+import net.minecraft.world.level.block.entity.CrafterBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.World;
 // TODO import org.bukkit.block.Crafter;
@@ -24,14 +24,14 @@ public class CraftCrafter extends CardboardLootableBlock<CrafterBlockEntity>
     }
 
     public org.bukkit.inventory.Inventory getSnapshotInventory() {
-        return new CraftInventory((Inventory)this.getSnapshot());
+        return new CraftInventory((Container)this.getSnapshot());
     }
 
     public org.bukkit.inventory.Inventory getInventory() {
         if (!this.isPlaced()) {
             return this.getSnapshotInventory();
         }
-        return new CraftInventory((Inventory)this.getTileEntity());
+        return new CraftInventory((Container)this.getTileEntity());
     }
 
     @Override
@@ -60,7 +60,7 @@ public class CraftCrafter extends CardboardLootableBlock<CrafterBlockEntity>
 
     public void setSlotDisabled(int slot, boolean disabled) {
         Preconditions.checkArgument((slot >= 0 && slot < 9 ? 1 : 0) != 0, (String)"Invalid slot index %s for Crafter", (int)slot);
-        ((CrafterBlockEntity)this.getSnapshot()).setSlotEnabled(slot, disabled);
+        ((CrafterBlockEntity)this.getSnapshot()).setSlotState(slot, disabled);
     }
 
     public boolean isTriggered() {

@@ -3,21 +3,19 @@ package org.bukkit.craftbukkit.inventory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
-import net.minecraft.block.entity.Hopper;
-import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.inventory.EnderChestInventory;
-import net.minecraft.village.MerchantInventory;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.block.entity.BarrelBlockEntity;
-import net.minecraft.block.entity.BlastFurnaceBlockEntity;
-import net.minecraft.block.entity.BrewingStandBlockEntity;
-import net.minecraft.block.entity.DispenserBlockEntity;
-import net.minecraft.block.entity.DropperBlockEntity;
-import net.minecraft.block.entity.FurnaceBlockEntity;
-import net.minecraft.block.entity.LecternBlockEntity;
-import net.minecraft.block.entity.ShulkerBoxBlockEntity;
-import net.minecraft.block.entity.SmokerBlockEntity;
-
+import net.minecraft.world.inventory.MerchantContainer;
+import net.minecraft.world.inventory.PlayerEnderChestContainer;
+import net.minecraft.world.inventory.TransientCraftingContainer;
+import net.minecraft.world.level.block.entity.BarrelBlockEntity;
+import net.minecraft.world.level.block.entity.BlastFurnaceBlockEntity;
+import net.minecraft.world.level.block.entity.BrewingStandBlockEntity;
+import net.minecraft.world.level.block.entity.DispenserBlockEntity;
+import net.minecraft.world.level.block.entity.DropperBlockEntity;
+import net.minecraft.world.level.block.entity.FurnaceBlockEntity;
+import net.minecraft.world.level.block.entity.Hopper;
+import net.minecraft.world.level.block.entity.LecternBlockEntity;
+import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
+import net.minecraft.world.level.block.entity.SmokerBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.util.CraftLegacy;
@@ -39,33 +37,33 @@ import org.cardboardpowered.interfaces.IMixinInventory;
 @SuppressWarnings("deprecation")
 public class CraftInventory implements Inventory {
 
-    protected final net.minecraft.inventory.Inventory inventory;
+    protected final net.minecraft.world.Container inventory;
 
-    public CraftInventory(net.minecraft.inventory.Inventory inventory) {
+    public CraftInventory(net.minecraft.world.Container inventory) {
         this.inventory = inventory;
     }
 
-    public net.minecraft.inventory.Inventory getInventory() {
+    public net.minecraft.world.Container getInventory() {
         return inventory;
     }
 
     @Override
     public int getSize() {
-        return getInventory().size();
+        return getInventory().getContainerSize();
     }
 
     @Override
     public ItemStack getItem(int index) {
-        net.minecraft.item.ItemStack item = getInventory().getStack(index);
+        net.minecraft.world.item.ItemStack item = getInventory().getItem(index);
         return item.isEmpty() ? null : CraftItemStack.asCraftMirror(item);
     }
 
-    protected ItemStack[] asCraftMirror(List<net.minecraft.item.ItemStack> mcItems) {
+    protected ItemStack[] asCraftMirror(List<net.minecraft.world.item.ItemStack> mcItems) {
         int size = mcItems.size();
         ItemStack[] items = new ItemStack[size];
 
         for (int i = 0; i < size; i++) {
-            net.minecraft.item.ItemStack mcItem = mcItems.get(i);
+            net.minecraft.world.item.ItemStack mcItem = mcItems.get(i);
             items[i] = (mcItem.isEmpty()) ? null : CraftItemStack.asCraftMirror(mcItem);
         }
         return items;
@@ -97,7 +95,7 @@ public class CraftInventory implements Inventory {
 
     @Override
     public void setItem(int index, ItemStack item) {
-        getInventory().setStack(index, CraftItemStack.asNMSCopy(item));
+        getInventory().setItem(index, CraftItemStack.asNMSCopy(item));
     }
 
     @Override
@@ -340,7 +338,7 @@ public class CraftInventory implements Inventory {
     }
 
     private int getMaxItemStack() {
-        return getInventory().getMaxCountPerStack();
+        return getInventory().getMaxStackSize();
     }
 
     @Override
@@ -391,9 +389,9 @@ public class CraftInventory implements Inventory {
     @Override
     public InventoryType getType() {
         // Order is important.
-        if (inventory instanceof CraftingInventory) {
-            return inventory.size() >= 9 ? InventoryType.WORKBENCH : InventoryType.CRAFTING;
-        } else if (inventory instanceof PlayerInventory) {
+        if (inventory instanceof TransientCraftingContainer) {
+            return inventory.getContainerSize() >= 9 ? InventoryType.WORKBENCH : InventoryType.CRAFTING;
+        } else if (inventory instanceof net.minecraft.world.entity.player.Inventory) {
             return InventoryType.PLAYER;
         } else if (inventory instanceof DropperBlockEntity) {
             return InventoryType.DROPPER;
@@ -411,9 +409,9 @@ public class CraftInventory implements Inventory {
             return InventoryType.BREWING;
         } else if (inventory instanceof CraftInventoryCustom.MinecraftInventory) {
             return ((CraftInventoryCustom.MinecraftInventory) inventory).getType();
-        } else if (inventory instanceof EnderChestInventory) {
+        } else if (inventory instanceof PlayerEnderChestContainer) {
             return InventoryType.ENDER_CHEST;
-        } else if (inventory instanceof MerchantInventory) {
+        } else if (inventory instanceof MerchantContainer) {
             return InventoryType.MERCHANT;
         } else if (this instanceof CardboardBeaconInventory) {
               return InventoryType.BEACON;
@@ -445,12 +443,12 @@ public class CraftInventory implements Inventory {
 
     @Override
     public int getMaxStackSize() {
-        return ((IMixinInventory)inventory).getMaxStackSize();
+        return ((IMixinInventory)inventory).getCardboardMaxStackSize();
     }
 
     @Override
     public void setMaxStackSize(int size) {
-        ((IMixinInventory)inventory).setMaxStackSize(size);
+        ((IMixinInventory)inventory).setCardboardMaxStackSize(size);
     }
 
     @Override

@@ -1,17 +1,16 @@
 package org.cardboardpowered.mixin.registry;
 
+import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.RegistryOps.RegistryInfoLookup;
 import org.cardboardpowered.interfaces.IRegistryInfoGetter;
 import org.spongepowered.asm.mixin.Mixin;
 
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.RegistryOps.RegistryInfoGetter;
-
-@Mixin(RegistryInfoGetter.class)
+@Mixin(RegistryInfoLookup.class)
 public interface MixinRegistryInfoGetter extends IRegistryInfoGetter {
 
 	/**
 	 */
 	@Override
-	public RegistryWrapper.WrapperLookup lookupForValueCopyViaBuilders();
+	public HolderLookup.Provider lookupForValueCopyViaBuilders();
 	
 }

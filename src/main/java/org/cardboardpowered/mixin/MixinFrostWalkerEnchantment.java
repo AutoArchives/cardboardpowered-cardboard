@@ -10,24 +10,11 @@
 package org.cardboardpowered.mixin;
 
 import java.util.Iterator;
-
+import net.minecraft.world.item.enchantment.Enchantments;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.FluidBlock;
-//import net.minecraft.block.Material;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.enchantment.Enchantments;
-// import net.minecraft.enchantment.FrostWalkerEnchantment;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Position;
-import net.minecraft.world.World;
 
 /**
  */

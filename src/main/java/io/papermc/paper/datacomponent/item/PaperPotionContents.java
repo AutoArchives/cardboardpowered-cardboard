@@ -7,8 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.world.effect.MobEffectInstance;
 import org.bukkit.Color;
 import org.bukkit.craftbukkit.potion.CraftPotionType;
 import org.bukkit.craftbukkit.util.Handleable;
@@ -19,11 +18,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 public record PaperPotionContents(
-    net.minecraft.component.type.PotionContentsComponent impl
-) implements PotionContents, Handleable<net.minecraft.component.type.PotionContentsComponent> {
+    net.minecraft.world.item.alchemy.PotionContents impl
+) implements PotionContents, Handleable<net.minecraft.world.item.alchemy.PotionContents> {
 
     @Override
-    public net.minecraft.component.type.PotionContentsComponent getHandle() {
+    public net.minecraft.world.item.alchemy.PotionContents getHandle() {
         return this.impl;
     }
 
@@ -53,7 +52,7 @@ public record PaperPotionContents(
 
     static final class BuilderImpl implements PotionContents.Builder {
 
-        private final List<StatusEffectInstance> customEffects = new ObjectArrayList<>();
+        private final List<MobEffectInstance> customEffects = new ObjectArrayList<>();
         private @Nullable PotionType type;
         private @Nullable Color color;
         private @Nullable String customName;
@@ -92,10 +91,10 @@ public record PaperPotionContents(
         @Override
         public PotionContents build() {
             if (this.type == null && this.color == null && this.customEffects.isEmpty() && this.customName == null) {
-                return new PaperPotionContents(net.minecraft.component.type.PotionContentsComponent.DEFAULT);
+                return new PaperPotionContents(net.minecraft.world.item.alchemy.PotionContents.EMPTY);
             }
 
-            return new PaperPotionContents(new net.minecraft.component.type.PotionContentsComponent(
+            return new PaperPotionContents(new net.minecraft.world.item.alchemy.PotionContents(
                 Optional.ofNullable(this.type).map(CraftPotionType::bukkitToMinecraftHolder),
                 Optional.ofNullable(this.color).map(Color::asARGB),
                 new ObjectArrayList<>(this.customEffects),
@@ -106,7 +105,7 @@ public record PaperPotionContents(
 
 	@Override
 	public @Unmodifiable List<PotionEffect> allEffects() {
-		return StreamSupport.stream(this.impl.getEffects().spliterator(), false).map(CardboardPotionUtil::toBukkit).collect(Collectors.toUnmodifiableList());
+		return StreamSupport.stream(this.impl.getAllEffects().spliterator(), false).map(CardboardPotionUtil::toBukkit).collect(Collectors.toUnmodifiableList());
 	}
 
 	@Override

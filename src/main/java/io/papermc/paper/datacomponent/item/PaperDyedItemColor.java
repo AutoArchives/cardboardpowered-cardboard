@@ -4,11 +4,11 @@ import org.bukkit.Color;
 import org.bukkit.craftbukkit.util.Handleable;
 
 public record PaperDyedItemColor(
-    net.minecraft.component.type.DyedColorComponent impl
-) implements DyedItemColor, Handleable<net.minecraft.component.type.DyedColorComponent> {
+    net.minecraft.world.item.component.DyedItemColor impl
+) implements DyedItemColor, Handleable<net.minecraft.world.item.component.DyedItemColor> {
 
     @Override
-    public net.minecraft.component.type.DyedColorComponent getHandle() {
+    public net.minecraft.world.item.component.DyedItemColor getHandle() {
         return this.impl;
     }
 
@@ -30,7 +30,7 @@ public record PaperDyedItemColor(
 
         @Override
         public DyedItemColor build() {
-            return new PaperDyedItemColor(new net.minecraft.component.type.DyedColorComponent(this.color.asRGB()/*, this.showInToolTip*/));
+            return new PaperDyedItemColor(new net.minecraft.world.item.component.DyedItemColor(this.color.asRGB()/*, this.showInToolTip*/));
         }
     }
 }

@@ -18,10 +18,10 @@
  */
 package org.cardboardpowered.interfaces;
 
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public interface IMixinWorldSaveHandler {
 
-    NbtCompound getPlayerData(String s);
+    CompoundTag getPlayerData(String s);
 
 }

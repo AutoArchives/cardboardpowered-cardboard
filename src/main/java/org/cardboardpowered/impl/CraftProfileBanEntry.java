@@ -4,26 +4,26 @@ import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import java.time.Instant;
 import java.util.Date;
-import net.minecraft.server.BannedPlayerEntry;
-import net.minecraft.server.BannedPlayerList;
-import net.minecraft.server.PlayerConfigEntry;
+import net.minecraft.server.players.NameAndId;
+import net.minecraft.server.players.UserBanList;
+import net.minecraft.server.players.UserBanListEntry;
 import org.bukkit.BanEntry;
 
 public final class CraftProfileBanEntry implements BanEntry<PlayerProfile> {
    private static final Date minorDate = Date.from(Instant.parse("1899-12-31T04:00:00Z"));
-   private final BannedPlayerList list;
-   private final PlayerConfigEntry profile;
+   private final UserBanList list;
+   private final NameAndId profile;
    private Date created;
    private String source;
    private Date expiration;
    private String reason;
 
-   public CraftProfileBanEntry(PlayerConfigEntry profile, BannedPlayerEntry entry, BannedPlayerList list) {
+   public CraftProfileBanEntry(NameAndId profile, UserBanListEntry entry, UserBanList list) {
       this.list = list;
       this.profile = profile;
-      this.created = entry.getCreationDate() != null ? new Date(entry.getCreationDate().getTime()) : null;
+      this.created = entry.getCreated() != null ? new Date(entry.getCreated().getTime()) : null;
       this.source = entry.getSource();
-      this.expiration = entry.getExpiryDate() != null ? new Date(entry.getExpiryDate().getTime()) : null;
+      this.expiration = entry.getExpires() != null ? new Date(entry.getExpires().getTime()) : null;
       this.reason = entry.getReason();
    }
 
@@ -72,7 +72,7 @@ public final class CraftProfileBanEntry implements BanEntry<PlayerProfile> {
    }
 
    public void save() {
-      BannedPlayerEntry entry = new BannedPlayerEntry(this.profile, this.created, this.source, this.expiration, this.reason);
+      UserBanListEntry entry = new UserBanListEntry(this.profile, this.created, this.source, this.expiration, this.reason);
       this.list.add(entry);
    }
 

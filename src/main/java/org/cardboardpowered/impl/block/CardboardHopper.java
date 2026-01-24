@@ -14,8 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.block.entity.HopperBlockEntity;
-import net.minecraft.text.Text;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
 
 public class CardboardHopper extends CardboardLootableBlock<HopperBlockEntity> implements Hopper {
 
@@ -104,13 +103,13 @@ public class CardboardHopper extends CardboardLootableBlock<HopperBlockEntity> i
     @Override
     public @Nullable Component customName() {
         // TODO Auto-generated method stub
-        return CardboardAdventure.asAdventure(Text.of(this.getCustomName()));
+        return CardboardAdventure.asAdventure(net.minecraft.network.chat.Component.nullToEmpty(this.getCustomName()));
     }
 
     @Override
     public void customName(@Nullable Component arg0) {
         // TODO Auto-generated method stub
-    	this.setCustomName( CardboardAdventure.asVanilla(arg0).getLiteralString() );
+    	this.setCustomName( CardboardAdventure.asVanilla(arg0).tryCollapseToString() );
     }
     
     // 1.20.4 API:

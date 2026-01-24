@@ -1,7 +1,5 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.passive.WanderingTraderEntity;
-
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
@@ -10,13 +8,13 @@ import org.jetbrains.annotations.Nullable;
 
 public class WanderingTraderImpl extends CraftAbstractVillager implements WanderingTrader {
 
-    public WanderingTraderImpl(CraftServer server, WanderingTraderEntity entity) {
+    public WanderingTraderImpl(CraftServer server, net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader entity) {
         super(server, entity);
     }
 
     @Override
-    public WanderingTraderEntity getHandle() {
-        return (WanderingTraderEntity) nms;
+    public net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader getHandle() {
+        return (net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader) nms;
     }
 
     @Override

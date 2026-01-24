@@ -1,13 +1,12 @@
 package org.cardboardpowered.mixin.block;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CoralWallFanBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.CoralWallFanBlock;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
-
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,17 +20,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin (CoralWallFanBlock.class)
 public class MixinCoralWallFanBlock {
 
-    @Shadow @Final private Block deadCoralBlock;
+    @Shadow @Final private Block deadBlock;
 
-    @Inject (method = "scheduledTick", at = @At (value = "INVOKE",
-            target = "Lnet/minecraft/server/world/ServerWorld;setBlockState" +
-                    "(Lnet/minecraft/util/math/BlockPos;" +
-                    "Lnet/minecraft/block/BlockState;I)Z"))
-    private void bukkit_fadeEvent(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo ci) {
-        if (CraftEventFactory.callBlockFadeEvent(world, pos, this.deadCoralBlock.getDefaultState()
-                        .with(CoralWallFanBlock.WATERLOGGED, false)
-                        .with(CoralWallFanBlock.FACING, state
-                                .get(CoralWallFanBlock.FACING)))
+    @Inject (method = "tick", at = @At (value = "INVOKE",
+            target = "Lnet/minecraft/server/level/ServerLevel;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z"))
+    private void bukkit_fadeEvent(BlockState state, ServerLevel world, BlockPos pos, RandomSource random, CallbackInfo ci) {
+        if (CraftEventFactory.callBlockFadeEvent(world, pos, this.deadBlock.defaultBlockState()
+                        .setValue(CoralWallFanBlock.WATERLOGGED, false)
+                        .setValue(CoralWallFanBlock.FACING, state
+                                .getValue(CoralWallFanBlock.FACING)))
                 .isCancelled()) { ci.cancel(); }
     }
 }

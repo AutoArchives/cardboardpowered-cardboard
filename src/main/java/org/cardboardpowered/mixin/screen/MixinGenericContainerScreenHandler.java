@@ -1,5 +1,10 @@
 package org.cardboardpowered.mixin.screen;
 
+import net.minecraft.world.CompoundContainer;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.MenuType;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.cardboardpowered.impl.inventory.CardboardDoubleChestInventory;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
@@ -13,24 +18,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.DoubleInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.screen.GenericContainerScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
-
-@Mixin(GenericContainerScreenHandler.class)
+@Mixin(ChestMenu.class)
 public class MixinGenericContainerScreenHandler extends MixinScreenHandler {
 
     @Shadow
-    public Inventory inventory;
+    public Container container;
 
     private CardboardInventoryView bukkitEntity = null;
-    private PlayerInventory player;
+    private Inventory player;
 
-    @Inject(method = "<init>(Lnet/minecraft/screen/ScreenHandlerType;ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/inventory/Inventory;I)V", at = @At("TAIL"))
-    public void setPlayerInv(ScreenHandlerType<?> containers, int i, PlayerInventory playerinventory, Inventory inventory, int j, CallbackInfo ci) {
-        this.player = (PlayerInventory) playerinventory;
+    @Inject(method = "<init>(Lnet/minecraft/world/inventory/MenuType;ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/Container;I)V", at = @At("TAIL"))
+    public void setPlayerInv(MenuType<?> containers, int i, Inventory playerinventory, Container inventory, int j, CallbackInfo ci) {
+        this.player = (Inventory) playerinventory;
     }
 
     @Override
@@ -39,13 +38,13 @@ public class MixinGenericContainerScreenHandler extends MixinScreenHandler {
             return bukkitEntity;
 
         CraftInventory inventory;
-        if (this.inventory instanceof PlayerInventory) {
-            inventory = new CardboardPlayerInventory((PlayerInventory) this.inventory);
-        } else if (this.inventory instanceof DoubleInventory) {
-            inventory = new CardboardDoubleChestInventory((DoubleInventory) this.inventory);
-        } else inventory = new CraftInventory(this.inventory);
+        if (this.container instanceof Inventory) {
+            inventory = new CardboardPlayerInventory((Inventory) this.container);
+        } else if (this.container instanceof CompoundContainer) {
+            inventory = new CardboardDoubleChestInventory((CompoundContainer) this.container);
+        } else inventory = new CraftInventory(this.container);
 
-        bukkitEntity = new CardboardInventoryView((Player)((IMixinServerEntityPlayer)this.player.player).getBukkitEntity(), inventory, (GenericContainerScreenHandler)(Object)this);
+        bukkitEntity = new CardboardInventoryView((Player)((IMixinServerEntityPlayer)this.player.player).getBukkitEntity(), inventory, (ChestMenu)(Object)this);
         return bukkitEntity;
     }
 

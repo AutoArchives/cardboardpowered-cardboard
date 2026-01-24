@@ -1,8 +1,8 @@
 package org.cardboardpowered.impl.block;
 
 
-import net.minecraft.block.entity.SculkShriekerBlockEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.entity.SculkShriekerBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.SculkShrieker;
@@ -30,8 +30,8 @@ public class CraftSculkShrieker extends CardboardBlockEntityState<SculkShriekerB
 
     public void tryShriek(Player player) {
         this.requirePlaced();
-        ServerPlayerEntity entityPlayer = player == null ? null : ((CraftPlayer)player).getHandle();
-        ((SculkShriekerBlockEntity)this.getTileEntity()).shriek(this.world.getHandle(), entityPlayer);
+        ServerPlayer entityPlayer = player == null ? null : ((CraftPlayer)player).getHandle();
+        ((SculkShriekerBlockEntity)this.getTileEntity()).tryShriek(this.world.getHandle(), entityPlayer);
     }
 
     @Override

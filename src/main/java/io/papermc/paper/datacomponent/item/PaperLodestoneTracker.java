@@ -7,11 +7,11 @@ import org.bukkit.craftbukkit.util.Handleable;
 import org.jspecify.annotations.Nullable;
 
 public record PaperLodestoneTracker(
-    net.minecraft.component.type.LodestoneTrackerComponent impl
-) implements LodestoneTracker, Handleable<net.minecraft.component.type.LodestoneTrackerComponent> {
+    net.minecraft.world.item.component.LodestoneTracker impl
+) implements LodestoneTracker, Handleable<net.minecraft.world.item.component.LodestoneTracker> {
 
     @Override
-    public net.minecraft.component.type.LodestoneTrackerComponent getHandle() {
+    public net.minecraft.world.item.component.LodestoneTracker getHandle() {
         return this.impl;
     }
 
@@ -44,7 +44,7 @@ public record PaperLodestoneTracker(
 
         @Override
         public LodestoneTracker build() {
-            return new PaperLodestoneTracker(new net.minecraft.component.type.LodestoneTrackerComponent(
+            return new PaperLodestoneTracker(new net.minecraft.world.item.component.LodestoneTracker(
                 Optional.ofNullable(this.location).map(CraftLocation::toGlobalPos),
                 this.tracked
             ));

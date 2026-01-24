@@ -14,22 +14,12 @@ import org.cardboardpowered.interfaces.IMixinRecipeManager;
 import com.mojang.serialization.JsonOps;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.recipe.PreparedRecipes;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.recipe.ServerRecipeManager;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryOps;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.resource.featuretoggle.FeatureSet;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.JsonHelper;
-import net.minecraft.util.profiler.Profiler;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spigotmc.AsyncCatcher;
@@ -47,7 +37,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-@Mixin(ServerRecipeManager.class) // Note: 1.21.4: RecipeManager->ServerRecipeManager // 72, 79, 52, 55, 58, 66, 114
+@Mixin(RecipeManager.class) // Note: 1.21.4: RecipeManager->ServerRecipeManager // 72, 79, 52, 55, 58, 66, 114
 public class MixinRecipeManager implements IMixinRecipeManager {
 
 	// TODO @Shadow
@@ -60,7 +50,7 @@ public class MixinRecipeManager implements IMixinRecipeManager {
 	// private RegistryWrapper.WrapperLookup registryLookup;
 	
 	@Override
-	public  Multimap<RecipeType<?>, RecipeEntry<?>> cb$get_recipesByType() {
+	public  Multimap<RecipeType<?>, RecipeHolder<?>> cb$get_recipesByType() {
 		return null; // TODO return recipesByType;
 	}
 
@@ -115,10 +105,10 @@ public class MixinRecipeManager implements IMixinRecipeManager {
     // TODO @Shadow
     // public PreparedRecipes preparedRecipes = PreparedRecipes.EMPTY;
     
-    private FeatureSet featureflagset;
+    private FeatureFlagSet featureflagset;
     
     @Override
-    public void addRecipe(RecipeEntry<?> irecipe) {
+    public void addRecipe(RecipeHolder<?> irecipe) {
         AsyncCatcher.catchOp("Recipe Add");
         // this.preparedRecipes.addRecipe(irecipe);
         // this.finalizeRecipeLoading();

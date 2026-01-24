@@ -5,17 +5,16 @@ import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.event.player.PlayerPurchaseEvent;
 import javax.annotation.Nullable;
 import net.kyori.adventure.text.Component;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ExperienceOrbEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.village.Merchant;
-import net.minecraft.village.TradeOffer;
-import net.minecraft.village.TradeOfferList;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.Merchant;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.entity.ExperienceOrb.SpawnReason;
 import org.cardboardpowered.interfaces.IMixinTrader;
@@ -44,9 +43,9 @@ public class CraftMerchantCustom implements CraftMerchant {
    }
 
    public static class MinecraftMerchant implements Merchant, IMixinTrader {
-      private final Text title;
-      private final TradeOfferList trades = new TradeOfferList();
-      private PlayerEntity tradingPlayer;
+      private final net.minecraft.network.chat.Component title;
+      private final MerchantOffers trades = new MerchantOffers();
+      private Player tradingPlayer;
       protected CraftMerchant craftMerchant;
 
       @Deprecated
@@ -61,7 +60,7 @@ public class CraftMerchantCustom implements CraftMerchant {
       }
 
       public MinecraftMerchant() {
-         this.title = EntityType.VILLAGER.getName();
+         this.title = EntityType.VILLAGER.getDescription();
       }
 
       @Override
@@ -70,37 +69,37 @@ public class CraftMerchantCustom implements CraftMerchant {
       }
 
       @Override
-      public void setCustomer(PlayerEntity customer) {
+      public void setTradingPlayer(Player customer) {
          this.tradingPlayer = customer;
       }
 
       @Override
-      public PlayerEntity getCustomer() {
+      public Player getTradingPlayer() {
          return this.tradingPlayer;
       }
 
       @Override
-      public TradeOfferList getOffers() {
+      public MerchantOffers getOffers() {
          return this.trades;
       }
 
       // @Override
-      public void processTrade(TradeOffer offer, @Nullable PlayerPurchaseEvent event) {
-         if (this.getCustomer() instanceof ServerPlayerEntity) {
+      public void processTrade(MerchantOffer offer, @Nullable PlayerPurchaseEvent event) {
+         if (this.getTradingPlayer() instanceof ServerPlayer) {
             if (event == null || event.willIncreaseTradeUses()) {
-               offer.use();
+               offer.increaseUses();
             }
 
             if (event == null || event.isRewardingExp()) {
                this.tradingPlayer
-                  .getEntityWorld()
-                  .spawnEntity(
-                     new ExperienceOrbEntity(
-                        this.tradingPlayer.getEntityWorld(),
+                  .level()
+                  .addFreshEntity(
+                     new ExperienceOrb(
+                        this.tradingPlayer.level(),
                         this.tradingPlayer.getX(),
                         this.tradingPlayer.getY(),
                         this.tradingPlayer.getZ(),
-                        offer.getMerchantExperience()
+                        offer.getXp()
                         // SpawnReason.VILLAGER_TRADE,
                         // this.tradingPlayer,
                         // null
@@ -109,51 +108,51 @@ public class CraftMerchantCustom implements CraftMerchant {
             }
          }
 
-         this.trade(offer);
+         this.notifyTrade(offer);
       }
 
       @Override
-      public void trade(TradeOffer offer) {
+      public void notifyTrade(MerchantOffer offer) {
       }
 
       @Override
-      public void onSellingItem(ItemStack stack) {
+      public void notifyTradeUpdated(ItemStack stack) {
       }
 
-      public Text getScoreboardDisplayName() {
+      public net.minecraft.network.chat.Component getScoreboardDisplayName() {
          return this.title;
       }
 
       @Override
-      public int getExperience() {
+      public int getVillagerXp() {
          return 0;
       }
 
       @Override
-      public void setExperienceFromServer(int experience) {
+      public void overrideXp(int experience) {
       }
 
       @Override
-      public boolean isLeveledMerchant() {
+      public boolean showProgressBar() {
          return false;
       }
 
       @Override
-      public SoundEvent getYesSound() {
-         return SoundEvents.ENTITY_VILLAGER_YES;
+      public SoundEvent getNotifyTradeSound() {
+         return SoundEvents.VILLAGER_YES;
       }
 
       @Override
-      public void setOffersFromServer(TradeOfferList offers) {
+      public void overrideOffers(MerchantOffers offers) {
       }
 
       @Override
-      public boolean isClient() {
+      public boolean isClientSide() {
          return false;
       }
 
       @Override
-      public boolean canInteract(PlayerEntity player) {
+      public boolean stillValid(Player player) {
          return this.tradingPlayer == player;
       }
    }

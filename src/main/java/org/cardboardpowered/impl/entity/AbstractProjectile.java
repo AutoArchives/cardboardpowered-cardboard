@@ -11,13 +11,11 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.util.hit.EntityHitResult;
-
 public class AbstractProjectile extends CraftEntity implements Projectile {
 
     private boolean doesBounce;
 
-    public AbstractProjectile(CraftServer server, net.minecraft.entity.Entity entity) {
+    public AbstractProjectile(CraftServer server, net.minecraft.world.entity.Entity entity) {
         super(entity);
         doesBounce = false;
     }
@@ -73,7 +71,7 @@ public class AbstractProjectile extends CraftEntity implements Projectile {
 	@Override
 	 public boolean canHitEntity(org.bukkit.entity.Entity entity) {
         //return this.getHandle().canHit(((CraftEntity)entity).getHandle());
-		return this.getHandle().canHit();
+		return this.getHandle().isPickable();
     }
 
 	@Override

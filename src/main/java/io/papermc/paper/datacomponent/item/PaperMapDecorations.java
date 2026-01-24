@@ -10,17 +10,17 @@ import org.bukkit.map.MapCursor;
 import org.jspecify.annotations.Nullable;
 
 public record PaperMapDecorations(
-    net.minecraft.component.type.MapDecorationsComponent impl
-) implements MapDecorations, Handleable<net.minecraft.component.type.MapDecorationsComponent> {
+    net.minecraft.world.item.component.MapDecorations impl
+) implements MapDecorations, Handleable<net.minecraft.world.item.component.MapDecorations> {
 
     @Override
-    public net.minecraft.component.type.MapDecorationsComponent getHandle() {
+    public net.minecraft.world.item.component.MapDecorations getHandle() {
         return this.impl;
     }
 
     @Override
     public @Nullable DecorationEntry decoration(final String id) {
-        final net.minecraft.component.type.MapDecorationsComponent.Decoration decoration = this.impl.decorations().get(id);
+        final net.minecraft.world.item.component.MapDecorations.Entry decoration = this.impl.decorations().get(id);
         if (decoration == null) {
             return null;
         }
@@ -34,19 +34,19 @@ public record PaperMapDecorations(
             return Collections.emptyMap();
         }
 
-        final Set<Map.Entry<String, net.minecraft.component.type.MapDecorationsComponent.Decoration>> entries = this.impl.decorations().entrySet();
+        final Set<Map.Entry<String, net.minecraft.world.item.component.MapDecorations.Entry>> entries = this.impl.decorations().entrySet();
         final Map<String, DecorationEntry> decorations = new Object2ObjectOpenHashMap<>(entries.size());
-        for (final Map.Entry<String, net.minecraft.component.type.MapDecorationsComponent.Decoration> entry : entries) {
+        for (final Map.Entry<String, net.minecraft.world.item.component.MapDecorations.Entry> entry : entries) {
             decorations.put(entry.getKey(), new PaperDecorationEntry(entry.getValue()));
         }
 
         return Collections.unmodifiableMap(decorations);
     }
 
-    public record PaperDecorationEntry(net.minecraft.component.type.MapDecorationsComponent.Decoration entry) implements DecorationEntry {
+    public record PaperDecorationEntry(net.minecraft.world.item.component.MapDecorations.Entry entry) implements DecorationEntry {
 
         public static DecorationEntry toApi(final MapCursor.Type type, final double x, final double z, final float rotation) {
-            return new PaperDecorationEntry(new net.minecraft.component.type.MapDecorationsComponent.Decoration(CraftMapCursor.CraftType.bukkitToMinecraftHolder(type), x, z, rotation));
+            return new PaperDecorationEntry(new net.minecraft.world.item.component.MapDecorations.Entry(CraftMapCursor.CraftType.bukkitToMinecraftHolder(type), x, z, rotation));
         }
 
         @Override
@@ -72,11 +72,11 @@ public record PaperMapDecorations(
 
     static final class BuilderImpl implements Builder {
 
-        private final Map<String, net.minecraft.component.type.MapDecorationsComponent.Decoration> entries = new Object2ObjectOpenHashMap<>();
+        private final Map<String, net.minecraft.world.item.component.MapDecorations.Entry> entries = new Object2ObjectOpenHashMap<>();
 
         @Override
         public MapDecorations.Builder put(final String id, final DecorationEntry entry) {
-            this.entries.put(id, new net.minecraft.component.type.MapDecorationsComponent.Decoration(CraftMapCursor.CraftType.bukkitToMinecraftHolder(entry.type()), entry.x(), entry.z(), entry.rotation()));
+            this.entries.put(id, new net.minecraft.world.item.component.MapDecorations.Entry(CraftMapCursor.CraftType.bukkitToMinecraftHolder(entry.type()), entry.x(), entry.z(), entry.rotation()));
             return this;
         }
 
@@ -89,9 +89,9 @@ public record PaperMapDecorations(
         @Override
         public MapDecorations build() {
             if (this.entries.isEmpty()) {
-                return new PaperMapDecorations(net.minecraft.component.type.MapDecorationsComponent.DEFAULT);
+                return new PaperMapDecorations(net.minecraft.world.item.component.MapDecorations.EMPTY);
             }
-            return new PaperMapDecorations(new net.minecraft.component.type.MapDecorationsComponent(new Object2ObjectOpenHashMap<>(this.entries)));
+            return new PaperMapDecorations(new net.minecraft.world.item.component.MapDecorations(new Object2ObjectOpenHashMap<>(this.entries)));
         }
     }
 }

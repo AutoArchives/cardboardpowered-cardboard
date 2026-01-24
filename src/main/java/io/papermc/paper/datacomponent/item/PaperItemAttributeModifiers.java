@@ -6,8 +6,6 @@ import io.papermc.paper.datacomponent.item.attribute.AttributeModifierDisplay;
 import io.papermc.paper.datacomponent.item.attribute.PaperAttributeModifierDisplay;
 import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.component.type.AttributeModifiersComponent;
-
 import java.util.List;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -20,10 +18,10 @@ import org.bukkit.inventory.EquipmentSlotGroup;
 import org.jetbrains.annotations.Unmodifiable;
 
 public record PaperItemAttributeModifiers(
-    net.minecraft.component.type.AttributeModifiersComponent impl
-) implements ItemAttributeModifiers, Handleable<net.minecraft.component.type.AttributeModifiersComponent> {
+    net.minecraft.world.item.component.ItemAttributeModifiers impl
+) implements ItemAttributeModifiers, Handleable<net.minecraft.world.item.component.ItemAttributeModifiers> {
 
-    private static List<Entry> convert(final net.minecraft.component.type.AttributeModifiersComponent nmsModifiers) {
+    private static List<Entry> convert(final net.minecraft.world.item.component.ItemAttributeModifiers nmsModifiers) {
         return MCUtil.transformUnmodifiable(nmsModifiers.modifiers(), nms -> new PaperEntry(
         		CraftAttribute.minecraftHolderToBukkit(nms.attribute()),
         		CraftAttributeInstance.convert(nms.modifier(), nms.slot()),
@@ -32,7 +30,7 @@ public record PaperItemAttributeModifiers(
     }
 
     @Override
-    public net.minecraft.component.type.AttributeModifiersComponent getHandle() {
+    public net.minecraft.world.item.component.ItemAttributeModifiers getHandle() {
         return this.impl;
     }
 
@@ -46,7 +44,7 @@ public record PaperItemAttributeModifiers(
 
     static final class BuilderImpl implements ItemAttributeModifiers.Builder {
 
-        private final List<net.minecraft.component.type.AttributeModifiersComponent.Entry> entries = new ObjectArrayList<>();
+        private final List<net.minecraft.world.item.component.ItemAttributeModifiers.Entry> entries = new ObjectArrayList<>();
 
         @Override
         public io.papermc.paper.datacomponent.item.ItemAttributeModifiers.Builder addModifier(final Attribute attribute, final AttributeModifier modifier) {
@@ -57,13 +55,13 @@ public record PaperItemAttributeModifiers(
         public ItemAttributeModifiers.Builder addModifier(final Attribute attribute, final AttributeModifier modifier, final EquipmentSlotGroup equipmentSlotGroup) {
             Preconditions.checkArgument(
                 this.entries.stream().noneMatch(e ->
-                    e.modifier().id().equals(CraftNamespacedKey.toMinecraft(modifier.getKey())) && e.attribute().matchesId(CraftNamespacedKey.toMinecraft(attribute.getKey()))
+                    e.modifier().id().equals(CraftNamespacedKey.toMinecraft(modifier.getKey())) && e.attribute().is(CraftNamespacedKey.toMinecraft(attribute.getKey()))
                 ),
                 "Cannot add 2 modifiers with identical keys on the same attribute (modifier %s for attribute %s)",
                 modifier.getKey(), attribute.getKey()
             );
 
-            this.entries.add(new net.minecraft.component.type.AttributeModifiersComponent.Entry(
+            this.entries.add(new net.minecraft.world.item.component.ItemAttributeModifiers.Entry(
             		CraftAttribute.bukkitToMinecraftHolder(attribute),
                 CraftAttributeInstance.convert(modifier),
                 CraftEquipmentSlot.getNMSGroup(equipmentSlotGroup)
@@ -72,19 +70,19 @@ public record PaperItemAttributeModifiers(
         }
         
         public ItemAttributeModifiers.Builder addModifier(Attribute attribute, AttributeModifier modifier, EquipmentSlotGroup equipmentSlotGroup, AttributeModifierDisplay display) {
-            Preconditions.checkArgument((boolean)this.entries.stream().noneMatch(e2 -> e2.modifier().id().equals(CraftNamespacedKey.toMinecraft(modifier.getKey())) && e2.attribute().matchesId(CraftNamespacedKey.toMinecraft(attribute.getKey()))), (String)"Cannot add 2 modifiers with identical keys on the same attribute (modifier %s for attribute %s)", (Object)modifier.getKey(), (Object)attribute.getKey());
-            this.entries.add(new AttributeModifiersComponent.Entry(CraftAttribute.bukkitToMinecraftHolder(attribute), CraftAttributeInstance.convert(modifier), CraftEquipmentSlot.getNMSGroup(equipmentSlotGroup), PaperAttributeModifierDisplay.toNms(display)));
+            Preconditions.checkArgument((boolean)this.entries.stream().noneMatch(e2 -> e2.modifier().id().equals(CraftNamespacedKey.toMinecraft(modifier.getKey())) && e2.attribute().is(CraftNamespacedKey.toMinecraft(attribute.getKey()))), (String)"Cannot add 2 modifiers with identical keys on the same attribute (modifier %s for attribute %s)", (Object)modifier.getKey(), (Object)attribute.getKey());
+            this.entries.add(new net.minecraft.world.item.component.ItemAttributeModifiers.Entry(CraftAttribute.bukkitToMinecraftHolder(attribute), CraftAttributeInstance.convert(modifier), CraftEquipmentSlot.getNMSGroup(equipmentSlotGroup), PaperAttributeModifierDisplay.toNms(display)));
             return this;
         }
 
         @Override
-        public ItemAttributeModifiers build() {
+        public io.papermc.paper.datacomponent.item.ItemAttributeModifiers build() {
             if (this.entries.isEmpty()) {
-                return new PaperItemAttributeModifiers(net.minecraft.component.type.AttributeModifiersComponent.DEFAULT
+                return new PaperItemAttributeModifiers(net.minecraft.world.item.component.ItemAttributeModifiers.EMPTY
                 		/*.withShowInTooltip(this.showInTooltip)*/);
             }
 
-            return new PaperItemAttributeModifiers(new net.minecraft.component.type.AttributeModifiersComponent(
+            return new PaperItemAttributeModifiers(new net.minecraft.world.item.component.ItemAttributeModifiers(
                 new ObjectArrayList<>(this.entries) // , this.showInTooltip
             ));
         }

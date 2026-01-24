@@ -15,14 +15,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageRecord;
-import net.minecraft.entity.damage.FallLocation;
-import net.minecraft.entity.decoration.MannequinEntity;
-import net.minecraft.entity.player.PlayerModelPart;
-import net.minecraft.text.Text;
-import net.minecraft.util.Nullables;
-
+import net.minecraft.Optionull;
+import net.minecraft.world.damagesource.FallLocation;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.decoration.Mannequin;
+import net.minecraft.world.entity.player.PlayerModelPart;
 import org.bukkit.GameRule;
 import org.bukkit.block.Biome;
 import org.bukkit.craftbukkit.CraftGameRule;
@@ -60,16 +57,16 @@ public class PaperServerInternalAPIBridge implements InternalAPIBridge {
 
     public CombatEntry createCombatEntry(org.bukkit.entity.LivingEntity entity, DamageSource damageSource, float damage) {
         LivingEntity mob = ((LivingEntityImpl)entity).getHandle();
-        FallLocation fallLocation = FallLocation.fromEntity(mob);
+        FallLocation fallLocation = FallLocation.getCurrentFallLocation(mob);
         return this.createCombatEntry(((CraftDamageSource)damageSource).getHandle(), damage, fallLocation, (float)mob.fallDistance);
     }
 
     public CombatEntry createCombatEntry(DamageSource damageSource, float damage, @Nullable FallLocationType fallLocationType, float fallDistance) {
-        return this.createCombatEntry(((CraftDamageSource)damageSource).getHandle(), damage, Nullables.map(fallLocationType, PaperCombatTrackerWrapper::paperToMinecraft), fallDistance);
+        return this.createCombatEntry(((CraftDamageSource)damageSource).getHandle(), damage, Optionull.map(fallLocationType, PaperCombatTrackerWrapper::paperToMinecraft), fallDistance);
     }
 
-    private CombatEntry createCombatEntry(net.minecraft.entity.damage.DamageSource damageSource, float damage, @Nullable FallLocation fallLocation, float fallDistance) {
-        return new PaperCombatEntryWrapper(new DamageRecord(damageSource, damage, fallLocation, fallDistance));
+    private CombatEntry createCombatEntry(net.minecraft.world.damagesource.DamageSource damageSource, float damage, @Nullable FallLocation fallLocation, float fallDistance) {
+        return new PaperCombatEntryWrapper(new net.minecraft.world.damagesource.CombatEntry(damageSource, damage, fallLocation, fallDistance));
     }
 
     public Predicate<CommandSourceStack> restricted(Predicate<CommandSourceStack> predicate) {
@@ -86,12 +83,12 @@ public class PaperServerInternalAPIBridge implements InternalAPIBridge {
 
 	@Override
 	public ResolvableProfile defaultMannequinProfile() {
-		return new PaperResolvableProfile(MannequinEntity.DEFAULT_INFO);
+		return new PaperResolvableProfile(Mannequin.DEFAULT_PROFILE);
 	}
 
 	// TODO: 1.21.9: Aw
 	public static final byte MannequinEntity_ALL_MODEL_PARTS = (byte)Arrays.stream(PlayerModelPart.values())
-		      .mapToInt(PlayerModelPart::getBitFlag)
+		      .mapToInt(PlayerModelPart::getMask)
 		      .reduce(0, (flagL, flagR) -> flagL | flagR);
 	
 	@Override
@@ -102,7 +99,7 @@ public class PaperServerInternalAPIBridge implements InternalAPIBridge {
 	@Override
 	public Component defaultMannequinDescription() {
 		// DEFAULT_DESCRIPTION not visible
-		return PaperAdventure.asAdventure(Text.of("Hello, I'm a Mannequin"));
+		return PaperAdventure.asAdventure(net.minecraft.network.chat.Component.nullToEmpty("Hello, I'm a Mannequin"));
 		// return PaperAdventure.asAdventure(MannequinEntity.DEFAULT_DESCRIPTION);
 	}
 

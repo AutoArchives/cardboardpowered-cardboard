@@ -1,7 +1,6 @@
 package org.cardboardpowered;
 
-import net.minecraft.server.world.ChunkTicketType;
-// import net.minecraft.server.world.ChunkTicketType.Use;
+import net.minecraft.server.level.TicketType;
 
 /**
  * Paper's added ChunkTicketType values
@@ -18,10 +17,10 @@ public class ChunkTicketBridge {
     public static final ChunkTicketType CHUNK_LOAD = ChunkTicketType.register("chunk_load", 0L, false, Use.LOADING);
     */
     
-    public static final ChunkTicketType POST_TELEPORT = ChunkTicketType.register("post_teleport", 5L, 6);
-    public static final ChunkTicketType PLUGIN_TICKET = ChunkTicketType.register("plugin_ticket", 0L, 6);
-    public static final ChunkTicketType FUTURE_AWAIT = ChunkTicketType.register("future_await", 0L, 6);
-    public static final ChunkTicketType CHUNK_LOAD = ChunkTicketType.register("chunk_load", 0L, 2);
+    public static final TicketType POST_TELEPORT = TicketType.register("post_teleport", 5L, 6);
+    public static final TicketType PLUGIN_TICKET = TicketType.register("plugin_ticket", 0L, 6);
+    public static final TicketType FUTURE_AWAIT = TicketType.register("future_await", 0L, 6);
+    public static final TicketType CHUNK_LOAD = TicketType.register("chunk_load", 0L, 2);
     
     // Paper - end
     

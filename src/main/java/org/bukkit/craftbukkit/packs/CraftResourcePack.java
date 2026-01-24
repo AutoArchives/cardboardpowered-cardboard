@@ -7,9 +7,9 @@ import org.bukkit.packs.ResourcePack;
 
 public class CraftResourcePack implements ResourcePack {
 
-    private final MinecraftServer.ServerResourcePackProperties handle;
+    private final MinecraftServer.ServerResourcePackInfo handle;
 
-    public CraftResourcePack(MinecraftServer.ServerResourcePackProperties handle) {
+    public CraftResourcePack(MinecraftServer.ServerResourcePackInfo handle) {
         this.handle = handle;
     }
 

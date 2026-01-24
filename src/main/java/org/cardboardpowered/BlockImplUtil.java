@@ -1,9 +1,7 @@
 package org.cardboardpowered;
 
-import net.minecraft.util.math.Direction;
-
 import org.bukkit.craftbukkit.block.data.IMagicNumbers;
-
+import net.minecraft.core.Direction;
 import org.bukkit.block.BlockFace;
 
 public class BlockImplUtil {

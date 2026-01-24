@@ -2,16 +2,12 @@ package org.cardboardpowered.impl.tag;
 
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.entity.EntityType;
-import net.minecraft.registry.tag.TagKey;
-
+import net.minecraft.core.Registry;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import org.bukkit.craftbukkit.entity.CraftEntityType;
 //import org.bukkit.Registry;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-
 import java.util.Objects;
 
 public class CraftEntityTag extends CraftTag<EntityType<?>, org.bukkit.entity.EntityType> {
@@ -34,7 +30,7 @@ public class CraftEntityTag extends CraftTag<EntityType<?>, org.bukkit.entity.En
     }
     
     public boolean isTagged(org.bukkit.entity.EntityType entity) {
-        return CraftEntityType.bukkitToMinecraft(entity).isIn(this.tag);
+        return CraftEntityType.bukkitToMinecraft(entity).is(this.tag);
     }
 
     /*
@@ -44,7 +40,7 @@ public class CraftEntityTag extends CraftTag<EntityType<?>, org.bukkit.entity.En
     */
 
     public Set<org.bukkit.entity.EntityType> getValues() {
-        return this.getHandle().stream().map(nms -> (org.bukkit.entity.EntityType)org.bukkit.Registry.ENTITY_TYPE.get(CraftNamespacedKey.fromMinecraft(EntityType.getId((EntityType)nms.value())))).filter(Objects::nonNull).collect(Collectors.toUnmodifiableSet());
+        return this.getHandle().stream().map(nms -> (org.bukkit.entity.EntityType)org.bukkit.Registry.ENTITY_TYPE.get(CraftNamespacedKey.fromMinecraft(EntityType.getKey((EntityType)nms.value())))).filter(Objects::nonNull).collect(Collectors.toUnmodifiableSet());
     }
 }
 

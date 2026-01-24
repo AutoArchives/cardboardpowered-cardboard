@@ -1,15 +1,13 @@
 package org.cardboardpowered.mixin.entity.block;
 
 import org.spongepowered.asm.mixin.Mixin;
-
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SignBlock;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.phys.Vec3;
 import org.cardboardpowered.interfaces.IMixinSignBlockEntity;
-
-import net.minecraft.block.AbstractSignBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 
 /**
  * @implSpec https://github.com/PaperMC/Paper/blob/main/paper-server/patches/sources/net/minecraft/world/level/block/entity/SignBlockEntity.java.patch
@@ -21,7 +19,7 @@ public class MixinSignBlockEntity implements IMixinSignBlockEntity {
    // public Text[] texts;
 
     @Override
-    public Text[] getTextBF() {
+    public Component[] getTextBF() {
     	SignBlockEntity e = (SignBlockEntity)(Object)this;
     	return e.getFrontText().getMessages(false);
     	
@@ -37,14 +35,14 @@ public class MixinSignBlockEntity implements IMixinSignBlockEntity {
     	SignBlockEntity thiz = (SignBlockEntity) (Object) this;
     	
     	
-        Block block = thiz.getCachedState().getBlock();
-        if (block instanceof AbstractSignBlock) {
-            AbstractSignBlock blocksign = (AbstractSignBlock)block;
-            Vec3d vec3d = blocksign.getCenter(thiz.getCachedState());
-            double d0 = x - ((double)thiz.getPos().getX() + vec3d.x);
-            double d1 = z - ((double)thiz.getPos().getZ() + vec3d.z);
-            float f2 = blocksign.getRotationDegrees(thiz.getCachedState());
-            return MathHelper.angleBetween(f2, (float)(MathHelper.atan2(d1, d0) * 57.2957763671875) - 90.0f) <= 90.0f;
+        Block block = thiz.getBlockState().getBlock();
+        if (block instanceof SignBlock) {
+            SignBlock blocksign = (SignBlock)block;
+            Vec3 vec3d = blocksign.getSignHitboxCenterPosition(thiz.getBlockState());
+            double d0 = x - ((double)thiz.getBlockPos().getX() + vec3d.x);
+            double d1 = z - ((double)thiz.getBlockPos().getZ() + vec3d.z);
+            float f2 = blocksign.getYRotationDegrees(thiz.getBlockState());
+            return Mth.degreesDifferenceAbs(f2, (float)(Mth.atan2(d1, d0) * 57.2957763671875) - 90.0f) <= 90.0f;
         }
         return false;
     }

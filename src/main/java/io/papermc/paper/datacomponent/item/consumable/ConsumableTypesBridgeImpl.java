@@ -8,8 +8,7 @@ import io.papermc.paper.registry.set.RegistryKeySet;
 import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.key.Key;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.core.registries.Registries;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.cardboardpowered.Registries_Bridge;
@@ -25,7 +24,7 @@ public class ConsumableTypesBridgeImpl implements ConsumableTypesBridge {
     public ConsumeEffect.ApplyStatusEffects applyStatusEffects(final List<PotionEffect> effectList, final float probability) {
         Preconditions.checkArgument(0 <= probability && probability <= 1, "probability must be between 0-1, was %s", probability);
         return new PaperApplyStatusEffects(
-            new net.minecraft.item.consume.ApplyEffectsConsumeEffect(
+            new net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect(
                 new ArrayList<>(Lists.transform(effectList, CardboardPotionUtil::fromBukkit)),
                 probability
             )
@@ -35,8 +34,8 @@ public class ConsumableTypesBridgeImpl implements ConsumableTypesBridge {
     @Override
     public ConsumeEffect.RemoveStatusEffects removeStatusEffects(final RegistryKeySet<PotionEffectType> effectTypes) {
         return new PaperRemoveStatusEffects(
-            new net.minecraft.item.consume.RemoveEffectsConsumeEffect(
-                PaperRegistrySets.convertToNms(RegistryKeys.STATUS_EFFECT, Registries_Bridge.BUILT_IN_CONVERSIONS.lookup(), effectTypes)
+            new net.minecraft.world.item.consume_effects.RemoveStatusEffectsConsumeEffect(
+                PaperRegistrySets.convertToNms(Registries.MOB_EFFECT, Registries_Bridge.BUILT_IN_CONVERSIONS.lookup(), effectTypes)
             )
         );
     }
@@ -44,14 +43,14 @@ public class ConsumableTypesBridgeImpl implements ConsumableTypesBridge {
     @Override
     public ConsumeEffect.ClearAllStatusEffects clearAllStatusEffects() {
         return new PaperClearAllStatusEffects(
-            new net.minecraft.item.consume.ClearAllEffectsConsumeEffect()
+            new net.minecraft.world.item.consume_effects.ClearAllStatusEffectsConsumeEffect()
         );
     }
 
     @Override
     public ConsumeEffect.PlaySound playSoundEffect(final Key sound) {
         return new PaperPlaySound(
-            new net.minecraft.item.consume.PlaySoundConsumeEffect(PaperAdventure.resolveSound(sound))
+            new net.minecraft.world.item.consume_effects.PlaySoundConsumeEffect(PaperAdventure.resolveSound(sound))
         );
     }
 
@@ -59,7 +58,7 @@ public class ConsumableTypesBridgeImpl implements ConsumableTypesBridge {
     public ConsumeEffect.TeleportRandomly teleportRandomlyEffect(final float diameter) {
         Preconditions.checkArgument(diameter > 0, "diameter must be positive, was %s", diameter);
         return new PaperTeleportRandomly(
-            new net.minecraft.item.consume.TeleportRandomlyConsumeEffect(diameter)
+            new net.minecraft.world.item.consume_effects.TeleportRandomlyConsumeEffect(diameter)
         );
     }
 }

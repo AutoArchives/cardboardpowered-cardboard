@@ -9,21 +9,21 @@ import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import net.kyori.adventure.key.Key;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
+import net.minecraft.core.Holder;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.jetbrains.annotations.Unmodifiable;
 
 public record PaperConsumable(
-    net.minecraft.component.type.ConsumableComponent impl
-) implements Consumable, Handleable<net.minecraft.component.type.ConsumableComponent> {
+    net.minecraft.world.item.component.Consumable impl
+) implements Consumable, Handleable<net.minecraft.world.item.component.Consumable> {
 
     private static final ItemUseAnimation[] VALUES = ItemUseAnimation.values();
 
     @Override
-    public net.minecraft.component.type.ConsumableComponent getHandle() {
+    public net.minecraft.world.item.component.Consumable getHandle() {
         return this.impl;
     }
 
@@ -34,12 +34,12 @@ public record PaperConsumable(
 
     @Override
     public ItemUseAnimation animation() {
-        return VALUES[this.impl.useAction().ordinal()];
+        return VALUES[this.impl.animation().ordinal()];
     }
 
     @Override
     public Key sound() {
-        return PaperAdventure.asAdventure(this.impl.sound().value().id());
+        return PaperAdventure.asAdventure(this.impl.sound().value().location());
     }
 
     @Override
@@ -63,13 +63,13 @@ public record PaperConsumable(
 
     static final class BuilderImpl implements Builder {
 
-        private static final net.minecraft.item.consume.UseAction[] VALUES = net.minecraft.item.consume.UseAction.values();
+        private static final net.minecraft.world.item.ItemUseAnimation[] VALUES = net.minecraft.world.item.ItemUseAnimation.values();
 
-        private float consumeSeconds = net.minecraft.component.type.ConsumableComponent.DEFAULT_CONSUME_SECONDS;
-        private net.minecraft.item.consume.UseAction consumeAnimation = net.minecraft.item.consume.UseAction.EAT;
-        private RegistryEntry<SoundEvent> eatSound = SoundEvents.ENTITY_GENERIC_EAT;
+        private float consumeSeconds = net.minecraft.world.item.component.Consumable.DEFAULT_CONSUME_SECONDS;
+        private net.minecraft.world.item.ItemUseAnimation consumeAnimation = net.minecraft.world.item.ItemUseAnimation.EAT;
+        private Holder<SoundEvent> eatSound = SoundEvents.GENERIC_EAT;
         private boolean hasConsumeParticles = true;
-        private final List<net.minecraft.item.consume.ConsumeEffect> effects = new ObjectArrayList<>();
+        private final List<net.minecraft.world.item.consume_effects.ConsumeEffect> effects = new ObjectArrayList<>();
 
         @Override
         public Builder consumeSeconds(final @NonNegative float consumeSeconds) {
@@ -113,7 +113,7 @@ public record PaperConsumable(
         @Override
         public Consumable build() {
             return new PaperConsumable(
-                new net.minecraft.component.type.ConsumableComponent(
+                new net.minecraft.world.item.component.Consumable(
                     this.consumeSeconds,
                     this.consumeAnimation,
                     this.eatSound,

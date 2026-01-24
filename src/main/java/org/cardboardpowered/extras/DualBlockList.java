@@ -1,10 +1,10 @@
 package org.cardboardpowered.extras;
 
-import net.minecraft.util.math.BlockPos;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import java.util.AbstractList;
 import java.util.List;
+import net.minecraft.core.BlockPos;
 
 public class DualBlockList extends AbstractList<Block> {
     private final List<BlockPos> moved;

@@ -3,9 +3,6 @@ package org.cardboardpowered.impl.entity;
 import com.google.common.base.Preconditions;
 import org.cardboardpowered.interfaces.ICreeperEntity;
 import org.cardboardpowered.interfaces.IMixinEntity;
-
-import net.minecraft.entity.mob.CreeperEntity;
-
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Creeper;
@@ -17,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class CreeperImpl extends CraftMonster implements Creeper {
 
-    public CreeperImpl(CraftServer server, CreeperEntity entity) {
+    public CreeperImpl(CraftServer server, net.minecraft.world.entity.monster.Creeper entity) {
         super(server, entity);
     }
 
@@ -81,8 +78,8 @@ public class CreeperImpl extends CraftMonster implements Creeper {
     }
 
     @Override
-    public CreeperEntity getHandle() {
-        return (CreeperEntity) nms;
+    public net.minecraft.world.entity.monster.Creeper getHandle() {
+        return (net.minecraft.world.entity.monster.Creeper) nms;
     }
 
     @Override

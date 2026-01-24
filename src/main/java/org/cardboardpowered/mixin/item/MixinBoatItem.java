@@ -1,28 +1,6 @@
 package org.cardboardpowered.mixin.item;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.vehicle.AbstractBoatEntity;
-import net.minecraft.entity.vehicle.BoatEntity;
-import net.minecraft.item.BoatItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.predicate.entity.EntityPredicates;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.stat.Stats;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.RaycastContext;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.event.GameEvent;
-
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.cardboardpowered.util.MixinInfo;
@@ -33,6 +11,26 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.List;
 import java.util.function.Predicate;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
+import net.minecraft.world.item.BoatItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 @MixinInfo(events = {"PlayerInteractEvent"})
 @Mixin(BoatItem.class)
@@ -60,19 +58,19 @@ public abstract class MixinBoatItem extends Item {
     // @Shadow @Final private BoatEntity.Type type;
     // @formatter:on
 
-    @Shadow protected abstract AbstractBoatEntity createEntity(World world, HitResult hitResult, ItemStack stack, PlayerEntity player);
+    @Shadow protected abstract AbstractBoat getBoat(Level world, HitResult hitResult, ItemStack stack, Player player);
 
-    public MixinBoatItem(net.minecraft.item.Item.Settings settings) {
+    public MixinBoatItem(net.minecraft.world.item.Item.Properties settings) {
         super(settings);
     }
     
-    private static boolean isValid(WorldAccess level) {
+    private static boolean isValid(LevelAccessor level) {
         return level != null
-                && !level.isClient();
+                && !level.isClientSide();
     }
 
-    private static boolean isValid(BlockView getter) {
-        return getter instanceof WorldAccess level && isValid(level);
+    private static boolean isValid(BlockGetter getter) {
+        return getter instanceof LevelAccessor level && isValid(level);
     }
 
     /**
@@ -80,50 +78,50 @@ public abstract class MixinBoatItem extends Item {
      * @reason PlayerInteractEvent
      */
     @Overwrite
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        ItemStack itemstack = user.getStackInHand(hand);
-        BlockHitResult movingobjectpositionblock = BoatItem.raycast(world, user, RaycastContext.FluidHandling.ANY);
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
+        ItemStack itemstack = user.getItemInHand(hand);
+        BlockHitResult movingobjectpositionblock = BoatItem.getPlayerPOVHitResult(world, user, ClipContext.Fluid.ANY);
         if (movingobjectpositionblock.getType() == HitResult.Type.MISS) {
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         }
-        Vec3d vec3d = user.getRotationVec(1.0f);
+        Vec3 vec3d = user.getViewVector(1.0f);
         double d0 = 5.0;
-        List<Entity> list = world.getOtherEntities(user, user.getBoundingBox().stretch(vec3d.multiply(5.0)).expand(1.0), EntityPredicates.CAN_HIT);
+        List<Entity> list = world.getEntities(user, user.getBoundingBox().expandTowards(vec3d.scale(5.0)).inflate(1.0), EntitySelector.CAN_BE_PICKED);
         if (!list.isEmpty()) {
-            Vec3d vec3d1 = user.getEyePos();
+            Vec3 vec3d1 = user.getEyePosition();
             for (Entity entity : list) {
-                Box axisalignedbb = entity.getBoundingBox().expand(entity.getTargetingMargin());
+                AABB axisalignedbb = entity.getBoundingBox().inflate(entity.getPickRadius());
                 if (!axisalignedbb.contains(vec3d1)) continue;
-                return ActionResult.PASS;
+                return InteractionResult.PASS;
             }
         }
         if (movingobjectpositionblock.getType() == HitResult.Type.BLOCK) {
-            PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent((ServerPlayerEntity)user, Action.RIGHT_CLICK_BLOCK, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), itemstack, false, hand/*, movingobjectpositionblock.getPos()*/);
+            PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent((ServerPlayer)user, Action.RIGHT_CLICK_BLOCK, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getDirection(), itemstack, false, hand/*, movingobjectpositionblock.getPos()*/);
             if (event.isCancelled()) {
-                return ActionResult.PASS;
+                return InteractionResult.PASS;
             }
-            AbstractBoatEntity abstractboat = this.createEntity(world, movingobjectpositionblock, itemstack, user);
+            AbstractBoat abstractboat = this.getBoat(world, movingobjectpositionblock, itemstack, user);
             if (abstractboat == null) {
-                return ActionResult.FAIL;
+                return InteractionResult.FAIL;
             }
-            abstractboat.setYaw(user.getYaw());
-            if (!world.isSpaceEmpty(abstractboat, abstractboat.getBoundingBox())) {
-                return ActionResult.FAIL;
+            abstractboat.setYRot(user.getYRot());
+            if (!world.noCollision(abstractboat, abstractboat.getBoundingBox())) {
+                return InteractionResult.FAIL;
             }
-            if (!world.isClient()) {
-                if (CraftEventFactory.callEntityPlaceEvent(world, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), user, abstractboat, hand).isCancelled()) {
-                    return ActionResult.FAIL;
+            if (!world.isClientSide()) {
+                if (CraftEventFactory.callEntityPlaceEvent(world, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getDirection(), user, abstractboat, hand).isCancelled()) {
+                    return InteractionResult.FAIL;
                 }
-                if (!world.spawnEntity(abstractboat)) {
-                    return ActionResult.PASS;
+                if (!world.addFreshEntity(abstractboat)) {
+                    return InteractionResult.PASS;
                 }
-                world.emitGameEvent((Entity)user, GameEvent.ENTITY_PLACE, movingobjectpositionblock.getPos());
-                itemstack.decrementUnlessCreative(1, user);
+                world.gameEvent((Entity)user, GameEvent.ENTITY_PLACE, movingobjectpositionblock.getLocation());
+                itemstack.consume(1, user);
             }
-            user.incrementStat(Stats.USED.getOrCreateStat(this));
-            return ActionResult.SUCCESS;
+            user.awardStat(Stats.ITEM_USED.get(this));
+            return InteractionResult.SUCCESS;
         }
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 
     /*

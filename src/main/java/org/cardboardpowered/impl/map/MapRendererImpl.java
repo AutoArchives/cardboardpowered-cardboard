@@ -1,7 +1,6 @@
 package org.cardboardpowered.impl.map;
 
-// import net.minecraft.item.map.MapIcon;
-import net.minecraft.item.map.MapState;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.entity.Player;
@@ -12,9 +11,9 @@ import org.bukkit.map.MapView;
 
 public class MapRendererImpl extends MapRenderer {
 
-    private final MapState worldMap;
+    private final MapItemSavedData worldMap;
 
-    public MapRendererImpl(MapViewImpl mapView, MapState worldMap) {
+    public MapRendererImpl(MapViewImpl mapView, MapItemSavedData worldMap) {
         super(false);
         this.worldMap = worldMap;
     }

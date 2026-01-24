@@ -1,8 +1,6 @@
 package org.cardboardpowered.impl.entity;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.entity.ExperienceOrbEntity;
-
 import java.util.UUID;
 
 import org.bukkit.craftbukkit.CraftServer;
@@ -13,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class ExperienceOrbImpl extends CraftEntity implements ExperienceOrb {
 
-    public ExperienceOrbImpl(CraftServer server, ExperienceOrbEntity entity) {
+    public ExperienceOrbImpl(CraftServer server, net.minecraft.world.entity.ExperienceOrb entity) {
         super(entity);
     }
 
@@ -28,8 +26,8 @@ public class ExperienceOrbImpl extends CraftEntity implements ExperienceOrb {
     }
 
     @Override
-    public ExperienceOrbEntity getHandle() {
-        return (ExperienceOrbEntity) nms;
+    public net.minecraft.world.entity.ExperienceOrb getHandle() {
+        return (net.minecraft.world.entity.ExperienceOrb) nms;
     }
 
     @Override
@@ -74,12 +72,12 @@ public class ExperienceOrbImpl extends CraftEntity implements ExperienceOrb {
 
 	@Override
 	public int getCount() {
-		return getHandle().pickingCount;
+		return getHandle().count;
 	}
 
 	@Override
 	public void setCount(int count) {
-		this.getHandle().pickingCount = count;
+		this.getHandle().count = count;
 	}
 
 }

@@ -15,11 +15,11 @@ import org.bukkit.Color;
 import org.bukkit.craftbukkit.util.Handleable;
 
 public record PaperCustomModelData(
-    net.minecraft.component.type.CustomModelDataComponent impl
-) implements CustomModelData, Handleable<net.minecraft.component.type.CustomModelDataComponent> {
+    net.minecraft.world.item.component.CustomModelData impl
+) implements CustomModelData, Handleable<net.minecraft.world.item.component.CustomModelData> {
 
     @Override
-    public net.minecraft.component.type.CustomModelDataComponent getHandle() {
+    public net.minecraft.world.item.component.CustomModelData getHandle() {
         return this.impl;
     }
 
@@ -109,7 +109,7 @@ public record PaperCustomModelData(
         @Override
         public CustomModelData build() {
             return new PaperCustomModelData(
-                new net.minecraft.component.type.CustomModelDataComponent(
+                new net.minecraft.world.item.component.CustomModelData(
                     new FloatArrayList(this.floats),
                     new BooleanArrayList(this.flags),
                     new ObjectArrayList<>(this.strings),

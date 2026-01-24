@@ -1,24 +1,23 @@
 package org.cardboardpowered.impl.entity;
 
+import net.minecraft.world.entity.AgeableMob;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Ageable;
 
-import net.minecraft.entity.passive.PassiveEntity;
-
 public class CraftAgeable extends CraftCreature implements Ageable {
 
-    public CraftAgeable(CraftServer server, PassiveEntity entity) {
+    public CraftAgeable(CraftServer server, AgeableMob entity) {
         super(server, entity);
     }
 
     @Override
     public int getAge() {
-        return getHandle().getBreedingAge();
+        return getHandle().getAge();
     }
 
     @Override
     public void setAge(int age) {
-        getHandle().setBreedingAge(age);
+        getHandle().setAge(age);
     }
 
     @Override
@@ -59,8 +58,8 @@ public class CraftAgeable extends CraftCreature implements Ageable {
     }
 
     @Override
-    public PassiveEntity getHandle() {
-        return (PassiveEntity) nms;
+    public AgeableMob getHandle() {
+        return (AgeableMob) nms;
     }
 
     @Override

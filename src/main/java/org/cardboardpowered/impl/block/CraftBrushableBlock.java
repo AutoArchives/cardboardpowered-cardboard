@@ -1,6 +1,6 @@
 package org.cardboardpowered.impl.block;
 
-import net.minecraft.block.entity.BrushableBlockEntity;
+import net.minecraft.world.level.block.entity.BrushableBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;

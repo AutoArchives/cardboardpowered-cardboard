@@ -3,9 +3,9 @@ package org.bukkit.craftbukkit.inventory;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.type.DyedColorComponent;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.world.item.component.DyedItemColor;
 import org.bukkit.Color;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.inventory.ItemFlag;
@@ -26,7 +26,7 @@ public class CraftMetaColorableArmor extends CraftMetaArmor implements Colorable
         this.color = armorMeta.color;
     }
 
-    CraftMetaColorableArmor(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
+    CraftMetaColorableArmor(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaColorableArmor.getOrEmpty(tag, CraftMetaLeatherArmor.COLOR).ifPresent(dyedItemColor -> {
             /*
@@ -47,7 +47,7 @@ public class CraftMetaColorableArmor extends CraftMetaArmor implements Colorable
     void applyToItem(CraftMetaItem.Applicator itemTag) {
         super.applyToItem(itemTag);
         if (this.hasColor()) {
-            itemTag.put(CraftMetaLeatherArmor.COLOR, new DyedColorComponent(this.color/*, !this.hasItemFlag(ItemFlag.HIDE_DYE)*/));
+            itemTag.put(CraftMetaLeatherArmor.COLOR, new DyedItemColor(this.color/*, !this.hasItemFlag(ItemFlag.HIDE_DYE)*/));
         }
     }
 

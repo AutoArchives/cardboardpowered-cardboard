@@ -5,7 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.craftbukkit.inventory.SerializableMeta;
@@ -15,9 +15,9 @@ import org.bukkit.inventory.meta.components.UseCooldownComponent;
 @SerializableAs("UseCooldown")
 public final class CraftUseCooldownComponent implements UseCooldownComponent {
 
-    private net.minecraft.component.type.UseCooldownComponent handle;
+    private net.minecraft.world.item.component.UseCooldown handle;
 
-    public CraftUseCooldownComponent(net.minecraft.component.type.UseCooldownComponent cooldown) {
+    public CraftUseCooldownComponent(net.minecraft.world.item.component.UseCooldown cooldown) {
         this.handle = cooldown;
     }
 
@@ -29,7 +29,7 @@ public final class CraftUseCooldownComponent implements UseCooldownComponent {
         Float seconds = SerializableMeta.getObject(Float.class, map, "seconds", false);
         String cooldownGroup = SerializableMeta.getString(map, "cooldown-group", true);
 
-        this.handle = new net.minecraft.component.type.UseCooldownComponent(seconds, Optional.ofNullable(cooldownGroup).map(Identifier::of));
+        this.handle = new net.minecraft.world.item.component.UseCooldown(seconds, Optional.ofNullable(cooldownGroup).map(Identifier::parse));
     }
 
     @Override
@@ -43,7 +43,7 @@ public final class CraftUseCooldownComponent implements UseCooldownComponent {
         return result;
     }
 
-    public net.minecraft.component.type.UseCooldownComponent getHandle() {
+    public net.minecraft.world.item.component.UseCooldown getHandle() {
         return this.handle;
     }
 
@@ -56,7 +56,7 @@ public final class CraftUseCooldownComponent implements UseCooldownComponent {
     public void setCooldownSeconds(float cooldown) {
         Preconditions.checkArgument(cooldown > 0, "cooldown must be greater than 0");
 
-        this.handle = new net.minecraft.component.type.UseCooldownComponent(cooldown, this.handle.cooldownGroup());
+        this.handle = new net.minecraft.world.item.component.UseCooldown(cooldown, this.handle.cooldownGroup());
     }
 
     @Override
@@ -66,7 +66,7 @@ public final class CraftUseCooldownComponent implements UseCooldownComponent {
 
     @Override
     public void setCooldownGroup(NamespacedKey song) {
-        this.handle = new net.minecraft.component.type.UseCooldownComponent(this.handle.seconds(), Optional.ofNullable(song).map(CraftNamespacedKey::toMinecraft));
+        this.handle = new net.minecraft.world.item.component.UseCooldown(this.handle.seconds(), Optional.ofNullable(song).map(CraftNamespacedKey::toMinecraft));
     }
 
     @Override

@@ -3,7 +3,7 @@ package com.destroystokyo.paper.loottable;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
 import java.util.UUID;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import org.bukkit.loot.Lootable;
 
 public interface PaperLootableInventory
@@ -13,7 +13,7 @@ Lootable {
 
     public LootableInventory getAPILootableInventory();
 
-    public World getNMSWorld();
+    public Level getNMSWorld();
 
     default public org.bukkit.World getBukkitWorld() {
         return ((IMixinWorld)this.getNMSWorld()).getCraftWorld();

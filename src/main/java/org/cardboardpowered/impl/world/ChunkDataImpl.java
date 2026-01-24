@@ -21,12 +21,6 @@ package org.cardboardpowered.impl.world;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Set;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkSection;
-
 import org.bukkit.HeightMap;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -44,13 +38,17 @@ import com.google.common.base.Preconditions;
 
 import me.isaiah.common.ICommonMod;
 import me.isaiah.common.cmixin.IMixinMinecraftServer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 
 @SuppressWarnings("deprecation")
 public final class ChunkDataImpl implements ChunkGenerator.ChunkData {
 
     private final int minHeight;
     private final int maxHeight;
-    private final ChunkSection[] sections;
+    private final LevelChunkSection[] sections;
     private Set<BlockPos> tiles;
     
     // private final WeakReference<Chunk> weakChunk;
@@ -63,7 +61,7 @@ public final class ChunkDataImpl implements ChunkGenerator.ChunkData {
         if (maxHeight > 256) throw new IllegalArgumentException("World height exceeded max chunk height");
         this.minHeight = min;
         this.maxHeight = maxHeight;
-        sections = new ChunkSection[maxHeight >> 4];
+        sections = new LevelChunkSection[maxHeight >> 4];
         
         // this.weakChunk = new WeakReference<>(sec);
     }
@@ -140,7 +138,7 @@ public final class ChunkDataImpl implements ChunkGenerator.ChunkData {
         if (xMin >= xMax || yMin >= yMax || zMin >= zMax) return;
 
         for (int y = yMin; y < yMax; y++) {
-            ChunkSection section = getChunkSection(y, true);
+            LevelChunkSection section = getChunkSection(y, true);
             int offsetBase = y & 0xf;
             for (int x = xMin; x < xMax; x++)
                 for (int z = zMin; z < zMax; z++) section.setBlockState(x, offsetBase, z, type);
@@ -148,9 +146,9 @@ public final class ChunkDataImpl implements ChunkGenerator.ChunkData {
     }
 
     public BlockState getTypeId(int x, int y, int z) {
-        if (x != (x & 0xf) || y < 0 || y >= maxHeight || z != (z & 0xf)) return Blocks.AIR.getDefaultState();
-        ChunkSection section = getChunkSection(y, false);
-        return section == null ? Blocks.AIR.getDefaultState() : section.getBlockState(x, y & 0xf, z);
+        if (x != (x & 0xf) || y < 0 || y >= maxHeight || z != (z & 0xf)) return Blocks.AIR.defaultBlockState();
+        LevelChunkSection section = getChunkSection(y, false);
+        return section == null ? Blocks.AIR.defaultBlockState() : section.getBlockState(x, y & 0xf, z);
     }
 
     @Override
@@ -160,7 +158,7 @@ public final class ChunkDataImpl implements ChunkGenerator.ChunkData {
 
     private void setBlock(int x, int y, int z, BlockState type) {
         if (x != (x & 0xf) || y < 0 || y >= maxHeight || z != (z & 0xf)) return;
-        ChunkSection section = getChunkSection(y, true);
+        LevelChunkSection section = getChunkSection(y, true);
         section.setBlockState(x, y & 0xf, z, type);
 
         if (type.hasBlockEntity()) {
@@ -169,15 +167,15 @@ public final class ChunkDataImpl implements ChunkGenerator.ChunkData {
         }
     }
 
-    private ChunkSection getChunkSection(int y, boolean create) {
-        ChunkSection section = sections[y >> 4];
+    private LevelChunkSection getChunkSection(int y, boolean create) {
+        LevelChunkSection section = sections[y >> 4];
         IMixinMinecraftServer mc = (IMixinMinecraftServer) ICommonMod.getIServer().getMinecraft();
         if (create && section == null) sections[y >> 4] = section = mc.newChunkSection(y >> 4 << 4);
         //if (create && section == null) sections[y >> 4] = section = new ChunkSection(y >> 4 << 4);
         return section;
     }
 
-    public ChunkSection[] getRawChunkData() {
+    public LevelChunkSection[] getRawChunkData() {
         return sections;
     }
 

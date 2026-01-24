@@ -1,25 +1,24 @@
 package io.papermc.paper.datacomponent.item;
 
+import net.minecraft.world.item.EitherHolder;
 import org.bukkit.JukeboxSong;
 import org.bukkit.craftbukkit.CraftJukeboxSong;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.Handleable;
 
-import net.minecraft.registry.entry.LazyRegistryEntryReference;
-
 public record PaperJukeboxPlayable(
-    net.minecraft.component.type.JukeboxPlayableComponent impl
-) implements JukeboxPlayable, Handleable<net.minecraft.component.type.JukeboxPlayableComponent> {
+    net.minecraft.world.item.JukeboxPlayable impl
+) implements JukeboxPlayable, Handleable<net.minecraft.world.item.JukeboxPlayable> {
 
     @Override
-    public net.minecraft.component.type.JukeboxPlayableComponent getHandle() {
+    public net.minecraft.world.item.JukeboxPlayable getHandle() {
         return this.impl;
     }
 
     @Override
     public JukeboxSong jukeboxSong() {
         return this.impl.song()
-            .resolveEntry(CraftRegistry.getMinecraftRegistry())
+            .unwrap(CraftRegistry.getMinecraftRegistry())
             .map(CraftJukeboxSong::minecraftHolderToBukkit)
             .orElseThrow();
     }
@@ -40,7 +39,7 @@ public record PaperJukeboxPlayable(
 
         @Override
         public JukeboxPlayable build() {
-            return new PaperJukeboxPlayable(new net.minecraft.component.type.JukeboxPlayableComponent(new LazyRegistryEntryReference<>(CraftJukeboxSong.bukkitToMinecraftHolder(this.song))));
+            return new PaperJukeboxPlayable(new net.minecraft.world.item.JukeboxPlayable(new EitherHolder<>(CraftJukeboxSong.bukkitToMinecraftHolder(this.song))));
         }
     }
 }

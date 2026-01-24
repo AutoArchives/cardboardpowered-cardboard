@@ -1,11 +1,10 @@
 package org.cardboardpowered.impl.block;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.DropperBlock;
-import net.minecraft.block.entity.DropperBlockEntity;
-
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DropperBlock;
+import net.minecraft.world.level.block.entity.DropperBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -56,7 +55,7 @@ public class CardboardDropper extends CardboardLootableBlock<DropperBlockEntity>
             CraftWorld world = (CraftWorld) this.getWorld();
             DropperBlock drop = (DropperBlock) Blocks.DROPPER;
             BlockState state = world.getHandle().getBlockState(getPosition());
-            drop.dispense(world.getHandle(), state, this.getPosition());
+            drop.dispenseFrom(world.getHandle(), state, this.getPosition());
         }
     }
 

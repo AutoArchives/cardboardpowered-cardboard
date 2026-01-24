@@ -1,7 +1,6 @@
 package org.cardboardpowered.impl.block;
 
-import net.minecraft.block.entity.SmokerBlockEntity;
-
+import net.minecraft.world.level.block.entity.SmokerBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;

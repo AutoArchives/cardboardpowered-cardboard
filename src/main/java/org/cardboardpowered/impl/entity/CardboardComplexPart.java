@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import org.cardboardpowered.interfaces.IMixinEntity;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.entity.boss.dragon.EnderDragonPart;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 
 public class CardboardComplexPart extends CraftEntity implements ComplexEntityPart {
 
@@ -21,7 +21,7 @@ public class CardboardComplexPart extends CraftEntity implements ComplexEntityPa
 
     @Override
     public ComplexLivingEntity getParent() {
-        return (ComplexLivingEntity) ((IMixinEntity) getHandle().owner).getBukkitEntity();
+        return (ComplexLivingEntity) ((IMixinEntity) getHandle().parentMob).getBukkitEntity();
     }
 
     @Override

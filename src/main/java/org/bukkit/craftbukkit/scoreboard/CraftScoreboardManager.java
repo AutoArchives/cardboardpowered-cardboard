@@ -1,16 +1,16 @@
 package org.bukkit.craftbukkit.scoreboard;
 
 import org.cardboardpowered.interfaces.IMixinPlayerManager;
-import net.minecraft.network.packet.s2c.play.ScoreboardObjectiveUpdateS2CPacket;
-import net.minecraft.scoreboard.ScoreAccess;
-import net.minecraft.scoreboard.ScoreHolder;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardCriterion;
-import net.minecraft.scoreboard.ScoreboardDisplaySlot;
-import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.scoreboard.ServerScoreboard;
+import net.minecraft.network.protocol.game.ClientboundSetObjectivePacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.ServerScoreboard;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.scores.DisplaySlot;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.ScoreAccess;
+import net.minecraft.world.scores.ScoreHolder;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.apache.commons.lang.Validate;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.ScoreboardManager;
@@ -31,7 +31,7 @@ public final class CraftScoreboardManager implements ScoreboardManager {
     private final Collection<CardboardScoreboard> scoreboards = new WeakCollection<CardboardScoreboard>();
     private final Map<CraftPlayer, CardboardScoreboard> playerBoards = new HashMap<CraftPlayer, CardboardScoreboard>();
 
-    public CraftScoreboardManager(MinecraftServer minecraftserver, net.minecraft.scoreboard.Scoreboard scoreboardServer) {
+    public CraftScoreboardManager(MinecraftServer minecraftserver, net.minecraft.world.scores.Scoreboard scoreboardServer) {
         mainScoreboard = new CardboardScoreboard(scoreboardServer);
         server = minecraftserver;
         scoreboards.add(mainScoreboard);
@@ -60,9 +60,9 @@ public final class CraftScoreboardManager implements ScoreboardManager {
         Validate.isTrue(bukkitScoreboard instanceof CardboardScoreboard, "Cannot set player scoreboard to an unregistered Scoreboard");
 
         CardboardScoreboard scoreboard = (CardboardScoreboard) bukkitScoreboard;
-        net.minecraft.scoreboard.Scoreboard oldboard = getPlayerBoard(player).getHandle();
-        net.minecraft.scoreboard.Scoreboard newboard = scoreboard.getHandle();
-        ServerPlayerEntity entityplayer = player.getHandle();
+        net.minecraft.world.scores.Scoreboard oldboard = getPlayerBoard(player).getHandle();
+        net.minecraft.world.scores.Scoreboard newboard = scoreboard.getHandle();
+        ServerPlayer entityplayer = player.getHandle();
 
         if (oldboard == newboard) return;
 
@@ -71,22 +71,22 @@ public final class CraftScoreboardManager implements ScoreboardManager {
         } else playerBoards.put(player, (CardboardScoreboard) scoreboard);
 
         // Old objective tracking
-        HashSet<ScoreboardObjective> removed = new HashSet<ScoreboardObjective>();
+        HashSet<Objective> removed = new HashSet<Objective>();
         for (int i = 0; i < 3; ++i) {
-            ScoreboardObjective scoreboardobjective = oldboard.getObjectiveForSlot(ScoreboardDisplaySlot.values()[i]);
+            Objective scoreboardobjective = oldboard.getDisplayObjective(DisplaySlot.values()[i]);
             if (scoreboardobjective != null && !removed.contains(scoreboardobjective)) {
-                entityplayer.networkHandler.sendPacket(new ScoreboardObjectiveUpdateS2CPacket(scoreboardobjective, 1));
+                entityplayer.connection.send(new ClientboundSetObjectivePacket(scoreboardobjective, 1));
                 removed.add(scoreboardobjective);
             }
         }
 
         // Old team tracking
-        Iterator<?> iterator = oldboard.getTeams().iterator();
+        Iterator<?> iterator = oldboard.getPlayerTeams().iterator();
         //while (iterator.hasNext())
         // TODO: 1.17ify    entityplayer.networkHandler.sendPacket(new TeamS2CPacket((Team) iterator.next(), 1));
 
         // The above is the reverse of the below method. 
-        ((IMixinPlayerManager)server.getPlayerManager()).sendScoreboardBF((ServerScoreboard) newboard, player.getHandle());
+        ((IMixinPlayerManager)server.getPlayerList()).sendScoreboardBF((ServerScoreboard) newboard, player.getHandle());
     }
 
     // CardboardBukkit method
@@ -95,10 +95,10 @@ public final class CraftScoreboardManager implements ScoreboardManager {
     }
 
     // CardboardBukkit method
-    public void getScoreboardScores(ScoreboardCriterion criteria, ScoreHolder holder, Consumer<ScoreAccess> consumer) {
+    public void getScoreboardScores(ObjectiveCriteria criteria, ScoreHolder holder, Consumer<ScoreAccess> consumer) {
         for (CardboardScoreboard scoreboard : scoreboards) {
             Scoreboard board = scoreboard.board;
-            board.forEachScore(criteria, holder, consumer::accept);
+            board.forAllObjectives(criteria, holder, consumer::accept);
         }
     }
 

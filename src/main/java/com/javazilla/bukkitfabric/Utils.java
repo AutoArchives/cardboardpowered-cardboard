@@ -38,18 +38,18 @@ import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
 import me.isaiah.common.cmixin.IMixinGlobalPos;
-import net.minecraft.entity.ai.brain.MemoryModuleType;
-import net.minecraft.util.math.GlobalPos;
-import net.minecraft.world.World;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.level.Level;
 
 public class Utils {
 
 	@Deprecated
-    public static EquipmentSlot getHand(Hand h) {
+    public static EquipmentSlot getHand(InteractionHand h) {
         return CraftEquipmentSlot.getHand(h);
     }
 
@@ -78,11 +78,11 @@ public class Utils {
 
     @SuppressWarnings("unchecked")
     public static <T, U> MemoryModuleType<U> fromMemoryKey(MemoryKey<T> memoryKey) {
-        return (MemoryModuleType<U>) Registries.MEMORY_MODULE_TYPE.get(CraftNamespacedKey.toMinecraft(memoryKey.getKey()));
+        return (MemoryModuleType<U>) BuiltInRegistries.MEMORY_MODULE_TYPE.getValue(CraftNamespacedKey.toMinecraft(memoryKey.getKey()));
     }
 
     public static <T, U> MemoryKey<?> toMemoryKey(MemoryModuleType<T> memoryModuleType) {
-        return MemoryKey.getByKey(CraftNamespacedKey.fromMinecraft(Registries.MEMORY_MODULE_TYPE.getId(memoryModuleType)));
+        return MemoryKey.getByKey(CraftNamespacedKey.fromMinecraft(BuiltInRegistries.MEMORY_MODULE_TYPE.getKey(memoryModuleType)));
     }
 
     public static Object fromNmsGlobalPos(Object object) {
@@ -107,11 +107,11 @@ public class Utils {
     	
     	IMixinGlobalPos ipos = (IMixinGlobalPos) (Object) globalPos;
     	
-        return new org.bukkit.Location(((IMixinWorld) Objects.requireNonNull(CraftServer.INSTANCE.getServer().getWorld((RegistryKey<World>) ipos.IC$get_dimension()))).getCraftWorld(), ipos.IC$get_pos().getX(), ipos.IC$get_pos().getY(), ipos.IC$get_pos().getZ());
+        return new org.bukkit.Location(((IMixinWorld) Objects.requireNonNull(CraftServer.INSTANCE.getServer().getLevel((ResourceKey<Level>) ipos.IC$get_dimension()))).getCraftWorld(), ipos.IC$get_pos().getX(), ipos.IC$get_pos().getY(), ipos.IC$get_pos().getZ());
     }
 
     public static GlobalPos toNmsGlobalPos(Location location) {
-        return GlobalPos.create(((CraftWorld) Objects.requireNonNull(location.getWorld())).getHandle().getRegistryKey(), BlockPos.ofFloored(location.getX(), location.getY(), location.getZ()));
+        return GlobalPos.of(((CraftWorld) Objects.requireNonNull(location.getWorld())).getHandle().dimension(), BlockPos.containing(location.getX(), location.getY(), location.getZ()));
     }
 
 }

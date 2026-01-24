@@ -5,9 +5,9 @@ import java.util.Locale;
 import java.util.Objects;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import net.minecraft.entity.decoration.painting.PaintingVariant;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.entity.decoration.painting.PaintingVariant;
 import org.bukkit.Art;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -25,10 +25,10 @@ Handleable<PaintingVariant> {
     private final int ordinal;
 
     public static Art minecraftToBukkit(PaintingVariant minecraft) {
-        return (Art)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.PAINTING_VARIANT);
+        return (Art)CraftRegistry.minecraftToBukkit(minecraft, Registries.PAINTING_VARIANT);
     }
 
-    public static Art minecraftHolderToBukkit(RegistryEntry<PaintingVariant> minecraft) {
+    public static Art minecraftHolderToBukkit(Holder<PaintingVariant> minecraft) {
         return CraftArt.minecraftToBukkit(minecraft.value());
     }
 
@@ -36,12 +36,12 @@ Handleable<PaintingVariant> {
         return (PaintingVariant)CraftRegistry.bukkitToMinecraft(bukkit);
     }
 
-    public static RegistryEntry<PaintingVariant> bukkitToMinecraftHolder(Art bukkit) {
+    public static Holder<PaintingVariant> bukkitToMinecraftHolder(Art bukkit) {
         Preconditions.checkArgument((bukkit != null ? 1 : 0) != 0);
-        net.minecraft.registry.Registry registry = CraftRegistry.getMinecraftRegistry(RegistryKeys.PAINTING_VARIANT);
-        RegistryEntry<PaintingVariant> registryEntry = registry.getEntry(CraftArt.bukkitToMinecraft(bukkit));
-        if (registryEntry instanceof RegistryEntry.Reference) {
-            RegistryEntry.Reference holder = (RegistryEntry.Reference)registryEntry;
+        net.minecraft.core.Registry registry = CraftRegistry.getMinecraftRegistry(Registries.PAINTING_VARIANT);
+        Holder<PaintingVariant> registryEntry = registry.wrapAsHolder(CraftArt.bukkitToMinecraft(bukkit));
+        if (registryEntry instanceof Holder.Reference) {
+            Holder.Reference holder = (Holder.Reference)registryEntry;
             return holder;
         }
         throw new IllegalArgumentException("No Reference holder found for " + String.valueOf(bukkit) + ", this can happen if a plugin creates its own painting variant with out properly registering it.");
@@ -80,7 +80,7 @@ Handleable<PaintingVariant> {
     }
 
     public int getId() {
-        return CraftRegistry.getMinecraftRegistry(RegistryKeys.PAINTING_VARIANT).getRawId(this.paintingVariant);
+        return CraftRegistry.getMinecraftRegistry(Registries.PAINTING_VARIANT).getId(this.paintingVariant);
     }
 
     @NotNull

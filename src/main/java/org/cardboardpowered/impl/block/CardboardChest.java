@@ -14,11 +14,11 @@ import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.Nullable;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.ChestBlock;
-import net.minecraft.block.entity.ChestBlockEntity;
-import net.minecraft.inventory.DoubleInventory;
-import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.world.CompoundContainer;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 
 public class CardboardChest extends CardboardLootableBlock<ChestBlockEntity> implements Chest {
 
@@ -68,9 +68,9 @@ public class CardboardChest extends CardboardLootableBlock<ChestBlockEntity> imp
         CraftWorld world = (CraftWorld) this.getWorld();
 
         ChestBlock blockChest = (ChestBlock) (this.getType() == Material.CHEST ? Blocks.CHEST : Blocks.TRAPPED_CHEST);
-        NamedScreenHandlerFactory nms = blockChest.createScreenHandlerFactory(data, world.getHandle(), this.getPosition());
+        MenuProvider nms = blockChest.getMenuProvider(data, world.getHandle(), this.getPosition());
 
-        return (nms instanceof DoubleInventory) ? (inventory = new CardboardDoubleChestInventory((DoubleInventory) nms)) : inventory;
+        return (nms instanceof CompoundContainer) ? (inventory = new CardboardDoubleChestInventory((CompoundContainer) nms)) : inventory;
     }
 
     @Override
@@ -159,7 +159,7 @@ public class CardboardChest extends CardboardLootableBlock<ChestBlockEntity> imp
 	public boolean isBlocked() {
 		// TODO Auto-generated method stub
 		// TODO
-		return getHandle().blocksMovement();
+		return getHandle().blocksMotion();
 	}
 
 }

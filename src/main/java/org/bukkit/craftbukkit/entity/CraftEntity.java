@@ -18,20 +18,118 @@ import me.isaiah.common.entity.IRemoveReason;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.util.TriState;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.packet.s2c.play.PositionFlag;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.PlayerAssociatedNetworkHandler;
-import net.minecraft.server.world.ServerChunkLoadingManager;
-import net.minecraft.server.world.ServerChunkLoadingManager.EntityTracker;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.NbtWriteView;
-import net.minecraft.text.Text;
-import net.minecraft.text.Texts;
-import net.minecraft.util.ErrorReporter;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.server.level.ChunkMap;
+import net.minecraft.server.level.ChunkMap.TrackedEntity;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerPlayerConnection;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.entity.EntityProcessor;
+import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.Relative;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.ambient.AmbientCreature;
+import net.minecraft.world.entity.ambient.Bat;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.chicken.Chicken;
+import net.minecraft.world.entity.animal.cow.Cow;
+import net.minecraft.world.entity.animal.cow.MushroomCow;
+import net.minecraft.world.entity.animal.dolphin.Dolphin;
+import net.minecraft.world.entity.animal.equine.AbstractChestedHorse;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.Donkey;
+import net.minecraft.world.entity.animal.equine.Horse;
+import net.minecraft.world.entity.animal.equine.Llama;
+import net.minecraft.world.entity.animal.equine.Mule;
+import net.minecraft.world.entity.animal.feline.Cat;
+import net.minecraft.world.entity.animal.feline.Ocelot;
+import net.minecraft.world.entity.animal.fish.AbstractFish;
+import net.minecraft.world.entity.animal.fish.Cod;
+import net.minecraft.world.entity.animal.fish.Pufferfish;
+import net.minecraft.world.entity.animal.fish.Salmon;
+import net.minecraft.world.entity.animal.fish.TropicalFish;
+import net.minecraft.world.entity.animal.fish.WaterAnimal;
+import net.minecraft.world.entity.animal.golem.AbstractGolem;
+import net.minecraft.world.entity.animal.golem.IronGolem;
+import net.minecraft.world.entity.animal.golem.SnowGolem;
+import net.minecraft.world.entity.animal.panda.Panda;
+import net.minecraft.world.entity.animal.parrot.Parrot;
+import net.minecraft.world.entity.animal.pig.Pig;
+import net.minecraft.world.entity.animal.polarbear.PolarBear;
+import net.minecraft.world.entity.animal.squid.Squid;
+import net.minecraft.world.entity.animal.turtle.Turtle;
+import net.minecraft.world.entity.animal.wolf.Wolf;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
+import net.minecraft.world.entity.boss.wither.WitherBoss;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.decoration.HangingEntity;
+import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.monster.Blaze;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.ElderGuardian;
+import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Endermite;
+import net.minecraft.world.entity.monster.Ghast;
+import net.minecraft.world.entity.monster.Giant;
+import net.minecraft.world.entity.monster.Guardian;
+import net.minecraft.world.entity.monster.MagmaCube;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.Phantom;
+import net.minecraft.world.entity.monster.Shulker;
+import net.minecraft.world.entity.monster.Silverfish;
+import net.minecraft.world.entity.monster.Slime;
+import net.minecraft.world.entity.monster.Vex;
+import net.minecraft.world.entity.monster.Witch;
+import net.minecraft.world.entity.monster.illager.AbstractIllager;
+import net.minecraft.world.entity.monster.illager.Evoker;
+import net.minecraft.world.entity.monster.illager.Illusioner;
+import net.minecraft.world.entity.monster.illager.Pillager;
+import net.minecraft.world.entity.monster.illager.SpellcasterIllager;
+import net.minecraft.world.entity.monster.illager.Vindicator;
+import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
+import net.minecraft.world.entity.monster.skeleton.Stray;
+import net.minecraft.world.entity.monster.skeleton.WitherSkeleton;
+import net.minecraft.world.entity.monster.spider.CaveSpider;
+import net.minecraft.world.entity.monster.spider.Spider;
+import net.minecraft.world.entity.monster.zombie.Drowned;
+import net.minecraft.world.entity.monster.zombie.Husk;
+import net.minecraft.world.entity.monster.zombie.Zombie;
+import net.minecraft.world.entity.monster.zombie.ZombieVillager;
+import net.minecraft.world.entity.monster.zombie.ZombifiedPiglin;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
+import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
+import net.minecraft.world.entity.projectile.FireworkRocketEntity;
+import net.minecraft.world.entity.projectile.FishingHook;
+import net.minecraft.world.entity.projectile.LlamaSpit;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ThrowableProjectile;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
+import net.minecraft.world.entity.projectile.hurtingprojectile.AbstractHurtingProjectile;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.AbstractThrownPotion;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownExperienceBottle;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.Minecart;
+import net.minecraft.world.entity.vehicle.minecart.MinecartChest;
+import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
+import net.minecraft.world.entity.vehicle.minecart.MinecartTNT;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.EntityEffect;
@@ -181,115 +279,6 @@ import me.isaiah.common.entity.IEntity;
 import me.isaiah.common.entity.IRemoveReason;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.minecraft.entity.ExperienceOrbEntity;
-import net.minecraft.entity.FallingBlockEntity;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.LightningEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.LoadedEntityProcessor;
-import net.minecraft.entity.TntEntity;
-import net.minecraft.command.argument.EntityAnchorArgumentType;
-import net.minecraft.entity.Entity.RemovalReason;
-import net.minecraft.entity.boss.WitherEntity;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.boss.dragon.EnderDragonPart;
-import net.minecraft.entity.decoration.AbstractDecorationEntity;
-import net.minecraft.entity.decoration.ArmorStandEntity;
-import net.minecraft.entity.mob.AbstractSkeletonEntity;
-import net.minecraft.entity.mob.AmbientEntity;
-import net.minecraft.entity.mob.BlazeEntity;
-import net.minecraft.entity.mob.CaveSpiderEntity;
-import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.entity.mob.DrownedEntity;
-import net.minecraft.entity.mob.ElderGuardianEntity;
-import net.minecraft.entity.mob.EndermanEntity;
-import net.minecraft.entity.mob.EndermiteEntity;
-import net.minecraft.entity.mob.EvokerEntity;
-// import net.minecraft.entity.mob.FlyingEntity;
-import net.minecraft.entity.mob.GhastEntity;
-import net.minecraft.entity.mob.GiantEntity;
-import net.minecraft.entity.mob.GuardianEntity;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.HuskEntity;
-import net.minecraft.entity.mob.IllagerEntity;
-import net.minecraft.entity.mob.IllusionerEntity;
-import net.minecraft.entity.mob.MagmaCubeEntity;
-import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.entity.mob.PhantomEntity;
-import net.minecraft.entity.mob.PillagerEntity;
-import net.minecraft.entity.mob.ShulkerEntity;
-import net.minecraft.entity.mob.SilverfishEntity;
-import net.minecraft.entity.mob.SlimeEntity;
-import net.minecraft.entity.mob.SpellcastingIllagerEntity;
-import net.minecraft.entity.mob.SpiderEntity;
-import net.minecraft.entity.mob.StrayEntity;
-import net.minecraft.entity.mob.VexEntity;
-import net.minecraft.entity.mob.VindicatorEntity;
-import net.minecraft.entity.mob.WaterCreatureEntity;
-import net.minecraft.entity.mob.WitchEntity;
-import net.minecraft.entity.mob.WitherSkeletonEntity;
-import net.minecraft.entity.mob.ZombieEntity;
-import net.minecraft.entity.mob.ZombieVillagerEntity;
-import net.minecraft.entity.mob.ZombifiedPiglinEntity;
-import net.minecraft.entity.passive.AbstractDonkeyEntity;
-import net.minecraft.entity.passive.AbstractHorseEntity;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.passive.BatEntity;
-import net.minecraft.entity.passive.CatEntity;
-import net.minecraft.entity.passive.ChickenEntity;
-import net.minecraft.entity.passive.CodEntity;
-import net.minecraft.entity.passive.CowEntity;
-import net.minecraft.entity.passive.DolphinEntity;
-import net.minecraft.entity.passive.DonkeyEntity;
-import net.minecraft.entity.passive.FishEntity;
-import net.minecraft.entity.passive.GolemEntity;
-import net.minecraft.entity.passive.HorseEntity;
-import net.minecraft.entity.passive.IronGolemEntity;
-import net.minecraft.entity.passive.LlamaEntity;
-import net.minecraft.entity.passive.MerchantEntity;
-import net.minecraft.entity.passive.MooshroomEntity;
-import net.minecraft.entity.passive.MuleEntity;
-import net.minecraft.entity.passive.OcelotEntity;
-import net.minecraft.entity.passive.PandaEntity;
-import net.minecraft.entity.passive.ParrotEntity;
-import net.minecraft.entity.passive.PigEntity;
-import net.minecraft.entity.passive.PolarBearEntity;
-import net.minecraft.entity.passive.PufferfishEntity;
-import net.minecraft.entity.passive.SalmonEntity;
-import net.minecraft.entity.passive.SnowGolemEntity;
-import net.minecraft.entity.passive.SquidEntity;
-import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.entity.passive.TropicalFishEntity;
-import net.minecraft.entity.passive.TurtleEntity;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.entity.passive.WanderingTraderEntity;
-import net.minecraft.entity.passive.WolfEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ExplosiveProjectileEntity;
-import net.minecraft.entity.projectile.FireworkRocketEntity;
-import net.minecraft.entity.projectile.FishingBobberEntity;
-import net.minecraft.entity.projectile.LlamaSpitEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.entity.projectile.TridentEntity;
-import net.minecraft.entity.projectile.thrown.EggEntity;
-import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
-import net.minecraft.entity.projectile.thrown.ExperienceBottleEntity;
-import net.minecraft.entity.projectile.thrown.PotionEntity;
-import net.minecraft.entity.projectile.thrown.SnowballEntity;
-import net.minecraft.entity.projectile.thrown.ThrownEntity;
-import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-import net.minecraft.entity.vehicle.ChestMinecartEntity;
-import net.minecraft.entity.vehicle.FurnaceMinecartEntity;
-import net.minecraft.entity.vehicle.MinecartEntity;
-import net.minecraft.entity.vehicle.TntMinecartEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.text.Texts;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
 
 public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
@@ -299,19 +288,19 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     protected static PermissibleBase perm;
     private static final CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new CraftPersistentDataTypeRegistry();
 
-    public net.minecraft.entity.Entity nms;
+    public net.minecraft.world.entity.Entity nms;
     private final CraftPersistentDataContainer persistentDataContainer = new CraftPersistentDataContainer(DATA_TYPE_REGISTRY);
 
     protected final CraftServer server = CraftServer.INSTANCE;
     
     private final EntityType entityType;
 
-    public CraftEntity(net.minecraft.entity.Entity entity) {
+    public CraftEntity(net.minecraft.world.entity.Entity entity) {
         this.nms = entity;
         this.entityType = CraftEntityType.minecraftToBukkit(entity.getType());
     }
 
-    public net.minecraft.entity.Entity getHandle() {
+    public net.minecraft.world.entity.Entity getHandle() {
         return nms;
     }
 
@@ -344,7 +333,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     public void sendMessage(String message) {
     	
     	me.isaiah.common.cmixin.IMixinEntity e = (me.isaiah.common.cmixin.IMixinEntity) nms;
-    	e.IsendText(Text.of(message), UUID.randomUUID());
+    	e.IsendText(net.minecraft.network.chat.Component.nullToEmpty(message), UUID.randomUUID());
     }
 
     @Override
@@ -425,7 +414,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public void setCustomName(String name) {
-        nms.setCustomName(Texts.toText(new LiteralMessage(name)));
+        nms.setCustomName(ComponentUtils.fromMessage(new LiteralMessage(name)));
     }
 
     @Override
@@ -442,19 +431,19 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     public boolean addScoreboardTag(String arg0) {
     	// 1.19.2: addScoreboardTag
     	// 1.19.4: addCommandTag
-        return nms.addCommandTag(arg0);
+        return nms.addTag(arg0);
     }
 
     @Override
     public boolean eject() {
         if (isEmpty()) return false;
-        nms.removeAllPassengers();
+        nms.ejectPassengers();
         return true;
     }
 
     @Override
     public BoundingBox getBoundingBox() {
-        Box b = nms.getBoundingBox();
+        AABB b = nms.getBoundingBox();
         return new BoundingBox(b.minX, b.minY, b.minZ, b.maxX, b.maxY, b.maxZ);
     }
 
@@ -465,7 +454,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public BlockFace getFacing() {
-        return CraftBlock.notchToBlockFace(nms.getMovementDirection());
+        return CraftBlock.notchToBlockFace(nms.getMotionDirection());
     }
 
     @Override
@@ -475,12 +464,12 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public int getFireTicks() {
-        return nms.fireTicks;
+        return nms.remainingFireTicks;
     }
 
     @Override
     public double getHeight() {
-        return nms.getHeight();
+        return nms.getBbHeight();
     }
 
     @Override
@@ -491,7 +480,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public Location getLocation() {
-        return new Location(getWorld(), nms.getX(), nms.getY(), nms.getZ(), nms.yaw, nms.pitch);
+        return new Location(getWorld(), nms.getX(), nms.getY(), nms.getZ(), nms.yRot, nms.xRot);
     }
 
     @Override
@@ -501,23 +490,23 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
             loc.setX(nms.getX());
             loc.setY(nms.getY());
             loc.setZ(nms.getZ());
-            loc.setYaw(nms.yaw);
-            loc.setPitch(nms.pitch);
+            loc.setYaw(nms.yRot);
+            loc.setPitch(nms.xRot);
         }
         return loc;
     }
 
     @Override
     public int getMaxFireTicks() {
-        return nms.getBurningDuration();
+        return nms.getFireImmuneTicks();
     }
 
     @Override
     public List<org.bukkit.entity.Entity> getNearbyEntities(double x, double y, double z) {
-        List<net.minecraft.entity.Entity> notchEntityList = nms.getEntityWorld().getOtherEntities(nms, nms.getBoundingBox().expand(x, y, z), null);
+        List<net.minecraft.world.entity.Entity> notchEntityList = nms.level().getEntities(nms, nms.getBoundingBox().inflate(x, y, z), null);
         List<org.bukkit.entity.Entity> bukkitEntityList = new java.util.ArrayList<org.bukkit.entity.Entity>(notchEntityList.size());
 
-        for (net.minecraft.entity.Entity e : notchEntityList)
+        for (net.minecraft.world.entity.Entity e : notchEntityList)
             bukkitEntityList.add(((IMixinEntity)e).getBukkitEntity());
         return bukkitEntityList;
     }
@@ -529,9 +518,9 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public List<Entity> getPassengers() {
-        return Lists.newArrayList(Lists.transform(getHandle().getPassengerList(), new Function<net.minecraft.entity.Entity, org.bukkit.entity.Entity>() {
+        return Lists.newArrayList(Lists.transform(getHandle().getPassengers(), new Function<net.minecraft.world.entity.Entity, org.bukkit.entity.Entity>() {
             @Override
-            public org.bukkit.entity.Entity apply(net.minecraft.entity.Entity input) {
+            public org.bukkit.entity.Entity apply(net.minecraft.world.entity.Entity input) {
                 return ((IMixinEntity)input).getBukkitEntity();
             }
         }));
@@ -540,12 +529,12 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     @SuppressWarnings("deprecation")
     @Override
     public PistonMoveReaction getPistonMoveReaction() {
-        return PistonMoveReaction.getById(nms.getPistonBehavior().ordinal());
+        return PistonMoveReaction.getById(nms.getPistonPushReaction().ordinal());
     }
 
     @Override
     public int getPortalCooldown() {
-        return nms.getDefaultPortalCooldown();
+        return nms.getDimensionChangingDelay();
     }
 
     @Override
@@ -555,7 +544,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public Set<String> getScoreboardTags() {
-        return nms.getCommandTags();
+        return nms.getTags();
     }
 
     @Override
@@ -565,12 +554,12 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public int getTicksLived() {
-        return nms.age;
+        return nms.tickCount;
     }
 
     @Override
     public UUID getUniqueId() {
-        return nms.getUuid();
+        return nms.getUUID();
     }
 
     @Override
@@ -582,23 +571,23 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public Vector getVelocity() {
-        Vec3d vec3d = nms.getVelocity();
+        Vec3 vec3d = nms.getDeltaMovement();
         return new Vector(vec3d.x, vec3d.y, vec3d.z);
     }
 
     @Override
     public double getWidth() {
-        return nms.getWidth();
+        return nms.getBbWidth();
     }
 
     @Override
     public World getWorld() {
-        return ((IMixinWorld)nms.getEntityWorld()).getCraftWorld();
+        return ((IMixinWorld)nms.level()).getCraftWorld();
     }
 
     @Override
     public boolean hasGravity() {
-        return !nms.hasNoGravity();
+        return !nms.isNoGravity();
     }
 
     @Override
@@ -613,17 +602,17 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public boolean isEmpty() {
-        return !nms.hasPassengers();
+        return !nms.isVehicle();
     }
 
     @Override
     public boolean isGlowing() {
-        return nms.isGlowing();
+        return nms.isCurrentlyGlowing();
     }
 
     @Override
     public boolean isInsideVehicle() {
-        return nms.hasVehicle();
+        return nms.isPassenger();
     }
 
     @Override
@@ -633,10 +622,10 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public boolean isOnGround() {
-        if (nms instanceof ProjectileEntity)
-            return ((ProjectileEntity) nms).isOnGround();
+        if (nms instanceof Projectile)
+            return ((Projectile) nms).onGround();
 
-        return nms.isOnGround();
+        return nms.onGround();
     }
 
     @Override
@@ -667,7 +656,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     @Override
     public void playEffect(EntityEffect type) {
         if (type.getApplicable().isInstance(this))
-            this.getHandle().getEntityWorld().sendEntityStatus(getHandle(), type.getData());
+            this.getHandle().level().broadcastEntityEvent(getHandle(), type.getData());
     }
 
     @Override
@@ -684,7 +673,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public boolean removeScoreboardTag(String arg0) {
-        return nms.removeCommandTag(arg0);
+        return nms.removeTag(arg0);
     }
 
     @Override
@@ -699,12 +688,12 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public void setFireTicks(int arg0) {
-        nms.setFireTicks(arg0);
+        nms.setRemainingFireTicks(arg0);
     }
 
     @Override
     public void setGlowing(boolean arg0) {
-        nms.setGlowing(arg0);
+        nms.setGlowingTag(arg0);
     }
 
     @Override
@@ -745,11 +734,11 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     public void setRotation(float yaw, float pitch) {
         yaw = Location.normalizeYaw((float)yaw);
         pitch = Location.normalizePitch((float)pitch);
-        this.nms.setYaw(yaw);
-        this.nms.setPitch(pitch);
-        this.nms.lastYaw = yaw;
-        this.nms.lastPitch = pitch;
-        this.nms.setHeadYaw(yaw);
+        this.nms.setYRot(yaw);
+        this.nms.setXRot(pitch);
+        this.nms.yRotO = yaw;
+        this.nms.xRotO = pitch;
+        this.nms.setYHeadRot(yaw);
     }
 
     @Override
@@ -759,13 +748,13 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public void setTicksLived(int arg0) {
-        nms.age = arg0;
+        nms.tickCount = arg0;
     }
 
     @Override
     public void setVelocity(Vector vec) {
-        nms.setVelocity(new Vec3d(vec.getX(), vec.getY(), vec.getZ()));
-        nms.knockedBack = true;
+        nms.setDeltaMovement(new Vec3(vec.getX(), vec.getY(), vec.getZ()));
+        nms.hurtMarked = true;
     }
 
     @Override
@@ -782,19 +771,19 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     public boolean teleport(Location loc, TeleportCause arg1) {
         loc.checkFinite();
 
-        if (nms.hasPassengers() || !nms.isAlive())
+        if (nms.isVehicle() || !nms.isAlive())
             return false;
 
         nms.stopRiding();
 
         if(loc.getWorld() == null || loc.getWorld().equals(getWorld())) {
-            nms.updatePositionAndAngles(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
-            nms.setHeadYaw(loc.getYaw());
+            nms.absSnapTo(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
+            nms.setYHeadRot(loc.getYaw());
         } else {
-            nms.teleport(
+            nms.teleportTo(
 		            ((CraftWorld) loc.getWorld()).getHandle(),
                     loc.getX(), loc.getY(), loc.getZ(),
-                    EnumSet.allOf(PositionFlag.class),
+                    EnumSet.allOf(Relative.class),
                     loc.getYaw(), loc.getPitch(), true);
             return true;
         }
@@ -807,7 +796,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     }
 
     @Override
-    public CommandSender getBukkitSender(ServerCommandSource serverCommandSource) {
+    public CommandSender getBukkitSender(CommandSourceStack serverCommandSource) {
         return this;
     }
 
@@ -843,15 +832,15 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         return spigot;
     }
 
-    protected NbtCompound save() {
-        try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "Entity#save", LOGGER);){
-            NbtWriteView tagValueOutput = NbtWriteView.create(problemReporter, this.getHandle().getRegistryManager());
+    protected CompoundTag save() {
+        try (ProblemReporter.ScopedCollector problemReporter = new ProblemReporter.ScopedCollector(() -> "Entity#save", LOGGER);){
+            TagValueOutput tagValueOutput = TagValueOutput.createWithContext(problemReporter, this.getHandle().registryAccess());
             
             // TODO: Check getSavedEntityId/getEncodeId(true)
            
-            tagValueOutput.putString("id", this.getHandle().getSavedEntityId());
-            this.getHandle().writeData(tagValueOutput);
-            NbtCompound nbtCompound = tagValueOutput.getNbt();
+            tagValueOutput.putString("id", this.getHandle().getEncodeId());
+            this.getHandle().saveWithoutId(tagValueOutput);
+            CompoundTag nbtCompound = tagValueOutput.buildResult();
             return nbtCompound;
         }
     }
@@ -881,16 +870,16 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     }
 
     public boolean isInWater() {
-        return nms.isSubmergedInWater();
+        return nms.isUnderWater();
     }
 
     public boolean isInRain() {
-        return nms.isBeingRainedOn();
+        return nms.isInRain();
     }
 
     @Override
     public Chunk getChunk() {
-        IWorldChunk wc = (IWorldChunk) nms.getEntityWorld().getWorldChunk(nms.getBlockPos());
+        IWorldChunk wc = (IWorldChunk) nms.level().getChunkAt(nms.blockPosition());
         return wc.getBukkitChunk();
     }
 
@@ -917,7 +906,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     @Override
     public boolean isInWaterOrRain() {
         // TODO Auto-generated method stub
-        return nms.isTouchingWaterOrRain();
+        return nms.isInWaterOrRain();
     }
 
     @Override
@@ -940,7 +929,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
 	@Override
 	public Component customName() {
-        Text name = this.getHandle().getCustomName();
+        net.minecraft.network.chat.Component name = this.getHandle().getCustomName();
         return name != null ? CardboardAdventure.asAdventure(name) : null;
     }
 
@@ -951,32 +940,32 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public int getFreezeTicks() {
-        return nms.getFrozenTicks();
+        return nms.getTicksFrozen();
     }
 
     @Override
     public int getMaxFreezeTicks() {
-        return nms.getFrozenTicks();
+        return nms.getTicksFrozen();
     }
 
     @Override
     public boolean isFrozen() {
-        return nms.isFrozen();
+        return nms.isFullyFrozen();
     }
 
     @Override
     public boolean isVisualFire() {
-        return nms.doesRenderOnFire();
+        return nms.displayFireAnimation();
     }
 
     @Override
     public void setFreezeTicks(int arg0) {
-        nms.setFrozenTicks(arg0);
+        nms.setTicksFrozen(arg0);
     }
 
     @Override
     public void setVisualFire(boolean arg0) {
-        nms.setOnFire(arg0);
+        nms.setSharedFlagOnFire(arg0);
     }
     
     @Override
@@ -998,13 +987,13 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     @Override
     public @NotNull Set<Player> getTrackedPlayers() {
         ImmutableSet.Builder<Player> players = ImmutableSet.builder();
-        ServerWorld world = (ServerWorld) nms.getEntityWorld();
-        EntityTracker entityTracker = world.getChunkManager()
-                .chunkLoadingManager.entityTrackers
+        ServerLevel world = (ServerLevel) nms.level();
+        TrackedEntity entityTracker = world.getChunkSource()
+                .chunkMap.entityMap
                 .get(this.getEntityId());
         if (entityTracker != null) {
 
-	        for(PlayerAssociatedNetworkHandler connection : entityTracker.listeners) {
+	        for(ServerPlayerConnection connection : entityTracker.seenBy) {
 		        players.add((Player) ((IMixinServerEntityPlayer) connection.getPlayer()).getBukkitEntity());
 	        }
         }
@@ -1040,8 +1029,8 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
 	@Override
     public boolean collidesAt(@NotNull Location location) {
-        Box aabb = ((IMixinEntity)this.getHandle()).cardboad_getBoundingBoxAt(location.getX(), location.getY(), location.getZ());
-        return !this.getHandle().getEntityWorld().isSpaceEmpty(this.getHandle(), aabb);
+        AABB aabb = ((IMixinEntity)this.getHandle()).cardboad_getBoundingBoxAt(location.getX(), location.getY(), location.getZ());
+        return !this.getHandle().level().noCollision(this.getHandle(), aabb);
     }
 
 	@Override
@@ -1066,7 +1055,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
 	@Override
     public boolean isUnderWater() {
-        return this.getHandle().isSubmergedInWater();
+        return this.getHandle().isUnderWater();
     }
 
 	// @Override
@@ -1077,23 +1066,23 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
 	@Override
     public boolean wouldCollideUsing(@NotNull BoundingBox boundingBox) {
-        Box aabb = new Box(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(), boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
-        return !this.getHandle().getEntityWorld().isSpaceEmpty(this.getHandle(), aabb);
+        AABB aabb = new AABB(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(), boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
+        return !this.getHandle().level().noCollision(this.getHandle(), aabb);
     }
 	
 	// 1.19.4:
 
 	// @Override
     public boolean isSneaking() {
-        return this.getHandle().isSneaking();
+        return this.getHandle().isShiftKeyDown();
     }
 
 	// @Override
     public void setSneaking(boolean sneak) {
-        this.getHandle().setSneaking(sneak);
+        this.getHandle().setShiftKeyDown(sneak);
     }
     
-    public static <T extends net.minecraft.entity.Entity> CraftEntity getEntity_new(CraftServer server, T entity) {
+    public static <T extends net.minecraft.world.entity.Entity> CraftEntity getEntity_new(CraftServer server, T entity) {
         Preconditions.checkArgument(entity != null, "Unknown entity");
         /*
         if (entity instanceof PlayerEntity && !(entity instanceof ServerPlayerEntity)) {
@@ -1113,106 +1102,106 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         // }
      }
 
-    public static CraftEntity getEntity(CraftServer server, net.minecraft.entity.Entity entity) {
+    public static CraftEntity getEntity(CraftServer server, net.minecraft.world.entity.Entity entity) {
         /*
          * Order is *EXTREMELY* important -- keep it right! =D
          */
         // CHECKSTYLE:OFF
         if (entity instanceof LivingEntity) {
             // Players
-            if (entity instanceof PlayerEntity) {
-                if (entity instanceof ServerPlayerEntity) { return new CraftPlayer((ServerPlayerEntity) entity); }
-                else { return new CraftHumanEntity((PlayerEntity) entity); }
+            if (entity instanceof net.minecraft.world.entity.player.Player) {
+                if (entity instanceof ServerPlayer) { return new CraftPlayer((ServerPlayer) entity); }
+                else { return new CraftHumanEntity((net.minecraft.world.entity.player.Player) entity); }
             }
             // Water Animals
-            else if (entity instanceof WaterCreatureEntity) {
-                if (entity instanceof SquidEntity) { return new CardboardSquid(server, (SquidEntity) entity); }
-                else if (entity instanceof FishEntity) {
-                    if (entity instanceof CodEntity) { return new CardboardFishCod(server, (CodEntity) entity); }
-                    else if (entity instanceof PufferfishEntity) { return new CardboardFishPufferfish(server, (PufferfishEntity) entity); }
-                    else if (entity instanceof SalmonEntity) { return new CardboardFishSalmon(server, (SalmonEntity) entity); }
-                    else if (entity instanceof TropicalFishEntity) { return new CardboardFishTropical(server, (TropicalFishEntity) entity); }
-                    else { return new CardboardFish(server, (FishEntity) entity); }
+            else if (entity instanceof WaterAnimal) {
+                if (entity instanceof Squid) { return new CardboardSquid(server, (Squid) entity); }
+                else if (entity instanceof AbstractFish) {
+                    if (entity instanceof Cod) { return new CardboardFishCod(server, (Cod) entity); }
+                    else if (entity instanceof Pufferfish) { return new CardboardFishPufferfish(server, (Pufferfish) entity); }
+                    else if (entity instanceof Salmon) { return new CardboardFishSalmon(server, (Salmon) entity); }
+                    else if (entity instanceof TropicalFish) { return new CardboardFishTropical(server, (TropicalFish) entity); }
+                    else { return new CardboardFish(server, (AbstractFish) entity); }
                 }
-                else if (entity instanceof DolphinEntity) { return new CardboardDolphin(server, (DolphinEntity) entity); }
-                else { return new CardboardWaterMob(server, (WaterCreatureEntity) entity); }
+                else if (entity instanceof Dolphin) { return new CardboardDolphin(server, (Dolphin) entity); }
+                else { return new CardboardWaterMob(server, (WaterAnimal) entity); }
             }
-            else if (entity instanceof PathAwareEntity) {
+            else if (entity instanceof PathfinderMob) {
                 // Animals
-                if (entity instanceof AnimalEntity) {
-                    if (entity instanceof ChickenEntity) { return new CraftChicken(server, (ChickenEntity) entity); }
-                    else if (entity instanceof CowEntity) {
-                        if (entity instanceof MooshroomEntity) { return new CraftMushroomCow(server, (MooshroomEntity) entity); }
-                        else { return new CraftCow(server, (CowEntity) entity); }
+                if (entity instanceof Animal) {
+                    if (entity instanceof Chicken) { return new CraftChicken(server, (Chicken) entity); }
+                    else if (entity instanceof Cow) {
+                        if (entity instanceof MushroomCow) { return new CraftMushroomCow(server, (MushroomCow) entity); }
+                        else { return new CraftCow(server, (Cow) entity); }
                     }
-                    else if (entity instanceof PigEntity) { return new CardboardPig(server, (PigEntity) entity); }
-                    else if (entity instanceof TameableEntity) {
-                        if (entity instanceof WolfEntity) { return new CraftWolf(server, (WolfEntity) entity); }
-                        else if (entity instanceof CatEntity) { return new CardboardCat(server, (CatEntity) entity); }
-                        else if (entity instanceof ParrotEntity) { return new CraftParrot(server, (ParrotEntity) entity); }
+                    else if (entity instanceof Pig) { return new CardboardPig(server, (Pig) entity); }
+                    else if (entity instanceof TamableAnimal) {
+                        if (entity instanceof Wolf) { return new CraftWolf(server, (Wolf) entity); }
+                        else if (entity instanceof Cat) { return new CardboardCat(server, (Cat) entity); }
+                        else if (entity instanceof Parrot) { return new CraftParrot(server, (Parrot) entity); }
                     }
                     //else if (entity instanceof SheepEntity) { return new CraftSheep(server, (SheepEntity) entity); }
-                    else if (entity instanceof AbstractHorseEntity) {
-                        if (entity instanceof AbstractDonkeyEntity){
-                            if (entity instanceof DonkeyEntity) { return new CardboardDonkey(server, (DonkeyEntity) entity); }
-                            else if (entity instanceof MuleEntity) { return new CardboardMule(server, (MuleEntity) entity); }
+                    else if (entity instanceof AbstractHorse) {
+                        if (entity instanceof AbstractChestedHorse){
+                            if (entity instanceof Donkey) { return new CardboardDonkey(server, (Donkey) entity); }
+                            else if (entity instanceof Mule) { return new CardboardMule(server, (Mule) entity); }
                             //else if (entity instanceof TraderLlamaEntity) { return new CardboardTraderLlama(server, (TraderLlamaEntity) entity); }
-                            else if (entity instanceof LlamaEntity) { return new CardboardLlama(server, (LlamaEntity) entity); }
-                        } else if (entity instanceof HorseEntity) { return new CardboardHorse(server, (HorseEntity) entity); }
+                            else if (entity instanceof Llama) { return new CardboardLlama(server, (Llama) entity); }
+                        } else if (entity instanceof Horse) { return new CardboardHorse(server, (Horse) entity); }
                         //else if (entity instanceof SkeletonHorseEntity) { return new CraftSkeletonHorse(server, (SkeletonHorseEntity) entity); }
                         //else if (entity instanceof ZombieHorseEntity) { return new CraftZombieHorse(server, (ZombieHorseEntity) entity); }
                     }
                     //else if (entity instanceof RabbitEntity) { return new CraftRabbit(server, (RabbitEntity) entity); }
-                    else if (entity instanceof PolarBearEntity) { return new CraftPolarBear(server, (PolarBearEntity) entity); }
-                    else if (entity instanceof TurtleEntity) { return new CraftTurtle(server, (TurtleEntity) entity); }
-                    else if (entity instanceof OcelotEntity) { return new CraftOcelot(server, (OcelotEntity) entity); }
-                    else if (entity instanceof PandaEntity) { return new CardboardPanda(server, (PandaEntity) entity); }
+                    else if (entity instanceof PolarBear) { return new CraftPolarBear(server, (PolarBear) entity); }
+                    else if (entity instanceof Turtle) { return new CraftTurtle(server, (Turtle) entity); }
+                    else if (entity instanceof Ocelot) { return new CraftOcelot(server, (Ocelot) entity); }
+                    else if (entity instanceof Panda) { return new CardboardPanda(server, (Panda) entity); }
                     //else if (entity instanceof FoxEntity) { return new CraftFox(server, (FoxEntity) entity); }
                     //else if (entity instanceof BeeEntity) { return new CraftBee(server, (BeeEntity) entity); }
                     //else if (entity instanceof HoglinEntity) { return new CraftHoglin(server, (HoglinEntity) entity); }
                     //else if (entity instanceof StriderEntity) { return new CraftStrider(server, (StriderEntity) entity); }
-                    else  { return new CraftAnimals(server, (AnimalEntity) entity); }
+                    else  { return new CraftAnimals(server, (Animal) entity); }
                 }
                 // Monsters
-                else if (entity instanceof HostileEntity) {
-                    if (entity instanceof ZombieEntity) {
-                        if (entity instanceof ZombifiedPiglinEntity) { return new CardboardPigZombie(server, (ZombifiedPiglinEntity) entity); }
-                        else if (entity instanceof HuskEntity) { return new CardboardHusk(server, (HuskEntity) entity); }
-                        else if (entity instanceof ZombieVillagerEntity) { return new CraftVillagerZombie(server, (ZombieVillagerEntity) entity); }
-                        else if (entity instanceof DrownedEntity) { return new CardboardDrowned(server, (DrownedEntity) entity); }
-                        else { return new CraftZombie(server, (ZombieEntity) entity); }
+                else if (entity instanceof Monster) {
+                    if (entity instanceof Zombie) {
+                        if (entity instanceof ZombifiedPiglin) { return new CardboardPigZombie(server, (ZombifiedPiglin) entity); }
+                        else if (entity instanceof Husk) { return new CardboardHusk(server, (Husk) entity); }
+                        else if (entity instanceof ZombieVillager) { return new CraftVillagerZombie(server, (ZombieVillager) entity); }
+                        else if (entity instanceof Drowned) { return new CardboardDrowned(server, (Drowned) entity); }
+                        else { return new CraftZombie(server, (Zombie) entity); }
                     }
-                    else if (entity instanceof CreeperEntity) { return new CreeperImpl(server, (CreeperEntity) entity); }
-                    else if (entity instanceof EndermanEntity) { return new CraftEnderman(server, (EndermanEntity) entity); }
-                    else if (entity instanceof SilverfishEntity) { return new CardboardSilverfish(server, (SilverfishEntity) entity); }
-                    else if (entity instanceof GiantEntity) { return new CardboardGiant(server, (GiantEntity) entity); }
-                    else if (entity instanceof AbstractSkeletonEntity) {
-                        if (entity instanceof StrayEntity) { return new StrayImpl(server, (StrayEntity) entity); }
-                        else if (entity instanceof WitherSkeletonEntity) { return new WitherSkeletonImpl(server, (WitherSkeletonEntity) entity); }
-                        else { return new CraftSkeleton(server, (AbstractSkeletonEntity) entity); }
+                    else if (entity instanceof Creeper) { return new CreeperImpl(server, (Creeper) entity); }
+                    else if (entity instanceof EnderMan) { return new CraftEnderman(server, (EnderMan) entity); }
+                    else if (entity instanceof Silverfish) { return new CardboardSilverfish(server, (Silverfish) entity); }
+                    else if (entity instanceof Giant) { return new CardboardGiant(server, (Giant) entity); }
+                    else if (entity instanceof AbstractSkeleton) {
+                        if (entity instanceof Stray) { return new StrayImpl(server, (Stray) entity); }
+                        else if (entity instanceof WitherSkeleton) { return new WitherSkeletonImpl(server, (WitherSkeleton) entity); }
+                        else { return new CraftSkeleton(server, (AbstractSkeleton) entity); }
                     }
-                    else if (entity instanceof BlazeEntity) { return new CardboardBlaze(server, (BlazeEntity) entity); }
-                    else if (entity instanceof WitchEntity) { return new CardboardWitch(server, (WitchEntity) entity); }
-                    else if (entity instanceof WitherEntity) { return new CardboardWither(server, (WitherEntity) entity); }
-                    else if (entity instanceof SpiderEntity) {
-                        if (entity instanceof CaveSpiderEntity) { return new CardboardCaveSpider(server, (CaveSpiderEntity) entity); }
-                        else { return new CraftSpider(server, (SpiderEntity) entity); }
+                    else if (entity instanceof Blaze) { return new CardboardBlaze(server, (Blaze) entity); }
+                    else if (entity instanceof Witch) { return new CardboardWitch(server, (Witch) entity); }
+                    else if (entity instanceof WitherBoss) { return new CardboardWither(server, (WitherBoss) entity); }
+                    else if (entity instanceof Spider) {
+                        if (entity instanceof CaveSpider) { return new CardboardCaveSpider(server, (CaveSpider) entity); }
+                        else { return new CraftSpider(server, (Spider) entity); }
                     }
-                    else if (entity instanceof EndermiteEntity) { return new CraftEndermite(server, (EndermiteEntity) entity); }
-                    else if (entity instanceof GuardianEntity) {
-                        if (entity instanceof ElderGuardianEntity) { return new CardboardGuardianElder(server, (ElderGuardianEntity) entity); }
-                        else { return new CardboardGuardian(server, (GuardianEntity) entity); }
+                    else if (entity instanceof Endermite) { return new CraftEndermite(server, (Endermite) entity); }
+                    else if (entity instanceof Guardian) {
+                        if (entity instanceof ElderGuardian) { return new CardboardGuardianElder(server, (ElderGuardian) entity); }
+                        else { return new CardboardGuardian(server, (Guardian) entity); }
                     }
-                    else if (entity instanceof VexEntity) { return new CardboardVex(server, (VexEntity) entity); }
-                    else if (entity instanceof IllagerEntity) {
-                        if (entity instanceof SpellcastingIllagerEntity) {;
-                            if (entity instanceof EvokerEntity) { return new CardboardEvoker(server, (EvokerEntity) entity); }
-                            else if (entity instanceof IllusionerEntity) { return new CardboardIllusioner(server, (IllusionerEntity) entity); }
-                            else {  return new CardboardSpellcaster(server, (SpellcastingIllagerEntity) entity); }
+                    else if (entity instanceof Vex) { return new CardboardVex(server, (Vex) entity); }
+                    else if (entity instanceof AbstractIllager) {
+                        if (entity instanceof SpellcasterIllager) {;
+                            if (entity instanceof Evoker) { return new CardboardEvoker(server, (Evoker) entity); }
+                            else if (entity instanceof Illusioner) { return new CardboardIllusioner(server, (Illusioner) entity); }
+                            else {  return new CardboardSpellcaster(server, (SpellcasterIllager) entity); }
                         }
-                        else if (entity instanceof VindicatorEntity) { return new CardboardVindicator(server, (VindicatorEntity) entity); }
-                        else if (entity instanceof PillagerEntity) { return new CardboardPillager(server, (PillagerEntity) entity); }
-                        else { return new CraftIllager(server, (IllagerEntity) entity); }
+                        else if (entity instanceof Vindicator) { return new CardboardVindicator(server, (Vindicator) entity); }
+                        else if (entity instanceof Pillager) { return new CardboardPillager(server, (Pillager) entity); }
+                        else { return new CraftIllager(server, (AbstractIllager) entity); }
                     }
                     //else if (entity instanceof RavagerEntity) { return new CraftRavager(server, (RavagerEntity) entity); }
                     //else if (entity instanceof AbstractPiglinEntity) {
@@ -1222,70 +1211,70 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
                     //}
                     //else if (entity instanceof ZoglinEntity) { return new CraftZoglin(server, (ZoglinEntity) entity); }
 
-                    else  { return new CraftMonster(server, (HostileEntity) entity); }
+                    else  { return new CraftMonster(server, (Monster) entity); }
                 }
-                else if (entity instanceof GolemEntity) {
-                    if (entity instanceof SnowGolemEntity) { return new CardboardSnowman(server, (SnowGolemEntity) entity); }
-                    else if (entity instanceof IronGolemEntity) { return new CardboardIronGolem(server, (IronGolemEntity) entity); }
-                    else if (entity instanceof ShulkerEntity) { return new CardboardShulker(server, (ShulkerEntity) entity); }
+                else if (entity instanceof AbstractGolem) {
+                    if (entity instanceof SnowGolem) { return new CardboardSnowman(server, (SnowGolem) entity); }
+                    else if (entity instanceof IronGolem) { return new CardboardIronGolem(server, (IronGolem) entity); }
+                    else if (entity instanceof Shulker) { return new CardboardShulker(server, (Shulker) entity); }
                 }
-                else if (entity instanceof MerchantEntity) {
-                    if (entity instanceof VillagerEntity) { return new CraftVillager(server, (VillagerEntity) entity); }
-                    else if (entity instanceof WanderingTraderEntity) { return new WanderingTraderImpl(server, (WanderingTraderEntity) entity); }
+                else if (entity instanceof AbstractVillager) {
+                    if (entity instanceof Villager) { return new CraftVillager(server, (Villager) entity); }
+                    else if (entity instanceof WanderingTrader) { return new WanderingTraderImpl(server, (WanderingTrader) entity); }
                     else { 
-                    	return getEntity_new(server, (MerchantEntity) entity);
+                    	return getEntity_new(server, (AbstractVillager) entity);
                     	// return new CraftAbstractVillager(server, (MerchantEntity) entity);
                     }
                 }
-                else { return new CraftCreature(server, (PathAwareEntity) entity); }
+                else { return new CraftCreature(server, (PathfinderMob) entity); }
             }
             // Slimes are a special (and broken) case
-            else if (entity instanceof SlimeEntity) {
-                if (entity instanceof MagmaCubeEntity) { return new CardboardMagmaCube(server, (MagmaCubeEntity) entity); }
-                else { return new CraftSlime(server, (SlimeEntity) entity); }
+            else if (entity instanceof Slime) {
+                if (entity instanceof MagmaCube) { return new CardboardMagmaCube(server, (MagmaCube) entity); }
+                else { return new CraftSlime(server, (Slime) entity); }
             }
             // Flying
             
             // TODO: check 1.21.8:
             //else if (entity instanceof FlyingEntity) {
-                if (entity instanceof GhastEntity) { return new CardboardGhast(server, (GhastEntity) entity); }
-                else if (entity instanceof PhantomEntity) { return new CardboardPhantom(server, (PhantomEntity) entity); }
+                if (entity instanceof Ghast) { return new CardboardGhast(server, (Ghast) entity); }
+                else if (entity instanceof Phantom) { return new CardboardPhantom(server, (Phantom) entity); }
                 // else { return new CardboardFlying(server, (FlyingEntity) entity); }
             //}
-            else if (entity instanceof EnderDragonEntity) {
-                return new CardboardEnderdragon(server, (EnderDragonEntity) entity);
+            else if (entity instanceof EnderDragon) {
+                return new CardboardEnderdragon(server, (EnderDragon) entity);
             }
             // Ambient
-            else if (entity instanceof AmbientEntity) {
-                if (entity instanceof BatEntity) { return new CardboardBat(server, (BatEntity) entity); }
-                else { return new CardboardAmbient(server, (AmbientEntity) entity); }
+            else if (entity instanceof AmbientCreature) {
+                if (entity instanceof Bat) { return new CardboardBat(server, (Bat) entity); }
+                else { return new CardboardAmbient(server, (AmbientCreature) entity); }
             }
-            else if (entity instanceof ArmorStandEntity) { return new CraftArmorStand(server, (ArmorStandEntity) entity); }
+            else if (entity instanceof ArmorStand) { return new CraftArmorStand(server, (ArmorStand) entity); }
             else  { return new LivingEntityImpl(server, (LivingEntity) entity); }
         }
         else if (entity instanceof EnderDragonPart) {
             EnderDragonPart part = (EnderDragonPart) entity;
-            if (part.owner instanceof EnderDragonEntity) { return new CardboardDragonPart(server, (EnderDragonPart) entity); }
+            if (part.parentMob instanceof EnderDragon) { return new CardboardDragonPart(server, (EnderDragonPart) entity); }
             else { return new CardboardComplexPart(server, (EnderDragonPart) entity); }
         }
-        else if (entity instanceof ExperienceOrbEntity) { return new ExperienceOrbImpl(server, (ExperienceOrbEntity) entity); }
+        else if (entity instanceof ExperienceOrb) { return new ExperienceOrbImpl(server, (ExperienceOrb) entity); }
         //else if (entity instanceof ArrowEntity) { return new CraftTippedArrow(server, (ArrowEntity) entity); }
         //else if (entity instanceof SpectralArrowEntity) { return new CraftSpectralArrow(server, (SpectralArrowEntity) entity); }
-        else if (entity instanceof PersistentProjectileEntity) {
-            if (entity instanceof TridentEntity) { return new TridentImpl(server, (TridentEntity) entity); }
-            else { return new CraftAbstractArrow(server, (PersistentProjectileEntity) entity); }
+        else if (entity instanceof AbstractArrow) {
+            if (entity instanceof ThrownTrident) { return new TridentImpl(server, (ThrownTrident) entity); }
+            else { return new CraftAbstractArrow(server, (AbstractArrow) entity); }
         }
         //else if (entity instanceof BoatEntity) { return new CraftBoat(server, (BoatEntity) entity); }
-        else if (entity instanceof ThrownEntity) {
-            if (entity instanceof EggEntity) { return new CardboardEgg(server, (EggEntity) entity); }
-            else if (entity instanceof SnowballEntity) { return new CraftSnowball(server, (SnowballEntity) entity); }
-            else if (entity instanceof PotionEntity) { return new CardboardThrownPotion(server, (PotionEntity) entity); }
-            else if (entity instanceof EnderPearlEntity) { return new CardboardEnderPearl(server, (EnderPearlEntity) entity); }
-            else if (entity instanceof ExperienceBottleEntity) { return new CardboardThrownExpBottle(server, (ExperienceBottleEntity) entity); }
+        else if (entity instanceof ThrowableProjectile) {
+            if (entity instanceof ThrownEgg) { return new CardboardEgg(server, (ThrownEgg) entity); }
+            else if (entity instanceof Snowball) { return new CraftSnowball(server, (Snowball) entity); }
+            else if (entity instanceof AbstractThrownPotion) { return new CardboardThrownPotion(server, (AbstractThrownPotion) entity); }
+            else if (entity instanceof ThrownEnderpearl) { return new CardboardEnderPearl(server, (ThrownEnderpearl) entity); }
+            else if (entity instanceof ThrownExperienceBottle) { return new CardboardThrownExpBottle(server, (ThrownExperienceBottle) entity); }
             
         }
         else if (entity instanceof FallingBlockEntity) { return new CraftFallingBlock(server, (FallingBlockEntity) entity); }
-        else if (entity instanceof ExplosiveProjectileEntity) {
+        else if (entity instanceof AbstractHurtingProjectile) {
             //if (entity instanceof SmallFireballEntity) { return new CraftSmallFireball(server, (SmallFireballEntity) entity); }
             //else if (entity instanceof FireballEntity) { return new CraftLargeFireball(server, (FireballEntity) entity); }
            // else if (entity instanceof WitherSkullEntity) { return new CraftWitherSkull(server, (WitherSkullEntity) entity); }
@@ -1294,35 +1283,35 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         }
         //else if (entity instanceof EyeOfEnderEntity) { return new CraftEnderSignal(server, (EyeOfEnderEntity) entity); }
         //else if (entity instanceof EndCrystalEntity) { return new CraftEnderCrystal(server, (EndCrystalEntity) entity); }
-        else if (entity instanceof FishingBobberEntity) { return new CardboardFishHook(server, (FishingBobberEntity) entity); }
+        else if (entity instanceof FishingHook) { return new CardboardFishHook(server, (FishingHook) entity); }
         else if (entity instanceof ItemEntity) { return new ItemEntityImpl(server, (ItemEntity) entity); }
-        else if (entity instanceof LightningEntity) { return new LightningStrikeImpl(server, (LightningEntity) entity); }
-        else if (entity instanceof AbstractMinecartEntity) {
-            if (entity instanceof FurnaceMinecartEntity) { return new CardboardMinecartFurnace(server, (FurnaceMinecartEntity) entity); }
-            else if (entity instanceof ChestMinecartEntity) { return new CardboardMinecartChest(server, (ChestMinecartEntity) entity); }
-            else if (entity instanceof TntMinecartEntity) { return new CardboardTntCart(server, (TntMinecartEntity) entity); }
+        else if (entity instanceof LightningBolt) { return new LightningStrikeImpl(server, (LightningBolt) entity); }
+        else if (entity instanceof AbstractMinecart) {
+            if (entity instanceof MinecartFurnace) { return new CardboardMinecartFurnace(server, (MinecartFurnace) entity); }
+            else if (entity instanceof MinecartChest) { return new CardboardMinecartChest(server, (MinecartChest) entity); }
+            else if (entity instanceof MinecartTNT) { return new CardboardTntCart(server, (MinecartTNT) entity); }
             //else if (entity instanceof HopperMinecartEntity) { return new CraftMinecartHopper(server, (HopperMinecartEntity) entity); }
             //else if (entity instanceof SpawnerMinecartEntity) { return new CraftMinecartMobSpawner(server, (SpawnerMinecartEntity) entity); }
-            else if (entity instanceof MinecartEntity) { return new CardboardMinecartRideable(server, (MinecartEntity) entity); }
+            else if (entity instanceof Minecart) { return new CardboardMinecartRideable(server, (Minecart) entity); }
             //else if (entity instanceof CommandBlockMinecartEntity) { return new CraftMinecartCommand(server, (CommandBlockMinecartEntity) entity); }*/
-            else return new CardboardMinecart(server, (AbstractMinecartEntity) entity);
-        } else if (entity instanceof AbstractDecorationEntity) {
+            else return new CardboardMinecart(server, (AbstractMinecart) entity);
+        } else if (entity instanceof HangingEntity) {
             //if (entity instanceof PaintingEntity) { return new CraftPainting(server, (PaintingEntity) entity); }
             //else if (entity instanceof ItemFrameEntity) { return new CraftItemFrame(server, (ItemFrameEntity) entity); }
             //else if (entity instanceof LeashKnotEntity) { return new CraftLeash(server, (LeashKnotEntity) entity); }
             //else { return new CraftHanging(server, (AbstractDecorationEntity) entity); }
-            return new CardboardHanging(server, (AbstractDecorationEntity) entity);
+            return new CardboardHanging(server, (HangingEntity) entity);
         }
-        else if (entity instanceof TntEntity) { return new CraftTNTPrimed(server, (TntEntity) entity); }
+        else if (entity instanceof PrimedTnt) { return new CraftTNTPrimed(server, (PrimedTnt) entity); }
         else if (entity instanceof FireworkRocketEntity) {return new CardboardFirework(server, (FireworkRocketEntity) entity); }
         //else if (entity instanceof ShulkerBulletEntity) { return new CraftShulkerBullet(server, (ShulkerBulletEntity) entity); }
         //else if (entity instanceof AreaEffectCloudEntity) { return new CraftAreaEffectCloud(server, (AreaEffectCloudEntity) entity); }
         //else if (entity instanceof EvokerFangsEntity) { return new CraftEvokerFangs(server, (EvokerFangsEntity) entity); }
-        else if (entity instanceof LlamaSpitEntity) { return new CardboardLlamaSpit(server, (LlamaSpitEntity) entity); }
+        else if (entity instanceof LlamaSpit) { return new CardboardLlamaSpit(server, (LlamaSpit) entity); }
         // CHECKSTYLE:ON
 
         
-        return (entity instanceof net.minecraft.entity.LivingEntity) ? new LivingEntityImpl(entity) : new UnknownEntity(entity); // TODO
+        return (entity instanceof net.minecraft.world.entity.LivingEntity) ? new LivingEntityImpl(entity) : new UnknownEntity(entity); // TODO
         //throw new AssertionError("Unknown entity " + (entity == null ? null : entity.getClass()));
     }
 
@@ -1334,13 +1323,13 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         Set<TeleportFlag> flagSet = Set.of(flags);
         boolean dismount = !flagSet.contains(TeleportFlag.EntityState.RETAIN_VEHICLE);
         boolean ignorePassengers = flagSet.contains(TeleportFlag.EntityState.RETAIN_PASSENGERS);
-        if (flagSet.contains(TeleportFlag.EntityState.RETAIN_PASSENGERS) && this.nms.hasPassengers() && location.getWorld() != this.getWorld()) {
+        if (flagSet.contains(TeleportFlag.EntityState.RETAIN_PASSENGERS) && this.nms.isVehicle() && location.getWorld() != this.getWorld()) {
             return false;
         }
-        if (!dismount && this.nms.hasVehicle() && location.getWorld() != this.getWorld()) {
+        if (!dismount && this.nms.isPassenger() && location.getWorld() != this.getWorld()) {
             return false;
         }
-        if (!ignorePassengers && this.nms.hasPassengers() || this.nms.isRemoved()) {
+        if (!ignorePassengers && this.nms.isVehicle() || this.nms.isRemoved()) {
             return false;
         }
         if (dismount) {
@@ -1352,8 +1341,8 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         	// this.nms.teleportTo(((CraftWorld)location.getWorld()).getHandle(), CraftLocation.toPosition(location));
             return true;
         }
-        this.nms.refreshPositionAndAngles(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
-        this.nms.setHeadYaw(location.getYaw());
+        this.nms.snapTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+        this.nms.setYHeadRot(location.getYaw());
         return true;
     }
 
@@ -1397,12 +1386,12 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
 	@Override
 	public float getPitch() {
-		return nms.pitch;
+		return nms.xRot;
 	}
 
 	@Override
 	public float getYaw() {
-		return nms.yaw;
+		return nms.yRot;
 	}
 
 	@Override
@@ -1415,7 +1404,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 	@Override
 	public @NotNull String getScoreboardEntryName() {
 		// TODO Auto-generated method stub
-		return this.getHandle().getNameForScoreboard();
+		return this.getHandle().getScoreboardName();
 	}
 	
 	// 1.20.2 API:
@@ -1424,10 +1413,10 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 	public @NotNull Set<Player> getTrackedBy() {
         // Preconditions.checkState((!this.entity.generation ? 1 : 0) != 0, (Object)"Cannot get tracking players during world generation");
         ImmutableSet.Builder<Player> players = ImmutableSet.builder();
-        ServerWorld world = ((CraftWorld)this.getWorld()).getHandle();
-        ServerChunkLoadingManager.EntityTracker entityTracker = (ServerChunkLoadingManager.EntityTracker)world.getChunkManager().chunkLoadingManager.entityTrackers.get(this.getEntityId());
+        ServerLevel world = ((CraftWorld)this.getWorld()).getHandle();
+        ChunkMap.TrackedEntity entityTracker = (ChunkMap.TrackedEntity)world.getChunkSource().chunkMap.entityMap.get(this.getEntityId());
         if (entityTracker != null) {
-            for (PlayerAssociatedNetworkHandler connection : entityTracker.listeners) {
+            for (ServerPlayerConnection connection : entityTracker.seenBy) {
                 players.add(
                 		(Player)( (IMixinEntity)  connection.getPlayer()).getBukkitEntity()
                 	);
@@ -1443,25 +1432,25 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     }
 	
     public Entity copy() {
-        net.minecraft.entity.Entity copy = this.copy(this.getHandle().getEntityWorld());
+        net.minecraft.world.entity.Entity copy = this.copy(this.getHandle().level());
         Preconditions.checkArgument((copy != null ? 1 : 0) != 0, (Object)"Error creating new entity.");
         return ((IMixinEntity)copy).getBukkitEntity();
     }
 
     public Entity copy(Location location) {
         Preconditions.checkArgument((location.getWorld() != null ? 1 : 0) != 0, (Object)"Location has no world");
-        net.minecraft.entity.Entity copy = this.copy(((CraftWorld)location.getWorld()).getHandle());
+        net.minecraft.world.entity.Entity copy = this.copy(((CraftWorld)location.getWorld()).getHandle());
         Preconditions.checkArgument((copy != null ? 1 : 0) != 0, (Object)"Error creating new entity.");
-        copy.setPosition(location.getX(), location.getY(), location.getZ());
+        copy.setPos(location.getX(), location.getY(), location.getZ());
         return ((CraftWorld)location.getWorld()).addEntity( (Entity)((IMixinEntity)copy).getBukkitEntity() );
     }
 
-    private net.minecraft.entity.Entity copy(net.minecraft.world.World level) {
-    	net.minecraft.entity.Entity var4;
-        try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "Entity#copy", LOGGER)) {
-           NbtWriteView output = NbtWriteView.create(problemReporter, level.getRegistryManager());
-           this.getHandle().saveSelfData(output);
-           var4 = net.minecraft.entity.EntityType.loadEntityWithPassengers(output.getNbt(), level, net.minecraft.entity.SpawnReason.LOAD, LoadedEntityProcessor.NOOP);
+    private net.minecraft.world.entity.Entity copy(net.minecraft.world.level.Level level) {
+    	net.minecraft.world.entity.Entity var4;
+        try (ProblemReporter.ScopedCollector problemReporter = new ProblemReporter.ScopedCollector(() -> "Entity#copy", LOGGER)) {
+           TagValueOutput output = TagValueOutput.createWithContext(problemReporter, level.registryAccess());
+           this.getHandle().saveAsPassenger(output);
+           var4 = net.minecraft.world.entity.EntityType.loadEntityRecursive(output.buildResult(), level, net.minecraft.world.entity.EntitySpawnReason.LOAD, EntityProcessor.NOP);
         }
 
         return var4;
@@ -1488,11 +1477,11 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 			@NotNull TeleportFlag @NotNull... teleportFlags) {
 		loc.checkFinite();
         Location locationClone = loc.clone();
-        ServerWorld world = ((CraftWorld)locationClone.getWorld()).getHandle();
+        ServerLevel world = ((CraftWorld)locationClone.getWorld()).getHandle();
         CompletableFuture<Boolean> ret = new CompletableFuture<Boolean>();
         
-        Box box = this.getHandle().getDimensions(this.getHandle().getPose())
-        		.getBoxAt(locationClone.getX(), locationClone.getY(), locationClone.getZ());
+        AABB box = this.getHandle().getDimensions(this.getHandle().getPose())
+        		.makeBoundingBox(locationClone.getX(), locationClone.getY(), locationClone.getZ());
         
         boolean tp = this.teleport(loc, cause);
         CompletableFuture<Boolean> b = CompletableFuture.completedFuture( tp );
@@ -1527,7 +1516,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 	@Override
 	public void setInvisible(boolean invisible) {
         //this.getHandle().persistentInvisibility = invisible;
-        this.getHandle().setFlag(5, invisible);
+        this.getHandle().setSharedFlag(5, invisible);
         
         this.getHandle().setInvisible(invisible);       
 	}
@@ -1539,26 +1528,26 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
 	@Override
 	public void setNoPhysics(boolean noPhysics) {
-		this.getHandle().noClip = noPhysics;
+		this.getHandle().noPhysics = noPhysics;
 	}
 
 	@Override
 	public boolean hasNoPhysics() {
-		return this.getHandle().noClip;
+		return this.getHandle().noPhysics;
 	}
 	
 	// 1.20.6 API:
 
 	@Override
 	public String getAsString() {
-        try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "Entity#toString", LOGGER);){
-            NbtWriteView output = NbtWriteView.create(problemReporter, this.getHandle().getRegistryManager());
+        try (ProblemReporter.ScopedCollector problemReporter = new ProblemReporter.ScopedCollector(() -> "Entity#toString", LOGGER);){
+            TagValueOutput output = TagValueOutput.createWithContext(problemReporter, this.getHandle().registryAccess());
             // .saveAsPassenger(output, false, true, true)
-            if (!this.getHandle().saveSelfData(output)) {
+            if (!this.getHandle().saveAsPassenger(output)) {
                 String string = null;
                 return string;
             }
-            String string = output.getNbt().toString();
+            String string = output.buildResult().toString();
             return string;
         }
     }
@@ -1575,13 +1564,13 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
 	@Override
 	public void lookAt(double x, double y, double z, @NotNull LookAnchor entityAnchor) {
-		this.getHandle().lookAt(toNmsAnchor(entityAnchor), new Vec3d(x, y, z));
+		this.getHandle().lookAt(toNmsAnchor(entityAnchor), new Vec3(x, y, z));
 	}
 	
-	public static EntityAnchorArgumentType.EntityAnchor toNmsAnchor(LookAnchor nmsAnchor) {
+	public static EntityAnchorArgument.Anchor toNmsAnchor(LookAnchor nmsAnchor) {
 		return switch (nmsAnchor) {
-		case EYES -> EntityAnchorArgumentType.EntityAnchor.EYES;
-		case FEET -> EntityAnchorArgumentType.EntityAnchor.FEET;
+		case EYES -> EntityAnchorArgument.Anchor.EYES;
+		case FEET -> EntityAnchorArgument.Anchor.FEET;
 		default -> throw new MatchException(null, null);
 		};
 	}
@@ -1618,21 +1607,21 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
 	@Override
 	public @NotNull ItemStack getPickItemStack() {
-		net.minecraft.item.ItemStack stack = this.getHandle().getPickBlockStack();
+		net.minecraft.world.item.ItemStack stack = this.getHandle().getPickResult();
         return stack == null ? ItemStack.empty() : ((IItemStack) stack).asBukkitCopy();
 	}
 
 	@Override
 	public boolean isTrackedBy(@NotNull Player player) {
-		ServerWorld world = ((CraftWorld)this.getWorld()).getHandle();
-		ServerChunkLoadingManager.EntityTracker entityTracker = (ServerChunkLoadingManager.EntityTracker)world.getChunkManager().chunkLoadingManager.entityTrackers.get(this.getEntityId());
+		ServerLevel world = ((CraftWorld)this.getWorld()).getHandle();
+		ChunkMap.TrackedEntity entityTracker = (ChunkMap.TrackedEntity)world.getChunkSource().chunkMap.entityMap.get(this.getEntityId());
 		if (entityTracker == null) {
 			return false;
 		}
-		return entityTracker.listeners.contains(((CraftPlayer)player).getHandle().networkHandler);
+		return entityTracker.seenBy.contains(((CraftPlayer)player).getHandle().connection);
 	}
 
-	public void setHandle(net.minecraft.entity.Entity entity) {
+	public void setHandle(net.minecraft.world.entity.Entity entity) {
 		this.nms = entity;
 	}
 

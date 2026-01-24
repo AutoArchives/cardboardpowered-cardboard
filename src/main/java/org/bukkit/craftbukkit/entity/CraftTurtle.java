@@ -1,7 +1,5 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.entity.passive.TurtleEntity;
-
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
@@ -10,13 +8,13 @@ import org.cardboardpowered.impl.entity.CraftAnimals;
 
 public class CraftTurtle extends CraftAnimals implements Turtle {
 
-    public CraftTurtle(CraftServer server, TurtleEntity entity) {
+    public CraftTurtle(CraftServer server, net.minecraft.world.entity.animal.turtle.Turtle entity) {
         super(server, entity);
     }
 
     @Override
-    public TurtleEntity getHandle() {
-        return (TurtleEntity) super.getHandle();
+    public net.minecraft.world.entity.animal.turtle.Turtle getHandle() {
+        return (net.minecraft.world.entity.animal.turtle.Turtle) super.getHandle();
     }
 
     @Override

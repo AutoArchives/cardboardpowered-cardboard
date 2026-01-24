@@ -9,19 +9,19 @@ public final class CraftFence extends org.bukkit.craftbukkit.block.data.CraftBlo
         super();
     }
 
-    public CraftFence(net.minecraft.block.BlockState state) {
+    public CraftFence(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftMultipleFacing
 
-    private static final net.minecraft.state.property.BooleanProperty[] FACES = new net.minecraft.state.property.BooleanProperty[]{
-        getBoolean(net.minecraft.block.FenceBlock.class, "north", true), getBoolean(net.minecraft.block.FenceBlock.class, "east", true), getBoolean(net.minecraft.block.FenceBlock.class, "south", true), getBoolean(net.minecraft.block.FenceBlock.class, "west", true), getBoolean(net.minecraft.block.FenceBlock.class, "up", true), getBoolean(net.minecraft.block.FenceBlock.class, "down", true)
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty[] FACES = new net.minecraft.world.level.block.state.properties.BooleanProperty[]{
+        getBoolean(net.minecraft.world.level.block.FenceBlock.class, "north", true), getBoolean(net.minecraft.world.level.block.FenceBlock.class, "east", true), getBoolean(net.minecraft.world.level.block.FenceBlock.class, "south", true), getBoolean(net.minecraft.world.level.block.FenceBlock.class, "west", true), getBoolean(net.minecraft.world.level.block.FenceBlock.class, "up", true), getBoolean(net.minecraft.world.level.block.FenceBlock.class, "down", true)
     };
 
     @Override
     public boolean hasFace(org.bukkit.block.BlockFace face) {
-        net.minecraft.state.property.BooleanProperty state = FACES[face.ordinal()];
+        net.minecraft.world.level.block.state.properties.BooleanProperty state = FACES[face.ordinal()];
         if (state == null) {
             throw new IllegalArgumentException("Non-allowed face " + face + ". Check MultipleFacing.getAllowedFaces.");
         }
@@ -30,7 +30,7 @@ public final class CraftFence extends org.bukkit.craftbukkit.block.data.CraftBlo
 
     @Override
     public void setFace(org.bukkit.block.BlockFace face, boolean has) {
-        net.minecraft.state.property.BooleanProperty state = FACES[face.ordinal()];
+        net.minecraft.world.level.block.state.properties.BooleanProperty state = FACES[face.ordinal()];
         if (state == null) {
             throw new IllegalArgumentException("Non-allowed face " + face + ". Check MultipleFacing.getAllowedFaces.");
         }
@@ -65,7 +65,7 @@ public final class CraftFence extends org.bukkit.craftbukkit.block.data.CraftBlo
 
     // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final net.minecraft.state.property.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.block.FenceBlock.class, "waterlogged");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.world.level.block.FenceBlock.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {

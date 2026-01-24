@@ -3,10 +3,6 @@ package org.bukkit.craftbukkit.entity;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Optional;
-import net.minecraft.component.type.PotionContentsComponent;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.registry.entry.RegistryEntry;
 import org.bukkit.Color;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
@@ -19,13 +15,13 @@ import org.bukkit.potion.PotionType;
 
 public class CraftArrow extends CraftAbstractArrow implements Arrow {
 
-    public CraftArrow(CraftServer server, net.minecraft.entity.projectile.ArrowEntity entity) {
+    public CraftArrow(CraftServer server, net.minecraft.world.entity.projectile.arrow.Arrow entity) {
         super(server, entity);
     }
 
     @Override
-    public net.minecraft.entity.projectile.ArrowEntity getHandle() {
-        return (net.minecraft.entity.projectile.ArrowEntity) this.nms;
+    public net.minecraft.world.entity.projectile.arrow.Arrow getHandle() {
+        return (net.minecraft.world.entity.projectile.arrow.Arrow) this.nms;
     }
 
     @Override

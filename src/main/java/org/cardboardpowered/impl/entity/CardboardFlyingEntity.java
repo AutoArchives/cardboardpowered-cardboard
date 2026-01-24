@@ -1,7 +1,7 @@
 package org.cardboardpowered.impl.entity;
 
+import net.minecraft.world.entity.Mob;
 import org.bukkit.craftbukkit.CraftServer;
-import net.minecraft.entity.mob.MobEntity;
 
 /**
  * @deprecated FlyingEntity removed in 1.21.8 API
@@ -9,7 +9,7 @@ import net.minecraft.entity.mob.MobEntity;
 @Deprecated
 public class CardboardFlyingEntity extends CraftMob {
 
-	public CardboardFlyingEntity(CraftServer server, MobEntity entity) {
+	public CardboardFlyingEntity(CraftServer server, Mob entity) {
 		super(server, entity);
 		// TODO Auto-generated constructor stub
 	}

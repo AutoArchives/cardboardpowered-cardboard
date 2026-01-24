@@ -10,13 +10,11 @@
 package org.cardboardpowered.interfaces;
 
 import java.util.Map;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.bukkit.Chunk;
-
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.registry.Registry;
-import net.minecraft.world.biome.Biome;
 
 public interface IMixinChunk {
 

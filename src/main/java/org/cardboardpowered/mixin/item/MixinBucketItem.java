@@ -1,29 +1,21 @@
 package org.cardboardpowered.mixin.item;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LiquidBlockContainer;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.phys.BlockHitResult;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.FluidDrainable;
-import net.minecraft.block.FluidFillable;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.FlowableFluid;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.item.BucketItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.RaycastContext;
-import net.minecraft.world.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
@@ -37,12 +29,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(BucketItem.class)
 public class MixinBucketItem extends Item {
 
-    public MixinBucketItem(net.minecraft.item.Item.Settings settings) {
+    public MixinBucketItem(net.minecraft.world.item.Item.Properties settings) {
         super(settings);
     }
 
     @Shadow
-    public Fluid fluid;
+    public Fluid content;
 
     // TODO
     /*
@@ -69,20 +61,20 @@ public class MixinBucketItem extends Item {
     }
     */
 
-    @Inject(method = "placeFluid", at = @At("HEAD"), cancellable = true)
-    public void placeFluid_BF(LivingEntity player, World world, BlockPos blockposition, BlockHitResult movingobjectpositionblock, CallbackInfoReturnable<Boolean> ci) {
-        if (this.fluid instanceof FlowableFluid) {
+    @Inject(method = "emptyContents", at = @At("HEAD"), cancellable = true)
+    public void placeFluid_BF(LivingEntity player, Level world, BlockPos blockposition, BlockHitResult movingobjectpositionblock, CallbackInfoReturnable<Boolean> ci) {
+        if (this.content instanceof FlowingFluid) {
             BlockState iblockdata = world.getBlockState(blockposition);
             Block block = iblockdata.getBlock();
-            boolean flag = iblockdata.canBucketPlace(this.fluid);
-            boolean flag1 = iblockdata.isAir() || flag || block instanceof FluidFillable && ((FluidFillable) block).canFillWithFluid(player, world, blockposition, iblockdata, this.fluid);
+            boolean flag = iblockdata.canBeReplaced(this.content);
+            boolean flag1 = iblockdata.isAir() || flag || block instanceof LiquidBlockContainer && ((LiquidBlockContainer) block).canPlaceLiquid(player, world, blockposition, iblockdata, this.content);
     
             // CraftBukkit start
             if (flag1 && player != null) {
-            	if (player instanceof PlayerEntity) {
-	                PlayerBucketEmptyEvent event = CraftEventFactory.callPlayerBucketEmptyEvent(world, (PlayerEntity) player, blockposition, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getSide(), player.getStackInHand(player.getActiveHand()), player.getActiveHand());
+            	if (player instanceof net.minecraft.world.entity.player.Player) {
+	                PlayerBucketEmptyEvent event = CraftEventFactory.callPlayerBucketEmptyEvent(world, (net.minecraft.world.entity.player.Player) player, blockposition, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getDirection(), player.getItemInHand(player.getUsedItemHand()), player.getUsedItemHand());
 	                if (event.isCancelled()) {
-	                    ((ServerPlayerEntity) player).networkHandler.sendPacket(new BlockUpdateS2CPacket(world, blockposition));
+	                    ((ServerPlayer) player).connection.send(new ClientboundBlockUpdatePacket(world, blockposition));
 	                    ((Player)((IMixinEntity) player).getBukkitEntity()).updateInventory();
 	                    ci.setReturnValue(false);
 	                    return;

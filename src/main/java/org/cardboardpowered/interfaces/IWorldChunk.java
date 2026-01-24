@@ -6,9 +6,6 @@ package org.cardboardpowered.interfaces;
 
 import org.bukkit.Chunk;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-
 public interface IWorldChunk {
 
     //Map<Heightmap.Type, Heightmap> getHeightMaps();

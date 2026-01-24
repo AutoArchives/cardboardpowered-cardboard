@@ -1,24 +1,28 @@
 package io.papermc.paper.datacomponent.item.consumable;
 
-import net.minecraft.item.consume.*;
+import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
+import net.minecraft.world.item.consume_effects.ClearAllStatusEffectsConsumeEffect;
+import net.minecraft.world.item.consume_effects.PlaySoundConsumeEffect;
+import net.minecraft.world.item.consume_effects.RemoveStatusEffectsConsumeEffect;
+import net.minecraft.world.item.consume_effects.TeleportRandomlyConsumeEffect;
 
 public final class PaperConsumableEffects {
 
     private PaperConsumableEffects() {
     }
 
-    public static ConsumeEffect fromNms(net.minecraft.item.consume.ConsumeEffect consumable) {
+    public static ConsumeEffect fromNms(net.minecraft.world.item.consume_effects.ConsumeEffect consumable) {
         return switch (consumable) {
-            case ApplyEffectsConsumeEffect effect -> new PaperApplyStatusEffects(effect);
-            case ClearAllEffectsConsumeEffect effect -> new PaperClearAllStatusEffects(effect);
+            case ApplyStatusEffectsConsumeEffect effect -> new PaperApplyStatusEffects(effect);
+            case ClearAllStatusEffectsConsumeEffect effect -> new PaperClearAllStatusEffects(effect);
             case PlaySoundConsumeEffect effect -> new PaperPlaySound(effect);
-            case RemoveEffectsConsumeEffect effect -> new PaperRemoveStatusEffects(effect);
+            case RemoveStatusEffectsConsumeEffect effect -> new PaperRemoveStatusEffects(effect);
             case TeleportRandomlyConsumeEffect effect -> new PaperTeleportRandomly(effect);
             default -> throw new UnsupportedOperationException("Don't know how to convert " + consumable.getClass());
         };
     }
 
-    public static net.minecraft.item.consume.ConsumeEffect toNms(ConsumeEffect effect) {
+    public static net.minecraft.world.item.consume_effects.ConsumeEffect toNms(ConsumeEffect effect) {
         if (effect instanceof PaperConsumableEffectImpl<?> consumableEffect) {
             return consumableEffect.getHandle();
         } else {

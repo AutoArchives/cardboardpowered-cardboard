@@ -9,16 +9,15 @@ import io.papermc.paper.registry.set.RegistryKeySet;
 import java.util.Optional;
 import java.util.function.Function;
 import net.kyori.adventure.key.Key;
-import net.minecraft.component.type.EquippableComponent;
-import net.minecraft.item.equipment.EquipmentAsset;
-import net.minecraft.item.equipment.EquipmentAssetKeys;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.equipment.EquipmentAsset;
+import net.minecraft.world.item.equipment.EquipmentAssets;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.entity.EntityType;
@@ -27,11 +26,11 @@ import org.cardboardpowered.Registries_Bridge;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public record PaperEquippable(
-    net.minecraft.component.type.EquippableComponent impl
-) implements Equippable, Handleable<net.minecraft.component.type.EquippableComponent> {
+    net.minecraft.world.item.equipment.Equippable impl
+) implements Equippable, Handleable<net.minecraft.world.item.equipment.Equippable> {
 
     @Override
-    public net.minecraft.component.type.EquippableComponent getHandle() {
+    public net.minecraft.world.item.equipment.Equippable getHandle() {
         return this.impl;
     }
 
@@ -42,7 +41,7 @@ public record PaperEquippable(
 
     @Override
     public Key equipSound() {
-        return PaperAdventure.asAdventure(this.impl.equipSound().value().id());
+        return PaperAdventure.asAdventure(this.impl.equipSound().value().location());
     }
 
     @Override
@@ -90,7 +89,7 @@ public record PaperEquippable(
     }
 
     public Key shearSound() {
-        return PaperAdventure.asAdventure(this.impl.shearingSound().value().id());
+        return PaperAdventure.asAdventure(this.impl.shearingSound().value().location());
     }
 
     public Equippable.Builder toBuilder() {
@@ -108,17 +107,17 @@ public record PaperEquippable(
 
     static final class BuilderImpl
     implements Equippable.Builder {
-        private final net.minecraft.entity.EquipmentSlot equipmentSlot;
-        private RegistryEntry<SoundEvent> equipSound = SoundEvents.ITEM_ARMOR_EQUIP_GENERIC;
-        private Optional<net.minecraft.registry.RegistryKey<EquipmentAsset>> assetId = Optional.empty();
+        private final net.minecraft.world.entity.EquipmentSlot equipmentSlot;
+        private Holder<SoundEvent> equipSound = SoundEvents.ARMOR_EQUIP_GENERIC;
+        private Optional<net.minecraft.resources.ResourceKey<EquipmentAsset>> assetId = Optional.empty();
         private Optional<Identifier> cameraOverlay = Optional.empty();
-        private Optional<RegistryEntryList<net.minecraft.entity.EntityType<?>>> allowedEntities = Optional.empty();
+        private Optional<HolderSet<net.minecraft.world.entity.EntityType<?>>> allowedEntities = Optional.empty();
         private boolean dispensable = true;
         private boolean swappable = true;
         private boolean damageOnHurt = true;
         private boolean equipOnInteract;
         private boolean canBeSheared = false;
-        private RegistryEntry<SoundEvent> shearSound = Registries.SOUND_EVENT.getEntry(SoundEvents.ITEM_SHEARS_SNIP);
+        private Holder<SoundEvent> shearSound = BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.SHEARS_SNIP);
 
         BuilderImpl(org.bukkit.inventory.EquipmentSlot equipmentSlot) {
             this.equipmentSlot = CraftEquipmentSlot.getNMS(equipmentSlot);
@@ -130,7 +129,7 @@ public record PaperEquippable(
         }
 
         public Equippable.Builder assetId(@Nullable Key assetId) {
-            this.assetId = Optional.ofNullable(assetId).map(key -> PaperAdventure.asVanilla(EquipmentAssetKeys.REGISTRY_KEY, key));
+            this.assetId = Optional.ofNullable(assetId).map(key -> PaperAdventure.asVanilla(EquipmentAssets.ROOT_ID, key));
             return this;
         }
 
@@ -140,7 +139,7 @@ public record PaperEquippable(
         }
 
         public Equippable.Builder allowedEntities(@Nullable RegistryKeySet<EntityType> allowedEntities) {
-            this.allowedEntities = Optional.ofNullable(allowedEntities).map(set -> PaperRegistrySets.convertToNms(RegistryKeys.ENTITY_TYPE, Conversions.global().lookup(), set));
+            this.allowedEntities = Optional.ofNullable(allowedEntities).map(set -> PaperRegistrySets.convertToNms(Registries.ENTITY_TYPE, Conversions.global().lookup(), set));
             return this;
         }
 
@@ -175,7 +174,7 @@ public record PaperEquippable(
         }
 
         public Equippable build() {
-            return new PaperEquippable(new EquippableComponent(this.equipmentSlot, this.equipSound, this.assetId, this.cameraOverlay, this.allowedEntities, this.dispensable, this.swappable, this.damageOnHurt, this.equipOnInteract, this.canBeSheared, this.shearSound));
+            return new PaperEquippable(new net.minecraft.world.item.equipment.Equippable(this.equipmentSlot, this.equipSound, this.assetId, this.cameraOverlay, this.allowedEntities, this.dispensable, this.swappable, this.damageOnHurt, this.equipOnInteract, this.canBeSheared, this.shearSound));
         }
     }
 }

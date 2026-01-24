@@ -1,12 +1,11 @@
 package org.cardboardpowered.mixin;
 
+import net.minecraft.server.level.ServerBossEvent;
 import org.cardboardpowered.interfaces.IMixinServerBossBar;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import net.minecraft.entity.boss.ServerBossBar;
-
-@Mixin(ServerBossBar.class)
+@Mixin(ServerBossEvent.class)
 public class MixinServerBossBar implements IMixinServerBossBar {
 
    /* @Override

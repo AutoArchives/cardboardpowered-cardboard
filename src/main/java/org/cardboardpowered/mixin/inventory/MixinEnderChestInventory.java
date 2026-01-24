@@ -1,5 +1,7 @@
 package org.cardboardpowered.mixin.inventory;
 
+import net.minecraft.world.inventory.PlayerEnderChestContainer;
+import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.inventory.InventoryHolder;
 import org.spongepowered.asm.mixin.Mixin;
@@ -7,13 +9,10 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import org.cardboardpowered.interfaces.IMixinWorld;
 
-import net.minecraft.block.entity.EnderChestBlockEntity;
-import net.minecraft.inventory.EnderChestInventory;
-
-@Mixin(EnderChestInventory.class)
+@Mixin(PlayerEnderChestContainer.class)
 public class MixinEnderChestInventory extends MixinSimpleInventory {
 
-    @Shadow private EnderChestBlockEntity activeBlockEntity;
+    @Shadow private EnderChestBlockEntity activeChest;
 
     public InventoryHolder getBukkitOwner() {
         return null; // TODO
@@ -21,7 +20,7 @@ public class MixinEnderChestInventory extends MixinSimpleInventory {
 
     @Override
     public Location getLocation() {
-        return new Location(((IMixinWorld)this.activeBlockEntity.getWorld()).getCraftWorld(), this.activeBlockEntity.getPos().getX(), this.activeBlockEntity.getPos().getY(), this.activeBlockEntity.getPos().getZ());
+        return new Location(((IMixinWorld)this.activeChest.getLevel()).getCraftWorld(), this.activeChest.getBlockPos().getX(), this.activeChest.getBlockPos().getY(), this.activeChest.getBlockPos().getZ());
     }
 
 }

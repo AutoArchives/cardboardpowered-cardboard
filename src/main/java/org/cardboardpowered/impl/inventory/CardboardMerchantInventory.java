@@ -1,8 +1,7 @@
 package org.cardboardpowered.impl.inventory;
 
-import net.minecraft.village.Merchant;
-import net.minecraft.village.MerchantInventory;
-
+import net.minecraft.world.inventory.MerchantContainer;
+import net.minecraft.world.item.trading.Merchant;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.MerchantRecipe;
 
@@ -13,7 +12,7 @@ public class CardboardMerchantInventory extends CraftInventory implements org.bu
 
     private final Merchant merchant;
 
-    public CardboardMerchantInventory(Merchant merchant, MerchantInventory inventory) {
+    public CardboardMerchantInventory(Merchant merchant, MerchantContainer inventory) {
         super(inventory);
         this.merchant = merchant;
     }
@@ -25,13 +24,13 @@ public class CardboardMerchantInventory extends CraftInventory implements org.bu
 
     @Override
     public MerchantRecipe getSelectedRecipe() {
-        net.minecraft.village.TradeOffer nmsRecipe = getInventory().getTradeOffer();
+        net.minecraft.world.item.trading.MerchantOffer nmsRecipe = getInventory().getActiveOffer();
         return (nmsRecipe == null) ? null : ((IMixinTradeOffer)nmsRecipe).asBukkit();
     }
 
     @Override
-    public MerchantInventory getInventory() {
-        return (MerchantInventory) inventory;
+    public MerchantContainer getInventory() {
+        return (MerchantContainer) inventory;
     }
 
     @Override

@@ -1,6 +1,5 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.entity.mob.EndermiteEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Endermite;
 import org.bukkit.entity.EntityType;
@@ -8,13 +7,13 @@ import org.cardboardpowered.impl.entity.CraftMonster;
 
 public class CraftEndermite extends CraftMonster implements Endermite {
 
-    public CraftEndermite(CraftServer server, EndermiteEntity entity) {
+    public CraftEndermite(CraftServer server, net.minecraft.world.entity.monster.Endermite entity) {
         super(server, entity);
     }
 
     @Override
-    public EndermiteEntity getHandle() {
-        return (EndermiteEntity) super.getHandle();
+    public net.minecraft.world.entity.monster.Endermite getHandle() {
+        return (net.minecraft.world.entity.monster.Endermite) super.getHandle();
     }
 
     @Override

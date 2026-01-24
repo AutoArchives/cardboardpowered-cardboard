@@ -10,8 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import net.kyori.adventure.util.TriState;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.core.registries.Registries;
 import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.cardboardpowered.Registries_Bridge;
@@ -19,10 +18,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 public record PaperItemTool(
-    net.minecraft.component.type.ToolComponent impl
-) implements Tool, Handleable<net.minecraft.component.type.ToolComponent> {
+    net.minecraft.world.item.component.Tool impl
+) implements Tool, Handleable<net.minecraft.world.item.component.Tool> {
 
-    private static List<Tool.Rule> convert(final List<net.minecraft.component.type.ToolComponent.Rule> tool) {
+    private static List<Tool.Rule> convert(final List<net.minecraft.world.item.component.Tool.Rule> tool) {
         return MCUtil.transformUnmodifiable(tool, nms -> new PaperRule(
             PaperRegistrySets.convertToApi(RegistryKey.BLOCK, nms.blocks()),
             nms.speed().orElse(null),
@@ -31,7 +30,7 @@ public record PaperItemTool(
     }
 
     @Override
-    public net.minecraft.component.type.ToolComponent getHandle() {
+    public net.minecraft.world.item.component.Tool getHandle() {
         return this.impl;
     }
 
@@ -64,7 +63,7 @@ public record PaperItemTool(
 
     static final class BuilderImpl implements Builder {
 
-        private final List<net.minecraft.component.type.ToolComponent.Rule> rules = new ObjectArrayList<>();
+        private final List<net.minecraft.world.item.component.Tool.Rule> rules = new ObjectArrayList<>();
         private int damage = 1;
         private float miningSpeed = 1.0F;
         private boolean canDestroyBlocksInCreative = true;
@@ -84,8 +83,8 @@ public record PaperItemTool(
 
         @Override
         public Builder addRule(final Rule rule) {
-            this.rules.add(new net.minecraft.component.type.ToolComponent.Rule(
-                PaperRegistrySets.convertToNms(RegistryKeys.BLOCK, Registries_Bridge.BUILT_IN_CONVERSIONS.lookup(), rule.blocks()),
+            this.rules.add(new net.minecraft.world.item.component.Tool.Rule(
+                PaperRegistrySets.convertToNms(Registries.BLOCK, Registries_Bridge.BUILT_IN_CONVERSIONS.lookup(), rule.blocks()),
                 Optional.ofNullable(rule.speed()),
                 Optional.ofNullable(rule.correctForDrops().toBoolean())
             ));
@@ -106,7 +105,7 @@ public record PaperItemTool(
 
         @Override
         public Tool build() {
-            return new PaperItemTool(new net.minecraft.component.type.ToolComponent(new ObjectArrayList<>(this.rules), this.miningSpeed, this.damage, this.canDestroyBlocksInCreative));
+            return new PaperItemTool(new net.minecraft.world.item.component.Tool(new ObjectArrayList<>(this.rules), this.miningSpeed, this.damage, this.canDestroyBlocksInCreative));
         }
     }
 }

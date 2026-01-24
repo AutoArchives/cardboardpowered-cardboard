@@ -3,7 +3,7 @@ package io.papermc.paper.util;
 import java.io.InputStream;
 import java.util.Objects;
 import java.util.jar.Manifest;
-import net.minecraft.entity.SpawnGroup;
+import net.minecraft.world.entity.MobCategory;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
@@ -56,7 +56,7 @@ public final class MappingEnvironment {
 	}
 
 	private static boolean checkReobf() {
-		Class<?> clazz = SpawnGroup.class;
+		Class<?> clazz = MobCategory.class;
 		
 		if (clazz.getSimpleName().equals("class_1311")) {
 			return false;

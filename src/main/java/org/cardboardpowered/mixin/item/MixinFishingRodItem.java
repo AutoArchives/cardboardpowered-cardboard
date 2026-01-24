@@ -1,5 +1,14 @@
 package org.cardboardpowered.mixin.item;
 
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.FishingHook;
+import net.minecraft.world.item.FishingRodItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.cardboardpowered.util.MixinInfo;
@@ -10,39 +19,29 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import org.cardboardpowered.interfaces.IMixinEntity;
 
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.FishingBobberEntity;
-import net.minecraft.item.FishingRodItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.world.World;
-
 @MixinInfo(events = {"PlayerFishEvent"})
 @Mixin(FishingRodItem.class)
 public class MixinFishingRodItem {
 
     @Inject(at = @At("HEAD"), method = "use", cancellable = true)
-    public void cardboard$fishingRodUse_PlayerFishEvent(World world, PlayerEntity entityhuman, Hand enumhand, CallbackInfoReturnable<ActionResult> ci) {
-        if (null == entityhuman.fishHook) {
-            ItemStack itemstack = entityhuman.getStackInHand(enumhand);
+    public void cardboard$fishingRodUse_PlayerFishEvent(Level world, Player entityhuman, InteractionHand enumhand, CallbackInfoReturnable<InteractionResult> ci) {
+        if (null == entityhuman.fishing) {
+            ItemStack itemstack = entityhuman.getItemInHand(enumhand);
 
-            int i = (int)(EnchantmentHelper.getFishingTimeReduction((ServerWorld) world, itemstack, entityhuman) * 20.0f);
-            int j = EnchantmentHelper.getFishingLuckBonus((ServerWorld) world, itemstack, entityhuman);
+            int i = (int)(EnchantmentHelper.getFishingTimeReduction((ServerLevel) world, itemstack, entityhuman) * 20.0f);
+            int j = EnchantmentHelper.getFishingLuckBonus((ServerLevel) world, itemstack, entityhuman);
             
-            FishingBobberEntity entityfishinghook = new FishingBobberEntity(entityhuman, world, j, i);
+            FishingHook entityfishinghook = new FishingHook(entityhuman, world, j, i);
             PlayerFishEvent playerFishEvent = new PlayerFishEvent((org.bukkit.entity.Player) ((IMixinEntity)entityhuman).getBukkitEntity(), null, (org.bukkit.entity.FishHook) ((IMixinEntity)entityfishinghook).getBukkitEntity(), PlayerFishEvent.State.FISHING);
             Bukkit.getPluginManager().callEvent(playerFishEvent);
     
             if (playerFishEvent.isCancelled()) {
-                entityhuman.fishHook = null;
-                ci.setReturnValue( ActionResult.PASS );
+                entityhuman.fishing = null;
+                ci.setReturnValue( InteractionResult.PASS );
                 return;
             }
-            world.spawnEntity(entityfishinghook); 
-            ci.setReturnValue( ActionResult.SUCCESS );
+            world.addFreshEntity(entityfishinghook); 
+            ci.setReturnValue( InteractionResult.SUCCESS );
             return;
         }
     }

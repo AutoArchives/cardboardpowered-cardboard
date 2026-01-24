@@ -1,8 +1,8 @@
 package org.cardboardpowered.mixin.block;
 
+import net.minecraft.world.level.block.NetherPortalBlock;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
-import net.minecraft.block.NetherPortalBlock;
 
 /**
  * 1.21.10 Note: now uses iCommonLib API

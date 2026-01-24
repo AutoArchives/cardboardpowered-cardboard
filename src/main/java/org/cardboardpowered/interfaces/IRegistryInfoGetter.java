@@ -1,11 +1,11 @@
 package org.cardboardpowered.interfaces;
 
-import net.minecraft.registry.RegistryWrapper.WrapperLookup;
+import net.minecraft.core.HolderLookup.Provider;
 
 public interface IRegistryInfoGetter {
 
 	/**
 	 */
-	WrapperLookup lookupForValueCopyViaBuilders();
+	Provider lookupForValueCopyViaBuilders();
 
 }

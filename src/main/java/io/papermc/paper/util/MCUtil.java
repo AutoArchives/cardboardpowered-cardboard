@@ -21,13 +21,13 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.World;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
@@ -92,7 +92,7 @@ public final class MCUtil {
     }
 
     public static boolean isMainThread() {
-        return MinecraftServer_getServer().isOnThread();
+        return MinecraftServer_getServer().isSameThread();
     }
 
     public static void ensureMain(Runnable run) {
@@ -150,11 +150,11 @@ public final class MCUtil {
         return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) + (z1 - z2) * (z1 - z2);
     }
 
-    public static Location toLocation(World world, double x, double y, double z) {
+    public static Location toLocation(Level world, double x, double y, double z) {
         return new Location(world.getCraftWorld(), x, y, z);
     }
 
-    public static Location toLocation(World world, BlockPos pos) {
+    public static Location toLocation(Level world, BlockPos pos) {
         return new Location(world.getCraftWorld(), pos.getX(), pos.getY(), pos.getZ());
     }
 
@@ -166,7 +166,7 @@ public final class MCUtil {
         return new BlockPos(pos.blockX(), pos.blockY(), pos.blockZ());
     }
 
-    public static FinePosition toPosition(Vec3d vector) {
+    public static FinePosition toPosition(Vec3 vector) {
         return Position.fine(vector.x, vector.y, vector.z);
     }
 
@@ -174,8 +174,8 @@ public final class MCUtil {
         return Position.block(vector.getX(), vector.getY(), vector.getZ());
     }
 
-    public static Vec3d toVec3(Position position) {
-        return new Vec3d(position.x(), position.y(), position.z());
+    public static Vec3 toVec3(Position position) {
+        return new Vec3(position.x(), position.y(), position.z());
     }
 
     public static boolean isEdgeOfChunk(BlockPos pos) {
@@ -188,15 +188,15 @@ public final class MCUtil {
         ASYNC_EXECUTOR.execute(run);
     }
 
-    public static <T> RegistryKey<T> toResourceKey(
-        final RegistryKey<? extends net.minecraft.registry.Registry<T>> registry,
+    public static <T> ResourceKey<T> toResourceKey(
+        final ResourceKey<? extends net.minecraft.core.Registry<T>> registry,
         final NamespacedKey namespacedKey
     ) {
-        return RegistryKey.of(registry, CraftNamespacedKey.toMinecraft(namespacedKey));
+        return ResourceKey.create(registry, CraftNamespacedKey.toMinecraft(namespacedKey));
     }
 
-    public static NamespacedKey fromResourceKey(final RegistryKey<?> key) {
-        return CraftNamespacedKey.fromMinecraft(key.getValue());
+    public static NamespacedKey fromResourceKey(final ResourceKey<?> key) {
+        return CraftNamespacedKey.fromMinecraft(key.identifier());
     }
 
     public static <A, M> List<A> transformUnmodifiable(final List<? extends M> nms, final Function<? super M, ? extends A> converter) {

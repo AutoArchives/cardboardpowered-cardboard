@@ -1,6 +1,6 @@
 package org.cardboardpowered.impl.inventory;
 
-import net.minecraft.inventory.Inventory;
+import net.minecraft.world.Container;
 import org.bukkit.block.Jukebox;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.ItemStack;
@@ -11,13 +11,13 @@ import org.cardboardpowered.interfaces.IMixinInventory;
 public class CraftInventoryJukebox
 extends CraftInventory
 implements JukeboxInventory {
-    public CraftInventoryJukebox(Inventory inventory) {
+    public CraftInventoryJukebox(Container inventory) {
         super(inventory);
     }
 
     public void setRecord(ItemStack item) {
         if (item == null) {
-            this.inventory.removeStack(0, 0);
+            this.inventory.removeItem(0, 0);
         } else {
             this.setItem(0, item);
         }

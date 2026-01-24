@@ -6,18 +6,18 @@ import org.bukkit.entity.ThrownExpBottle;
 import org.jetbrains.annotations.Nullable;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.entity.projectile.thrown.ExperienceBottleEntity;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownExperienceBottle;
 
 public class CardboardThrownExpBottle extends ThrowableProjectileImpl implements ThrownExpBottle {
 
-    public CardboardThrownExpBottle(CraftServer server, ProjectileEntity entity) {
+    public CardboardThrownExpBottle(CraftServer server, Projectile entity) {
         super(server, entity);
     }
 
     @Override
-    public ExperienceBottleEntity getHandle() {
-        return (ExperienceBottleEntity) nms;
+    public ThrownExperienceBottle getHandle() {
+        return (ThrownExperienceBottle) nms;
     }
 
     @Override

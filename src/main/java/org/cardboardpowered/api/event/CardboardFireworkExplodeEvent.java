@@ -2,23 +2,23 @@ package org.cardboardpowered.api.event;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.entity.projectile.FireworkRocketEntity;
-import net.minecraft.util.ActionResult;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 
 public interface CardboardFireworkExplodeEvent {
 
     Event<CardboardFireworkExplodeEvent> EVENT = EventFactory.createArrayBacked(CardboardFireworkExplodeEvent.class,
             (listeners) -> (firework) -> {
                 for (CardboardFireworkExplodeEvent listener : listeners) {
-                    ActionResult result = listener.interact(firework);
+                    InteractionResult result = listener.interact(firework);
 
-                    if(result != ActionResult.PASS) {
+                    if(result != InteractionResult.PASS) {
                         return result;
                     }
                 }
 
-                return ActionResult.PASS;
+                return InteractionResult.PASS;
             });
 
-    ActionResult interact(FireworkRocketEntity firework);
+    InteractionResult interact(FireworkRocketEntity firework);
 }

@@ -9,8 +9,8 @@
  */
 package org.cardboardpowered.interfaces;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 /**
  */
@@ -18,7 +18,7 @@ public interface IMixinScreenHandlerContext {
 
     org.bukkit.Location getLocation();
 
-    World getWorld();
+    Level getWorld();
 
     BlockPos getPosition();
 

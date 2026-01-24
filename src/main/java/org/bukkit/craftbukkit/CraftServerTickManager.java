@@ -7,20 +7,20 @@ import org.bukkit.entity.Entity;
 
 final class CraftServerTickManager implements ServerTickManager {
 
-    private final net.minecraft.server.ServerTickManager manager;
+    private final net.minecraft.server.ServerTickRateManager manager;
 
-    protected CraftServerTickManager(net.minecraft.server.ServerTickManager manager) {
+    protected CraftServerTickManager(net.minecraft.server.ServerTickRateManager manager) {
         this.manager = manager;
     }
 
     @Override
     public boolean isRunningNormally() {
-        return this.manager.shouldTick();
+        return this.manager.runsNormally();
     }
 
     @Override
     public boolean isStepping() {
-        return this.manager.isStepping();
+        return this.manager.isSteppingForward();
     }
 
     @Override
@@ -35,7 +35,7 @@ final class CraftServerTickManager implements ServerTickManager {
 
     @Override
     public float getTickRate() {
-        return this.manager.getTickRate();
+        return this.manager.tickrate();
     }
 
     @Override
@@ -51,7 +51,7 @@ final class CraftServerTickManager implements ServerTickManager {
                 this.manager.stopSprinting();
             }
 
-            if (this.manager.isStepping()) {
+            if (this.manager.isSteppingForward()) {
                 this.manager.stopStepping();
             }
         }
@@ -61,7 +61,7 @@ final class CraftServerTickManager implements ServerTickManager {
 
     @Override
     public boolean stepGameIfFrozen(final int ticks) {
-        return this.manager.step(ticks);
+        return this.manager.stepGameIfPaused(ticks);
     }
 
     @Override
@@ -71,7 +71,7 @@ final class CraftServerTickManager implements ServerTickManager {
 
     @Override
     public boolean requestGameToSprint(final int ticks) {
-        return this.manager.startSprint(ticks);
+        return this.manager.requestGameToSprint(ticks);
     }
 
     @Override
@@ -82,12 +82,12 @@ final class CraftServerTickManager implements ServerTickManager {
     @Override
     public boolean isFrozen(final Entity entity) {
         Preconditions.checkArgument(entity != null, "entity must not be null");
-        return this.manager.shouldSkipTick(((CraftEntity) entity).getHandle());
+        return this.manager.isEntityFrozen(((CraftEntity) entity).getHandle());
     }
 
     @Override
     public int getFrozenTicksToRun() {
-        return this.manager.getStepTicks();
+        return this.manager.frozenTicksToRun();
     }
 
 }

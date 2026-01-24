@@ -1,21 +1,20 @@
 package org.cardboardpowered.mixin;
 
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import org.bukkit.command.CommandSender;
 import org.spongepowered.asm.mixin.Mixin;
-import net.minecraft.server.command.CommandOutput;
-import net.minecraft.server.command.ServerCommandSource;
-
 import org.cardboardpowered.interfaces.IMixinCommandOutput;
 
-@Mixin(CommandOutput.class)
+@Mixin(CommandSource.class)
 public interface MixinCommandOutput extends IMixinCommandOutput {
 
 	// @Override
 	// public CommandSender getBukkitSender(ServerCommandSource source);
 
 	@Override
-	default CommandSender getBukkitSender(ServerCommandSource source) {
-		if (source.isExecutedByPlayer()) {
+	default CommandSender getBukkitSender(CommandSourceStack source) {
+		if (source.isPlayer()) {
 			// Cardboard Note: Redirect ServerPlayerEntity$3 to ServerPlayerEntity
 			return ( (IMixinCommandOutput) source.getPlayer() ).getBukkitSender(source);
 		}
@@ -24,7 +23,7 @@ public interface MixinCommandOutput extends IMixinCommandOutput {
 			return ( (IMixinCommandOutput) source.getEntity() ).getBukkitSender(source);
 		}
 			
-		CommandOutput output = source.output;
+		CommandSource output = source.source;
 		
 		// Memic Default Error
 		String msg1 = " does not define or inherit an implementation of the resolved method 'org.bukkit.command.CommandSender";

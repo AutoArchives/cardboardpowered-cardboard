@@ -1,6 +1,5 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.passive.SalmonEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Salmon;
@@ -11,13 +10,13 @@ import io.papermc.paper.entity.SchoolableFish;
 
 public class CardboardFishSalmon extends CardboardFish implements Salmon {
 
-    public CardboardFishSalmon(CraftServer server, SalmonEntity entity) {
+    public CardboardFishSalmon(CraftServer server, net.minecraft.world.entity.animal.fish.Salmon entity) {
         super(server, entity);
     }
 
     @Override
-    public SalmonEntity getHandle() {
-        return (SalmonEntity) super.getHandle();
+    public net.minecraft.world.entity.animal.fish.Salmon getHandle() {
+        return (net.minecraft.world.entity.animal.fish.Salmon) super.getHandle();
     }
 
     @Override
@@ -64,7 +63,7 @@ public class CardboardFishSalmon extends CardboardFish implements Salmon {
 	
 	@Override
     public void setVariant(Variant variant) {
-		this.getHandle().setVariant(SalmonEntity.Variant.values()[variant.ordinal()]);
+		this.getHandle().setVariant(net.minecraft.world.entity.animal.fish.Salmon.Variant.values()[variant.ordinal()]);
 		// this.getHandle().setVariant(net.minecraft.entity.passive.SalmonEntity.Variant.values()[variant.ordinal()]);
     }
 	

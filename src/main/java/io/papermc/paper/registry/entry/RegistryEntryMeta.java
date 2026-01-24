@@ -10,8 +10,8 @@ import io.papermc.paper.registry.data.util.Conversions;
 // import io.papermc.paper.registry.event.RegistryFreezeEventImpl;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.SimpleRegistry;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.Registry;
 import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.CraftRegistry;
@@ -19,7 +19,7 @@ import org.bukkit.craftbukkit.util.ApiVersion;
 
 public sealed interface RegistryEntryMeta<M, A extends Keyed> permits RegistryEntryMeta.ApiOnly, RegistryEntryMeta.ServerSide { // TODO remove Keyed
 
-    net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey();
+    net.minecraft.resources.ResourceKey<? extends Registry<M>> mcKey();
 
     RegistryKey<A> apiKey();
 
@@ -29,7 +29,7 @@ public sealed interface RegistryEntryMeta<M, A extends Keyed> permits RegistryEn
         return RegistryModificationApiSupport.NONE;
     }
 
-    record ApiOnly<M, A extends Keyed>(net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey, RegistryKey<A> apiKey, Supplier<org.bukkit.Registry<A>> registrySupplier) implements RegistryEntryMeta<M, A> { // TODO remove Keyed
+    record ApiOnly<M, A extends Keyed>(net.minecraft.resources.ResourceKey<? extends Registry<M>> mcKey, RegistryKey<A> apiKey, Supplier<org.bukkit.Registry<A>> registrySupplier) implements RegistryEntryMeta<M, A> { // TODO remove Keyed
 
         @Override
         public org.bukkit.Registry<A> createApiRegistry(final Registry<M> nmsRegistry) {
@@ -51,7 +51,7 @@ public sealed interface RegistryEntryMeta<M, A extends Keyed> permits RegistryEn
     }
 
     record Craft<M, A extends Keyed>(
-        net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey,
+        net.minecraft.resources.ResourceKey<? extends Registry<M>> mcKey,
         RegistryKey<A> apiKey,
         Class<?> classToPreload,
         RegistryTypeMapper<M, A> registryTypeMapper,
@@ -100,7 +100,7 @@ public sealed interface RegistryEntryMeta<M, A extends Keyed> permits RegistryEn
     }
 
     record Buildable<M, A extends Keyed, B extends PaperRegistryBuilder<M, A>>( // TODO remove Keyed
-        net.minecraft.registry.RegistryKey<? extends Registry<M>> mcKey,
+        net.minecraft.resources.ResourceKey<? extends Registry<M>> mcKey,
         RegistryKey<A> apiKey,
         Class<?> classToPreload,
         RegistryTypeMapper<M, A> registryTypeMapper,
@@ -122,7 +122,7 @@ public sealed interface RegistryEntryMeta<M, A extends Keyed> permits RegistryEn
         @Override
         public org.bukkit.Registry<A> createApiRegistry(final Registry<M> nmsRegistry) {
             if (this.modificationApiSupport.canAdd()) {
-                return new WritableCraftRegistry<>((SimpleRegistry<M>) nmsRegistry, this);
+                return new WritableCraftRegistry<>((MappedRegistry<M>) nmsRegistry, this);
             } else {
                 return ServerSide.super.createApiRegistry(nmsRegistry);
             }

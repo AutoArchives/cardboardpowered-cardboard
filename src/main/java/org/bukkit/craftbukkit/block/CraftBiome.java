@@ -3,12 +3,10 @@ package org.bukkit.craftbukkit.block;
 import com.google.common.base.Preconditions;
 
 import io.papermc.paper.util.OldEnumHolderable;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-
 import java.util.Locale;
 import java.util.Objects;
-
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.block.Biome;
@@ -17,33 +15,33 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.jspecify.annotations.Nullable;
 
-public class CraftBiome extends OldEnumHolderable<Biome, net.minecraft.world.biome.Biome> implements Biome {
+public class CraftBiome extends OldEnumHolderable<Biome, net.minecraft.world.level.biome.Biome> implements Biome {
 
 	private static int count = 0;
 
-    public static Biome minecraftToBukkit(net.minecraft.world.biome.Biome minecraft) {
-        return (Biome)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.BIOME);
+    public static Biome minecraftToBukkit(net.minecraft.world.level.biome.Biome minecraft) {
+        return (Biome)CraftRegistry.minecraftToBukkit(minecraft, Registries.BIOME);
     }
 
-    public static Biome minecraftHolderToBukkit(RegistryEntry<net.minecraft.world.biome.Biome> minecraft) {
-        return (Biome)CraftRegistry.minecraftHolderToBukkit(minecraft, RegistryKeys.BIOME);
+    public static Biome minecraftHolderToBukkit(Holder<net.minecraft.world.level.biome.Biome> minecraft) {
+        return (Biome)CraftRegistry.minecraftHolderToBukkit(minecraft, Registries.BIOME);
     }
 
-    public static net.minecraft.world.biome.@Nullable Biome bukkitToMinecraft(Biome bukkit) {
+    public static net.minecraft.world.level.biome.@Nullable Biome bukkitToMinecraft(Biome bukkit) {
         if (bukkit == Biome.CUSTOM) {
             return null;
         }
-        return (net.minecraft.world.biome.Biome)CraftRegistry.bukkitToMinecraft(bukkit);
+        return (net.minecraft.world.level.biome.Biome)CraftRegistry.bukkitToMinecraft(bukkit);
     }
 
-    public static @Nullable RegistryEntry<net.minecraft.world.biome.Biome> bukkitToMinecraftHolder(Biome bukkit) {
+    public static @Nullable Holder<net.minecraft.world.level.biome.Biome> bukkitToMinecraftHolder(Biome bukkit) {
         if (bukkit == Biome.CUSTOM) {
             return null;
         }
         return CraftRegistry.bukkitToMinecraftHolder(bukkit);
     }
 
-    public CraftBiome(RegistryEntry<net.minecraft.world.biome.Biome> holder) {
+    public CraftBiome(Holder<net.minecraft.world.level.biome.Biome> holder) {
         super(holder, count++);
     }
     

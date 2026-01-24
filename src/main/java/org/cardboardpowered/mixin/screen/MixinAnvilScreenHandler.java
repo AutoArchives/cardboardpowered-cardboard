@@ -1,6 +1,8 @@
 package org.cardboardpowered.mixin.screen;
 
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import net.minecraft.world.inventory.AnvilMenu;
+import net.minecraft.world.inventory.DataSlot;
 import org.bukkit.entity.Player;
 import org.cardboardpowered.impl.inventory.CardboardAnvilInventory;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,10 +12,7 @@ import org.cardboardpowered.interfaces.IMixinAnvilScreenHandler;
 import org.cardboardpowered.interfaces.IMixinScreenHandlerContext;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
-import net.minecraft.screen.AnvilScreenHandler;
-import net.minecraft.screen.Property;
-
-@Mixin(AnvilScreenHandler.class)
+@Mixin(AnvilMenu.class)
 public class MixinAnvilScreenHandler extends MixinForgingScreenHandler implements IMixinAnvilScreenHandler {
 
     // TODO Add AnvilPrepareEvent
@@ -21,8 +20,8 @@ public class MixinAnvilScreenHandler extends MixinForgingScreenHandler implement
     public int maximumRepairCost_BF = 40;
     public CardboardInventoryView bukkitEntity;
 
-    @Shadow public String newItemName;
-    @Shadow public Property levelCost;
+    @Shadow public String itemName;
+    @Shadow public DataSlot cost;
 
     @Override
     public CardboardInventoryView getBukkitView() {
@@ -30,24 +29,24 @@ public class MixinAnvilScreenHandler extends MixinForgingScreenHandler implement
             return bukkitEntity;
 
         org.bukkit.craftbukkit.inventory.CraftInventory inventory = new CardboardAnvilInventory(
-                ((IMixinScreenHandlerContext)context).getLocation(), this.input, this.output, (AnvilScreenHandler)(Object)this);
-        bukkitEntity = new CardboardInventoryView((Player)((IMixinServerEntityPlayer)this.player).getBukkitEntity(), inventory, (AnvilScreenHandler)(Object)this);
+                ((IMixinScreenHandlerContext)access).getLocation(), this.inputSlots, this.resultSlots, (AnvilMenu)(Object)this);
+        bukkitEntity = new CardboardInventoryView((Player)((IMixinServerEntityPlayer)this.player).getBukkitEntity(), inventory, (AnvilMenu)(Object)this);
         return bukkitEntity;
     }
 
     @Override
     public String getNewItemName_BF() {
-        return newItemName;
+        return itemName;
     }
 
     @Override
     public int getLevelCost_BF() {
-        return levelCost.get();
+        return cost.get();
     }
 
     @Override
     public void setLevelCost_BF(int i) {
-        levelCost.set(i);
+        cost.set(i);
     }
 
     @Override

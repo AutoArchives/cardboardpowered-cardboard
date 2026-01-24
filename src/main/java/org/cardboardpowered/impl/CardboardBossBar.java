@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
+import net.minecraft.server.bossevents.CustomBossEvent;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.NamespacedKey;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
@@ -21,17 +23,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import org.cardboardpowered.interfaces.IMixinEntity;
 
-import net.minecraft.entity.boss.CommandBossBar;
-import net.minecraft.entity.boss.ServerBossBar;
-import net.minecraft.server.network.ServerPlayerEntity;
-
 public class CardboardBossBar implements BossBar, KeyedBossBar {
 
-    private final ServerBossBar handle;
+    private final ServerBossEvent handle;
     private Map<BarFlag, FlagContainer> flags;
 
     public CardboardBossBar(String title, BarColor color, BarStyle style, BarFlag... flags) {
-        handle = new ServerBossBar(CraftChatMessage.fromString(title, true)[0], convertColor(color), convertStyle(style));
+        handle = new ServerBossEvent(CraftChatMessage.fromString(title, true)[0], convertColor(color), convertStyle(style));
 
         this.initialize();
         for (BarFlag flag : flags) this.addFlag(flag);
@@ -39,20 +37,20 @@ public class CardboardBossBar implements BossBar, KeyedBossBar {
         this.setStyle(style);
     }
 
-    public CardboardBossBar(ServerBossBar bossBattleServer) {
+    public CardboardBossBar(ServerBossEvent bossBattleServer) {
         this.handle = bossBattleServer;
         this.initialize();
     }
 
-    public CardboardBossBar(CommandBossBar bossBattleCustom) {
+    public CardboardBossBar(CustomBossEvent bossBattleCustom) {
         this.handle = bossBattleCustom;
         this.initialize();
     }
 
     @Override
     public NamespacedKey getKey() {
-        if (handle instanceof CommandBossBar) {
-            return CraftNamespacedKey.fromMinecraft(((CommandBossBar)handle).getId());
+        if (handle instanceof CustomBossEvent) {
+            return CraftNamespacedKey.fromMinecraft(((CustomBossEvent)handle).getTextId());
         }
         throw new UnsupportedOperationException("BossBar is not keyed!");
     }
@@ -60,38 +58,38 @@ public class CardboardBossBar implements BossBar, KeyedBossBar {
     private void initialize() {
         this.flags = new HashMap<>();
 
-        this.flags.put(BarFlag.DARKEN_SKY, new FlagContainer(handle::shouldDarkenSky, handle::setDarkenSky));
-        this.flags.put(BarFlag.PLAY_BOSS_MUSIC, new FlagContainer(handle::hasDragonMusic, handle::setDragonMusic));
-        this.flags.put(BarFlag.CREATE_FOG, new FlagContainer(handle::shouldThickenFog, handle::setThickenFog));
+        this.flags.put(BarFlag.DARKEN_SKY, new FlagContainer(handle::shouldDarkenScreen, handle::setDarkenScreen));
+        this.flags.put(BarFlag.PLAY_BOSS_MUSIC, new FlagContainer(handle::shouldPlayBossMusic, handle::setPlayBossMusic));
+        this.flags.put(BarFlag.CREATE_FOG, new FlagContainer(handle::shouldCreateWorldFog, handle::setCreateWorldFog));
     }
 
-    private BarColor convertColor(net.minecraft.entity.boss.BossBar.Color color) {
+    private BarColor convertColor(net.minecraft.world.BossEvent.BossBarColor color) {
         BarColor bukkitColor = BarColor.valueOf(color.name());
         return (bukkitColor == null) ? BarColor.WHITE : bukkitColor;
     }
 
-    private net.minecraft.entity.boss.BossBar.Color convertColor(BarColor color) {
-        net.minecraft.entity.boss.BossBar.Color nmsColor = net.minecraft.entity.boss.BossBar.Color.valueOf(color.name());
-        return (nmsColor == null) ? net.minecraft.entity.boss.BossBar.Color.WHITE : nmsColor;
+    private net.minecraft.world.BossEvent.BossBarColor convertColor(BarColor color) {
+        net.minecraft.world.BossEvent.BossBarColor nmsColor = net.minecraft.world.BossEvent.BossBarColor.valueOf(color.name());
+        return (nmsColor == null) ? net.minecraft.world.BossEvent.BossBarColor.WHITE : nmsColor;
     }
 
-    private net.minecraft.entity.boss.BossBar.Style convertStyle(BarStyle style) {
+    private net.minecraft.world.BossEvent.BossBarOverlay convertStyle(BarStyle style) {
         switch (style) {
             default:
                 case SOLID:
-                    return net.minecraft.entity.boss.BossBar.Style.PROGRESS;
+                    return net.minecraft.world.BossEvent.BossBarOverlay.PROGRESS;
                 case SEGMENTED_6:
-                    return net.minecraft.entity.boss.BossBar.Style.NOTCHED_6;
+                    return net.minecraft.world.BossEvent.BossBarOverlay.NOTCHED_6;
                 case SEGMENTED_10:
-                    return net.minecraft.entity.boss.BossBar.Style.NOTCHED_10;
+                    return net.minecraft.world.BossEvent.BossBarOverlay.NOTCHED_10;
                 case SEGMENTED_12:
-                    return net.minecraft.entity.boss.BossBar.Style.NOTCHED_12;
+                    return net.minecraft.world.BossEvent.BossBarOverlay.NOTCHED_12;
                 case SEGMENTED_20:
-                    return net.minecraft.entity.boss.BossBar.Style.NOTCHED_20;
+                    return net.minecraft.world.BossEvent.BossBarOverlay.NOTCHED_20;
         }
     }
 
-    private BarStyle convertStyle(net.minecraft.entity.boss.BossBar.Style style) {
+    private BarStyle convertStyle(net.minecraft.world.BossEvent.BossBarOverlay style) {
         switch (style) {
             default:
                 case PROGRESS:
@@ -131,12 +129,12 @@ public class CardboardBossBar implements BossBar, KeyedBossBar {
 
     @Override
     public BarStyle getStyle() {
-        return convertStyle(handle.style);
+        return convertStyle(handle.overlay);
     }
 
     @Override
     public void setStyle(BarStyle style) {
-        handle.style = convertStyle(style);
+        handle.overlay = convertStyle(style);
      // TODO 1.17ify ((IMixinServerBossBar)handle).sendPacketBF(BossBarS2CPacket.Type.UPDATE_STYLE);
     }
 
@@ -161,18 +159,18 @@ public class CardboardBossBar implements BossBar, KeyedBossBar {
     @Override
     public void setProgress(double progress) {
         Preconditions.checkArgument(progress >= 0.0 && progress <= 1.0, "Progress must be between 0.0 and 1.0 (%s)", progress);
-        handle.setPercent((float) progress);
+        handle.setProgress((float) progress);
     }
 
     @Override
     public double getProgress() {
-        return handle.getPercent();
+        return handle.getProgress();
     }
 
     @Override
     public void addPlayer(Player player) {
         Preconditions.checkArgument(player != null, "player == null");
-        Preconditions.checkArgument(((CraftPlayer) player).getHandle().networkHandler != null, "player is not fully connected (wait for PlayerJoinEvent)");
+        Preconditions.checkArgument(((CraftPlayer) player).getHandle().connection != null, "player is not fully connected (wait for PlayerJoinEvent)");
         handle.addPlayer(((CraftPlayer) player).getHandle());
     }
 
@@ -185,7 +183,7 @@ public class CardboardBossBar implements BossBar, KeyedBossBar {
     @Override
     public List<Player> getPlayers() {
         ImmutableList.Builder<Player> players = ImmutableList.builder();
-        for (ServerPlayerEntity p : handle.getPlayers())
+        for (ServerPlayer p : handle.getPlayers())
             players.add((Player)((IMixinEntity)p).getBukkitEntity());
         return players.build();
     }
@@ -226,7 +224,7 @@ public class CardboardBossBar implements BossBar, KeyedBossBar {
         }
     }
 
-    public ServerBossBar getHandle() {
+    public ServerBossEvent getHandle() {
         return handle;
     }
 

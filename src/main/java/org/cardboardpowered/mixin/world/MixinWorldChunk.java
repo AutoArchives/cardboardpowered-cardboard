@@ -1,5 +1,6 @@
 package org.cardboardpowered.mixin.world;
 
+import net.minecraft.world.level.chunk.LevelChunk;
 import org.bukkit.Chunk;
 import org.cardboardpowered.impl.world.CardboardChunk;
 import org.spongepowered.asm.mixin.Mixin;
@@ -9,11 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.cardboardpowered.interfaces.IWorldChunk;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.WorldChunk;
-
-@Mixin(WorldChunk.class)
+@Mixin(LevelChunk.class)
 public class MixinWorldChunk implements IWorldChunk {
 
     private Chunk bukkit;
@@ -35,7 +32,7 @@ public class MixinWorldChunk implements IWorldChunk {
     
     public void cardboard_set() {
         if (null == bukkit) {
-            this.bukkit = new CardboardChunk((WorldChunk)(Object)this);
+            this.bukkit = new CardboardChunk((LevelChunk)(Object)this);
         }
     }
 

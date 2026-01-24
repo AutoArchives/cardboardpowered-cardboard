@@ -10,8 +10,8 @@ import java.util.Optional;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.minecraft.text.RawFilteredPair;
-import net.minecraft.util.JsonHelper;
+import net.minecraft.server.network.Filterable;
+import net.minecraft.util.GsonHelper;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -19,11 +19,11 @@ import static io.papermc.paper.adventure.PaperAdventure.asAdventure;
 import static io.papermc.paper.adventure.PaperAdventure.asVanilla;
 
 public record PaperWrittenBookContent(
-    net.minecraft.component.type.WrittenBookContentComponent impl
-) implements WrittenBookContent, Handleable<net.minecraft.component.type.WrittenBookContentComponent> {
+    net.minecraft.world.item.component.WrittenBookContent impl
+) implements WrittenBookContent, Handleable<net.minecraft.world.item.component.WrittenBookContent> {
 
     @Override
-    public net.minecraft.component.type.WrittenBookContentComponent getHandle() {
+    public net.minecraft.world.item.component.WrittenBookContent getHandle() {
         return this.impl;
     }
 
@@ -57,8 +57,8 @@ public record PaperWrittenBookContent(
 
     static final class BuilderImpl implements WrittenBookContent.Builder {
 
-        private final List<RawFilteredPair<net.minecraft.text.Text>> pages = new ObjectArrayList<>();
-        private RawFilteredPair<String> title;
+        private final List<Filterable<net.minecraft.network.chat.Component>> pages = new ObjectArrayList<>();
+        private Filterable<String> title;
         private String author;
         private int generation = 0;
         private boolean resolved = false;
@@ -68,25 +68,25 @@ public record PaperWrittenBookContent(
             if (title.filtered() != null) {
                 validateTitle(title.filtered());
             }
-            this.title = new RawFilteredPair<>(title.raw(), Optional.ofNullable(title.filtered()));
+            this.title = new Filterable<>(title.raw(), Optional.ofNullable(title.filtered()));
             this.author = author;
         }
 
         private static void validateTitle(final String title) {
             Preconditions.checkArgument(
-                title.length() <= net.minecraft.component.type.WrittenBookContentComponent.MAX_TITLE_LENGTH,
+                title.length() <= net.minecraft.world.item.component.WrittenBookContent.TITLE_MAX_LENGTH,
                 "Title cannot be longer than %s, was %s",
-                net.minecraft.component.type.WrittenBookContentComponent.MAX_TITLE_LENGTH,
+                net.minecraft.world.item.component.WrittenBookContent.TITLE_MAX_LENGTH,
                 title.length()
             );
         }
 
         private static void validatePageLength(final Component page) {
-            final String flagPage = JsonHelper.toSortedString(GsonComponentSerializer.gson().serializeToTree(page));
+            final String flagPage = GsonHelper.toStableString(GsonComponentSerializer.gson().serializeToTree(page));
             Preconditions.checkArgument(
-                flagPage.length() <= net.minecraft.component.type.WrittenBookContentComponent.MAX_SERIALIZED_PAGE_LENGTH,
+                flagPage.length() <= net.minecraft.world.item.component.WrittenBookContent.PAGE_LENGTH,
                 "Cannot have page length more than %s, had %s",
-                net.minecraft.component.type.WrittenBookContentComponent.MAX_SERIALIZED_PAGE_LENGTH,
+                net.minecraft.world.item.component.WrittenBookContent.PAGE_LENGTH,
                 flagPage.length()
             );
         }
@@ -94,7 +94,7 @@ public record PaperWrittenBookContent(
         @Override
         public WrittenBookContent.Builder title(final String title) {
             validateTitle(title);
-            this.title = RawFilteredPair.of(title);
+            this.title = Filterable.passThrough(title);
             return this;
         }
 
@@ -104,7 +104,7 @@ public record PaperWrittenBookContent(
             if (title.filtered() != null) {
                 validateTitle(title.filtered());
             }
-            this.title = new RawFilteredPair<>(title.raw(), Optional.ofNullable(title.filtered()));
+            this.title = new Filterable<>(title.raw(), Optional.ofNullable(title.filtered()));
             return this;
         }
 
@@ -117,9 +117,9 @@ public record PaperWrittenBookContent(
         @Override
         public WrittenBookContent.Builder generation(final int generation) {
             Preconditions.checkArgument(
-                generation >= 0 && generation <= net.minecraft.component.type.WrittenBookContentComponent.MAX_GENERATION,
+                generation >= 0 && generation <= net.minecraft.world.item.component.WrittenBookContent.MAX_GENERATION,
                 "generation must be between %s and %s, was %s",
-                0, net.minecraft.component.type.WrittenBookContentComponent.MAX_GENERATION,
+                0, net.minecraft.world.item.component.WrittenBookContent.MAX_GENERATION,
                 generation
             );
             this.generation = generation;
@@ -136,7 +136,7 @@ public record PaperWrittenBookContent(
         public WrittenBookContent.Builder addPage(final ComponentLike page) {
             final Component component = page.asComponent();
             validatePageLength(component);
-            this.pages.add(RawFilteredPair.of(asVanilla(component)));
+            this.pages.add(Filterable.passThrough(asVanilla(component)));
             return this;
         }
 
@@ -145,7 +145,7 @@ public record PaperWrittenBookContent(
             for (final ComponentLike page : pages) {
                 final Component component = page.asComponent();
                 validatePageLength(component);
-                this.pages.add(RawFilteredPair.of(asVanilla(component)));
+                this.pages.add(Filterable.passThrough(asVanilla(component)));
             }
             return this;
         }
@@ -159,7 +159,7 @@ public record PaperWrittenBookContent(
                 filtered = page.filtered().asComponent();
                 validatePageLength(filtered);
             }
-            this.pages.add(new RawFilteredPair<>(asVanilla(raw), Optional.ofNullable(filtered).map(PaperAdventure::asVanilla)));
+            this.pages.add(new Filterable<>(asVanilla(raw), Optional.ofNullable(filtered).map(PaperAdventure::asVanilla)));
             return this;
         }
 
@@ -171,7 +171,7 @@ public record PaperWrittenBookContent(
 
         @Override
         public WrittenBookContent build() {
-            return new PaperWrittenBookContent(new net.minecraft.component.type.WrittenBookContentComponent(
+            return new PaperWrittenBookContent(new net.minecraft.world.item.component.WrittenBookContent(
                 this.title,
                 this.author,
                 this.generation,

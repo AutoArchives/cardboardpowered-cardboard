@@ -13,17 +13,16 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import java.util.Optional;
 import net.kyori.adventure.key.Key;
-import net.minecraft.component.type.BlocksAttacksComponent;
-import net.minecraft.sound.SoundEvent;
+import net.minecraft.sounds.SoundEvent;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.damage.DamageType;
 import org.jspecify.annotations.Nullable;
 
-public record PaperBlocksAttacks(BlocksAttacksComponent impl) implements BlocksAttacks,
-Handleable<BlocksAttacksComponent>
+public record PaperBlocksAttacks(net.minecraft.world.item.component.BlocksAttacks impl) implements BlocksAttacks,
+Handleable<net.minecraft.world.item.component.BlocksAttacks>
 {
     @Override
-    public BlocksAttacksComponent getHandle() {
+    public net.minecraft.world.item.component.BlocksAttacks getHandle() {
         return this.impl;
     }
 
@@ -50,11 +49,11 @@ Handleable<BlocksAttacksComponent>
     }
 
     public @Nullable Key blockSound() {
-        return this.impl.blockSound().map(holder -> PaperAdventure.asAdventure(((SoundEvent)holder.value()).id())).orElse(null);
+        return this.impl.blockSound().map(holder -> PaperAdventure.asAdventure(((SoundEvent)holder.value()).location())).orElse(null);
     }
 
     public @Nullable Key disableSound() {
-        return this.impl.disableSound().map(holder -> PaperAdventure.asAdventure(((SoundEvent)holder.value()).id())).orElse(null);
+        return this.impl.disableSound().map(holder -> PaperAdventure.asAdventure(((SoundEvent)holder.value()).location())).orElse(null);
     }
 
     static final class BuilderImpl
@@ -62,7 +61,7 @@ Handleable<BlocksAttacksComponent>
         private float blockDelaySeconds;
         private float disableCooldownScale = 1.0f;
         private List<DamageReduction> damageReductions = new ObjectArrayList();
-        private ItemDamageFunction itemDamage = new PaperItemDamageFunction(BlocksAttacksComponent.ItemDamage.DEFAULT);
+        private ItemDamageFunction itemDamage = new PaperItemDamageFunction(net.minecraft.world.item.component.BlocksAttacks.ItemDamageFunction.DEFAULT);
         private @Nullable TagKey<DamageType> bypassedBy;
         private @Nullable Key blockSound;
         private @Nullable Key disableSound;
@@ -113,7 +112,7 @@ Handleable<BlocksAttacksComponent>
         }
 
         public BlocksAttacks build() {
-            return new PaperBlocksAttacks(new BlocksAttacksComponent(this.blockDelaySeconds, this.disableCooldownScale, this.damageReductions.stream().map(damageReduction -> ((PaperDamageReduction)damageReduction).getHandle()).toList(), ((PaperItemDamageFunction)this.itemDamage).getHandle(), Optional.ofNullable(this.bypassedBy).map(PaperRegistries::toNms), Optional.ofNullable(this.blockSound).map(PaperAdventure::resolveSound), Optional.ofNullable(this.disableSound).map(PaperAdventure::resolveSound)));
+            return new PaperBlocksAttacks(new net.minecraft.world.item.component.BlocksAttacks(this.blockDelaySeconds, this.disableCooldownScale, this.damageReductions.stream().map(damageReduction -> ((PaperDamageReduction)damageReduction).getHandle()).toList(), ((PaperItemDamageFunction)this.itemDamage).getHandle(), Optional.ofNullable(this.bypassedBy).map(PaperRegistries::toNms), Optional.ofNullable(this.blockSound).map(PaperAdventure::resolveSound), Optional.ofNullable(this.disableSound).map(PaperAdventure::resolveSound)));
         }
     }
 }

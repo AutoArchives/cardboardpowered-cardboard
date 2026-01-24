@@ -16,27 +16,28 @@ import com.mojang.serialization.Lifecycle;
 
 import io.papermc.paper.registry.PaperRegistryAccess;
 import io.papermc.paper.registry.data.util.Conversions;
-import net.minecraft.registry.entry.RegistryEntryInfo;
-import net.minecraft.util.Identifier;
-import net.minecraft.Bootstrap;
-import net.minecraft.registry.*;
+import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.BuiltInRegistries.RegistryBootstrap;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.Bootstrap;
 
-import net.minecraft.registry.Registries.Initializer;
-
-@Mixin(Registries.class)
+@Mixin(BuiltInRegistries.class)
 public class MixinRegistries {
 	
 	@Shadow
-    private static Map<Identifier, Supplier<?>> DEFAULT_ENTRIES;
+    private static Map<Identifier, Supplier<?>> LOADERS;
 
 	@Shadow
-    private static MutableRegistry<MutableRegistry<?>> ROOT;
+    private static WritableRegistry<WritableRegistry<?>> WRITABLE_REGISTRY;
 	
-	@Inject(at = @At("HEAD"), method = "Lnet/minecraft/registry/Registries;create(Lnet/minecraft/registry/RegistryKey;Lnet/minecraft/registry/MutableRegistry;Lnet/minecraft/registry/Registries$Initializer;)Lnet/minecraft/registry/MutableRegistry;")
-	private static void testtt(RegistryKey key, MutableRegistry registry, Initializer initializer, CallbackInfoReturnable ci) {
+	@Inject(at = @At("HEAD"), method = "internalRegister(Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/core/WritableRegistry;Lnet/minecraft/core/registries/BuiltInRegistries$RegistryBootstrap;)Lnet/minecraft/core/WritableRegistry;")
+	private static void testtt(ResourceKey key, WritableRegistry registry, RegistryBootstrap initializer, CallbackInfoReturnable ci) {
 		
-		Bootstrap.ensureBootstrapped(() -> "registry " + key.getValue());
-		PaperRegistryAccess.instance().registerRegistry(registry.getKey(), registry);
+		Bootstrap.checkBootstrapCalled(() -> "registry " + key.identifier());
+		PaperRegistryAccess.instance().registerRegistry(registry.key(), registry);
 	}
 
 	/**
@@ -44,17 +45,17 @@ public class MixinRegistries {
 	 * @reason PaperRegistryAccess
 	 */
 	@Overwrite
-	public static void bootstrap() {
+	public static void bootStrap() {
 		cardboard$bootStrap(() -> {});
     }
 
 
     private static void cardboard$bootStrap(Runnable runnable) {
-    	Registries.REGISTRIES.freeze();
-        init();
+    	BuiltInRegistries.REGISTRY.freeze();
+        createContents();
         runnable.run();
-        freezeRegistries();
-        validate(Registries.REGISTRIES);
+        freeze();
+        validate(BuiltInRegistries.REGISTRY);
     }
     
     //@Shadow
@@ -77,7 +78,7 @@ public class MixinRegistries {
 	 * @reason PaperRegistryAccess
 	 */
     @Overwrite
-    public static void init() {
+    public static void createContents() {
     	try {
 			Class.forName(org.bukkit.Registry.class.getName());
 		} catch (ClassNotFoundException e) {
@@ -85,13 +86,13 @@ public class MixinRegistries {
 			throw new RuntimeException(e);
 		}
 
-    	DEFAULT_ENTRIES.forEach((id, initializer) -> {
+    	LOADERS.forEach((id, initializer) -> {
             if (initializer.get() == null) {
                 CardboardMod.LOGGER.warning("Unable to bootstrap registry: " + id);
             }
 
             io.papermc.paper.registry.PaperRegistryAccess.instance().lockReferenceHolders(
-            		RegistryKey.ofRegistry(id)
+            		ResourceKey.createRegistryKey(id)
             	); // Paper - lock reference holder creation
             
         });
@@ -99,7 +100,7 @@ public class MixinRegistries {
     }
     
     @Shadow
-    private static void freezeRegistries() {
+    private static void freeze() {
        /*
         * TODO: PaperRegistryListenerManager
     	REGISTRIES.freeze();

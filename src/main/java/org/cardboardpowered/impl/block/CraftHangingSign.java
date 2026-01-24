@@ -1,6 +1,6 @@
 package org.cardboardpowered.impl.block;
 
-import net.minecraft.block.entity.HangingSignBlockEntity;
+import net.minecraft.world.level.block.entity.HangingSignBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.HangingSign;

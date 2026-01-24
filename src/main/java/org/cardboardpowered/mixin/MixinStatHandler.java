@@ -22,14 +22,12 @@ import org.bukkit.event.Cancellable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-
+import net.minecraft.stats.Stat;
+import net.minecraft.stats.StatsCounter;
+import net.minecraft.world.entity.player.Player;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.stat.Stat;
-import net.minecraft.stat.StatHandler;
-
-@Mixin(value = StatHandler.class, priority = 900)
+@Mixin(value = StatsCounter.class, priority = 900)
 public class MixinStatHandler {
 
     /**
@@ -37,20 +35,20 @@ public class MixinStatHandler {
      * @author .
      */
     @Overwrite
-    public void increaseStat(PlayerEntity player, Stat<?> statistic, int i) {
-        int j = (int) Math.min((long) this.getStat(statistic) + (long) i, 2147483647L);
+    public void increment(Player player, Stat<?> statistic, int i) {
+        int j = (int) Math.min((long) this.getValue(statistic) + (long) i, 2147483647L);
 
-        Cancellable cancellable = CraftEventFactory.handleStatisticsIncrease(player, statistic, this.getStat(statistic), j);
+        Cancellable cancellable = CraftEventFactory.handleStatisticsIncrease(player, statistic, this.getValue(statistic), j);
         if (cancellable != null && cancellable.isCancelled()) return;
-        this.setStat(player, statistic, j);
+        this.setValue(player, statistic, j);
     }
 
     @Shadow
-    public void setStat(PlayerEntity player, Stat<?> statistic, int i) {
+    public void setValue(Player player, Stat<?> statistic, int i) {
     }
 
     @Shadow
-    public int getStat(Stat<?> statistic) {
+    public int getValue(Stat<?> statistic) {
         return 0;
     }
 

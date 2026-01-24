@@ -1,10 +1,10 @@
 package org.cardboardpowered.interfaces;
 
-import net.minecraft.util.context.ContextParameter;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.context.ContextKey;
 
 public interface IMixinLootContextParameters {
 
-	ContextParameter<Integer> LOOTING_MOD = new ContextParameter<>(Identifier.of("bukkit:looting_mod"));
+	ContextKey<Integer> LOOTING_MOD = new ContextKey<>(Identifier.parse("bukkit:looting_mod"));
 
 }

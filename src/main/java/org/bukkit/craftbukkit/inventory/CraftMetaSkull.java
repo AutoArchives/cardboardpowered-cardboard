@@ -16,19 +16,18 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executor;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ProfileComponent;
-import net.minecraft.entity.player.SkinTextures;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Util;
-import net.minecraft.util.Uuids;
-
+import net.minecraft.world.entity.player.PlayerSkin;
+import net.minecraft.world.item.component.ResolvableProfile;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -55,12 +54,12 @@ implements SkullMeta {
     				Material.ZOMBIE_HEAD, Material.ZOMBIE_WALL_HEAD
     			}
     	);
-    static final CraftMetaItem.ItemMetaKeyType<ProfileComponent> SKULL_PROFILE = new CraftMetaItem.ItemMetaKeyType<ProfileComponent>(DataComponentTypes.PROFILE, "SkullProfile");
+    static final CraftMetaItem.ItemMetaKeyType<ResolvableProfile> SKULL_PROFILE = new CraftMetaItem.ItemMetaKeyType<ResolvableProfile>(DataComponents.PROFILE, "SkullProfile");
     static final CraftMetaItem.ItemMetaKey SKULL_OWNER = new CraftMetaItem.ItemMetaKey("skull-owner");
     static final CraftMetaItem.ItemMetaKey BLOCK_ENTITY_TAG = new CraftMetaItem.ItemMetaKey("BlockEntityTag");
-    static final CraftMetaItem.ItemMetaKeyType<Identifier> NOTE_BLOCK_SOUND = new CraftMetaItem.ItemMetaKeyType<Identifier>(DataComponentTypes.NOTE_BLOCK_SOUND, "note_block_sound");
+    static final CraftMetaItem.ItemMetaKeyType<Identifier> NOTE_BLOCK_SOUND = new CraftMetaItem.ItemMetaKeyType<Identifier>(DataComponents.NOTE_BLOCK_SOUND, "note_block_sound");
     static final int MAX_OWNER_LENGTH = 16;
-    private ProfileComponent profile;
+    private ResolvableProfile profile;
     private Identifier noteBlockSound;
 
     CraftMetaSkull(CraftMetaItem meta) {
@@ -73,7 +72,7 @@ implements SkullMeta {
         this.noteBlockSound = skullMeta.noteBlockSound;
     }
 
-    CraftMetaSkull(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
+    CraftMetaSkull(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         getOrEmpty(tag, SKULL_PROFILE).ifPresent(this::setProfile);
         getOrEmpty(tag, NOTE_BLOCK_SOUND).ifPresent(noteBlockSound -> this.noteBlockSound = noteBlockSound);
@@ -102,18 +101,18 @@ implements SkullMeta {
     }
     
     @Override
-    void deserializeInternal(NbtCompound tag, Object context) {
+    void deserializeInternal(CompoundTag tag, Object context) {
         super.deserializeInternal(tag, context);
         tag.getCompound(CraftMetaSkull.SKULL_PROFILE.NBT).ifPresent(skullTag -> {
-            skullTag.get("Id", Uuids.STRING_CODEC).ifPresent(legacyId -> skullTag.put("Id", Uuids.INT_STREAM_CODEC, legacyId));
-            ProfileComponent.CODEC.parse(NbtOps.INSTANCE, skullTag).result().ifPresent(this::setProfile);
+            skullTag.read("Id", UUIDUtil.STRING_CODEC).ifPresent(legacyId -> skullTag.store("Id", UUIDUtil.CODEC, legacyId));
+            ResolvableProfile.CODEC.parse(NbtOps.INSTANCE, skullTag).result().ifPresent(this::setProfile);
         });
         tag.getCompound(CraftMetaSkull.BLOCK_ENTITY_TAG.NBT).flatMap(blockEntityTag -> blockEntityTag.copy().getString(CraftMetaSkull.NOTE_BLOCK_SOUND.NBT)).ifPresent(noteBlockSound -> {
             this.noteBlockSound = Identifier.tryParse(noteBlockSound);
         });
     }
     
-    private void setProfile(ProfileComponent profile) {
+    private void setProfile(ResolvableProfile profile) {
     	this.profile = profile;
     	// this.profile = profile;
     }
@@ -188,7 +187,7 @@ implements SkullMeta {
     }
 
     public String getOwner() {
-    	return this.hasOwner() ? this.profile.getName().orElse(null) : null;
+    	return this.hasOwner() ? this.profile.name().orElse(null) : null;
         // return this.hasOwner() ? this.profile.name() : null;
     }
 
@@ -205,7 +204,7 @@ implements SkullMeta {
 
     public OfflinePlayer getOwningPlayer() {
     	if (this.hasOwner()) {
-           GameProfile gameProfile = this.profile.getGameProfile();
+           GameProfile gameProfile = this.profile.partialProfile();
            if (Objects.equals(gameProfile.id(), Util.NIL_UUID)) {
               return Bukkit.getOfflinePlayer(gameProfile.id());
            }
@@ -224,11 +223,11 @@ implements SkullMeta {
             if (name == null) {
                this.setProfile(null);
             } else {
-               ServerPlayerEntity player = CraftServer.server.getPlayerManager().getPlayer(name);
+               ServerPlayer player = CraftServer.server.getPlayerList().getPlayerByName(name);
                this.setProfile(
-                  (ProfileComponent)(player != null
-                     ? ProfileComponent.ofStatic(player.getGameProfile())
-                     : new ProfileComponent.Dynamic(Either.left(name), SkinTextures.SkinOverride.EMPTY))
+                  (ResolvableProfile)(player != null
+                     ? ResolvableProfile.createResolved(player.getGameProfile())
+                     : new ResolvableProfile.Dynamic(Either.left(name), PlayerSkin.Patch.EMPTY))
                );
             }
 
@@ -240,9 +239,9 @@ implements SkullMeta {
     	if (owner == null) {
             this.setProfile(null);
          } else if (owner instanceof CraftPlayer craftPlayer) {
-            this.setProfile(ProfileComponent.ofStatic(craftPlayer.getProfile()));
+            this.setProfile(ResolvableProfile.createResolved(craftPlayer.getProfile()));
          } else {
-            this.setProfile(new ProfileComponent.Dynamic(Either.right(owner.getUniqueId()), SkinTextures.SkinOverride.EMPTY));
+            this.setProfile(new ResolvableProfile.Dynamic(Either.right(owner.getUniqueId()), PlayerSkin.Patch.EMPTY));
          }
 
          return true;

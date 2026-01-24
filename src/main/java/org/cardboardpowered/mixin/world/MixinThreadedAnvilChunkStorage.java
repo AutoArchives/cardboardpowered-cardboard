@@ -6,18 +6,18 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.cardboardpowered.interfaces.IMixinThreadedAnvilChunkStorage;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
-import net.minecraft.server.world.ChunkHolder;
-import net.minecraft.server.world.ServerChunkLoadingManager;
+import net.minecraft.server.level.ChunkHolder;
+import net.minecraft.server.level.ChunkMap;
 
-@Mixin(ServerChunkLoadingManager.class)
+@Mixin(ChunkMap.class)
 public class MixinThreadedAnvilChunkStorage implements IMixinThreadedAnvilChunkStorage {
 
     @Shadow
-    public Long2ObjectLinkedOpenHashMap<ChunkHolder> chunkHolders;
+    public Long2ObjectLinkedOpenHashMap<ChunkHolder> visibleChunkMap;
 
     @Override
     public Long2ObjectLinkedOpenHashMap<ChunkHolder> getChunkHoldersBF() {
-        return chunkHolders;
+        return visibleChunkMap;
     }
 
 }

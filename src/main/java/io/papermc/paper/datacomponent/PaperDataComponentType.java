@@ -6,10 +6,9 @@ import io.papermc.paper.datacomponent.DataComponentType;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.component.ComponentType;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
@@ -18,29 +17,29 @@ import org.jspecify.annotations.Nullable;
 
 public abstract class PaperDataComponentType<T, NMS>
 implements DataComponentType,
-Handleable<ComponentType<NMS>> {
+Handleable<net.minecraft.core.component.DataComponentType<NMS>> {
     private final NamespacedKey key;
-    private final ComponentType<NMS> type;
+    private final net.minecraft.core.component.DataComponentType<NMS> type;
     private final DataComponentAdapter<NMS, T> adapter;
 
-    public static <T> ComponentType<T> bukkitToMinecraft(DataComponentType type) {
-        return (ComponentType)CraftRegistry.bukkitToMinecraft(type);
+    public static <T> net.minecraft.core.component.DataComponentType<T> bukkitToMinecraft(DataComponentType type) {
+        return (net.minecraft.core.component.DataComponentType)CraftRegistry.bukkitToMinecraft(type);
     }
 
-    public static DataComponentType minecraftToBukkit(ComponentType<?> type) {
-        return (DataComponentType)CraftRegistry.minecraftToBukkit(type, RegistryKeys.DATA_COMPONENT_TYPE);
+    public static DataComponentType minecraftToBukkit(net.minecraft.core.component.DataComponentType<?> type) {
+        return (DataComponentType)CraftRegistry.minecraftToBukkit(type, Registries.DATA_COMPONENT_TYPE);
     }
 
-    public static Set<DataComponentType> minecraftToBukkit(Set<ComponentType<?>> nmsTypes) {
+    public static Set<DataComponentType> minecraftToBukkit(Set<net.minecraft.core.component.DataComponentType<?>> nmsTypes) {
         HashSet<DataComponentType> types = new HashSet<DataComponentType>(nmsTypes.size());
-        for (ComponentType<?> nmsType : nmsTypes) {
+        for (net.minecraft.core.component.DataComponentType<?> nmsType : nmsTypes) {
             types.add(PaperDataComponentType.minecraftToBukkit(nmsType));
         }
         return Collections.unmodifiableSet(types);
     }
 
-    public static <B, M> @Nullable B convertDataComponentValue(final ComponentMap map, final PaperDataComponentType.ValuedImpl<B, M> type) {
-        final net.minecraft.component.ComponentType<M> nms = bukkitToMinecraft(type);
+    public static <B, M> @Nullable B convertDataComponentValue(final DataComponentMap map, final PaperDataComponentType.ValuedImpl<B, M> type) {
+        final net.minecraft.core.component.DataComponentType<M> nms = bukkitToMinecraft(type);
         final M nmsValue = map.get(nms);
         if (nmsValue == null) {
             return null;
@@ -48,7 +47,7 @@ Handleable<ComponentType<NMS>> {
         return type.getAdapter().fromVanilla(nmsValue);
     }
 
-    public PaperDataComponentType(NamespacedKey key, ComponentType<NMS> type, DataComponentAdapter<NMS, T> adapter) {
+    public PaperDataComponentType(NamespacedKey key, net.minecraft.core.component.DataComponentType<NMS> type, DataComponentAdapter<NMS, T> adapter) {
         this.key = key;
         this.type = type;
         this.adapter = adapter;
@@ -59,7 +58,7 @@ Handleable<ComponentType<NMS>> {
     }
 
     public boolean isPersistent() {
-        return !this.type.shouldSkipSerialization();
+        return !this.type.isTransient();
     }
 
     public DataComponentAdapter<NMS, T> getAdapter() {
@@ -67,12 +66,12 @@ Handleable<ComponentType<NMS>> {
     }
 
     @Override
-    public ComponentType<NMS> getHandle() {
+    public net.minecraft.core.component.DataComponentType<NMS> getHandle() {
         return this.type;
     }
 
-    public static <NMS> DataComponentType of(NamespacedKey key, ComponentType<NMS> type) {
-        DataComponentAdapter<?, ?> adapter = DataComponentAdapters.ADAPTERS.get(Registries.DATA_COMPONENT_TYPE.getKey(type).orElseThrow());
+    public static <NMS> DataComponentType of(NamespacedKey key, net.minecraft.core.component.DataComponentType<NMS> type) {
+        DataComponentAdapter<?, ?> adapter = DataComponentAdapters.ADAPTERS.get(BuiltInRegistries.DATA_COMPONENT_TYPE.getResourceKey(type).orElseThrow());
         if (adapter == null) {
             throw new IllegalArgumentException("No adapter found for " + String.valueOf(key));
         }
@@ -89,7 +88,7 @@ Handleable<ComponentType<NMS>> {
     public static final class ValuedImpl<T, NMS>
     extends PaperDataComponentType<T, NMS>
     implements DataComponentType.Valued<T> {
-        ValuedImpl(NamespacedKey key, ComponentType<NMS> type, DataComponentAdapter<NMS, T> adapter) {
+        ValuedImpl(NamespacedKey key, net.minecraft.core.component.DataComponentType<NMS> type, DataComponentAdapter<NMS, T> adapter) {
             super(key, type, adapter);
         }
     }
@@ -97,7 +96,7 @@ Handleable<ComponentType<NMS>> {
     public static final class NonValuedImpl<T, NMS>
     extends PaperDataComponentType<T, NMS>
     implements DataComponentType.NonValued {
-        NonValuedImpl(NamespacedKey key, ComponentType<NMS> type, DataComponentAdapter<NMS, T> adapter) {
+        NonValuedImpl(NamespacedKey key, net.minecraft.core.component.DataComponentType<NMS> type, DataComponentAdapter<NMS, T> adapter) {
             super(key, type, adapter);
         }
     }
