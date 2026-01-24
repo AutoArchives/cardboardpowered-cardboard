@@ -264,20 +264,21 @@ ext.downloadPaperFile = {
 publishing {
 //	configurations.api.setCanBeResolved(true)
 	// downloadPaperFile()
-    publications {
-        mavenJava(MavenPublication) {
-			groupId = 'io.papermc.paper'
-            artifactId = PAPER_VER_A
-			version = PAPER_VER_B
-			artifact file("repos/tempp/paper-api-" + PAPER_VER_B + ".jar")
-        }
-    }
-    repositories {
-        maven {
-            // change URLs to point to your repos, e.g. http://my.org/repo
-            def releasesRepoUrl = layout.buildDirectory.dir('repos/releases')
-            def snapshotsRepoUrl = layout.buildDirectory.dir('repos/snapshots')
-            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-        }
-    }
+    
+    //publications {
+    //    mavenJava(MavenPublication) {
+	//		groupId = 'io.papermc.paper'
+    //        artifactId = PAPER_VER_A
+	//		version = PAPER_VER_B
+	//		artifact file("repos/tempp/paper-api-" + PAPER_VER_B + ".jar")
+    //    }
+    //}
+    //repositories {
+    //    maven {
+    //        // change URLs to point to your repos, e.g. http://my.org/repo
+    //        def releasesRepoUrl = layout.buildDirectory.dir('repos/releases')
+    //        def snapshotsRepoUrl = layout.buildDirectory.dir('repos/snapshots')
+    //        url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+    //    }
+    //}
 }
