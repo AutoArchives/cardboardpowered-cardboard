@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
-
+import net.minecraft.world.level.storage.loot.LootTable;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.event.world.LootGenerateEvent;
 import org.cardboardpowered.util.MixinInfo;
@@ -12,11 +12,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.loot.LootTable;
-import net.minecraft.loot.context.LootContext;
 
 @MixinInfo(events = {"LootGenerateEvent"})
 @Mixin(LootTable.class)

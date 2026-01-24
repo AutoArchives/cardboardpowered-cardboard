@@ -1,6 +1,5 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.mob.WitchEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -9,13 +8,13 @@ import org.bukkit.inventory.ItemStack;
 
 public class CardboardWitch extends CardboardRaider implements Witch {
 
-    public CardboardWitch(CraftServer server, WitchEntity entity) {
+    public CardboardWitch(CraftServer server, net.minecraft.world.entity.monster.Witch entity) {
         super(server, entity);
     }
 
     @Override
-    public WitchEntity getHandle() {
-        return (WitchEntity) nms;
+    public net.minecraft.world.entity.monster.Witch getHandle() {
+        return (net.minecraft.world.entity.monster.Witch) nms;
     }
 
     @Override

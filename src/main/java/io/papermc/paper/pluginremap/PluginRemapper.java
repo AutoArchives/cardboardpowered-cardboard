@@ -26,8 +26,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.jar.Manifest;
 import java.util.stream.Stream;
-import net.minecraft.util.ThrowableDeliverer;
-import net.minecraft.util.logging.UncaughtExceptionHandler;
+import net.minecraft.DefaultUncaughtExceptionHandlerWithName;
+import net.minecraft.util.ExceptionCollector;
 import net.neoforged.art.api.Renamer;
 import net.neoforged.art.api.SignatureStripperConfig;
 import net.neoforged.art.api.Transformer;
@@ -509,7 +509,7 @@ public final class PluginRemapper {
 	}
 
 	private static List<Path> waitForAll(List<CompletableFuture<Path>> tasks) {
-		ThrowableDeliverer<Exception> collector = new ThrowableDeliverer<>();
+		ExceptionCollector<Exception> collector = new ExceptionCollector<>();
 		List<Path> ret = new ArrayList<>();
 
 		for (CompletableFuture<Path> task : tasks) {
@@ -521,7 +521,7 @@ public final class PluginRemapper {
 		}
 
 		try {
-			collector.deliver();
+			collector.throwIfPresent();
 		} catch (Exception var6) {
 			LOGGER.error("Encountered exception remapping plugins", var6);
 		}
@@ -538,7 +538,7 @@ public final class PluginRemapper {
 				ScalingThreadPool.createUnboundedQueue(),
 				new ThreadFactoryBuilder()
 				.setNameFormat("Paper Plugin Remapper Thread - %1$d")
-				.setUncaughtExceptionHandler(new UncaughtExceptionHandler(LOGGER))
+				.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandlerWithName(LOGGER))
 				.build(),
 				ScalingThreadPool.defaultReEnqueuePolicy()
 				);

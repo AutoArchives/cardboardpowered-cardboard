@@ -24,24 +24,22 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.player.Player;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.player.PlayerEntity;
-
-@Mixin(AnimalEntity.class)
+@Mixin(Animal.class)
 public class MixinAnimalEntity {
 
     @Shadow
-    public int loveTicks;
+    public int inLove;
 
-    @Inject(at = @At("HEAD"), method = "lovePlayer", cancellable = true)
-    public void callEnterLoveModeEvent(PlayerEntity entityhuman, CallbackInfo ci) {
-        EntityEnterLoveModeEvent entityEnterLoveModeEvent = CraftEventFactory.callEntityEnterLoveModeEvent(entityhuman, (AnimalEntity)(Object)this, 600);
+    @Inject(at = @At("HEAD"), method = "setInLove", cancellable = true)
+    public void callEnterLoveModeEvent(Player entityhuman, CallbackInfo ci) {
+        EntityEnterLoveModeEvent entityEnterLoveModeEvent = CraftEventFactory.callEntityEnterLoveModeEvent(entityhuman, (Animal)(Object)this, 600);
         if (entityEnterLoveModeEvent.isCancelled())
             ci.cancel();
-        this.loveTicks = entityEnterLoveModeEvent.getTicksInLove();
+        this.inLove = entityEnterLoveModeEvent.getTicksInLove();
     }
 
 }

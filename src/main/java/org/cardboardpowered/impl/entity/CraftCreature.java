@@ -1,7 +1,6 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.mob.PathAwareEntity;
-
+import net.minecraft.world.entity.PathfinderMob;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Creature;
@@ -10,13 +9,13 @@ import org.jetbrains.annotations.NotNull;
 
 public class CraftCreature extends CraftMob implements Creature {
 
-    public CraftCreature(CraftServer server, PathAwareEntity entity) {
+    public CraftCreature(CraftServer server, PathfinderMob entity) {
         super(server, entity);
     }
 
     @Override
-    public PathAwareEntity getHandle() {
-        return (PathAwareEntity) nms;
+    public PathfinderMob getHandle() {
+        return (PathfinderMob) nms;
     }
 
     @Override

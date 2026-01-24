@@ -1,9 +1,8 @@
 package org.bukkit.craftbukkit;
 
 import java.util.Locale;
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.util.Hand;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EquipmentSlot;
 import org.bukkit.inventory.EquipmentSlotGroup;
 
 public class CraftEquipmentSlot {
@@ -20,28 +19,28 @@ public class CraftEquipmentSlot {
         return enums[nms.ordinal()];
     }
 
-    public static EquipmentSlotGroup getSlot(AttributeModifierSlot nms) {
-        return EquipmentSlotGroup.getByName((String)nms.asString());
+    public static EquipmentSlotGroup getSlot(net.minecraft.world.entity.EquipmentSlotGroup nms) {
+        return EquipmentSlotGroup.getByName((String)nms.getSerializedName());
     }
 
     public static EquipmentSlot getNMS(org.bukkit.inventory.EquipmentSlot slot) {
         return slots[slot.ordinal()];
     }
 
-    public static AttributeModifierSlot getNMSGroup(EquipmentSlotGroup slot) {
-        return AttributeModifierSlot.valueOf(slot.toString().toUpperCase(Locale.ROOT));
+    public static net.minecraft.world.entity.EquipmentSlotGroup getNMSGroup(EquipmentSlotGroup slot) {
+        return net.minecraft.world.entity.EquipmentSlotGroup.valueOf(slot.toString().toUpperCase(Locale.ROOT));
     }
 
-    public static org.bukkit.inventory.EquipmentSlot getHand(Hand enumhand) {
-        return enumhand == Hand.MAIN_HAND ? org.bukkit.inventory.EquipmentSlot.HAND : org.bukkit.inventory.EquipmentSlot.OFF_HAND;
+    public static org.bukkit.inventory.EquipmentSlot getHand(InteractionHand enumhand) {
+        return enumhand == InteractionHand.MAIN_HAND ? org.bukkit.inventory.EquipmentSlot.HAND : org.bukkit.inventory.EquipmentSlot.OFF_HAND;
     }
 
-    public static Hand getHand(org.bukkit.inventory.EquipmentSlot hand) {
+    public static InteractionHand getHand(org.bukkit.inventory.EquipmentSlot hand) {
         if (hand == org.bukkit.inventory.EquipmentSlot.HAND) {
-            return Hand.MAIN_HAND;
+            return InteractionHand.MAIN_HAND;
         }
         if (hand == org.bukkit.inventory.EquipmentSlot.OFF_HAND) {
-            return Hand.OFF_HAND;
+            return InteractionHand.OFF_HAND;
         }
         throw new IllegalArgumentException("EquipmentSlot." + String.valueOf(hand) + " is not a hand");
     }
@@ -56,7 +55,7 @@ public class CraftEquipmentSlot {
         CraftEquipmentSlot.set(org.bukkit.inventory.EquipmentSlot.BODY, EquipmentSlot.BODY);
     }
 
-    public static EquipmentSlotGroup getSlotGroup(AttributeModifierSlot slotGroup) {
-    	return EquipmentSlotGroup.getByName(slotGroup.asString());
+    public static EquipmentSlotGroup getSlotGroup(net.minecraft.world.entity.EquipmentSlotGroup slotGroup) {
+    	return EquipmentSlotGroup.getByName(slotGroup.getSerializedName());
     }
 }

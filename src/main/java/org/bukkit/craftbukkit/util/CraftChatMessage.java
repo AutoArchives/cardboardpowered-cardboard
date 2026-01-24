@@ -9,17 +9,15 @@ import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ChatVersion;
 import net.md_5.bungee.chat.VersionedComponentSerializer;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.ClickEvent.Action;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.PlainTextContent.Literal;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
-import net.minecraft.text.TranslatableTextContent;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.dynamic.Codecs;
-
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.network.chat.contents.PlainTextContents.LiteralContents;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.util.ExtraCodecs;
 import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.CraftServer;
 
@@ -33,22 +31,22 @@ import java.util.regex.Pattern;
 public final class CraftChatMessage {
 
     private static final Pattern LINK_PATTERN = Pattern.compile("((?:(?:https?):\\/\\/)?(?:[-\\w_\\.]{2,}\\.[a-z]{2,4}.*?(?=[\\.\\?!,;:]?(?:[" + String.valueOf(org.bukkit.ChatColor.COLOR_CHAR) + " \\n]|$))))");
-    private static final Map<Character, Formatting> formatMap;
+    private static final Map<Character, ChatFormatting> formatMap;
     private static VersionedComponentSerializer bungeeSerializer;
 
     static {
-        Builder<Character, Formatting> builder = ImmutableMap.builder();
-        for (Formatting format : Formatting.values()) builder.put(Character.toLowerCase(format.toString().charAt(1)), format);
+        Builder<Character, ChatFormatting> builder = ImmutableMap.builder();
+        for (ChatFormatting format : ChatFormatting.values()) builder.put(Character.toLowerCase(format.toString().charAt(1)), format);
         formatMap = builder.build();
         
         bungeeSerializer = VersionedComponentSerializer.forVersion(ChatVersion.V1_21_5);
     }
 
-    public static Formatting getColor(ChatColor color) {
+    public static ChatFormatting getColor(ChatColor color) {
         return formatMap.get(color.getChar());
     }
 
-    public static ChatColor getColor(Formatting format) {
+    public static ChatColor getColor(ChatFormatting format) {
         switch (format) {
             case AQUA:
                 return ChatColor.AQUA;
@@ -104,10 +102,10 @@ public final class CraftChatMessage {
         private static final Pattern INCREMENTAL_PATTERN_KEEP_NEWLINES = Pattern.compile("(" + String.valueOf(org.bukkit.ChatColor.COLOR_CHAR) + "[0-9a-fk-orx])|((?:(?:https?):\\/\\/)?(?:[-\\w_\\.]{2,}\\.[a-z]{2,4}.*?(?=[\\.\\?!,;:]?(?:[" + String.valueOf(org.bukkit.ChatColor.COLOR_CHAR) + " ]|$))))", Pattern.CASE_INSENSITIVE);
         private static final Style RESET = Style.EMPTY;
 
-        private final List<Text> list = new ArrayList<Text>();
-        private Text currentChatComponent = Text.of("");
+        private final List<Component> list = new ArrayList<Component>();
+        private Component currentChatComponent = Component.nullToEmpty("");
         private Style modifier = Style.EMPTY;
-        private final Text[] output;
+        private final Component[] output;
         private int currentIndex;
         private StringBuilder hex;
         private final String message;
@@ -115,7 +113,7 @@ public final class CraftChatMessage {
         private StringMessage(String message, boolean keepNewlines) {
             this.message = message;
             if (message == null) {
-                output = new Text[]{currentChatComponent};
+                output = new Component[]{currentChatComponent};
                 return;
             }
             list.add(currentChatComponent);
@@ -134,7 +132,7 @@ public final class CraftChatMessage {
                 switch (groupId) {
                 case 1:
                     char c = match.toLowerCase(java.util.Locale.ENGLISH).charAt(1);
-                    Formatting format = formatMap.get(c);
+                    ChatFormatting format = formatMap.get(c);
 
                     if (c == 'x') {
                         hex = new StringBuilder("#");
@@ -142,10 +140,10 @@ public final class CraftChatMessage {
                         hex.append(c);
 
                         if (hex.length() == 7) {
-                            modifier = RESET.withColor(TextColor.parse(hex.toString()).result().get());
+                            modifier = RESET.withColor(TextColor.parseColor(hex.toString()).result().get());
                             hex = null;
                         }
-                    } else if (format.isModifier() && format != Formatting.RESET) {
+                    } else if (format.isFormat() && format != ChatFormatting.RESET) {
                         switch (format) {
                         case BOLD:
                             modifier = modifier.withBold(Boolean.TRUE);
@@ -172,7 +170,7 @@ public final class CraftChatMessage {
                 case 2:
                     if (!(match.startsWith("http://") || match.startsWith("https://"))) match = "http://" + match;
                     // modifier = modifier.withClickEvent(new ClickEvent(Action.OPEN_URL, match));
-                    Codecs.URI.parse(JavaOps.INSTANCE, match).ifSuccess(uri -> {
+                    ExtraCodecs.UNTRUSTED_URI.parse(JavaOps.INSTANCE, match).ifSuccess(uri -> {
                         this.modifier = this.modifier.withClickEvent(new ClickEvent.OpenUrl(uri));
                     });
                     this.appendNewComponent(matcher.end(groupId));
@@ -187,83 +185,83 @@ public final class CraftChatMessage {
                 currentIndex = matcher.end(groupId);
             }
             if (currentIndex < message.length() || needsAdd) appendNewComponent(message.length());
-            output = list.toArray(new Text[list.size()]);
+            output = list.toArray(new Component[list.size()]);
         }
 
         private void appendNewComponent(int index) {
-            Text addition = Text.literal(message.substring(currentIndex, index)).setStyle(modifier);
+            Component addition = Component.literal(message.substring(currentIndex, index)).setStyle(modifier);
             currentIndex = index;
             if (currentChatComponent == null) {
-                currentChatComponent = Text.of("");
+                currentChatComponent = Component.nullToEmpty("");
                 list.add(currentChatComponent);
             }
             currentChatComponent.getSiblings().add(addition);
         }
 
-        private Text[] getOutput() {
+        private Component[] getOutput() {
             return output;
         }
     }
 
-    public static Text wrapOrNull(String message) {
-        return (message == null || message.isEmpty()) ? null : Text.of(message);
+    public static Component wrapOrNull(String message) {
+        return (message == null || message.isEmpty()) ? null : Component.nullToEmpty(message);
     }
 
-    public static Text wrapOrEmpty(String message) {
-        return (message == null) ? Text.of("") : Text.of(message);
+    public static Component wrapOrEmpty(String message) {
+        return (message == null) ? Component.nullToEmpty("") : Component.nullToEmpty(message);
     }
 
-    public static Text fromStringOrNull(String message) {
+    public static Component fromStringOrNull(String message) {
         return fromStringOrNull(message, false);
     }
 
-    public static Text fromStringOrNull(String message, boolean keepNewlines) {
+    public static Component fromStringOrNull(String message, boolean keepNewlines) {
         return (message == null || message.isEmpty()) ? null : fromString(message, keepNewlines)[0];
     }
 
-    public static Text[] fromString(String message) {
+    public static Component[] fromString(String message) {
         return fromString(message, false);
     }
 
-    public static Text[] fromString(String message, boolean keepNewlines) {
+    public static Component[] fromString(String message, boolean keepNewlines) {
         return new StringMessage(message, keepNewlines).getOutput();
     }
 
-    public static String fromComponent(Text component) {
-        return fromComponent(component, Formatting.BLACK);
+    public static String fromComponent(Component component) {
+        return fromComponent(component, ChatFormatting.BLACK);
     }
 
-    public static String toJSON(Text component) {
+    public static String toJSON(Component component) {
     	return ((IMixinMinecraftServer)CraftServer.server).IC$to_json(component);
     	
     	
         // return Text.Serialization.toJsonString(component);
     }
     
-    public static ArrayList<Text> list(Text txt) {
-        ArrayList<Text> arr = new ArrayList<>();
+    public static ArrayList<Component> list(Component txt) {
+        ArrayList<Component> arr = new ArrayList<>();
         if (!arr.contains(txt))
             arr.add( txt );
-        for (Text tx : txt.getSiblings()) {
+        for (Component tx : txt.getSiblings()) {
             arr.addAll( list(tx) );
         }
         return arr;
     }
 
-    public static String fromComponent(Text component, Formatting defaultColor) {
+    public static String fromComponent(Component component, ChatFormatting defaultColor) {
         if (component == null) return "";
         StringBuilder out = new StringBuilder();
 
        // IText it = (IText) component;
 
-        for (Text c : list(component)) {
-            Style modi = ((Text)c).getStyle();
+        for (Component c : list(component)) {
+            Style modi = ((Component)c).getStyle();
             out.append(modi.getColor() == null ? defaultColor : modi.getColor());
-            if (modi.isBold()) out.append(Formatting.BOLD);
-            if (modi.isItalic()) out.append(Formatting.ITALIC);
-            if (modi.isUnderlined()) out.append(Formatting.UNDERLINE);
-            if (modi.isStrikethrough()) out.append(Formatting.STRIKETHROUGH);
-            if (modi.isObfuscated()) out.append(Formatting.OBFUSCATED);
+            if (modi.isBold()) out.append(ChatFormatting.BOLD);
+            if (modi.isItalic()) out.append(ChatFormatting.ITALIC);
+            if (modi.isUnderlined()) out.append(ChatFormatting.UNDERLINE);
+            if (modi.isStrikethrough()) out.append(ChatFormatting.STRIKETHROUGH);
+            if (modi.isObfuscated()) out.append(ChatFormatting.OBFUSCATED);
 
             c.visit((x) -> {
                 out.append(x);
@@ -274,37 +272,37 @@ public final class CraftChatMessage {
         return out.toString();//.replaceFirst("^(" + defaultColor + ")*", "");
     }
 
-    public static Text fixComponent(MutableText component) {
+    public static Component fixComponent(MutableComponent component) {
         Matcher matcher = LINK_PATTERN.matcher("");
         return fixComponent(component, matcher);
     }
 
-    private static Text fixComponent(MutableText component, Matcher matcher) {
-        Literal text;
+    private static Component fixComponent(MutableComponent component, Matcher matcher) {
+        LiteralContents text;
         String msg;
-        if (component.getContent() instanceof Literal && matcher.reset(msg = (text = (Literal)component.getContent()).string()).find()) {
+        if (component.getContents() instanceof LiteralContents && matcher.reset(msg = (text = (LiteralContents)component.getContents()).text()).find()) {
             matcher.reset();
             Style modifier = component.getStyle();
-            ArrayList<Text> extras = new ArrayList<Text>();
-            ArrayList<Text> extrasOld = new ArrayList<Text>(component.getSiblings());
-            component = Text.empty();
+            ArrayList<Component> extras = new ArrayList<Component>();
+            ArrayList<Component> extrasOld = new ArrayList<Component>(component.getSiblings());
+            component = Component.empty();
             int pos = 0;
             while (matcher.find()) {
                 Object match = matcher.group();
                 if (!((String)match).startsWith("http://") && !((String)match).startsWith("https://")) {
                     match = "http://" + (String)match;
                 }
-                MutableText prev = Text.literal(msg.substring(pos, matcher.start()));
+                MutableComponent prev = Component.literal(msg.substring(pos, matcher.start()));
                 prev.setStyle(modifier);
                 extras.add(prev);
-                MutableText link = Text.literal(matcher.group());
+                MutableComponent link = Component.literal(matcher.group());
                 
                 
                 Style linkModi = modifier; // .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, (String)match));
                 
                 link.setStyle(linkModi);
                 
-                Codecs.URI.parse(JavaOps.INSTANCE, match).ifSuccess(uri -> {
+                ExtraCodecs.UNTRUSTED_URI.parse(JavaOps.INSTANCE, match).ifSuccess(uri -> {
                 	Style linkModi1 = modifier.withClickEvent(new ClickEvent.OpenUrl(uri));
                 	link.setStyle(linkModi1);
                 });
@@ -314,32 +312,32 @@ public final class CraftChatMessage {
                 extras.add(link);
                 pos = matcher.end();
             }
-            MutableText prev = Text.literal(msg.substring(pos));
+            MutableComponent prev = Component.literal(msg.substring(pos));
             prev.setStyle(modifier);
             extras.add(prev);
             extras.addAll(extrasOld);
-            for (Text c2 : extras) {
+            for (Component c2 : extras) {
                 component.append(c2);
             }
         }
-        List<Text> extras = component.getSiblings();
+        List<Component> extras = component.getSiblings();
         for (int i2 = 0; i2 < extras.size(); ++i2) {
-            Text comp = extras.get(i2);
+            Component comp = extras.get(i2);
             if (comp.getStyle() == null || comp.getStyle().getClickEvent() != null) continue;
             extras.set(i2, CraftChatMessage.fixComponent(comp.copy(), matcher));
         }
-        if (component.getContent() instanceof TranslatableTextContent) {
-            Object[] subs = ((TranslatableTextContent)component.getContent()).getArgs();
+        if (component.getContents() instanceof TranslatableContents) {
+            Object[] subs = ((TranslatableContents)component.getContents()).getArgs();
             for (int i3 = 0; i3 < subs.length; ++i3) {
                 Object comp = subs[i3];
-                if (comp instanceof Text) {
-                    Text c3 = (Text)comp;
+                if (comp instanceof Component) {
+                    Component c3 = (Component)comp;
                     if (c3.getStyle() == null || c3.getStyle().getClickEvent() != null) continue;
                     subs[i3] = CraftChatMessage.fixComponent(c3.copy(), matcher);
                     continue;
                 }
                 if (!(comp instanceof String) || !matcher.reset((String)comp).find()) continue;
-                subs[i3] = CraftChatMessage.fixComponent(Text.literal((String)comp), matcher);
+                subs[i3] = CraftChatMessage.fixComponent(Component.literal((String)comp), matcher);
             }
         }
         return component;
@@ -363,7 +361,7 @@ public final class CraftChatMessage {
     }
 
     public static String fromStringToJSON(String message, boolean keepNewlines) {
-        Text component = CraftChatMessage.fromString(message, keepNewlines)[0];
+        Component component = CraftChatMessage.fromString(message, keepNewlines)[0];
         return CraftChatMessage.toJSON(component);
     }
 
@@ -383,7 +381,7 @@ public final class CraftChatMessage {
         return fromJSONOrStringToJSON(message, true, keepNewlines, Integer.MAX_VALUE, false);
     }
 
-    public static Text fromJSONOrNull(String jsonMessage) {
+    public static Component fromJSONOrNull(String jsonMessage) {
         if (jsonMessage == null) return null;
         try {
             return fromJSON(jsonMessage); // Can return null
@@ -392,7 +390,7 @@ public final class CraftChatMessage {
         }
     }
 
-    public static Text fromJSON(String jsonMessage) throws JsonParseException {
+    public static Component fromJSON(String jsonMessage) throws JsonParseException {
         return ((IMixinMinecraftServer)CraftServer.server).IC$from_json(jsonMessage);
     }
 
@@ -400,7 +398,7 @@ public final class CraftChatMessage {
         if (message == null) message = "";
         if (nullable && message.isEmpty()) return null;
         // If the input can be parsed as JSON, we use that:
-        Text component = fromJSONOrNull(message);
+        Component component = fromJSONOrNull(message);
         if (component != null) {
             if (checkJsonContentLength) {
                 String content = fromComponent(component);
@@ -418,31 +416,31 @@ public final class CraftChatMessage {
         }
     }
 
-    public static Text[] fromString(String message, boolean keepNewlines, boolean plain) {
+    public static Component[] fromString(String message, boolean keepNewlines, boolean plain) {
         return new StringMessage(message, keepNewlines/*, plain*/).getOutput();
     }
 
     public static String fromJSONComponent(String jsonMessage) {
-        Text component = CraftChatMessage.fromJSONOrNull(jsonMessage);
+        Component component = CraftChatMessage.fromJSONOrNull(jsonMessage);
         return CraftChatMessage.fromComponent(component);
     }
 
-    public static Text fromJSONOrString(String message) {
+    public static Component fromJSONOrString(String message) {
         return CraftChatMessage.fromJSONOrString(message, false);
     }
 
-    public static Text fromJSONOrString(String message, boolean keepNewlines) {
+    public static Component fromJSONOrString(String message, boolean keepNewlines) {
         return CraftChatMessage.fromJSONOrString(message, false, keepNewlines);
     }
 
-    public static Text fromJSONOrString(String message, boolean nullable, boolean keepNewlines) {
+    public static Component fromJSONOrString(String message, boolean nullable, boolean keepNewlines) {
         if (message == null) {
             message = "";
         }
         if (nullable && message.isEmpty()) {
             return null;
         }
-        Text component = CraftChatMessage.fromJSONOrNull(message);
+        Component component = CraftChatMessage.fromJSONOrNull(message);
         if (component != null) {
             return component;
         }
@@ -450,15 +448,15 @@ public final class CraftChatMessage {
     }
 
     // 1.20 API
-    public static Optional<Text> fromStringOrOptional(String message) {
+    public static Optional<Component> fromStringOrOptional(String message) {
         return Optional.ofNullable(CraftChatMessage.fromStringOrNull(message));
     }
 
-    public static Optional<Text> fromStringOrOptional(String message, boolean keepNewlines) {
+    public static Optional<Component> fromStringOrOptional(String message, boolean keepNewlines) {
         return Optional.ofNullable(CraftChatMessage.fromStringOrNull(message, keepNewlines));
     }
 
-    public static Text bungeeToVanilla(BaseComponent... components) {
+    public static Component bungeeToVanilla(BaseComponent... components) {
     	return fromJSON(bungeeToJson(components));
     }
 

@@ -14,8 +14,8 @@ import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.Nullable;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.block.ShulkerBoxBlock;
-import net.minecraft.block.entity.ShulkerBoxBlockEntity;
+import net.minecraft.world.level.block.ShulkerBoxBlock;
+import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 
 public class CardboardShulkerBox extends CardboardLootableBlock<ShulkerBoxBlockEntity> implements ShulkerBox {
 
@@ -58,8 +58,8 @@ public class CardboardShulkerBox extends CardboardLootableBlock<ShulkerBoxBlockE
 
     @Override
     public DyeColor getColor() {
-        net.minecraft.block.Block block = CraftMagicNumbers.getBlock(this.getType());
-        return DyeColor.getByWoolData((byte) ((ShulkerBoxBlock) block).getColor().getIndex());
+        net.minecraft.world.level.block.Block block = CraftMagicNumbers.getBlock(this.getType());
+        return DyeColor.getByWoolData((byte) ((ShulkerBoxBlock) block).getColor().getId());
     }
 
     @Override

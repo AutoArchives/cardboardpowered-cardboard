@@ -5,8 +5,8 @@ import com.google.common.base.Preconditions;
 import io.papermc.paper.registry.RegistryKey;
 
 import java.util.Locale;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
@@ -17,30 +17,30 @@ import org.bukkit.entity.EntityType;
 
 public class CraftEntityType {
 
-    public static EntityType minecraftToBukkit(net.minecraft.entity.EntityType<?> minecraft) {
+    public static EntityType minecraftToBukkit(net.minecraft.world.entity.EntityType<?> minecraft) {
         Preconditions.checkArgument(minecraft != null);
 
-        net.minecraft.registry.Registry<net.minecraft.entity.EntityType<?>> registry = CraftRegistry.getMinecraftRegistry(RegistryKeys.ENTITY_TYPE);
-        EntityType bukkit = Registry.ENTITY_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getKey(minecraft).orElseThrow().getValue()));
+        net.minecraft.core.Registry<net.minecraft.world.entity.EntityType<?>> registry = CraftRegistry.getMinecraftRegistry(Registries.ENTITY_TYPE);
+        EntityType bukkit = Registry.ENTITY_TYPE.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().identifier()));
 
         Preconditions.checkArgument(bukkit != null);
 
         return bukkit;
     }
 
-    private static final java.util.Map<EntityType, net.minecraft.registry.RegistryKey<net.minecraft.entity.EntityType<?>>> KEY_CACHE = java.util.Collections.synchronizedMap(new java.util.EnumMap<>(EntityType.class)); // Paper
-    public static net.minecraft.entity.EntityType<?> bukkitToMinecraft(EntityType bukkit) {
+    private static final java.util.Map<EntityType, net.minecraft.resources.ResourceKey<net.minecraft.world.entity.EntityType<?>>> KEY_CACHE = java.util.Collections.synchronizedMap(new java.util.EnumMap<>(EntityType.class)); // Paper
+    public static net.minecraft.world.entity.EntityType<?> bukkitToMinecraft(EntityType bukkit) {
         Preconditions.checkArgument(bukkit != null);
-        return CraftRegistry.getMinecraftRegistry(RegistryKeys.ENTITY_TYPE)
-                .getOptionalValue(KEY_CACHE.computeIfAbsent(bukkit, type -> net.minecraft.registry.RegistryKey.of(RegistryKeys.ENTITY_TYPE, CraftNamespacedKey.toMinecraft(type.getKey())))).orElseThrow();
+        return CraftRegistry.getMinecraftRegistry(Registries.ENTITY_TYPE)
+                .getOptional(KEY_CACHE.computeIfAbsent(bukkit, type -> net.minecraft.resources.ResourceKey.create(Registries.ENTITY_TYPE, CraftNamespacedKey.toMinecraft(type.getKey())))).orElseThrow();
     }
 
-    public static RegistryEntry<net.minecraft.entity.EntityType<?>> bukkitToMinecraftHolder(EntityType bukkit) {
+    public static Holder<net.minecraft.world.entity.EntityType<?>> bukkitToMinecraftHolder(EntityType bukkit) {
         Preconditions.checkArgument(bukkit != null);
 
-        net.minecraft.registry.Registry<net.minecraft.entity.EntityType<?>> registry = CraftRegistry.getMinecraftRegistry(RegistryKeys.ENTITY_TYPE);
+        net.minecraft.core.Registry<net.minecraft.world.entity.EntityType<?>> registry = CraftRegistry.getMinecraftRegistry(Registries.ENTITY_TYPE);
 
-        if (registry.getEntry(CraftEntityType.bukkitToMinecraft(bukkit)) instanceof RegistryEntry.Reference<net.minecraft.entity.EntityType<?>> holder) {
+        if (registry.wrapAsHolder(CraftEntityType.bukkitToMinecraft(bukkit)) instanceof Holder.Reference<net.minecraft.world.entity.EntityType<?>> holder) {
             return holder;
         }
 

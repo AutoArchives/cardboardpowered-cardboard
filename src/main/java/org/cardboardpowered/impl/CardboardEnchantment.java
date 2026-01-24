@@ -1,18 +1,14 @@
 package org.cardboardpowered.impl;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.registry.tag.EnchantmentTags;
-import net.minecraft.registry.tag.EntityTypeTags;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.text.TextContent;
-import net.minecraft.text.TranslatableTextContent;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.ComponentContents;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.Util;
-
+import net.minecraft.world.item.Item;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
@@ -45,7 +41,7 @@ import io.papermc.paper.registry.set.PaperRegistrySets;
 import io.papermc.paper.registry.set.RegistryKeySet;
 import me.isaiah.common.ICommonMod;
 
-public class CardboardEnchantment extends Enchantment implements Handleable<net.minecraft.enchantment.Enchantment> {
+public class CardboardEnchantment extends Enchantment implements Handleable<net.minecraft.world.item.enchantment.Enchantment> {
 
     //private final net.minecraft.enchantment.Enchantment target;
 
@@ -54,15 +50,15 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
     //private final int id;
     
     private final NamespacedKey key;
-    private final RegistryEntry<net.minecraft.enchantment.Enchantment> handle;
+    private final Holder<net.minecraft.world.item.enchantment.Enchantment> handle;
 	
-    public CardboardEnchantment(NamespacedKey key,  net.minecraft.enchantment.Enchantment handle) {
+    public CardboardEnchantment(NamespacedKey key,  net.minecraft.world.item.enchantment.Enchantment handle) {
         this.key = key;
-        this.handle = CraftRegistry.getMinecraftRegistry(RegistryKeys.ENCHANTMENT).getEntry(handle);
+        this.handle = CraftRegistry.getMinecraftRegistry(Registries.ENCHANTMENT).wrapAsHolder(handle);
     }
     
     @Override
-    public net.minecraft.enchantment.Enchantment getHandle() {
+    public net.minecraft.world.item.enchantment.Enchantment getHandle() {
         return this.handle.value();
     }
     
@@ -104,17 +100,17 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 
     @Override
     public boolean isTreasure() {
-    	return this.handle.isIn(EnchantmentTags.TREASURE);
+    	return this.handle.is(EnchantmentTags.TREASURE);
     }
 
     @Override
     public boolean isCursed() {
-        return this.handle.isIn(EnchantmentTags.CURSE);
+        return this.handle.is(EnchantmentTags.CURSE);
     }
 
     @Override
     public boolean canEnchantItem(ItemStack item) {
-        return getHandle().isAcceptableItem(CraftItemStack.asNMSCopy(item));
+        return getHandle().canEnchant(CraftItemStack.asNMSCopy(item));
     }
 
     @Override
@@ -147,7 +143,7 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
         };
     }
 
-    public static net.minecraft.enchantment.Enchantment getRaw(Enchantment enchantment) {
+    public static net.minecraft.world.item.enchantment.Enchantment getRaw(Enchantment enchantment) {
         if (enchantment instanceof EnchantmentWrapper) enchantment = ((EnchantmentWrapper) enchantment).getEnchantment();
         if (enchantment instanceof CardboardEnchantment) return ((CardboardEnchantment) enchantment).getHandle();
 
@@ -160,12 +156,12 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
         if (!(other instanceof CardboardEnchantment)) return false;
 
         CardboardEnchantment ench = (CardboardEnchantment) other;
-        return !net.minecraft.enchantment.Enchantment.canBeCombined(this.handle, ench.handle);
+        return !net.minecraft.world.item.enchantment.Enchantment.areCompatible(this.handle, ench.handle);
     }
 
     @Override
     public @NotNull Component displayName(int lev) {
-        return CardboardAdventure.asAdventure(net.minecraft.enchantment.Enchantment.getName(this.handle, lev));
+        return CardboardAdventure.asAdventure(net.minecraft.world.item.enchantment.Enchantment.getFullname(this.handle, lev));
     }
 
     @Override
@@ -186,35 +182,35 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 
     @Override
     public boolean isDiscoverable() {
-        return this.handle.isIn(EnchantmentTags.IN_ENCHANTING_TABLE) || this.handle.isIn(EnchantmentTags.ON_RANDOM_LOOT) || this.handle.isIn(EnchantmentTags.ON_MOB_SPAWN_EQUIPMENT) || this.handle.isIn(EnchantmentTags.TRADEABLE) || this.handle.isIn(EnchantmentTags.ON_TRADED_EQUIPMENT);
+        return this.handle.is(EnchantmentTags.IN_ENCHANTING_TABLE) || this.handle.is(EnchantmentTags.ON_RANDOM_LOOT) || this.handle.is(EnchantmentTags.ON_MOB_SPAWN_EQUIPMENT) || this.handle.is(EnchantmentTags.TRADEABLE) || this.handle.is(EnchantmentTags.ON_TRADED_EQUIPMENT);
     }
 
     @Override
     public boolean isTradeable() {
-        return this.handle.isIn(EnchantmentTags.TRADEABLE);
+        return this.handle.is(EnchantmentTags.TRADEABLE);
     }
 
     @Override
     public String translationKey() {
-        TextContent textContent = this.getHandle().description().getContent();
-        if (!(textContent instanceof TranslatableTextContent)) {
+        ComponentContents textContent = this.getHandle().description().getContents();
+        if (!(textContent instanceof TranslatableContents)) {
             throw new UnsupportedOperationException("Description isn't translatable!");
         }
-        TranslatableTextContent translatableContents = (TranslatableTextContent)textContent;
+        TranslatableContents translatableContents = (TranslatableContents)textContent;
         return translatableContents.getKey();
     }
 
 	public static void bukkitToMinecraft_old() {
 	}
 	
-    public static net.minecraft.enchantment.Enchantment bukkitToMinecraft(Enchantment bukkit) {
+    public static net.minecraft.world.item.enchantment.Enchantment bukkitToMinecraft(Enchantment bukkit) {
     	
     	// return ( (CardboardEnchantment) bukkit ).getHandle();
     	
         return CraftRegistry.bukkitToMinecraft(bukkit);
     }
 
-	public static Enchantment minecraftHolderToBukkit(RegistryEntry<net.minecraft.enchantment.Enchantment> id) {
+	public static Enchantment minecraftHolderToBukkit(Holder<net.minecraft.world.item.enchantment.Enchantment> id) {
         return CardboardEnchantment.minecraftToBukkit(id.value());
 
 		
@@ -223,20 +219,20 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 		// return null;
 	}
 	
-    public static Enchantment minecraftToBukkit(net.minecraft.enchantment.Enchantment minecraft) {
-        return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.ENCHANTMENT);
+    public static Enchantment minecraftToBukkit(net.minecraft.world.item.enchantment.Enchantment minecraft) {
+        return CraftRegistry.minecraftToBukkit(minecraft, Registries.ENCHANTMENT);
     }
     
     // 1.20.2 API: 
     
 	@Override
 	public int getMinModifiedCost(int level) {
-		return this.getHandle().getMinPower(level);
+		return this.getHandle().getMinCost(level);
 	}
 
 	@Override
 	public int getMaxModifiedCost(int level) {
-		return this.getHandle().getMaxPower(level);
+		return this.getHandle().getMaxCost(level);
 	}
 
 	// 1.20.3 API:
@@ -250,7 +246,7 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 
 	@Override
 	public String getTranslationKey() {
-        return Util.createTranslationKey("enchantment", this.handle.getKey().get().getValue());
+        return Util.makeDescriptionId("enchantment", this.handle.unwrapKey().get().identifier());
 	}
 	
 	// 1.20.6 API
@@ -293,8 +289,8 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
     }
     */
 
-	public static RegistryEntry<net.minecraft.enchantment.Enchantment> bukkitToMinecraftHolder(Enchantment key2) {
-        return CraftRegistry.bukkitToMinecraftHolder(key2, RegistryKeys.ENCHANTMENT);
+	public static Holder<net.minecraft.world.item.enchantment.Enchantment> bukkitToMinecraftHolder(Enchantment key2) {
+        return CraftRegistry.bukkitToMinecraftHolder(key2, Registries.ENCHANTMENT);
 	}
 
 	@Override
@@ -309,12 +305,12 @@ public class CardboardEnchantment extends Enchantment implements Handleable<net.
 
 	@Override
 	public @NotNull RegistryKeySet<ItemType> getSupportedItems() {
-        return PaperRegistrySets.convertToApi(RegistryKey.ITEM, this.handle.value().getApplicableItems());
+        return PaperRegistrySets.convertToApi(RegistryKey.ITEM, this.handle.value().getSupportedItems());
 	}
 
 	@Override
 	public @Nullable RegistryKeySet<ItemType> getPrimaryItems() {
-		Optional<RegistryEntryList<Item>> primaryItems = this.handle.value().definition().primaryItems();
+		Optional<HolderSet<Item>> primaryItems = this.handle.value().definition().primaryItems();
         return primaryItems.map(holders -> PaperRegistrySets.convertToApi(RegistryKey.ITEM, holders)).orElse(null);
 	}
 

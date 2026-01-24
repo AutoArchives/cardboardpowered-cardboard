@@ -9,13 +9,13 @@ public final class CraftLoom extends org.bukkit.craftbukkit.block.data.CraftBloc
         super();
     }
 
-    public CraftLoom(net.minecraft.block.BlockState state) {
+    public CraftLoom(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftDirectional
 
-    private static final net.minecraft.state.property.EnumProperty<?> FACING = getEnum(net.minecraft.block.LoomBlock.class, "facing");
+    private static final net.minecraft.world.level.block.state.properties.EnumProperty<?> FACING = getEnum(net.minecraft.world.level.block.LoomBlock.class, "facing");
 
     @Override
     public org.bukkit.block.BlockFace getFacing() {

@@ -1,9 +1,7 @@
 package org.cardboardpowered.impl.block;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.block.entity.BrewingStandBlockEntity;
-import net.minecraft.text.Text;
-
+import net.minecraft.world.level.block.entity.BrewingStandBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -78,7 +76,7 @@ public class CardboardBrewingStand extends CraftContainer<BrewingStandBlockEntit
     @Override
     public @Nullable Component customName() {
         // TODO Auto-generated method stub
-        return CardboardAdventure.asAdventure(Text.of(super.getCustomName()));
+        return CardboardAdventure.asAdventure(net.minecraft.network.chat.Component.nullToEmpty(super.getCustomName()));
     }
 
     @Override

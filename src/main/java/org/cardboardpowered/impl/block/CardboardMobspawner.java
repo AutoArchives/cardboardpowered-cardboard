@@ -3,7 +3,10 @@ package org.cardboardpowered.impl.block;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.BaseSpawner;
+import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -19,19 +22,10 @@ import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.block.entity.MobSpawnerBlockEntity;
-import net.minecraft.block.spawner.MobSpawnerEntry;
-import net.minecraft.block.spawner.MobSpawnerLogic;
-import net.minecraft.entity.EquipmentTable;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
-
 @SuppressWarnings("deprecation")
-public class CardboardMobspawner extends CardboardBlockEntityState<MobSpawnerBlockEntity> implements CreatureSpawner {
+public class CardboardMobspawner extends CardboardBlockEntityState<SpawnerBlockEntity> implements CreatureSpawner {
 
-    public CardboardMobspawner(World world, MobSpawnerBlockEntity tileEntity) {
+    public CardboardMobspawner(World world, SpawnerBlockEntity tileEntity) {
         super(world, tileEntity);
     }
 
@@ -63,8 +57,8 @@ public class CardboardMobspawner extends CardboardBlockEntityState<MobSpawnerBlo
             throw new IllegalArgumentException("Can't spawn EntityType " + entityType + " from mobspawners!");
         // this.getSnapshot().getLogic().setEntityId(net.minecraft.entity.EntityType.get(entityType.getName()).get());
         
-        Random rand = (this.isPlaced()) ? ((CraftWorld)this.getWorld()).getHandle().getRandom() : Random.create();
-        this.getSnapshot().setEntityType(net.minecraft.entity.EntityType.get(entityType.getName()).get(), rand);
+        RandomSource rand = (this.isPlaced()) ? ((CraftWorld)this.getWorld()).getHandle().getRandom() : RandomSource.create();
+        this.getSnapshot().setEntityId(net.minecraft.world.entity.EntityType.byString(entityType.getName()).get(), rand);
     }
 
     @Override
@@ -81,72 +75,72 @@ public class CardboardMobspawner extends CardboardBlockEntityState<MobSpawnerBlo
 
     @Override
     public int getDelay() {
-        return this.getSnapshot().getLogic().spawnDelay;
+        return this.getSnapshot().getSpawner().spawnDelay;
     }
 
     @Override
     public void setDelay(int delay) {
-        this.getSnapshot().getLogic().spawnDelay = delay;
+        this.getSnapshot().getSpawner().spawnDelay = delay;
     }
 
     @Override
     public int getMinSpawnDelay() {
-        return this.getSnapshot().getLogic().minSpawnDelay;
+        return this.getSnapshot().getSpawner().minSpawnDelay;
     }
 
     @Override
     public void setMinSpawnDelay(int spawnDelay) {
-        this.getSnapshot().getLogic().minSpawnDelay = spawnDelay;
+        this.getSnapshot().getSpawner().minSpawnDelay = spawnDelay;
     }
 
     @Override
     public int getMaxSpawnDelay() {
-        return this.getSnapshot().getLogic().maxSpawnDelay;
+        return this.getSnapshot().getSpawner().maxSpawnDelay;
     }
 
     @Override
     public void setMaxSpawnDelay(int spawnDelay) {
-        this.getSnapshot().getLogic().maxSpawnDelay = spawnDelay;
+        this.getSnapshot().getSpawner().maxSpawnDelay = spawnDelay;
     }
 
     @Override
     public int getMaxNearbyEntities() {
-        return this.getSnapshot().getLogic().maxNearbyEntities;
+        return this.getSnapshot().getSpawner().maxNearbyEntities;
     }
 
     @Override
     public void setMaxNearbyEntities(int maxNearbyEntities) {
-        this.getSnapshot().getLogic().maxNearbyEntities = maxNearbyEntities;
+        this.getSnapshot().getSpawner().maxNearbyEntities = maxNearbyEntities;
     }
 
     @Override
     public int getSpawnCount() {
-        return this.getSnapshot().getLogic().spawnCount;
+        return this.getSnapshot().getSpawner().spawnCount;
     }
 
     @Override
     public void setSpawnCount(int count) {
-        this.getSnapshot().getLogic().spawnCount = count;
+        this.getSnapshot().getSpawner().spawnCount = count;
     }
 
     @Override
     public int getRequiredPlayerRange() {
-        return this.getSnapshot().getLogic().requiredPlayerRange;
+        return this.getSnapshot().getSpawner().requiredPlayerRange;
     }
 
     @Override
     public void setRequiredPlayerRange(int requiredPlayerRange) {
-        this.getSnapshot().getLogic().requiredPlayerRange = requiredPlayerRange;
+        this.getSnapshot().getSpawner().requiredPlayerRange = requiredPlayerRange;
     }
 
     @Override
     public int getSpawnRange() {
-        return this.getSnapshot().getLogic().spawnRange;
+        return this.getSnapshot().getSpawner().spawnRange;
     }
 
     @Override
     public void setSpawnRange(int spawnRange) {
-        this.getSnapshot().getLogic().spawnRange = spawnRange;
+        this.getSnapshot().getSpawner().spawnRange = spawnRange;
     }
 
     @Override
@@ -223,11 +217,11 @@ public class CardboardMobspawner extends CardboardBlockEntityState<MobSpawnerBlo
 	@Override
 	public void setSpawnedEntity(@NotNull SpawnerEntry spawnerEntry) {
 		// TODO Auto-generated method stub
-        setSpawnedEntity(((MobSpawnerBlockEntity)this.getSnapshot()).getLogic(), spawnerEntry.getSnapshot(), spawnerEntry.getSpawnRule(), spawnerEntry.getEquipment());
+        setSpawnedEntity(((SpawnerBlockEntity)this.getSnapshot()).getSpawner(), spawnerEntry.getSnapshot(), spawnerEntry.getSpawnRule(), spawnerEntry.getEquipment());
 
 	}
 	
-    public static void setSpawnedEntity(MobSpawnerLogic spawner, EntitySnapshot snapshot, SpawnRule spawnRule, SpawnerEntry.Equipment equipment) {
+    public static void setSpawnedEntity(BaseSpawner spawner, EntitySnapshot snapshot, SpawnRule spawnRule, SpawnerEntry.Equipment equipment) {
         // TODO
     	/*
     	spawner.spawnPotentials = DataPool.empty();

@@ -18,6 +18,19 @@
  */
 package org.cardboardpowered.mixin.item;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.PlaceOnWaterBlockItem;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
@@ -32,30 +45,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.PlaceableOnWaterItem ;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.state.property.Property;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 @Mixin(value = BlockItem.class, priority = 999) // Priority 999 to allow Carpet Mod
 public class MixinBlockItem implements IBlockItem {
 
-    @Shadow public BlockState getPlacementState(ItemPlacementContext blockactioncontext) {return null;}
+    @Shadow public BlockState getPlacementState(BlockPlaceContext blockactioncontext) {return null;}
     // @Shadow public BlockState placeFromTag(BlockPos blockposition, World world, ItemStack itemstack, BlockState iblockdata) {return null;}
-    @Shadow public ItemPlacementContext getPlacementContext(ItemPlacementContext blockactioncontext) {return null;}
-    @Shadow public boolean place(ItemPlacementContext blockactioncontext, BlockState iblockdata) {return false;}
-    @Shadow public boolean postPlacement(BlockPos blockposition, World world, PlayerEntity entityhuman, ItemStack itemstack, BlockState iblockdata) {return false;}
-    @Shadow protected boolean checkStatePlacement() {return false;}
+    @Shadow public BlockPlaceContext updatePlacementContext(BlockPlaceContext blockactioncontext) {return null;}
+    @Shadow public boolean placeBlock(BlockPlaceContext blockactioncontext, BlockState iblockdata) {return false;}
+    @Shadow public boolean updateCustomBlockEntityTag(BlockPos blockposition, Level world, Player entityhuman, ItemStack itemstack, BlockState iblockdata) {return false;}
+    @Shadow protected boolean mustSurvive() {return false;}
 
     private org.bukkit.block.BlockState bukkit_state;
 
@@ -71,30 +70,30 @@ public class MixinBlockItem implements IBlockItem {
      * @reason Fix LilyPad BlockState
      */
     @Inject(at = @At(value = "INVOKE_ASSIGN", target = 
-            "Lnet/minecraft/item/BlockItem;getPlacementState(Lnet/minecraft/item/ItemPlacementContext;)Lnet/minecraft/block/BlockState;"), 
-            method = "place(Lnet/minecraft/item/ItemPlacementContext;)Lnet/minecraft/util/ActionResult;")
-    public void bukkitWaterlilyPlacementFix(ItemPlacementContext context, CallbackInfoReturnable<ActionResult> ci) {
+            "Lnet/minecraft/world/item/BlockItem;getPlacementState(Lnet/minecraft/world/item/context/BlockPlaceContext;)Lnet/minecraft/world/level/block/state/BlockState;"), 
+            method = "place(Lnet/minecraft/world/item/context/BlockPlaceContext;)Lnet/minecraft/world/InteractionResult;")
+    public void bukkitWaterlilyPlacementFix(BlockPlaceContext context, CallbackInfoReturnable<InteractionResult> ci) {
         bukkit_state = null;
-        if (((BlockItem)(Object)this) instanceof PlaceableOnWaterItem)
-            bukkit_state = org.bukkit.craftbukkit.block.CraftBlockState.getBlockState(context.getWorld(), context.getBlockPos());
+        if (((BlockItem)(Object)this) instanceof PlaceOnWaterBlockItem)
+            bukkit_state = org.bukkit.craftbukkit.block.CraftBlockState.getBlockState(context.getLevel(), context.getClickedPos());
     }
 
     /**
      * @reason BlockPlaceEvent for LilyPad
      */
     @Inject(at = @At(value = "INVOKE_ASSIGN", target =
-            "Lnet/minecraft/item/BlockItem;postPlacement(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/block/BlockState;)Z"),
-            method = "place(Lnet/minecraft/item/ItemPlacementContext;)Lnet/minecraft/util/ActionResult;", cancellable = true)
-    public void doBukkitEvent_DoBlockPlaceEventForWaterlilies(ItemPlacementContext context, CallbackInfoReturnable<ActionResult> ci) {
+            "Lnet/minecraft/world/item/BlockItem;updateCustomBlockEntityTag(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/block/state/BlockState;)Z"),
+            method = "place(Lnet/minecraft/world/item/context/BlockPlaceContext;)Lnet/minecraft/world/InteractionResult;", cancellable = true)
+    public void doBukkitEvent_DoBlockPlaceEventForWaterlilies(BlockPlaceContext context, CallbackInfoReturnable<InteractionResult> ci) {
         if (bukkit_state != null) {
-            BlockPos pos = context.getBlockPos();
-            World world = context.getWorld();
-            PlayerEntity entityhuman = context.getPlayer();
+            BlockPos pos = context.getClickedPos();
+            Level world = context.getLevel();
+            Player entityhuman = context.getPlayer();
 
-            BlockPlaceEvent placeEvent = CraftEventFactory.callBlockPlaceEvent((ServerWorld) world, entityhuman, context.getHand(), bukkit_state, pos.getX(), pos.getY(), pos.getZ());
+            BlockPlaceEvent placeEvent = CraftEventFactory.callBlockPlaceEvent((ServerLevel) world, entityhuman, context.getHand(), bukkit_state, pos.getX(), pos.getY(), pos.getZ());
             if (placeEvent.isCancelled() || !placeEvent.canBuild()) {
                 bukkit_state.update(true, false);
-                ci.setReturnValue(ActionResult.FAIL);
+                ci.setReturnValue(InteractionResult.FAIL);
             }
         }
     }
@@ -102,15 +101,15 @@ public class MixinBlockItem implements IBlockItem {
     /**
      * @reason BlockCanBuildEvent
      */
-    @Inject(at = @At("RETURN"), method = "Lnet/minecraft/item/BlockItem;canPlace(Lnet/minecraft/item/ItemPlacementContext;Lnet/minecraft/block/BlockState;)Z", cancellable = true)
-    public void doBukkitEvent_BlockCanBuildEvent(ItemPlacementContext blockactioncontext, BlockState iblockdata, CallbackInfoReturnable<Boolean> ci) {
-        PlayerEntity entityhuman = blockactioncontext.getPlayer();
-        ShapeContext voxelshapecollision = entityhuman == null ? ShapeContext.absent() : ShapeContext.of((Entity) entityhuman);
+    @Inject(at = @At("RETURN"), method = "canPlace(Lnet/minecraft/world/item/context/BlockPlaceContext;Lnet/minecraft/world/level/block/state/BlockState;)Z", cancellable = true)
+    public void doBukkitEvent_BlockCanBuildEvent(BlockPlaceContext blockactioncontext, BlockState iblockdata, CallbackInfoReturnable<Boolean> ci) {
+        Player entityhuman = blockactioncontext.getPlayer();
+        CollisionContext voxelshapecollision = entityhuman == null ? CollisionContext.empty() : CollisionContext.of((Entity) entityhuman);
 
-        boolean defaultReturn = (!this.checkStatePlacement() || iblockdata.canPlaceAt(blockactioncontext.getWorld(), blockactioncontext.getBlockPos())) && blockactioncontext.getWorld().canPlace(iblockdata, blockactioncontext.getBlockPos(), voxelshapecollision);
-        org.bukkit.entity.Player player = (blockactioncontext.getPlayer() instanceof ServerPlayerEntity) ? (org.bukkit.entity.Player) ((IMixinServerEntityPlayer)blockactioncontext.getPlayer()).getBukkitEntity() : null;
+        boolean defaultReturn = (!this.mustSurvive() || iblockdata.canSurvive(blockactioncontext.getLevel(), blockactioncontext.getClickedPos())) && blockactioncontext.getLevel().isUnobstructed(iblockdata, blockactioncontext.getClickedPos(), voxelshapecollision);
+        org.bukkit.entity.Player player = (blockactioncontext.getPlayer() instanceof ServerPlayer) ? (org.bukkit.entity.Player) ((IMixinServerEntityPlayer)blockactioncontext.getPlayer()).getBukkitEntity() : null;
 
-        BlockCanBuildEvent event = new BlockCanBuildEvent(CraftBlock.at((ServerWorld) blockactioncontext.getWorld(), blockactioncontext.getBlockPos()), player, CraftBlockData.fromData(iblockdata), defaultReturn);
+        BlockCanBuildEvent event = new BlockCanBuildEvent(CraftBlock.at((ServerLevel) blockactioncontext.getLevel(), blockactioncontext.getClickedPos()), player, CraftBlockData.fromData(iblockdata), defaultReturn);
         CraftServer.INSTANCE.getPluginManager().callEvent(event);
         ci.setReturnValue(event.isBuildable());
     }

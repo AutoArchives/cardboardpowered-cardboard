@@ -1,19 +1,19 @@
 package org.cardboardpowered.mixin.block;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.WaterlilyBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.LilyPadBlock;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCollisionHandler;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(LilyPadBlock.class)
+@Mixin(WaterlilyBlock.class)
 public class MixinLilyPadBlock {
 
 	// TODO: EntityInsideBlockEvent
@@ -31,10 +31,10 @@ public class MixinLilyPadBlock {
     */
     
     @Inject(
-    		method = "onEntityCollision", cancellable = true, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;breakBlock(Lnet/minecraft/util/math/BlockPos;ZLnet/minecraft/entity/Entity;)Z")
+    		method = "entityInside", cancellable = true, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;destroyBlock(Lnet/minecraft/core/BlockPos;ZLnet/minecraft/world/entity/Entity;)Z")
     )
-    public void entityChangeBlock_1_21_10(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler ech, boolean b, CallbackInfo ci) {
-        if (CraftEventFactory.callEntityChangeBlockEvent(entity, pos, Blocks.AIR.getDefaultState()).isCancelled()) {
+    public void entityChangeBlock_1_21_10(BlockState state, Level world, BlockPos pos, Entity entity, InsideBlockEffectApplier ech, boolean b, CallbackInfo ci) {
+        if (CraftEventFactory.callEntityChangeBlockEvent(entity, pos, Blocks.AIR.defaultBlockState()).isCancelled()) {
             ci.cancel();
         }
     }

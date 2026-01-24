@@ -1,13 +1,13 @@
 package org.cardboardpowered.interfaces;
 
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
 
 public interface IComponentChanges{
  
-	void copy(ComponentChanges orig);
+	void copy(DataComponentPatch orig);
 
-	void clear(ComponentType<?> type);
+	void clear(DataComponentType<?> type);
 
 	boolean isEmpty();
 

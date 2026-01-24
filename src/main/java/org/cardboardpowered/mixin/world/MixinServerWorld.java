@@ -17,26 +17,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.cardboardpowered.CardboardMod;
 import com.javazilla.bukkitfabric.Utils;
 import org.cardboardpowered.interfaces.IMixinWorld;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-/// import net.minecraft.server.WorldGenerationProgressListener;
-import net.minecraft.server.world.ServerEntityManager;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.progress.LevelLoadListener;
+import net.minecraft.server.level.progress.LoggingLevelLoadListener;
 import net.minecraft.util.ProgressListener;
-import net.minecraft.util.math.random.RandomSequencesState;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.ChunkLoadProgress;
-import net.minecraft.world.chunk.LoggingChunkLoadProgress;
-import net.minecraft.world.dimension.DimensionOptions;
-import net.minecraft.world.entity.EntityLookup;
-import net.minecraft.world.level.LevelProperties;
-import net.minecraft.world.level.ServerWorldProperties;
-import net.minecraft.world.level.storage.LevelStorage;
-import net.minecraft.world.spawner.SpecialSpawner;
+import net.minecraft.world.RandomSequences;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.CustomSpawner;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.entity.LevelEntityGetter;
+import net.minecraft.world.level.entity.PersistentEntitySectionManager;
+import net.minecraft.world.level.storage.LevelStorageSource;
+import net.minecraft.world.level.storage.ServerLevelData;
 
-@Mixin(ServerWorld.class)
+@Mixin(ServerLevel.class)
 public class MixinServerWorld extends MixinWorld implements IServerWorld {
 
    // @Shadow
@@ -47,19 +44,19 @@ public class MixinServerWorld extends MixinWorld implements IServerWorld {
         // ((CraftServer)Bukkit.getServer()).addWorldToMap(getCraftWorld());
     }*/
 
-	private LevelStorage.Session cardboard$session;
+	private LevelStorageSource.LevelStorageAccess cardboard$session;
 	private UUID cardboard$uuid;
-	private ChunkLoadProgress cardboard$levelLoadListener;
+	private LevelLoadListener cardboard$levelLoadListener;
 
 	@Inject(method = "<init>", at = @At(value = "RETURN"))
     private void banner$initWorldServer(
     		MinecraftServer minecraftserver,
     		Executor executor,
-    		LevelStorage.Session convertable_conversionsession,
-    		ServerWorldProperties iworlddataserver, RegistryKey<World> resourcekey,
-    		DimensionOptions worlddimension, // WorldGenerationProgressListener worldloadlistener,
-    		boolean flag, long i2, List<SpecialSpawner> list, boolean flag1,
-    		RandomSequencesState randomsequences, CallbackInfo ci
+    		LevelStorageSource.LevelStorageAccess convertable_conversionsession,
+    		ServerLevelData iworlddataserver, ResourceKey<Level> resourcekey,
+    		LevelStem worlddimension, // WorldGenerationProgressListener worldloadlistener,
+    		boolean flag, long i2, List<CustomSpawner> list, boolean flag1,
+    		RandomSequences randomsequences, CallbackInfo ci
     	) {
 		
 		if (CardboardConfig.DEBUG_OTHER) {
@@ -67,10 +64,10 @@ public class MixinServerWorld extends MixinWorld implements IServerWorld {
 		}
 
         this.cardboard$session = convertable_conversionsession;
-        this.cardboard$uuid = Utils.getWorldUUID(cardboard$session.getWorldDirectory(((ServerWorld)(Object)this).getRegistryKey()).toFile());
+        this.cardboard$uuid = Utils.getWorldUUID(cardboard$session.getDimensionPath(((ServerLevel)(Object)this).dimension()).toFile());
         
         // TODO: add ServerWorld argument to LoggingChunkLoadProgress constructor
-        this.cardboard$levelLoadListener = new LoggingChunkLoadProgress(false);
+        this.cardboard$levelLoadListener = new LoggingLevelLoadListener(false);
     }
 
     @Inject(at = @At("HEAD"), method = "save")
@@ -81,11 +78,11 @@ public class MixinServerWorld extends MixinWorld implements IServerWorld {
     }
     
     @Shadow 
-    public ServerWorldProperties worldProperties;
+    public ServerLevelData serverLevelData;
 
     @Override
-    public ServerWorldProperties cardboard_worldProperties() {
-        return worldProperties;
+    public ServerLevelData cardboard_worldProperties() {
+        return serverLevelData;
     }
     
     @Override
@@ -100,11 +97,11 @@ public class MixinServerWorld extends MixinWorld implements IServerWorld {
 	}
 	
 	@Shadow
-	private ServerEntityManager<Entity> entityManager;
+	private PersistentEntitySectionManager<Entity> entityManager;
 
 	@Shadow
-	public EntityLookup<Entity> getEntityLookup() {
-		return this.entityManager.getLookup();
+	public LevelEntityGetter<Entity> getEntities() {
+		return this.entityManager.getEntityGetter();
 	}
 	
 	@Override
@@ -118,7 +115,7 @@ public class MixinServerWorld extends MixinWorld implements IServerWorld {
 	}
 	
 	@Override
-	public ChunkLoadProgress cardboard$levelLoadListener() {
+	public LevelLoadListener cardboard$levelLoadListener() {
 		return cardboard$levelLoadListener;
 	}
 

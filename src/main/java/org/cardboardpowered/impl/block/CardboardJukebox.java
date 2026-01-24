@@ -1,11 +1,11 @@
 package org.cardboardpowered.impl.block;
 
-import net.minecraft.block.Blocks;
-import net.minecraft.block.JukeboxBlock;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.JukeboxBlockEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.JukeboxBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.JukeboxBlockEntity;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -45,7 +45,7 @@ public class CardboardJukebox extends CardboardBlockEntityState<JukeboxBlockEnti
         if (result && this.isPlaced() && this.getType() == Material.JUKEBOX) {
             CraftWorld world = (CraftWorld) this.getWorld();
             Material record = this.getPlaying();
-            world.getHandle().setBlockState(this.getPosition(), Blocks.JUKEBOX.getDefaultState().with(JukeboxBlock.HAS_RECORD, !(record == Material.AIR)), 3);
+            world.getHandle().setBlock(this.getPosition(), Blocks.JUKEBOX.defaultBlockState().setValue(JukeboxBlock.HAS_RECORD, !(record == Material.AIR)), 3);
             world.playEffect(this.getLocation(), Effect.RECORD_PLAY, record);
         }
         return result;
@@ -64,20 +64,20 @@ public class CardboardJukebox extends CardboardBlockEntityState<JukeboxBlockEnti
 
     @Override
     public org.bukkit.inventory.ItemStack getRecord() {
-        ItemStack record = this.getSnapshot().getStack();
+        ItemStack record = this.getSnapshot().getTheItem();
         return CraftItemStack.asBukkitCopy(record);
     }
 
     @Override
     public void setRecord(org.bukkit.inventory.ItemStack record) {
         ItemStack nms = CraftItemStack.asNMSCopy(record);
-        this.getSnapshot().setStack(nms);
-        this.data = this.data.with(JukeboxBlock.HAS_RECORD, !nms.isEmpty());
+        this.getSnapshot().setTheItem(nms);
+        this.data = this.data.setValue(JukeboxBlock.HAS_RECORD, !nms.isEmpty());
     }
 
     @Override
     public boolean isPlaying() {
-        return getHandle().get(JukeboxBlock.HAS_RECORD);
+        return getHandle().getValue(JukeboxBlock.HAS_RECORD);
     }
 
     @Override
@@ -87,8 +87,8 @@ public class CardboardJukebox extends CardboardBlockEntityState<JukeboxBlockEnti
         if (!(tileEntity instanceof JukeboxBlockEntity)) return false;
 
         JukeboxBlockEntity jukebox = (JukeboxBlockEntity) tileEntity;
-        boolean result = !jukebox.getStack().isEmpty();
-        jukebox.dropRecord();
+        boolean result = !jukebox.getTheItem().isEmpty();
+        jukebox.popOutTheItem();
         
         return result;
     }
@@ -101,7 +101,7 @@ public class CardboardJukebox extends CardboardBlockEntityState<JukeboxBlockEnti
             return;
         }
         JukeboxBlockEntity jukebox = (JukeboxBlockEntity)tileEntity;
-        jukebox.getManager().stopPlaying(tileEntity.getWorld(), tileEntity.getCachedState());
+        jukebox.getSongPlayer().stop(tileEntity.getLevel(), tileEntity.getBlockState());
     }
 
 	@Override
@@ -109,17 +109,17 @@ public class CardboardJukebox extends CardboardBlockEntityState<JukeboxBlockEnti
         if (!this.isPlaced()) {
             return this.getSnapshotInventory();
         }
-        return new CraftInventoryJukebox((Inventory)this.getTileEntity());
+        return new CraftInventoryJukebox((Container)this.getTileEntity());
 	}
 
 	@Override
 	public @NotNull JukeboxInventory getSnapshotInventory() {
-        return new CraftInventoryJukebox((Inventory)this.getSnapshot());
+        return new CraftInventoryJukebox((Container)this.getSnapshot());
 	}
 
 	@Override
 	public boolean hasRecord() {
-        return this.getHandle().get(JukeboxBlock.HAS_RECORD) != false && !this.getPlaying().isAir();
+        return this.getHandle().getValue(JukeboxBlock.HAS_RECORD) != false && !this.getPlaying().isAir();
 	}
 
 	@Override
@@ -130,11 +130,11 @@ public class CardboardJukebox extends CardboardBlockEntityState<JukeboxBlockEnti
             return false;
         }
         JukeboxBlockEntity jukebox = (JukeboxBlockEntity)tileEntity;
-        net.minecraft.item.ItemStack record = jukebox.getStack();
+        net.minecraft.world.item.ItemStack record = jukebox.getTheItem();
         if (record.isEmpty() || this.isPlaying()) {
             return false;
         }
-        jukebox.reloadDisc();
+        jukebox.tryForcePlaySong();
         return true;
 	}
 

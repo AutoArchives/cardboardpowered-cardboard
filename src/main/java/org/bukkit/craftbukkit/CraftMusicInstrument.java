@@ -4,9 +4,9 @@ import com.google.common.base.Preconditions;
 
 import io.papermc.paper.adventure.PaperAdventure;
 import net.kyori.adventure.text.Component;
-import net.minecraft.item.Instrument;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.Instrument;
 import org.bukkit.MusicInstrument;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -17,10 +17,10 @@ import org.jetbrains.annotations.NotNull;
 public class CraftMusicInstrument extends MusicInstrument implements Handleable<Instrument> {
 
     public static MusicInstrument minecraftToBukkit(Instrument minecraft) {
-        return CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.INSTRUMENT);
+        return CraftRegistry.minecraftToBukkit(minecraft, Registries.INSTRUMENT);
     }
 
-    public static MusicInstrument minecraftHolderToBukkit(RegistryEntry<Instrument> minecraft) {
+    public static MusicInstrument minecraftHolderToBukkit(Holder<Instrument> minecraft) {
         return CraftMusicInstrument.minecraftToBukkit(minecraft.value());
     }
 
@@ -28,12 +28,12 @@ public class CraftMusicInstrument extends MusicInstrument implements Handleable<
         return CraftRegistry.bukkitToMinecraft(bukkit);
     }
 
-    public static RegistryEntry<Instrument> bukkitToMinecraftHolder(MusicInstrument bukkit) {
+    public static Holder<Instrument> bukkitToMinecraftHolder(MusicInstrument bukkit) {
         Preconditions.checkArgument(bukkit != null);
 
-        net.minecraft.registry.Registry<Instrument> registry = CraftRegistry.getMinecraftRegistry(RegistryKeys.INSTRUMENT);
+        net.minecraft.core.Registry<Instrument> registry = CraftRegistry.getMinecraftRegistry(Registries.INSTRUMENT);
 
-        if (registry.getEntry(CraftMusicInstrument.bukkitToMinecraft(bukkit)) instanceof RegistryEntry.Reference<Instrument> holder) {
+        if (registry.wrapAsHolder(CraftMusicInstrument.bukkitToMinecraft(bukkit)) instanceof Holder.Reference<Instrument> holder) {
             return holder;
         }
 
@@ -85,7 +85,7 @@ public class CraftMusicInstrument extends MusicInstrument implements Handleable<
 
     @Override
     public @NotNull String translationKey() {
-        if (!(this.getHandle().description().getContent() instanceof final net.minecraft.text.TranslatableTextContent translatableContents)) {
+        if (!(this.getHandle().description().getContents() instanceof final net.minecraft.network.chat.contents.TranslatableContents translatableContents)) {
             throw new UnsupportedOperationException("Description isn't translatable!"); // Paper
         }
         return translatableContents.getKey();

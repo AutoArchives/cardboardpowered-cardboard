@@ -5,12 +5,10 @@
 package org.cardboardpowered.interfaces;
 
 import java.util.Map;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.entity.LevelEntityGetter;
 import org.cardboardpowered.impl.block.CapturedBlockState;
 import org.cardboardpowered.impl.world.CraftWorld;
-
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.entity.EntityLookup;
 
 public interface IMixinWorld {
 
@@ -24,6 +22,6 @@ public interface IMixinWorld {
 
     void set_bukkit_world(CraftWorld world);
 
-	EntityLookup cb$get_entity_lookup();
+	LevelEntityGetter cb$get_entity_lookup();
 
 }

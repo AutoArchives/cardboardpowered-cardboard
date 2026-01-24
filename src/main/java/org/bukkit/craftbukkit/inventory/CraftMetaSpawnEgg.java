@@ -6,15 +6,13 @@ import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.entity.TypedEntityData;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.item.component.TypedEntityData;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.entity.CraftEntitySnapshot;
@@ -119,10 +117,10 @@ implements SpawnEggMeta {
     				Material.ZOMBIE_VILLAGER_SPAWN_EGG,
     				Material.ZOMBIFIED_PIGLIN_SPAWN_EGG
     				});
-    static final CraftMetaItem.ItemMetaKeyType<TypedEntityData<net.minecraft.entity.EntityType<?>>> ENTITY_TAG = new CraftMetaItem.ItemMetaKeyType<>(DataComponentTypes.ENTITY_DATA, "entity-tag");
+    static final CraftMetaItem.ItemMetaKeyType<TypedEntityData<net.minecraft.world.entity.EntityType<?>>> ENTITY_TAG = new CraftMetaItem.ItemMetaKeyType<>(DataComponents.ENTITY_DATA, "entity-tag");
     static final CraftMetaItem.ItemMetaKey ENTITY_ID = new CraftMetaItem.ItemMetaKey("id");
     private EntityType spawnedType;
-    private NbtCompound entityTag;
+    private CompoundTag entityTag;
 
     CraftMetaSpawnEgg(CraftMetaItem meta) {
         super(meta);
@@ -134,7 +132,7 @@ implements SpawnEggMeta {
         this.updateMaterial(null);
     }
 
-    CraftMetaSpawnEgg(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
+    CraftMetaSpawnEgg(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaSpawnEgg.getOrEmpty(tag, ENTITY_TAG).ifPresent(nbt -> {
             this.entityTag = TypedEntityDataExtra.copyTagWithEntityId(nbt);// nbt.copyTagWithEntityId();
@@ -150,7 +148,7 @@ implements SpawnEggMeta {
     }
 
     @Override
-    void deserializeInternal(NbtCompound tag, Object context) {
+    void deserializeInternal(CompoundTag tag, Object context) {
         super.deserializeInternal(tag, context);
         
         
@@ -178,7 +176,7 @@ implements SpawnEggMeta {
     }
 
     @Override
-    void serializeInternal(Map<String, NbtElement> internalTags) {
+    void serializeInternal(Map<String, Tag> internalTags) {
         if (this.entityTag != null && !this.entityTag.isEmpty()) {
             internalTags.put(CraftMetaSpawnEgg.ENTITY_TAG.NBT, this.entityTag);
         }
@@ -188,7 +186,7 @@ implements SpawnEggMeta {
     void applyToItem(CraftMetaItem.Applicator tag) {
         super.applyToItem(tag);
         if (!this.isSpawnEggEmpty() && this.entityTag == null) {
-            this.entityTag = new NbtCompound();
+            this.entityTag = new CompoundTag();
         }
         if (this.entityTag != null) {
             tag.put(ENTITY_TAG, TypedEntityDataExtra.decodeEntity(this.entityTag));
@@ -222,7 +220,7 @@ implements SpawnEggMeta {
     }
 
     public EntityType getCustomSpawnedType() {
-        return Optional.ofNullable(this.entityTag).flatMap(tag -> tag.get(CraftMetaSpawnEgg.ENTITY_ID.NBT, Registries.ENTITY_TYPE.getCodec())).map(CraftEntityType::minecraftToBukkit).orElse(null);
+        return Optional.ofNullable(this.entityTag).flatMap(tag -> tag.read(CraftMetaSpawnEgg.ENTITY_ID.NBT, BuiltInRegistries.ENTITY_TYPE.byNameCodec())).map(CraftEntityType::minecraftToBukkit).orElse(null);
 
     	// return Optional.ofNullable(this.entityTag).map(tag -> tag.getString(CraftMetaSpawnEgg.ENTITY_ID.NBT)).flatMap(net.minecraft.entity.EntityType::get).map(CraftMagicNumbers::getEntityType).orElse(null);
     }
@@ -234,7 +232,7 @@ implements SpawnEggMeta {
             }
         } else {
             if (this.entityTag == null) {
-                this.entityTag = new NbtCompound();
+                this.entityTag = new CompoundTag();
             }
             this.entityTag.putString(CraftMetaSpawnEgg.ENTITY_ID.NBT, type.key().toString());
         }

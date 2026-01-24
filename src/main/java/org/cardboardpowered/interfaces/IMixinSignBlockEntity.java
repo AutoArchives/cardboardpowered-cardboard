@@ -1,6 +1,6 @@
 package org.cardboardpowered.interfaces;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 /**
  */
@@ -8,7 +8,7 @@ public interface IMixinSignBlockEntity {
 
 	/**
 	 */
-    Text[] getTextBF();
+    Component[] getTextBF();
 
     /**
      * Note: bukkit adds method.

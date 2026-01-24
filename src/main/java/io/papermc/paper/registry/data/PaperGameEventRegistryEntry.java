@@ -3,7 +3,7 @@ package io.papermc.paper.registry.data;
 import io.papermc.paper.registry.PaperRegistryBuilder;
 import io.papermc.paper.registry.data.util.Conversions;
 import java.util.OptionalInt;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.world.level.gameevent.GameEvent;
 import org.jetbrains.annotations.Range;
 import org.jspecify.annotations.Nullable;
 

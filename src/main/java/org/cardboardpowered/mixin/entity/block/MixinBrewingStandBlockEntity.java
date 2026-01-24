@@ -1,7 +1,13 @@
 package org.cardboardpowered.mixin.entity.block;
 
 import java.util.List;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BrewingStandBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
@@ -19,14 +25,6 @@ import org.cardboardpowered.interfaces.IMixinBrewingStandBlockEntity;
 import org.cardboardpowered.interfaces.IMixinInventory;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BrewingStandBlockEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
 @Mixin(BrewingStandBlockEntity.class)
 public class MixinBrewingStandBlockEntity implements IMixinInventory, IMixinBrewingStandBlockEntity {
 
@@ -34,7 +32,7 @@ public class MixinBrewingStandBlockEntity implements IMixinInventory, IMixinBrew
     public int fuel;
 
     @Shadow
-    public DefaultedList<ItemStack> inventory;
+    public NonNullList<ItemStack> items;
 
     public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
     private int maxStack = 64;
@@ -56,16 +54,16 @@ public class MixinBrewingStandBlockEntity implements IMixinInventory, IMixinBrew
 
     @Override
     public List<ItemStack> getContents() {
-        return this.inventory;
+        return this.items;
     }
 
     @Override
-    public int getMaxStackSize() {
+    public int getCardboardMaxStackSize() {
         return maxStack;
     }
 
     @Override
-    public void setMaxStackSize(int size) {
+    public void setCardboardMaxStackSize(int size) {
         maxStack = size;
     }
 
@@ -73,12 +71,12 @@ public class MixinBrewingStandBlockEntity implements IMixinInventory, IMixinBrew
      * @author CardboardPowered.org
      * @reason BrewingStandFuelEvent
      */
-    @Inject(at = @At("HEAD"), method = "tick", cancellable = true)
-    private static void doBukkitEvent_BrewingStandFuelEvent(World world, BlockPos pos, BlockState state, BrewingStandBlockEntity be, CallbackInfo ci) {
+    @Inject(at = @At("HEAD"), method = "serverTick", cancellable = true)
+    private static void doBukkitEvent_BrewingStandFuelEvent(Level world, BlockPos pos, BlockState state, BrewingStandBlockEntity be, CallbackInfo ci) {
         ItemStack itemstack = (ItemStack) ((IMixinBrewingStandBlockEntity)be).cardboard_getInventory().get(4);
 
         if (be.fuel <= 0 && itemstack.getItem() == Items.BLAZE_POWDER) {
-            BrewingStandFuelEvent event = new BrewingStandFuelEvent(((IMixinWorld)be.world).getCraftWorld().getBlockAt(be.pos.getX(), be.pos.getY(), be.pos.getZ()), CraftItemStack.asCraftMirror(itemstack), 20);
+            BrewingStandFuelEvent event = new BrewingStandFuelEvent(((IMixinWorld)be.level).getCraftWorld().getBlockAt(be.worldPosition.getX(), be.worldPosition.getY(), be.worldPosition.getZ()), CraftItemStack.asCraftMirror(itemstack), 20);
             CraftServer.INSTANCE.getPluginManager().callEvent(event);
 
             if (event.isCancelled()) {
@@ -87,7 +85,7 @@ public class MixinBrewingStandBlockEntity implements IMixinInventory, IMixinBrew
             }
 
             be.fuel = event.getFuelPower();
-            if (be.fuel > 0 && event.isConsuming()) itemstack.decrement(1);
+            if (be.fuel > 0 && event.isConsuming()) itemstack.shrink(1);
         }
     }
 
@@ -110,8 +108,8 @@ public class MixinBrewingStandBlockEntity implements IMixinInventory, IMixinBrew
     @Override public Location getLocation() {return null;}
 
     @Override
-    public DefaultedList<ItemStack> cardboard_getInventory() {
-        return inventory;
+    public NonNullList<ItemStack> cardboard_getInventory() {
+        return items;
     }
 
 }

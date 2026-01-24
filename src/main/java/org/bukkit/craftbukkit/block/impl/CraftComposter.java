@@ -9,13 +9,13 @@ public final class CraftComposter extends org.bukkit.craftbukkit.block.data.Craf
         super();
     }
 
-    public CraftComposter(net.minecraft.block.BlockState state) {
+    public CraftComposter(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftLevelled
 
-    private static final net.minecraft.state.property.IntProperty LEVEL = getInteger(net.minecraft.block.ComposterBlock.class, "level");
+    private static final net.minecraft.world.level.block.state.properties.IntegerProperty LEVEL = getInteger(net.minecraft.world.level.block.ComposterBlock.class, "level");
 
     @Override
     public int getLevel() {

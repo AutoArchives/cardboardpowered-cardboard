@@ -16,29 +16,27 @@ import com.mojang.authlib.yggdrasil.ProfileResult;
 import io.netty.channel.local.LocalAddress;
 import io.papermc.paper.adventure.PaperAdventure;
 import net.kyori.adventure.text.Component;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.PacketCallbacks;
-import net.minecraft.network.encryption.NetworkEncryptionException;
-import net.minecraft.network.encryption.NetworkEncryptionUtils;
-import net.minecraft.network.packet.c2s.login.EnterConfigurationC2SPacket;
-import net.minecraft.network.packet.c2s.login.LoginHelloC2SPacket;
-import net.minecraft.network.packet.c2s.login.LoginKeyC2SPacket;
-import net.minecraft.network.packet.s2c.login.LoginCompressionS2CPacket;
-import net.minecraft.network.packet.s2c.login.LoginDisconnectS2CPacket;
-import net.minecraft.network.packet.s2c.login.LoginSuccessS2CPacket;
-import net.minecraft.network.state.ConfigurationStates;
+import net.minecraft.DefaultUncaughtExceptionHandler;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.Connection;
+import net.minecraft.network.PacketSendListener;
+import net.minecraft.network.protocol.configuration.ConfigurationProtocols;
+import net.minecraft.network.protocol.login.ClientboundLoginCompressionPacket;
+import net.minecraft.network.protocol.login.ClientboundLoginDisconnectPacket;
+import net.minecraft.network.protocol.login.ClientboundLoginFinishedPacket;
+import net.minecraft.network.protocol.login.ServerboundHelloPacket;
+import net.minecraft.network.protocol.login.ServerboundKeyPacket;
+import net.minecraft.network.protocol.login.ServerboundLoginAcknowledgedPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerConfigEntry;
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ConnectedClientData;
-import net.minecraft.server.network.ServerConfigurationNetworkHandler;
-import net.minecraft.server.network.ServerLoginNetworkHandler;
-import net.minecraft.server.network.ServerLoginNetworkHandler.State;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Uuids;
-import net.minecraft.util.logging.UncaughtExceptionLogger;
-
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
+import net.minecraft.server.network.ServerLoginPacketListenerImpl;
+import net.minecraft.server.network.ServerLoginPacketListenerImpl.State;
+import net.minecraft.server.players.NameAndId;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.util.Crypt;
+import net.minecraft.util.CryptException;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,31 +69,31 @@ import java.util.concurrent.atomic.AtomicInteger;
 import io.papermc.paper.connection.PaperPlayerLoginConnection;
 
 @SuppressWarnings("deprecation")
-@Mixin(value = ServerLoginNetworkHandler.class, priority = 999)
+@Mixin(value = ServerLoginPacketListenerImpl.class, priority = 999)
 public abstract class MixinServerLoginNetworkHandler implements IMixinServerLoginNetworkHandler {
 
 	private static Logger LOGGER_BF = LoggerFactory.getLogger("PaperMC|ServerLoginNetworkHandler"); // LogManager.getLogger("Bukkit|ServerLoginNetworkHandler");
 	
 	// Cardboard: Paper - Use ExecutorService
 	private static final ExecutorService authenticatorPool = Executors.newCachedThreadPool(
-		      new ThreadFactoryBuilder().setNameFormat("User Authenticator #%d").setUncaughtExceptionHandler(new UncaughtExceptionLogger(LOGGER_BF)).build()
+		      new ThreadFactoryBuilder().setNameFormat("User Authenticator #%d").setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER_BF)).build()
 		   );
 	
-	@Shadow @Nullable private String profileName;
+	@Shadow @Nullable private String requestedUsername;
 	@Shadow
-	abstract void startVerify(GameProfile profile);
-	@Shadow private byte[] nonce = new byte[4];
+	abstract void startClientVerification(GameProfile profile);
+	@Shadow private byte[] challenge = new byte[4];
 	@Shadow private MinecraftServer server;
-	@Shadow public ClientConnection connection;
-	@Shadow private ServerLoginNetworkHandler.State state;
-	@Shadow private GameProfile profile;
+	@Shadow public Connection connection;
+	@Shadow private ServerLoginPacketListenerImpl.State state;
+	@Shadow private GameProfile authenticatedProfile;
 	
-	@Shadow private static AtomicInteger NEXT_AUTHENTICATOR_THREAD_ID;
+	@Shadow private static AtomicInteger UNIQUE_THREAD_ID;
 	
-	public ServerPlayerEntity delayedPlayer;
+	public ServerPlayer delayedPlayer;
 
 	@Override
-	public ClientConnection cb_get_connection() {
+	public Connection cb_get_connection() {
 		return connection;
 	}
 
@@ -103,19 +101,19 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 	private long theid = 0;
 	
 	// Cardboard: field added by bukkit
-	private ServerPlayerEntity player;
+	private ServerPlayer player;
 	public UUID requestedUuid;
 	private PaperPlayerLoginConnection paperLoginConnection1;
 	
 	private PaperPlayerLoginConnection paperLoginConnection() {
 		if (null == paperLoginConnection1) {
-			this.paperLoginConnection1 = new PaperPlayerLoginConnection((ServerLoginNetworkHandler) (Object) this);
+			this.paperLoginConnection1 = new PaperPlayerLoginConnection((ServerLoginPacketListenerImpl) (Object) this);
 		}
 		return this.paperLoginConnection1;
 	}
 	
-	@Inject(at = @At("HEAD"), method = "onHello")
-	public void cardboard$setRequestedUuid(LoginHelloC2SPacket packet, CallbackInfo ci) {
+	@Inject(at = @At("HEAD"), method = "handleHello")
+	public void cardboard$setRequestedUuid(ServerboundHelloPacket packet, CallbackInfo ci) {
 		this.requestedUuid = packet.profileId();
 	}
 	
@@ -126,7 +124,7 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 	
 	@Override
 	public String cardboard$profileName() {
-		return this.profileName;
+		return this.requestedUsername;
 	}
 	
 	@Override
@@ -149,25 +147,25 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 	 * @reason Bukkit login changes
 	 */
 	@Overwrite
-	public void onKey(LoginKeyC2SPacket packet) {
-		Validate.validState(this.state == ServerLoginNetworkHandler.State.KEY, "Unexpected key packet", new Object[0]);
+	public void handleKey(ServerboundKeyPacket packet) {
+		Validate.validState(this.state == ServerLoginPacketListenerImpl.State.KEY, "Unexpected key packet", new Object[0]);
 		final String string;
 		try {
 			PrivateKey _private = this.server.getKeyPair().getPrivate();
-			if (!packet.verifySignedNonce(this.nonce, _private)) {
+			if (!packet.isChallengeValid(this.challenge, _private)) {
 				throw new IllegalStateException("Protocol error");
 			}
 
-			SecretKey secretKey = packet.decryptSecretKey(_private);
-			Cipher cipher = NetworkEncryptionUtils.cipherFromKey(2, secretKey);
-			Cipher cipher1 = NetworkEncryptionUtils.cipherFromKey(1, secretKey);
-			string = (new BigInteger(NetworkEncryptionUtils.computeServerId("", this.server.getKeyPair()
+			SecretKey secretKey = packet.getSecretKey(_private);
+			Cipher cipher = Crypt.getCipher(2, secretKey);
+			Cipher cipher1 = Crypt.getCipher(1, secretKey);
+			string = (new BigInteger(Crypt.digestData("", this.server.getKeyPair()
 					.getPublic(), secretKey))).toString(16);
 
-			this.state = ServerLoginNetworkHandler.State.AUTHENTICATING;
-			this.connection.setupEncryption(cipher, cipher1);
+			this.state = ServerLoginPacketListenerImpl.State.AUTHENTICATING;
+			this.connection.setEncryptionKey(cipher, cipher1);
 
-		} catch (NetworkEncryptionException var5) {
+		} catch (CryptException var5) {
 			throw new IllegalStateException("Protocol error", var5);
 		}
 
@@ -175,33 +173,33 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 				new Runnable() {
 					@Override
 					public void run() {
-						String string1 = Objects.requireNonNull(profileName, "Player name not initialized");
+						String string1 = Objects.requireNonNull(requestedUsername, "Player name not initialized");
 
 						try {
 							ProfileResult profileResult = server
-									.getApiServices()
+									.services()
 									.sessionService()
 									.hasJoinedServer(string1, string, this.getClientAddress());
 							if (profileResult != null) {
 								GameProfile gameProfile = profileResult.profile();
-								if (!connection.isOpen()) {
+								if (!connection.isConnected()) {
 									return;
 								}
 
 								gameProfile = callPlayerPreLoginEvents(gameProfile);
 								LOGGER_BF.info("UUID of player {} is {}", gameProfile.name(), gameProfile.id());
-								startVerify(gameProfile);
+								startClientVerification(gameProfile);
 							} else if (server.isSingleplayer()) {
 								LOGGER_BF.warn("Failed to verify username but will let them in anyway!");
-								startVerify(createOfflineProfile(string1));
+								startClientVerification(createOfflineProfile(string1));
 							} else {
-								disconnect(Text.translatable("multiplayer.disconnect.unverified_username"));
+								disconnect(net.minecraft.network.chat.Component.translatable("multiplayer.disconnect.unverified_username"));
 								LOGGER_BF.error("Username '{}' tried to join with an invalid session", string1);
 							}
 						} catch (AuthenticationUnavailableException var4) {
 							if (server.isSingleplayer()) {
 								LOGGER_BF.warn("Authentication servers are down but will let them in anyway!");
-								startVerify(createOfflineProfile(string1));
+								startClientVerification(createOfflineProfile(string1));
 							} else {
 								// this.disconnect(PaperAdventure.asVanilla(GlobalConfiguration.get().messages.kick.authenticationServersDown));
 								disconnect(PaperAdventure.asVanilla( Component.translatable("multiplayer.disconnect.authservers_down")) );
@@ -215,8 +213,8 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 
 					@Nullable
 					private InetAddress getClientAddress() {
-						SocketAddress remoteAddress = connection.getAddress();
-						return server.shouldPreventProxyConnections() && remoteAddress instanceof InetSocketAddress
+						SocketAddress remoteAddress = connection.getRemoteAddress();
+						return server.getPreventProxyConnections() && remoteAddress instanceof InetSocketAddress
 								? ((InetSocketAddress)remoteAddress).getAddress()
 										: null;
 					}
@@ -245,7 +243,7 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 	      return new GameProfile(uuid, s, new PropertyMap(props.build()));
 		 */
 		// TODO
-		return Uuids.getOfflinePlayerProfile(s);
+		return UUIDUtil.createOfflineProfile(s);
 	}
 
 	private GameProfile callPlayerPreLoginEvents(GameProfile gameprofile) throws Exception {
@@ -254,7 +252,7 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 			return gameprofile;
 		} else {
 			String playerName = gameprofile.name();
-			InetAddress address = ((InetSocketAddress)this.connection.getAddress()).getAddress();
+			InetAddress address = ((InetSocketAddress)this.connection.getRemoteAddress()).getAddress();
 			UUID uniqueId = gameprofile.id();
 			final CraftServer server = CraftServer.INSTANCE;
 			InetAddress rawAddress = ((InetSocketAddress)this.connection.channel.remoteAddress()).getAddress();
@@ -300,9 +298,9 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 	public void fireEvents(GameProfile profile) throws Exception {
 		String playerName = profile.name();
 		java.net.InetAddress address;
-		if(connection.getAddress() instanceof LocalAddress) {
+		if(connection.getRemoteAddress() instanceof LocalAddress) {
 			address = InetAddress.getLocalHost();
-		} else address = ((java.net.InetSocketAddress) connection.getAddress()).getAddress();
+		} else address = ((java.net.InetSocketAddress) connection.getRemoteAddress()).getAddress();
 		UUID uniqueId = profile.id();
 		final org.bukkit.craftbukkit.CraftServer server = CraftServer.INSTANCE;
 
@@ -334,24 +332,24 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 			}
 		}
 		LOGGER_BF.info("UUID of player {} is {}", profile.name(), profile.id());
-		startVerify(profile);
+		startClientVerification(profile);
 	}
 
 	public void disconnect(String s) {
 		try {
-			Text text = Text.of(s);
+			net.minecraft.network.chat.Component text = net.minecraft.network.chat.Component.nullToEmpty(s);
 			LOGGER_BF.info("Disconnecting BUKKITFABRIC_TODO: " + s);
-			this.connection.send(new LoginDisconnectS2CPacket(text));
+			this.connection.send(new ClientboundLoginDisconnectPacket(text));
 			this.connection.disconnect(text);
 		} catch(Exception exception) {
 			LOGGER_BF.error("Error whilst disconnecting player", exception);
 		}
 	}
 
-	private ServerPlayerEntity cardboard_player;
+	private ServerPlayer cardboard_player;
 
 	@Override
-	public ServerPlayerEntity cardboard$get_player() {
+	public ServerPlayer cardboard$get_player() {
 		if (null == player) {
 			player = cardboard_player;
 		}
@@ -363,14 +361,14 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 	 * @reason We create the ServerPlayerEntity using attemptLogin
 	 */
 	@Overwrite
-    private void tickVerify(GameProfile profile) {
-        PlayerManager playerManager = this.server.getPlayerManager();
+    private void verifyLoginAndFinishConnectionSetup(GameProfile profile) {
+        PlayerList playerManager = this.server.getPlayerList();
         
-        Text text = playerManager.checkCanJoin(this.connection.getAddress(), new PlayerConfigEntry(profile));
+        net.minecraft.network.chat.Component text = playerManager.canPlayerLogin(this.connection.getRemoteAddress(), new NameAndId(profile));
 
-        IMixinPlayerManager pm = ((IMixinPlayerManager) this.server.getPlayerManager());
+        IMixinPlayerManager pm = ((IMixinPlayerManager) this.server.getPlayerList());
 
-        PlayerManager_LoginResult paperizedResult = pm.cardboard$canPlayerLogin(text, new PlayerConfigEntry(profile));
+        PlayerManager_LoginResult paperizedResult = pm.cardboard$canPlayerLogin(text, new NameAndId(profile));
         text = CraftEventFactory.handleLoginResult(
         		paperizedResult,
                 this.paperLoginConnection(),
@@ -380,7 +378,7 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
                 true
         );
         
-        ServerPlayerEntity s = pm.attemptLogin((ServerLoginNetworkHandler) (Object) this, this.profile, null, hostname);
+        ServerPlayer s = pm.attemptLogin((ServerLoginPacketListenerImpl) (Object) this, this.authenticatedProfile, null, hostname);
         this.cardboard_player = s;
         this.player = s;
         
@@ -391,38 +389,38 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
             this.disconnect(text);
         } else {
             boolean bl;
-            if (this.server.getNetworkCompressionThreshold() >= 0 && !this.connection.isLocal()) {
+            if (this.server.getCompressionThreshold() >= 0 && !this.connection.isMemoryConnection()) {
 
-                this.connection.send(new LoginCompressionS2CPacket(this.server.getNetworkCompressionThreshold()), PacketCallbacks.always(() -> this.connection.setCompressionThreshold(this.server.getNetworkCompressionThreshold(), true)));
+                this.connection.send(new ClientboundLoginCompressionPacket(this.server.getCompressionThreshold()), PacketSendListener.thenRun(() -> this.connection.setupCompression(this.server.getCompressionThreshold(), true)));
             }
-            if (bl = playerManager.disconnectDuplicateLogins(profile.id())) {
+            if (bl = playerManager.disconnectAllPlayersWithProfile(profile.id())) {
                 this.state = State.WAITING_FOR_DUPE_DISCONNECT;
             } else {
-                this.sendSuccessPacket(profile);
+                this.finishLoginAndWaitForClient(profile);
             }
         }
     }
     
     @Shadow
-    private void sendSuccessPacket(GameProfile profile) {
+    private void finishLoginAndWaitForClient(GameProfile profile) {
         this.state = State.PROTOCOL_SWITCHING;
-        this.connection.send(new LoginSuccessS2CPacket(profile));
+        this.connection.send(new ClientboundLoginFinishedPacket(profile));
     }
 
-	@Inject(at = @At("TAIL"), method = "onHello")
-	public void spigotHello(LoginHelloC2SPacket packetlogininstart, CallbackInfo ci) {
-		if(!(this.server.isOnlineMode() && !this.connection.isLocal())) {
+	@Inject(at = @At("TAIL"), method = "handleHello")
+	public void spigotHello(ServerboundHelloPacket packetlogininstart, CallbackInfo ci) {
+		if(!(this.server.usesAuthentication() && !this.connection.isMemoryConnection())) {
 			// Spigot start
 			new Thread("User Authenticator #" + theid++) {
 				@Override
 				public void run() {
 					try {
 						initUUID();
-						fireEvents(profile);
+						fireEvents(authenticatedProfile);
 					} catch(Exception ex) {
 						disconnect("Failed to verify username!");
 						CraftServer.INSTANCE.getLogger()
-								.log(java.util.logging.Level.WARNING, "Exception verifying " + profile.name(), ex);
+								.log(java.util.logging.Level.WARNING, "Exception verifying " + authenticatedProfile.name(), ex);
 					}
 				}
 			}.start();
@@ -437,14 +435,14 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 			uuid = ((IMixinClientConnection) connection).getSpoofedUUID();
 		else {
 			// Note: PlayerEntity (1.18) -> DynamicSerializableUuid (1.19) -> Uuids (1.19.4)
-			uuid = Uuids.getOfflinePlayerUuid(this.profile.name());
+			uuid = UUIDUtil.createOfflinePlayerUUID(this.authenticatedProfile.name());
 		}
 
-		this.profile = new GameProfile(uuid, this.profile.name());
+		this.authenticatedProfile = new GameProfile(uuid, this.authenticatedProfile.name());
 
 		if(((IMixinClientConnection) connection).getSpoofedProfile() != null)
 			for(com.mojang.authlib.properties.Property property : ((IMixinClientConnection) connection).getSpoofedProfile())
-				this.profile.properties().put(property.name(), property);
+				this.authenticatedProfile.properties().put(property.name(), property);
 	}
 	// Spigot end
 
@@ -456,19 +454,19 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
      * @reason TODO: Injection here fails
      */
     @Overwrite
-    public void onEnterConfiguration(EnterConfigurationC2SPacket packet) {
+    public void handleLoginAcknowledgement(ServerboundLoginAcknowledgedPacket packet) {
         Validate.validState((this.state == State.PROTOCOL_SWITCHING ? 1 : 0) != 0, (String)"Unexpected login acknowledgement packet", (Object[])new Object[0]);
-        this.connection.transitionOutbound(ConfigurationStates.S2C);
-        ConnectedClientData commonlistenercookie = ConnectedClientData.createDefault(Objects.requireNonNull(this.profile), this.transferred);
-        ServerConfigurationNetworkHandler networkConfig = new ServerConfigurationNetworkHandler(this.server, this.connection, commonlistenercookie);
+        this.connection.setupOutboundProtocol(ConfigurationProtocols.CLIENTBOUND);
+        CommonListenerCookie commonlistenercookie = CommonListenerCookie.createInitial(Objects.requireNonNull(this.authenticatedProfile), this.transferred);
+        ServerConfigurationPacketListenerImpl networkConfig = new ServerConfigurationPacketListenerImpl(this.server, this.connection, commonlistenercookie);
 
         // System.out.println("networkConfig: setting player");
         if(cardboard_player != null) {
 			((INetworkConfiguration) networkConfig).cardboard_setPlayer(cardboard_player);
 		}
         
-        this.connection.transitionInbound(ConfigurationStates.C2S, networkConfig);
-        networkConfig.sendConfigurations();
+        this.connection.setupInboundProtocol(ConfigurationProtocols.SERVERBOUND, networkConfig);
+        networkConfig.startConfiguration();
         this.state = State.ACCEPTED;
     }
 
@@ -488,6 +486,6 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 	*/
 
 	@Shadow
-	public void disconnect(Text t) {}
+	public void disconnect(net.minecraft.network.chat.Component t) {}
 
 }

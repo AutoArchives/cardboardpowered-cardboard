@@ -5,35 +5,33 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownExperienceBottle;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.ExperienceOrbEntity;
-import net.minecraft.entity.projectile.thrown.ExperienceBottleEntity;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-
 @MixinInfo(events = {"ExpBottleEvent"})
-@Mixin(ExperienceBottleEntity.class)
+@Mixin(ThrownExperienceBottle.class)
 public class MixinExperienceBottleEntity extends MixinProjectileEntity {
 
-    @Inject(at = @At("HEAD"), method = "onCollision", cancellable = true)
+    @Inject(at = @At("HEAD"), method = "onHit", cancellable = true)
     public void doBukkitEvent(HitResult movingobjectposition, CallbackInfo ci) {
         HitResult.Type type = movingobjectposition.getType();
         if (type == HitResult.Type.ENTITY) {
-            ((ExperienceBottleEntity)(Object)this).onEntityHit((EntityHitResult)movingobjectposition);
-        } else if (type == HitResult.Type.BLOCK) this.onBlockHit((BlockHitResult)movingobjectposition);
+            ((ThrownExperienceBottle)(Object)this).onHitEntity((EntityHitResult)movingobjectposition);
+        } else if (type == HitResult.Type.BLOCK) this.onHitBlock((BlockHitResult)movingobjectposition);
 
         int i = 3 + this.mc_world().random.nextInt(5) + this.mc_world().random.nextInt(5);
-        org.bukkit.event.entity.ExpBottleEvent event = CraftEventFactory.callExpBottleEvent((ExperienceBottleEntity)(Object)this, i);
+        org.bukkit.event.entity.ExpBottleEvent event = CraftEventFactory.callExpBottleEvent((ThrownExperienceBottle)(Object)this, i);
         i = event.getExperience();
 
         while (i > 0) {
-            int j = ExperienceOrbEntity.roundToOrbSize(i);
+            int j = ExperienceOrb.getExperienceValue(i);
             i -= j;
-            this.mc_world().spawnEntity(new ExperienceOrbEntity(this.mc_world(), ((Entity)(Object)this).getX(), ((Entity)(Object)this).getY(), ((Entity)(Object)this).getZ(), j));
+            this.mc_world().addFreshEntity(new ExperienceOrb(this.mc_world(), ((Entity)(Object)this).getX(), ((Entity)(Object)this).getY(), ((Entity)(Object)this).getZ(), j));
         }
         this.removeBF();
         ci.cancel();

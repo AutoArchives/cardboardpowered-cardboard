@@ -1,7 +1,7 @@
 package org.cardboardpowered.impl.block;
 
 
-import net.minecraft.block.entity.CalibratedSculkSensorBlockEntity;
+import net.minecraft.world.level.block.entity.CalibratedSculkSensorBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.World;
 

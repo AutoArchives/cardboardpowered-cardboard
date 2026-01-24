@@ -1,6 +1,6 @@
 package org.bukkit.craftbukkit.damage;
 
-import net.minecraft.entity.damage.DamageEffects;
+import net.minecraft.world.damagesource.DamageEffects;
 import org.bukkit.Sound;
 import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.damage.DamageEffect;
@@ -19,12 +19,12 @@ public class CraftDamageEffect implements DamageEffect {
 
     @Override
     public Sound getSound() {
-        return CraftSound.minecraftToBukkit(this.getHandle().getSound());
+        return CraftSound.minecraftToBukkit(this.getHandle().sound());
     }
 
     public static DamageEffect getById(String id) {
         for (DamageEffects damageEffects : DamageEffects.values()) {
-            if (damageEffects.asString().equalsIgnoreCase(id)) {
+            if (damageEffects.getSerializedName().equalsIgnoreCase(id)) {
                 return CraftDamageEffect.toBukkit(damageEffects);
             }
         }

@@ -1,9 +1,8 @@
 package org.cardboardpowered.interfaces;
 
 import java.util.UUID;
-
-import net.minecraft.network.ClientConnection;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.network.Connection;
+import net.minecraft.server.level.ServerPlayer;
 
 public interface IMixinServerLoginNetworkHandler {
 
@@ -11,9 +10,9 @@ public interface IMixinServerLoginNetworkHandler {
 
     void setHostname(String hostname);
 
-	ClientConnection cb_get_connection();
+	Connection cb_get_connection();
 
-	ServerPlayerEntity cardboard$get_player();
+	ServerPlayer cardboard$get_player();
 
 	/**
 	 * @since 1.21.10

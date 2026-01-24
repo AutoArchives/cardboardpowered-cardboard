@@ -1,6 +1,5 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.passive.MuleEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
@@ -8,7 +7,7 @@ import org.bukkit.entity.Mule;
 
 public class CardboardMule extends CardboardChestedHorse implements Mule {
 
-    public CardboardMule(CraftServer server, MuleEntity entity) {
+    public CardboardMule(CraftServer server, net.minecraft.world.entity.animal.equine.Mule entity) {
         super(server, entity);
     }
 

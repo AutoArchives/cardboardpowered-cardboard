@@ -92,27 +92,25 @@ import me.isaiah.common.cmixin.IMixinItemStack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.minecraft.SharedConstants;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.datafixer.Schemas;
-import net.minecraft.datafixer.TypeReferences;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtHelper;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.potion.Potion;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryOps;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.util.datafix.DataFixers;
+import net.minecraft.util.datafix.fixes.References;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.craftbukkit.block.data.IMagicNumbers;
 import org.bukkit.craftbukkit.damage.CraftDamageEffect;
 import org.bukkit.craftbukkit.damage.CraftDamageSourceBuilder;
@@ -157,33 +155,33 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     private static final Map<Item, Material> ITEM_MATERIAL = new HashMap<>();
     private static final Map<Material, Item> MATERIAL_ITEM = new HashMap<>();
     private static final Map<Material, Block> MATERIAL_BLOCK = new HashMap<>();
-    private static final Map<net.minecraft.fluid.Fluid, org.bukkit.Fluid> FLUID_MATERIAL = new HashMap<>();
-    private static final Map<Material, net.minecraft.fluid.Fluid> MATERIAL_FLUID = new HashMap<>();
-    private static final Map<org.bukkit.entity.EntityType, net.minecraft.entity.EntityType<?>> ENTITY_TYPE_ENTITY_TYPES = new HashMap();
-    private static final Map<net.minecraft.entity.EntityType<?>, org.bukkit.entity.EntityType> ENTITY_TYPES_ENTITY_TYPE = new HashMap();
+    private static final Map<net.minecraft.world.level.material.Fluid, org.bukkit.Fluid> FLUID_MATERIAL = new HashMap<>();
+    private static final Map<Material, net.minecraft.world.level.material.Fluid> MATERIAL_FLUID = new HashMap<>();
+    private static final Map<org.bukkit.entity.EntityType, net.minecraft.world.entity.EntityType<?>> ENTITY_TYPE_ENTITY_TYPES = new HashMap();
+    private static final Map<net.minecraft.world.entity.EntityType<?>, org.bukkit.entity.EntityType> ENTITY_TYPES_ENTITY_TYPE = new HashMap();
     
-    private static final StringNbtReader<NbtElement> SNBT_REGISTRY_UNAWARE_PARSER;
+    private static final TagParser<Tag> SNBT_REGISTRY_UNAWARE_PARSER;
 
     static {
         BlockImplUtil.setMN((IMagicNumbers)INSTANCE);
         
         for (org.bukkit.entity.EntityType type : org.bukkit.entity.EntityType.values()) {
             if (type == org.bukkit.entity.EntityType.UNKNOWN) continue;
-            ENTITY_TYPE_ENTITY_TYPES.put(type, Registries.ENTITY_TYPE.get(CraftNamespacedKey.toMinecraft(type.getKey())));
-            ENTITY_TYPES_ENTITY_TYPE.put(Registries.ENTITY_TYPE.get(CraftNamespacedKey.toMinecraft(type.getKey())), type);
+            ENTITY_TYPE_ENTITY_TYPES.put(type, BuiltInRegistries.ENTITY_TYPE.getValue(CraftNamespacedKey.toMinecraft(type.getKey())));
+            ENTITY_TYPES_ENTITY_TYPE.put(BuiltInRegistries.ENTITY_TYPE.getValue(CraftNamespacedKey.toMinecraft(type.getKey())), type);
         }
         
-        for (Block block : Registries.BLOCK)
-            BLOCK_MATERIAL.put(block, Material.getMaterial(Registries.BLOCK.getId(block).getPath().toUpperCase(Locale.ROOT)));
+        for (Block block : BuiltInRegistries.BLOCK)
+            BLOCK_MATERIAL.put(block, Material.getMaterial(BuiltInRegistries.BLOCK.getKey(block).getPath().toUpperCase(Locale.ROOT)));
 
-        for (Item item : Registries.ITEM)
-            ITEM_MATERIAL.put(item, Material.getMaterial(Registries.ITEM.getId(item).getPath().toUpperCase(Locale.ROOT)));
+        for (Item item : BuiltInRegistries.ITEM)
+            ITEM_MATERIAL.put(item, Material.getMaterial(BuiltInRegistries.ITEM.getKey(item).getPath().toUpperCase(Locale.ROOT)));
 
         //for (net.minecraft.fluid.Fluid fluid : Registries.FLUID)
         //    FLUID_MATERIAL.put(fluid, org.bukkit.Registries.FLUID.get(CraftNamespacedKey.fromMinecraft(Registries.FLUID.getId(fluid))));
 
-        for (net.minecraft.fluid.Fluid fluidType : Registries.FLUID) {
-            if (Registries.FLUID.getId(fluidType).getNamespace().equals(NamespacedKey.MINECRAFT)) {
+        for (net.minecraft.world.level.material.Fluid fluidType : BuiltInRegistries.FLUID) {
+            if (BuiltInRegistries.FLUID.getKey(fluidType).getNamespace().equals(NamespacedKey.MINECRAFT)) {
                 //Fluid fluid = org.bukkit.Registries.FLUID.get(CraftNamespacedKey.fromMinecraft(Registries.FLUID.getId(fluidType)));
                // if (fluid != null) {
                // 	FLUID_MATERIAL.put(fluidType, fluid);
@@ -195,12 +193,12 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
             if (material.isLegacy()) continue;
 
             Identifier key = key(material);
-            Registries.ITEM.getOptionalValue(key).ifPresent((item) -> MATERIAL_ITEM.put(material, item));
-            Registries.BLOCK.getOptionalValue(key).ifPresent((block) -> MATERIAL_BLOCK.put(material, block));
-            Registries.FLUID.getOptionalValue(key).ifPresent((fluid) -> MATERIAL_FLUID.put(material, fluid));
+            BuiltInRegistries.ITEM.getOptional(key).ifPresent((item) -> MATERIAL_ITEM.put(material, item));
+            BuiltInRegistries.BLOCK.getOptional(key).ifPresent((block) -> MATERIAL_BLOCK.put(material, block));
+            BuiltInRegistries.FLUID.getOptional(key).ifPresent((fluid) -> MATERIAL_FLUID.put(material, fluid));
         }
         
-        SNBT_REGISTRY_UNAWARE_PARSER = StringNbtReader.fromOps(NbtOps.INSTANCE);
+        SNBT_REGISTRY_UNAWARE_PARSER = TagParser.create(NbtOps.INSTANCE);
     }
 
     public static final Map<String, Material> BY_NAME = Unsafe.getStatic(Material.class, "BY_NAME");
@@ -215,9 +213,9 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         for (Material material : Material.values()) {
             if (material.isLegacy()) continue;
             Identifier key = key(material);
-            Registries.ITEM.getOptionalValue(key).ifPresent((item) -> MATERIAL_ITEM.put(material, item));
-            Registries.BLOCK.getOptionalValue(key).ifPresent((block) -> MATERIAL_BLOCK.put(material, block));
-            Registries.FLUID.getOptionalValue(key).ifPresent((fluid) -> MATERIAL_FLUID.put(material, fluid));
+            BuiltInRegistries.ITEM.getOptional(key).ifPresent((item) -> MATERIAL_ITEM.put(material, item));
+            BuiltInRegistries.BLOCK.getOptional(key).ifPresent((block) -> MATERIAL_BLOCK.put(material, block));
+            BuiltInRegistries.FLUID.getOptional(key).ifPresent((fluid) -> MATERIAL_FLUID.put(material, fluid));
         }
     }
     
@@ -240,8 +238,8 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         List<Material> list = new ArrayList<>();
 
         String lastMod = "";
-        for (Block block : Registries.BLOCK) {
-            Identifier id = Registries.BLOCK.getId(block);
+        for (Block block : BuiltInRegistries.BLOCK) {
+            Identifier id = BuiltInRegistries.BLOCK.getKey(block);
             String name = standardize(id);
             String nam = id.getNamespace().toUpperCase(Locale.ROOT) + "_" + id.getPath().toUpperCase(Locale.ROOT);
             if (id.getNamespace().startsWith("minecraft")) {
@@ -281,8 +279,8 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
             MATERIAL_BLOCK.put(m, block);
         }
 
-        for (Item item : Registries.ITEM) {
-            Identifier id = Registries.ITEM.getId(item);
+        for (Item item : BuiltInRegistries.ITEM) {
+            Identifier id = BuiltInRegistries.ITEM.getKey(item);
             String name = standardize(id);
             String nam = id.getNamespace().toUpperCase(Locale.ROOT) + "_" + id.getPath().toUpperCase(Locale.ROOT);
             if (id.getNamespace().startsWith("minecraft")) {
@@ -329,24 +327,24 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 
         for (Material material : list) {
             Identifier key = key(material);
-            Registries.ITEM.getOptionalValue(key).ifPresent((item) -> MATERIAL_ITEM.put(material, item));
-            Registries.BLOCK.getOptionalValue(key).ifPresent((block) -> MATERIAL_BLOCK.put(material, block));
-            Registries.FLUID.getOptionalValue(key).ifPresent((fluid) -> MATERIAL_FLUID.put(material, fluid));
+            BuiltInRegistries.ITEM.getOptional(key).ifPresent((item) -> MATERIAL_ITEM.put(material, item));
+            BuiltInRegistries.BLOCK.getOptional(key).ifPresent((block) -> MATERIAL_BLOCK.put(material, block));
+            BuiltInRegistries.FLUID.getOptional(key).ifPresent((fluid) -> MATERIAL_FLUID.put(material, fluid));
         }
     }
 
     public static HashMap<String, Material> getModdedMaterials() {
         HashMap<String, Material> map = new HashMap<>();
-        for (Block block : Registries.BLOCK) {
-            Identifier id = Registries.BLOCK.getId(block);
+        for (Block block : BuiltInRegistries.BLOCK) {
+            Identifier id = BuiltInRegistries.BLOCK.getKey(block);
             String name = standardize(id);
             if (id.getNamespace().startsWith("minecraft")) continue;
 
             map.put(name, Material.getMaterial(id.getNamespace().toUpperCase(Locale.ROOT) + "_" + id.getPath().toUpperCase(Locale.ROOT)));
         }
 
-        for (Item item : Registries.ITEM) {
-            Identifier id = Registries.ITEM.getId(item);
+        for (Item item : BuiltInRegistries.ITEM) {
+            Identifier id = BuiltInRegistries.ITEM.getKey(item);
             String name = standardize(id);
             if (id.getNamespace().startsWith("minecraft")) continue;
 
@@ -373,7 +371,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     }
 
     public static Material getMaterial(Block block) {
-        Identifier id = Registries.BLOCK.getId(block);
+        Identifier id = BuiltInRegistries.BLOCK.getKey(block);
         Material m = BLOCK_MATERIAL.getOrDefault(block, Material.getMaterial(id.getNamespace().toUpperCase(Locale.ROOT) + "_" + id.getPath().toUpperCase(Locale.ROOT)));
         BLOCK_MATERIAL.put(block, m);
         MATERIAL_BLOCK.put(m, block);
@@ -402,8 +400,8 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         IMixinMaterial mm = (IMixinMaterial)(Object) mat;
         if (!mm.isModded()) return null;
 
-        Identifier id = Identifier.of(mm.getModdedData().getId());
-        Item item = Registries.ITEM.get(id);
+        Identifier id = Identifier.parse(mm.getModdedData().getId());
+        Item item = BuiltInRegistries.ITEM.getValue(id);
         MATERIAL_ITEM.put(mat, item);
         return item;
     }
@@ -417,8 +415,8 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         IMixinMaterial mm = (IMixinMaterial)(Object) mat;
         if (!mm.isModded()) return null;
 
-        Identifier id = Identifier.of(mm.getModdedData().getId());
-        Block block = Registries.BLOCK.get(id);
+        Identifier id = Identifier.parse(mm.getModdedData().getId());
+        Block block = BuiltInRegistries.BLOCK.getValue(id);
         MATERIAL_BLOCK.put(mat, block);
         return block;
     }
@@ -466,10 +464,10 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         // Fastpath up to date materials
         if (version == this.getDataVersion()) return Material.getMaterial(material);
 
-        Dynamic<NbtElement> name = new Dynamic<>(NbtOps.INSTANCE, NbtString.of("minecraft:" + material.toLowerCase(Locale.ROOT)));
-        Dynamic<NbtElement> converted = Schemas.getFixer().update(TypeReferences.ITEM_NAME, name, version, this.getDataVersion());
+        Dynamic<Tag> name = new Dynamic<>(NbtOps.INSTANCE, StringTag.valueOf("minecraft:" + material.toLowerCase(Locale.ROOT)));
+        Dynamic<Tag> converted = DataFixers.getDataFixer().update(References.ITEM_NAME, name, version, this.getDataVersion());
 
-        if (name.equals(converted)) converted = Schemas.getFixer().update(TypeReferences.BLOCK_NAME, name, version, this.getDataVersion());
+        if (name.equals(converted)) converted = DataFixers.getDataFixer().update(References.BLOCK_NAME, name, version, this.getDataVersion());
         return Material.matchMaterial(converted.asString(""));
     }
 
@@ -485,7 +483,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 
     @Override
     public ItemStack modifyItemStack(ItemStack stack, String arguments) {
-        net.minecraft.item.ItemStack nmsStack = CraftItemStack.asNMSCopy(stack);
+        net.minecraft.world.item.ItemStack nmsStack = CraftItemStack.asNMSCopy(stack);
 
         /*try {
             nmsStack.setNbt((NbtCompound) StringNbtReader.parse(arguments));
@@ -621,11 +619,11 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         public static final int TAG_ANY_NUMBER = 99;
     }
 
-    public static Fluid getFluid(net.minecraft.fluid.Fluid fluid) {
+    public static Fluid getFluid(net.minecraft.world.level.material.Fluid fluid) {
         return FLUID_MATERIAL.get(fluid);
     }
 
-    public static net.minecraft.fluid.Fluid getFluid(Fluid fluid) {
+    public static net.minecraft.world.level.material.Fluid getFluid(Fluid fluid) {
         return MATERIAL_FLUID.get(fluid);
     }
 
@@ -634,7 +632,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     	Preconditions.checkNotNull(data, "null cannot be deserialized");
         Preconditions.checkArgument(data.length > 0, "cannot deserialize nothing");
 
-        NbtCompound compound = deserializeNbtFromBytes(data);
+        CompoundTag compound = deserializeNbtFromBytes(data);
         return deserializeItem(compound);
     }
 
@@ -657,7 +655,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     @Override
     public String getTranslationKey(EntityType type) {
     	Preconditions.checkArgument(type.getName() != null, "Invalid name of EntityType %s for translation key", type);
-        return net.minecraft.entity.EntityType.get(type.getName()).map(net.minecraft.entity.EntityType::getTranslationKey).orElseThrow();
+        return net.minecraft.world.entity.EntityType.byString(type.getName()).map(net.minecraft.world.entity.EntityType::getDescriptionId).orElseThrow();
     }
 
     @Override
@@ -675,8 +673,8 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     	Preconditions.checkNotNull(item, "null cannot be serialized");
         Preconditions.checkArgument(!item.isEmpty(), "Empty itemstack cannot be serialized");
         return this.serializeNbtToBytes(
-           (NbtCompound)net.minecraft.item.ItemStack.CODEC
-              .encodeStart(CraftServer.server.getRegistryManager().getOps(NbtOps.INSTANCE), CraftItemStack.unwrap(item))
+           (CompoundTag)net.minecraft.world.item.ItemStack.CODEC
+              .encodeStart(CraftServer.server.registryAccess().createSerializationContext(NbtOps.INSTANCE), CraftItemStack.unwrap(item))
               .getOrThrow()
         );
     }
@@ -708,8 +706,8 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 
     @Override
     public String getTranslationKey(ItemStack arg0) {
-    	net.minecraft.item.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(arg0);
-        return nmsItemStack.getItem().getTranslationKey();
+    	net.minecraft.world.item.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(arg0);
+        return nmsItemStack.getItem().getDescriptionId();
     }
 
     @Override
@@ -788,7 +786,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 	@SuppressWarnings("resource")
 	@Override
 	public @NotNull String getMainLevelName() {
-        return ((net.minecraft.server.dedicated.MinecraftDedicatedServer) IMixinMinecraftServer.getServer()).getProperties().levelName;
+        return ((net.minecraft.server.dedicated.DedicatedServer) IMixinMinecraftServer.getServer()).getProperties().levelName;
 	}
 
 	@Override
@@ -829,7 +827,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 	@Override
     public String getBlockTranslationKey(Material material) {
         Block block = CraftMagicNumbers.getBlock(material);
-        return block != null ? block.getTranslationKey() : null;
+        return block != null ? block.getDescriptionId() : null;
     }
 
 	// @Override
@@ -841,14 +839,14 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 	@Override
     public String getItemTranslationKey(Material material) {
         Item item = CraftMagicNumbers.getItem(material);
-        return item != null ? item.getTranslationKey() : null;
+        return item != null ? item.getDescriptionId() : null;
     }
 	
-    public static net.minecraft.entity.EntityType<?> getEntityTypes(org.bukkit.entity.EntityType type) {
+    public static net.minecraft.world.entity.EntityType<?> getEntityTypes(org.bukkit.entity.EntityType type) {
         return ENTITY_TYPE_ENTITY_TYPES.get(type);
     }
 
-    public static org.bukkit.entity.EntityType getEntityType(net.minecraft.entity.EntityType<?> entityTypes) {
+    public static org.bukkit.entity.EntityType getEntityType(net.minecraft.world.entity.EntityType<?> entityTypes) {
         return ENTITY_TYPES_ENTITY_TYPE.get(entityTypes);
     }
 
@@ -862,7 +860,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 
 	@Override
 	public InternalPotionData getInternalPotionData(NamespacedKey key) {
-		Potion potReg = CraftRegistry.getMinecraftRegistry(RegistryKeys.POTION).getOptionalValue(CraftNamespacedKey.toMinecraft(key)).orElseThrow();
+		Potion potReg = CraftRegistry.getMinecraftRegistry(Registries.POTION).getOptional(CraftNamespacedKey.toMinecraft(key)).orElseThrow();
         return new CraftPotionType(key, potReg);
 	}
 	
@@ -870,7 +868,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 
 	@Override
 	public String getTranslationKey(Attribute attribute) {
-        return CraftAttribute.bukkitToMinecraft(attribute).getTranslationKey();
+        return CraftAttribute.bukkitToMinecraft(attribute).getDescriptionId();
 	}
 
 	// @Override
@@ -885,8 +883,8 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 
 	@Override
 	public org.bukkit.Color getSpawnEggLayerColor(final EntityType entityType, final int layer) {
-		final net.minecraft.entity.EntityType<?> nmsType = org.bukkit.craftbukkit.entity.CraftEntityType.bukkitToMinecraft(entityType);
-		final net.minecraft.item.SpawnEggItem eggItem = net.minecraft.item.SpawnEggItem.forEntity(nmsType);
+		final net.minecraft.world.entity.EntityType<?> nmsType = org.bukkit.craftbukkit.entity.CraftEntityType.bukkitToMinecraft(entityType);
+		final net.minecraft.world.item.SpawnEggItem eggItem = net.minecraft.world.item.SpawnEggItem.byId(nmsType);
 		if (eggItem != null) {
 			throw new UnsupportedOperationException("Not yet implemented");
 		}
@@ -901,16 +899,16 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 
 	@Override
 	public List<Component> computeTooltipLines(ItemStack itemStack, TooltipContext tooltipContext, Player player) {
-        TooltipType.Default default_type = tooltipContext.isAdvanced() ? TooltipType.ADVANCED : TooltipType.BASIC;
+        TooltipFlag.Default default_type = tooltipContext.isAdvanced() ? TooltipFlag.ADVANCED : TooltipFlag.NORMAL;
         
         if (tooltipContext.isCreative()) {
-        	default_type = default_type.withCreative();
+        	default_type = default_type.asCreative();
         }
         
-        List<Text> lines = CraftItemStack.asNMSCopy(itemStack).getTooltip(
-        		Item.TooltipContext.create(
-        			player == null ? CraftServer.server.getRegistryManager() :
-        						((CraftPlayer)player).getHandle().getEntityWorld().getRegistryManager()
+        List<net.minecraft.network.chat.Component> lines = CraftItemStack.asNMSCopy(itemStack).getTooltipLines(
+        		Item.TooltipContext.of(
+        			player == null ? CraftServer.server.registryAccess() :
+        						((CraftPlayer)player).getHandle().level().registryAccess()
         		),
         		player == null ? null : ((CraftPlayer)player).getHandle(), default_type
         );
@@ -942,12 +940,12 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 		JsonObject item;
         Preconditions.checkNotNull((Object)itemStack, (Object)"Cannot serialize empty ItemStack");
         Preconditions.checkArgument((!itemStack.isEmpty() ? 1 : 0) != 0, (Object)"Cannot serialize empty ItemStack");
-        DynamicRegistryManager.Immutable reg = CraftServer.server.getRegistryManager();
-        RegistryOps ops = reg.getOps(JsonOps.INSTANCE);
+        RegistryAccess.Frozen reg = CraftServer.server.registryAccess();
+        RegistryOps ops = reg.createSerializationContext(JsonOps.INSTANCE);
         // TODO
         //NbtComponent.SERIALIZE_CUSTOM_AS_SNBT.set(true);
         try {
-            item = ((JsonElement)net.minecraft.item.ItemStack.CODEC.encodeStart(ops, CraftItemStack.unwrap(itemStack)).getOrThrow()).getAsJsonObject();
+            item = ((JsonElement)net.minecraft.world.item.ItemStack.CODEC.encodeStart(ops, CraftItemStack.unwrap(itemStack)).getOrThrow()).getAsJsonObject();
         } finally {
             // TODO
         	// NbtComponent.SERIALIZE_CUSTOM_AS_SNBT.set(false);
@@ -962,16 +960,16 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 		int dataVersion = data.get("DataVersion").getAsInt();
 		int currentVersion = INSTANCE.getDataVersion();
 		data = (JsonObject)CraftServer.server
-				.dataFixer
-				.update(TypeReferences.ITEM_STACK, new Dynamic<>(JsonOps.INSTANCE, data), dataVersion, currentVersion)
+				.fixerUpper
+				.update(References.ITEM_STACK, new Dynamic<>(JsonOps.INSTANCE, data), dataVersion, currentVersion)
 				.getValue();
-		DynamicOps<JsonElement> ops = CraftServer.server.getRegistryManager().getOps(JsonOps.INSTANCE);
+		DynamicOps<JsonElement> ops = CraftServer.server.registryAccess().createSerializationContext(JsonOps.INSTANCE);
 		return CraftItemStack.asCraftMirror(
-				(net.minecraft.item.ItemStack)net.minecraft.item.ItemStack.CODEC.parse(ops, data).getOrThrow(IllegalArgumentException::new)
+				(net.minecraft.world.item.ItemStack)net.minecraft.world.item.ItemStack.CODEC.parse(ops, data).getOrThrow(IllegalArgumentException::new)
 				);
 	}
 	
-	private byte[] serializeNbtToBytes(NbtCompound compound) {
+	private byte[] serializeNbtToBytes(CompoundTag compound) {
         compound.putInt("DataVersion", getDataVersion());
         java.io.ByteArrayOutputStream outputStream = new java.io.ByteArrayOutputStream();
         try {
@@ -985,16 +983,16 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         return outputStream.toByteArray();
     }
 
-    private NbtCompound deserializeNbtFromBytes(byte[] data) {
-        NbtCompound compound;
+    private CompoundTag deserializeNbtFromBytes(byte[] data) {
+        CompoundTag compound;
         try {
             compound = net.minecraft.nbt.NbtIo.readCompressed(
-                new java.io.ByteArrayInputStream(data), net.minecraft.nbt.NbtSizeTracker.ofUnlimitedBytes()
+                new java.io.ByteArrayInputStream(data), net.minecraft.nbt.NbtAccounter.unlimitedHeap()
             );
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        int dataVersion = compound.getInt("DataVersion", 0);
+        int dataVersion = compound.getIntOr("DataVersion", 0);
         Preconditions.checkArgument(dataVersion <= getDataVersion(), "Newer version! Server downgrades are not supported!");
         return compound;
     }
@@ -1024,35 +1022,35 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     	final boolean allowMiscSerialization = flags.contains(EntitySerializationFlag.MISC);
     	final boolean includeNonSaveable = allowPlayerSerialization || allowMiscSerialization;
 
-    	net.minecraft.entity.Entity nmsEntity = ((CraftEntity) entity).getHandle();
-    	(serializePassangers ? nmsEntity.streamSelfAndPassengers() : Stream.of(nmsEntity)).forEach(e -> {
+    	net.minecraft.world.entity.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+    	(serializePassangers ? nmsEntity.getSelfAndPassengers() : Stream.of(nmsEntity)).forEach(e -> {
     		// Ensure force flag is not needed
     		Preconditions.checkArgument(
     				(e.getBukkitEntity().isValid() && e.getBukkitEntity().isPersistent()) || forceSerialization,
     				"Cannot serialize invalid or non-persistent entity %s(%s) without the FORCE flag",
-    				e.getType().getUntranslatedName(),
-    				e.getUuidAsString()
+    				e.getType().toShortString(),
+    				e.getStringUUID()
     				);
 
-    		if (e instanceof PlayerEntity) {
+    		if (e instanceof net.minecraft.world.entity.player.Player) {
     			// Ensure player flag is not needed
     			Preconditions.checkArgument(
     					allowPlayerSerialization,
     					"Cannot serialize player(%s) without the PLAYER flag",
-    					e.getUuidAsString()
+    					e.getStringUUID()
     					);
     		} else {
     			// Ensure player flag is not needed
     			Preconditions.checkArgument(
-    					nmsEntity.getType().isSaveable() || allowMiscSerialization,
+    					nmsEntity.getType().canSerialize() || allowMiscSerialization,
     					"Cannot serialize misc non-saveable entity %s(%s) without the MISC flag",
-    					e.getType().getUntranslatedName(),
-    					e.getUuidAsString()
+    					e.getType().toShortString(),
+    					e.getStringUUID()
     					);
     		}
     	});
 
-    	NbtCompound compound = new NbtCompound();
+    	CompoundTag compound = new CompoundTag();
     	if (serializePassangers) {
     		// TODO
     		// if (!nmsEntity.saveAsPassenger(compound, true, includeNonSaveable, forceSerialization)) {
@@ -1083,8 +1081,8 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     	if (itemStack.isEmpty()) {
     		return Map.of("id", "minecraft:air", "DataVersion", this.getDataVersion(), "schema_version", 1);
     	}
-    	NbtCompound tag = (NbtCompound)net.minecraft.item.ItemStack.CODEC.encodeStart(CraftRegistry.getMinecraftRegistry().getOps(NbtOps.INSTANCE), CraftItemStack.asNMSCopy(itemStack)).getOrThrow();
-    	NbtHelper.putDataVersion(tag);
+    	CompoundTag tag = (CompoundTag)net.minecraft.world.item.ItemStack.CODEC.encodeStart(CraftRegistry.getMinecraftRegistry().createSerializationContext(NbtOps.INSTANCE), CraftItemStack.asNMSCopy(itemStack)).getOrThrow();
+    	NbtUtils.addCurrentDataVersion(tag);
     	LinkedHashMap<String, Object> ret = new LinkedHashMap<String, Object>();
     	tag.asCompound().get().forEach((key, value) -> {
     		switch (key) {
@@ -1123,7 +1121,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 
     	int version = args.getOrDefault("schema_version", 1) instanceof Number val ? val.intValue() : -1;
     	
-    	NbtCompound tag = new NbtCompound();
+    	CompoundTag tag = new CompoundTag();
     	args.forEach((key, value) -> {
     		switch (key) {
     		case "id": {
@@ -1148,11 +1146,11 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     				} else {
     					throw new IllegalArgumentException("components must be a Map");
     				}
-    				NbtCompound componentsTag = new NbtCompound();
+    				CompoundTag componentsTag = new CompoundTag();
     				componentMap.forEach((componentKey, componentString) -> {
-    					NbtElement componentTag;
+    					Tag componentTag;
     					try {
-    						componentTag = SNBT_REGISTRY_UNAWARE_PARSER.read((String)componentString);
+    						componentTag = SNBT_REGISTRY_UNAWARE_PARSER.parseFully((String)componentString);
     					}
     					catch (CommandSyntaxException e2) {
     						throw new RuntimeException("Error parsing item stack data components", e2);
@@ -1180,18 +1178,18 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     	return this.deserializeItem(tag);
     }
 
-    private ItemStack deserializeItem(NbtCompound compound) {
+    private ItemStack deserializeItem(CompoundTag compound) {
     	
-    	int dataVersion = compound.getInt("DataVersion", 0);
+    	int dataVersion = compound.getIntOr("DataVersion", 0);
 
     	// compound = PlatformHooks.get().convertNBT(TypeReferences.ITEM_STACK, Schemas.getFixer(), compound, dataVersion, this.getDataVersion());
-    	compound = platformhooks$convertNBT(TypeReferences.ITEM_STACK, Schemas.getFixer(), compound, dataVersion, this.getDataVersion());
+    	compound = platformhooks$convertNBT(References.ITEM_STACK, DataFixers.getDataFixer(), compound, dataVersion, this.getDataVersion());
 
 
-    	if (compound.getString("id", "minecraft:air").equals("minecraft:air")) {
-    		return CraftItemStack.asCraftMirror(net.minecraft.item.ItemStack.EMPTY);
+    	if (compound.getStringOr("id", "minecraft:air").equals("minecraft:air")) {
+    		return CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.EMPTY);
     	}
-    	return CraftItemStack.asCraftMirror((net.minecraft.item.ItemStack)net.minecraft.item.ItemStack.CODEC.parse(CraftRegistry.getMinecraftRegistry().getOps(NbtOps.INSTANCE), compound).getOrThrow());
+    	return CraftItemStack.asCraftMirror((net.minecraft.world.item.ItemStack)net.minecraft.world.item.ItemStack.CODEC.parse(CraftRegistry.getMinecraftRegistry().createSerializationContext(NbtOps.INSTANCE), compound).getOrThrow());
     }
 
     /**
@@ -1199,8 +1197,8 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
      * 
      * @see {@link ca.spottedleaf.moonrise.paper.PaperHooks}
      */
-    public NbtCompound platformhooks$convertNBT(TypeReference type, DataFixer dataFixer, NbtCompound nbt, int fromVersion, int toVersion) {
-    	return (NbtCompound)dataFixer.update(type, new Dynamic<>(NbtOps.INSTANCE, nbt), fromVersion, toVersion).getValue();
+    public CompoundTag platformhooks$convertNBT(TypeReference type, DataFixer dataFixer, CompoundTag nbt, int fromVersion, int toVersion) {
+    	return (CompoundTag)dataFixer.update(type, new Dynamic<>(NbtOps.INSTANCE, nbt), fromVersion, toVersion).getValue();
     }
 
 

@@ -1,6 +1,6 @@
 package org.bukkit.craftbukkit.block.data;
 
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 import org.bukkit.Material;
 
 public interface IMagicNumbers {

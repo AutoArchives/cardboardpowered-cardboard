@@ -9,17 +9,15 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.event.HoverEvent.ShowItem;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.hover.content.Content;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.registry.entry.RegistryEntryList.Named;
-import net.minecraft.registry.tag.EnchantmentTags;
-
+import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Random;
@@ -47,7 +45,7 @@ import org.jetbrains.annotations.Range;
 
 public final class CraftItemFactory implements ItemFactory {
 
-	private static final net.minecraft.util.math.random.Random randomSource = net.minecraft.util.math.random.Random.create();
+	private static final net.minecraft.util.RandomSource randomSource = net.minecraft.util.RandomSource.create();
 	
     protected static final Color DEFAULT_LEATHER_COLOR = Color.fromRGB(0xA06540);
     protected static final Collection<String> KNOWN_NBT_ATTRIBUTE_NAMES;
@@ -443,31 +441,31 @@ public final class CraftItemFactory implements ItemFactory {
         return CraftItemFactory.enchantItem(CraftItemFactory.randomSource, itemStack, level, allowTreasures);
     }
 
-    private static ItemStack enchantItem(net.minecraft.util.math.random.Random source, ItemStack itemStack, int level, boolean allowTreasures) {
+    private static ItemStack enchantItem(net.minecraft.util.RandomSource source, ItemStack itemStack, int level, boolean allowTreasures) {
         itemStack = CraftItemStack.asCraftCopy(itemStack);
         CraftItemStack craft = (CraftItemStack) itemStack;
-        DynamicRegistryManager registry = CraftRegistry.getMinecraftRegistry();
-        Optional<RegistryEntryList.Named<Enchantment>> optional = (allowTreasures) ? Optional.empty() : registry.getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.IN_ENCHANTING_TABLE);
-        return CraftItemStack.asCraftMirror(EnchantmentHelper.enchant(source, craft.handle, level, registry, optional));
+        RegistryAccess registry = CraftRegistry.getMinecraftRegistry();
+        Optional<HolderSet.Named<Enchantment>> optional = (allowTreasures) ? Optional.empty() : registry.lookupOrThrow(Registries.ENCHANTMENT).get(EnchantmentTags.IN_ENCHANTING_TABLE);
+        return CraftItemStack.asCraftMirror(EnchantmentHelper.enchantItem(source, craft.handle, level, registry, optional));
     }
 
 	@Override
     public ItemStack enchantWithLevels(ItemStack itemStack, int levels, boolean allowTreasure, Random random) {
-        return this.enchantWithLevels(itemStack, levels, allowTreasure ? Optional.empty() : CraftServer.server.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(EnchantmentTags.IN_ENCHANTING_TABLE), random);
+        return this.enchantWithLevels(itemStack, levels, allowTreasure ? Optional.empty() : CraftServer.server.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).get(EnchantmentTags.IN_ENCHANTING_TABLE), random);
     }
 
 	@Override
     public ItemStack enchantWithLevels(ItemStack itemStack, int levels, RegistryKeySet<org.bukkit.enchantments.Enchantment> keySet, Random random) {
-		return this.enchantWithLevels(itemStack, levels, Optional.of(PaperRegistrySets.convertToNms(RegistryKeys.ENCHANTMENT, CraftServer.server.getRegistryManager().getOps(NbtOps.INSTANCE).registryInfoGetter, keySet)), random);
+		return this.enchantWithLevels(itemStack, levels, Optional.of(PaperRegistrySets.convertToNms(Registries.ENCHANTMENT, CraftServer.server.registryAccess().createSerializationContext(NbtOps.INSTANCE).lookupProvider, keySet)), random);
     }
 
-    private ItemStack enchantWithLevels(ItemStack itemStack, int levels, Optional<? extends RegistryEntryList<net.minecraft.enchantment.Enchantment>> possibleEnchantments, Random random) {
-        net.minecraft.item.ItemStack internalStack = CraftItemStack.asNMSCopy(itemStack);
-        if (internalStack.hasEnchantments()) {
-            internalStack.set(DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT);
+    private ItemStack enchantWithLevels(ItemStack itemStack, int levels, Optional<? extends HolderSet<net.minecraft.world.item.enchantment.Enchantment>> possibleEnchantments, Random random) {
+        net.minecraft.world.item.ItemStack internalStack = CraftItemStack.asNMSCopy(itemStack);
+        if (internalStack.isEnchanted()) {
+            internalStack.set(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
         }
-        DynamicRegistryManager.Immutable registryAccess = CraftServer.server.getRegistryManager();
-        net.minecraft.item.ItemStack enchanted = EnchantmentHelper.enchant(new RandomSourceWrapper(random), internalStack, levels, registryAccess, possibleEnchantments);
+        RegistryAccess.Frozen registryAccess = CraftServer.server.registryAccess();
+        net.minecraft.world.item.ItemStack enchanted = EnchantmentHelper.enchantItem(new RandomSourceWrapper(random), internalStack, levels, registryAccess, possibleEnchantments);
         return CraftItemStack.asCraftMirror(enchanted);
     }
 

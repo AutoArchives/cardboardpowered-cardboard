@@ -1,8 +1,7 @@
 package org.cardboardpowered.impl.block;
 
-import net.minecraft.block.LecternBlock;
-import net.minecraft.block.entity.LecternBlockEntity;
-
+import net.minecraft.world.level.block.LecternBlock;
+import net.minecraft.world.level.block.entity.LecternBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -33,29 +32,29 @@ public class CardboardLectern extends CardboardBlockEntityState<LecternBlockEnti
 
     @Override
     public int getPage() {
-        return getSnapshot().getCurrentPage();
+        return getSnapshot().getPage();
     }
 
     @Override
     public void setPage(int page) {
-        getSnapshot().setCurrentPage(page);
+        getSnapshot().setPage(page);
     }
 
     @Override
     public Inventory getSnapshotInventory() {
-        return new CardboardLecternInventory(this.getSnapshot().inventory);
+        return new CardboardLecternInventory(this.getSnapshot().bookAccess);
     }
 
     @Override
     public Inventory getInventory() {
-        return (!this.isPlaced()) ? this.getSnapshotInventory() : new CardboardLecternInventory(this.getTileEntity().inventory);
+        return (!this.isPlaced()) ? this.getSnapshotInventory() : new CardboardLecternInventory(this.getTileEntity().bookAccess);
     }
 
     @Override
     public boolean update(boolean force, boolean applyPhysics) {
         boolean result = super.update(force, applyPhysics);
         if (result && this.isPlaced() && this.getType() == Material.LECTERN)
-            LecternBlock.setPowered(this.world.getHandle(), this.getPosition(), this.getHandle());
+            LecternBlock.signalPageChange(this.world.getHandle(), this.getPosition(), this.getHandle());
         return result;
     }
 

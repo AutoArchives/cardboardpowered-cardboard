@@ -1,11 +1,9 @@
 package org.bukkit.craftbukkit.scoreboard;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.scoreboard.ReadableScoreboardScore;
-import net.minecraft.scoreboard.ScoreHolder;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.text.Text;
-
+import net.minecraft.world.scores.ReadOnlyScoreInfo;
+import net.minecraft.world.scores.ScoreHolder;
+import net.minecraft.world.scores.Scoreboard;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scoreboard.Criteria;
@@ -28,12 +26,12 @@ public final class CardboardScore implements Score {
 
     @Override
     public OfflinePlayer getPlayer() {
-        return Bukkit.getOfflinePlayer(entry.getNameForScoreboard());
+        return Bukkit.getOfflinePlayer(entry.getScoreboardName());
     }
 
     @Override
     public String getEntry() {
-        return entry.getNameForScoreboard();
+        return entry.getScoreboardName();
     }
 
     @Override
@@ -45,10 +43,10 @@ public final class CardboardScore implements Score {
     public int getScore() throws IllegalStateException {
         Scoreboard board = objective.checkState().board;
 
-        if(board.getKnownScoreHolders().contains(entry)) {
-            ReadableScoreboardScore score = board.getScore(entry, objective.getHandle());
+        if(board.getTrackedPlayers().contains(entry)) {
+            ReadOnlyScoreInfo score = board.getPlayerScoreInfo(entry, objective.getHandle());
             if(score != null) {
-                return score.getScore();
+                return score.value();
             }
         }
 
@@ -57,14 +55,14 @@ public final class CardboardScore implements Score {
 
     @Override
     public void setScore(int score) throws IllegalStateException {
-        objective.checkState().board.getOrCreateScore(entry, objective.getHandle()).setScore(score);
+        objective.checkState().board.getOrCreatePlayerScore(entry, objective.getHandle()).set(score);
     }
 
     @Override
     public boolean isScoreSet() throws IllegalStateException {
         Scoreboard board = objective.checkState().board;
-        return board.getKnownScoreHolders().contains(entry) &&
-                board.getScore(entry, objective.getHandle()) != null;
+        return board.getTrackedPlayers().contains(entry) &&
+                board.getPlayerScoreInfo(entry, objective.getHandle()) != null;
     }
 
     @Override
@@ -85,7 +83,7 @@ public final class CardboardScore implements Score {
             return false;
         }
         Scoreboard board = this.objective.checkState().board;
-        ReadableScoreboardScore scoreInfo = board.getScore(this.entry, this.objective.getHandle());
+        ReadOnlyScoreInfo scoreInfo = board.getPlayerScoreInfo(this.entry, this.objective.getHandle());
         return scoreInfo != null && !scoreInfo.isLocked();
 	}
 
@@ -93,27 +91,27 @@ public final class CardboardScore implements Score {
 	public void setTriggerable(boolean triggerable) {
         Scoreboard board = this.objective.checkState().board;
         if (triggerable) {
-            board.getOrCreateScore(this.entry, this.objective.getHandle()).unlock();
+            board.getOrCreatePlayerScore(this.entry, this.objective.getHandle()).unlock();
         } else {
-            board.getOrCreateScore(this.entry, this.objective.getHandle()).lock();
+            board.getOrCreatePlayerScore(this.entry, this.objective.getHandle()).lock();
         }
 	}
 
 	@Override
 	public Component customName() {
         Scoreboard board = this.objective.checkState().board;
-        ReadableScoreboardScore scoreInfo = board.getScore(this.entry, this.objective.getHandle());
+        ReadOnlyScoreInfo scoreInfo = board.getPlayerScoreInfo(this.entry, this.objective.getHandle());
         if (scoreInfo == null) {
             return null;
         }
-        Text display = board.getOrCreateScore(this.entry, this.objective.getHandle()).getDisplayText();
+        net.minecraft.network.chat.Component display = board.getOrCreatePlayerScore(this.entry, this.objective.getHandle()).display();
         return display == null ? null : CardboardAdventure.asAdventure(display);
 	}
 
 	@Override
 	public void customName(@Nullable Component customName) {
 		Scoreboard board = this.objective.checkState().board;
-        board.getOrCreateScore(this.entry, this.objective.getHandle()).setDisplayText(CardboardAdventure.asVanilla(customName));
+        board.getOrCreatePlayerScore(this.entry, this.objective.getHandle()).display(CardboardAdventure.asVanilla(customName));
 	}
 
 	@Override

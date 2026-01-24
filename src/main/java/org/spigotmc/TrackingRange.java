@@ -1,6 +1,6 @@
 package org.spigotmc;
 
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 
 public class TrackingRange {
 

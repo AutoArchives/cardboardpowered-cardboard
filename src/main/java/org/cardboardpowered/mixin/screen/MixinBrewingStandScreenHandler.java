@@ -2,6 +2,10 @@ package org.cardboardpowered.mixin.screen;
 
 import org.cardboardpowered.impl.inventory.CardboardBrewerInventory;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.BrewingStandMenu;
+import net.minecraft.world.inventory.ContainerData;
 import org.bukkit.entity.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -11,31 +15,26 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.screen.BrewingStandScreenHandler;
-import net.minecraft.screen.PropertyDelegate;
-
-@Mixin(BrewingStandScreenHandler.class)
+@Mixin(BrewingStandMenu.class)
 public class MixinBrewingStandScreenHandler extends MixinScreenHandler {
 
     @Shadow
-    public Inventory inventory;
+    public Container brewingStand;
 
     private CardboardInventoryView bukkitEntity = null;
-    private PlayerInventory player;
+    private Inventory player;
 
-    @Inject(method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/inventory/Inventory;Lnet/minecraft/screen/PropertyDelegate;)V", at = @At("TAIL"))
-    public void setPlayerInv(int i, PlayerInventory inventory, Inventory iinventory, PropertyDelegate icontainerproperties, CallbackInfo ci) {
-        this.player = (PlayerInventory) inventory;
+    @Inject(method = "<init>(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/Container;Lnet/minecraft/world/inventory/ContainerData;)V", at = @At("TAIL"))
+    public void setPlayerInv(int i, Inventory inventory, Container iinventory, ContainerData icontainerproperties, CallbackInfo ci) {
+        this.player = (Inventory) inventory;
     }
 
     @Override
     public CardboardInventoryView getBukkitView() {
         if (bukkitEntity != null) return bukkitEntity;
 
-        CardboardBrewerInventory inventory = new CardboardBrewerInventory(this.inventory);
-        bukkitEntity = new CardboardInventoryView((Player)((IMixinServerEntityPlayer)this.player.player).getBukkitEntity(), inventory, (BrewingStandScreenHandler)(Object)this);
+        CardboardBrewerInventory inventory = new CardboardBrewerInventory(this.brewingStand);
+        bukkitEntity = new CardboardInventoryView((Player)((IMixinServerEntityPlayer)this.player.player).getBukkitEntity(), inventory, (BrewingStandMenu)(Object)this);
         return bukkitEntity;
     }
 

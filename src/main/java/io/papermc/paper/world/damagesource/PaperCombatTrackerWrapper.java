@@ -24,18 +24,16 @@ import io.papermc.paper.world.damagesource.PaperCombatEntryWrapper;
 import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.Component;
-import net.minecraft.entity.damage.DamageRecord;
-import net.minecraft.entity.damage.DamageTracker;
-import net.minecraft.entity.damage.FallLocation;
-import net.minecraft.util.Nullables;
+import net.minecraft.Optionull;
 import net.minecraft.util.Util;
+import net.minecraft.world.damagesource.FallLocation;
 import org.bukkit.entity.LivingEntity;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public record PaperCombatTrackerWrapper(DamageTracker handle) implements CombatTracker {
+public record PaperCombatTrackerWrapper(net.minecraft.world.damagesource.CombatTracker handle) implements CombatTracker {
 
     private static final BiMap<FallLocation, FallLocationType> FALL_LOCATION_MAPPING = Util.make(() -> {
         HashBiMap<FallLocation, FallLocationType> map = HashBiMap.create(8);
@@ -51,39 +49,39 @@ public record PaperCombatTrackerWrapper(DamageTracker handle) implements CombatT
     });
 
     public LivingEntity getEntity() {
-        return (LivingEntity) ( (IMixinEntity) this.handle.entity) .getBukkitEntity();
+        return (LivingEntity) ( (IMixinEntity) this.handle.mob) .getBukkitEntity();
     }
 
     public List<CombatEntry> getCombatEntries() {
-        ArrayList<CombatEntry> combatEntries = new ArrayList<CombatEntry>(this.handle.recentDamage.size());
-        this.handle.recentDamage.forEach(combatEntry -> combatEntries.add(new PaperCombatEntryWrapper((DamageRecord)combatEntry)));
+        ArrayList<CombatEntry> combatEntries = new ArrayList<CombatEntry>(this.handle.entries.size());
+        this.handle.entries.forEach(combatEntry -> combatEntries.add(new PaperCombatEntryWrapper((net.minecraft.world.damagesource.CombatEntry)combatEntry)));
         return combatEntries;
     }
 
     public void setCombatEntries(List<CombatEntry> combatEntries) {
-        this.handle.recentDamage.clear();
-        combatEntries.forEach(combatEntry -> this.handle.recentDamage.add(((PaperCombatEntryWrapper)combatEntry).handle()));
+        this.handle.entries.clear();
+        combatEntries.forEach(combatEntry -> this.handle.entries.add(((PaperCombatEntryWrapper)combatEntry).handle()));
     }
 
     public @Nullable CombatEntry computeMostSignificantFall() {
-        DamageRecord combatEntry = this.handle.getBiggestFall();
+        net.minecraft.world.damagesource.CombatEntry combatEntry = this.handle.getMostSignificantFall();
         return combatEntry == null ? null : new PaperCombatEntryWrapper(combatEntry);
     }
 
     public boolean isInCombat() {
-        return this.handle.recentlyAttacked;
+        return this.handle.inCombat;
     }
 
     public boolean isTakingDamage() {
-        return this.handle.hasDamage;
+        return this.handle.takingDamage;
     }
 
     public int getCombatDuration() {
-        return this.handle.getTimeSinceLastAttack();
+        return this.handle.getCombatDuration();
     }
 
     public void addCombatEntry(CombatEntry combatEntry) {
-        DamageRecord entry = ((PaperCombatEntryWrapper)combatEntry).handle();
+        net.minecraft.world.damagesource.CombatEntry entry = ((PaperCombatEntryWrapper)combatEntry).handle();
         // TODO
         // this.handle.recordDamageAndCheckCombatState(entry);
     }
@@ -98,8 +96,8 @@ public record PaperCombatTrackerWrapper(DamageTracker handle) implements CombatT
     }
 
     public FallLocationType calculateFallLocationType() {
-        FallLocation fallLocation = FallLocation.fromEntity(this.handle().entity);
-        return Nullables.map(fallLocation, PaperCombatTrackerWrapper::minecraftToPaper);
+        FallLocation fallLocation = FallLocation.getCurrentFallLocation(this.handle().mob);
+        return Optionull.map(fallLocation, PaperCombatTrackerWrapper::minecraftToPaper);
     }
 
     public static FallLocation paperToMinecraft(FallLocationType fallLocationType) {

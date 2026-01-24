@@ -1,13 +1,10 @@
 package org.cardboardpowered.mixin;
 
 import org.spongepowered.asm.mixin.Mixin;
-
+import net.minecraft.world.effect.MobEffects;
 import org.cardboardpowered.impl.CardboardPotionEffectType;
 
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffects;
-
-@Mixin(StatusEffects.class)
+@Mixin(MobEffects.class)
 public class MixinStatusEffects {
 
     static {

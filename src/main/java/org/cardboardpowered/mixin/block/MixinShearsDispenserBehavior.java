@@ -3,20 +3,18 @@ package org.cardboardpowered.mixin.block;
 import com.google.common.collect.Lists;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinWorld;
-import net.minecraft.block.DispenserBlock;
-import net.minecraft.block.dispenser.DispenserBehavior;
-import net.minecraft.block.dispenser.ShearsDispenserBehavior;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.Shearable;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.math.BlockPointer;
-
 import java.util.Collections;
 import java.util.List;
-
+import net.minecraft.core.dispenser.BlockSource;
+import net.minecraft.core.dispenser.DispenseItemBehavior;
+import net.minecraft.core.dispenser.ShearsDispenseItemBehavior;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Shearable;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.DispenserBlock;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -29,16 +27,16 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(ShearsDispenserBehavior.class)
+@Mixin(ShearsDispenseItemBehavior.class)
 public class MixinShearsDispenserBehavior {
 
     // todo: nonstatic
     private static Block cardboard_block;
     private static CraftItemStack cardboard_saved;
 
-    @Inject(at = @At("HEAD"), method = "dispenseSilently")
-    protected void cardboard_dispenseSilently(BlockPointer pointer, ItemStack stack, CallbackInfoReturnable<ItemStack> ci) {
-        cardboard_block = ((IMixinWorld)pointer.world()).getCraftWorld().getBlockAt(pointer.pos().getX(), pointer.pos().getY(), pointer.pos().getZ());
+    @Inject(at = @At("HEAD"), method = "execute")
+    protected void cardboard_dispenseSilently(BlockSource pointer, ItemStack stack, CallbackInfoReturnable<ItemStack> ci) {
+        cardboard_block = ((IMixinWorld)pointer.level()).getCraftWorld().getBlockAt(pointer.pos().getX(), pointer.pos().getY(), pointer.pos().getZ());
         cardboard_saved = CraftItemStack.asCraftMirror(stack);
 
         BlockDispenseEvent event = new BlockDispenseEvent(cardboard_block, cardboard_saved.clone(), new org.bukkit.util.Vector(0, 0, 0));
@@ -51,8 +49,8 @@ public class MixinShearsDispenserBehavior {
 
         if (!event.getItem().equals(cardboard_saved)) {
             ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
-            DispenserBehavior idispensebehavior = (DispenserBehavior) DispenserBlock.BEHAVIORS.get(eventStack.getItem());
-            if (idispensebehavior != DispenserBehavior.NOOP && idispensebehavior != this) {
+            DispenseItemBehavior idispensebehavior = (DispenseItemBehavior) DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
+            if (idispensebehavior != DispenseItemBehavior.NOOP && idispensebehavior != this) {
                 idispensebehavior.dispense(pointer, eventStack);
                 ci.setReturnValue(stack);
                 return;
@@ -60,14 +58,14 @@ public class MixinShearsDispenserBehavior {
         }
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Shearable;sheared(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/sound/SoundCategory;Lnet/minecraft/item/ItemStack;)V"),
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Shearable;shear(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/sounds/SoundSource;Lnet/minecraft/world/item/ItemStack;)V"),
             method = "tryShearEntity")
-    private static void doEvent(Shearable s, ServerWorld sworld, SoundCategory cat, ItemStack stack) {
+    private static void doEvent(Shearable s, ServerLevel sworld, SoundSource cat, ItemStack stack) {
     	BlockShearEntityEvent event = callBlockShearEntityEvent((LivingEntity)s, cardboard_block, cardboard_saved, Shearable_generateDefaultDrops());
     	if (!event.isCancelled()) {
            
     		CraftItemStack.asNMSCopy(event.getDrops());
-    		s.sheared(sworld, SoundCategory.BLOCKS, stack);
+    		s.shear(sworld, SoundSource.BLOCKS, stack);
         	// s.sheared(sworld, SoundCategory.BLOCKS, stack, CraftItemStack.asNMSCopy(event.getDrops()));
         	
         	// s.sheared(cat);
@@ -78,7 +76,7 @@ public class MixinShearsDispenserBehavior {
         return Collections.emptyList();
     }
 
-    private static BlockShearEntityEvent callBlockShearEntityEvent(Entity animal, org.bukkit.block.Block dispenser, CraftItemStack is, List<net.minecraft.item.ItemStack> drops) {
+    private static BlockShearEntityEvent callBlockShearEntityEvent(Entity animal, org.bukkit.block.Block dispenser, CraftItemStack is, List<net.minecraft.world.item.ItemStack> drops) {
 
     	BlockShearEntityEvent bse = new BlockShearEntityEvent(
     			dispenser,

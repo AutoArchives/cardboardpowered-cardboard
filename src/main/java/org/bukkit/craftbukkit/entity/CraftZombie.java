@@ -1,8 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.entity.mob.ZombieEntity;
-import net.minecraft.entity.mob.ZombieVillagerEntity;
+import net.minecraft.world.entity.monster.zombie.ZombieVillager;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
@@ -11,13 +10,13 @@ import org.cardboardpowered.impl.entity.CraftMonster;
 
 public class CraftZombie extends CraftMonster implements Zombie {
 
-    public CraftZombie(CraftServer server, ZombieEntity entity) {
+    public CraftZombie(CraftServer server, net.minecraft.world.entity.monster.zombie.Zombie entity) {
         super(server, entity);
     }
 
     @Override
-    public ZombieEntity getHandle() {
-        return (ZombieEntity) nms;
+    public net.minecraft.world.entity.monster.zombie.Zombie getHandle() {
+        return (net.minecraft.world.entity.monster.zombie.Zombie) nms;
     }
 
     @Override
@@ -42,7 +41,7 @@ public class CraftZombie extends CraftMonster implements Zombie {
 
     @Override
     public boolean isVillager() {
-        return getHandle() instanceof ZombieVillagerEntity;
+        return getHandle() instanceof ZombieVillager;
     }
 
     @Override
@@ -62,23 +61,23 @@ public class CraftZombie extends CraftMonster implements Zombie {
 
     @Override
     public boolean isConverting() {
-        return getHandle().isConvertingInWater();
+        return getHandle().isUnderWaterConverting();
     }
 
     @Override
     public int getConversionTime() {
         Preconditions.checkState(isConverting(), "Entity not converting");
-        return getHandle().ticksUntilWaterConversion;
+        return getHandle().conversionTime;
     }
 
     @Override
     public void setConversionTime(int time) {
         if (time < 0) {
-            getHandle().ticksUntilWaterConversion = -1;
+            getHandle().conversionTime = -1;
             // TODO
             //getHandle().getDataTracker().set(ZombieEntity.CONVERTING_IN_WATER, false);
         } else {
-            getHandle().setTicksUntilWaterConversion(time);
+            getHandle().startUnderWaterConversion(time);
         }
     }
 

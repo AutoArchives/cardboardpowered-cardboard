@@ -1,6 +1,5 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.passive.DonkeyEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Donkey;
 import org.bukkit.entity.EntityType;
@@ -8,7 +7,7 @@ import org.bukkit.entity.Horse;
 
 public class CardboardDonkey extends CardboardChestedHorse implements Donkey {
 
-    public CardboardDonkey(CraftServer server, DonkeyEntity entity) {
+    public CardboardDonkey(CraftServer server, net.minecraft.world.entity.animal.equine.Donkey entity) {
         super(server, entity);
     }
 

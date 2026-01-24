@@ -1,14 +1,13 @@
 package org.cardboardpowered.impl.inventory;
 
-import net.minecraft.inventory.Inventory;
-
+import net.minecraft.world.Container;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.BeaconInventory;
 import org.bukkit.inventory.ItemStack;
 
 public class CardboardBeaconInventory extends CraftInventory implements BeaconInventory {
 
-    public CardboardBeaconInventory(Inventory beacon) {
+    public CardboardBeaconInventory(Container beacon) {
         super(beacon);
     }
 

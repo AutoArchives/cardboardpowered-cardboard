@@ -1,19 +1,18 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.mob.GhastEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Ghast;
 
 public class CardboardGhast extends CraftMob implements Ghast {
 
-    public CardboardGhast(CraftServer server, GhastEntity entity) {
+    public CardboardGhast(CraftServer server, net.minecraft.world.entity.monster.Ghast entity) {
         super(server, entity);
     }
 
     @Override
-    public GhastEntity getHandle() {
-        return (GhastEntity) nms;
+    public net.minecraft.world.entity.monster.Ghast getHandle() {
+        return (net.minecraft.world.entity.monster.Ghast) nms;
     }
 
     @Override

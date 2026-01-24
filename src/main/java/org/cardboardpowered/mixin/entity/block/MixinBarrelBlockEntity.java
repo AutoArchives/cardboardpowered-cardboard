@@ -2,7 +2,10 @@ package org.cardboardpowered.mixin.entity.block;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BarrelBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.entity.HumanEntity;
@@ -11,11 +14,6 @@ import org.spongepowered.asm.mixin.Mixin;
 
 import org.cardboardpowered.interfaces.IMixinInventory;
 import org.cardboardpowered.interfaces.IMixinWorld;
-
-import net.minecraft.block.entity.BarrelBlockEntity;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
 
 @Mixin(BarrelBlockEntity.class)
 public class MixinBarrelBlockEntity implements IMixinInventory {
@@ -51,18 +49,18 @@ public class MixinBarrelBlockEntity implements IMixinInventory {
     }
 
     @Override
-    public void setMaxStackSize(int size) {
+    public void setCardboardMaxStackSize(int size) {
         maxStack = size;
     }
 
     @Override
     public Location getLocation() {
-        BlockPos pos = ((BlockEntity)(Object)this).getPos();
-        return new Location(((IMixinWorld)((BlockEntity)(Object)this).getWorld()).getCraftWorld(), pos.x, pos.y, pos.z);
+        BlockPos pos = ((BlockEntity)(Object)this).getBlockPos();
+        return new Location(((IMixinWorld)((BlockEntity)(Object)this).getLevel()).getCraftWorld(), pos.x, pos.y, pos.z);
     }
 
     @Override
-    public int getMaxStackSize() {
+    public int getCardboardMaxStackSize() {
         return maxStack;
     }
 

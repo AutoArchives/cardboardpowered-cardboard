@@ -2,9 +2,9 @@ package org.cardboardpowered.impl.map;
 
 import java.util.*;
 import java.util.logging.Level;
-import net.minecraft.item.map.MapState;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftServer;
@@ -20,9 +20,9 @@ public final class MapViewImpl implements MapView {
     private final Map<CraftPlayer, RenderData> renderCache = new HashMap<>();
     private final List<MapRenderer> renderers = new ArrayList<>();
     private final Map<MapRenderer, Map<CraftPlayer, MapCanvasImpl>> canvases = new HashMap<>();
-    protected final MapState worldMap;
+    protected final MapItemSavedData worldMap;
 
-    public MapViewImpl(MapState worldMap) {
+    public MapViewImpl(MapItemSavedData worldMap) {
         this.worldMap = worldMap;
         addRenderer(new MapRendererImpl(this, worldMap));
     }
@@ -58,8 +58,8 @@ public final class MapViewImpl implements MapView {
 
     @Override
     public World getWorld() {
-        RegistryKey<net.minecraft.world.World> dimension = worldMap.dimension;
-        ServerWorld world = CraftServer.server.getWorld(dimension);
+        ResourceKey<net.minecraft.world.level.Level> dimension = worldMap.dimension;
+        ServerLevel world = CraftServer.server.getLevel(dimension);
         return (world == null) ? null : ((IMixinWorld)world).getCraftWorld();
     }
 

@@ -2,8 +2,8 @@ package org.cardboardpowered.impl.block;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.block.entity.BeehiveBlockEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -42,28 +42,28 @@ public class CardboardBeehive extends CardboardBlockEntityState<BeehiveBlockEnti
 
     @Override
     public Location getFlower() {
-        BlockPos flower = getSnapshot().flowerPos;
+        BlockPos flower = getSnapshot().savedFlowerPos;
         return (flower == null) ? null : new Location(getWorld(), flower.getX(), flower.getY(), flower.getZ());
     }
 
     @Override
     public void setFlower(Location location) {
-        getSnapshot().flowerPos = (location == null) ? null : new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        getSnapshot().savedFlowerPos = (location == null) ? null : new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
 
     @Override
     public boolean isFull() {
-        return getSnapshot().isFullOfBees();
+        return getSnapshot().isFull();
     }
 
     @Override
     public boolean isSedated() {
-        return isPlaced() && getTileEntity().isSmoked();
+        return isPlaced() && getTileEntity().isSedated();
     }
 
     @Override
     public int getEntityCount() {
-        return getSnapshot().getBeeCount();
+        return getSnapshot().getOccupantCount();
     }
 
     @Override

@@ -1,6 +1,6 @@
 package org.cardboardpowered.impl.block;
 
-import net.minecraft.block.entity.TrialSpawnerBlockEntity;
+import net.minecraft.world.level.block.entity.TrialSpawnerBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.World;
 // TODO import org.bukkit.block.TrialSpawner;

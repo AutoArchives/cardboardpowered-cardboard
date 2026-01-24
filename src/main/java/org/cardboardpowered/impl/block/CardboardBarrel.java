@@ -1,8 +1,7 @@
 package org.cardboardpowered.impl.block;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.block.entity.BarrelBlockEntity;
-
+import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;

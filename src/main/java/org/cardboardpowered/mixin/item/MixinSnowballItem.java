@@ -1,22 +1,17 @@
 package org.cardboardpowered.mixin.item;
 
 import com.destroystokyo.paper.event.player.PlayerLaunchProjectileEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SnowballItem;
+import net.minecraft.world.level.Level;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.entity.projectile.thrown.SnowballEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.SnowballItem;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.world.World;
-
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -26,7 +21,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 @Mixin(value = SnowballItem.class, priority = 900)
 public class MixinSnowballItem extends Item {
 
-    public MixinSnowballItem(net.minecraft.item.Item.Settings settings) {
+    public MixinSnowballItem(net.minecraft.world.item.Item.Properties settings) {
         super(settings);
     }
 
@@ -35,25 +30,25 @@ public class MixinSnowballItem extends Item {
      * @reason
      */
     @Overwrite
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        ItemStack itemStack = user.getStackInHand(hand);
-        if (!world.isClient()) {
-            SnowballEntity snowballEntity = new SnowballEntity(world, user, itemStack);
+    public InteractionResult use(Level world, net.minecraft.world.entity.player.Player user, InteractionHand hand) {
+        ItemStack itemStack = user.getItemInHand(hand);
+        if (!world.isClientSide()) {
+            Snowball snowballEntity = new Snowball(world, user, itemStack);
             snowballEntity.setItem(itemStack);
-            snowballEntity.setVelocity(user, user.getPitch(), user.getYaw(), 0.0F, 1.5F, 1.0F);
-            if (!world.spawnEntity(snowballEntity)) {
+            snowballEntity.shootFromRotation(user, user.getXRot(), user.getYRot(), 0.0F, 1.5F, 1.0F);
+            if (!world.addFreshEntity(snowballEntity)) {
                 if (user instanceof IMixinServerEntityPlayer) {
                     ((IMixinServerEntityPlayer) user).getBukkit().updateInventory();
                 }
-                return ActionResult.FAIL;
+                return InteractionResult.FAIL;
             }
         }
-        world.playSound(null, user.getX(), user.getY(), user.getZ(), SoundEvents.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (world.getRandom().nextFloat() * 0.4F + 0.8F));
-        user.incrementStat(Stats.USED.getOrCreateStat(this));
-        if (!user.getAbilities().creativeMode) {
-            itemStack.decrement(1);
+        world.playSound(null, user.getX(), user.getY(), user.getZ(), SoundEvents.SNOWBALL_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (world.getRandom().nextFloat() * 0.4F + 0.8F));
+        user.awardStat(Stats.ITEM_USED.get(this));
+        if (!user.getAbilities().instabuild) {
+            itemStack.shrink(1);
         }
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
     
     /*

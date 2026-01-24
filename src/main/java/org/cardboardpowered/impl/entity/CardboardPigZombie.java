@@ -1,6 +1,6 @@
  package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.mob.ZombifiedPiglinEntity;
+import net.minecraft.world.entity.monster.zombie.ZombifiedPiglin;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftZombie;
 import org.bukkit.entity.EntityType;
@@ -8,19 +8,19 @@ import org.bukkit.entity.PigZombie;
 
 public class CardboardPigZombie extends CraftZombie implements PigZombie {
 
-    public CardboardPigZombie(CraftServer server, ZombifiedPiglinEntity entity) {
+    public CardboardPigZombie(CraftServer server, ZombifiedPiglin entity) {
         super(server, entity);
     }
 
     @Override
     public int getAnger() {
-    	return (int)(this.getHandle().getAngerEndTime() - this.getHandle().getEntityWorld().getTime());
+    	return (int)(this.getHandle().getPersistentAngerEndTime() - this.getHandle().level().getGameTime());
         // return getHandle().getAngerTime();
     }
 
     @Override
     public void setAnger(int level) {
-    	this.getHandle().setAngerDuration(level);
+    	this.getHandle().setTimeToRemainAngry(level);
         // getHandle().setAngerTime(level);
     }
 
@@ -35,8 +35,8 @@ public class CardboardPigZombie extends CraftZombie implements PigZombie {
     }
 
     @Override
-    public ZombifiedPiglinEntity getHandle() {
-        return (ZombifiedPiglinEntity) nms;
+    public ZombifiedPiglin getHandle() {
+        return (ZombifiedPiglin) nms;
     }
 
     @Override

@@ -10,12 +10,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.minecraft.network.message.MessageType;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
-import net.minecraft.text.Text;
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 
-@Mixin(GameMessageS2CPacket.class)
+@Mixin(ClientboundSystemChatPacket.class)
 public class MixinGameMessageS2CPacket implements IGameMessagePacket {
 
     //@Shadow private Text message;

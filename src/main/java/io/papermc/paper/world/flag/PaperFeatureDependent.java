@@ -1,11 +1,10 @@
 package io.papermc.paper.world.flag;
 
-//import io.papermc.paper.world.flag.PaperFeatureFlagProviderImpl;
-import net.minecraft.resource.featuretoggle.ToggleableFeature;
+import net.minecraft.world.flag.FeatureElement;
 
 public interface PaperFeatureDependent extends FeatureDependant {
 
-    public <M extends ToggleableFeature> M getHandle();
+    public <M extends FeatureElement> M getHandle();
 
     /*
     default public @NonNull @Unmodifiable Set<FeatureFlag> requiredFeatures() {

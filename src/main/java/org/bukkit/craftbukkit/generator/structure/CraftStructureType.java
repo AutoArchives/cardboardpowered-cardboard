@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.generator.structure;
 
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.world.gen.structure.StructureType;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.levelgen.structure.StructureType;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.util.Handleable;
@@ -12,7 +12,7 @@ public class CraftStructureType extends org.bukkit.generator.structure.Structure
     private final StructureType<?> structureType;
 
     public static org.bukkit.generator.structure.StructureType minecraftToBukkit(StructureType<?> minecraft) {
-        return (org.bukkit.generator.structure.StructureType)CraftRegistry.minecraftToBukkit(minecraft, RegistryKeys.STRUCTURE_TYPE);
+        return (org.bukkit.generator.structure.StructureType)CraftRegistry.minecraftToBukkit(minecraft, Registries.STRUCTURE_TYPE);
     }
 
     public static StructureType<?> bukkitToMinecraft(org.bukkit.generator.structure.StructureType bukkit) {

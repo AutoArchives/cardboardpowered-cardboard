@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BannerPatternsComponent;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.block.Banner;
@@ -36,7 +36,7 @@ public class CraftMetaShield
 extends CraftMetaItem
 implements ShieldMeta,
 BlockStateMeta {
-    static final CraftMetaItem.ItemMetaKeyType<net.minecraft.util.DyeColor> BASE_COLOR = new CraftMetaItem.ItemMetaKeyType<net.minecraft.util.DyeColor>(DataComponentTypes.BASE_COLOR, "Base", "base-color");
+    static final CraftMetaItem.ItemMetaKeyType<net.minecraft.world.item.DyeColor> BASE_COLOR = new CraftMetaItem.ItemMetaKeyType<net.minecraft.world.item.DyeColor>(DataComponents.BASE_COLOR, "Base", "base-color");
     @Nullable
     private List<Pattern> patterns;
     @Nullable
@@ -65,16 +65,16 @@ BlockStateMeta {
         }
     }
 
-    CraftMetaShield(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
+    CraftMetaShield(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaShield.getOrEmpty(tag, BASE_COLOR).ifPresent(color -> {
-            this.baseColor = DyeColor.getByWoolData((byte)((byte)color.getIndex()));
+            this.baseColor = DyeColor.getByWoolData((byte)((byte)color.getId()));
         });
         CraftMetaShield.getOrEmpty(tag, CraftMetaBanner.PATTERNS).ifPresent(entityTag -> {
-            List<BannerPatternsComponent.Layer> patterns = entityTag.layers();
+            List<BannerPatternLayers.Layer> patterns = entityTag.layers();
             for (int i2 = 0; i2 < Math.min(patterns.size(), 20); ++i2) {
-                BannerPatternsComponent.Layer p = patterns.get(i2);
-                DyeColor color = DyeColor.getByWoolData((byte)((byte)p.color().getIndex()));
+                BannerPatternLayers.Layer p = patterns.get(i2);
+                DyeColor color = DyeColor.getByWoolData((byte)((byte)p.color().getId()));
                 PatternType pattern = CraftRegistry.unwrapAndConvertHolder(RegistryKey.BANNER_PATTERN, p.pattern()).orElse(null);
                 if (color == null || pattern == null) continue;
                 this.addPattern(new Pattern(color, pattern));
@@ -85,11 +85,11 @@ BlockStateMeta {
     CraftMetaShield(Map<String, Object> map) {
         super(map);
         Iterable rawPatternList;
-        String baseColor = SerializableMeta.getString(map, CraftMetaShield.BASE_COLOR.BUKKIT, true);
+        String baseColor = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getString(map, CraftMetaShield.BASE_COLOR.BUKKIT, true);
         if (baseColor != null) {
             this.baseColor = DyeColor.valueOf((String)baseColor);
         }
-        if ((rawPatternList = SerializableMeta.getObject(Iterable.class, map, CraftMetaBanner.PATTERNS.BUKKIT, true)) == null) {
+        if ((rawPatternList = org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(Iterable.class, map, CraftMetaBanner.PATTERNS.BUKKIT, true)) == null) {
             return;
         }
         for (Object obj : rawPatternList) {
@@ -102,14 +102,14 @@ BlockStateMeta {
     void applyToItem(CraftMetaItem.Applicator tag) {
         super.applyToItem(tag);
         if (this.baseColor != null) {
-            tag.put(BASE_COLOR, net.minecraft.util.DyeColor.byIndex(this.baseColor.getWoolData()));
+            tag.put(BASE_COLOR, net.minecraft.world.item.DyeColor.byId(this.baseColor.getWoolData()));
         }
         if (this.patterns != null && !this.patterns.isEmpty()) {
-            ArrayList<BannerPatternsComponent.Layer> newPatterns = new ArrayList<BannerPatternsComponent.Layer>();
+            ArrayList<BannerPatternLayers.Layer> newPatterns = new ArrayList<BannerPatternLayers.Layer>();
             for (Pattern p : this.patterns) {
-                newPatterns.add(new BannerPatternsComponent.Layer(CraftPatternType.bukkitToMinecraftHolder(p.getPattern()), net.minecraft.util.DyeColor.byIndex(p.getColor().getWoolData())));
+                newPatterns.add(new BannerPatternLayers.Layer(CraftPatternType.bukkitToMinecraftHolder(p.getPattern()), net.minecraft.world.item.DyeColor.byId(p.getColor().getWoolData())));
             }
-            tag.put(CraftMetaBanner.PATTERNS, new BannerPatternsComponent(newPatterns));
+            tag.put(CraftMetaBanner.PATTERNS, new BannerPatternLayers(newPatterns));
         }
     }
 
@@ -241,7 +241,7 @@ BlockStateMeta {
 
     private static Banner getBlockState(DyeColor color) {
         Material stateMaterial = CraftMetaShield.shieldToBannerHack(color);
-        return (Banner)CraftBlockStates.getBlockState(CraftRegistry.getMinecraftRegistry(), BlockPos.ORIGIN, stateMaterial, null);
+        return (Banner)CraftBlockStates.getBlockState(CraftRegistry.getMinecraftRegistry(), BlockPos.ZERO, stateMaterial, null);
     }
 
     @Override

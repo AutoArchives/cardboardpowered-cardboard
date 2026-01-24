@@ -14,12 +14,10 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import org.cardboardpowered.interfaces.IMixinEntity;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.item.ItemEntity;
 
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-
-@Mixin(value = ServerPlayerEntity.class, priority = 900)
+@Mixin(value = ServerPlayer.class, priority = 900)
 public class MixinPlayerEntity {
     
     // private ItemEntity cardboard_stored_entity;
@@ -35,10 +33,10 @@ public class MixinPlayerEntity {
 
     @SuppressWarnings("deprecation")
     @Inject(at = @At("RETURN"),
-            method = "dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;",
+            method = "drop(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;",
             cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
     public void cardboard_doPlayerDropItemEvent(
-    		net.minecraft.item.ItemStack stack,
+    		net.minecraft.world.item.ItemStack stack,
     		boolean throwRandomly,
     		boolean retainOwnership,
     		CallbackInfoReturnable<ItemEntity> ci,

@@ -1,7 +1,12 @@
 package org.cardboardpowered.mixin.entity;
 
 import java.util.Optional;
-
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantedItemInUse;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.bukkit.event.player.PlayerExpCooldownChangeEvent.ChangeReason;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
@@ -21,40 +26,31 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
 
-import net.minecraft.component.EnchantmentEffectComponentTypes;
-import net.minecraft.enchantment.EnchantmentEffectContext;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.ExperienceOrbEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-
-@Mixin(value = ExperienceOrbEntity.class, priority = 900)
+@Mixin(value = net.minecraft.world.entity.ExperienceOrb.class, priority = 900)
 public class MixinExperienceOrbEntity extends MixinEntity {
 
-	private static final ThreadLocal<PlayerEntity> currentPlayer = new ThreadLocal<>();
+	private static final ThreadLocal<net.minecraft.world.entity.player.Player> currentPlayer = new ThreadLocal<>();
 
-	@Inject(method = "onPlayerCollision", at = @At("HEAD"))
-	private void capturePlayer(PlayerEntity player, CallbackInfo ci) {
+	@Inject(method = "playerTouch", at = @At("HEAD"))
+	private void capturePlayer(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
 		currentPlayer.set(player);
 	}
 	
-	@Inject(method = "onPlayerCollision", at = @At("RETURN"))
-	private void clearPlayer(PlayerEntity player, CallbackInfo ci) {
+	@Inject(method = "playerTouch", at = @At("RETURN"))
+	private void clearPlayer(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
 		currentPlayer.remove();
 	}
 	
 	@Shadow
-	public int pickingCount = 1;
+	public int count = 1;
 
-	@Inject(at = @At("HEAD"), method = "onPlayerCollision", cancellable = true)
-	public void cardboard$check_PlayerPickupExperienceEvent(PlayerEntity player, CallbackInfo ci) {
-		if (player instanceof ServerPlayerEntity serverPlayer
-				&& player.experiencePickUpDelay == 0
+	@Inject(at = @At("HEAD"), method = "playerTouch", cancellable = true)
+	public void cardboard$check_PlayerPickupExperienceEvent(net.minecraft.world.entity.player.Player player, CallbackInfo ci) {
+		if (player instanceof ServerPlayer serverPlayer
+				&& player.takeXpDelay == 0
 				&& new PlayerPickupExperienceEvent(
 						(Player) ((IMixinServerEntityPlayer)serverPlayer).getBukkitEntity(),
-						(ExperienceOrb) ((IMixinEntity) ((ExperienceOrbEntity) (Object) this)).getBukkitEntity()
+						(ExperienceOrb) ((IMixinEntity) ((net.minecraft.world.entity.ExperienceOrb) (Object) this)).getBukkitEntity()
 					).callEvent()) {
 			// Continue
 		} else {
@@ -64,46 +60,46 @@ public class MixinExperienceOrbEntity extends MixinEntity {
 	}
 
 	@ModifyVariable(
-			method = "onPlayerCollision",
+			method = "playerTouch",
 			at = @At(
 					value = "STORE"
 					),
 			ordinal = 0
 			)
 	private int cardboard$modifyPickupDelay_callPlayerXpCooldownEvent(int original) {
-		PlayerEntity player = currentPlayer.get();
+		net.minecraft.world.entity.player.Player player = currentPlayer.get();
 		return CraftEventFactory.callPlayerXpCooldownEvent(player, original, ChangeReason.PICKUP_ORB).getNewCooldown();
 	}
 
 	@ModifyArg(
-			method = "onPlayerCollision",
+			method = "playerTouch",
 			at = @At(
 					value = "INVOKE",
-					target = "Lnet/minecraft/entity/player/PlayerEntity;addExperience(I)V"
+					target = "Lnet/minecraft/world/entity/player/Player;giveExperiencePoints(I)V"
 					),
 			index = 0
 			)
 	private int modifyExperienceAmount(int original) {
-		PlayerEntity player = currentPlayer.get();
+		net.minecraft.world.entity.player.Player player = currentPlayer.get();
 		if (player == null) return original;
 
 		return CraftEventFactory.callPlayerExpChangeEvent(
 				player,
-				(ExperienceOrbEntity)(Object)this,
+				(net.minecraft.world.entity.ExperienceOrb)(Object)this,
 				original
 				).getAmount();
 	}
 
-    @Redirect(at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(II)I"), method = "repairPlayerGears")
-    public int doBukkitEvent_PlayerItemMendEvent(int a, int b, ServerPlayerEntity entityhuman) {
+    @Redirect(at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(II)I"), method = "repairPlayerItems")
+    public int doBukkitEvent_PlayerItemMendEvent(int a, int b, ServerPlayer entityhuman) {
         
-        Optional<EnchantmentEffectContext> optional = EnchantmentHelper.chooseEquipmentWith(EnchantmentEffectComponentTypes.REPAIR_WITH_XP, entityhuman, ItemStack::isDamaged);
+        Optional<EnchantedItemInUse> optional = EnchantmentHelper.getRandomItemWith(EnchantmentEffectComponents.REPAIR_WITH_XP, entityhuman, ItemStack::isDamaged);
 
-        ItemStack itemstack = optional.get().stack();
-        EquipmentSlot slot = optional.get().slot();
+        ItemStack itemstack = optional.get().itemStack();
+        EquipmentSlot slot = optional.get().inSlot();
 
         int i = Math.min(a, b);
-        PlayerItemMendEvent event = CraftEventFactory.callPlayerItemMendEvent(entityhuman, (ExperienceOrbEntity)(Object)this, itemstack, i);
+        PlayerItemMendEvent event = CraftEventFactory.callPlayerItemMendEvent(entityhuman, (net.minecraft.world.entity.ExperienceOrb)(Object)this, itemstack, i);
         i = event.getRepairAmount();
         if (!event.isCancelled()) {
             return i;
@@ -118,7 +114,7 @@ public class MixinExperienceOrbEntity extends MixinEntity {
     */
 
     @Shadow
-    private int repairPlayerGears(ServerPlayerEntity player, int amount) {
+    private int repairPlayerItems(ServerPlayer player, int amount) {
         return 0;
     }
     

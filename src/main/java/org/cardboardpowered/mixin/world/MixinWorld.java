@@ -4,19 +4,18 @@ import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
 import me.isaiah.common.fabric.FabricWorld;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.MutableWorldProperties;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.WorldChunk;
-import net.minecraft.world.dimension.DimensionType;
-import net.minecraft.world.entity.EntityLookup;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.entity.LevelEntityGetter;
+import net.minecraft.world.level.storage.WritableLevelData;
 import org.cardboardpowered.impl.block.CapturedBlockState;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,10 +28,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.HashMap;
 import java.util.Map;
 
-@Mixin(World.class)
+@Mixin(Level.class)
 public abstract class MixinWorld implements IMixinWorld {
 
-    @Shadow public WorldChunk getWorldChunk(BlockPos pos) {return null;}
+    @Shadow public LevelChunk getChunkAt(BlockPos pos) {return null;}
     private CraftWorld bukkit;
 
     public boolean captureBlockStates = false;
@@ -40,11 +39,11 @@ public abstract class MixinWorld implements IMixinWorld {
     public Map<BlockPos, CapturedBlockState> capturedBlockStates = new HashMap<>();
 
     @Shadow
-    public abstract EntityLookup<Entity> getEntityLookup();
+    public abstract LevelEntityGetter<Entity> getEntities();
     
     @Override
-    public EntityLookup<Entity> cb$get_entity_lookup() {
-    	return getEntityLookup();
+    public LevelEntityGetter<Entity> cb$get_entity_lookup() {
+    	return getEntities();
     }
     
     @Override
@@ -58,15 +57,15 @@ public abstract class MixinWorld implements IMixinWorld {
     }
     
     @Inject(method = "<init>", at = @At("TAIL"))
-    public void init(MutableWorldProperties a, RegistryKey<?> b, DynamicRegistryManager rm, RegistryEntry<DimensionType> registryEntry, boolean f, boolean g, long h, int i, CallbackInfo ci) {
+    public void init(WritableLevelData a, ResourceKey<?> b, RegistryAccess rm, Holder<DimensionType> registryEntry, boolean f, boolean g, long h, int i, CallbackInfo ci) {
 
-        if (!(((World) (Object) this) instanceof ServerWorld)) {
+        if (!(((Level) (Object) this) instanceof ServerLevel)) {
             System.out.println("CLIENT WORLD!");
             return;
         }
 
-        World thiz = (World) (Object) this;
-        ServerWorld nms = ((ServerWorld) thiz);
+        Level thiz = (Level) (Object) this;
+        ServerLevel nms = ((ServerLevel) thiz);
     	CardboardMod.on_world_init_mc(nms);
     }
 
@@ -91,14 +90,14 @@ public abstract class MixinWorld implements IMixinWorld {
         this.bukkit = world;
     }
 
-    @Inject(at = @At("HEAD"), method = "setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;II)Z")
+    @Inject(at = @At("HEAD"), method = "setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z")
     public void setBlockState1(BlockPos pos, BlockState state, int flags, int maxUpdateDepth, CallbackInfoReturnable<Boolean> cir) {
         // TODO 1.17ify: if (!ServerWorld.isOutOfBuildLimitVertically(blockposition)) {
-            WorldChunk chunk = getWorldChunk(pos);
+            LevelChunk chunk = getChunkAt(pos);
             boolean captured = false;
             if (this.captureBlockStates && !this.capturedBlockStates.containsKey(pos)) {
-                CapturedBlockState blockstate = CapturedBlockState.getBlockState((World)(Object)this, pos, flags);
-                this.capturedBlockStates.put(pos.toImmutable(), blockstate);
+                CapturedBlockState blockstate = CapturedBlockState.getBlockState((Level)(Object)this, pos, flags);
+                this.capturedBlockStates.put(pos.immutable(), blockstate);
                 captured = true;
             }
         //}

@@ -1,13 +1,12 @@
 package org.cardboardpowered.impl.inventory;
 
-import net.minecraft.inventory.Inventory;
-
+import net.minecraft.world.Container;
 import org.bukkit.craftbukkit.inventory.CraftResultInventory;
 import org.bukkit.inventory.GrindstoneInventory;
 
 public class CardboardGrindstoneInventory extends CraftResultInventory implements GrindstoneInventory {
 
-    public CardboardGrindstoneInventory(Inventory inventory, Inventory resultInventory) {
+    public CardboardGrindstoneInventory(Container inventory, Container resultInventory) {
         super(inventory, resultInventory);
     }
 

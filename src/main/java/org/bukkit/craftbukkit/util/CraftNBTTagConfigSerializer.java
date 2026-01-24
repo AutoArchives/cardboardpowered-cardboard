@@ -10,17 +10,15 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.nbt.AbstractNbtList;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtDouble;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtInt;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.DoubleTag;
+import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.nbt.visitor.NbtOrderedStringFormatter;
+import net.minecraft.nbt.SnbtPrinterTagVisitor;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.TagParser;
 
 public class CraftNBTTagConfigSerializer {
 
@@ -28,19 +26,19 @@ public class CraftNBTTagConfigSerializer {
     private static final Pattern INTEGER = Pattern.compile("[-+]?(?:0|[1-9][0-9]*)?i", Pattern.CASE_INSENSITIVE);
     private static final Pattern DOUBLE = Pattern.compile("[-+]?(?:[0-9]+[.]?|[0-9]*[.][0-9]+)(?:e[-+]?[0-9]+)?d", Pattern.CASE_INSENSITIVE);
     // private static final StringNbtReader MOJANGSON_PARSER = new StringNbtReader(new StringReader(""));
-    private static final StringNbtReader<NbtElement> MOJANGSON_PARSER = StringNbtReader.fromOps(NbtOps.INSTANCE);
+    private static final TagParser<Tag> MOJANGSON_PARSER = TagParser.create(NbtOps.INSTANCE);
     
     
-    public static String serialize(NbtElement tag) {
-        NbtOrderedStringFormatter snbtVisitor = new NbtOrderedStringFormatter();
-        return snbtVisitor.apply(tag);
+    public static String serialize(Tag tag) {
+        SnbtPrinterTagVisitor snbtVisitor = new SnbtPrinterTagVisitor();
+        return snbtVisitor.visit(tag);
     }
     
-    public static NbtElement deserialize(Object object) {
+    public static Tag deserialize(Object object) {
         if (object instanceof String) {
             String snbtString = (String)object;
             try {
-                return StringNbtReader.readCompound(snbtString);
+                return TagParser.parseCompoundFully(snbtString);
             }
             catch (CommandSyntaxException e2) {
                 throw new RuntimeException("Failed to deserialise nbt", e2);
@@ -49,9 +47,9 @@ public class CraftNBTTagConfigSerializer {
         return CraftNBTTagConfigSerializer.internalLegacyDeserialization(object);
     }
     
-    private static NbtElement internalLegacyDeserialization(@NotNull Object object) {
+    private static Tag internalLegacyDeserialization(@NotNull Object object) {
         if (object instanceof Map) {
-            NbtCompound compound = new NbtCompound();
+            CompoundTag compound = new CompoundTag();
             for (Map.Entry entry : ((Map<String, Object>)object).entrySet()) {
                 compound.put((String)entry.getKey(), CraftNBTTagConfigSerializer.internalLegacyDeserialization(entry.getValue()));
             }
@@ -60,9 +58,9 @@ public class CraftNBTTagConfigSerializer {
         if (object instanceof List) {
             List list = (List)object;
             if (list.isEmpty()) {
-                return new NbtList();
+                return new ListTag();
             }
-            NbtList tagList = new NbtList();
+            ListTag tagList = new ListTag();
             for (Object tag : list) {
                 tagList.add(CraftNBTTagConfigSerializer.internalLegacyDeserialization(tag));
             }
@@ -72,28 +70,28 @@ public class CraftNBTTagConfigSerializer {
             String string = (String)object;
             if (ARRAY.matcher(string).matches()) {
                 try {
-                    return MOJANGSON_PARSER.readAsArgument(new StringReader(string));
+                    return MOJANGSON_PARSER.parseAsArgument(new StringReader(string));
                 }
                 catch (CommandSyntaxException e2) {
                     throw new RuntimeException("Could not deserialize found list ", e2);
                 }
             }
             if (INTEGER.matcher(string).matches()) {
-                return NbtInt.of(Integer.parseInt(string.substring(0, string.length() - 1)));
+                return IntTag.valueOf(Integer.parseInt(string.substring(0, string.length() - 1)));
             }
             if (DOUBLE.matcher(string).matches()) {
-                return NbtDouble.of(Double.parseDouble(string.substring(0, string.length() - 1)));
+                return DoubleTag.valueOf(Double.parseDouble(string.substring(0, string.length() - 1)));
             }
             try {
-                NbtElement tag = MOJANGSON_PARSER.readAsArgument(new StringReader(string));
-                if (tag instanceof NbtInt) {
-                    return NbtString.of(tag.toString());
+                Tag tag = MOJANGSON_PARSER.parseAsArgument(new StringReader(string));
+                if (tag instanceof IntTag) {
+                    return StringTag.valueOf(tag.toString());
                 }
-                if (tag instanceof NbtDouble) {
-                    return NbtString.of(String.valueOf(((NbtDouble)tag).doubleValue()));
+                if (tag instanceof DoubleTag) {
+                    return StringTag.valueOf(String.valueOf(((DoubleTag)tag).doubleValue()));
                 }
-                if (tag instanceof NbtString) {
-                    return NbtString.of(string);
+                if (tag instanceof StringTag) {
+                    return StringTag.valueOf(string);
                 }
                 return tag;
             }

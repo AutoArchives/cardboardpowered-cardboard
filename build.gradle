@@ -1,7 +1,7 @@
 import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
 
 plugins {
-    id 'fabric-loom' version '1.13-SNAPSHOT'
+    id 'fabric-loom' version '1.14-SNAPSHOT'
     id 'maven-publish'
     id 'com.gradleup.shadow' version '8.3.6'
     id 'java-library'
@@ -16,10 +16,10 @@ gversion {
 }
 project.compileJava.dependsOn(createVersionFile)
 
-sourceCompatibility = JavaVersion.VERSION_21
-targetCompatibility = JavaVersion.VERSION_21
+//sourceCompatibility = JavaVersion.VERSION_21
+//targetCompatibility = JavaVersion.VERSION_21
 
-archivesBaseName = project.archives_base_name
+//archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
@@ -58,7 +58,7 @@ dependencies {
     minecraft("com.mojang:minecraft:${project.minecraft_version}") {
     	exclude module: 'commons-logging'
     }
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    mappings loom.officialMojangMappings()
     modImplementation("net.fabricmc:fabric-loader:${project.loader_version}")
     // modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
     
@@ -260,7 +260,7 @@ ext.downloadPaperFile = {
 
 // Make sure paper-api on the repo is kept updated.
 publishing {
-	configurations.api.setCanBeResolved(true)
+//	configurations.api.setCanBeResolved(true)
 	downloadPaperFile()
     publications {
         mavenJava(MavenPublication) {

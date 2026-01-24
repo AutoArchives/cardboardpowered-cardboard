@@ -4,10 +4,10 @@ import com.google.common.collect.ImmutableMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem;
@@ -20,7 +20,7 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 class CraftMetaEnchantedBook
 extends CraftMetaItem
 implements EnchantmentStorageMeta {
-    static final CraftMetaItem.ItemMetaKeyType<ItemEnchantmentsComponent> STORED_ENCHANTMENTS = new CraftMetaItem.ItemMetaKeyType<ItemEnchantmentsComponent>(DataComponentTypes.STORED_ENCHANTMENTS, "stored-enchants");
+    static final CraftMetaItem.ItemMetaKeyType<ItemEnchantments> STORED_ENCHANTMENTS = new CraftMetaItem.ItemMetaKeyType<ItemEnchantments>(DataComponents.STORED_ENCHANTMENTS, "stored-enchants");
     private Map<Enchantment, Integer> enchantments;
 
     CraftMetaEnchantedBook(CraftMetaItem meta) {
@@ -34,7 +34,7 @@ implements EnchantmentStorageMeta {
         }
     }
 
-    CraftMetaEnchantedBook(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
+    CraftMetaEnchantedBook(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaEnchantedBook.getOrEmpty(tag, STORED_ENCHANTMENTS).ifPresent(itemEnchantments -> {
             this.enchantments = CraftMetaEnchantedBook.buildEnchantments(itemEnchantments);

@@ -1,38 +1,38 @@
 package org.cardboardpowered.extras;
 
-import net.minecraft.block.entity.ChestBlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.GenericContainerScreenHandler;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 
-public class BukkitChestDoubleInventory implements NamedScreenHandlerFactory {
-    public final net.minecraft.inventory.DoubleInventory inventory;
+public class BukkitChestDoubleInventory implements MenuProvider {
+    public final net.minecraft.world.CompoundContainer inventory;
     private final ChestBlockEntity leftChest;
     private final ChestBlockEntity rightChest;
 
     public BukkitChestDoubleInventory(ChestBlockEntity leftChest, ChestBlockEntity rightChest,
-                                      net.minecraft.inventory.DoubleInventory inventory) {
+                                      net.minecraft.world.CompoundContainer inventory) {
         this.leftChest = leftChest;
         this.rightChest = rightChest;
         this.inventory = inventory;
     }
 
     @Override
-    public Text getDisplayName() {
+    public Component getDisplayName() {
         return this.leftChest.hasCustomName() ? this.leftChest.getDisplayName() :
                 (this.rightChest.hasCustomName() ? this.rightChest.getDisplayName() :
-                        Text.translatable("container.chestDouble"));
+                        Component.translatable("container.chestDouble"));
     }
 
     @Override
-    public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-        if (this.leftChest.checkUnlocked(player) && this.rightChest.checkUnlocked(player)) {
-            this.leftChest.generateLoot(inv.player);
-            this.rightChest.generateLoot(inv.player);
-            return GenericContainerScreenHandler.createGeneric9x6(syncId, inv, this.inventory);
+    public AbstractContainerMenu createMenu(int syncId, Inventory inv, Player player) {
+        if (this.leftChest.canOpen(player) && this.rightChest.canOpen(player)) {
+            this.leftChest.unpackLootTable(inv.player);
+            this.rightChest.unpackLootTable(inv.player);
+            return ChestMenu.sixRows(syncId, inv, this.inventory);
         } else {
             return null;
         }

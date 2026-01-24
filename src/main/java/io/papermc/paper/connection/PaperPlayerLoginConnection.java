@@ -6,9 +6,8 @@ import io.papermc.paper.adventure.PaperAdventure;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import net.kyori.adventure.text.Component;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.server.network.ServerLoginNetworkHandler;
-
+import net.minecraft.network.Connection;
+import net.minecraft.server.network.ServerLoginPacketListenerImpl;
 import org.cardboardpowered.interfaces.IMixinClientConnection;
 import org.cardboardpowered.interfaces.IMixinServerLoginNetworkHandler;
 import org.jspecify.annotations.NullMarked;
@@ -17,7 +16,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class PaperPlayerLoginConnection extends ReadablePlayerCookieConnectionImpl implements PlayerLoginConnection {
 
-	private final ServerLoginNetworkHandler packetListener;
+	private final ServerLoginPacketListenerImpl packetListener;
 	
 	private IMixinClientConnection iconnection() {
 		return (IMixinClientConnection) packetListener_connection();
@@ -27,18 +26,18 @@ public class PaperPlayerLoginConnection extends ReadablePlayerCookieConnectionIm
 		return ((IMixinServerLoginNetworkHandler) this.packetListener);
 	}
 	
-	private ClientConnection packetListener_connection() {
+	private Connection packetListener_connection() {
 		return ((IMixinServerLoginNetworkHandler) this.packetListener).cb_get_connection();
 	}
 
-	public PaperPlayerLoginConnection(ServerLoginNetworkHandler packetListener) {
+	public PaperPlayerLoginConnection(ServerLoginPacketListenerImpl packetListener) {
 		super(((IMixinServerLoginNetworkHandler) packetListener).cb_get_connection());
 		this.packetListener = packetListener;
 	}
 
 	@Nullable
 	public PlayerProfile getAuthenticatedProfile() {
-		return this.packetListener.profile == null ? null : CraftPlayerProfile.asBukkitCopy(this.packetListener.profile);
+		return this.packetListener.authenticatedProfile == null ? null : CraftPlayerProfile.asBukkitCopy(this.packetListener.authenticatedProfile);
 	}
 
 	@Nullable
@@ -47,7 +46,7 @@ public class PaperPlayerLoginConnection extends ReadablePlayerCookieConnectionIm
 	}
 
 	public SocketAddress getAddress() {
-		return packetListener_connection().getAddress();
+		return packetListener_connection().getRemoteAddress();
 	}
 
 	public InetSocketAddress getClientAddress() {
@@ -77,7 +76,7 @@ public class PaperPlayerLoginConnection extends ReadablePlayerCookieConnectionIm
 	@Override
 	public boolean isConnected() {
 		// TODO Auto-generated method stub
-		return packetListener_connection().isOpen();
+		return packetListener_connection().isConnected();
 	}
 
 }

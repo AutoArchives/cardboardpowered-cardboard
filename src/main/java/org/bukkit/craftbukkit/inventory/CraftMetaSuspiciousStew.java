@@ -11,11 +11,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.SuspiciousStewEffectsComponent;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.SuspiciousStewEffects;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
@@ -27,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
 @DelegateDeserialization(SerializableMeta.class)
 public class CraftMetaSuspiciousStew extends CraftMetaItem implements SuspiciousStewMeta {
 
-    static final ItemMetaKeyType<SuspiciousStewEffectsComponent> EFFECTS = new ItemMetaKeyType<>(DataComponentTypes.SUSPICIOUS_STEW_EFFECTS, "effects");
+    static final ItemMetaKeyType<SuspiciousStewEffects> EFFECTS = new ItemMetaKeyType<>(DataComponents.SUSPICIOUS_STEW_EFFECTS, "effects");
 
     // private List<PotionEffect> customEffects;
 
@@ -43,15 +42,15 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
         }
     }
 
-    CraftMetaSuspiciousStew(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
+    CraftMetaSuspiciousStew(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         getOrEmpty(tag, CraftMetaSuspiciousStew.EFFECTS).ifPresent((suspiciousStewEffects) -> {
-            List<SuspiciousStewEffectsComponent.StewEffect> list = suspiciousStewEffects.effects();
+            List<SuspiciousStewEffects.Entry> list = suspiciousStewEffects.effects();
             int length = list.size();
             this.customEffects = new ArrayList<>(length);
 
             for (int i = 0; i < length; i++) {
-                SuspiciousStewEffectsComponent.StewEffect effect = list.get(i);
+                SuspiciousStewEffects.Entry effect = list.get(i);
                 PotionEffectType type = CraftPotionEffectType.minecraftHolderToBukkit(effect.effect());
                 if (type == null) {
                     continue;
@@ -80,11 +79,11 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
     void applyToItem(CraftMetaItem.Applicator tag) {
         super.applyToItem(tag);
         if (this.customEffects != null) {
-            ArrayList<SuspiciousStewEffectsComponent.StewEffect> effectList = new ArrayList<SuspiciousStewEffectsComponent.StewEffect>();
+            ArrayList<SuspiciousStewEffects.Entry> effectList = new ArrayList<SuspiciousStewEffects.Entry>();
             for (SuspiciousEffectEntry effect : this.customEffects) {
-                effectList.add(new SuspiciousStewEffectsComponent.StewEffect(CraftPotionEffectType.bukkitToMinecraftHolder(effect.effect()), effect.duration()));
+                effectList.add(new SuspiciousStewEffects.Entry(CraftPotionEffectType.bukkitToMinecraftHolder(effect.effect()), effect.duration()));
             }
-            tag.put(EFFECTS, new SuspiciousStewEffectsComponent(effectList));
+            tag.put(EFFECTS, new SuspiciousStewEffects(effectList));
         }
     }
 

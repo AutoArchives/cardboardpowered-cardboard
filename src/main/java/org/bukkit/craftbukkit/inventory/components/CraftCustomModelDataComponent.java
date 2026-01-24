@@ -15,9 +15,9 @@ import org.bukkit.inventory.meta.components.CustomModelDataComponent;
 @SerializableAs("CustomModelData")
 public final class CraftCustomModelDataComponent implements CustomModelDataComponent {
 
-    private net.minecraft.component.type.CustomModelDataComponent handle;
+    private net.minecraft.world.item.component.CustomModelData handle;
 
-    public CraftCustomModelDataComponent(net.minecraft.component.type.CustomModelDataComponent handle) {
+    public CraftCustomModelDataComponent(net.minecraft.world.item.component.CustomModelData handle) {
         this.handle = handle;
     }
 
@@ -26,7 +26,7 @@ public final class CraftCustomModelDataComponent implements CustomModelDataCompo
     }
 
     public CraftCustomModelDataComponent(Map<String, Object> map) {
-        this.handle = new net.minecraft.component.type.CustomModelDataComponent(
+        this.handle = new net.minecraft.world.item.component.CustomModelData(
                 SerializableMeta.getList(Float.class, map, "floats"),
                 SerializableMeta.getList(Boolean.class, map, "flags"),
                 SerializableMeta.getList(String.class, map, "strings"),
@@ -46,7 +46,7 @@ public final class CraftCustomModelDataComponent implements CustomModelDataCompo
         return result;
     }
 
-    public net.minecraft.component.type.CustomModelDataComponent getHandle() {
+    public net.minecraft.world.item.component.CustomModelData getHandle() {
         return this.handle;
     }
 
@@ -57,7 +57,7 @@ public final class CraftCustomModelDataComponent implements CustomModelDataCompo
 
     // @Override
     public void setFloats(List<Float> floats) {
-        this.handle = new net.minecraft.component.type.CustomModelDataComponent(new ArrayList<>(floats), this.handle.flags(), this.handle.strings(), this.handle.colors());
+        this.handle = new net.minecraft.world.item.component.CustomModelData(new ArrayList<>(floats), this.handle.flags(), this.handle.strings(), this.handle.colors());
     }
 
     // @Override
@@ -67,7 +67,7 @@ public final class CraftCustomModelDataComponent implements CustomModelDataCompo
 
     // @Override
     public void setFlags(List<Boolean> flags) {
-        this.handle = new net.minecraft.component.type.CustomModelDataComponent(this.handle.floats(), List.copyOf(flags), this.handle.strings(), this.handle.colors()); // Paper
+        this.handle = new net.minecraft.world.item.component.CustomModelData(this.handle.floats(), List.copyOf(flags), this.handle.strings(), this.handle.colors()); // Paper
     }
 
     // @Override
@@ -77,7 +77,7 @@ public final class CraftCustomModelDataComponent implements CustomModelDataCompo
 
     // @Override
     public void setStrings(List<String> strings) {
-        this.handle = new net.minecraft.component.type.CustomModelDataComponent(this.handle.floats(), this.handle.flags(), List.copyOf(strings), this.handle.colors()); // Paper
+        this.handle = new net.minecraft.world.item.component.CustomModelData(this.handle.floats(), this.handle.flags(), List.copyOf(strings), this.handle.colors()); // Paper
     }
 
     // @Override
@@ -87,7 +87,7 @@ public final class CraftCustomModelDataComponent implements CustomModelDataCompo
 
     // @Override
     public void setColors(List<Color> colors) {
-        this.handle = new net.minecraft.component.type.CustomModelDataComponent(this.handle.floats(), this.handle.flags(), this.handle.strings(), colors.stream().map(Color::asRGB).toList()); // Paper
+        this.handle = new net.minecraft.world.item.component.CustomModelData(this.handle.floats(), this.handle.flags(), this.handle.strings(), colors.stream().map(Color::asRGB).toList()); // Paper
     }
 
     @Override

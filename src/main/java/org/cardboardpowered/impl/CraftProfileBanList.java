@@ -11,19 +11,19 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
-import net.minecraft.server.BannedPlayerEntry;
-import net.minecraft.server.BannedPlayerList;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerConfigEntry;
+import net.minecraft.server.players.NameAndId;
+import net.minecraft.server.players.UserBanList;
+import net.minecraft.server.players.UserBanListEntry;
 import org.bukkit.BanEntry;
 import org.bukkit.ban.ProfileBanList;
 import org.bukkit.craftbukkit.CraftServer;
 
 public class CraftProfileBanList implements ProfileBanList {
 
-   private final BannedPlayerList list;
+   private final UserBanList list;
 
-   public CraftProfileBanList(BannedPlayerList list) {
+   public CraftProfileBanList(UserBanList list) {
       this.list = list;
    }
 
@@ -34,18 +34,18 @@ public class CraftProfileBanList implements ProfileBanList {
 
    public BanEntry<PlayerProfile> getBanEntry(org.bukkit.profile.PlayerProfile target) {
       Preconditions.checkArgument(target != null, "Target cannot be null");
-      return this.getBanEntry(new PlayerConfigEntry(((SharedPlayerProfile)target).buildGameProfile()));
+      return this.getBanEntry(new NameAndId(((SharedPlayerProfile)target).buildGameProfile()));
    }
 
    public BanEntry<PlayerProfile> getBanEntry(PlayerProfile target) {
       Preconditions.checkArgument(target != null, "target cannot be null");
-      return this.getBanEntry(new PlayerConfigEntry(((SharedPlayerProfile)target).buildGameProfile()));
+      return this.getBanEntry(new NameAndId(((SharedPlayerProfile)target).buildGameProfile()));
    }
 
    public BanEntry<PlayerProfile> addBan(PlayerProfile target, String reason, Date expires, String source) {
       Preconditions.checkArgument(target != null, "PlayerProfile cannot be null");
       Preconditions.checkArgument(target.getId() != null, "The PlayerProfile UUID cannot be null");
-      return this.addBan(new PlayerConfigEntry(((SharedPlayerProfile)target).buildGameProfile()), reason, expires, source);
+      return this.addBan(new NameAndId(((SharedPlayerProfile)target).buildGameProfile()), reason, expires, source);
    }
 
    public boolean isBanned(PlayerProfile target) {
@@ -74,7 +74,7 @@ public class CraftProfileBanList implements ProfileBanList {
    public BanEntry<PlayerProfile> addBan(org.bukkit.profile.PlayerProfile target, String reason, Date expires, String source) {
       Preconditions.checkArgument(target != null, "PlayerProfile cannot be null");
       Preconditions.checkArgument(target.getUniqueId() != null, "The PlayerProfile UUID cannot be null");
-      return this.addBan(new PlayerConfigEntry(((SharedPlayerProfile)target).buildGameProfile()), reason, expires, source);
+      return this.addBan(new NameAndId(((SharedPlayerProfile)target).buildGameProfile()), reason, expires, source);
    }
 
    public BanEntry<PlayerProfile> addBan(org.bukkit.profile.PlayerProfile target, String reason, Instant expires, String source) {
@@ -90,8 +90,8 @@ public class CraftProfileBanList implements ProfileBanList {
    public Set<BanEntry> getBanEntries() {
       Builder<BanEntry> builder = ImmutableSet.builder();
 
-      for (BannedPlayerEntry entry : this.list.values()) {
-         PlayerConfigEntry profile = entry.getKey();
+      for (UserBanListEntry entry : this.list.getEntries()) {
+         NameAndId profile = entry.getUser();
          builder.add(new CraftProfileBanEntry(profile, entry, this.list));
       }
 
@@ -101,8 +101,8 @@ public class CraftProfileBanList implements ProfileBanList {
    public Set<BanEntry<PlayerProfile>> getEntries() {
       Builder<BanEntry<PlayerProfile>> builder = ImmutableSet.builder();
 
-      for (BannedPlayerEntry entry : this.list.values()) {
-         PlayerConfigEntry profile = entry.getKey();
+      for (UserBanListEntry entry : this.list.getEntries()) {
+         NameAndId profile = entry.getUser();
          builder.add(new CraftProfileBanEntry(profile, entry, this.list));
       }
 
@@ -115,7 +115,7 @@ public class CraftProfileBanList implements ProfileBanList {
 
    private boolean isBanned(SharedPlayerProfile target) {
       Preconditions.checkArgument(target != null, "Target cannot be null");
-      return this.isBanned(new PlayerConfigEntry(target.buildGameProfile()));
+      return this.isBanned(new NameAndId(target.buildGameProfile()));
    }
 
    public boolean isBanned(String target) {
@@ -129,7 +129,7 @@ public class CraftProfileBanList implements ProfileBanList {
 
    private void pardon(SharedPlayerProfile target) {
       Preconditions.checkArgument(target != null, "Target cannot be null");
-      this.pardon(new PlayerConfigEntry(target.buildGameProfile()));
+      this.pardon(new NameAndId(target.buildGameProfile()));
    }
 
    public void pardon(String target) {
@@ -137,20 +137,20 @@ public class CraftProfileBanList implements ProfileBanList {
       this.pardon(getProfile(target));
    }
 
-   public BanEntry<PlayerProfile> getBanEntry(PlayerConfigEntry profile) {
+   public BanEntry<PlayerProfile> getBanEntry(NameAndId profile) {
       if (profile == null) {
          return null;
       } else {
-         BannedPlayerEntry entry = this.list.get(profile);
+         UserBanListEntry entry = this.list.get(profile);
          return entry == null ? null : new CraftProfileBanEntry(profile, entry, this.list);
       }
    }
 
-   public BanEntry<PlayerProfile> addBan(PlayerConfigEntry profile, String reason, Date expires, String source) {
+   public BanEntry<PlayerProfile> addBan(NameAndId profile, String reason, Date expires, String source) {
       if (profile == null) {
          return null;
       } else {
-         BannedPlayerEntry entry = new BannedPlayerEntry(
+         UserBanListEntry entry = new UserBanListEntry(
             profile, new Date(), source != null && !source.isBlank() ? source : null, expires, reason != null && !reason.isBlank() ? reason : null
          );
          this.list.add(entry);
@@ -158,15 +158,15 @@ public class CraftProfileBanList implements ProfileBanList {
       }
    }
 
-   private void pardon(PlayerConfigEntry profile) {
+   private void pardon(NameAndId profile) {
       this.list.remove(profile);
    }
 
-   private boolean isBanned(PlayerConfigEntry profile) {
-      return profile != null && this.list.contains(profile);
+   private boolean isBanned(NameAndId profile) {
+      return profile != null && this.list.isBanned(profile);
    }
 
-   static PlayerConfigEntry getProfile(String target) {
+   static NameAndId getProfile(String target) {
       UUID uuid = null;
 
       try {
@@ -177,14 +177,14 @@ public class CraftProfileBanList implements ProfileBanList {
       return uuid != null ? getProfileByUUID(uuid) : getProfileByName(target);
    }
 
-   static PlayerConfigEntry getProfileByUUID(UUID uuid) {
+   static NameAndId getProfileByUUID(UUID uuid) {
 	   MinecraftServer server = CraftServer.server;
-      return server != null ? server.getApiServices().nameToIdCache().getByUuid(uuid).orElse(null) : null;
+      return server != null ? server.services().nameToIdCache().get(uuid).orElse(null) : null;
    }
 
-   static PlayerConfigEntry getProfileByName(String name) {
+   static NameAndId getProfileByName(String name) {
 	   MinecraftServer server = CraftServer.server;
-      return server != null ? server.getApiServices().nameToIdCache().findByName(name).orElse(null) : null;
+      return server != null ? server.services().nameToIdCache().get(name).orElse(null) : null;
    }
 
 }

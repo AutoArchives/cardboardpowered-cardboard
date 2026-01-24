@@ -1,8 +1,7 @@
 package org.cardboardpowered.impl.block;
 
-import net.minecraft.block.entity.EnderChestBlockEntity;
-import net.minecraft.util.math.BlockPos;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -51,8 +50,8 @@ public class CardboardEnderchest extends CardboardBlockEntityState<EnderChestBlo
     
 	@Override
 	public boolean isBlocked() {
-        BlockPos abovePos = this.getPosition().up();
-        return this.isPlaced() && this.getWorldHandle().getBlockState(abovePos).isSolidBlock(this.getWorldHandle(), abovePos);
+        BlockPos abovePos = this.getPosition().above();
+        return this.isPlaced() && this.getWorldHandle().getBlockState(abovePos).isRedstoneConductor(this.getWorldHandle(), abovePos);
 	}
 
 }

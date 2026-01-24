@@ -7,11 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ChargedProjectilesComponent;
-import net.minecraft.item.ArrowItem;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.ArrowItem;
+import net.minecraft.world.item.component.ChargedProjectiles;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -26,7 +26,7 @@ public class CraftMetaCrossbow
 extends CraftMetaItem
 implements CrossbowMeta {
     static final CraftMetaItem.ItemMetaKey CHARGED = new CraftMetaItem.ItemMetaKey("charged");
-    static final CraftMetaItem.ItemMetaKeyType<ChargedProjectilesComponent> CHARGED_PROJECTILES = new CraftMetaItem.ItemMetaKeyType<ChargedProjectilesComponent>(DataComponentTypes.CHARGED_PROJECTILES, "charged-projectiles");
+    static final CraftMetaItem.ItemMetaKeyType<ChargedProjectiles> CHARGED_PROJECTILES = new CraftMetaItem.ItemMetaKeyType<ChargedProjectiles>(DataComponents.CHARGED_PROJECTILES, "charged-projectiles");
     private List<ItemStack> chargedProjectiles;
 
     CraftMetaCrossbow(CraftMetaItem meta) {
@@ -40,14 +40,14 @@ implements CrossbowMeta {
         }
     }
 
-    CraftMetaCrossbow(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
+    CraftMetaCrossbow(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaCrossbow.getOrEmpty(tag, CHARGED_PROJECTILES).ifPresent(p -> {
-            List<net.minecraft.item.ItemStack> list = p.getProjectiles();
+            List<net.minecraft.world.item.ItemStack> list = p.getItems();
             if (list != null && !list.isEmpty()) {
                 this.chargedProjectiles = new ArrayList<ItemStack>();
                 for (int i2 = 0; i2 < list.size(); ++i2) {
-                    net.minecraft.item.ItemStack nbttagcompound1 = list.get(i2);
+                    net.minecraft.world.item.ItemStack nbttagcompound1 = list.get(i2);
                     this.chargedProjectiles.add(CraftItemStack.asCraftMirror(nbttagcompound1));
                 }
             }
@@ -69,11 +69,11 @@ implements CrossbowMeta {
     void applyToItem(CraftMetaItem.Applicator tag) {
         super.applyToItem(tag);
         if (this.hasChargedProjectiles()) {
-            ArrayList<net.minecraft.item.ItemStack> list = new ArrayList<net.minecraft.item.ItemStack>();
+            ArrayList<net.minecraft.world.item.ItemStack> list = new ArrayList<net.minecraft.world.item.ItemStack>();
             for (ItemStack item : this.chargedProjectiles) {
                 list.add(CraftItemStack.asNMSCopy(item));
             }
-            tag.put(CHARGED_PROJECTILES, ChargedProjectilesComponent.of(list));
+            tag.put(CHARGED_PROJECTILES, ChargedProjectiles.of(list));
         }
     }
 

@@ -7,28 +7,26 @@ import org.cardboardpowered.interfaces.IMixinTradeOffer;
 
 import java.util.Collections;
 import java.util.List;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.village.Merchant;
-import net.minecraft.village.TradeOffer;
-import net.minecraft.village.TradeOfferList;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.MerchantRecipe;
 
 public interface CraftMerchant extends org.bukkit.inventory.Merchant {
 
-	net.minecraft.village.Merchant getMerchant();
+	net.minecraft.world.item.trading.Merchant getMerchant();
 
 	default List<MerchantRecipe> getRecipes() {
-		return List.copyOf(Lists.transform(this.getMerchant().getOffers(), new Function<TradeOffer, MerchantRecipe>() {
-			public MerchantRecipe apply(TradeOffer recipe) {
+		return List.copyOf(Lists.transform(this.getMerchant().getOffers(), new Function<MerchantOffer, MerchantRecipe>() {
+			public MerchantRecipe apply(MerchantOffer recipe) {
 				return ((IMixinTradeOffer)recipe).asBukkit();
 			}
 		}));
 	}
 
 	default void setRecipes(List<MerchantRecipe> recipes) {
-		TradeOfferList recipesList = this.getMerchant().getOffers();
+		MerchantOffers recipesList = this.getMerchant().getOffers();
 		recipesList.clear();
 
 		for (MerchantRecipe recipe : recipes) {
@@ -53,7 +51,7 @@ public interface CraftMerchant extends org.bukkit.inventory.Merchant {
 	}
 
 	default HumanEntity getTrader() {
-		PlayerEntity eh = this.getMerchant().getCustomer();
+		net.minecraft.world.entity.player.Player eh = this.getMerchant().getTradingPlayer();
 		return eh == null ? null : (Player)((IMixinServerEntityPlayer)eh).getBukkitEntity();
 	}
 

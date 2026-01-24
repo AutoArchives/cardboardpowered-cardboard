@@ -1,6 +1,5 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.entity.passive.OcelotEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Ocelot;
@@ -8,13 +7,13 @@ import org.cardboardpowered.impl.entity.CraftAnimals;
 
 public class CraftOcelot extends CraftAnimals implements Ocelot {
  
-    public CraftOcelot(CraftServer server, OcelotEntity ocelot) {
+    public CraftOcelot(CraftServer server, net.minecraft.world.entity.animal.feline.Ocelot ocelot) {
         super(server, ocelot);
     }
 
     @Override
-    public OcelotEntity getHandle() {
-        return (OcelotEntity) nms;
+    public net.minecraft.world.entity.animal.feline.Ocelot getHandle() {
+        return (net.minecraft.world.entity.animal.feline.Ocelot) nms;
     }
 
     @SuppressWarnings("deprecation")

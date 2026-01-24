@@ -3,11 +3,6 @@ package org.cardboardpowered.impl.inventory;
 import com.google.common.base.Preconditions;
 import org.cardboardpowered.interfaces.IMixinInventory;
 import org.cardboardpowered.interfaces.IMixinPlayerInventory;
-
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.UpdateSelectedSlotS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -20,31 +15,35 @@ import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Inventory;
 
 public class CardboardPlayerInventory extends CraftInventory implements org.bukkit.inventory.PlayerInventory, EntityEquipment {
 
-    public CardboardPlayerInventory(net.minecraft.entity.player.PlayerInventory inventory) {
+    public CardboardPlayerInventory(net.minecraft.world.entity.player.Inventory inventory) {
         super(inventory);
     }
 
     @Override
-    public PlayerInventory getInventory() {
-        return (PlayerInventory) inventory;
+    public Inventory getInventory() {
+        return (Inventory) inventory;
     }
     
     // Get cast to Cardboard Interface
     private IMixinPlayerInventory IgetInventory() {
-        return (IMixinPlayerInventory) (PlayerInventory) inventory;
+        return (IMixinPlayerInventory) (Inventory) inventory;
     }
 
     @Override
     public ItemStack[] getStorageContents() {
-        return asCraftMirror(getInventory().main);
+        return asCraftMirror(getInventory().items);
     }
 
     @Override
     public ItemStack getItemInMainHand() {
-        return CraftItemStack.asCraftMirror(getInventory().getSelectedStack());
+        return CraftItemStack.asCraftMirror(getInventory().getSelectedItem());
     }
 
     @Override
@@ -54,7 +53,7 @@ public class CardboardPlayerInventory extends CraftInventory implements org.bukk
 
     @Override
     public ItemStack getItemInOffHand() {
-        return CraftItemStack.asCraftMirror(this.getInventory().equipment.get(net.minecraft.entity.EquipmentSlot.OFFHAND));
+        return CraftItemStack.asCraftMirror(this.getInventory().equipment.get(net.minecraft.world.entity.EquipmentSlot.OFFHAND));
     }
 
     @Override
@@ -78,17 +77,17 @@ public class CardboardPlayerInventory extends CraftInventory implements org.bukk
     public void setItem(int index, ItemStack item) {
         super.setItem(index, item);
         if (this.getHolder() == null) return;
-        ServerPlayerEntity player = ((CraftPlayer) this.getHolder()).getHandle();
-        if (player.networkHandler == null) return;
+        ServerPlayer player = ((CraftPlayer) this.getHolder()).getHandle();
+        if (player.connection == null) return;
 
-        if (index < PlayerInventory.getHotbarSize())
+        if (index < Inventory.getSelectionSize())
             index += 36;
         else if (index > 39)
             index += 5; // Off hand
         else if (index > 35)
             index = 8 - (index - 36);
 
-        player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(player.playerScreenHandler.syncId,  player.playerScreenHandler.nextRevision(), index, CraftItemStack.asNMSCopy(item)));
+        player.connection.send(new ClientboundContainerSetSlotPacket(player.inventoryMenu.containerId,  player.inventoryMenu.incrementStateId(), index, CraftItemStack.asNMSCopy(item)));
     }
 
     @Override
@@ -148,10 +147,10 @@ public class CardboardPlayerInventory extends CraftInventory implements org.bukk
 
     @Override
     public void setHeldItemSlot(int slot) {
-        Validate.isTrue(slot >= 0 && slot < PlayerInventory.getHotbarSize(), "Slot is not between 0 and 8 inclusive");
+        Validate.isTrue(slot >= 0 && slot < Inventory.getSelectionSize(), "Slot is not between 0 and 8 inclusive");
         // this.getInventory().selectedSlot = slot;
         this.getInventory().setSelectedSlot(slot);
-        ((CraftPlayer) this.getHolder()).getHandle().networkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(slot));
+        ((CraftPlayer) this.getHolder()).getHandle().connection.send(new ClientboundSetHeldSlotPacket(slot));
     }
 
     @Override
@@ -211,12 +210,12 @@ public class CardboardPlayerInventory extends CraftInventory implements org.bukk
 
     @Override
     public void setStorageContents(ItemStack[] items) throws IllegalArgumentException {
-        setSlots(items, 0, getInventory().main.size());
+        setSlots(items, 0, getInventory().items.size());
     }
 
     @Override
     public void setArmorContents(ItemStack[] items) {
-    	this.setSlots(items, this.getInventory().getMainStacks().size(), this.IgetInventory().getArmorContents().size());
+    	this.setSlots(items, this.getInventory().getNonEquipmentItems().size(), this.IgetInventory().getArmorContents().size());
     }
 
     @Override
@@ -226,7 +225,7 @@ public class CardboardPlayerInventory extends CraftInventory implements org.bukk
 
     @Override
     public void setExtraContents(ItemStack[] items) {
-    	this.setSlots(items, this.getInventory().getMainStacks().size() + this.IgetInventory().getArmorContents().size(), 3);
+    	this.setSlots(items, this.getInventory().getNonEquipmentItems().size() + this.IgetInventory().getArmorContents().size(), 3);
     }
 
     @Override

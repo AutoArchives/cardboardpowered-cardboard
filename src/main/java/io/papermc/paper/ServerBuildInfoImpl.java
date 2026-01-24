@@ -44,8 +44,8 @@ public record ServerBuildInfoImpl(
     	this(
     			Key.key("papermc:paper"),
     			"Paper",
-    			SharedConstants.getGameVersion().id(),
-    			SharedConstants.getGameVersion().name(),
+    			SharedConstants.getCurrentVersion().id(),
+    			SharedConstants.getCurrentVersion().name(),
     			OptionalInt.of(15),
     			Instant.parse("2025-07-01T22:53:44.086687487Z"),
     			Optional.of("main"),

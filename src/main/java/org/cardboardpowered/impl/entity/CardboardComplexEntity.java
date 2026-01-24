@@ -1,6 +1,6 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.entity.LivingEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.ComplexLivingEntity;
 

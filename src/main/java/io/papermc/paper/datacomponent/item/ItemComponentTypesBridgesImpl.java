@@ -14,9 +14,8 @@ import io.papermc.paper.registry.tag.TagKey;
 import io.papermc.paper.text.Filtered;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.util.TriState;
-import net.minecraft.component.type.OminousBottleAmplifierComponent;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.component.OminousBottleAmplifier;
 import org.bukkit.JukeboxSong;
 import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -180,7 +179,7 @@ public final class ItemComponentTypesBridgesImpl implements ItemComponentTypesBr
 
     @Override
     public MapId mapId(final int id) {
-        return new PaperMapId(new net.minecraft.component.type.MapIdComponent(id));
+        return new PaperMapId(new net.minecraft.world.level.saveddata.maps.MapId(id));
     }
 
     @Override
@@ -188,7 +187,7 @@ public final class ItemComponentTypesBridgesImpl implements ItemComponentTypesBr
         Preconditions.checkArgument(itemStack != null, "Item cannot be null");
         Preconditions.checkArgument(!itemStack.isEmpty(), "Remaining item cannot be empty!");
         return new PaperUseRemainder(
-            new net.minecraft.component.type.UseRemainderComponent(CraftItemStack.asNMSCopy(itemStack))
+            new net.minecraft.world.item.component.UseRemainder(CraftItemStack.asNMSCopy(itemStack))
         );
     }
 
@@ -205,18 +204,18 @@ public final class ItemComponentTypesBridgesImpl implements ItemComponentTypesBr
 
     @Override
     public DamageResistant damageResistant(final TagKey<DamageType> types) {
-        return new PaperDamageResistant(new net.minecraft.component.type.DamageResistantComponent(PaperRegistries.toNms(types)));
+        return new PaperDamageResistant(new net.minecraft.world.item.component.DamageResistant(PaperRegistries.toNms(types)));
     }
 
     @Override
     public Enchantable enchantable(final int level) {
-        return new PaperEnchantable(new net.minecraft.component.type.EnchantableComponent(level));
+        return new PaperEnchantable(new net.minecraft.world.item.enchantment.Enchantable(level));
     }
 
     @Override
     public Repairable repairable(final RegistryKeySet<ItemType> types) {
-        return new PaperRepairable(new net.minecraft.component.type.RepairableComponent(
-            PaperRegistrySets.convertToNms(RegistryKeys.ITEM, Registries_Bridge.BUILT_IN_CONVERSIONS.lookup(), types)
+        return new PaperRepairable(new net.minecraft.world.item.enchantment.Repairable(
+            PaperRegistrySets.convertToNms(Registries.ITEM, Registries_Bridge.BUILT_IN_CONVERSIONS.lookup(), types)
         ));
     }
 
@@ -237,11 +236,11 @@ public final class ItemComponentTypesBridgesImpl implements ItemComponentTypesBr
 
     @Override
     public PaperOminousBottleAmplifier ominousBottleAmplifier(final int amplifier) {
-        Preconditions.checkArgument(OminousBottleAmplifierComponent.MIN_VALUE <= amplifier && amplifier <= OminousBottleAmplifierComponent.MAX_VALUE,
-            "amplifier must be between %s-%s, was %s", OminousBottleAmplifierComponent.MIN_VALUE, OminousBottleAmplifierComponent.MAX_VALUE, amplifier
+        Preconditions.checkArgument(OminousBottleAmplifier.MIN_AMPLIFIER <= amplifier && amplifier <= OminousBottleAmplifier.MAX_AMPLIFIER,
+            "amplifier must be between %s-%s, was %s", OminousBottleAmplifier.MIN_AMPLIFIER, OminousBottleAmplifier.MAX_AMPLIFIER, amplifier
         );
         return new PaperOminousBottleAmplifier(
-            new OminousBottleAmplifierComponent(amplifier)
+            new OminousBottleAmplifier(amplifier)
         );
     }
 

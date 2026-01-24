@@ -2,16 +2,13 @@ package org.cardboardpowered.impl.world;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
-
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.biome.source.BiomeAccess;
-import net.minecraft.world.chunk.PalettedContainer;
-import net.minecraft.world.chunk.ReadableContainer;
-
 import java.util.function.Predicate;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.PalettedContainer;
+import net.minecraft.world.level.chunk.PalettedContainerRO;
+import net.minecraft.world.level.levelgen.Heightmap;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
 import org.bukkit.block.Biome;
@@ -34,10 +31,10 @@ public class CardboardChunkSnapshot implements ChunkSnapshot {
     private final boolean[] empty;
     private final Heightmap hmap; // Height map
     private final long captureFulltime;
-    private final net.minecraft.registry.Registry<net.minecraft.world.biome.Biome> biomeRegistry;
-    private final ReadableContainer<RegistryEntry<net.minecraft.world.biome.Biome>>[] biome;
+    private final net.minecraft.core.Registry<net.minecraft.world.level.biome.Biome> biomeRegistry;
+    private final PalettedContainerRO<Holder<net.minecraft.world.level.biome.Biome>>[] biome;
 
-    CardboardChunkSnapshot(int x, int z, int minHeight, int maxHeight, int seaLevel, String wname, long wtime, PalettedContainer<BlockState>[] sectionBlockIDs, byte[][] sectionSkyLights, byte[][] sectionEmitLights, boolean[] sectionEmpty, Heightmap hmap, net.minecraft.registry.Registry<net.minecraft.world.biome.Biome> biomeRegistry, ReadableContainer<RegistryEntry<net.minecraft.world.biome.Biome>>[] biome) {
+    CardboardChunkSnapshot(int x, int z, int minHeight, int maxHeight, int seaLevel, String wname, long wtime, PalettedContainer<BlockState>[] sectionBlockIDs, byte[][] sectionSkyLights, byte[][] sectionEmitLights, boolean[] sectionEmpty, Heightmap hmap, net.minecraft.core.Registry<net.minecraft.world.level.biome.Biome> biomeRegistry, PalettedContainerRO<Holder<net.minecraft.world.level.biome.Biome>>[] biome) {
         this.x = x;
         this.z = z;
         this.minHeight = minHeight;
@@ -75,7 +72,7 @@ public class CardboardChunkSnapshot implements ChunkSnapshot {
 
         Predicate<BlockState> nms = Predicates.equalTo(((CraftBlockData) block).getState());
         for (PalettedContainer<BlockState> palette : blockids) {
-            if (palette.hasAny(nms)) {
+            if (palette.maybeHas(nms)) {
                 return true;
             }
         }
@@ -139,7 +136,7 @@ public class CardboardChunkSnapshot implements ChunkSnapshot {
         Preconditions.checkState(hmap != null, "ChunkSnapshot created without height map. Please call getSnapshot with includeMaxblocky=true");
         validateChunkCoordinates(x, 0, z);
 
-        return hmap.getOneLower(x, z); // = getHighestTaken(x, z);
+        return hmap.getHighestTaken(x, z); // = getHighestTaken(x, z);
     }
 
     @Override
@@ -152,7 +149,7 @@ public class CardboardChunkSnapshot implements ChunkSnapshot {
         Preconditions.checkState(biome != null, "ChunkSnapshot created without biome. Please call getSnapshot with includeBiome=true");
         validateChunkCoordinates(x, y, z);
 
-        ReadableContainer<RegistryEntry<net.minecraft.world.biome.Biome>> biome = this.biome[getSectionIndex(y)]; // SPIGOT-7188: Don't need to convert y to biome coordinate scale since it is bound to the block chunk section
+        PalettedContainerRO<Holder<net.minecraft.world.level.biome.Biome>> biome = this.biome[getSectionIndex(y)]; // SPIGOT-7188: Don't need to convert y to biome coordinate scale since it is bound to the block chunk section
         return CraftBlock.biomeBaseToBiome(biomeRegistry, biome.get(x >> 2, (y & 0xF) >> 2, z >> 2));
     }
 
@@ -166,8 +163,8 @@ public class CardboardChunkSnapshot implements ChunkSnapshot {
         Preconditions.checkState(biome != null, "ChunkSnapshot created without biome. Please call getSnapshot with includeBiome=true");
         validateChunkCoordinates(x, y, z);
 
-        ReadableContainer<RegistryEntry<net.minecraft.world.biome.Biome>> biome = this.biome[getSectionIndex(y)]; // SPIGOT-7188: Don't need to convert y to biome coordinate scale since it is bound to the block chunk section
-        return biome.get(x >> 2, (y & 0xF) >> 2, z >> 2).value().getTemperature(BlockPos.ofFloored((this.x << 4) | x, y, (this.z << 4) | z), this.seaLevel);
+        PalettedContainerRO<Holder<net.minecraft.world.level.biome.Biome>> biome = this.biome[getSectionIndex(y)]; // SPIGOT-7188: Don't need to convert y to biome coordinate scale since it is bound to the block chunk section
+        return biome.get(x >> 2, (y & 0xF) >> 2, z >> 2).value().getTemperature(BlockPos.containing((this.x << 4) | x, y, (this.z << 4) | z), this.seaLevel);
     }
 
     @Override
@@ -192,8 +189,8 @@ public class CardboardChunkSnapshot implements ChunkSnapshot {
     public boolean contains(Biome biome) {
         Preconditions.checkArgument((biome != null ? 1 : 0) != 0, (Object)"Biome cannot be null");
         com.google.common.base.Predicate nms = Predicates.equalTo(CraftBlock.biomeToBiomeBase(this.biomeRegistry, biome));
-        for (ReadableContainer<RegistryEntry<net.minecraft.world.biome.Biome>> palette : this.biome) {
-            if (!palette.hasAny((Predicate<RegistryEntry<net.minecraft.world.biome.Biome>>)nms)) continue;
+        for (PalettedContainerRO<Holder<net.minecraft.world.level.biome.Biome>> palette : this.biome) {
+            if (!palette.maybeHas((Predicate<Holder<net.minecraft.world.level.biome.Biome>>)nms)) continue;
             return true;
         }
         return false;

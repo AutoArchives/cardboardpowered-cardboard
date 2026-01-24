@@ -21,20 +21,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
-
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.PlayerConfigEntry;
-import net.minecraft.server.WhitelistEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.GlobalPos;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.PlayerSaveHandler;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
+import net.minecraft.server.players.UserWhiteListEntry;
+import net.minecraft.world.level.storage.PlayerDataStorage;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.BanEntry;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
@@ -59,13 +55,13 @@ import org.jetbrains.annotations.Nullable;
 @SerializableAs("Player")
 public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializable {
 
-	private final PlayerConfigEntry nameAndId;
+	private final NameAndId nameAndId;
 	
     // private final GameProfile profile;
     private final CraftServer server;
-    private final PlayerSaveHandler storage;
+    private final PlayerDataStorage storage;
 
-	protected CraftOfflinePlayer(CraftServer server, PlayerConfigEntry nameAndId) {
+	protected CraftOfflinePlayer(CraftServer server, NameAndId nameAndId) {
 		this.server = server;
 		this.nameAndId = nameAndId;
 		this.storage = ((IMixinMinecraftServer)server.getServer()).getSaveHandler_BF();
@@ -97,7 +93,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         } else if (!this.nameAndId.name().isEmpty()) {
            return this.nameAndId.name();
         } else {
-           NbtCompound data = this.getBukkitData();
+           CompoundTag data = this.getBukkitData();
            return data != null ? data.getString("lastKnownName").orElse(null) : null;
         }
      }
@@ -113,15 +109,15 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
     @Override
     public boolean isOp() {
-        return server.getHandle().getPlayerManager().isOperator(this.nameAndId);
+        return server.getHandle().getPlayerList().isOp(this.nameAndId);
     }
 
     @Override
     public void setOp(boolean value) {
         if (value == isOp()) return;
 
-        if (value) server.getHandle().getPlayerManager().addToOperators(this.nameAndId);
-        else server.getHandle().getPlayerManager().removeFromOperators(this.nameAndId);
+        if (value) server.getHandle().getPlayerList().op(this.nameAndId);
+        else server.getHandle().getPlayerList().deop(this.nameAndId);
     }
 
     @Override
@@ -143,15 +139,15 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
     @Override
     public boolean isWhitelisted() {
-        return server.getHandle().getPlayerManager().getWhitelist().isAllowed(this.nameAndId);
+        return server.getHandle().getPlayerList().getWhiteList().isWhiteListed(this.nameAndId);
     }
 
     @Override
     public void setWhitelisted(boolean value) {
         if (value) {
-            server.getHandle().getPlayerManager().getWhitelist().add(new WhitelistEntry(this.nameAndId));
+            server.getHandle().getPlayerList().getWhiteList().add(new UserWhiteListEntry(this.nameAndId));
         } else {
-            server.getHandle().getPlayerManager().getWhitelist().remove(this.nameAndId);
+            server.getHandle().getPlayerList().getWhiteList().remove(this.nameAndId);
         }
     }
 
@@ -202,12 +198,12 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         return hash;
     }
 
-    private NbtCompound getData() {
+    private CompoundTag getData() {
         return ((IMixinWorldSaveHandler)storage).getPlayerData(getUniqueId().toString());
     }
 
-    private NbtCompound getBukkitData() {
-        NbtCompound result = getData();
+    private CompoundTag getBukkitData() {
+        CompoundTag result = getData();
 
         if (result != null) {
             result = result.getCompound("bukkit").orElse(null);
@@ -217,7 +213,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     }
 
     private File getDataFile() {
-        return new File(storage.playerDataDir, getUniqueId() + ".dat");
+        return new File(storage.playerDir, getUniqueId() + ".dat");
     }
 
     @Override
@@ -225,7 +221,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         Player player = getPlayer();
         if (player != null) return player.getFirstPlayed();
 
-        NbtCompound data = getBukkitData();
+        CompoundTag data = getBukkitData();
 
         if (data != null) {
             return data.getLong("firstPlayed").orElseGet(() -> {
@@ -242,7 +238,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         Player player = getPlayer();
         if (player != null) return player.getLastPlayed();
 
-        NbtCompound data = getBukkitData();
+        CompoundTag data = getBukkitData();
         if (data != null) {
             return data.getLong("lastPlayed").orElseGet(() -> {
                 File file = this.getDataFile();
@@ -260,7 +256,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
     @Override
     public Location getBedSpawnLocation() {
-        NbtCompound data = getData();
+        CompoundTag data = getData();
         if (data == null) return null;
 
         if (data.contains("SpawnX") && data.contains("SpawnY") && data.contains("SpawnZ")) {
@@ -460,7 +456,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         if (player != null) {
             return player.getLastLogin();
         }
-        NbtCompound data = this.getPaperData();
+        CompoundTag data = this.getPaperData();
         if (data != null) {
             return data.getLong("LastLogin").orElseGet(() -> {
                 // if the player file cannot provide accurate data, this is probably the closest we can approximate
@@ -478,7 +474,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         if (player != null) {
             return player.getLastSeen();
         }
-        NbtCompound data = this.getPaperData();
+        CompoundTag data = this.getPaperData();
         if (data != null) {
             return data.getLong("LastSeen").orElseGet(() -> {
                 // if the player file cannot provide accurate data, this is probably the closest we can approximate
@@ -490,8 +486,8 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         }
     }
     
-    private NbtCompound getPaperData() {
-        NbtCompound result = this.getData();
+    private CompoundTag getPaperData() {
+        CompoundTag result = this.getData();
         if (result != null) {
             result = result.getCompound("Paper").orElse(null);
         }
@@ -518,13 +514,13 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         return null;
         */
         
-        NbtCompound data = this.getData();
+        CompoundTag data = this.getData();
         
         if (data == null) {
             return null;
         }
 
-        return data.get("LastDeathLocation", GlobalPos.CODEC).map(CraftLocation::fromGlobalPos).orElse(null);
+        return data.read("LastDeathLocation", GlobalPos.CODEC).map(CraftLocation::fromGlobalPos).orElse(null);
 	}
 
 	@Override
@@ -584,17 +580,17 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 	}
 	
 	public Location getRespawnLocation(final boolean loadLocationAdValidate) {
-        final NbtCompound data = this.getData();
+        final CompoundTag data = this.getData();
         if (data == null) return null;
 
-        final ServerPlayerEntity.Respawn respawnConfig = data.get("respawn", ServerPlayerEntity.Respawn.CODEC).orElse(null);
+        final ServerPlayer.RespawnConfig respawnConfig = data.read("respawn", ServerPlayer.RespawnConfig.CODEC).orElse(null);
         if (respawnConfig == null) return null;
 
-        final ServerWorld level = this.server.console.getWorld(respawnConfig.respawnData().getDimension());
+        final ServerLevel level = this.server.console.getLevel(respawnConfig.respawnData().dimension());
         if (level == null) return null;
 
         //if (!loadLocationAndValidate) {
-            return CraftLocation.toBukkit(respawnConfig.respawnData().getPos(), level.getWorld(), respawnConfig.respawnData().yaw(), 0);
+            return CraftLocation.toBukkit(respawnConfig.respawnData().pos(), level.getWorld(), respawnConfig.respawnData().yaw(), 0);
         //}
 
             /*
@@ -606,13 +602,13 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
 	@Override
 	public Location getLocation() {
-        NbtCompound data = this.getData();
+        CompoundTag data = this.getData();
         if (data == null) {
             return null;
         }
 
-        Vec3d pos = data.get("Pos", Vec3d.CODEC).orElse(null);
-        Vec2f rot = data.get("Rotation", Vec2f.CODEC).orElse(null);
+        Vec3 pos = data.read("Pos", Vec3.CODEC).orElse(null);
+        Vec2 rot = data.read("Rotation", Vec2.CODEC).orElse(null);
         if (pos != null && rot != null) {
             Long msb = data.getLong("WorldUUIDMost").orElse(null);
             Long lsb = data.getLong("WorldUUIDLeast").orElse(null);
@@ -620,7 +616,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
             return new Location(
                 world,
-                pos.getX(), pos.getY(), pos.getZ(),
+                pos.x(), pos.y(), pos.z(),
                 rot.x, rot.y
             );
         }

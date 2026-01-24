@@ -1,7 +1,6 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.passive.FishEntity;
-
+import net.minecraft.world.entity.animal.fish.AbstractFish;
 import org.bukkit.Sound;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Fish;
@@ -10,13 +9,13 @@ import org.jetbrains.annotations.NotNull;
 
 public class CardboardFish extends CardboardWaterMob implements Fish {
 
-    public CardboardFish(CraftServer server, FishEntity entity) {
+    public CardboardFish(CraftServer server, AbstractFish entity) {
         super(server, entity);
     }
 
     @Override
-    public FishEntity getHandle() {
-        return (FishEntity) nms;
+    public AbstractFish getHandle() {
+        return (AbstractFish) nms;
     }
 
     @Override

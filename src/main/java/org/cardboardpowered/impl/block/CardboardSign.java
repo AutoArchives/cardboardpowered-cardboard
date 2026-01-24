@@ -24,8 +24,7 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 import io.papermc.paper.event.player.PlayerOpenSignEvent;
 import net.kyori.adventure.text.Component;
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.text.Text;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
 
 @SuppressWarnings("deprecation")
 public class CardboardSign<T extends SignBlockEntity> extends CardboardBlockEntityState<T> implements Sign {
@@ -88,31 +87,31 @@ public class CardboardSign<T extends SignBlockEntity> extends CardboardBlockEnti
 
     @Override
     public DyeColor getColor() {
-        return DyeColor.getByWoolData((byte) getSnapshot().getFrontText().getColor().getIndex());
+        return DyeColor.getByWoolData((byte) getSnapshot().getFrontText().getColor().getId());
     }
 
     @Override
     public void setColor(DyeColor color) {
-        getSnapshot().getFrontText().withColor(net.minecraft.util.DyeColor.byIndex(color.getWoolData()));
+        getSnapshot().getFrontText().setColor(net.minecraft.world.item.DyeColor.byId(color.getWoolData()));
     }
 
     @Override
     public void applyTo(T sign) {
         super.applyTo(sign);
 
-        Text[] newLines = sanitizeLines(lines);
+        net.minecraft.network.chat.Component[] newLines = sanitizeLines(lines);
         System.arraycopy(newLines, 0, ((IMixinSignBlockEntity)sign).getTextBF(), 0, 4);
       //  sign.editable = true;
     }
 
-    public static Text[] sanitizeLines(String[] lines) {
-        Text[] components = new Text[4];
+    public static net.minecraft.network.chat.Component[] sanitizeLines(String[] lines) {
+        net.minecraft.network.chat.Component[] components = new net.minecraft.network.chat.Component[4];
         for (int i = 0; i < 4; i++)
-            components[i] = (i < lines.length && lines[i] != null) ? CraftChatMessage.fromString(lines[i])[0] : Text.of("");
+            components[i] = (i < lines.length && lines[i] != null) ? CraftChatMessage.fromString(lines[i])[0] : net.minecraft.network.chat.Component.nullToEmpty("");
         return components;
     }
 
-    public static String[] revertComponents(Text[] components) {
+    public static String[] revertComponents(net.minecraft.network.chat.Component[] components) {
         String[] lines = new String[components.length];
         for (int i = 0; i < lines.length; i++)
             lines[i] = CraftChatMessage.fromComponent(components[i]);
@@ -141,12 +140,12 @@ public class CardboardSign<T extends SignBlockEntity> extends CardboardBlockEnti
     
     @Override
     public boolean isGlowingText() {
-        return getSnapshot().getFrontText().isGlowing();
+        return getSnapshot().getFrontText().hasGlowingText();
     }
 
     @Override
     public void setGlowingText(boolean arg0) {
-        getSnapshot().getFrontText().withGlowing(arg0);
+        getSnapshot().getFrontText().setHasGlowingText(arg0);
     }
 
 	@Override
@@ -197,8 +196,8 @@ public class CardboardSign<T extends SignBlockEntity> extends CardboardBlockEnti
             return;
         }
         SignBlockEntity handle = (SignBlockEntity)((CardboardSign)sign).getTileEntity();
-        handle.setEditor(player.getUniqueId());
-        ((CraftPlayer)player).getHandle().openEditSignScreen(handle, Side.FRONT == side);
+        handle.setAllowedPlayerEditor(player.getUniqueId());
+        ((CraftPlayer)player).getHandle().openTextEdit(handle, Side.FRONT == side);
 	}
     
     // 1.20.4 API:
@@ -217,20 +216,20 @@ public class CardboardSign<T extends SignBlockEntity> extends CardboardBlockEnti
 
 	@Override
 	public @Nullable Player getAllowedEditor() {
-        UUID id = ((SignBlockEntity)this.getTileEntity()).getEditor();
+        UUID id = ((SignBlockEntity)this.getTileEntity()).getPlayerWhoMayEdit();
         return id == null ? null : Bukkit.getPlayer((UUID)id);
 	}
 
 	@Override
 	public UUID getAllowedEditorUniqueId() {
 		// this.ensureNoWorldGeneration();
-        return ((SignBlockEntity)this.getTileEntity()).getEditor();
+        return ((SignBlockEntity)this.getTileEntity()).getPlayerWhoMayEdit();
 	}
 
 	@Override
 	public void setAllowedEditorUniqueId(UUID uuid) {
 		// this.ensureNoWorldGeneration();
-        ((SignBlockEntity)this.getTileEntity()).setEditor(uuid);
+        ((SignBlockEntity)this.getTileEntity()).setAllowedPlayerEditor(uuid);
 	}
 
 }

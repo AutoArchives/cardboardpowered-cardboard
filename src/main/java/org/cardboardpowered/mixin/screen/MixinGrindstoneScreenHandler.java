@@ -2,6 +2,10 @@ package org.cardboardpowered.mixin.screen;
 
 import org.cardboardpowered.impl.inventory.CardboardGrindstoneInventory;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.GrindstoneMenu;
 import org.bukkit.entity.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -11,22 +15,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.screen.GrindstoneScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
-
-@Mixin(GrindstoneScreenHandler.class)
+@Mixin(GrindstoneMenu.class)
 public class MixinGrindstoneScreenHandler extends MixinScreenHandler {
 
     private CardboardInventoryView bukkitEntity = null;
     private Player player;
 
-    @Shadow private Inventory result;
-    @Shadow private Inventory input;
+    @Shadow private Container resultSlots;
+    @Shadow private Container repairSlots;
 
-    @Inject(method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/screen/ScreenHandlerContext;)V", at = @At("TAIL"))
-    public void setPlayerInv(int i, PlayerInventory playerinventory, final ScreenHandlerContext containeraccess, CallbackInfo ci) {
+    @Inject(method = "<init>(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/inventory/ContainerLevelAccess;)V", at = @At("TAIL"))
+    public void setPlayerInv(int i, Inventory playerinventory, final ContainerLevelAccess containeraccess, CallbackInfo ci) {
         this.player = (Player)((IMixinServerEntityPlayer)playerinventory.player).getBukkitEntity();
     }
 
@@ -35,8 +34,8 @@ public class MixinGrindstoneScreenHandler extends MixinScreenHandler {
         if (bukkitEntity != null)
             return bukkitEntity;
 
-        CardboardGrindstoneInventory inventory = new CardboardGrindstoneInventory(this.input, this.result);
-        bukkitEntity = new CardboardInventoryView(this.player, inventory, (GrindstoneScreenHandler)(Object)this);
+        CardboardGrindstoneInventory inventory = new CardboardGrindstoneInventory(this.repairSlots, this.resultSlots);
+        bukkitEntity = new CardboardInventoryView(this.player, inventory, (GrindstoneMenu)(Object)this);
         return bukkitEntity;
     }
 

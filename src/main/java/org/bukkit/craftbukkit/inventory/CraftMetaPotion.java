@@ -12,13 +12,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.PotionContentsComponent;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.potion.Potion;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionContents;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -42,7 +42,7 @@ implements PotionMeta {
     private static final Set<Material> POTION_MATERIALS = Sets.newHashSet(
     		new Material[]{Material.POTION, Material.SPLASH_POTION, Material.LINGERING_POTION, Material.TIPPED_ARROW}
     	);
-    static final CraftMetaItem.ItemMetaKeyType<PotionContentsComponent> POTION_CONTENTS = new CraftMetaItem.ItemMetaKeyType<PotionContentsComponent>(DataComponentTypes.POTION_CONTENTS);
+    static final CraftMetaItem.ItemMetaKeyType<PotionContents> POTION_CONTENTS = new CraftMetaItem.ItemMetaKeyType<PotionContents>(DataComponents.POTION_CONTENTS);
     static final CraftMetaItem.ItemMetaKey POTION_EFFECTS = new CraftMetaItem.ItemMetaKey("custom-effects");
     static final CraftMetaItem.ItemMetaKey POTION_COLOR = new CraftMetaItem.ItemMetaKey("custom-color");
     static final CraftMetaItem.ItemMetaKey DEFAULT_POTION = new CraftMetaItem.ItemMetaKey("potion-type");
@@ -66,7 +66,7 @@ implements PotionMeta {
         }
     }
 
-    CraftMetaPotion(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
+    CraftMetaPotion(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaPotion.getOrEmpty(tag, POTION_CONTENTS).ifPresent(potionContents -> {
             potionContents.potion().ifPresent(potion -> {
@@ -85,18 +85,18 @@ implements PotionMeta {
                 this.customName = name;
             });
             
-            List<StatusEffectInstance> list = potionContents.customEffects();
+            List<MobEffectInstance> list = potionContents.customEffects();
             int length = list.size();
             this.customEffects = new ArrayList<PotionEffect>(length);
             for (int i2 = 0; i2 < length; ++i2) {
-                StatusEffectInstance effect = list.get(i2);
-                PotionEffectType type = CraftPotionEffectType.minecraftHolderToBukkit(effect.getEffectType());
+                MobEffectInstance effect = list.get(i2);
+                PotionEffectType type = CraftPotionEffectType.minecraftHolderToBukkit(effect.getEffect());
                 if (type == null) continue;
                 int amp = effect.getAmplifier();
                 int duration = effect.getDuration();
                 boolean ambient = effect.isAmbient();
-                boolean particles = effect.shouldShowParticles();
-                boolean icon = effect.shouldShowIcon();
+                boolean particles = effect.isVisible();
+                boolean icon = effect.showIcon();
                 this.customEffects.add(new PotionEffect(type, duration, amp, ambient, particles, icon));
             }
         });
@@ -130,18 +130,18 @@ implements PotionMeta {
             return;
         }
 
-        Optional<RegistryEntry<Potion>> defaultPotion = (this.hasBasePotionType()) ? Optional.of(CraftPotionType.bukkitToMinecraftHolder(this.type)) : Optional.empty();
+        Optional<Holder<Potion>> defaultPotion = (this.hasBasePotionType()) ? Optional.of(CraftPotionType.bukkitToMinecraftHolder(this.type)) : Optional.empty();
         Optional<Integer> potionColor = (this.hasColor()) ? Optional.of(this.color.asRGB()) : Optional.empty(); // Paper
         Optional<String> customName = Optional.ofNullable(this.customName);
 
-        List<StatusEffectInstance> effectList = new ArrayList<>();
+        List<MobEffectInstance> effectList = new ArrayList<>();
         if (this.customEffects != null) {
             for (PotionEffect effect : this.customEffects) {
-                effectList.add(new StatusEffectInstance(CraftPotionEffectType.bukkitToMinecraftHolder(effect.getType()), effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles(), effect.hasIcon()));
+                effectList.add(new MobEffectInstance(CraftPotionEffectType.bukkitToMinecraftHolder(effect.getType()), effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles(), effect.hasIcon()));
             }
         }
 
-        tag.put(CraftMetaPotion.POTION_CONTENTS, new PotionContentsComponent(defaultPotion, potionColor, effectList, customName));
+        tag.put(CraftMetaPotion.POTION_CONTENTS, new PotionContents(defaultPotion, potionColor, effectList, customName));
     }
     
     /*
@@ -385,7 +385,7 @@ implements PotionMeta {
         if (this.hasColor()) {
             return this.getColor();
         }
-        return Color.fromRGB((int)(PotionContentsComponent.mixColors(Collections2.transform(this.getAllEffects(), CardboardPotionUtil::fromBukkit)).orElse(-13083194) & 0xFFFFFF));
+        return Color.fromRGB((int)(PotionContents.getColorOptional(Collections2.transform(this.getAllEffects(), CardboardPotionUtil::fromBukkit)).orElse(-13083194) & 0xFFFFFF));
     }
 }
 

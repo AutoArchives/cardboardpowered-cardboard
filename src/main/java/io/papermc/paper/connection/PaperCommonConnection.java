@@ -6,27 +6,27 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Map;
 import net.kyori.adventure.text.Component;
-import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
-import net.minecraft.network.packet.s2c.common.CustomReportDetailsS2CPacket;
-import net.minecraft.network.packet.s2c.common.ServerTransferS2CPacket;
-import net.minecraft.network.packet.s2c.common.StoreCookieS2CPacket;
-import net.minecraft.server.network.ServerCommonNetworkHandler;
+import net.minecraft.network.protocol.common.ClientboundCustomReportDetailsPacket;
+import net.minecraft.network.protocol.common.ClientboundStoreCookiePacket;
+import net.minecraft.network.protocol.common.ClientboundTransferPacket;
+import net.minecraft.server.level.ClientInformation;
+import net.minecraft.server.network.ServerCommonPacketListenerImpl;
 import org.bukkit.NamespacedKey;
 import org.bukkit.ServerLinks;
 // import org.bukkit.craftbukkit.CraftServerLinks;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.jspecify.annotations.Nullable;
 
-public abstract class PaperCommonConnection<T extends ServerCommonNetworkHandler> extends ReadablePlayerCookieConnectionImpl implements PlayerCommonConnection {
+public abstract class PaperCommonConnection<T extends ServerCommonPacketListenerImpl> extends ReadablePlayerCookieConnectionImpl implements PlayerCommonConnection {
     protected final T handle;
 
     public PaperCommonConnection(T serverConfigurationPacketListenerImpl) {
-        super(((ServerCommonNetworkHandler)serverConfigurationPacketListenerImpl).connection);
+        super(((ServerCommonPacketListenerImpl)serverConfigurationPacketListenerImpl).connection);
         this.handle = serverConfigurationPacketListenerImpl;
     }
 
     public void sendReportDetails(Map<String, String> details) {
-        ((ServerCommonNetworkHandler)this.handle).sendPacket(new CustomReportDetailsS2CPacket(details));
+        ((ServerCommonPacketListenerImpl)this.handle).send(new ClientboundCustomReportDetailsPacket(details));
     }
 
     public void sendLinks(ServerLinks links) {
@@ -35,11 +35,11 @@ public abstract class PaperCommonConnection<T extends ServerCommonNetworkHandler
     }
 
     public void transfer(String host, int port) {
-        ((ServerCommonNetworkHandler)this.handle).sendPacket(new ServerTransferS2CPacket(host, port));
+        ((ServerCommonPacketListenerImpl)this.handle).send(new ClientboundTransferPacket(host, port));
     }
 
     public <T> T getClientOption(ClientOption<T> type) {
-        SyncedClientOptions information = this.getClientInformation();
+        ClientInformation information = this.getClientInformation();
         
         // TODO
         /*
@@ -48,7 +48,7 @@ public abstract class PaperCommonConnection<T extends ServerCommonNetworkHandler
         }
         */
         if (ClientOption.CHAT_COLORS_ENABLED == type) {
-            return type.getType().cast(information.chatColorsEnabled());
+            return type.getType().cast(information.chatColors());
         }
         if (ClientOption.CHAT_VISIBILITY == type) {
             return type.getType().cast(ClientOption.ChatVisibility.valueOf((String)information.chatVisibility().name()));
@@ -57,16 +57,16 @@ public abstract class PaperCommonConnection<T extends ServerCommonNetworkHandler
             return type.getType().cast(information.language());
         }
         if (ClientOption.MAIN_HAND == type) {
-            return type.getType().cast(information.mainArm());
+            return type.getType().cast(information.mainHand());
         }
         if (ClientOption.VIEW_DISTANCE == type) {
             return type.getType().cast(information.viewDistance());
         }
         if (ClientOption.TEXT_FILTERING_ENABLED == type) {
-            return type.getType().cast(information.filtersText());
+            return type.getType().cast(information.textFilteringEnabled());
         }
         if (ClientOption.ALLOW_SERVER_LISTINGS == type) {
-            return type.getType().cast(information.allowsServerListing());
+            return type.getType().cast(information.allowsListing());
         }
         if (ClientOption.PARTICLE_VISIBILITY == type) {
             return type.getType().cast(ClientOption.ParticleVisibility.valueOf((String)information.particleStatus().name()));
@@ -75,7 +75,7 @@ public abstract class PaperCommonConnection<T extends ServerCommonNetworkHandler
     }
 
     public void disconnect(Component component) {
-        ((ServerCommonNetworkHandler)this.handle).disconnect(PaperAdventure.asVanilla(component)/*, DisconnectionReason.UNKNOWN*/);
+        ((ServerCommonPacketListenerImpl)this.handle).disconnect(PaperAdventure.asVanilla(component)/*, DisconnectionReason.UNKNOWN*/);
     }
 
     public boolean isTransferred() {
@@ -84,11 +84,11 @@ public abstract class PaperCommonConnection<T extends ServerCommonNetworkHandler
     }
 
     public SocketAddress getAddress() {
-        return ((ServerCommonNetworkHandler)this.handle).connection.getAddress();
+        return ((ServerCommonPacketListenerImpl)this.handle).connection.getRemoteAddress();
     }
 
     public InetSocketAddress getClientAddress() {
-        return (InetSocketAddress)((ServerCommonNetworkHandler)this.handle).connection.channel.remoteAddress();
+        return (InetSocketAddress)((ServerCommonPacketListenerImpl)this.handle).connection.channel.remoteAddress();
     }
 
     public @Nullable InetSocketAddress getVirtualHost() {
@@ -104,9 +104,9 @@ public abstract class PaperCommonConnection<T extends ServerCommonNetworkHandler
     }
 
     public void storeCookie(NamespacedKey key, byte[] value) {
-        ((ServerCommonNetworkHandler)this.handle).sendPacket(new StoreCookieS2CPacket(CraftNamespacedKey.toMinecraft(key), value));
+        ((ServerCommonPacketListenerImpl)this.handle).send(new ClientboundStoreCookiePacket(CraftNamespacedKey.toMinecraft(key), value));
     }
 
-    public abstract SyncedClientOptions getClientInformation();
+    public abstract ClientInformation getClientInformation();
 }
 

@@ -5,8 +5,6 @@ import io.papermc.paper.persistence.PersistentDataContainerView;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtIo;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataAdapterContext;

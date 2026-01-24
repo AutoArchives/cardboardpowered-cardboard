@@ -4,10 +4,10 @@ import com.destroystokyo.paper.loottable.LootableBlockInventory;
 import com.destroystokyo.paper.loottable.LootableInventory;
 import com.destroystokyo.paper.loottable.PaperLootableInventory;
 import com.destroystokyo.paper.loottable.PaperLootableInventoryData;
-import net.minecraft.block.entity.LootableContainerBlockEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import org.bukkit.Chunk;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.block.CraftBlock;
@@ -15,7 +15,7 @@ import org.bukkit.craftbukkit.block.CraftBlock;
 public interface PaperLootableBlockInventory
 extends LootableBlockInventory,
 PaperLootableInventory {
-    public LootableContainerBlockEntity getTileEntity();
+    public RandomizableContainerBlockEntity getTileEntity();
 
     @Override
     default public LootableInventory getAPILootableInventory() {
@@ -23,13 +23,13 @@ PaperLootableInventory {
     }
 
     @Override
-    default public World getNMSWorld() {
-        return this.getTileEntity().getWorld();
+    default public Level getNMSWorld() {
+        return this.getTileEntity().getLevel();
     }
 
     default public Block getBlock() {
-        BlockPos position = this.getTileEntity().getPos();
-        Chunk bukkitChunk = this.getBukkitWorld().getChunkAt((Block)CraftBlock.at((ServerWorld) this.getNMSWorld(), position));
+        BlockPos position = this.getTileEntity().getBlockPos();
+        Chunk bukkitChunk = this.getBukkitWorld().getChunkAt((Block)CraftBlock.at((ServerLevel) this.getNMSWorld(), position));
         return bukkitChunk.getBlock(position.getX(), position.getY(), position.getZ());
     }
 

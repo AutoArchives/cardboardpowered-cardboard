@@ -5,15 +5,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 import javax.annotation.Nullable;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldView;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -32,7 +32,7 @@ public final class CraftBlockStates {
     private static final BlockStateFactory<?> DEFAULT_FACTORY = new BlockStateFactory<CraftBlockState>(CraftBlockState.class){
 
         @Override
-        public CraftBlockState createBlockState(World world, BlockPos blockPosition, net.minecraft.block.BlockState blockData, BlockEntity tileEntity) {
+        public CraftBlockState createBlockState(World world, BlockPos blockPosition, net.minecraft.world.level.block.state.BlockState blockData, BlockEntity tileEntity) {
             Preconditions.checkState((tileEntity == null ? 1 : 0) != 0, (String)"Unexpected BlockState for %s", (Object)CraftBlockType.minecraftToBukkit(blockData.getBlock()));
             return new CraftBlockState(world, blockPosition, blockData);
         }
@@ -59,7 +59,7 @@ public final class CraftBlockStates {
     	BlockStateFactory<B> factory = new BlockEntityStateFactory<>(blockStateType, blockStateConstructor, blockEntityType); // Paper
     	
         // BlockEntityStateFactory<B> factory = new BlockEntityStateFactory<>(blockStateType, blockStateConstructor, blockEntityType::instantiate);
-        for (net.minecraft.block.Block block : blockEntityType.blocks) {
+        for (net.minecraft.world.level.block.Block block : blockEntityType.validBlocks) {
             CraftBlockStates.register(CraftBlockType.minecraftToBukkit(block), factory);
         }
         CraftBlockStates.register(blockEntityType, factory);
@@ -95,7 +95,7 @@ public final class CraftBlockStates {
     public static BlockEntity createNewTileEntity(Material material) {
         BlockStateFactory<?> factory = CraftBlockStates.getFactory(material);
         if (factory instanceof BlockEntityStateFactory) {
-            return ((BlockEntityStateFactory)factory).createTileEntity(BlockPos.ORIGIN, CraftBlockType.bukkitToMinecraft(material).getDefaultState());
+            return ((BlockEntityStateFactory)factory).createTileEntity(BlockPos.ZERO, CraftBlockType.bukkitToMinecraft(material).defaultBlockState());
         }
         return null;
     }
@@ -117,7 +117,7 @@ public final class CraftBlockStates {
         CraftBlock craftBlock = (CraftBlock)block;
         CraftWorld world = (CraftWorld)block.getWorld();
         BlockPos blockPosition = craftBlock.getPosition();
-        net.minecraft.block.BlockState blockData = craftBlock.getNMS();
+        net.minecraft.world.level.block.state.BlockState blockData = craftBlock.getNMS();
         BlockEntity tileEntity = craftBlock.getHandle().getBlockEntity(blockPosition);
         boolean prev = CardboardBlockEntityState.DISABLE_SNAPSHOT;
         CardboardBlockEntityState.DISABLE_SNAPSHOT = !useSnapshot;
@@ -133,37 +133,37 @@ public final class CraftBlockStates {
     }
 
     @Deprecated
-    public static BlockState getBlockState(BlockPos blockPosition, Material material, @Nullable NbtCompound blockEntityTag) {
-        return CraftBlockStates.getBlockState(CraftServer.server.getRegistryManager(), blockPosition, material, blockEntityTag);
+    public static BlockState getBlockState(BlockPos blockPosition, Material material, @Nullable CompoundTag blockEntityTag) {
+        return CraftBlockStates.getBlockState(CraftServer.server.registryAccess(), blockPosition, material, blockEntityTag);
     }
 
-    public static BlockState getBlockState(WorldView world, BlockPos blockPosition, Material material, @Nullable NbtCompound blockEntityTag) {
-        return CraftBlockStates.getBlockState(world.getRegistryManager(), blockPosition, material, blockEntityTag);
+    public static BlockState getBlockState(LevelReader world, BlockPos blockPosition, Material material, @Nullable CompoundTag blockEntityTag) {
+        return CraftBlockStates.getBlockState(world.registryAccess(), blockPosition, material, blockEntityTag);
     }
 
-    public static BlockState getBlockState(DynamicRegistryManager registry, BlockPos blockPosition, Material material, @Nullable NbtCompound blockEntityTag) {
+    public static BlockState getBlockState(RegistryAccess registry, BlockPos blockPosition, Material material, @Nullable CompoundTag blockEntityTag) {
         Preconditions.checkNotNull((Object)material, (Object)"material is null");
-        net.minecraft.block.BlockState blockData = CraftBlockType.bukkitToMinecraft(material).getDefaultState();
+        net.minecraft.world.level.block.state.BlockState blockData = CraftBlockType.bukkitToMinecraft(material).defaultBlockState();
         return CraftBlockStates.getBlockState(registry, blockPosition, blockData, blockEntityTag);
     }
 
     @Deprecated
-    public static BlockState getBlockState(net.minecraft.block.BlockState blockData, @Nullable NbtCompound blockEntityTag) {
-        return CraftBlockStates.getBlockState(CraftServer.server.getRegistryManager(), BlockPos.ORIGIN, blockData, blockEntityTag);
+    public static BlockState getBlockState(net.minecraft.world.level.block.state.BlockState blockData, @Nullable CompoundTag blockEntityTag) {
+        return CraftBlockStates.getBlockState(CraftServer.server.registryAccess(), BlockPos.ZERO, blockData, blockEntityTag);
     }
 
-    public static BlockState getBlockState(WorldView world, BlockPos blockPosition, net.minecraft.block.BlockState blockData, @Nullable NbtCompound blockEntityTag) {
-        return CraftBlockStates.getBlockState(world.getRegistryManager(), blockPosition, blockData, blockEntityTag);
+    public static BlockState getBlockState(LevelReader world, BlockPos blockPosition, net.minecraft.world.level.block.state.BlockState blockData, @Nullable CompoundTag blockEntityTag) {
+        return CraftBlockStates.getBlockState(world.registryAccess(), blockPosition, blockData, blockEntityTag);
     }
 
-    public static BlockState getBlockState(DynamicRegistryManager registry, BlockPos blockPosition, net.minecraft.block.BlockState blockData, @Nullable NbtCompound blockEntityTag) {
+    public static BlockState getBlockState(RegistryAccess registry, BlockPos blockPosition, net.minecraft.world.level.block.state.BlockState blockData, @Nullable CompoundTag blockEntityTag) {
         Preconditions.checkNotNull((Object)blockPosition, (Object)"blockPosition is null");
         Preconditions.checkNotNull((Object)blockData, (Object)"blockData is null");
-        BlockEntity tileEntity = blockEntityTag == null ? null : BlockEntity.createFromNbt(blockPosition, blockData, blockEntityTag, registry);
+        BlockEntity tileEntity = blockEntityTag == null ? null : BlockEntity.loadStatic(blockPosition, blockData, blockEntityTag, registry);
         return CraftBlockStates.getBlockState(null, blockPosition, blockData, tileEntity);
     }
 
-    public static CraftBlockState getBlockState(World world, BlockPos blockPosition, net.minecraft.block.BlockState blockData, BlockEntity tileEntity) {
+    public static CraftBlockState getBlockState(World world, BlockPos blockPosition, net.minecraft.world.level.block.state.BlockState blockData, BlockEntity tileEntity) {
         Material material = CraftBlockType.minecraftToBukkit(blockData.getBlock());
         BlockStateFactory<?> factory = world != null && tileEntity == null && CraftBlockStates.isTileEntityOptional(material) ? DEFAULT_FACTORY : CraftBlockStates.getFactory(material, tileEntity != null ? tileEntity.getType() : null);
         return factory.createBlockState(world, blockPosition, blockData, tileEntity);
@@ -173,12 +173,12 @@ public final class CraftBlockStates {
         return material == Material.MOVING_PISTON;
     }
 
-    public static CraftBlockState getBlockState(WorldAccess world, BlockPos pos) {
-        return new CraftBlockState(CraftBlock.at((ServerWorld)world, pos));
+    public static CraftBlockState getBlockState(LevelAccessor world, BlockPos pos) {
+        return new CraftBlockState(CraftBlock.at((ServerLevel)world, pos));
     }
 
-    public static CraftBlockState getBlockState(WorldAccess world, BlockPos pos, int flag) {
-        return new CraftBlockState(CraftBlock.at((ServerWorld)world, pos), flag);
+    public static CraftBlockState getBlockState(LevelAccessor world, BlockPos pos, int flag) {
+        return new CraftBlockState(CraftBlock.at((ServerLevel)world, pos), flag);
     }
 
     private CraftBlockStates() {
@@ -260,12 +260,12 @@ public final class CraftBlockStates {
         }
         */
         
-        private T createBlockEntity(BlockPos pos, net.minecraft.block.BlockState state) {
-            return this.blockEntityType.instantiate(pos, state);
+        private T createBlockEntity(BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
+            return this.blockEntityType.create(pos, state);
         }
 
         @Override
-        public final B createBlockState(World world, BlockPos blockPosition, net.minecraft.block.BlockState blockData, BlockEntity tileEntity) {
+        public final B createBlockState(World world, BlockPos blockPosition, net.minecraft.world.level.block.state.BlockState blockData, BlockEntity tileEntity) {
             if (world != null) {
                 Preconditions.checkState((tileEntity != null ? 1 : 0) != 0, (String)"Tile is null, asynchronous access? %s", (Object)CraftBlock.at(((CraftWorld)world).getHandle(), blockPosition));
             } else if (tileEntity == null) {
@@ -274,9 +274,9 @@ public final class CraftBlockStates {
             return this.createBlockState(world, (T) tileEntity);
         }
 
-        private T createTileEntity(BlockPos blockPosition, net.minecraft.block.BlockState blockData) {
+        private T createTileEntity(BlockPos blockPosition, net.minecraft.world.level.block.state.BlockState blockData) {
         	
-            return (T)((BlockEntity)this.tileEntityConstructor.instantiate(blockPosition, blockData));
+            return (T)((BlockEntity)this.tileEntityConstructor.create(blockPosition, blockData));
         }
 
         private B createBlockState(World world, T tileEntity) {
@@ -291,13 +291,13 @@ public final class CraftBlockStates {
             this.blockStateType = blockStateType;
         }
 
-        public abstract B createBlockState(World var1, BlockPos var2, net.minecraft.block.BlockState var3, BlockEntity var4);
+        public abstract B createBlockState(World var1, BlockPos var2, net.minecraft.world.level.block.state.BlockState var3, BlockEntity var4);
     }
 
     public static BlockEntity createNewBlockEntity(Material material) {
         BlockStateFactory<?> factory = CraftBlockStates.getFactory(material);
         if (factory instanceof BlockEntityStateFactory) {
-            return ((BlockEntityStateFactory)factory).createBlockEntity(BlockPos.ORIGIN, CraftBlockType.bukkitToMinecraft(material).getDefaultState());
+            return ((BlockEntityStateFactory)factory).createBlockEntity(BlockPos.ZERO, CraftBlockType.bukkitToMinecraft(material).defaultBlockState());
         }
         return null;
     }

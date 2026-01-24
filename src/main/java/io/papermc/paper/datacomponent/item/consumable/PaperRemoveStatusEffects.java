@@ -6,8 +6,8 @@ import io.papermc.paper.registry.set.RegistryKeySet;
 import org.bukkit.potion.PotionEffectType;
 
 public record PaperRemoveStatusEffects(
-    net.minecraft.item.consume.RemoveEffectsConsumeEffect impl
-) implements ConsumeEffect.RemoveStatusEffects, PaperConsumableEffectImpl<net.minecraft.item.consume.RemoveEffectsConsumeEffect> {
+    net.minecraft.world.item.consume_effects.RemoveStatusEffectsConsumeEffect impl
+) implements ConsumeEffect.RemoveStatusEffects, PaperConsumableEffectImpl<net.minecraft.world.item.consume_effects.RemoveStatusEffectsConsumeEffect> {
 
     @Override
     public RegistryKeySet<PotionEffectType> removeEffects() {
@@ -15,7 +15,7 @@ public record PaperRemoveStatusEffects(
     }
 
     @Override
-    public net.minecraft.item.consume.RemoveEffectsConsumeEffect getHandle() {
+    public net.minecraft.world.item.consume_effects.RemoveStatusEffectsConsumeEffect getHandle() {
         return this.impl;
     }
 }

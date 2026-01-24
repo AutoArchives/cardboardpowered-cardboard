@@ -3,17 +3,15 @@ package org.cardboardpowered.impl.entity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Monster;
 
-import net.minecraft.entity.mob.HostileEntity;
-
 public class CraftMonster extends CraftCreature implements Monster {
 
-    public CraftMonster(CraftServer server, HostileEntity entity) {
+    public CraftMonster(CraftServer server, net.minecraft.world.entity.monster.Monster entity) {
         super(server, entity);
     }
 
     @Override
-    public HostileEntity getHandle() {
-        return (HostileEntity) nms;
+    public net.minecraft.world.entity.monster.Monster getHandle() {
+        return (net.minecraft.world.entity.monster.Monster) nms;
     }
 
     @Override

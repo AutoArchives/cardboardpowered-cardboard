@@ -1,7 +1,6 @@
 package org.cardboardpowered.impl.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.entity.passive.ParrotEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftTameableAnimal;
 import org.bukkit.entity.EntityType;
@@ -9,13 +8,13 @@ import org.bukkit.entity.Parrot;
 
 public class CraftParrot extends CraftTameableAnimal implements Parrot {
 
-    public CraftParrot(CraftServer server, ParrotEntity parrot) {
+    public CraftParrot(CraftServer server, net.minecraft.world.entity.animal.parrot.Parrot parrot) {
         super(server, parrot);
     }
 
     @Override
-    public ParrotEntity getHandle() {
-        return (ParrotEntity) nms;
+    public net.minecraft.world.entity.animal.parrot.Parrot getHandle() {
+        return (net.minecraft.world.entity.animal.parrot.Parrot) nms;
     }
 
     @Override
@@ -27,7 +26,7 @@ public class CraftParrot extends CraftTameableAnimal implements Parrot {
     public void setVariant(Variant variant) {
         Preconditions.checkArgument(variant != null, "variant");
 
-        getHandle().setVariant(ParrotEntity.Variant.byIndex(variant.ordinal()));
+        getHandle().setVariant(net.minecraft.world.entity.animal.parrot.Parrot.Variant.byId(variant.ordinal()));
     }
 
     @Override
@@ -42,7 +41,7 @@ public class CraftParrot extends CraftTameableAnimal implements Parrot {
 
 	@Override
 	public boolean isDancing() {
-		return this.getHandle().isSongPlaying();
+		return this.getHandle().isPartyParrot();
 	}
 
 }

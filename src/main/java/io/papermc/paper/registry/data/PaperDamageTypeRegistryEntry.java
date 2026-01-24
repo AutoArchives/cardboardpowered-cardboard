@@ -2,10 +2,10 @@ package io.papermc.paper.registry.data;
 
 import io.papermc.paper.registry.PaperRegistryBuilder;
 import io.papermc.paper.registry.data.util.Conversions;
-import net.minecraft.entity.damage.DamageEffects;
-import net.minecraft.entity.damage.DamageScaling;
-import net.minecraft.entity.damage.DamageType;
-import net.minecraft.entity.damage.DeathMessageType;
+import net.minecraft.world.damagesource.DamageEffects;
+import net.minecraft.world.damagesource.DamageScaling;
+import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.damagesource.DeathMessageType;
 import org.bukkit.craftbukkit.damage.CraftDamageEffect;
 import org.bukkit.craftbukkit.damage.CraftDamageType;
 import org.bukkit.damage.DamageEffect;

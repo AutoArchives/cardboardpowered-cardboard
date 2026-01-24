@@ -1,19 +1,18 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.mob.SilverfishEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Silverfish;
 
 public class CardboardSilverfish extends CraftMonster implements Silverfish {
 
-    public CardboardSilverfish(CraftServer server, SilverfishEntity entity) {
+    public CardboardSilverfish(CraftServer server, net.minecraft.world.entity.monster.Silverfish entity) {
         super(server, entity);
     }
 
     @Override
-    public SilverfishEntity getHandle() {
-        return (SilverfishEntity) nms;
+    public net.minecraft.world.entity.monster.Silverfish getHandle() {
+        return (net.minecraft.world.entity.monster.Silverfish) nms;
     }
 
     @Override

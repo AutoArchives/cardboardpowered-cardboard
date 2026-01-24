@@ -1,6 +1,6 @@
 package org.cardboardpowered.impl.util;
 
-import net.minecraft.entity.SpawnGroup;
+import net.minecraft.world.entity.MobCategory;
 import org.bukkit.entity.SpawnCategory;
 
 public class CardboardSpawnCategory {
@@ -43,7 +43,7 @@ public class CardboardSpawnCategory {
         };
     }
 
-    public static SpawnCategory toBukkit(SpawnGroup enumCreatureType) {
+    public static SpawnCategory toBukkit(MobCategory enumCreatureType) {
         return switch (enumCreatureType) {
             case MONSTER -> SpawnCategory.MONSTER;
             case CREATURE -> SpawnCategory.ANIMAL;
@@ -57,17 +57,17 @@ public class CardboardSpawnCategory {
         };
     }
 
-    public static SpawnGroup toNMS(SpawnCategory spawnCategory) {
+    public static MobCategory toNMS(SpawnCategory spawnCategory) {
         return switch (spawnCategory) {
-            case MONSTER -> SpawnGroup.MONSTER;
-            case ANIMAL -> SpawnGroup.CREATURE;
-            case AMBIENT -> SpawnGroup.AMBIENT;
-            case AXOLOTL -> SpawnGroup.AXOLOTLS;
-            case WATER_ANIMAL -> SpawnGroup.WATER_CREATURE;
-            case WATER_AMBIENT -> SpawnGroup.WATER_AMBIENT;
-            case WATER_UNDERGROUND_CREATURE -> SpawnGroup.UNDERGROUND_WATER_CREATURE;
-            case MISC -> SpawnGroup.MISC;
-            default -> SpawnGroup.valueOf(spawnCategory.name());
+            case MONSTER -> MobCategory.MONSTER;
+            case ANIMAL -> MobCategory.CREATURE;
+            case AMBIENT -> MobCategory.AMBIENT;
+            case AXOLOTL -> MobCategory.AXOLOTLS;
+            case WATER_ANIMAL -> MobCategory.WATER_CREATURE;
+            case WATER_AMBIENT -> MobCategory.WATER_AMBIENT;
+            case WATER_UNDERGROUND_CREATURE -> MobCategory.UNDERGROUND_WATER_CREATURE;
+            case MISC -> MobCategory.MISC;
+            default -> MobCategory.valueOf(spawnCategory.name());
         };
     }
 

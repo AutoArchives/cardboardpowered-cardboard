@@ -1,7 +1,5 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.mob.PhantomEntity;
-
 import java.util.UUID;
 
 import org.bukkit.Location;
@@ -13,13 +11,13 @@ import org.jetbrains.annotations.NotNull;
 
 public class CardboardPhantom extends CraftMob implements Phantom {
 
-    public CardboardPhantom(CraftServer server, PhantomEntity entity) {
+    public CardboardPhantom(CraftServer server, net.minecraft.world.entity.monster.Phantom entity) {
         super(server, entity);
     }
 
     @Override
-    public PhantomEntity getHandle() {
-        return (PhantomEntity) super.getHandle();
+    public net.minecraft.world.entity.monster.Phantom getHandle() {
+        return (net.minecraft.world.entity.monster.Phantom) super.getHandle();
     }
 
     @Override
@@ -45,7 +43,7 @@ public class CardboardPhantom extends CraftMob implements Phantom {
     @Override
     public UUID getSpawningEntity() {
         // TODO Auto-generated method stub
-        return getHandle().getUuid();
+        return getHandle().getUUID();
     }
 
     @Override

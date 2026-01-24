@@ -107,7 +107,7 @@ final class ReobfServer {
 	private static Path serverJar() {
 		try {
 			
-			Class cl = net.minecraft.server.network.ServerPlayerEntity.class;
+			Class cl = net.minecraft.server.level.ServerPlayer.class;
 			
 			Path path = Path.of(/*ReobfServer.class*/cl.getProtectionDomain().getCodeSource().getLocation().toURI());
 			// System.out.println(path);

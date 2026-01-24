@@ -2,22 +2,20 @@ package org.cardboardpowered.mixin.screen;
 
 import java.util.Optional;
 import java.util.function.BiFunction;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
 import org.cardboardpowered.interfaces.IMixinScreenHandlerContext;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
-@Mixin(ScreenHandlerContext.class)
+@Mixin(ContainerLevelAccess.class)
 public interface MixinScreenHandlerContext extends IMixinScreenHandlerContext {
 
     @Override
-    default World getWorld() {
+    default Level getWorld() {
         throw new UnsupportedOperationException("Not supported yet");
     }
 
@@ -36,11 +34,11 @@ public interface MixinScreenHandlerContext extends IMixinScreenHandlerContext {
      * @author BukkitFabric
      */
     @Overwrite
-    static ScreenHandlerContext create(final World world, final BlockPos blockposition) {
-        return new ScreenHandlerContext() {
+    static ContainerLevelAccess create(final Level world, final BlockPos blockposition) {
+        return new ContainerLevelAccess() {
 
             @SuppressWarnings("unused")
-            public World getWorld() {
+            public Level getWorld() {
                 return world;
             }
 
@@ -50,7 +48,7 @@ public interface MixinScreenHandlerContext extends IMixinScreenHandlerContext {
             }
 
             @Override
-            public <T> Optional<T> get(BiFunction<World, BlockPos, T> bifunction) {
+            public <T> Optional<T> evaluate(BiFunction<Level, BlockPos, T> bifunction) {
                 return Optional.of(bifunction.apply(world, blockposition));
             }
         };

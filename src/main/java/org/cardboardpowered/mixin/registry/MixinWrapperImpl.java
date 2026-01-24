@@ -2,25 +2,21 @@ package org.cardboardpowered.mixin.registry;
 
 import java.util.Optional;
 import java.util.stream.Stream;
-
+import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.ResourceKey;
 import org.cardboardpowered.interfaces.IRegistryWrapperImpl;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
 import com.google.common.base.Predicate;
 
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.RegistryWrapper.Impl;
-import net.minecraft.registry.entry.RegistryEntry;
-
-@Mixin(RegistryWrapper.Impl.class)
+@Mixin(HolderLookup.RegistryLookup.class)
 public interface MixinWrapperImpl<T> extends IRegistryWrapperImpl<T> {
 
 	/**
 	 */
 	@Override
-	public Optional<T> getValueForCopying(RegistryKey<T> var1);
+	public Optional<T> getValueForCopying(ResourceKey<T> var1);
 	
 	/**
 	 * @author Cardboard

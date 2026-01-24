@@ -1,13 +1,12 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.mob.GuardianEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Guardian;
 
 public class CardboardGuardian extends CraftMonster implements Guardian {
 
-    public CardboardGuardian(CraftServer server, GuardianEntity entity) {
+    public CardboardGuardian(CraftServer server, net.minecraft.world.entity.monster.Guardian entity) {
         super(server, entity);
     }
 
@@ -46,13 +45,13 @@ public class CardboardGuardian extends CraftMonster implements Guardian {
     // 1.19.4:
 
     @Override
-    public GuardianEntity getHandle() {
-        return (GuardianEntity)super.getHandle();
+    public net.minecraft.world.entity.monster.Guardian getHandle() {
+        return (net.minecraft.world.entity.monster.Guardian)super.getHandle();
     }
     
 	@Override
 	public int getLaserDuration() {
-        return this.getHandle().getWarmupTime();
+        return this.getHandle().getAttackDuration();
 	}
 
 	@Override
@@ -64,7 +63,7 @@ public class CardboardGuardian extends CraftMonster implements Guardian {
 
 	@Override
 	public boolean isMoving() {
-        return this.getHandle().areSpikesRetracted();
+        return this.getHandle().isMoving();
 	}
 
 	@Override

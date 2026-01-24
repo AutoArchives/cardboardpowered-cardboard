@@ -3,11 +3,10 @@ package org.cardboardpowered.impl.block;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import net.minecraft.block.entity.DecoratedPotBlockEntity;
-import net.minecraft.block.entity.DecoratedPotBlockEntity.WobbleType;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.Container;
+import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -50,7 +49,7 @@ public class CraftDecoratedPot extends CardboardBlockEntityState<DecoratedPotBlo
     }
 
     public void setLootTable(LootTable table, long seed) {
-        RegistryKey<net.minecraft.loot.LootTable> key = table == null ? null : RegistryKey.of(RegistryKeys.LOOT_TABLE, CraftNamespacedKey.toMinecraft(table.getKey()));
+        ResourceKey<net.minecraft.world.level.storage.loot.LootTable> key = table == null ? null : ResourceKey.create(Registries.LOOT_TABLE, CraftNamespacedKey.toMinecraft(table.getKey()));
         ((DecoratedPotBlockEntity)this.getSnapshot()).setLootTable(key, seed);
     }
 
@@ -58,8 +57,8 @@ public class CraftDecoratedPot extends CardboardBlockEntityState<DecoratedPotBlo
         if (((DecoratedPotBlockEntity)this.getSnapshot()).getLootTable() == null) {
             return null;
         }
-        RegistryKey<net.minecraft.loot.LootTable> key = ((DecoratedPotBlockEntity)this.getSnapshot()).getLootTable();
-        return Bukkit.getLootTable((NamespacedKey)CraftNamespacedKey.fromMinecraft(key.getValue()));
+        ResourceKey<net.minecraft.world.level.storage.loot.LootTable> key = ((DecoratedPotBlockEntity)this.getSnapshot()).getLootTable();
+        return Bukkit.getLootTable((NamespacedKey)CraftNamespacedKey.fromMinecraft(key.identifier()));
     }
 
     public void setSeed(long seed) {
@@ -71,7 +70,7 @@ public class CraftDecoratedPot extends CardboardBlockEntityState<DecoratedPotBlo
     }
 
     public List<Material> getShards() {
-        return this.getSnapshot().getSherds().toList().stream().map(CraftItemType::minecraftToBukkit).collect(Collectors.toUnmodifiableList());
+        return this.getSnapshot().getDecorations().ordered().stream().map(CraftItemType::minecraftToBukkit).collect(Collectors.toUnmodifiableList());
     	// return ((DecoratedPotBlockEntity)this.getSnapshot()).getSherds().stream().stream().map(CraftItemType::minecraftToBukkit).collect(Collectors.toUnmodifiableList());
     }
 
@@ -122,12 +121,12 @@ public class CraftDecoratedPot extends CardboardBlockEntityState<DecoratedPotBlo
 		if (!this.isPlaced()) {
 			return this.getSnapshotInventory();
 		}
-		return new CraftInventoryDecoratedPot((Inventory)this.getTileEntity());
+		return new CraftInventoryDecoratedPot((Container)this.getTileEntity());
 	}
 
 	@Override
 	public DecoratedPotInventory getSnapshotInventory() {
-		return new CraftInventoryDecoratedPot((Inventory)this.getSnapshot());
+		return new CraftInventoryDecoratedPot((Container)this.getSnapshot());
 	}
 
 	@Override
@@ -135,9 +134,9 @@ public class CraftDecoratedPot extends CardboardBlockEntityState<DecoratedPotBlo
 		// Preconditions.checkArgument(style != null, "style must not be null");
         this.requirePlaced();
 
-        WobbleType originalStyle = switch (style) {
-            case POSITIVE -> DecoratedPotBlockEntity.WobbleType.POSITIVE;
-            case NEGATIVE -> DecoratedPotBlockEntity.WobbleType.NEGATIVE;
+        net.minecraft.world.level.block.entity.DecoratedPotBlockEntity.WobbleStyle originalStyle = switch (style) {
+            case POSITIVE -> DecoratedPotBlockEntity.WobbleStyle.POSITIVE;
+            case NEGATIVE -> DecoratedPotBlockEntity.WobbleStyle.NEGATIVE;
         };
         this.getTileEntity().wobble(originalStyle);
 	}

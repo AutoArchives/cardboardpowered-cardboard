@@ -2,14 +2,12 @@ package org.cardboardpowered.mixin.entity;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.cardboardpowered.interfaces.IMixinThrownItemEntity;
 
-import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-
-@Mixin(ThrownItemEntity.class)
+@Mixin(ThrowableItemProjectile.class)
 public abstract class MixinThrownItemEntity implements IMixinThrownItemEntity {
 
     @Shadow
@@ -23,7 +21,7 @@ public abstract class MixinThrownItemEntity implements IMixinThrownItemEntity {
     @Override
     @Deprecated
     public ItemStack getItemBF() {
-        return ((ThrownItemEntity) (Object) this).getStack();
+        return ((ThrowableItemProjectile) (Object) this).getItem();
     }
 
 }

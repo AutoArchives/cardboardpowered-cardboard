@@ -10,14 +10,13 @@
 package org.cardboardpowered.interfaces;
 
 import java.util.Set;
-
+import net.minecraft.network.Connection;
+import net.minecraft.world.entity.PositionMoveRotation;
+import net.minecraft.world.entity.Relative;
 import org.bukkit.Location;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 
 import io.papermc.paper.connection.PlayerGameConnection;
-import net.minecraft.entity.EntityPosition;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.packet.s2c.play.PositionFlag;
 
 public interface IMixinPlayNetworkHandler {
 
@@ -27,9 +26,9 @@ public interface IMixinPlayNetworkHandler {
 
     boolean isDisconnected();
 
-	ClientConnection cb_get_connection();
+	Connection cb_get_connection();
 
-	void internalTeleport(EntityPosition positionmoverotation, Set<PositionFlag> set);
+	void internalTeleport(PositionMoveRotation positionmoverotation, Set<Relative> set);
 
 	/**
 	 */

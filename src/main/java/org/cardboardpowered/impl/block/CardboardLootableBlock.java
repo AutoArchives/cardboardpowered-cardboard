@@ -1,12 +1,11 @@
 package org.cardboardpowered.impl.block;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.block.entity.LootableContainerBlockEntity;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import java.util.Optional;
 
 import org.bukkit.Bukkit;
@@ -29,7 +28,7 @@ import com.destroystokyo.paper.loottable.PaperLootableInventory;
 
 import me.isaiah.common.cmixin.IMixinLootableContainerBlockEntity;
 
-public abstract class CardboardLootableBlock<T extends LootableContainerBlockEntity> extends CraftContainer<T>
+public abstract class CardboardLootableBlock<T extends RandomizableContainerBlockEntity> extends CraftContainer<T>
 implements Nameable, Lootable, PaperLootableBlockInventory {
 
 	
@@ -51,7 +50,7 @@ implements Nameable, Lootable, PaperLootableBlockInventory {
     }*/
 
     public Identifier get_table_id() {
-    	IMixinLootableContainerBlockEntity be = (IMixinLootableContainerBlockEntity) (LootableContainerBlockEntity) this.getSnapshot();
+    	IMixinLootableContainerBlockEntity be = (IMixinLootableContainerBlockEntity) (RandomizableContainerBlockEntity) this.getSnapshot();
     	if (null == be.IC$get_loot_table_id()) {
     		return null;
     	}
@@ -62,7 +61,7 @@ implements Nameable, Lootable, PaperLootableBlockInventory {
     public void applyTo(T lootable) {
         super.applyTo(lootable);
         
-        IMixinLootableContainerBlockEntity be = (IMixinLootableContainerBlockEntity) (LootableContainerBlockEntity) this.getSnapshot();
+        IMixinLootableContainerBlockEntity be = (IMixinLootableContainerBlockEntity) (RandomizableContainerBlockEntity) this.getSnapshot();
         
         if (null == be.IC$get_loot_table_id()) { 
         	lootable.setLootTable(null, 0L);
@@ -90,11 +89,11 @@ implements Nameable, Lootable, PaperLootableBlockInventory {
     }
 
     public void setLootTable(LootTable table, long seed) {
-    	Registry<net.minecraft.loot.LootTable> reg = CraftServer.server.getRegistryManager().getOrThrow(RegistryKeys.LOOT_TABLE);
-    	Optional<net.minecraft.loot.LootTable> mc_table = reg.getOptionalValue( CraftNamespacedKey.toMinecraft(table.getKey()) );
+    	Registry<net.minecraft.world.level.storage.loot.LootTable> reg = CraftServer.server.registryAccess().lookupOrThrow(Registries.LOOT_TABLE);
+    	Optional<net.minecraft.world.level.storage.loot.LootTable> mc_table = reg.getOptional( CraftNamespacedKey.toMinecraft(table.getKey()) );
     	
     	if (mc_table.isPresent()) {
-    		Optional<RegistryKey<net.minecraft.loot.LootTable>> mc_key = reg.getKey(mc_table.get());
+    		Optional<ResourceKey<net.minecraft.world.level.storage.loot.LootTable>> mc_key = reg.getResourceKey(mc_table.get());
     		getSnapshot().setLootTable(mc_key.get(), seed);
     	} else {
     		getSnapshot().setLootTable(null, seed);

@@ -6,11 +6,11 @@ import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.damage.DamageType;
 
 public record PaperDamageResistant(
-    net.minecraft.component.type.DamageResistantComponent impl
-) implements DamageResistant, Handleable<net.minecraft.component.type.DamageResistantComponent> {
+    net.minecraft.world.item.component.DamageResistant impl
+) implements DamageResistant, Handleable<net.minecraft.world.item.component.DamageResistant> {
 
     @Override
-    public net.minecraft.component.type.DamageResistantComponent getHandle() {
+    public net.minecraft.world.item.component.DamageResistant getHandle() {
         return this.impl;
     }
 

@@ -1,14 +1,11 @@
 package org.cardboardpowered.mixin.recipe;
 
 import java.util.List;
+import net.minecraft.stats.ServerRecipeBook;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-// import net.minecraft.network.packet.s2c.play.ChangeUnlockedRecipesS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.network.ServerRecipeBook;
-import net.minecraft.util.Identifier;
 
 @Mixin(ServerRecipeBook.class)
 public class MixinServerRecipeBook {

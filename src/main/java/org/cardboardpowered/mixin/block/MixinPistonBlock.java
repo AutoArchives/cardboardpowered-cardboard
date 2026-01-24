@@ -1,12 +1,6 @@
 package org.cardboardpowered.mixin.block;
 
 import org.cardboardpowered.interfaces.IMixinWorld;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.PistonBlock;
-import net.minecraft.block.piston.PistonHandler;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.event.block.BlockPistonEvent;
@@ -21,9 +15,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.piston.PistonBaseBlock;
+import net.minecraft.world.level.block.piston.PistonStructureResolver;
 
 //@MixinInfo(events = {"BlockPistonExtendEvent","BlockPistonRetractEvent","BlockPistonEvent"})
-@Mixin(PistonBlock.class)
+@Mixin(PistonBaseBlock.class)
 public class MixinPistonBlock {
 
 	/*
@@ -35,10 +35,10 @@ public class MixinPistonBlock {
     }
     */
 
-    @Inject(at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/block/piston/PistonHandler;getBrokenBlocks()Ljava/util/List;"),
-            method = "move", cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
-    public void cardboard_doPistonEvents(World world, BlockPos pos, Direction dir, boolean retract, CallbackInfoReturnable<Boolean> ci,
-    		BlockPos blockPos, PistonHandler helper) {
+    @Inject(at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/level/block/piston/PistonStructureResolver;getToDestroy()Ljava/util/List;"),
+            method = "moveBlocks", cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
+    public void cardboard_doPistonEvents(Level world, BlockPos pos, Direction dir, boolean retract, CallbackInfoReturnable<Boolean> ci,
+    		BlockPos blockPos, PistonStructureResolver helper) {
 
         final org.bukkit.block.Block bblock = ((IMixinWorld)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
 
@@ -48,8 +48,8 @@ public class MixinPistonBlock {
 		//	return;
 		//}
 
-        final List<BlockPos> moved = helper.getMovedBlocks();
-        final List<BlockPos> broken = helper.getBrokenBlocks();
+        final List<BlockPos> moved = helper.getToPush();
+        final List<BlockPos> broken = helper.getToDestroy();
 
         // Direction enumdirection1 = retract ? helper.pistonDirection : helper.pistonDirection ;
         
@@ -76,11 +76,11 @@ public class MixinPistonBlock {
 
         if (event.isCancelled()) {
             for (BlockPos b : broken)
-                world.updateListeners(b, Blocks.AIR.getDefaultState(), world.getBlockState(b), 3);
+                world.sendBlockUpdated(b, Blocks.AIR.defaultBlockState(), world.getBlockState(b), 3);
             for (BlockPos b : moved) {
-                world.updateListeners(b, Blocks.AIR.getDefaultState(), world.getBlockState(b), 3);
-                b = b.offset(enumdirection1);
-                world.updateListeners(b, Blocks.AIR.getDefaultState(), world.getBlockState(b), 3);
+                world.sendBlockUpdated(b, Blocks.AIR.defaultBlockState(), world.getBlockState(b), 3);
+                b = b.relative(enumdirection1);
+                world.sendBlockUpdated(b, Blocks.AIR.defaultBlockState(), world.getBlockState(b), 3);
             }
             ci.setReturnValue(false);
             return;

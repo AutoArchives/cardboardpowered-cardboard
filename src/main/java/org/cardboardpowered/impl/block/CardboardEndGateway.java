@@ -1,19 +1,17 @@
 package org.cardboardpowered.impl.block;
 
 import java.util.Objects;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.EndGateway;
 
-import net.minecraft.block.entity.EndGatewayBlockEntity;
-import net.minecraft.util.math.BlockPos;
+public class CardboardEndGateway extends CardboardBlockEntityState<TheEndGatewayBlockEntity> implements EndGateway {
 
-public class CardboardEndGateway extends CardboardBlockEntityState<EndGatewayBlockEntity> implements EndGateway {
-
-    public CardboardEndGateway(World world, EndGatewayBlockEntity tileEntity) {
+    public CardboardEndGateway(World world, TheEndGatewayBlockEntity tileEntity) {
         super(world, tileEntity);
     }
 
@@ -33,17 +31,17 @@ public class CardboardEndGateway extends CardboardBlockEntityState<EndGatewayBlo
 
     @Override
     public Location getExitLocation() {
-        BlockPos pos = this.getSnapshot().exitPortalPos;
+        BlockPos pos = this.getSnapshot().exitPortal;
         return pos == null ? null : new Location(this.isPlaced() ? this.getWorld() : null, pos.getX(), pos.getY(), pos.getZ());
     }
 
     @Override
     public void setExitLocation(Location location) {
         if (location == null) {
-            this.getSnapshot().exitPortalPos = null;
+            this.getSnapshot().exitPortal = null;
         } else if (!Objects.equals(location.getWorld(), this.isPlaced() ? this.getWorld() : null)) {
             throw new IllegalArgumentException("Cannot set exit location to different world");
-        } else this.getSnapshot().exitPortalPos = new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        } else this.getSnapshot().exitPortal = new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
 
     @Override
@@ -67,9 +65,9 @@ public class CardboardEndGateway extends CardboardBlockEntityState<EndGatewayBlo
     }
 
     @Override
-    public void applyTo(EndGatewayBlockEntity endGateway) {
+    public void applyTo(TheEndGatewayBlockEntity endGateway) {
         super.applyTo(endGateway);
-        if (this.getSnapshot().exitPortalPos == null) endGateway.exitPortalPos = null;
+        if (this.getSnapshot().exitPortal == null) endGateway.exitPortal = null;
     }
 
 }

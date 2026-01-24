@@ -7,14 +7,12 @@ import org.cardboardpowered.interfaces.IMixinEntity;
 import org.slf4j.Logger;
 
 import java.util.function.Function;
-
-import net.minecraft.entity.LoadedEntityProcessor;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.storage.NbtReadView;
-import net.minecraft.storage.NbtWriteView;
-import net.minecraft.storage.ReadView;
-import net.minecraft.util.ErrorReporter;
-
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.entity.EntityProcessor;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftRegistry;
@@ -28,10 +26,10 @@ public class CraftEntitySnapshot implements EntitySnapshot {
 
 	private static final Logger LOGGER = LogUtils.getLogger();
 	
-    private final NbtCompound data;
+    private final CompoundTag data;
     private final EntityType type;
 
-    private CraftEntitySnapshot(NbtCompound data, EntityType type) {
+    private CraftEntitySnapshot(CompoundTag data, EntityType type) {
         this.data = data;
         this.type = type;
     }
@@ -43,7 +41,7 @@ public class CraftEntitySnapshot implements EntitySnapshot {
 
     @Override
     public Entity createEntity(World world) {
-        net.minecraft.entity.Entity internal = this.createInternal(world);
+        net.minecraft.world.entity.Entity internal = this.createInternal(world);
 
         return ((IMixinEntity)internal).getBukkitEntity();
     }
@@ -52,9 +50,9 @@ public class CraftEntitySnapshot implements EntitySnapshot {
     public Entity createEntity(Location location) {
         Preconditions.checkArgument(location.getWorld() != null, "Location has no world");
 
-        net.minecraft.entity.Entity internal = this.createInternal(location.getWorld());
+        net.minecraft.world.entity.Entity internal = this.createInternal(location.getWorld());
 
-        internal.setPosition(location.getX(), location.getY(), location.getZ());
+        internal.setPos(location.getX(), location.getY(), location.getZ());
         return location.getWorld().addEntity(((IMixinEntity)internal).getBukkitEntity());
     }
 
@@ -64,27 +62,27 @@ public class CraftEntitySnapshot implements EntitySnapshot {
     }
     
 	// TODO: Move to NbtReadView
-    public static ReadView NbtReadView_createGlobal(ErrorReporter problemReporter, NbtCompound compoundTag) {
-        return NbtReadView.create(problemReporter, CraftServer.server.getRegistryManager(), compoundTag);
+    public static ValueInput NbtReadView_createGlobal(ProblemReporter problemReporter, CompoundTag compoundTag) {
+        return TagValueInput.create(problemReporter, CraftServer.server.registryAccess(), compoundTag);
     }
 
-    private net.minecraft.entity.Entity createInternal(World world) {
-        net.minecraft.world.World nms = ((CraftWorld) world).getHandle();
-        net.minecraft.entity.Entity internal = net.minecraft.entity.EntityType.loadEntityWithPassengers(this.data, nms, net.minecraft.entity.SpawnReason.LOAD, LoadedEntityProcessor.NOOP);
+    private net.minecraft.world.entity.Entity createInternal(World world) {
+        net.minecraft.world.level.Level nms = ((CraftWorld) world).getHandle();
+        net.minecraft.world.entity.Entity internal = net.minecraft.world.entity.EntityType.loadEntityRecursive(this.data, nms, net.minecraft.world.entity.EntitySpawnReason.LOAD, EntityProcessor.NOP);
         if (internal == null) { // Try creating by type
-            internal = CraftEntityType.bukkitToMinecraft(this.type).create(nms, net.minecraft.entity.SpawnReason.LOAD);
+            internal = CraftEntityType.bukkitToMinecraft(this.type).create(nms, net.minecraft.world.entity.EntitySpawnReason.LOAD);
         }
 
         Preconditions.checkArgument(internal != null, "Error creating new entity."); // This should only fail if the stored NBTTagCompound is malformed.
 
-        try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "EntitySnapshot#createEntity", LOGGER);){
-            internal.readData(NbtReadView_createGlobal(problemReporter, this.data));
+        try (ProblemReporter.ScopedCollector problemReporter = new ProblemReporter.ScopedCollector(() -> "EntitySnapshot#createEntity", LOGGER);){
+            internal.load(NbtReadView_createGlobal(problemReporter, this.data));
         }
 
         return internal;
     }
 
-    public NbtCompound getData() {
+    public CompoundTag getData() {
         return this.data;
     }
 
@@ -100,21 +98,21 @@ public class CraftEntitySnapshot implements EntitySnapshot {
     */
     
     public static CraftEntitySnapshot create(CraftEntity entity) {
-        try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "create@" + String.valueOf(entity.getUniqueId()), LOGGER);){
-            NbtWriteView output = NbtWriteView.create(problemReporter, CraftRegistry.getMinecraftRegistry());
+        try (ProblemReporter.ScopedCollector problemReporter = new ProblemReporter.ScopedCollector(() -> "create@" + String.valueOf(entity.getUniqueId()), LOGGER);){
+            TagValueOutput output = TagValueOutput.createWithContext(problemReporter, CraftRegistry.getMinecraftRegistry());
             
             // TODO: if (!entity.getHandle().saveAsPassenger(output, false, false, false)) {
             
-            if (!entity.getHandle().saveSelfData(output)) {
+            if (!entity.getHandle().saveAsPassenger(output)) {
                 CraftEntitySnapshot craftEntitySnapshot = null;
                 return craftEntitySnapshot;
             }
-            CraftEntitySnapshot craftEntitySnapshot = new CraftEntitySnapshot(output.getNbt(), entity.getType());
+            CraftEntitySnapshot craftEntitySnapshot = new CraftEntitySnapshot(output.buildResult(), entity.getType());
             return craftEntitySnapshot;
         }
     }
 
-    public static CraftEntitySnapshot create(NbtCompound tag, EntityType type) {
+    public static CraftEntitySnapshot create(CompoundTag tag, EntityType type) {
         if (tag == null || tag.isEmpty() || type == null) {
             return null;
         }
@@ -122,9 +120,9 @@ public class CraftEntitySnapshot implements EntitySnapshot {
         return new CraftEntitySnapshot(tag, type);
     }
     
-    public static CraftEntitySnapshot create(NbtCompound tag) {
-        try (ErrorReporter.Logging problemReporter = new ErrorReporter.Logging(() -> "create", LOGGER);){
-            EntityType type = net.minecraft.entity.EntityType.fromData(NbtReadView_createGlobal(problemReporter, tag)).map(CraftEntityType::minecraftToBukkit).orElse(null);
+    public static CraftEntitySnapshot create(CompoundTag tag) {
+        try (ProblemReporter.ScopedCollector problemReporter = new ProblemReporter.ScopedCollector(() -> "create", LOGGER);){
+            EntityType type = net.minecraft.world.entity.EntityType.by(NbtReadView_createGlobal(problemReporter, tag)).map(CraftEntityType::minecraftToBukkit).orElse(null);
             CraftEntitySnapshot craftEntitySnapshot = CraftEntitySnapshot.create(tag, type);
             return craftEntitySnapshot;
         }

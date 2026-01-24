@@ -1,7 +1,5 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.mob.VexEntity;
-
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
@@ -11,13 +9,13 @@ import org.jetbrains.annotations.Nullable;
 
 public class CardboardVex extends CraftMonster implements Vex {
 
-    public CardboardVex(CraftServer server, VexEntity entity) {
+    public CardboardVex(CraftServer server, net.minecraft.world.entity.monster.Vex entity) {
         super(server, entity);
     }
 
     @Override
-    public VexEntity getHandle() {
-        return (VexEntity) super.getHandle();
+    public net.minecraft.world.entity.monster.Vex getHandle() {
+        return (net.minecraft.world.entity.monster.Vex) super.getHandle();
     }
 
     @Override
@@ -37,7 +35,7 @@ public class CardboardVex extends CraftMonster implements Vex {
 
     @Override
     public void setCharging(boolean charging) {
-        getHandle().setCharging(charging);
+        getHandle().setIsCharging(charging);
     }
 
     @Override

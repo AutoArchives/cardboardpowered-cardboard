@@ -1,6 +1,5 @@
 package org.bukkit.craftbukkit.inventory.view;
 
-import net.minecraft.screen.AnvilScreenHandler;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.AnvilInventory;
@@ -11,27 +10,28 @@ import org.jetbrains.annotations.Nullable;
 import org.cardboardpowered.interfaces.IMixinScreenHandler;
 
 import io.papermc.paper.adventure.PaperAdventure;
+import net.minecraft.world.inventory.AnvilMenu;
 
-public class CraftAnvilView extends CraftInventoryView<AnvilScreenHandler, AnvilInventory> implements AnvilView {
+public class CraftAnvilView extends CraftInventoryView<AnvilMenu, AnvilInventory> implements AnvilView {
 
-    public CraftAnvilView(final HumanEntity player, final AnvilInventory viewing, final AnvilScreenHandler container) {
+    public CraftAnvilView(final HumanEntity player, final AnvilInventory viewing, final AnvilMenu container) {
         super(player, viewing, container);
     }
     
     @Nullable
     @Override
     public String getRenameText() {
-        return ((AnvilScreenHandler) this.container).newItemName;
+        return ((AnvilMenu) this.container).itemName;
     }
 
     @Override
     public int getRepairItemCountCost() {
-        return ((AnvilScreenHandler) this.container).repairItemUsage;
+        return ((AnvilMenu) this.container).repairItemCountCost;
     }
 
     @Override
     public int getRepairCost() {
-        return ((AnvilScreenHandler) this.container).getLevelCost();
+        return ((AnvilMenu) this.container).getCost();
     }
 
     @Override
@@ -42,12 +42,12 @@ public class CraftAnvilView extends CraftInventoryView<AnvilScreenHandler, Anvil
 
     @Override
     public void setRepairItemCountCost(final int cost) {
-    	((AnvilScreenHandler) this.container).repairItemUsage = cost;
+    	((AnvilMenu) this.container).repairItemCountCost = cost;
     }
 
     @Override
     public void setRepairCost(final int cost) {
-    	((AnvilScreenHandler) this.container).levelCost.set(cost);
+    	((AnvilMenu) this.container).cost.set(cost);
     }
 
     @Override

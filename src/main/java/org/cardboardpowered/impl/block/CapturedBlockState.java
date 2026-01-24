@@ -1,12 +1,6 @@
 package org.cardboardpowered.impl.block;
 
 
-import net.minecraft.block.entity.BeehiveBlockEntity;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.StructureWorldAccess;
-import net.minecraft.world.World;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.block.CraftBlockState;
@@ -14,6 +8,12 @@ import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
 import me.isaiah.common.cmixin.IMixinBlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 public final class CapturedBlockState extends CraftBlockState {
 
@@ -29,9 +29,9 @@ public final class CapturedBlockState extends CraftBlockState {
         boolean result = super.update(force, applyPhysics);
 
         if (this.treeBlock && getType() == Material.BEE_NEST) {
-            StructureWorldAccess world = this.world.getHandle();
+            WorldGenLevel world = this.world.getHandle();
             BlockPos blockposition1 = this.getPosition();
-            Random random = world.getRandom();
+            RandomSource random = world.getRandom();
             BlockEntity block = world.getBlockEntity(blockposition1);
 
             if (block instanceof BeehiveBlockEntity) {
@@ -39,18 +39,18 @@ public final class CapturedBlockState extends CraftBlockState {
                 int j = 2 + random.nextInt(2);
                 for (int k = 0; k < j; ++k) {
                 	IMixinBlockEntity ie = (IMixinBlockEntity) beehive;
-                	ie.IC$add_bee_to_beehive(world.toServerWorld(), random.nextInt(599));
+                	ie.IC$add_bee_to_beehive(world.getLevel(), random.nextInt(599));
                 }
             }
         }
         return result;
     }
 
-    public static CapturedBlockState getBlockState(World world, BlockPos pos, int flag) {
+    public static CapturedBlockState getBlockState(Level world, BlockPos pos, int flag) {
         return new CapturedBlockState(((IMixinWorld)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), flag, false);
     }
 
-    public static CapturedBlockState getTreeBlockState(World world, BlockPos pos, int flag) {
+    public static CapturedBlockState getTreeBlockState(Level world, BlockPos pos, int flag) {
         return new CapturedBlockState(((IMixinWorld)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), flag, true);
     }
 

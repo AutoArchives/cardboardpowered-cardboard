@@ -2,10 +2,8 @@ package org.cardboardpowered.impl.entity;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.util.TriState;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.level.block.state.BlockState;
 import java.util.Optional;
 
 import org.bukkit.Material;
@@ -21,18 +19,18 @@ import org.jetbrains.annotations.Nullable;
 
 public class CardboardMinecart extends CraftVehicle implements Minecart {
 
-    public CardboardMinecart(CraftServer server, AbstractMinecartEntity entity) {
+    public CardboardMinecart(CraftServer server, AbstractMinecart entity) {
         super(server, entity);
     }
 
     @Override
     public void setDamage(double damage) {
-        getHandle().setDamageWobbleStrength((float) damage);
+        getHandle().setDamage((float) damage);
     }
 
     @Override
     public double getDamage() {
-        return getHandle().getDamageWobbleStrength();
+        return getHandle().getDamage();
     }
 
     @Override
@@ -76,40 +74,40 @@ public class CardboardMinecart extends CraftVehicle implements Minecart {
     }
 
     @Override
-    public AbstractMinecartEntity getHandle() {
-        return (AbstractMinecartEntity) nms;
+    public AbstractMinecart getHandle() {
+        return (AbstractMinecart) nms;
     }
 
     @Override
     public void setDisplayBlock(MaterialData material) {
-        this.getHandle().setCustomBlockState(Optional.ofNullable(material).map(CraftMagicNumbers::getBlock));
+        this.getHandle().setCustomDisplayBlockState(Optional.ofNullable(material).map(CraftMagicNumbers::getBlock));
     }
 
     @Override
     public void setDisplayBlockData(BlockData blockData) {
-    	this.getHandle().setCustomBlockState(Optional.ofNullable(blockData).map(data -> ((CraftBlockData)data).getState()));
+    	this.getHandle().setCustomDisplayBlockState(Optional.ofNullable(blockData).map(data -> ((CraftBlockData)data).getState()));
     }
 
     @Override
     public MaterialData getDisplayBlock() {
-        BlockState blockData = getHandle().getContainedBlock();
+        BlockState blockData = getHandle().getDisplayBlockState();
         return CraftMagicNumbers.getMaterial(blockData);
     }
 
     @Override
     public BlockData getDisplayBlockData() {
-        BlockState blockData = getHandle().getContainedBlock();
+        BlockState blockData = getHandle().getDisplayBlockState();
         return CraftBlockData.fromData(blockData);
     }
 
     @Override
     public void setDisplayBlockOffset(int offset) {
-    	this.getHandle().setBlockOffset(offset);
+    	this.getHandle().setDisplayOffset(offset);
     }
 
     @Override
     public int getDisplayBlockOffset() {
-        return getHandle().getBlockOffset();
+        return getHandle().getDisplayOffset();
     }
 
     @Override

@@ -14,13 +14,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.item.Item;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.text.Text;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.enchantment.Enchantment;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.inventory.ItemType;
 import org.jetbrains.annotations.Range;
@@ -33,23 +33,23 @@ import static io.papermc.paper.registry.data.util.Checks.asConfigured;
 public class PaperEnchantmentRegistryEntry implements EnchantmentRegistryEntry {
 
     // Top level
-    protected @Nullable Text description;
+    protected @Nullable Component description;
 
     // Definition
-    protected @Nullable RegistryEntryList<Item> supportedItems;
-    protected @Nullable RegistryEntryList<Item> primaryItems;
+    protected @Nullable HolderSet<Item> supportedItems;
+    protected @Nullable HolderSet<Item> primaryItems;
     protected OptionalInt weight = OptionalInt.empty();
     protected OptionalInt maxLevel = OptionalInt.empty();
     protected Enchantment.@Nullable Cost minimumCost;
     protected Enchantment.@Nullable Cost maximumCost;
     protected OptionalInt anvilCost = OptionalInt.empty();
-    protected @Nullable List<AttributeModifierSlot> activeSlots;
+    protected @Nullable List<EquipmentSlotGroup> activeSlots;
 
     // Exclusive
-    protected RegistryEntryList<Enchantment> exclusiveWith = RegistryEntryList.empty(); // Paper added default to empty.
+    protected HolderSet<Enchantment> exclusiveWith = HolderSet.empty(); // Paper added default to empty.
 
     // Effects
-    protected ComponentMap effects;
+    protected DataComponentMap effects;
 
     protected final Conversions conversions;
 
@@ -59,7 +59,7 @@ public class PaperEnchantmentRegistryEntry implements EnchantmentRegistryEntry {
     ) {
         this.conversions = conversions;
         if (internal == null) {
-            this.effects = ComponentMap.EMPTY;
+            this.effects = DataComponentMap.EMPTY;
             return;
         }
 
@@ -67,7 +67,7 @@ public class PaperEnchantmentRegistryEntry implements EnchantmentRegistryEntry {
         this.description = internal.description();
 
         // definition
-        final Enchantment.Definition definition = internal.definition();
+        final Enchantment.EnchantmentDefinition definition = internal.definition();
         this.supportedItems = definition.supportedItems();
         this.primaryItems = definition.primaryItems().orElse(null);
         this.weight = OptionalInt.of(definition.weight());
@@ -151,13 +151,13 @@ public class PaperEnchantmentRegistryEntry implements EnchantmentRegistryEntry {
 
         @Override
         public Builder supportedItems(final RegistryKeySet<ItemType> supportedItems) {
-            this.supportedItems = PaperRegistrySets.convertToNms(RegistryKeys.ITEM, this.conversions.lookup(), asArgument(supportedItems, "supportedItems"));
+            this.supportedItems = PaperRegistrySets.convertToNms(Registries.ITEM, this.conversions.lookup(), asArgument(supportedItems, "supportedItems"));
             return this;
         }
 
         @Override
         public Builder primaryItems(final @Nullable RegistryKeySet<ItemType> primaryItems) {
-            this.primaryItems = primaryItems == null ? null : PaperRegistrySets.convertToNms(RegistryKeys.ITEM, this.conversions.lookup(), primaryItems);
+            this.primaryItems = primaryItems == null ? null : PaperRegistrySets.convertToNms(Registries.ITEM, this.conversions.lookup(), primaryItems);
             return this;
         }
 
@@ -176,14 +176,14 @@ public class PaperEnchantmentRegistryEntry implements EnchantmentRegistryEntry {
         @Override
         public Builder minimumCost(final EnchantmentCost minimumCost) {
             final EnchantmentCost validCost = asArgument(minimumCost, "minimumCost");
-            this.minimumCost = Enchantment.leveledCost(validCost.baseCost(), validCost.additionalPerLevelCost());
+            this.minimumCost = Enchantment.dynamicCost(validCost.baseCost(), validCost.additionalPerLevelCost());
             return this;
         }
 
         @Override
         public Builder maximumCost(final EnchantmentCost maximumCost) {
             final EnchantmentCost validCost = asArgument(maximumCost, "maximumCost");
-            this.maximumCost = Enchantment.leveledCost(validCost.baseCost(), validCost.additionalPerLevelCost());
+            this.maximumCost = Enchantment.dynamicCost(validCost.baseCost(), validCost.additionalPerLevelCost());
             return this;
         }
 
@@ -202,13 +202,13 @@ public class PaperEnchantmentRegistryEntry implements EnchantmentRegistryEntry {
 
         @Override
         public Builder exclusiveWith(final RegistryKeySet<org.bukkit.enchantments.Enchantment> exclusiveWith) {
-            this.exclusiveWith = PaperRegistrySets.convertToNms(RegistryKeys.ENCHANTMENT, this.conversions.lookup(), asArgument(exclusiveWith, "exclusiveWith"));
+            this.exclusiveWith = PaperRegistrySets.convertToNms(Registries.ENCHANTMENT, this.conversions.lookup(), asArgument(exclusiveWith, "exclusiveWith"));
             return this;
         }
 
         @Override
         public Enchantment build() {
-            final Enchantment.Definition def = new Enchantment.Definition(
+            final Enchantment.EnchantmentDefinition def = new Enchantment.EnchantmentDefinition(
                 asConfigured(this.supportedItems, "supportedItems"),
                 Optional.ofNullable(this.primaryItems),
                 this.weight(),

@@ -5,11 +5,11 @@ import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.inventory.ItemStack;
 
 public record PaperUseRemainder(
-    net.minecraft.component.type.UseRemainderComponent impl
-) implements UseRemainder, Handleable<net.minecraft.component.type.UseRemainderComponent> {
+    net.minecraft.world.item.component.UseRemainder impl
+) implements UseRemainder, Handleable<net.minecraft.world.item.component.UseRemainder> {
 
     @Override
-    public net.minecraft.component.type.UseRemainderComponent getHandle() {
+    public net.minecraft.world.item.component.UseRemainder getHandle() {
         return this.impl;
     }
 

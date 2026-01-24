@@ -9,13 +9,13 @@ public final class CraftEnderPortalFrame extends org.bukkit.craftbukkit.block.da
         super();
     }
 
-    public CraftEnderPortalFrame(net.minecraft.block.BlockState state) {
+    public CraftEnderPortalFrame(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftEndPortalFrame
 
-    private static final net.minecraft.state.property.BooleanProperty EYE = getBoolean(net.minecraft.block.EndPortalFrameBlock.class, "eye");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty EYE = getBoolean(net.minecraft.world.level.block.EndPortalFrameBlock.class, "eye");
 
     @Override
     public boolean hasEye() {
@@ -29,7 +29,7 @@ public final class CraftEnderPortalFrame extends org.bukkit.craftbukkit.block.da
 
     // org.bukkit.craftbukkit.block.data.CraftDirectional
 
-    private static final net.minecraft.state.property.EnumProperty<?> FACING = getEnum(net.minecraft.block.EndPortalFrameBlock.class, "facing");
+    private static final net.minecraft.world.level.block.state.properties.EnumProperty<?> FACING = getEnum(net.minecraft.world.level.block.EndPortalFrameBlock.class, "facing");
 
     @Override
     public org.bukkit.block.BlockFace getFacing() {

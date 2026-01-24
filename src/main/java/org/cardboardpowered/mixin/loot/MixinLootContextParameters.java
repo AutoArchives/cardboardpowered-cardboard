@@ -1,12 +1,10 @@
 package org.cardboardpowered.mixin.loot;
 
 import org.spongepowered.asm.mixin.Mixin;
-
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import org.cardboardpowered.interfaces.IMixinLootContextParameters;
 
-import net.minecraft.loot.context.LootContextParameters;
-
-@Mixin(LootContextParameters.class)
+@Mixin(LootContextParams.class)
 public class MixinLootContextParameters implements IMixinLootContextParameters {
     // Inherent static method from interface
 }

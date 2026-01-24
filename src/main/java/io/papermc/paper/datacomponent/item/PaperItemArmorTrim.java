@@ -6,11 +6,11 @@ import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.inventory.meta.trim.ArmorTrim;
 
 public record PaperItemArmorTrim(
-    net.minecraft.item.equipment.trim.ArmorTrim impl
-) implements ItemArmorTrim, Handleable<net.minecraft.item.equipment.trim.ArmorTrim> {
+    net.minecraft.world.item.equipment.trim.ArmorTrim impl
+) implements ItemArmorTrim, Handleable<net.minecraft.world.item.equipment.trim.ArmorTrim> {
 
     @Override
-    public net.minecraft.item.equipment.trim.ArmorTrim getHandle() {
+    public net.minecraft.world.item.equipment.trim.ArmorTrim getHandle() {
         return this.impl;
     }
 
@@ -36,7 +36,7 @@ public record PaperItemArmorTrim(
 
         @Override
         public ItemArmorTrim build() {
-            return new PaperItemArmorTrim(new net.minecraft.item.equipment.trim.ArmorTrim(
+            return new PaperItemArmorTrim(new net.minecraft.world.item.equipment.trim.ArmorTrim(
                 CraftTrimMaterial.bukkitToMinecraftHolder(this.armorTrim.getMaterial()),
                 CraftTrimPattern.bukkitToMinecraftHolder(this.armorTrim.getPattern())
                 // this.showInTooltip

@@ -1,6 +1,6 @@
 package org.cardboardpowered.impl;
 
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 
 public class CardboardModdedBlock implements CardboardModdedMaterial {
 
@@ -9,7 +9,7 @@ public class CardboardModdedBlock implements CardboardModdedMaterial {
 
     public CardboardModdedBlock(String id) {
         this.id = id;
-        this.block = net.minecraft.registry.Registries.BLOCK.get(net.minecraft.util.Identifier.of(id));
+        this.block = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(net.minecraft.resources.Identifier.parse(id));
     }
 
     public CardboardModdedBlock(Block block) {

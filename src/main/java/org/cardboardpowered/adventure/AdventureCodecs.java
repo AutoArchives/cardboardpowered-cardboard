@@ -16,14 +16,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.*;
-import net.minecraft.text.KeybindTextContent;
-import net.minecraft.text.ParsedSelector;
-import net.minecraft.text.ScoreTextContent;
 //import net.minecraft.text.Style;
 import net.kyori.adventure.text.format.Style;
-import net.minecraft.text.TextCodecs;
-import net.minecraft.util.StringIdentifiable;
-import net.minecraft.util.dynamic.Codecs;
 
 public final class AdventureCodecs {
     

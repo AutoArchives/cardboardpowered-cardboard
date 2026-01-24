@@ -1,8 +1,7 @@
 package org.cardboardpowered.impl.block;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.block.entity.EnchantingTableBlockEntity;
-
+import net.minecraft.world.level.block.entity.EnchantingTableBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;

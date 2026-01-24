@@ -16,24 +16,23 @@ import org.bukkit.material.MaterialData;
 import com.google.common.base.Preconditions;
 import org.cardboardpowered.CardboardMod;
 import com.mojang.serialization.Dynamic;
-
-import net.minecraft.Bootstrap;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.datafixer.Schemas;
-import net.minecraft.datafixer.TypeReferences;
-import net.minecraft.datafixer.fix.BlockStateFlattening;
-import net.minecraft.datafixer.fix.ItemIdFix;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.Property;
-import net.minecraft.util.Identifier;
-import net.minecraft.registry.Registries;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.Bootstrap;
+import net.minecraft.util.datafix.DataFixers;
+import net.minecraft.util.datafix.fixes.BlockStateData;
+import net.minecraft.util.datafix.fixes.ItemIdFix;
+import net.minecraft.util.datafix.fixes.References;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.Property;
 
 /**
  * This class may seem unnecessarily slow and complicated/repetitive however it
@@ -72,7 +71,7 @@ public class CraftLegacyMaterials {
 
         if (material.isBlock()) {
             Block block = CraftMagicNumbers.getBlock(material);
-            BlockState blockData = block.getDefaultState();
+            BlockState blockData = block.defaultBlockState();
 
             // Try exact match first
             mappedData = dataToMaterial.get(blockData);
@@ -103,9 +102,9 @@ public class CraftLegacyMaterials {
         // Fallback to any block
         Block convertedBlock = materialToBlock.get(materialData);
         if (convertedBlock != null)
-            return convertedBlock.getDefaultState();
+            return convertedBlock.defaultBlockState();
 
-        return Blocks.AIR.getDefaultState(); // Return air
+        return Blocks.AIR.defaultBlockState(); // Return air
     }
 
     public static Item fromLegacyData(Material material, short data) {
@@ -234,7 +233,7 @@ public class CraftLegacyMaterials {
 
     static {
         CardboardMod.LOGGER.warning("Initializing Legacy Material Support. Unless you have legacy plugins and/or data this is a bug!");
-        if (((CraftServer)Bukkit.getServer()).getServer() != null && ((CraftServer)Bukkit.getServer()).getServer().isDebugRunning())
+        if (((CraftServer)Bukkit.getServer()).getServer() != null && ((CraftServer)Bukkit.getServer()).getServer().isTimeProfilerRunning())
             new Exception().printStackTrace();
 
         SPAWN_EGGS.put((byte) 0, Material.PIG_SPAWN_EGG); // Will be fixed by updateMaterial if possible
@@ -290,7 +289,7 @@ public class CraftLegacyMaterials {
         SPAWN_EGGS.put((byte) EntityType.ZOMBIFIED_PIGLIN.getTypeId(), Material.ZOMBIFIED_PIGLIN_SPAWN_EGG);
         SPAWN_EGGS.put((byte) EntityType.ZOMBIE_VILLAGER.getTypeId(), Material.ZOMBIE_VILLAGER_SPAWN_EGG);
 
-        Bootstrap.initialize();
+        Bootstrap.bootStrap();
 
         for (Material material : Material.values()) {
             if (!material.isLegacy())
@@ -300,23 +299,23 @@ public class CraftLegacyMaterials {
             if (material.isBlock()) {
                 for (byte data = 0; data < 16; data++) {
                     MaterialData matData = new MaterialData(material, data);
-                    Dynamic blockTag = BlockStateFlattening.lookupState(material.getId() << 4 | data);
-                    blockTag = Schemas.getFixer().update(TypeReferences.BLOCK_STATE, blockTag, 100, CraftMagicNumbers.INSTANCE.getDataVersion());
+                    Dynamic blockTag = BlockStateData.getTag(material.getId() << 4 | data);
+                    blockTag = DataFixers.getDataFixer().update(References.BLOCK_STATE, blockTag, 100, CraftMagicNumbers.INSTANCE.getDataVersion());
                     // TODO: better skull conversion, chests
                     if (blockTag.get("Name").asString("").contains("%%FILTER_ME%%"))
                         continue;
 
                     String name = blockTag.get("Name").asString("");
-                    Block block = Registries.BLOCK.get(Identifier.of(name));
+                    Block block = BuiltInRegistries.BLOCK.getValue(Identifier.parse(name));
                     if (block == null)
                         continue;
-                    BlockState blockData = block.getDefaultState();
-                    StateManager states = block.getStateManager();
+                    BlockState blockData = block.defaultBlockState();
+                    StateDefinition states = block.getStateDefinition();
 
-                    Optional<NbtCompound> propMap = blockTag.getElement("Properties").result();
+                    Optional<CompoundTag> propMap = blockTag.getElement("Properties").result();
                     if (propMap.isPresent()) {
-                        NbtCompound properties = propMap.get();
-                        for (String dataKey : properties.getKeys()) {
+                        CompoundTag properties = propMap.get();
+                        for (String dataKey : properties.keySet()) {
                             Property state = states.getProperty(dataKey);
 
                             if (state == null) {
@@ -332,10 +331,10 @@ public class CraftLegacyMaterials {
                             if (!optStr.isPresent())
                                 throw new IllegalStateException("No state value " + properties.getString(dataKey) + " for " + dataKey);
                             
-                            Optional opt = state.parse( optStr.get() );
+                            Optional opt = state.getValue( optStr.get() );
                             if (!opt.isPresent())
                                 throw new IllegalStateException("No state value " + properties.getString(dataKey) + " for " + dataKey);
-                            blockData = blockData.with(state, (Comparable) opt.get());
+                            blockData = blockData.setValue(state, (Comparable) opt.get());
                         }
                     }
 
@@ -364,23 +363,23 @@ public class CraftLegacyMaterials {
                     continue;
                 }
                 // Skip non item stacks for now (18w19b)
-                if (ItemIdFix.fromId(material.getId()) == null)
+                if (ItemIdFix.getItem(material.getId()) == null)
                     continue;
 
                 MaterialData matData = new MaterialData(material, data);
 
-                NbtCompound stack = new NbtCompound();
+                CompoundTag stack = new CompoundTag();
                 stack.putInt("id", material.getId());
                 stack.putShort("Damage", data);
 
-                Dynamic<NbtElement> converted = Schemas.getFixer().update(TypeReferences.ITEM_STACK, new Dynamic<NbtElement>(NbtOps.INSTANCE, stack), -1, CraftMagicNumbers.INSTANCE.getDataVersion());
+                Dynamic<Tag> converted = DataFixers.getDataFixer().update(References.ITEM_STACK, new Dynamic<Tag>(NbtOps.INSTANCE, stack), -1, CraftMagicNumbers.INSTANCE.getDataVersion());
 
                 String newId = converted.get("id").asString("");
                 // Recover spawn eggs with invalid data
                 if (newId.equals("minecraft:spawn_egg"))
                     newId = "minecraft:pig_spawn_egg";
 
-                Item newMaterial = Registries.ITEM.get(Identifier.of(newId));
+                Item newMaterial = BuiltInRegistries.ITEM.getValue(Identifier.parse(newId));
 
                 if (newMaterial == Items.AIR)
                     continue;

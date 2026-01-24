@@ -1,19 +1,19 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.mob.AmbientEntity;
+import net.minecraft.world.entity.ambient.AmbientCreature;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Ambient;
 import org.bukkit.entity.EntityType;
 
 public class CardboardAmbient extends CraftMob implements Ambient {
 
-    public CardboardAmbient(CraftServer server, AmbientEntity entity) {
+    public CardboardAmbient(CraftServer server, AmbientCreature entity) {
         super(server, entity);
     }
 
     @Override
-    public AmbientEntity getHandle() {
-        return (AmbientEntity) nms;
+    public AmbientCreature getHandle() {
+        return (AmbientCreature) nms;
     }
 
     @Override

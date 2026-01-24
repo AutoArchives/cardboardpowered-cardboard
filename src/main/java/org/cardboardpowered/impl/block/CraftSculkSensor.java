@@ -1,6 +1,6 @@
 package org.cardboardpowered.impl.block;
 
-import net.minecraft.block.entity.SculkSensorBlockEntity;
+import net.minecraft.world.level.block.entity.SculkSensorBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.SculkSensor;
@@ -34,7 +34,7 @@ public class CraftSculkSensor<T extends SculkSensorBlockEntity> extends Cardboar
     }
 
     public int getListenerRange() {
-        return ((SculkSensorBlockEntity)this.getSnapshot()).getEventListener().getRange();
+        return ((SculkSensorBlockEntity)this.getSnapshot()).getListener().getListenerRadius();
     }
 
     public void setListenerRange(int range) {

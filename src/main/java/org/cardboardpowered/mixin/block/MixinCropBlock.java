@@ -1,16 +1,9 @@
 package org.cardboardpowered.mixin.block;
 
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.VegetationBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.CropBlock;
-import net.minecraft.block.PlantBlock;
-import net.minecraft.entity.Entity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.rule.GameRules;
-import net.minecraft.world.World;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,9 +13,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @MixinInfo(events = {"BlockGrowEvent, EntityChangeBlockEvent"})
 @Mixin (CropBlock.class)
-public abstract class MixinCropBlock extends PlantBlock {
+public abstract class MixinCropBlock extends VegetationBlock {
 
-    protected MixinCropBlock(AbstractBlock.Settings settings) {
+    protected MixinCropBlock(BlockBehaviour.Properties settings) {
         super(settings);
     }
     

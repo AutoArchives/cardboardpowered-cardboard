@@ -1,8 +1,7 @@
 package org.cardboardpowered.impl.block;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.block.entity.CommandBlockBlockEntity;
-
+import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -12,12 +11,12 @@ import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class CardboardCommandBlock extends CardboardBlockEntityState<CommandBlockBlockEntity> implements CommandBlock {
+public class CardboardCommandBlock extends CardboardBlockEntityState<CommandBlockEntity> implements CommandBlock {
 
     private String command;
     private String name;
     
-    public CardboardCommandBlock(World world, CommandBlockBlockEntity tileEntity) {
+    public CardboardCommandBlock(World world, CommandBlockEntity tileEntity) {
         super(world, tileEntity);
     }
 
@@ -46,10 +45,10 @@ public class CardboardCommandBlock extends CardboardBlockEntityState<CommandBloc
     */
 
     @Override
-    public void load(CommandBlockBlockEntity cmdblock) {
+    public void load(CommandBlockEntity cmdblock) {
         super.load(cmdblock);
-        command = cmdblock.getCommandExecutor().getCommand();
-        name = CraftChatMessage.fromComponent(cmdblock.getCommandExecutor().getCustomName());
+        command = cmdblock.getCommandBlock().getCommand();
+        name = CraftChatMessage.fromComponent(cmdblock.getCommandBlock().getCustomName());
     }
 
     @Override
@@ -73,10 +72,10 @@ public class CardboardCommandBlock extends CardboardBlockEntityState<CommandBloc
     }
 
     @Override
-    public void applyTo(CommandBlockBlockEntity commandBlock) {
+    public void applyTo(CommandBlockEntity commandBlock) {
         super.applyTo(commandBlock);
-        commandBlock.getCommandExecutor().setCommand(command);
-        commandBlock.getCommandExecutor().setCustomName(CraftChatMessage.fromStringOrNull(name));
+        commandBlock.getCommandBlock().setCommand(command);
+        commandBlock.getCommandBlock().setCustomName(CraftChatMessage.fromStringOrNull(name));
     }
 
     @Override

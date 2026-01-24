@@ -1,9 +1,5 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.passive.HorseColor;
-import net.minecraft.entity.passive.HorseEntity;
-import net.minecraft.entity.passive.HorseMarking;
-
 import java.util.UUID;
 
 import org.apache.commons.lang.Validate;
@@ -18,13 +14,13 @@ import org.jetbrains.annotations.Nullable;
 public class CardboardHorse
 extends CardboardAbstractHorse
 implements Horse {
-    public CardboardHorse(CraftServer server, HorseEntity entity) {
+    public CardboardHorse(CraftServer server, net.minecraft.world.entity.animal.equine.Horse entity) {
         super(server, entity);
     }
 
     @Override
-    public HorseEntity getHandle() {
-        return (HorseEntity)super.getHandle();
+    public net.minecraft.world.entity.animal.equine.Horse getHandle() {
+        return (net.minecraft.world.entity.animal.equine.Horse)super.getHandle();
     }
 
     @Override
@@ -34,19 +30,19 @@ implements Horse {
 
     @Override
     public Horse.Color getColor() {
-        return Horse.Color.values()[this.getHandle().getHorseColor().getIndex()];
+        return Horse.Color.values()[this.getHandle().getVariant().getId()];
     }
 
     @Override
     public void setColor(Horse.Color color) {
         Validate.notNull((Object)color, "Color cannot be null");
        // this.getHandle().setVariant(HorseColor.byIndex(color.ordinal()), this.getHandle().getMarking());
-        this.getHandle().setHorseVariant(HorseColor.byIndex(color.ordinal()), this.getHandle().getMarking());
+        this.getHandle().setVariantAndMarkings(net.minecraft.world.entity.animal.equine.Variant.byId(color.ordinal()), this.getHandle().getMarkings());
     }
 
     @Override
     public Horse.Style getStyle() {
-        return Horse.Style.values()[this.getHandle().getMarking().getIndex()];
+        return Horse.Style.values()[this.getHandle().getMarkings().getId()];
     }
 
     @Override

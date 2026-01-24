@@ -6,31 +6,30 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinEntity;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LazyEntityReference;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-
-@Mixin(ProjectileEntity.class)
+@Mixin(Projectile.class)
 public class MixinProjectileEntity extends MixinEntity {
 
     @Inject(at = @At("TAIL"), method = "setOwner")
-    public void setProjectileSource(LazyEntityReference<Entity> entity, CallbackInfo ci) {
+    public void setProjectileSource(EntityReference<Entity> entity, CallbackInfo ci) {
     	cb$refreshProjectileSource(false);
     }
 
-    @Inject(at = @At("HEAD"), method = "onCollision")
+    @Inject(at = @At("HEAD"), method = "onHit")
     public void fireProjectileHitEvent(HitResult hitResult, CallbackInfo ci) {
-        CraftEventFactory.callProjectileHitEvent((ProjectileEntity)(Object)this, hitResult);
+        CraftEventFactory.callProjectileHitEvent((Projectile)(Object)this, hitResult);
     }
 
     @Shadow
-    public void onBlockHit(BlockHitResult blockHitResult) {
+    public void onHitBlock(BlockHitResult blockHitResult) {
     }
     
     private void cb$refreshProjectileSource(boolean fillCache) {

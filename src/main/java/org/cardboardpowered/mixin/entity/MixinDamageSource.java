@@ -1,10 +1,8 @@
 package org.cardboardpowered.mixin.entity;
 
 import org.spongepowered.asm.mixin.Mixin;
-
+import net.minecraft.world.damagesource.DamageSource;
 import org.cardboardpowered.interfaces.IMixinDamageSource;
-
-import net.minecraft.entity.damage.DamageSource;
 
 @Mixin(DamageSource.class)
 public class MixinDamageSource implements IMixinDamageSource {

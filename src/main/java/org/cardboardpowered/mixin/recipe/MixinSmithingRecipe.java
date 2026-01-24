@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.recipe;
 
-import net.minecraft.recipe.Ingredient;
+import net.minecraft.world.item.crafting.Ingredient;
 import org.bukkit.inventory.Recipe;
 import org.spongepowered.asm.mixin.Mixin;
 

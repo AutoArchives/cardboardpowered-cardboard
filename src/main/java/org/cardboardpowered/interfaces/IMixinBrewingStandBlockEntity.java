@@ -1,10 +1,10 @@
 package org.cardboardpowered.interfaces;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.item.ItemStack;
 
 public interface IMixinBrewingStandBlockEntity {
 
-    public DefaultedList<ItemStack> cardboard_getInventory();
+    public NonNullList<ItemStack> cardboard_getInventory();
 
 }

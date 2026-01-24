@@ -1,7 +1,6 @@
 package org.cardboardpowered.impl.entity;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.entity.projectile.LlamaSpitEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LlamaSpit;
@@ -12,13 +11,13 @@ import org.cardboardpowered.interfaces.IMixinEntity;
 
 public class CardboardLlamaSpit extends AbstractProjectile implements LlamaSpit {
 
-    public CardboardLlamaSpit(CraftServer server, LlamaSpitEntity entity) {
+    public CardboardLlamaSpit(CraftServer server, net.minecraft.world.entity.projectile.LlamaSpit entity) {
         super(server, entity);
     }
 
     @Override
-    public LlamaSpitEntity getHandle() {
-        return (LlamaSpitEntity) super.getHandle();
+    public net.minecraft.world.entity.projectile.LlamaSpit getHandle() {
+        return (net.minecraft.world.entity.projectile.LlamaSpit) super.getHandle();
     }
 
     @Override

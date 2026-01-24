@@ -1,13 +1,12 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.mob.ElderGuardianEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.ElderGuardian;
 import org.bukkit.entity.EntityType;
 
 public class CardboardGuardianElder extends CardboardGuardian implements ElderGuardian {
 
-    public CardboardGuardianElder(CraftServer server, ElderGuardianEntity entity) {
+    public CardboardGuardianElder(CraftServer server, net.minecraft.world.entity.monster.ElderGuardian entity) {
         super(server, entity);
     }
 

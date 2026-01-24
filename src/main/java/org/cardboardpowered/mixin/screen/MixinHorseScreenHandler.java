@@ -1,6 +1,10 @@
 package org.cardboardpowered.mixin.screen;
 
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.HorseInventoryMenu;
 import org.bukkit.entity.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -11,22 +15,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinInventory;
 
-import net.minecraft.entity.passive.AbstractHorseEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.screen.HorseScreenHandler;
-
-@Mixin(HorseScreenHandler.class)
+@Mixin(HorseInventoryMenu.class)
 public class MixinHorseScreenHandler extends MixinScreenHandler {
 
     // @Shadow
     // public Inventory inventory;
 
     private CardboardInventoryView bukkitEntity = null;
-    private PlayerInventory playerInv;
+    private Inventory playerInv;
 
-    @Inject(method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/inventory/Inventory;Lnet/minecraft/entity/passive/AbstractHorseEntity;I)V", at = @At("TAIL"))
-    public void setPlayerInv(int i, PlayerInventory playerinventory, Inventory iinventory, final AbstractHorseEntity  entityhorseabstract, int slot_col_count, CallbackInfo ci) {
+    @Inject(method = "<init>(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/Container;Lnet/minecraft/world/entity/animal/equine/AbstractHorse;I)V", at = @At("TAIL"))
+    public void setPlayerInv(int i, Inventory playerinventory, Container iinventory, final AbstractHorse  entityhorseabstract, int slot_col_count, CallbackInfo ci) {
         this.playerInv = playerinventory;
     }
 
@@ -34,7 +33,7 @@ public class MixinHorseScreenHandler extends MixinScreenHandler {
     public CardboardInventoryView getBukkitView() {
         if (bukkitEntity != null)
             return bukkitEntity;
-        return bukkitEntity = new CardboardInventoryView((Player)((IMixinEntity)this.playerInv.player).getBukkitEntity(), ((IMixinInventory)playerInv).getOwner().getInventory(), (HorseScreenHandler)(Object)this);
+        return bukkitEntity = new CardboardInventoryView((Player)((IMixinEntity)this.playerInv.player).getBukkitEntity(), ((IMixinInventory)playerInv).getOwner().getInventory(), (HorseInventoryMenu)(Object)this);
     }
 
 

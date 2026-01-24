@@ -2,10 +2,9 @@ package org.cardboardpowered.impl.entity;
 
 import java.util.Random;
 import java.util.UUID;
-
-import net.minecraft.entity.projectile.FireworkRocketEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.world.entity.projectile.FireworkRocketEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftProjectile;
@@ -26,11 +25,11 @@ public class CardboardFirework extends CraftProjectile implements Firework {
     public CardboardFirework(CraftServer server, FireworkRocketEntity entity) {
         super(server, entity);
 
-        ItemStack item = getHandle().getDataTracker().get(FireworkRocketEntity.ITEM);
+        ItemStack item = getHandle().getEntityData().get(FireworkRocketEntity.DATA_ID_FIREWORKS_ITEM);
 
         if (item.isEmpty()) {
             item = new ItemStack(Items.FIREWORK_ROCKET);
-            getHandle().getDataTracker().set(FireworkRocketEntity.ITEM, item);
+            getHandle().getEntityData().set(FireworkRocketEntity.DATA_ID_FIREWORKS_ITEM, item);
         }
 
         this.item = CraftItemStack.asCraftMirror(item);
@@ -66,24 +65,24 @@ public class CardboardFirework extends CraftProjectile implements Firework {
         item.setItemMeta(meta);
 
         // Copied from FireworkRocketEntity constructor, update firework lifetime/power
-        getHandle().lifeTime = 10 * (1 + meta.getPower()) + random.nextInt(6) + random.nextInt(7);
+        getHandle().lifetime = 10 * (1 + meta.getPower()) + random.nextInt(6) + random.nextInt(7);
 
-        ((IMixinDataTracker) getHandle().getDataTracker()).markDirty(FireworkRocketEntity.ITEM);
+        ((IMixinDataTracker) getHandle().getEntityData()).markDirty(FireworkRocketEntity.DATA_ID_FIREWORKS_ITEM);
     }
 
     @Override
     public void detonate() {
-        getHandle().lifeTime = 0;
+        getHandle().lifetime = 0;
     }
 
     @Override
     public boolean isShotAtAngle() {
-        return getHandle().wasShotAtAngle();
+        return getHandle().isShotAtAngle();
     }
 
     @Override
     public void setShotAtAngle(boolean shotAtAngle) {
-        getHandle().getDataTracker().set(FireworkRocketEntity.SHOT_AT_ANGLE, shotAtAngle);
+        getHandle().getEntityData().set(FireworkRocketEntity.DATA_SHOT_AT_ANGLE, shotAtAngle);
     }
 
     @Override

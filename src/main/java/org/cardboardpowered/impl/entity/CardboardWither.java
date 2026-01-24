@@ -1,5 +1,6 @@
 package org.cardboardpowered.impl.entity;
 
+import net.minecraft.world.entity.boss.wither.WitherBoss;
 import org.bukkit.boss.BossBar;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
@@ -8,20 +9,18 @@ import org.bukkit.entity.Wither;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.entity.boss.WitherEntity;
-
 public class CardboardWither extends CraftMonster implements Wither {
 
     private BossBar bossBar;
 
-    public CardboardWither(CraftServer server, WitherEntity entity) {
+    public CardboardWither(CraftServer server, WitherBoss entity) {
         super(server, entity);
         // TODO if (entity.bossBar != null) this.bossBar = new CardboardBossBar(entity.bossBar);
     }
 
     @Override
-    public WitherEntity getHandle() {
-        return (WitherEntity) nms;
+    public WitherBoss getHandle() {
+        return (WitherBoss) nms;
     }
 
     @Override
@@ -97,17 +96,17 @@ public class CardboardWither extends CraftMonster implements Wither {
 
 	@Override
 	public void enterInvulnerabilityPhase() {
-        this.getHandle().onSummoned();
+        this.getHandle().makeInvulnerable();
 	}
 
 	@Override
 	public int getInvulnerabilityTicks() {
-        return this.getHandle().getInvulnerableTimer();
+        return this.getHandle().getInvulnerableTicks();
 	}
 
 	@Override
 	public void setInvulnerabilityTicks(int arg0) {
-        this.getHandle().setInvulTimer(arg0);
+        this.getHandle().setInvulnerableTicks(arg0);
 	}
 
 }

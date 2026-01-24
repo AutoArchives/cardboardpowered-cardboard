@@ -20,33 +20,40 @@ import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
 import me.isaiah.common.ICommonMod;
 import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.component.type.*;
-import net.minecraft.component.*;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.ChatFormatting;
+import net.minecraft.advancements.criterion.BlockPredicate;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.predicate.BlockPredicate;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryOps;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.nbt.NbtSizeTracker;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Rarity;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Unit;
-
+import net.minecraft.world.item.AdventureModePredicate;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.DamageResistant;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.item.component.UseRemainder;
+import net.minecraft.world.item.enchantment.Enchantable;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -198,6 +205,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                     // TODO .put(CraftMetaTropicalFishBucket.class, "TROPICAL_FISH_BUCKET")
                     .put(CraftMetaCrossbow.class, "CROSSBOW")
                     .put(CraftMetaSuspiciousStew.class, "SUSPICIOUS_STEW")
+                    .put(CraftMetaShield.class, "SHIELD")
                     .put(CraftMetaItem.class, "UNSPECIFIC")
                     .build();
 
@@ -275,14 +283,14 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     }
 
-    static final ItemMetaKeyType<Text> NAME = new ItemMetaKeyType(DataComponentTypes.CUSTOM_NAME, "display-name");
-    static final ItemMetaKeyType<Text> ITEM_NAME = new ItemMetaKeyType(DataComponentTypes.ITEM_NAME, "item-name");
-    static final ItemMetaKeyType<LoreComponent> LORE = new ItemMetaKeyType<>(DataComponentTypes.LORE, "lore");
-    static final ItemMetaKeyType<net.minecraft.component.type.CustomModelDataComponent> CUSTOM_MODEL_DATA = new ItemMetaKeyType<>(DataComponentTypes.CUSTOM_MODEL_DATA, "custom-model-data");
-    static final ItemMetaKeyType<EnchantableComponent> ENCHANTABLE = new ItemMetaKeyType<>(DataComponentTypes.ENCHANTABLE, "enchantable");
-    static final ItemMetaKeyType<ItemEnchantmentsComponent> ENCHANTMENTS = new ItemMetaKeyType<>(DataComponentTypes.ENCHANTMENTS, "enchants");
-    static final ItemMetaKeyType<Integer> REPAIR = new ItemMetaKeyType<>(DataComponentTypes.REPAIR_COST, "repair-cost");
-    static final ItemMetaKeyType<AttributeModifiersComponent> ATTRIBUTES = new ItemMetaKeyType<>(DataComponentTypes.ATTRIBUTE_MODIFIERS, "attribute-modifiers");
+    static final ItemMetaKeyType<net.minecraft.network.chat.Component> NAME = new ItemMetaKeyType(DataComponents.CUSTOM_NAME, "display-name");
+    static final ItemMetaKeyType<net.minecraft.network.chat.Component> ITEM_NAME = new ItemMetaKeyType(DataComponents.ITEM_NAME, "item-name");
+    static final ItemMetaKeyType<ItemLore> LORE = new ItemMetaKeyType<>(DataComponents.LORE, "lore");
+    static final ItemMetaKeyType<net.minecraft.world.item.component.CustomModelData> CUSTOM_MODEL_DATA = new ItemMetaKeyType<>(DataComponents.CUSTOM_MODEL_DATA, "custom-model-data");
+    static final ItemMetaKeyType<Enchantable> ENCHANTABLE = new ItemMetaKeyType<>(DataComponents.ENCHANTABLE, "enchantable");
+    static final ItemMetaKeyType<ItemEnchantments> ENCHANTMENTS = new ItemMetaKeyType<>(DataComponents.ENCHANTMENTS, "enchants");
+    static final ItemMetaKeyType<Integer> REPAIR = new ItemMetaKeyType<>(DataComponents.REPAIR_COST, "repair-cost");
+    static final ItemMetaKeyType<ItemAttributeModifiers> ATTRIBUTES = new ItemMetaKeyType<>(DataComponents.ATTRIBUTE_MODIFIERS, "attribute-modifiers");
     @Specific(Specific.To.NBT)
     static final ItemMetaKey ATTRIBUTES_IDENTIFIER = new ItemMetaKey("AttributeName");
     @Specific(Specific.To.NBT)
@@ -291,74 +299,74 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     static final ItemMetaKey HIDEFLAGS = new ItemMetaKey("ItemFlags");
     @Specific(Specific.To.NBT)
     //static final ItemMetaKeyType<Unit> HIDE_TOOLTIP = new ItemMetaKeyType<>(DataComponentTypes.HIDE_TOOLTIP, "hide-tool-tip");
-    static final ItemMetaKeyType<TooltipDisplayComponent> TOOLTIP_DISPLAY = new ItemMetaKeyType<TooltipDisplayComponent>(DataComponentTypes.TOOLTIP_DISPLAY, "tool-tip-display");
+    static final ItemMetaKeyType<TooltipDisplay> TOOLTIP_DISPLAY = new ItemMetaKeyType<TooltipDisplay>(DataComponents.TOOLTIP_DISPLAY, "tool-tip-display");
 
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<Identifier> TOOLTIP_STYLE = new ItemMetaKeyType<>(DataComponentTypes.TOOLTIP_STYLE, "tool-tip-style");
+    static final ItemMetaKeyType<Identifier> TOOLTIP_STYLE = new ItemMetaKeyType<>(DataComponents.TOOLTIP_STYLE, "tool-tip-style");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<Identifier> ITEM_MODEL = new ItemMetaKeyType<>(DataComponentTypes.ITEM_MODEL, "item-model");
+    static final ItemMetaKeyType<Identifier> ITEM_MODEL = new ItemMetaKeyType<>(DataComponents.ITEM_MODEL, "item-model");
     @Specific(Specific.To.NBT)
     //static final ItemMetaKeyType<UnbreakableComponent> UNBREAKABLE = new ItemMetaKeyType<>(DataComponentTypes.UNBREAKABLE, "Unbreakable");
-    static final ItemMetaKeyType<Unit> UNBREAKABLE = new ItemMetaKeyType<Unit>(DataComponentTypes.UNBREAKABLE, "Unbreakable");
+    static final ItemMetaKeyType<Unit> UNBREAKABLE = new ItemMetaKeyType<Unit>(DataComponents.UNBREAKABLE, "Unbreakable");
 
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<Boolean> ENCHANTMENT_GLINT_OVERRIDE = new ItemMetaKeyType<>(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, "enchantment-glint-override");
+    static final ItemMetaKeyType<Boolean> ENCHANTMENT_GLINT_OVERRIDE = new ItemMetaKeyType<>(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, "enchantment-glint-override");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<Unit> GLIDER = new ItemMetaKeyType<>(DataComponentTypes.GLIDER, "glider");
+    static final ItemMetaKeyType<Unit> GLIDER = new ItemMetaKeyType<>(DataComponents.GLIDER, "glider");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<DamageResistantComponent> DAMAGE_RESISTANT = new ItemMetaKeyType<>(DataComponentTypes.DAMAGE_RESISTANT, "damage-resistant");
+    static final ItemMetaKeyType<DamageResistant> DAMAGE_RESISTANT = new ItemMetaKeyType<>(DataComponents.DAMAGE_RESISTANT, "damage-resistant");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<Integer> MAX_STACK_SIZE = new ItemMetaKeyType<>(DataComponentTypes.MAX_STACK_SIZE, "max-stack-size");
+    static final ItemMetaKeyType<Integer> MAX_STACK_SIZE = new ItemMetaKeyType<>(DataComponents.MAX_STACK_SIZE, "max-stack-size");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<Rarity> RARITY = new ItemMetaKeyType<>(DataComponentTypes.RARITY, "rarity");
+    static final ItemMetaKeyType<Rarity> RARITY = new ItemMetaKeyType<>(DataComponents.RARITY, "rarity");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<UseRemainderComponent> USE_REMAINDER = new ItemMetaKeyType<>(DataComponentTypes.USE_REMAINDER, "use-remainder");
+    static final ItemMetaKeyType<UseRemainder> USE_REMAINDER = new ItemMetaKeyType<>(DataComponents.USE_REMAINDER, "use-remainder");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<net.minecraft.component.type.UseCooldownComponent> USE_COOLDOWN = new ItemMetaKeyType<>(DataComponentTypes.USE_COOLDOWN, "use-cooldown");
+    static final ItemMetaKeyType<net.minecraft.world.item.component.UseCooldown> USE_COOLDOWN = new ItemMetaKeyType<>(DataComponents.USE_COOLDOWN, "use-cooldown");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<net.minecraft.component.type.FoodComponent> FOOD = new ItemMetaKeyType<>(DataComponentTypes.FOOD, "food");
+    static final ItemMetaKeyType<net.minecraft.world.food.FoodProperties> FOOD = new ItemMetaKeyType<>(DataComponents.FOOD, "food");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<net.minecraft.component.type.ToolComponent> TOOL = new ItemMetaKeyType<>(DataComponentTypes.TOOL, "tool");
+    static final ItemMetaKeyType<net.minecraft.world.item.component.Tool> TOOL = new ItemMetaKeyType<>(DataComponents.TOOL, "tool");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<net.minecraft.component.type.EquippableComponent> EQUIPPABLE = new ItemMetaKeyType<>(DataComponentTypes.EQUIPPABLE, "equippable");
+    static final ItemMetaKeyType<net.minecraft.world.item.equipment.Equippable> EQUIPPABLE = new ItemMetaKeyType<>(DataComponents.EQUIPPABLE, "equippable");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<net.minecraft.component.type.JukeboxPlayableComponent> JUKEBOX_PLAYABLE = new ItemMetaKeyType<>(DataComponentTypes.JUKEBOX_PLAYABLE, "jukebox-playable");
+    static final ItemMetaKeyType<net.minecraft.world.item.JukeboxPlayable> JUKEBOX_PLAYABLE = new ItemMetaKeyType<>(DataComponents.JUKEBOX_PLAYABLE, "jukebox-playable");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<Integer> DAMAGE = new ItemMetaKeyType<>(DataComponentTypes.DAMAGE, "Damage");
+    static final ItemMetaKeyType<Integer> DAMAGE = new ItemMetaKeyType<>(DataComponents.DAMAGE, "Damage");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<Integer> MAX_DAMAGE = new ItemMetaKeyType<>(DataComponentTypes.MAX_DAMAGE, "max-damage");
+    static final ItemMetaKeyType<Integer> MAX_DAMAGE = new ItemMetaKeyType<>(DataComponents.MAX_DAMAGE, "max-damage");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<BlockStateComponent> BLOCK_DATA = new ItemMetaKeyType<>(DataComponentTypes.BLOCK_STATE, "BlockStateTag");
+    static final ItemMetaKeyType<BlockItemStateProperties> BLOCK_DATA = new ItemMetaKeyType<>(DataComponents.BLOCK_STATE, "BlockStateTag");
     static final ItemMetaKey BUKKIT_CUSTOM_TAG = new ItemMetaKey("PublicBukkitValues");
     // @Specific(Specific.To.NBT)
     // static final ItemMetaKeyType<Unit> HIDE_ADDITIONAL_TOOLTIP = new ItemMetaKeyType(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP);
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<NbtComponent> CUSTOM_DATA = new ItemMetaKeyType<>(DataComponentTypes.CUSTOM_DATA);
+    static final ItemMetaKeyType<CustomData> CUSTOM_DATA = new ItemMetaKeyType<>(DataComponents.CUSTOM_DATA);
 
     // paper
-    static final ItemMetaKeyType<BlockPredicatesComponent> CAN_PLACE_ON = new ItemMetaKeyType<BlockPredicatesComponent>(DataComponentTypes.CAN_PLACE_ON);
-    static final ItemMetaKeyType<BlockPredicatesComponent> CAN_BREAK = new ItemMetaKeyType<BlockPredicatesComponent>(DataComponentTypes.CAN_BREAK);
+    static final ItemMetaKeyType<AdventureModePredicate> CAN_PLACE_ON = new ItemMetaKeyType<AdventureModePredicate>(DataComponents.CAN_PLACE_ON);
+    static final ItemMetaKeyType<AdventureModePredicate> CAN_BREAK = new ItemMetaKeyType<AdventureModePredicate>(DataComponents.CAN_BREAK);
     
     private List<BlockPredicate> canPlaceOnPredicates;
     private List<BlockPredicate> canBreakPredicates;
     
-    private static final Set<ComponentType<?>> HIDDEN_COMPONENTS_PREVIOUSLY = Set.of(DataComponentTypes.BANNER_PATTERNS, DataComponentTypes.BEES, DataComponentTypes.BLOCK_ENTITY_DATA, DataComponentTypes.BLOCK_STATE, DataComponentTypes.BUNDLE_CONTENTS, DataComponentTypes.CHARGED_PROJECTILES, DataComponentTypes.CONTAINER, DataComponentTypes.CONTAINER_LOOT, DataComponentTypes.FIREWORK_EXPLOSION, DataComponentTypes.FIREWORKS, DataComponentTypes.INSTRUMENT, DataComponentTypes.JUKEBOX_PLAYABLE, DataComponentTypes.MAP_ID, DataComponentTypes.PAINTING_VARIANT, DataComponentTypes.POT_DECORATIONS, DataComponentTypes.POTION_CONTENTS, DataComponentTypes.TROPICAL_FISH_PATTERN, DataComponentTypes.WRITTEN_BOOK_CONTENT);
+    private static final Set<DataComponentType<?>> HIDDEN_COMPONENTS_PREVIOUSLY = Set.of(DataComponents.BANNER_PATTERNS, DataComponents.BEES, DataComponents.BLOCK_ENTITY_DATA, DataComponents.BLOCK_STATE, DataComponents.BUNDLE_CONTENTS, DataComponents.CHARGED_PROJECTILES, DataComponents.CONTAINER, DataComponents.CONTAINER_LOOT, DataComponents.FIREWORK_EXPLOSION, DataComponents.FIREWORKS, DataComponents.INSTRUMENT, DataComponents.JUKEBOX_PLAYABLE, DataComponents.MAP_ID, DataComponents.PAINTING_VARIANT, DataComponents.POT_DECORATIONS, DataComponents.POTION_CONTENTS, DataComponents.TROPICAL_FISH_PATTERN, DataComponents.WRITTEN_BOOK_CONTENT);
 
     
-    private static final Map<ItemFlag, Set<ComponentType<?>>> ITEM_FLAG_EQUIVALENTS = ImmutableMap.<ItemFlag, Set<ComponentType<?>>>builder()
-    		.put(ItemFlag.HIDE_ATTRIBUTES, Set.of(DataComponentTypes.ATTRIBUTE_MODIFIERS))
-    		.put(ItemFlag.HIDE_ENCHANTS, Set.of(DataComponentTypes.ENCHANTMENTS))
-    		.put(ItemFlag.HIDE_STORED_ENCHANTS, Set.of(DataComponentTypes.STORED_ENCHANTMENTS))
-    		.put(ItemFlag.HIDE_UNBREAKABLE, Set.of(DataComponentTypes.UNBREAKABLE))
-    		.put(ItemFlag.HIDE_DYE, Set.of(DataComponentTypes.DYED_COLOR))
-    		.put(ItemFlag.HIDE_ARMOR_TRIM, Set.of(DataComponentTypes.TRIM))
-    		.put(ItemFlag.HIDE_PLACED_ON, Set.of(DataComponentTypes.CAN_PLACE_ON))
-    		.put(ItemFlag.HIDE_DESTROYS, Set.of(DataComponentTypes.CAN_BREAK))
+    private static final Map<ItemFlag, Set<DataComponentType<?>>> ITEM_FLAG_EQUIVALENTS = ImmutableMap.<ItemFlag, Set<DataComponentType<?>>>builder()
+    		.put(ItemFlag.HIDE_ATTRIBUTES, Set.of(DataComponents.ATTRIBUTE_MODIFIERS))
+    		.put(ItemFlag.HIDE_ENCHANTS, Set.of(DataComponents.ENCHANTMENTS))
+    		.put(ItemFlag.HIDE_STORED_ENCHANTS, Set.of(DataComponents.STORED_ENCHANTMENTS))
+    		.put(ItemFlag.HIDE_UNBREAKABLE, Set.of(DataComponents.UNBREAKABLE))
+    		.put(ItemFlag.HIDE_DYE, Set.of(DataComponents.DYED_COLOR))
+    		.put(ItemFlag.HIDE_ARMOR_TRIM, Set.of(DataComponents.TRIM))
+    		.put(ItemFlag.HIDE_PLACED_ON, Set.of(DataComponents.CAN_PLACE_ON))
+    		.put(ItemFlag.HIDE_DESTROYS, Set.of(DataComponents.CAN_BREAK))
     		.put(ItemFlag.HIDE_ADDITIONAL_TOOLTIP, HIDDEN_COMPONENTS_PREVIOUSLY)
     		.buildOrThrow();
 
     
-    protected static final Set<ComponentType<?>> DEFAULT_HANDLED_DCTS = Set.of(CraftMetaItem.NAME.TYPE, CraftMetaItem.ITEM_NAME.TYPE, CraftMetaItem.LORE.TYPE, CraftMetaItem.CUSTOM_MODEL_DATA.TYPE, CraftMetaItem.ENCHANTABLE.TYPE, CraftMetaItem.BLOCK_DATA.TYPE, CraftMetaItem.REPAIR.TYPE, CraftMetaItem.ENCHANTMENTS.TYPE, CraftMetaItem.TOOLTIP_DISPLAY.TYPE, CraftMetaItem.TOOLTIP_STYLE.TYPE, CraftMetaItem.ITEM_MODEL.TYPE, CraftMetaItem.UNBREAKABLE.TYPE, CraftMetaItem.ENCHANTMENT_GLINT_OVERRIDE.TYPE, CraftMetaItem.GLIDER.TYPE, CraftMetaItem.DAMAGE_RESISTANT.TYPE, CraftMetaItem.MAX_STACK_SIZE.TYPE, CraftMetaItem.RARITY.TYPE, CraftMetaItem.USE_REMAINDER.TYPE, CraftMetaItem.USE_COOLDOWN.TYPE, CraftMetaItem.FOOD.TYPE, CraftMetaItem.TOOL.TYPE, CraftMetaItem.EQUIPPABLE.TYPE, CraftMetaItem.JUKEBOX_PLAYABLE.TYPE, CraftMetaItem.DAMAGE.TYPE, CraftMetaItem.MAX_DAMAGE.TYPE, CraftMetaItem.CUSTOM_DATA.TYPE, CraftMetaItem.ATTRIBUTES.TYPE, CraftMetaItem.CAN_PLACE_ON.TYPE, CraftMetaItem.CAN_BREAK.TYPE);
+    protected static final Set<DataComponentType<?>> DEFAULT_HANDLED_DCTS = Set.of(CraftMetaItem.NAME.TYPE, CraftMetaItem.ITEM_NAME.TYPE, CraftMetaItem.LORE.TYPE, CraftMetaItem.CUSTOM_MODEL_DATA.TYPE, CraftMetaItem.ENCHANTABLE.TYPE, CraftMetaItem.BLOCK_DATA.TYPE, CraftMetaItem.REPAIR.TYPE, CraftMetaItem.ENCHANTMENTS.TYPE, CraftMetaItem.TOOLTIP_DISPLAY.TYPE, CraftMetaItem.TOOLTIP_STYLE.TYPE, CraftMetaItem.ITEM_MODEL.TYPE, CraftMetaItem.UNBREAKABLE.TYPE, CraftMetaItem.ENCHANTMENT_GLINT_OVERRIDE.TYPE, CraftMetaItem.GLIDER.TYPE, CraftMetaItem.DAMAGE_RESISTANT.TYPE, CraftMetaItem.MAX_STACK_SIZE.TYPE, CraftMetaItem.RARITY.TYPE, CraftMetaItem.USE_REMAINDER.TYPE, CraftMetaItem.USE_COOLDOWN.TYPE, CraftMetaItem.FOOD.TYPE, CraftMetaItem.TOOL.TYPE, CraftMetaItem.EQUIPPABLE.TYPE, CraftMetaItem.JUKEBOX_PLAYABLE.TYPE, CraftMetaItem.DAMAGE.TYPE, CraftMetaItem.MAX_DAMAGE.TYPE, CraftMetaItem.CUSTOM_DATA.TYPE, CraftMetaItem.ATTRIBUTES.TYPE, CraftMetaItem.CAN_PLACE_ON.TYPE, CraftMetaItem.CAN_BREAK.TYPE);
 
     
     /*private Text displayName;
@@ -374,9 +382,9 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     private int damage;*/
 
     // We store the raw original JSON representation of all text data. See SPIGOT-5063, SPIGOT-5656, SPIGOT-5304
-    private Text displayName;
-    private Text itemName;
-    private List<Text> lore; // null and empty are two different states internally
+    private net.minecraft.network.chat.Component displayName;
+    private net.minecraft.network.chat.Component itemName;
+    private List<net.minecraft.network.chat.Component> lore; // null and empty are two different states internally
     private CraftCustomModelDataComponent customModelData;
     private Map<String, String> blockData;
     private Map<Enchantment, Integer> enchantments;
@@ -399,11 +407,11 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     private Integer enchantableValue;
     
     @Nullable
-    private TooltipDisplayComponent tooltipDisplay;
+    private TooltipDisplay tooltipDisplay;
     
     private NamespacedKey tooltipStyle;
     private NamespacedKey itemModel;
-    private TagKey<net.minecraft.entity.damage.DamageType> damageResistant;
+    private TagKey<net.minecraft.world.damagesource.DamageType> damageResistant;
     private ItemStack useRemainder;
     private boolean glider;
 
@@ -416,11 +424,11 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     private int version = CraftMagicNumbers.INSTANCE.getDataVersion(); // Internal use only*/
     
-    private static final Set<ComponentType> HANDLED_TAGS = Sets.newHashSet();
+    private static final Set<DataComponentType> HANDLED_TAGS = Sets.newHashSet();
     private static final CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new CraftPersistentDataTypeRegistry();
 
-    private NbtCompound customTag;
-    protected ComponentChanges.Builder unhandledTags = ComponentChanges.builder();
+    private CompoundTag customTag;
+    protected DataComponentPatch.Builder unhandledTags = DataComponentPatch.builder();
     private CraftPersistentDataContainer persistentDataContainer = new CraftPersistentDataContainer(CraftMetaItem.DATA_TYPE_REGISTRY);
 
     private int version = CraftMagicNumbers.INSTANCE.getDataVersion(); // Internal use only
@@ -467,7 +475,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         this.itemName = meta.itemName;
 
         if (meta.lore != null) {
-            this.lore = new ArrayList<Text>(meta.lore);
+            this.lore = new ArrayList<net.minecraft.network.chat.Component>(meta.lore);
         }
 
         if (meta.hasCustomModelData()) {
@@ -499,9 +507,9 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         
         
         if (meta.tooltipDisplay != null) {
-            this.tooltipDisplay = new TooltipDisplayComponent(
+            this.tooltipDisplay = new TooltipDisplay(
             		meta.tooltipDisplay.hideTooltip(),
-            		(SequencedSet<ComponentType<?>>)new ReferenceLinkedOpenHashSet(meta.tooltipDisplay.hiddenComponents()));
+            		(SequencedSet<DataComponentType<?>>)new ReferenceLinkedOpenHashSet(meta.tooltipDisplay.hiddenComponents()));
         }
         
         if (meta.hasUseRemainder()) {
@@ -539,21 +547,21 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         // Paper end
     }
 
-    protected static <T> Optional<? extends T> getOrEmpty(ComponentChanges tag, ItemMetaKeyType<T> type) {
+    protected static <T> Optional<? extends T> getOrEmpty(DataComponentPatch tag, ItemMetaKeyType<T> type) {
         Optional result = tag.get(type.TYPE);
         return result != null ? result : Optional.empty();
     }
     
-    protected static <T> Optional<? extends T> getOrEmpty(ComponentChanges tag, ComponentType<T> type) {
+    protected static <T> Optional<? extends T> getOrEmpty(DataComponentPatch tag, DataComponentType<T> type) {
         Optional<? extends T> result = tag.get(type);
         return result != null ? result : Optional.empty();
     }
     
-    CraftMetaItem(ComponentChanges tag, Set<ComponentType<?>> extraHandledTags) {
+    CraftMetaItem(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledTags) {
     	this.updateFromPatch(tag, extraHandledTags);
     }
 
-    protected final void updateFromPatch(ComponentChanges tag, Set<ComponentType<?>> extraHandledTags) {
+    protected final void updateFromPatch(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledTags) {
         CraftMetaItem.getOrEmpty(tag, NAME).ifPresent(component -> {
             this.displayName = component;
         });
@@ -561,10 +569,10 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             this.itemName = component;
         });
         CraftMetaItem.getOrEmpty(tag, LORE).ifPresent(l -> {
-            List<Text> list = l.lines();
-            this.lore = new ArrayList<Text>(list.size());
+            List<net.minecraft.network.chat.Component> list = l.lines();
+            this.lore = new ArrayList<net.minecraft.network.chat.Component>(list.size());
             for (int index = 0; index < list.size(); ++index) {
-                Text line = list.get(index);
+                net.minecraft.network.chat.Component line = list.get(index);
                 this.lore.add(line);
             }
         });
@@ -602,7 +610,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         */
         
         CraftMetaItem.getOrEmpty(tag, TOOLTIP_DISPLAY).ifPresent(en -> {
-            this.tooltipDisplay = new TooltipDisplayComponent(en.hideTooltip(), new ReferenceLinkedOpenHashSet<>(en.hiddenComponents()));
+            this.tooltipDisplay = new TooltipDisplay(en.hideTooltip(), new ReferenceLinkedOpenHashSet<>(en.hiddenComponents()));
         });
         
         CraftMetaItem.getOrEmpty(tag, CraftMetaItem.TOOLTIP_STYLE).ifPresent((key) -> {
@@ -668,10 +676,10 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             this.maxDamage = i2;
         });
         CraftMetaItem.getOrEmpty(tag, CUSTOM_DATA).ifPresent(customData -> {
-            this.customTag = customData.copyNbt();
+            this.customTag = customData.copyTag();
             if (this.customTag.contains(CraftMetaItem.BUKKIT_CUSTOM_TAG.NBT)) {
-                NbtCompound compound = this.customTag.getCompoundOrEmpty(CraftMetaItem.BUKKIT_CUSTOM_TAG.NBT);
-                Set<String> keys = compound.getKeys();
+                CompoundTag compound = this.customTag.getCompoundOrEmpty(CraftMetaItem.BUKKIT_CUSTOM_TAG.NBT);
+                Set<String> keys = compound.keySet();
                 for (String key : keys) {
                     this.persistentDataContainer.put(key, compound.get(key).copy());
                 }
@@ -705,11 +713,11 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }*/
         
 
-        Set<Map.Entry<ComponentType<?>, Optional<?>>> keys = tag.entrySet();
-        for (Map.Entry<ComponentType<?>, Optional<?>> key : keys) {
+        Set<Map.Entry<DataComponentType<?>, Optional<?>>> keys = tag.entrySet();
+        for (Map.Entry<DataComponentType<?>, Optional<?>> key : keys) {
             if (!CraftMetaItem.getHandledTags().contains(key.getKey())) {
                 key.getValue().ifPresentOrElse((value) -> {
-                    this.unhandledTags.add((ComponentType) key.getKey(), value);
+                    this.unhandledTags.set((DataComponentType) key.getKey(), value);
                 }, () -> {
                     this.unhandledTags.remove(key.getKey());
                 });
@@ -805,11 +813,11 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             if (!getHandledTags().contains(key)) unhandledTags.put(key, tag.get(key));
     }*/
     
-    static Map<Enchantment, Integer> buildEnchantments(ItemEnchantmentsComponent tag) {
-        Map<Enchantment, Integer> enchantments = new LinkedHashMap<Enchantment, Integer>(tag.getSize());
+    static Map<Enchantment, Integer> buildEnchantments(ItemEnchantments tag) {
+        Map<Enchantment, Integer> enchantments = new LinkedHashMap<Enchantment, Integer>(tag.size());
   
-        tag.getEnchantmentEntries().forEach((entry) -> {
-            RegistryEntry<net.minecraft.enchantment.Enchantment> id = entry.getKey();
+        tag.entrySet().forEach((entry) -> {
+            Holder<net.minecraft.world.item.enchantment.Enchantment> id = entry.getKey();
             int level = entry.getIntValue();
 
             Enchantment enchant = CardboardEnchantment.minecraftHolderToBukkit(id);
@@ -911,7 +919,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     }*/
     
     public void setHideTooltip(boolean hideTooltip) {
-        this.tooltipDisplay = this.tooltipDisplay == null ? new TooltipDisplayComponent(hideTooltip, new ReferenceLinkedOpenHashSet<>()) : new TooltipDisplayComponent(hideTooltip, this.tooltipDisplay.hiddenComponents());
+        this.tooltipDisplay = this.tooltipDisplay == null ? new TooltipDisplay(hideTooltip, new ReferenceLinkedOpenHashSet<>()) : new TooltipDisplay(hideTooltip, this.tooltipDisplay.hiddenComponents());
     }
     
     public void setEnchantmentGlintOverride(Boolean override) {
@@ -920,7 +928,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     
     public void setMaxStackSize(Integer max) {
         Preconditions.checkArgument(max == null || max > 0, "max_stack_size must be > 0");
-        Preconditions.checkArgument(max == null || max <= net.minecraft.item.Item.MAX_MAX_COUNT, "max_stack_size must be <= 99");
+        Preconditions.checkArgument(max == null || max <= net.minecraft.world.item.Item.ABSOLUTE_MAX_STACK_SIZE, "max_stack_size must be <= 99");
         this.maxStackSize = max;
     }
 
@@ -938,7 +946,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         Iterable<?> lore = SerializableMeta.getObject(Iterable.class, map, CraftMetaItem.LORE.BUKKIT, true);
         if (lore != null) {
-            CraftMetaItem.safelyAdd(lore, this.lore = new ArrayList<Text>(), true);
+            CraftMetaItem.safelyAdd(lore, this.lore = new ArrayList<net.minecraft.network.chat.Component>(), true);
         }
 
         Integer customModelData = SerializableMeta.getObject(Integer.class, map, CraftMetaItem.CUSTOM_MODEL_DATA.BUKKIT, true);
@@ -955,8 +963,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         if (blockData != null) {
             Map<String, String> mapBlockData = new HashMap<>();
 
-            NbtCompound nbtBlockData = (NbtCompound) CraftNBTTagConfigSerializer.deserialize(blockData);
-            for (String key : nbtBlockData.getKeys()) {
+            CompoundTag nbtBlockData = (CompoundTag) CraftNBTTagConfigSerializer.deserialize(blockData);
+            for (String key : nbtBlockData.keySet()) {
                 mapBlockData.put(key, nbtBlockData.getString(key).orElseThrow());
             }
 
@@ -1092,7 +1100,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         if (internal != null) {
             ByteArrayInputStream buf = new ByteArrayInputStream(Base64.getDecoder().decode(internal));
             try {
-                NbtCompound internalTag = NbtIo.readCompressed(buf, NbtSizeTracker.ofUnlimitedBytes());
+                CompoundTag internalTag = NbtIo.readCompressed(buf, NbtAccounter.unlimitedHeap());
                 this.deserializeInternal(internalTag, map);
             } catch (IOException ex) {
                 Logger.getLogger(CraftMetaItem.class.getName()).log(Level.SEVERE, null, ex);
@@ -1103,11 +1111,11 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         if (unhandled != null) {
             ByteArrayInputStream buf = new ByteArrayInputStream(Base64.getDecoder().decode(internal));
             try {
-                NbtCompound unhandledTag = NbtIo.readCompressed(buf, NbtSizeTracker.ofUnlimitedBytes());
-                RegistryOps<NbtElement> ops = ICommonMod.getIServer().getMinecraft().getRegistryManager().getOps(NbtOps.INSTANCE);
+                CompoundTag unhandledTag = NbtIo.readCompressed(buf, NbtAccounter.unlimitedHeap());
+                RegistryOps<net.minecraft.nbt.Tag> ops = ICommonMod.getIServer().getMinecraft().registryAccess().createSerializationContext(NbtOps.INSTANCE);
 
                 
-                ((IComponentChanges)(Object)this.unhandledTags.build()).copy(ComponentChanges.CODEC.parse(ops, unhandledTag).result().get());
+                ((IComponentChanges)(Object)this.unhandledTags.build()).copy(DataComponentPatch.CODEC.parse(ops, unhandledTag).result().get());
                 
                 /*NbtCompound unhandledTag = NbtIo.readCompressed(buf, NbtSizeTracker.ofUnlimitedBytes());
                 ComponentChanges patch = (ComponentChanges)ComponentChanges.CODEC.parse(ops, unhandledTag).result().get();
@@ -1126,14 +1134,14 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         Object nbtMap = SerializableMeta.getObject(Object.class, map, CraftMetaItem.BUKKIT_CUSTOM_TAG.BUKKIT, true); // We read both legacy maps and potential modern snbt strings here
         if (nbtMap != null) {
-            this.persistentDataContainer.putAll((NbtCompound) CraftNBTTagConfigSerializer.deserialize(nbtMap));
+            this.persistentDataContainer.putAll((CompoundTag) CraftNBTTagConfigSerializer.deserialize(nbtMap));
         }
 
         String custom = SerializableMeta.getString(map, "custom", true);
         if (custom != null) {
             ByteArrayInputStream buf = new ByteArrayInputStream(Base64.getDecoder().decode(custom));
             try {
-                this.customTag = NbtIo.readCompressed(buf, NbtSizeTracker.ofUnlimitedBytes());
+                this.customTag = NbtIo.readCompressed(buf, NbtAccounter.unlimitedHeap());
             } catch (IOException ex) {
                 Logger.getLogger(CraftMetaItem.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -1212,21 +1220,21 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     }
     */
     
-    void deserializeInternal(NbtCompound tag, Object context) {
+    void deserializeInternal(CompoundTag tag, Object context) {
         if (tag.getList(CraftMetaItem.ATTRIBUTES.NBT).isPresent()) {
             this.attributeModifiers = CraftMetaItem.buildModifiersLegacy(tag, ATTRIBUTES);
         }
     }
     
-    private static Multimap<Attribute, AttributeModifier> buildModifiersLegacy(NbtCompound tag, ItemMetaKey key) {
+    private static Multimap<Attribute, AttributeModifier> buildModifiersLegacy(CompoundTag tag, ItemMetaKey key) {
     	Multimap<Attribute, AttributeModifier> modifiers = LinkedHashMultimap.create();
-        NbtList mods = tag.getListOrEmpty(key.NBT);
+        ListTag mods = tag.getListOrEmpty(key.NBT);
         int size = mods.size();
         for (int i2 = 0; i2 < size; ++i2) {
             Attribute attribute;
-            EntityAttributeModifier nmsModifier;
-            NbtCompound entry = mods.getCompoundOrEmpty(i2);
-            if (entry.isEmpty() || (nmsModifier = (EntityAttributeModifier)EntityAttributeModifier.CODEC.parse(NbtOps.INSTANCE, entry).resultOrPartial().orElse(null)) == null) continue;
+            net.minecraft.world.entity.ai.attributes.AttributeModifier nmsModifier;
+            CompoundTag entry = mods.getCompoundOrEmpty(i2);
+            if (entry.isEmpty() || (nmsModifier = (net.minecraft.world.entity.ai.attributes.AttributeModifier)net.minecraft.world.entity.ai.attributes.AttributeModifier.CODEC.parse(NbtOps.INSTANCE, entry).resultOrPartial().orElse(null)) == null) continue;
             AttributeModifier attribMod = CraftAttributeInstance.convert(nmsModifier);
             String attributeName = entry.getString(CraftMetaItem.ATTRIBUTES_IDENTIFIER.NBT).map(CraftAttributeMap::convertIfNeeded).orElse(null);
             if (attributeName == null || attributeName.isEmpty() || (attribute = CraftAttribute.stringToBukkit(attributeName)) == null) continue;
@@ -1240,7 +1248,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                 org.bukkit.inventory.EquipmentSlot slot = null;
                 try {
                     // slot = CraftEquipmentSlot.getSlot(net.minecraft.entity.EquipmentSlot.byName(slotName.toLowerCase(Locale.ROOT)));
-                    slot = CraftEquipmentSlot.getSlot(net.minecraft.entity.EquipmentSlot.byName(slotName.toLowerCase(Locale.ROOT)));
+                    slot = CraftEquipmentSlot.getSlot(net.minecraft.world.entity.EquipmentSlot.byName(slotName.toLowerCase(Locale.ROOT)));
 
                 } catch (IllegalArgumentException illegalArgumentException) {
                     // empty catch block
@@ -1341,14 +1349,14 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         return enchantments;
     }*/
     
-    static Multimap<Attribute, AttributeModifier> buildModifiers(AttributeModifiersComponent tag) {
+    static Multimap<Attribute, AttributeModifier> buildModifiers(ItemAttributeModifiers tag) {
         Multimap<Attribute, AttributeModifier> modifiers = LinkedHashMultimap.create();
-        List<AttributeModifiersComponent.Entry> mods = tag.modifiers();
+        List<ItemAttributeModifiers.Entry> mods = tag.modifiers();
         int size = mods.size();
 
         for (int i = 0; i < size; i++) {
-            AttributeModifiersComponent.Entry entry = mods.get(i);
-            net.minecraft.entity.attribute.EntityAttributeModifier nmsModifier = entry.modifier();
+            ItemAttributeModifiers.Entry entry = mods.get(i);
+            net.minecraft.world.entity.ai.attributes.AttributeModifier nmsModifier = entry.modifier();
             if (nmsModifier == null) {
                 continue;
             }
@@ -1361,7 +1369,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             }
 
             if (entry.slot() != null) {
-                AttributeModifierSlot slotName = entry.slot();
+                net.minecraft.world.entity.EquipmentSlotGroup slotName = entry.slot();
                 if (slotName == null) {
                     modifiers.put(attribute, attribMod);
                     continue;
@@ -1433,7 +1441,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
 
         if (this.lore != null) {
-            itemTag.put(CraftMetaItem.LORE, new LoreComponent(this.lore));
+            itemTag.put(CraftMetaItem.LORE, new ItemLore(this.lore));
         }
 
         if (this.hasCustomModelData()) {
@@ -1441,11 +1449,11 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
         
         if (this.hasEnchantable()) {
-            itemTag.put(CraftMetaItem.ENCHANTABLE, new EnchantableComponent(this.enchantableValue));
+            itemTag.put(CraftMetaItem.ENCHANTABLE, new Enchantable(this.enchantableValue));
         }
 
         if (this.hasBlockData()) {
-            itemTag.put(CraftMetaItem.BLOCK_DATA, new BlockStateComponent(this.blockData));
+            itemTag.put(CraftMetaItem.BLOCK_DATA, new BlockItemStateProperties(this.blockData));
         }
 
         this.applyEnchantments(this.enchantments, itemTag, CraftMetaItem.ENCHANTMENTS, ItemFlag.HIDE_ENCHANTS);
@@ -1456,7 +1464,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
 
         if (this.tooltipDisplay != null) {
-        	itemTag.put(TOOLTIP_DISPLAY, new TooltipDisplayComponent(this.tooltipDisplay.hideTooltip(), new ReferenceLinkedOpenHashSet<>(this.tooltipDisplay.hiddenComponents())));
+        	itemTag.put(TOOLTIP_DISPLAY, new TooltipDisplay(this.tooltipDisplay.hideTooltip(), new ReferenceLinkedOpenHashSet<>(this.tooltipDisplay.hiddenComponents())));
         }
         
         /*
@@ -1495,7 +1503,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         */
         
         if (this.hasDamageResistant()) {
-            itemTag.put(CraftMetaItem.DAMAGE_RESISTANT, new DamageResistantComponent(this.damageResistant));
+            itemTag.put(CraftMetaItem.DAMAGE_RESISTANT, new DamageResistant(this.damageResistant));
         }
 
         if (this.hasMaxStackSize()) {
@@ -1507,7 +1515,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
         
         if (this.hasUseRemainder()) {
-            itemTag.put(CraftMetaItem.USE_REMAINDER, new UseRemainderComponent(CraftItemStack.asNMSCopy(this.useRemainder)));
+            itemTag.put(CraftMetaItem.USE_REMAINDER, new UseRemainder(CraftItemStack.asNMSCopy(this.useRemainder)));
         }
         
         if (this.hasUseCooldown()) {
@@ -1542,37 +1550,37 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         
      // Paper start
         if (this.canPlaceOnPredicates != null && !this.canPlaceOnPredicates.isEmpty()) {
-        	itemTag.put(CAN_PLACE_ON, new BlockPredicatesComponent(this.canPlaceOnPredicates));
+        	itemTag.put(CAN_PLACE_ON, new AdventureModePredicate(this.canPlaceOnPredicates));
         	// itemTag.put(CraftMetaItem.CAN_PLACE_ON, new net.minecraft.item.BlockPredicatesChecker(this.canPlaceOnPredicates, !this.hasItemFlag(ItemFlag.HIDE_PLACED_ON)));
         }
         if (this.canBreakPredicates != null && !this.canBreakPredicates.isEmpty()) {
-        	itemTag.put(CAN_BREAK, new BlockPredicatesComponent(this.canBreakPredicates));
+        	itemTag.put(CAN_BREAK, new AdventureModePredicate(this.canBreakPredicates));
         	// itemTag.put(CraftMetaItem.CAN_BREAK, new net.minecraft.item.BlockPredicatesChecker(this.canBreakPredicates, !this.hasItemFlag(ItemFlag.HIDE_DESTROYS)));
         }
         // Paper end
         
-        for (Map.Entry<ComponentType<?>, Optional<?>> e : this.unhandledTags.build().entrySet()) {
+        for (Map.Entry<DataComponentType<?>, Optional<?>> e : this.unhandledTags.build().entrySet()) {
             e.getValue().ifPresent((value) -> {
-                itemTag.builder.add((ComponentType) e.getKey(), value);
+                itemTag.builder.set((DataComponentType) e.getKey(), value);
             });
         }
 
         if (!this.persistentDataContainer.isEmpty()) {
-            NbtCompound bukkitCustomCompound = new NbtCompound();
-            Map<String, NbtElement> rawPublicMap = this.persistentDataContainer.getRaw();
+            CompoundTag bukkitCustomCompound = new CompoundTag();
+            Map<String, net.minecraft.nbt.Tag> rawPublicMap = this.persistentDataContainer.getRaw();
 
-            for (Map.Entry<String, NbtElement> nbtBaseEntry : rawPublicMap.entrySet()) {
+            for (Map.Entry<String, net.minecraft.nbt.Tag> nbtBaseEntry : rawPublicMap.entrySet()) {
                 bukkitCustomCompound.put(nbtBaseEntry.getKey(), nbtBaseEntry.getValue());
             }
 
             if (this.customTag == null) {
-                this.customTag = new NbtCompound();
+                this.customTag = new CompoundTag();
             }
             this.customTag.put(CraftMetaItem.BUKKIT_CUSTOM_TAG.BUKKIT, bukkitCustomCompound);
         }
 
         if (this.customTag != null) {
-            itemTag.put(CraftMetaItem.CUSTOM_DATA, NbtComponent.of(this.customTag));
+            itemTag.put(CraftMetaItem.CUSTOM_DATA, CustomData.of(this.customTag));
         }
     }
     
@@ -1622,22 +1630,22 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
     }*/
 
-    NbtList createStringList(List<Text> list) {
+    ListTag createStringList(List<net.minecraft.network.chat.Component> list) {
         if (list == null || list.isEmpty()) return null;
 
-        NbtList tagList = new NbtList();
-        for (Text value : list)
-            tagList.add(NbtString.of(version <= 0 || version >= 1803 ? CraftChatMessage.toJSON(value) : CraftChatMessage.fromComponent(value, Formatting.DARK_PURPLE))); // SPIGOT-4935
+        ListTag tagList = new ListTag();
+        for (net.minecraft.network.chat.Component value : list)
+            tagList.add(StringTag.valueOf(version <= 0 || version >= 1803 ? CraftChatMessage.toJSON(value) : CraftChatMessage.fromComponent(value, ChatFormatting.DARK_PURPLE))); // SPIGOT-4935
 
         return tagList;
     }
     
-    void applyEnchantments(Map<Enchantment, Integer> enchantments, CraftMetaItem.Applicator tag, ItemMetaKeyType<ItemEnchantmentsComponent> key, ItemFlag itemFlag) {
+    void applyEnchantments(Map<Enchantment, Integer> enchantments, CraftMetaItem.Applicator tag, ItemMetaKeyType<ItemEnchantments> key, ItemFlag itemFlag) {
         if (enchantments == null) {
             return;
         }
 
-        ItemEnchantmentsComponent.Builder list = new ItemEnchantmentsComponent.Builder(ItemEnchantmentsComponent.DEFAULT);
+        ItemEnchantments.Mutable list = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
 
         for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
             list.set(CardboardEnchantment.bukkitToMinecraftHolder(entry.getKey()), entry.getValue());
@@ -1645,7 +1653,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         // TODO: 1.20.6
         // list.showInTooltip = !this.hasItemFlag(itemFlag);
-        tag.put(key, list.build());
+        tag.put(key, list.toImmutable());
     }
 
     /*static void applyEnchantments(Map<Enchantment, Integer> enchantments, NbtCompound tag, ItemMetaKey key) {
@@ -1668,16 +1676,16 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         if (modifiers == null) {
             return;
         }
-        AttributeModifiersComponent.Builder list = AttributeModifiersComponent.builder();
+        ItemAttributeModifiers.Builder list = ItemAttributeModifiers.builder();
         for (Map.Entry entry : modifiers.entries()) {
             if (entry.getKey() == null || entry.getValue() == null) continue;
-            EntityAttributeModifier nmsModifier = CraftAttributeInstance.convert((AttributeModifier)entry.getValue());
-            RegistryEntry<EntityAttribute> name = CraftAttribute.bukkitToMinecraftHolder((Attribute)entry.getKey());
+            net.minecraft.world.entity.ai.attributes.AttributeModifier nmsModifier = CraftAttributeInstance.convert((AttributeModifier)entry.getValue());
+            Holder<net.minecraft.world.entity.ai.attributes.Attribute> name = CraftAttribute.bukkitToMinecraftHolder((Attribute)entry.getKey());
             if (name == null) continue;
             //AttributeModifierSlot group = CraftEquipmentSlot.getNMSGroup(((AttributeModifier)entry.getValue()).getSlotGroup());
             // TODO: 1.20.6
             // AttributeModifierSlot group = CraftEquipmentSlot.getNMSGroup(entry.getValue().getSlotGroup());
-            AttributeModifierSlot group  = AttributeModifierSlot.ANY;
+            net.minecraft.world.entity.EquipmentSlotGroup group  = net.minecraft.world.entity.EquipmentSlotGroup.ANY;
             
             list.add(name, nmsModifier, group);
         }
@@ -1759,7 +1767,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public String getDisplayName() {
-        return CraftChatMessage.fromComponent(displayName, Formatting.WHITE);
+        return CraftChatMessage.fromComponent(displayName, ChatFormatting.WHITE);
     }
 
     @Override
@@ -1848,7 +1856,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     @Override
     public void addItemFlags(ItemFlag ... hideFlags) {
         if (this.tooltipDisplay == null) {
-            this.tooltipDisplay = new TooltipDisplayComponent(false, new ReferenceLinkedOpenHashSet<>());
+            this.tooltipDisplay = new TooltipDisplay(false, new ReferenceLinkedOpenHashSet<>());
         }
         for (ItemFlag f : hideFlags) {
             this.tooltipDisplay.hiddenComponents().addAll(ITEM_FLAG_EQUIVALENTS.get(f));
@@ -1861,7 +1869,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             return;
         }
         for (ItemFlag f : hideFlags) {
-            Set<ComponentType<?>> dataComponentTypes = ITEM_FLAG_EQUIVALENTS.get(f);
+            Set<DataComponentType<?>> dataComponentTypes = ITEM_FLAG_EQUIVALENTS.get(f);
             if (!this.tooltipDisplay.hiddenComponents().containsAll(dataComponentTypes)) continue;
             this.tooltipDisplay.hiddenComponents().removeAll(dataComponentTypes);
         }
@@ -1891,7 +1899,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public List<String> getLore() {
-        return this.lore == null ? null : new ArrayList<String>(Lists.transform(this.lore, (line) -> CraftChatMessage.fromComponent(line, Formatting.DARK_PURPLE)));
+        return this.lore == null ? null : new ArrayList<String>(Lists.transform(this.lore, (line) -> CraftChatMessage.fromComponent(line, ChatFormatting.DARK_PURPLE)));
     }
 
     @Override
@@ -1900,7 +1908,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             this.lore = null;
         } else {
             if (this.lore == null) {
-                safelyAdd(lore, this.lore = new ArrayList<Text>(lore.size()), Integer.MAX_VALUE);
+                safelyAdd(lore, this.lore = new ArrayList<net.minecraft.network.chat.Component>(lore.size()), Integer.MAX_VALUE);
             } else {
                 this.lore.clear();
                 safelyAdd(lore, this.lore, Integer.MAX_VALUE);
@@ -1924,7 +1932,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public void setCustomModelData(Integer data) {
-        this.customModelData = (data == null) ? null : new CraftCustomModelDataComponent(new net.minecraft.component.type.CustomModelDataComponent(List.of(data.floatValue()), List.of(), List.of(), List.of()));
+        this.customModelData = (data == null) ? null : new CraftCustomModelDataComponent(new net.minecraft.world.item.component.CustomModelData(List.of(data.floatValue()), List.of(), List.of(), List.of()));
     }
 
     @Override
@@ -1939,8 +1947,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     
     @Override
     public BlockData getBlockData(Material material) {
-        BlockState defaultData = CraftBlockType.bukkitToMinecraft(material).getDefaultState();
-        return CraftBlockData.fromData((this.hasBlockData()) ? new BlockStateComponent(this.blockData).applyToState(defaultData) : defaultData);
+        BlockState defaultData = CraftBlockType.bukkitToMinecraft(material).defaultBlockState();
+        return CraftBlockData.fromData((this.hasBlockData()) ? new BlockItemStateProperties(this.blockData).apply(defaultData) : defaultData);
     }
 
     /**
@@ -2401,7 +2409,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         try {
             CraftMetaItem clone = (CraftMetaItem) super.clone();
             if (this.lore != null) {
-                clone.lore = new ArrayList<Text>(this.lore);
+                clone.lore = new ArrayList<net.minecraft.network.chat.Component>(this.lore);
             }
             if (this.hasCustomModelData()) {
                 clone.customModelData = new CraftCustomModelDataComponent(this.customModelData);
@@ -2422,7 +2430,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             clone.persistentDataContainer = new CraftPersistentDataContainer(this.persistentDataContainer.getRaw(), CraftMetaItem.DATA_TYPE_REGISTRY); // Paper - deep clone NBT tags
             
             if (this.tooltipDisplay != null) {
-                clone.tooltipDisplay = new TooltipDisplayComponent(this.tooltipDisplay.hideTooltip(), new ReferenceLinkedOpenHashSet<>(this.tooltipDisplay.hiddenComponents()));
+                clone.tooltipDisplay = new TooltipDisplay(this.tooltipDisplay.hideTooltip(), new ReferenceLinkedOpenHashSet<>(this.tooltipDisplay.hiddenComponents()));
             }
 
             clone.hideTooltip = this.hideTooltip;
@@ -2516,7 +2524,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             // SPIGOT-7625: Convert lore to json before serializing it
             List<String> jsonLore = new ArrayList<>();
 
-            for (Text component : this.lore) {
+            for (net.minecraft.network.chat.Component component : this.lore) {
                 jsonLore.add(CraftChatMessage.toJSON(component));
             }
 
@@ -2575,7 +2583,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
 
         if (this.hasDamageResistant()) {
-            builder.put(CraftMetaItem.DAMAGE_RESISTANT.BUKKIT, this.damageResistant.id().toString());
+            builder.put(CraftMetaItem.DAMAGE_RESISTANT.BUKKIT, this.damageResistant.location().toString());
         }
 
         if (this.hasMaxStackSize()) {
@@ -2618,11 +2626,11 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             builder.put(CraftMetaItem.MAX_DAMAGE.BUKKIT, this.maxDamage);
         }
 
-        final Map<String, NbtElement> internalTags = new HashMap<String, NbtElement>();
+        final Map<String, net.minecraft.nbt.Tag> internalTags = new HashMap<String, net.minecraft.nbt.Tag>();
         this.serializeInternal(internalTags);
         if (!internalTags.isEmpty()) {
-            NbtCompound internal = new NbtCompound();
-            for (Map.Entry<String, NbtElement> e : internalTags.entrySet()) {
+            CompoundTag internal = new CompoundTag();
+            for (Map.Entry<String, net.minecraft.nbt.Tag> e : internalTags.entrySet()) {
                 internal.put(e.getKey(), e.getValue());
             }
             try {
@@ -2636,12 +2644,12 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         if (!this.unhandledTags.build().isEmpty()) {
         	
-        	RegistryOps<NbtElement> ops = ICommonMod.getIServer().getMinecraft().getRegistryManager().getOps(NbtOps.INSTANCE);
+        	RegistryOps<net.minecraft.nbt.Tag> ops = ICommonMod.getIServer().getMinecraft().registryAccess().createSerializationContext(NbtOps.INSTANCE);
         	
-            NbtElement unhandled = ComponentChanges.CODEC.encodeStart(ops, this.unhandledTags.build()).getOrThrow(IllegalStateException::new);
+            net.minecraft.nbt.Tag unhandled = DataComponentPatch.CODEC.encodeStart(ops, this.unhandledTags.build()).getOrThrow(IllegalStateException::new);
             try {
                 ByteArrayOutputStream buf = new ByteArrayOutputStream();
-                NbtIo.writeCompressed((NbtCompound) unhandled, buf);
+                NbtIo.writeCompressed((CompoundTag) unhandled, buf);
                 builder.put("unhandled", Base64.getEncoder().encodeToString(buf.toByteArray()));
             } catch (IOException ex) {
                 Logger.getLogger(CraftMetaItem.class.getName()).log(Level.SEVERE, null, ex);
@@ -2724,7 +2732,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         return builder;
     }*/
 
-    void serializeInternal(final Map<String, NbtElement> unhandledTags) {
+    void serializeInternal(final Map<String, net.minecraft.nbt.Tag> unhandledTags) {
     }
 
     public Material updateMaterial(Material material) {
@@ -2755,7 +2763,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         builder.put(key.BUKKIT, mods);
     }
 
-    static void safelyAdd(Iterable<?> addFrom, Collection<Text> addTo, boolean possiblyJsonInput) {
+    static void safelyAdd(Iterable<?> addFrom, Collection<net.minecraft.network.chat.Component> addTo, boolean possiblyJsonInput) {
         if (addFrom == null) {
             return;
         }
@@ -2766,28 +2774,28 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                     throw new IllegalArgumentException(addFrom + " cannot contain non-string " + object.getClass().getName());
                 }
 
-                addTo.add(Text.empty());
+                addTo.add(net.minecraft.network.chat.Component.empty());
             } else {
                 String entry = object.toString();
-                Text component = (possiblyJsonInput) ? CraftChatMessage.fromJSONOrString(entry) : CraftChatMessage.fromStringOrNull(entry);
+                net.minecraft.network.chat.Component component = (possiblyJsonInput) ? CraftChatMessage.fromJSONOrString(entry) : CraftChatMessage.fromStringOrNull(entry);
 
                 if (component != null) {
                     addTo.add(component);
                 } else {
-                    addTo.add(Text.empty());
+                    addTo.add(net.minecraft.network.chat.Component.empty());
                 }
             }
         }
     }
     
-    public static void safelyAdd(Iterable<?> addFrom, Collection<Text> addTo, int maxItemLength) {
+    public static void safelyAdd(Iterable<?> addFrom, Collection<net.minecraft.network.chat.Component> addTo, int maxItemLength) {
         if (addFrom == null) return;
 
         for (Object object : addFrom) {
             if (!(object instanceof String)) {
                 if (object != null)
                     throw new IllegalArgumentException(addFrom + " cannot contain non-string " + object.getClass().getName());
-                addTo.add(Text.of(""));
+                addTo.add(net.minecraft.network.chat.Component.nullToEmpty(""));
             } else {
                 String page = object.toString();
                 if (page.length() > maxItemLength) page = page.substring(0, maxItemLength);
@@ -2817,7 +2825,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         this.version = version;
     }
     
-    public static Set<ComponentType> getHandledTags() {
+    public static Set<DataComponentType> getHandledTags() {
         synchronized (CraftMetaItem.HANDLED_TAGS) {
             if (CraftMetaItem.HANDLED_TAGS.isEmpty()) {
                 CraftMetaItem.HANDLED_TAGS.addAll(Arrays.asList(
@@ -3040,10 +3048,10 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     public String getAsString() {
         Applicator tag =  new Applicator();
         this.applyToItem(tag);
-        ComponentChanges patch = tag.build();
+        DataComponentPatch patch = tag.build();
         
-        RegistryOps<NbtElement> reg = ICommonMod.getIServer().getMinecraft().getRegistryManager().getOps(NbtOps.INSTANCE);
-        NbtElement nbt = (NbtElement)ComponentChanges.CODEC.encodeStart(reg, patch).getOrThrow();
+        RegistryOps<net.minecraft.nbt.Tag> reg = ICommonMod.getIServer().getMinecraft().registryAccess().createSerializationContext(NbtOps.INSTANCE);
+        net.minecraft.nbt.Tag nbt = (net.minecraft.nbt.Tag)DataComponentPatch.CODEC.encodeStart(reg, patch).getOrThrow();
         return nbt.toString();
     }
     
@@ -3055,42 +3063,42 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 	
     static final class ItemMetaKeyType<T>
     extends ItemMetaKey {
-        final ComponentType<T> TYPE;
+        final DataComponentType<T> TYPE;
 
-        ItemMetaKeyType(ComponentType<T> type) {
+        ItemMetaKeyType(DataComponentType<T> type) {
             this(type, null, null);
         }
 
-        ItemMetaKeyType(ComponentType<T> type, String both) {
+        ItemMetaKeyType(DataComponentType<T> type, String both) {
             this(type, both, both);
         }
 
-        ItemMetaKeyType(ComponentType<T> type, String nbt, String bukkit) {
+        ItemMetaKeyType(DataComponentType<T> type, String nbt, String bukkit) {
             super(nbt, bukkit);
             this.TYPE = type;
         }
     }
 	
 	static class Applicator {
-        final ComponentChanges.Builder builder = ComponentChanges.builder();
+        final DataComponentPatch.Builder builder = DataComponentPatch.builder();
 
         Applicator() {
         }
 
-        void skullCallback(ProfileComponent gameProfile) {
+        void skullCallback(ResolvableProfile gameProfile) {
         }
 
         <T> Applicator put(ItemMetaKeyType<T> key, T value) {
-            this.builder.add(key.TYPE, value);
+            this.builder.set(key.TYPE, value);
             return this;
         }
 
-        <T> Applicator remove(ComponentType<T> type) {
+        <T> Applicator remove(DataComponentType<T> type) {
             this.builder.remove(type);
             return this;
         }
 
-        ComponentChanges build() {
+        DataComponentPatch build() {
             return this.builder.build();
         }
     }
@@ -3164,15 +3172,15 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     public String getAsComponentString() {
         Applicator tag = new Applicator(){};
         this.applyToItem(tag);
-        ComponentChanges patch = tag.build();
-        DynamicRegistryManager registryAccess = CraftRegistry.getMinecraftRegistry();
-        RegistryOps<NbtElement> ops = registryAccess.getOps(NbtOps.INSTANCE);
-        Registry<ComponentType<?>> componentTypeRegistry = registryAccess.getOrThrow(RegistryKeys.DATA_COMPONENT_TYPE);
+        DataComponentPatch patch = tag.build();
+        RegistryAccess registryAccess = CraftRegistry.getMinecraftRegistry();
+        RegistryOps<net.minecraft.nbt.Tag> ops = registryAccess.createSerializationContext(NbtOps.INSTANCE);
+        Registry<DataComponentType<?>> componentTypeRegistry = registryAccess.lookupOrThrow(Registries.DATA_COMPONENT_TYPE);
         StringJoiner componentString = new StringJoiner(",", "[", "]");
-        for (Map.Entry<ComponentType<?>, Optional<?>> entry : patch.entrySet()) {
-            ComponentType<?> componentType = entry.getKey();
+        for (Map.Entry<DataComponentType<?>, Optional<?>> entry : patch.entrySet()) {
+            DataComponentType<?> componentType = entry.getKey();
             Optional<?> componentValue = entry.getValue();
-            String componentKey = componentTypeRegistry.getKey(componentType).orElseThrow().getValue().toString();
+            String componentKey = componentTypeRegistry.getResourceKey(componentType).orElseThrow().identifier().toString();
             if (!componentValue.isPresent()) continue;
             
             // TODO
@@ -3217,13 +3225,13 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         HashSet namespaceds = Sets.newHashSet();
         for (BlockPredicate predicate : predicates) {
             if (predicate.blocks().isEmpty()) continue;
-            RegistryEntryList<Block> holders = predicate.blocks().get();
-            if (holders instanceof RegistryEntryList.Named) {
-                RegistryEntryList.Named named = (RegistryEntryList.Named)holders;
-                namespaceds.add(new NamespacedTag(named.getTag().id().getNamespace(), named.getTag().id().getPath()));
+            HolderSet<Block> holders = predicate.blocks().get();
+            if (holders instanceof HolderSet.Named) {
+                HolderSet.Named named = (HolderSet.Named)holders;
+                namespaceds.add(new NamespacedTag(named.key().location().getNamespace(), named.key().location().getPath()));
                 continue;
             }
-            holders.forEach(h2 -> h2.getKey().ifPresent(key -> namespaceds.add(new NamespacedKey(key.getValue().getNamespace(), key.getValue().getPath()))));
+            holders.forEach(h2 -> h2.unwrapKey().ifPresent(key -> namespaceds.add(new NamespacedKey(key.identifier().getNamespace(), key.identifier().getPath()))));
         }
         return namespaceds;
     }
@@ -3236,17 +3244,17 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 	
 	private static List<BlockPredicate> convertFromLegacyNamespaced(Collection<Namespaced> namespaceds) {
         ArrayList<BlockPredicate> predicates = new ArrayList<BlockPredicate>();
-        final net.minecraft.registry.Registry<net.minecraft.block.Block> blockRegistry = CraftServer.server.getRegistryManager().getOrThrow(net.minecraft.registry.RegistryKeys.BLOCK);
+        final net.minecraft.core.Registry<net.minecraft.world.level.block.Block> blockRegistry = CraftServer.server.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.BLOCK);
 
         for (Namespaced namespaced : namespaceds) {
             if (namespaced instanceof NamespacedKey) {
                 NamespacedKey key = (NamespacedKey)namespaced;
-                predicates.add(BlockPredicate.Builder.create().blocks(blockRegistry, CraftBlockType.bukkitToMinecraft(Objects.requireNonNull((Material)org.bukkit.Registry.MATERIAL.get(key)))).build());
+                predicates.add(BlockPredicate.Builder.block().of(blockRegistry, CraftBlockType.bukkitToMinecraft(Objects.requireNonNull((Material)org.bukkit.Registry.MATERIAL.get(key)))).build());
                 continue;
             }
             if (!(namespaced instanceof NamespacedTag)) continue;
             NamespacedTag tag = (NamespacedTag)namespaced;
-            predicates.add(BlockPredicate.Builder.create().tag(blockRegistry, TagKey.of(RegistryKeys.BLOCK, Identifier.of(tag.getNamespace(), tag.getKey()))).build());
+            predicates.add(BlockPredicate.Builder.block().of(blockRegistry, TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(tag.getNamespace(), tag.getKey()))).build());
         }
         return predicates;
     }
@@ -3285,7 +3293,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
 	@Override
 	public org.bukkit.inventory.meta.components.@NotNull CustomModelDataComponent getCustomModelDataComponent() {
-        return (this.hasCustomModelData()) ? new CraftCustomModelDataComponent(this.customModelData) : new CraftCustomModelDataComponent(new net.minecraft.component.type.CustomModelDataComponent(List.of(), List.of(), List.of(), List.of()));
+        return (this.hasCustomModelData()) ? new CraftCustomModelDataComponent(this.customModelData) : new CraftCustomModelDataComponent(new net.minecraft.world.item.component.CustomModelData(List.of(), List.of(), List.of(), List.of()));
 	}
 
 	@Override
@@ -3357,7 +3365,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
 	@Override
 	public @Nullable Tag<DamageType> getDamageResistant() {
-        return (this.hasDamageResistant()) ? Bukkit.getTag(DamageTypeTags.REGISTRY_DAMAGE_TYPES, CraftNamespacedKey.fromMinecraft(this.damageResistant.id()), DamageType.class) : null;
+        return (this.hasDamageResistant()) ? Bukkit.getTag(DamageTypeTags.REGISTRY_DAMAGE_TYPES, CraftNamespacedKey.fromMinecraft(this.damageResistant.location()), DamageType.class) : null;
 
 	}
 
@@ -3389,7 +3397,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
 	@Override
     public UseCooldownComponent getUseCooldown() {
-        return (this.hasUseCooldown()) ? new CraftUseCooldownComponent(this.useCooldown) : new CraftUseCooldownComponent(new net.minecraft.component.type.UseCooldownComponent(1));
+        return (this.hasUseCooldown()) ? new CraftUseCooldownComponent(this.useCooldown) : new CraftUseCooldownComponent(new net.minecraft.world.item.component.UseCooldown(1));
     }
 
 	@Override
@@ -3404,7 +3412,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
 	@Override
     public EquippableComponent getEquippable() {
-        return (this.hasEquippable()) ? new CraftEquippableComponent(this.equippable) : new CraftEquippableComponent(net.minecraft.component.type.EquippableComponent.builder(net.minecraft.entity.EquipmentSlot.HEAD).build());
+        return (this.hasEquippable()) ? new CraftEquippableComponent(this.equippable) : new CraftEquippableComponent(net.minecraft.world.item.equipment.Equippable.builder(net.minecraft.world.entity.EquipmentSlot.HEAD).build());
     }
 
     @Override

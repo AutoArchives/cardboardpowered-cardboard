@@ -4,12 +4,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.MapColorComponent;
-import net.minecraft.component.type.MapIdComponent;
-import net.minecraft.component.type.MapPostProcessingComponent;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.MapItemColor;
+import net.minecraft.world.item.component.MapPostProcessing;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -23,12 +23,12 @@ import org.bukkit.map.MapView;
 class CraftMetaMap
 extends CraftMetaItem
 implements MapMeta {
-    static final CraftMetaItem.ItemMetaKeyType<MapPostProcessingComponent> MAP_POST_PROCESSING = new CraftMetaItem.ItemMetaKeyType<MapPostProcessingComponent>(DataComponentTypes.MAP_POST_PROCESSING);
+    static final CraftMetaItem.ItemMetaKeyType<MapPostProcessing> MAP_POST_PROCESSING = new CraftMetaItem.ItemMetaKeyType<MapPostProcessing>(DataComponents.MAP_POST_PROCESSING);
     static final CraftMetaItem.ItemMetaKey MAP_SCALING = new CraftMetaItem.ItemMetaKey("scaling");
     @Deprecated
     static final CraftMetaItem.ItemMetaKey MAP_LOC_NAME = new CraftMetaItem.ItemMetaKey("display-loc-name");
-    static final CraftMetaItem.ItemMetaKeyType<MapColorComponent> MAP_COLOR = new CraftMetaItem.ItemMetaKeyType<MapColorComponent>(DataComponentTypes.MAP_COLOR, "display-map-color");
-    static final CraftMetaItem.ItemMetaKeyType<MapIdComponent> MAP_ID = new CraftMetaItem.ItemMetaKeyType<MapIdComponent>(DataComponentTypes.MAP_ID, "map-id");
+    static final CraftMetaItem.ItemMetaKeyType<MapItemColor> MAP_COLOR = new CraftMetaItem.ItemMetaKeyType<MapItemColor>(DataComponents.MAP_COLOR, "display-map-color");
+    static final CraftMetaItem.ItemMetaKeyType<MapId> MAP_ID = new CraftMetaItem.ItemMetaKeyType<MapId>(DataComponents.MAP_ID, "map-id");
     static final byte SCALING_EMPTY = 0;
     static final byte SCALING_TRUE = 1;
     static final byte SCALING_FALSE = 2;
@@ -47,13 +47,13 @@ implements MapMeta {
         this.color = map.color;
     }
 
-    CraftMetaMap(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
+    CraftMetaMap(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaMap.getOrEmpty(tag, MAP_ID).ifPresent(mapId -> {
             this.mapId = mapId.id();
         });
         CraftMetaMap.getOrEmpty(tag, MAP_POST_PROCESSING).ifPresent(mapPostProcessing -> {
-            this.scaling = (byte)(mapPostProcessing == MapPostProcessingComponent.SCALE ? 1 : 2);
+            this.scaling = (byte)(mapPostProcessing == MapPostProcessing.SCALE ? 1 : 2);
         });
         CraftMetaMap.getOrEmpty(tag, MAP_COLOR).ifPresent(mapColor -> {
             try {
@@ -89,13 +89,13 @@ implements MapMeta {
     void applyToItem(CraftMetaItem.Applicator tag) {
         super.applyToItem(tag);
         if (this.hasMapId()) {
-            tag.put(MAP_ID, new MapIdComponent(this.getMapId()));
+            tag.put(MAP_ID, new MapId(this.getMapId()));
         }
         if (this.hasScaling()) {
-            tag.put(MAP_POST_PROCESSING, this.isScaling() ? MapPostProcessingComponent.SCALE : MapPostProcessingComponent.LOCK);
+            tag.put(MAP_POST_PROCESSING, this.isScaling() ? MapPostProcessing.SCALE : MapPostProcessing.LOCK);
         }
         if (this.hasColor()) {
-            tag.put(MAP_COLOR, new MapColorComponent(this.color.asRGB()));
+            tag.put(MAP_COLOR, new MapItemColor(this.color.asRGB()));
         }
     }
 

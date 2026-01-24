@@ -3,7 +3,7 @@ package com.destroystokyo.paper.profile;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import java.util.UUID;
-import net.minecraft.component.type.ProfileComponent;
+import net.minecraft.world.item.component.ResolvableProfile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,6 +27,6 @@ public interface SharedPlayerProfile {
    GameProfile buildGameProfile();
 
    @NotNull
-   ProfileComponent buildResolvableProfile();
+   ResolvableProfile buildResolvableProfile();
 
 }

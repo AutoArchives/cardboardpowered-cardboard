@@ -9,11 +9,11 @@ import org.bukkit.craftbukkit.util.Handleable;
 import org.jetbrains.annotations.Unmodifiable;
 
 public record PaperDeathProtection(
-    net.minecraft.component.type.DeathProtectionComponent impl
-) implements DeathProtection, Handleable<net.minecraft.component.type.DeathProtectionComponent> {
+    net.minecraft.world.item.component.DeathProtection impl
+) implements DeathProtection, Handleable<net.minecraft.world.item.component.DeathProtection> {
 
     @Override
-    public net.minecraft.component.type.DeathProtectionComponent getHandle() {
+    public net.minecraft.world.item.component.DeathProtection getHandle() {
         return this.impl;
     }
 
@@ -24,7 +24,7 @@ public record PaperDeathProtection(
 
     static final class BuilderImpl implements Builder {
 
-        private final List<net.minecraft.item.consume.ConsumeEffect> effects = new ArrayList<>();
+        private final List<net.minecraft.world.item.consume_effects.ConsumeEffect> effects = new ArrayList<>();
 
         @Override
         public Builder addEffect(final ConsumeEffect effect) {
@@ -43,7 +43,7 @@ public record PaperDeathProtection(
         @Override
         public DeathProtection build() {
             return new PaperDeathProtection(
-                new net.minecraft.component.type.DeathProtectionComponent(this.effects)
+                new net.minecraft.world.item.component.DeathProtection(this.effects)
             );
         }
     }

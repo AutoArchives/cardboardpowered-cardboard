@@ -1,10 +1,10 @@
 package org.cardboardpowered.interfaces;
 
-import net.minecraft.server.world.ChunkHolder;
-import net.minecraft.server.world.ChunkLevelType;
-import net.minecraft.server.world.ChunkLevels;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.server.level.ChunkHolder;
+import net.minecraft.server.level.ChunkLevel;
+import net.minecraft.server.level.FullChunkStatus;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 public interface IMixinChunkHolder {
 
@@ -18,19 +18,19 @@ public interface IMixinChunkHolder {
     // CraftBukkit end
 
     
-    static WorldChunk getFullChunkNow(ChunkHolder holder) {
-    	 if (!ChunkLevels.getType(holder.lastTickLevel).isAfter(ChunkLevelType.FULL)) {
+    static LevelChunk getFullChunkNow(ChunkHolder holder) {
+    	 if (!ChunkLevel.fullStatus(holder.oldTicketLevel).isOrAfter(FullChunkStatus.FULL)) {
              return null; // note: using oldTicketLevel for isLoaded checks
          }
          return getFullChunkNowUnchecked(holder);
     }
 
-    static WorldChunk getFullChunkNowUnchecked(ChunkHolder holder) {
+    static LevelChunk getFullChunkNowUnchecked(ChunkHolder holder) {
     	// CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> statusFuture = holder.getFutureFor(ChunkStatus.FULL);
         // Either<Chunk, ChunkHolder.Unloaded> either = statusFuture.getNow(null);
         // return (either == null) ? null : (WorldChunk) either.left().orElse(null);
         
-    	return (WorldChunk) holder.getUncheckedOrNull(ChunkStatus.FULL);
+    	return (LevelChunk) holder.getChunkIfPresentUnchecked(ChunkStatus.FULL);
     	
     	// CompletableFuture<OptionalChunk<Chunk>> statusFuture = holder.getFutureFor(ChunkStatus.FULL);
     	// OptionalChunk<Chunk>  either = statusFuture.getNow(null);

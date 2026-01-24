@@ -5,34 +5,32 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.FireChargeItem;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.CampfireBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-
-import net.minecraft.block.BlockState;
-import net.minecraft.block.CampfireBlock;
-import net.minecraft.item.FireChargeItem;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 @MixinInfo(events = {"BlockIgniteEvent"})
 @Mixin(FireChargeItem.class)
 public class MixinFirechargeItem {
 
-    @Inject(method = "useOnBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/FireChargeItem;playUseSound(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V"))
-    public void cardboard$fireChargeItem_BlockIgniteEvent(ItemUsageContext context, CallbackInfoReturnable<ActionResult> ci) {
-        World world = context.getWorld();
-        BlockPos blockpos = context.getBlockPos();
+    @Inject(method = "useOn", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/FireChargeItem;playSound(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V"))
+    public void cardboard$fireChargeItem_BlockIgniteEvent(UseOnContext context, CallbackInfoReturnable<InteractionResult> ci) {
+        Level world = context.getLevel();
+        BlockPos blockpos = context.getClickedPos();
         BlockState state = world.getBlockState(blockpos);
 
-        if (!CampfireBlock.canBeLit(state))
-            blockpos = blockpos.offset(context.getSide());
+        if (!CampfireBlock.canLight(state))
+            blockpos = blockpos.relative(context.getClickedFace());
 
         if (CraftEventFactory.callBlockIgniteEvent(world, blockpos, org.bukkit.event.block.BlockIgniteEvent.IgniteCause.FIREBALL, context.getPlayer()).isCancelled()) {
-            if (!context.getPlayer().abilities.creativeMode)
-                context.getStack().decrement(1);
-            ci.setReturnValue(ActionResult.PASS);
+            if (!context.getPlayer().abilities.instabuild)
+                context.getItemInHand().shrink(1);
+            ci.setReturnValue(InteractionResult.PASS);
         }
     }
 

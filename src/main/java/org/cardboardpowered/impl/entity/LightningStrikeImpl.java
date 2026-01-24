@@ -1,9 +1,8 @@
 package org.cardboardpowered.impl.entity;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.entity.LightningEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LightningBolt;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.entity.Entity;
@@ -16,7 +15,7 @@ import org.cardboardpowered.interfaces.IMixinEntity;
 
 public class LightningStrikeImpl extends CraftEntity implements LightningStrike {
 
-    public LightningStrikeImpl(final CraftServer server, final LightningEntity entity) {
+    public LightningStrikeImpl(final CraftServer server, final LightningBolt entity) {
         super(entity);
     }
 
@@ -26,8 +25,8 @@ public class LightningStrikeImpl extends CraftEntity implements LightningStrike 
     }
 
     @Override
-    public LightningEntity getHandle() {
-        return (LightningEntity) nms;
+    public LightningBolt getHandle() {
+        return (LightningBolt) nms;
     }
 
     @Override
@@ -116,7 +115,7 @@ public class LightningStrikeImpl extends CraftEntity implements LightningStrike 
 
 	@Override
 	public Player getCausingPlayer() {
-		ServerPlayerEntity player = this.getHandle().getChanneler();
+		ServerPlayer player = this.getHandle().getCause();
         return player != null ? (Player) ((IMixinEntity)player).getBukkitEntity() : null;
 	}
 

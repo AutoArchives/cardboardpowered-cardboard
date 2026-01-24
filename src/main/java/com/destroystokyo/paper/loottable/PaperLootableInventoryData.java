@@ -18,13 +18,9 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.Uuids;
-
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.bukkit.entity.Player;
 import org.bukkit.loot.LootTable;
 
@@ -54,7 +50,7 @@ public class PaperLootableInventoryData {
         return prev;
     }
 
-    public boolean shouldReplenish(@Nullable PlayerEntity player) {
+    public boolean shouldReplenish(@Nullable net.minecraft.world.entity.player.Player player) {
         LootTable table = this.lootable.getLootTable();
         if (table == null) {
             return false;
@@ -79,11 +75,11 @@ public class PaperLootableInventoryData {
 
         Player bukkitPlayer = (Player)((IMixinEntity) player).getBukkitEntity();
         LootableInventoryReplenishEvent event = new LootableInventoryReplenishEvent(bukkitPlayer, this.lootable.getAPILootableInventory());
-        event.setCancelled(!this.canPlayerLoot(player.getUuid(), null));
+        event.setCancelled(!this.canPlayerLoot(player.getUUID(), null));
         return event.callEvent();
     }
 
-    public void processRefill(@Nullable PlayerEntity player) {
+    public void processRefill(@Nullable net.minecraft.world.entity.player.Player player) {
         this.lastFill = System.currentTimeMillis();
         CardboardMod.LOGGER.info("processRefil: TODO stub");
         
@@ -111,12 +107,12 @@ public class PaperLootableInventoryData {
     private static final String NUM_REFILLS = "numRefills";
     private static final String LOOTED_PLAYERS = "lootedPlayers";
     
-    public void loadNbt(ReadView input) {
-        ReadView data = input.getReadView(ROOT);
-        this.lastFill = data.getLong(LAST_FILL, -1L);
-        this.nextRefill = data.getLong(NEXT_REFILL, -1L);
-        this.numRefills = data.getInt(NUM_REFILLS, 0);
-        ReadView.TypedListReadView<SerializedLootedPlayerEntry> list = data.getTypedListView(LOOTED_PLAYERS, SerializedLootedPlayerEntry.CODEC);
+    public void loadNbt(ValueInput input) {
+        ValueInput data = input.childOrEmpty(ROOT);
+        this.lastFill = data.getLongOr(LAST_FILL, -1L);
+        this.nextRefill = data.getLongOr(NEXT_REFILL, -1L);
+        this.numRefills = data.getIntOr(NUM_REFILLS, 0);
+        ValueInput.TypedInputList<SerializedLootedPlayerEntry> list = data.listOrEmpty(LOOTED_PLAYERS, SerializedLootedPlayerEntry.CODEC);
         if (!list.isEmpty()) {
             this.lootedPlayers = new HashMap<UUID, Long>();
             list.forEach(serializedLootedPlayerEntry -> this.lootedPlayers.put(serializedLootedPlayerEntry.uuid, serializedLootedPlayerEntry.time));
@@ -127,7 +123,7 @@ public class PaperLootableInventoryData {
         public static final Codec<SerializedLootedPlayerEntry> CODEC =
         		RecordCodecBuilder.create(instance -> 
         			instance.group(
-        					Uuids.INT_STREAM_CODEC.fieldOf("UUID").forGetter(SerializedLootedPlayerEntry::uuid),
+        					UUIDUtil.CODEC.fieldOf("UUID").forGetter(SerializedLootedPlayerEntry::uuid),
         					Codec.LONG.optionalFieldOf("Time", 0L).forGetter(SerializedLootedPlayerEntry::time)
         			)
         			.apply(instance, SerializedLootedPlayerEntry::new));
@@ -162,8 +158,8 @@ public class PaperLootableInventoryData {
     }
     */
     
-    public void saveNbt(WriteView output) {
-        WriteView data = output.get(ROOT);
+    public void saveNbt(ValueOutput output) {
+        ValueOutput data = output.child(ROOT);
         if (this.nextRefill != -1L) {
             data.putLong(NEXT_REFILL, this.nextRefill);
         }
@@ -174,13 +170,13 @@ public class PaperLootableInventoryData {
             data.putInt(NUM_REFILLS, this.numRefills);
         }
         if (this.lootedPlayers != null && !this.lootedPlayers.isEmpty()) {
-            WriteView.ListAppender<SerializedLootedPlayerEntry> list = data.getListAppender(LOOTED_PLAYERS, SerializedLootedPlayerEntry.CODEC);
+            ValueOutput.TypedOutputList<SerializedLootedPlayerEntry> list = data.list(LOOTED_PLAYERS, SerializedLootedPlayerEntry.CODEC);
             for (Map.Entry<UUID, Long> entry : this.lootedPlayers.entrySet()) {
                 list.add(new SerializedLootedPlayerEntry(entry.getKey(), entry.getValue()));
             }
         }
         if (data.isEmpty()) {
-            output.remove(ROOT);
+            output.discard(ROOT);
         }
     }
 

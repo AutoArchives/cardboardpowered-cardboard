@@ -5,8 +5,8 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
-import net.minecraft.network.handler.LegacyQueryHandler;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.LegacyQueryHandler;
 import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,8 +20,8 @@ import java.nio.charset.StandardCharsets;
 @Mixin(value = LegacyQueryHandler.class, priority = 999)
 public class MixinLegacyQueryHandler {
 
-    @Shadow private static ByteBuf createBuf(ByteBufAllocator allocator, String string) {return null;}
-    @Shadow private static void reply(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf) {}
+    @Shadow private static ByteBuf createLegacyDisconnectPacket(ByteBufAllocator allocator, String string) {return null;}
+    @Shadow private static void sendFlushAndClose(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf) {}
 
     /**
      * @reason Add ServerListPingEvent
@@ -41,21 +41,21 @@ public class MixinLegacyQueryHandler {
             MinecraftServer minecraftserver = CraftServer.server;
             int i = bytebuf.readableBytes();
             String s;
-            org.bukkit.event.server.ServerListPingEvent event = CraftEventFactory.callServerListPingEvent(CraftServer.INSTANCE, inetsocketaddress.getAddress(), minecraftserver.getServerMotd(), minecraftserver.getCurrentPlayerCount(), minecraftserver.getMaxPlayerCount()); // CraftBukkit
+            org.bukkit.event.server.ServerListPingEvent event = CraftEventFactory.callServerListPingEvent(CraftServer.INSTANCE, inetsocketaddress.getAddress(), minecraftserver.getMotd(), minecraftserver.getPlayerCount(), minecraftserver.getMaxPlayers()); // CraftBukkit
 
             switch (i) {
                 case 0:
                     CardboardMod.LOGGER.config("Ping: (<1.3.x) from " + inetsocketaddress.getAddress() + ":" + inetsocketaddress.getPort());
                     s = String.format("%s\u00a7%d\u00a7%d", event.getMotd(), event.getNumPlayers(), event.getMaxPlayers()); // CraftBukkit
-                    reply(ctx, createBuf(ctx.alloc(), s));
+                    sendFlushAndClose(ctx, createLegacyDisconnectPacket(ctx.alloc(), s));
                     break;
                 case 1:
                     if (bytebuf.readUnsignedByte() != 1)
                         return;
 
                     CardboardMod.LOGGER.config("Ping: (1.4-1.5.x) from " + inetsocketaddress.getAddress() + ":" + inetsocketaddress.getPort());
-                    s = String.format("\u00a71\u0000%d\u0000%s\u0000%s\u0000%d\u0000%d", 127, minecraftserver.getVersion(), event.getMotd(), event.getNumPlayers(), event.getMaxPlayers()); // CraftBukkit
-                    reply(ctx, createBuf(ctx.alloc(), s));
+                    s = String.format("\u00a71\u0000%d\u0000%s\u0000%s\u0000%d\u0000%d", 127, minecraftserver.getServerVersion(), event.getMotd(), event.getNumPlayers(), event.getMaxPlayers()); // CraftBukkit
+                    sendFlushAndClose(ctx, createLegacyDisconnectPacket(ctx.alloc(), s));
                     break;
                 default:
                     boolean flag1 = bytebuf.readUnsignedByte() == 1;
@@ -71,12 +71,12 @@ public class MixinLegacyQueryHandler {
                     if (!flag1)
                         return;
                     CardboardMod.LOGGER.config("Ping: (1.6) from " + inetsocketaddress.getAddress() + ":" + inetsocketaddress.getPort());
-                    String s1 = String.format("\u00a71\u0000%d\u0000%s\u0000%s\u0000%d\u0000%d", 127, minecraftserver.getVersion(), event.getMotd(), event.getNumPlayers(), event.getMaxPlayers()); // CraftBukkit
+                    String s1 = String.format("\u00a71\u0000%d\u0000%s\u0000%s\u0000%d\u0000%d", 127, minecraftserver.getServerVersion(), event.getMotd(), event.getNumPlayers(), event.getMaxPlayers()); // CraftBukkit
                     System.out.println("DEBUG: " + s1);
-                    ByteBuf bytebuf1 = createBuf(ctx.alloc(), s1);
+                    ByteBuf bytebuf1 = createLegacyDisconnectPacket(ctx.alloc(), s1);
 
                     try {
-                        reply(ctx, bytebuf1);
+                        sendFlushAndClose(ctx, bytebuf1);
                     } finally {
                         bytebuf1.release();
                     }

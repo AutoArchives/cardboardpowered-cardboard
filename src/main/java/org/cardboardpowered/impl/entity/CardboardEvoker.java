@@ -1,7 +1,6 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.mob.EvokerEntity;
-import net.minecraft.entity.mob.SpellcastingIllagerEntity;
+import net.minecraft.world.entity.monster.illager.SpellcasterIllager;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Evoker;
@@ -9,13 +8,13 @@ import org.bukkit.entity.Sheep;
 
 public class CardboardEvoker extends CardboardSpellcaster implements Evoker {
 
-    public CardboardEvoker(CraftServer server, EvokerEntity entity) {
+    public CardboardEvoker(CraftServer server, net.minecraft.world.entity.monster.illager.Evoker entity) {
         super(server, entity);
     }
 
     @Override
-    public EvokerEntity getHandle() {
-        return (EvokerEntity) super.getHandle();
+    public net.minecraft.world.entity.monster.illager.Evoker getHandle() {
+        return (net.minecraft.world.entity.monster.illager.Evoker) super.getHandle();
     }
 
     @Override
@@ -30,12 +29,12 @@ public class CardboardEvoker extends CardboardSpellcaster implements Evoker {
 
     @Override
     public Evoker.Spell getCurrentSpell() {
-        return Evoker.Spell.values()[getHandle().getSpell().ordinal()];
+        return Evoker.Spell.values()[getHandle().getCurrentSpell().ordinal()];
     }
 
     @Override
     public void setCurrentSpell(Evoker.Spell spell) {
-        getHandle().setSpell(spell == null ? SpellcastingIllagerEntity.Spell.NONE : SpellcastingIllagerEntity.Spell.byId(spell.ordinal()));
+        getHandle().setIsCastingSpell(spell == null ? SpellcasterIllager.IllagerSpell.NONE : SpellcasterIllager.IllagerSpell.byId(spell.ordinal()));
     }
 
     @Override

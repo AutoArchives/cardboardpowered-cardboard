@@ -6,13 +6,13 @@ import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.component.type.TooltipDisplayComponent;
+import net.minecraft.world.item.component.TooltipDisplay;
 import org.bukkit.craftbukkit.util.Handleable;
 
-public record PaperTooltipDisplay(TooltipDisplayComponent impl) implements TooltipDisplay, Handleable<TooltipDisplayComponent> {
+public record PaperTooltipDisplay(TooltipDisplay impl) implements io.papermc.paper.datacomponent.item.TooltipDisplay, Handleable<TooltipDisplay> {
 
     @Override
-    public TooltipDisplayComponent getHandle() {
+    public TooltipDisplay getHandle() {
         return this.impl;
     }
 
@@ -24,30 +24,30 @@ public record PaperTooltipDisplay(TooltipDisplayComponent impl) implements Toolt
         return this.impl.hiddenComponents().stream().map(PaperDataComponentType::minecraftToBukkit).collect(Collectors.toCollection(ReferenceLinkedOpenHashSet::new));
     }
 
-    static final class BuilderImpl implements TooltipDisplay.Builder {
+    static final class BuilderImpl implements io.papermc.paper.datacomponent.item.TooltipDisplay.Builder {
         private final Set<DataComponentType> hiddenComponents = new ReferenceLinkedOpenHashSet();
         private boolean hideTooltip;
 
         BuilderImpl() {
         }
 
-        public TooltipDisplay.Builder hideTooltip(boolean hide) {
+        public io.papermc.paper.datacomponent.item.TooltipDisplay.Builder hideTooltip(boolean hide) {
             this.hideTooltip = hide;
             return this;
         }
 
-        public TooltipDisplay.Builder addHiddenComponents(DataComponentType ... components) {
+        public io.papermc.paper.datacomponent.item.TooltipDisplay.Builder addHiddenComponents(DataComponentType ... components) {
             this.hiddenComponents.addAll(Arrays.asList(components));
             return this;
         }
 
-        public TooltipDisplay.Builder hiddenComponents(Set<DataComponentType> components) {
+        public io.papermc.paper.datacomponent.item.TooltipDisplay.Builder hiddenComponents(Set<DataComponentType> components) {
             this.hiddenComponents.addAll(components);
             return this;
         }
 
-        public TooltipDisplay build() {
-            return new PaperTooltipDisplay(new TooltipDisplayComponent(this.hideTooltip, this.hiddenComponents.stream().map(PaperDataComponentType::bukkitToMinecraft).collect(Collectors.toCollection(ReferenceLinkedOpenHashSet::new))));
+        public io.papermc.paper.datacomponent.item.TooltipDisplay build() {
+            return new PaperTooltipDisplay(new TooltipDisplay(this.hideTooltip, this.hiddenComponents.stream().map(PaperDataComponentType::bukkitToMinecraft).collect(Collectors.toCollection(ReferenceLinkedOpenHashSet::new))));
         }
     }
 

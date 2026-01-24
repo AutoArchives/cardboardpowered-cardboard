@@ -9,22 +9,22 @@ import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.inventory.ItemStack;
 
 public record PaperBundleContents(
-    net.minecraft.component.type.BundleContentsComponent impl
-) implements BundleContents, Handleable<net.minecraft.component.type.BundleContentsComponent> {
+    net.minecraft.world.item.component.BundleContents impl
+) implements BundleContents, Handleable<net.minecraft.world.item.component.BundleContents> {
 
     @Override
-    public net.minecraft.component.type.BundleContentsComponent getHandle() {
+    public net.minecraft.world.item.component.BundleContents getHandle() {
         return this.impl;
     }
 
     @Override
     public List<ItemStack> contents() {
-        return MCUtil.transformUnmodifiable((List<net.minecraft.item.ItemStack>) this.impl.iterate(), CraftItemStack::asBukkitCopy);
+        return MCUtil.transformUnmodifiable((List<net.minecraft.world.item.ItemStack>) this.impl.items(), CraftItemStack::asBukkitCopy);
     }
 
     static final class BuilderImpl implements BundleContents.Builder {
 
-        private final List<net.minecraft.item.ItemStack> items = new ObjectArrayList<>();
+        private final List<net.minecraft.world.item.ItemStack> items = new ObjectArrayList<>();
 
         @Override
         public BundleContents.Builder add(final ItemStack stack) {
@@ -43,9 +43,9 @@ public record PaperBundleContents(
         @Override
         public BundleContents build() {
             if (this.items.isEmpty()) {
-                return new PaperBundleContents(net.minecraft.component.type.BundleContentsComponent.DEFAULT);
+                return new PaperBundleContents(net.minecraft.world.item.component.BundleContents.EMPTY);
             }
-            return new PaperBundleContents(new net.minecraft.component.type.BundleContentsComponent(new ObjectArrayList<>(this.items)));
+            return new PaperBundleContents(new net.minecraft.world.item.component.BundleContents(new ObjectArrayList<>(this.items)));
         }
     }
 }

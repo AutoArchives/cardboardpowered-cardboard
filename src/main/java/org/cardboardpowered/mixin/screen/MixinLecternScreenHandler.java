@@ -1,5 +1,10 @@
 package org.cardboardpowered.mixin.screen;
 
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.LecternMenu;
+import net.minecraft.world.item.ItemStack;
 import org.bukkit.Bukkit;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.impl.inventory.CardboardLecternInventory;
@@ -14,36 +19,29 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.cardboardpowered.interfaces.IMixinEntity;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.LecternScreenHandler;
-import net.minecraft.screen.PropertyDelegate;
-
-@Mixin(LecternScreenHandler.class)
+@Mixin(LecternMenu.class)
 public class MixinLecternScreenHandler extends MixinScreenHandler {
 
     @Shadow
-    public Inventory inventory;
+    public Container lectern;
 
     @Shadow
-    public PropertyDelegate propertyDelegate;
+    public ContainerData lecternData;
 
     private CardboardInventoryView bukkitEntity = null;
     private Player player;
 
-    @Inject(method = "<init>(ILnet/minecraft/inventory/Inventory;Lnet/minecraft/screen/PropertyDelegate;)V", at = @At("TAIL"))
-    public void setPlayerInv(int i, Inventory iinventory, PropertyDelegate icontainerproperties, CallbackInfo ci) {
-        this.player = (Player)((IMixinEntity)((PlayerInventory)iinventory).player).getBukkitEntity();
+    @Inject(method = "<init>(ILnet/minecraft/world/Container;Lnet/minecraft/world/inventory/ContainerData;)V", at = @At("TAIL"))
+    public void setPlayerInv(int i, Container iinventory, ContainerData icontainerproperties, CallbackInfo ci) {
+        this.player = (Player)((IMixinEntity)((Inventory)iinventory).player).getBukkitEntity();
     }
 
     @Override
     public CardboardInventoryView getBukkitView() {
         if (bukkitEntity != null) return bukkitEntity;
 
-        CardboardLecternInventory inventory = new CardboardLecternInventory(this.inventory);
-        bukkitEntity = new CardboardInventoryView(this.player, inventory, (LecternScreenHandler)(Object)this);
+        CardboardLecternInventory inventory = new CardboardLecternInventory(this.lectern);
+        bukkitEntity = new CardboardInventoryView(this.player, inventory, (LecternMenu)(Object)this);
         return bukkitEntity;
     }
 
@@ -52,33 +50,33 @@ public class MixinLecternScreenHandler extends MixinScreenHandler {
      * @author .
      */
     @Overwrite
-    public boolean onButtonClick(PlayerEntity entityhuman, int i) {
+    public boolean clickMenuButton(net.minecraft.world.entity.player.Player entityhuman, int i) {
         int j;
 
         if (i >= 100) {
             j = i - 100;
-            ((LecternScreenHandler)(Object)this).setProperty(0, j);
+            ((LecternMenu)(Object)this).setData(0, j);
             return true;
         } else {
             switch (i) {
                 case 1:
-                    j = this.propertyDelegate.get(0);
-                    ((LecternScreenHandler)(Object)this).setProperty(0, j - 1);
+                    j = this.lecternData.get(0);
+                    ((LecternMenu)(Object)this).setData(0, j - 1);
                     return true;
                 case 2:
-                    j = this.propertyDelegate.get(0);
-                    ((LecternScreenHandler)(Object)this).setProperty(0, j + 1);
+                    j = this.lecternData.get(0);
+                    ((LecternMenu)(Object)this).setData(0, j + 1);
                     return true;
                 case 3:
-                    if (!entityhuman.canModifyBlocks()) return false;
+                    if (!entityhuman.mayBuild()) return false;
 
                     PlayerTakeLecternBookEvent event = new PlayerTakeLecternBookEvent(player, ((CardboardLecternInventory) getBukkitView().getTopInventory()).getHolder());
                     Bukkit.getServer().getPluginManager().callEvent(event);
                     if (event.isCancelled()) return false;
 
-                    ItemStack itemstack = this.inventory.removeStack(0);
-                    this.inventory.markDirty();
-                    if (!entityhuman.getInventory().insertStack(itemstack))  entityhuman.dropItem(itemstack, false);
+                    ItemStack itemstack = this.lectern.removeItemNoUpdate(0);
+                    this.lectern.setChanged();
+                    if (!entityhuman.getInventory().add(itemstack))  entityhuman.drop(itemstack, false);
 
                     return true;
                 default:

@@ -2,8 +2,8 @@ package org.cardboardpowered.impl.block;
 
 import com.google.common.base.Preconditions;
 import io.papermc.paper.math.Position;
-import net.minecraft.block.entity.SculkCatalystBlockEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.SculkCatalystBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -26,7 +26,7 @@ public class CraftSculkCatalyst extends CardboardBlockEntityState<SculkCatalystB
         this.requirePlaced();
         // TODO
         // ((SculkCatalystBlockEntity)this.getTileEntity()).getEventListener().bloom(this.world.getHandle(), this.getPosition(), this.getHandle(), this.world.getHandle().getRandom());
-        ((SculkCatalystBlockEntity)this.getTileEntity()).getEventListener().getSpreadManager().spread(new BlockPos(block.getX(), block.getY(), block.getZ()), charge);
+        ((SculkCatalystBlockEntity)this.getTileEntity()).getListener().getSculkSpreader().addCursors(new BlockPos(block.getX(), block.getY(), block.getZ()), charge);
     }
 
     @Override

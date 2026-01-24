@@ -2,12 +2,9 @@ package org.cardboardpowered.impl.inventory;
 
 import com.google.common.base.Preconditions;
 import org.cardboardpowered.interfaces.IMixinAnvilScreenHandler;
-
-import net.minecraft.inventory.Inventory;
-import net.minecraft.screen.AnvilScreenHandler;
-
 import java.util.function.Consumer;
-
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.AnvilMenu;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.inventory.CraftResultInventory;
 import org.bukkit.craftbukkit.inventory.view.CraftAnvilView;
@@ -21,13 +18,13 @@ public class CardboardAnvilInventory extends CraftResultInventory implements Anv
     private static final int DEFAULT_MAXIMUM_REPAIR_COST = 40;
 	
     private final Location location;
-    private final AnvilScreenHandler container;
+    private final AnvilMenu container;
     
     private int repairCost;
     private int repairCostAmount;
     private int maximumRepairCost;
 
-    public CardboardAnvilInventory(Location location, Inventory inventory, Inventory resultInventory, AnvilScreenHandler container) {
+    public CardboardAnvilInventory(Location location, Container inventory, Container resultInventory, AnvilMenu container) {
         super(inventory, resultInventory);
         this.location = location;
         this.container = container;

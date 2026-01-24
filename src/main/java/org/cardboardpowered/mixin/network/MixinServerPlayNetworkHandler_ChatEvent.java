@@ -1,24 +1,24 @@
 package org.cardboardpowered.mixin.network;
 
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
-import net.minecraft.network.ClientConnection;
+import net.minecraft.network.Connection;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ConnectedClientData;
-import net.minecraft.server.network.ServerCommonNetworkHandler;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.server.network.ServerCommonPacketListenerImpl;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.phys.Vec3;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
-@Mixin(value = ServerPlayNetworkHandler.class, priority = 999)
-public abstract class MixinServerPlayNetworkHandler_ChatEvent extends ServerCommonNetworkHandler {
+@Mixin(value = ServerGamePacketListenerImpl.class, priority = 999)
+public abstract class MixinServerPlayNetworkHandler_ChatEvent extends ServerCommonPacketListenerImpl {
 
     @Shadow 
-    public ServerPlayerEntity player;
+    public ServerPlayer player;
 
     // private static final AtomicIntegerFieldUpdater<ServerPlayNetworkHandler> chatSpamField = AtomicIntegerFieldUpdater.newUpdater(ServerPlayNetworkHandler.class, "messageCooldownBukkit");
 
@@ -29,28 +29,28 @@ public abstract class MixinServerPlayNetworkHandler_ChatEvent extends ServerComm
     // public int ticks;
 
     @Shadow
-    public Vec3d requestedTeleportPos;
+    public Vec3 awaitingPositionFromClient;
 
     @Shadow
-    public int requestedTeleportId;
+    public int awaitingTeleport;
 
-    @Shadow public double lastTickX;
-    @Shadow public double lastTickY;
-    @Shadow public double lastTickZ;
-    @Shadow public double updatedX;
-    @Shadow public double updatedY;
-    @Shadow public double updatedZ;
-    @Shadow private boolean floating;
-    @Shadow private int movePacketsCount;
-    @Shadow private int lastTickMovePacketsCount;
+    @Shadow public double firstGoodX;
+    @Shadow public double firstGoodY;
+    @Shadow public double firstGoodZ;
+    @Shadow public double lastGoodX;
+    @Shadow public double lastGoodY;
+    @Shadow public double lastGoodZ;
+    @Shadow private boolean clientIsFloating;
+    @Shadow private int receivedMovePacketCount;
+    @Shadow private int knownMovePacketCount;
 
-    public MixinServerPlayNetworkHandler_ChatEvent(MinecraftServer server, ClientConnection connection, ConnectedClientData clientData) {
+    public MixinServerPlayNetworkHandler_ChatEvent(MinecraftServer server, Connection connection, CommonListenerCookie clientData) {
         super(server, connection, clientData);
         throw new AssertionError("i disagree");
     }
 
-    private ServerPlayNetworkHandler get() {
-        return (ServerPlayNetworkHandler) (Object) this;
+    private ServerGamePacketListenerImpl get() {
+        return (ServerGamePacketListenerImpl) (Object) this;
     }
 
     public CraftPlayer getPlayer_0() {

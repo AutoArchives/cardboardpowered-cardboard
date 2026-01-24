@@ -6,28 +6,26 @@ package org.cardboardpowered.mixin.entity;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.ItemBasedSteering;
 import org.cardboardpowered.interfaces.ISaddledComponent;
 
-import net.minecraft.entity.SaddledComponent;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-
-@Mixin(SaddledComponent.class)
+@Mixin(ItemBasedSteering.class)
 public class MixinSaddledComponent implements ISaddledComponent {
 
-    @Shadow public DataTracker dataTracker;
-    @Shadow public TrackedData<Integer> boostTime;
-    @Shadow public boolean boosted;
-    @Shadow public int boostedTime; // field_23216
+    @Shadow public SynchedEntityData entityData;
+    @Shadow public EntityDataAccessor<Integer> boostTimeAccessor;
+    @Shadow public boolean boosting;
+    @Shadow public int boostTime; // field_23216
     // @Shadow public int currentBoostTime;
 
     @Override
     public void setBoostTicks(int ticks) {
-        this.boosted = true;
-        this.boostedTime = 0;
+        this.boosting = true;
+        this.boostTime = 0;
         // this.currentBoostTime = ticks;
-        this.dataTracker.set(this.boostTime, ticks);
+        this.entityData.set(this.boostTimeAccessor, ticks);
     }
 
 }

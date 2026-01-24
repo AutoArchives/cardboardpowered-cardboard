@@ -1,7 +1,7 @@
 package org.cardboardpowered.impl.entity;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.entity.FallingBlockEntity;
+import net.minecraft.world.entity.item.FallingBlockEntity;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
@@ -71,7 +71,7 @@ public class CraftFallingBlock extends CraftEntity implements FallingBlock {
         super.setTicksLived(value);
 
         // Second field for EntityFallingBlock
-        getHandle().timeFalling = value;
+        getHandle().time = value;
     }
 
     @Override
@@ -100,19 +100,19 @@ public class CraftFallingBlock extends CraftEntity implements FallingBlock {
 
 	@Override
     public float getDamagePerBlock() {
-        return this.getHandle().fallHurtAmount;
+        return this.getHandle().fallDamagePerDistance;
     }
 
 
 	@Override
 	public int getMaxDamage() {
-        return this.getHandle().fallHurtMax;
+        return this.getHandle().fallDamageMax;
 	}
 
 	@Override
     public void setDamagePerBlock(float damage) {
         // Preconditions.checkArgument(((double)damage >= 0.0 ? 1 : 0) != 0, (String)"damage must be >= 0.0, given %s", (Object)Float.valueOf(damage));
-        this.getHandle().fallHurtAmount = damage;
+        this.getHandle().fallDamagePerDistance = damage;
         if ((double)damage > 0.0) {
             this.setHurtEntities(true);
         }
@@ -120,7 +120,7 @@ public class CraftFallingBlock extends CraftEntity implements FallingBlock {
 
 	@Override
 	public void setMaxDamage(int damage) {
-        this.getHandle().fallHurtMax = damage;
+        this.getHandle().fallDamageMax = damage;
         if (damage > 0) {
             this.setHurtEntities(true);
         }
@@ -142,10 +142,10 @@ public class CraftFallingBlock extends CraftEntity implements FallingBlock {
 
 	@Override
 	public void setBlockData(BlockData blockData) {
-		net.minecraft.block.BlockState newState;
-        net.minecraft.block.BlockState oldState = this.getHandle().blockState;
+		net.minecraft.world.level.block.state.BlockState newState;
+        net.minecraft.world.level.block.state.BlockState oldState = this.getHandle().blockState;
         this.getHandle().blockState = newState = ((CraftBlockData)blockData).getState();
-        this.getHandle().blockEntityData = null;
+        this.getHandle().blockData = null;
         if (oldState != newState) {
             // this.update();
         }
@@ -153,7 +153,7 @@ public class CraftFallingBlock extends CraftEntity implements FallingBlock {
 
 	@Override
 	public BlockState getBlockState() {
-        return CraftBlockStates.getBlockState(this.getHandle().blockState, this.getHandle().blockEntityData);
+        return CraftBlockStates.getBlockState(this.getHandle().blockState, this.getHandle().blockData);
 	}
 
 	@Override
@@ -161,7 +161,7 @@ public class CraftFallingBlock extends CraftEntity implements FallingBlock {
         this.setBlockData(blockState.getBlockData());
         if (blockState instanceof CardboardBlockEntityState) {
         	CardboardBlockEntityState tileEntity = (CardboardBlockEntityState)blockState;
-            this.getHandle().blockEntityData = tileEntity.getSnapshotNBT();
+            this.getHandle().blockData = tileEntity.getSnapshotNBT();
         }
 	}
 

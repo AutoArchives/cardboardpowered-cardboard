@@ -1,12 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
 import java.util.UUID;
-
-import net.minecraft.entity.LazyEntityReference;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.util.Nullables;
-
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Creature;
@@ -14,25 +8,29 @@ import org.bukkit.entity.Tameable;
 import org.cardboardpowered.impl.entity.CraftAnimals;
 
 import me.isaiah.common.cmixin.IMixinTameableEntity;
+import net.minecraft.Optionull;
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.TamableAnimal;
 
 public class CraftTameableAnimal extends CraftAnimals implements Tameable, Creature {
 
-    public CraftTameableAnimal(CraftServer server, TameableEntity entity) {
+    public CraftTameableAnimal(CraftServer server, TamableAnimal entity) {
         super(server, entity);
     }
 
     @Override
-    public TameableEntity getHandle() {
-        return (TameableEntity) super.getHandle();
+    public TamableAnimal getHandle() {
+        return (TamableAnimal) super.getHandle();
     }
 
     public UUID getOwnerUUID() {
-    	return Nullables.map(this.getHandle().getOwnerReference(), LazyEntityReference::getUuid);
+    	return Optionull.map(this.getHandle().getOwnerReference(), EntityReference::getUUID);
     }
 
     public void setOwnerUUID(UUID uuid) {
 
-        this.getHandle().setOwner( (LazyEntityReference)  (uuid == null ? null : new LazyEntityReference<LivingEntity>(uuid)) );
+        this.getHandle().setOwnerReference( (EntityReference)  (uuid == null ? null : new EntityReference<LivingEntity>(uuid)) );
     }
 
     public UUID getOwnerUniqueId() {return getOwnerUUID();} // Paper
@@ -50,7 +48,7 @@ public class CraftTameableAnimal extends CraftAnimals implements Tameable, Creat
 
     @Override
     public boolean isTamed() {
-        return getHandle().isTamed();
+        return getHandle().isTame();
     }
 
     @Override
@@ -78,7 +76,7 @@ public class CraftTameableAnimal extends CraftAnimals implements Tameable, Creat
 
     public void setSitting(boolean sitting) {
         getHandle().setInSittingPose(sitting);
-        getHandle().setSitting(sitting);
+        getHandle().setOrderedToSit(sitting);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.damage;
 
 import java.util.Objects;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -14,15 +14,15 @@ import org.bukkit.entity.Entity;
 
 public class CraftDamageSource implements DamageSource {
 
-    private final net.minecraft.entity.damage.DamageSource damageSource;
+    private final net.minecraft.world.damagesource.DamageSource damageSource;
     private final DamageType damageType;
 
-    public CraftDamageSource(net.minecraft.entity.damage.DamageSource damageSource) {
+    public CraftDamageSource(net.minecraft.world.damagesource.DamageSource damageSource) {
         this.damageSource = damageSource;
-        this.damageType = CraftDamageType.minecraftHolderToBukkit(damageSource.getTypeRegistryEntry());
+        this.damageType = CraftDamageType.minecraftHolderToBukkit(damageSource.typeHolder());
     }
 
-    public net.minecraft.entity.damage.DamageSource getHandle() {
+    public net.minecraft.world.damagesource.DamageSource getHandle() {
         return this.damageSource;
     }
 
@@ -43,31 +43,31 @@ public class CraftDamageSource implements DamageSource {
 
     @Override
     public org.bukkit.entity.Entity getCausingEntity() {
-        net.minecraft.entity.Entity entity = this.getHandle().getAttacker(); // .getCausingEntity();
+        net.minecraft.world.entity.Entity entity = this.getHandle().getEntity(); // .getCausingEntity();
         return (entity != null) ? entity.getBukkitEntity() : null;
     }
 
     @Override
     public org.bukkit.entity.Entity getDirectEntity() {
-        net.minecraft.entity.Entity entity = this.getHandle().getSource();
+        net.minecraft.world.entity.Entity entity = this.getHandle().getDirectEntity();
         return (entity != null) ? entity.getBukkitEntity() : null;
     }
 
     @Override
     public Location getDamageLocation() {
-        Vec3d vec3D = this.getHandle().getStoredPosition();
+        Vec3 vec3D = this.getHandle().sourcePositionRaw();
         return (vec3D != null) ? CraftLocation.toBukkit(vec3D, this.getCausingEntityWorld()) : null;
     }
 
     @Override
     public Location getSourceLocation() {
-        Vec3d vec3D = this.getHandle().getPosition();
+        Vec3 vec3D = this.getHandle().getSourcePosition();
         return (vec3D != null) ? CraftLocation.toBukkit(vec3D, this.getCausingEntityWorld()) : null;
     }
 
     @Override
     public boolean isIndirect() {
-        return this.getHandle().getAttacker() != this.getHandle().getSource();
+        return this.getHandle().getEntity() != this.getHandle().getDirectEntity();
 
     	// return this.getHandle().getCausingEntity() != this.getHandle().getSource();
     }
@@ -79,7 +79,7 @@ public class CraftDamageSource implements DamageSource {
 
     @Override
     public boolean scalesWithDifficulty() {
-        return this.getHandle().isScaledWithDifficulty();
+        return this.getHandle().scalesWithDifficulty();
     }
 
     @Override
@@ -113,21 +113,21 @@ public class CraftDamageSource implements DamageSource {
     }
 
     public static DamageSource buildFromBukkit(DamageType damageType, Entity causingEntity, Entity directEntity, Location damageLocation) {
-        net.minecraft.registry.entry.RegistryEntry<net.minecraft.entity.damage.DamageType> holderDamageType = CraftDamageType.bukkitToMinecraftHolder(damageType);
+        net.minecraft.core.Holder<net.minecraft.world.damagesource.DamageType> holderDamageType = CraftDamageType.bukkitToMinecraftHolder(damageType);
 
-        net.minecraft.entity.Entity nmsCausingEntity = null;
+        net.minecraft.world.entity.Entity nmsCausingEntity = null;
         if (causingEntity instanceof CraftEntity craftCausingEntity) {
             nmsCausingEntity = craftCausingEntity.getHandle();
         }
 
-        net.minecraft.entity.Entity nmsDirectEntity = null;
+        net.minecraft.world.entity.Entity nmsDirectEntity = null;
         if (directEntity instanceof CraftEntity craftDirectEntity) {
             nmsDirectEntity = craftDirectEntity.getHandle();
         }
 
-        Vec3d vec3D = (damageLocation == null) ? null : CraftLocation.toVec3D(damageLocation);
+        Vec3 vec3D = (damageLocation == null) ? null : CraftLocation.toVec3D(damageLocation);
 
-        net.minecraft.entity.damage.DamageSource sor = new net.minecraft.entity.damage.DamageSource(holderDamageType, nmsDirectEntity, nmsCausingEntity);
+        net.minecraft.world.damagesource.DamageSource sor = new net.minecraft.world.damagesource.DamageSource(holderDamageType, nmsDirectEntity, nmsCausingEntity);
         // TODO: set vec3d
         return new CraftDamageSource(sor);
         

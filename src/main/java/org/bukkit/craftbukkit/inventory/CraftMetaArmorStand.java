@@ -8,19 +8,14 @@ import com.mojang.serialization.Codec;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.TypedEntityData;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.Registries;
-
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.component.TypedEntityData;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.cardboardpowered.TypedEntityDataExtra;
@@ -32,7 +27,7 @@ implements ArmorStandMeta {
 	
 	
 	static final CraftMetaItem.ItemMetaKeyType<TypedEntityData<EntityType<?>>> ENTITY_TAG = new CraftMetaItem.ItemMetaKeyType<>(
-		      DataComponentTypes.ENTITY_DATA, "entity-tag"
+		      DataComponents.ENTITY_DATA, "entity-tag"
 		   );
 	
     // static final CraftMetaItem.ItemMetaKeyType<NbtComponent> ENTITY_TAG = new CraftMetaItem.ItemMetaKeyType<NbtComponent>(DataComponentTypes.ENTITY_DATA, "entity-tag");
@@ -46,7 +41,7 @@ implements ArmorStandMeta {
     private Boolean showArms = null;
     private Boolean small = null;
     private Boolean marker = null;
-    NbtCompound entityTag;
+    CompoundTag entityTag;
 
     CraftMetaArmorStand(CraftMetaItem meta) {
         super(meta);
@@ -62,7 +57,7 @@ implements ArmorStandMeta {
         this.entityTag = armorStand.entityTag;
     }
 
-    CraftMetaArmorStand(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
+    CraftMetaArmorStand(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaArmorStand.getOrEmpty(tag, ENTITY_TAG).ifPresent(nbt -> {
             this.entityTag = TypedEntityDataExtra.copyTagWithEntityId(nbt);
@@ -94,10 +89,10 @@ implements ArmorStandMeta {
     }
 
     @Override
-    void deserializeInternal(NbtCompound tag, Object context) {
+    void deserializeInternal(CompoundTag tag, Object context) {
         super.deserializeInternal(tag, context);
         if (tag.contains(CraftMetaArmorStand.ENTITY_TAG.NBT)) {
-        	Optional<NbtCompound> opt = tag.getCompound(CraftMetaArmorStand.ENTITY_TAG.NBT);
+        	Optional<CompoundTag> opt = tag.getCompound(CraftMetaArmorStand.ENTITY_TAG.NBT);
         	if (opt.isPresent()) {
         		this.entityTag = opt.get();
         	}
@@ -105,7 +100,7 @@ implements ArmorStandMeta {
     }
 
     @Override
-    void serializeInternal(Map<String, NbtElement> internalTags) {
+    void serializeInternal(Map<String, Tag> internalTags) {
         if (this.entityTag != null && !this.entityTag.isEmpty()) {
             internalTags.put(CraftMetaArmorStand.ENTITY_TAG.NBT, this.entityTag);
         }
@@ -115,7 +110,7 @@ implements ArmorStandMeta {
     void applyToItem(CraftMetaItem.Applicator tag) {
         super.applyToItem(tag);
         if (!this.isArmorStandEmpty() && this.entityTag == null) {
-            this.entityTag = new NbtCompound();
+            this.entityTag = new CompoundTag();
         }
         if (this.invisible != null) {
             this.entityTag.putBoolean(CraftMetaArmorStand.INVISIBLE.NBT, this.invisible);

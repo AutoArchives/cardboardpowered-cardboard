@@ -1,37 +1,37 @@
 package org.cardboardpowered.impl.inventory;
 
-import net.minecraft.block.entity.ChestBlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.GenericContainerScreenHandler;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 
-public class CardboardChestBlockDoubleInventory implements NamedScreenHandlerFactory {
+public class CardboardChestBlockDoubleInventory implements MenuProvider {
 
     private final ChestBlockEntity tileentitychest;
     private final ChestBlockEntity tileentitychest1;
-    public final net.minecraft.inventory.DoubleInventory inventorylargechest;
+    public final net.minecraft.world.CompoundContainer inventorylargechest;
 
-    public CardboardChestBlockDoubleInventory(ChestBlockEntity tileentitychest, ChestBlockEntity tileentitychest1, net.minecraft.inventory.DoubleInventory inventorylargechest) {
+    public CardboardChestBlockDoubleInventory(ChestBlockEntity tileentitychest, ChestBlockEntity tileentitychest1, net.minecraft.world.CompoundContainer inventorylargechest) {
         this.tileentitychest = tileentitychest;
         this.tileentitychest1 = tileentitychest1;
         this.inventorylargechest = inventorylargechest;
     }
 
     @Override
-    public ScreenHandler createMenu(int i, PlayerInventory playerinventory, PlayerEntity entityhuman) {
-        if (tileentitychest.checkUnlocked(entityhuman) && tileentitychest1.checkUnlocked(entityhuman)) {
-            tileentitychest.generateLoot(playerinventory.player);
-            tileentitychest1.generateLoot(playerinventory.player);
-            return GenericContainerScreenHandler.createGeneric9x6(i, playerinventory, inventorylargechest);
+    public AbstractContainerMenu createMenu(int i, Inventory playerinventory, Player entityhuman) {
+        if (tileentitychest.canOpen(entityhuman) && tileentitychest1.canOpen(entityhuman)) {
+            tileentitychest.unpackLootTable(playerinventory.player);
+            tileentitychest1.unpackLootTable(playerinventory.player);
+            return ChestMenu.sixRows(i, playerinventory, inventorylargechest);
         } else return null;
     }
 
     @Override
-    public Text getDisplayName() {
-        return (Text) (tileentitychest.hasCustomName() ? tileentitychest.getDisplayName() : (tileentitychest1.hasCustomName() ? tileentitychest1.getDisplayName() : Text.translatable("container.chestDouble")));
+    public Component getDisplayName() {
+        return (Component) (tileentitychest.hasCustomName() ? tileentitychest.getDisplayName() : (tileentitychest1.hasCustomName() ? tileentitychest1.getDisplayName() : Component.translatable("container.chestDouble")));
     }
 
 }

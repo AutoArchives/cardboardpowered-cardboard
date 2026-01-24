@@ -2,14 +2,12 @@ package org.cardboardpowered.mixin.network;
 
 import java.net.SocketAddress;
 import java.util.UUID;
-
+import net.minecraft.network.Connection;
 import org.spongepowered.asm.mixin.Mixin;
 import org.cardboardpowered.interfaces.IMixinClientConnection;
 import com.mojang.authlib.properties.Property;
 
-import net.minecraft.network.ClientConnection;
-
-@Mixin(ClientConnection.class)
+@Mixin(Connection.class)
 public class MixinClientConnection implements IMixinClientConnection {
 
     public UUID spoofedUUID;
@@ -18,7 +16,7 @@ public class MixinClientConnection implements IMixinClientConnection {
 
     @Override
     public SocketAddress getRawAddress() {
-        return ((ClientConnection)(Object)this).channel.remoteAddress();
+        return ((Connection)(Object)this).channel.remoteAddress();
     }
 
     @Override

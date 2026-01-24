@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 
 public class UnknownEntity extends CraftEntity {
 

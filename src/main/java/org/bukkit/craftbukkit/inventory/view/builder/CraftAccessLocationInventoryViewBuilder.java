@@ -1,10 +1,10 @@
 package org.bukkit.craftbukkit.inventory.view.builder;
 
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.MenuType;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.view.builder.LocationInventoryViewBuilder;
 
@@ -14,18 +14,18 @@ public class CraftAccessLocationInventoryViewBuilder<V extends InventoryView> ex
 
     private final CraftAccessContainerObjectBuilder containerBuilder;
 
-    public CraftAccessLocationInventoryViewBuilder(final ScreenHandlerType<?> handle, final CraftAccessContainerObjectBuilder containerBuilder) {
+    public CraftAccessLocationInventoryViewBuilder(final MenuType<?> handle, final CraftAccessContainerObjectBuilder containerBuilder) {
         super(handle);
         this.containerBuilder = containerBuilder;
     }
 
     @Override
-    protected ScreenHandler buildContainer(final ServerPlayerEntity player) {
-        final ScreenHandlerContext access;
+    protected AbstractContainerMenu buildContainer(final ServerPlayer player) {
+        final ContainerLevelAccess access;
         if (super.position == null) {
-            access = ScreenHandlerContext.create(player.getEntityWorld(), player.getBlockPos());
+            access = ContainerLevelAccess.create(player.level(), player.blockPosition());
         } else {
-            access = ScreenHandlerContext.create(super.world, super.position);
+            access = ContainerLevelAccess.create(super.world, super.position);
         }
 
         return this.containerBuilder.build(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory(), access);
@@ -42,6 +42,6 @@ public class CraftAccessLocationInventoryViewBuilder<V extends InventoryView> ex
     }
 
     public interface CraftAccessContainerObjectBuilder {
-        ScreenHandler build(final int syncId, final PlayerInventory inventory, ScreenHandlerContext access);
+        AbstractContainerMenu build(final int syncId, final Inventory inventory, ContainerLevelAccess access);
     }
 }

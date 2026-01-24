@@ -1,42 +1,42 @@
 package org.bukkit.craftbukkit.inventory.view;
 
-import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
-import net.minecraft.screen.AbstractFurnaceScreenHandler;
+import net.minecraft.world.inventory.AbstractFurnaceMenu;
+import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.view.FurnaceView;
 
-public class CraftFurnaceView extends CraftInventoryView<AbstractFurnaceScreenHandler, FurnaceInventory> implements FurnaceView {
+public class CraftFurnaceView extends CraftInventoryView<AbstractFurnaceMenu, FurnaceInventory> implements FurnaceView {
 
-    public CraftFurnaceView(final HumanEntity player, final FurnaceInventory viewing, final AbstractFurnaceScreenHandler container) {
+    public CraftFurnaceView(final HumanEntity player, final FurnaceInventory viewing, final AbstractFurnaceMenu container) {
         super(player, viewing, container);
     }
 
     @Override
     public float getCookTime() {
-        return ((AbstractFurnaceScreenHandler)this.container).getCookProgress();
+        return ((AbstractFurnaceMenu)this.container).getBurnProgress();
     }
 
     @Override
     public float getBurnTime() {
-        return ((AbstractFurnaceScreenHandler)this.container).getFuelProgress();
+        return ((AbstractFurnaceMenu)this.container).getLitProgress();
     }
 
     @Override
     public boolean isBurning() {
-        return ((AbstractFurnaceScreenHandler)this.container).isBurning();
+        return ((AbstractFurnaceMenu)this.container).isLit();
     }
 
     @Override
     public void setCookTime(final int cookProgress, final int cookDuration) {
-        this.container.setProperty(AbstractFurnaceBlockEntity.COOK_TIME_PROPERTY_INDEX, cookProgress);
-        this.container.setProperty(AbstractFurnaceBlockEntity.COOK_TIME_TOTAL_PROPERTY_INDEX, cookDuration);
+        this.container.setData(AbstractFurnaceBlockEntity.DATA_COOKING_PROGRESS, cookProgress);
+        this.container.setData(AbstractFurnaceBlockEntity.DATA_COOKING_TOTAL_TIME, cookDuration);
     }
 
     @Override
     public void setBurnTime(final int burnProgress, final int burnDuration) {
-        this.container.setProperty(AbstractFurnaceBlockEntity.BURN_TIME_PROPERTY_INDEX, burnProgress);
-        this.container.setProperty(AbstractFurnaceBlockEntity.FUEL_TIME_PROPERTY_INDEX, burnDuration);
+        this.container.setData(AbstractFurnaceBlockEntity.DATA_LIT_TIME, burnProgress);
+        this.container.setData(AbstractFurnaceBlockEntity.DATA_LIT_DURATION, burnDuration);
     }
 }

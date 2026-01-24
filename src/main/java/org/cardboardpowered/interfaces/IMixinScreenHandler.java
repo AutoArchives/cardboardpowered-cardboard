@@ -18,26 +18,25 @@
  */
 package org.cardboardpowered.interfaces;
 
+import net.minecraft.core.NonNullList;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.interfaces.IScreenHandler;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.text.Text;
-import net.minecraft.util.collection.DefaultedList;
-
 public interface IMixinScreenHandler extends IScreenHandler {
 
     CardboardInventoryView getBukkitView();
 
-    Text getTitle();
+    Component getTitle();
 
-    void setTitle(Text title);
+    void setTitle(Component title);
 
-    void transferTo(ScreenHandler other, CraftHumanEntity player);
+    void transferTo(AbstractContainerMenu other, CraftHumanEntity player);
     
     /*
     public default void transferTo(ScreenHandler other, CraftHumanEntity player) {
@@ -52,16 +51,16 @@ public interface IMixinScreenHandler extends IScreenHandler {
     */
 
 
-    DefaultedList<ItemStack> getTrackedStacksBF();
+    NonNullList<ItemStack> getTrackedStacksBF();
 
-    void setTrackedStacksBF(DefaultedList<ItemStack> trackedStacks);
+    void setTrackedStacksBF(NonNullList<ItemStack> trackedStacks);
 
     void setCheckReachable(boolean bl);
 
-    void cardboard_setSlots(DefaultedList<Slot> slots);
+    void cardboard_setSlots(NonNullList<Slot> slots);
 
-    DefaultedList<ItemStack> cardboard_previousTrackedStacks();
+    NonNullList<ItemStack> cardboard_previousTrackedStacks();
 
-    void cardboard_previousTrackedStacks(DefaultedList<ItemStack> s);
+    void cardboard_previousTrackedStacks(NonNullList<ItemStack> s);
 
 }

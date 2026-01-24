@@ -18,13 +18,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.WritableBookContentComponent;
-import net.minecraft.server.filter.FilteredMessage;
-import net.minecraft.text.RawFilteredPair;
-import net.minecraft.text.Text;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.server.network.Filterable;
+import net.minecraft.server.network.FilteredText;
+import net.minecraft.world.item.component.WritableBookContent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -40,7 +39,7 @@ public class CraftMetaBook
 extends CraftMetaItem
 implements BookMeta // ,
 /*WritableBookMeta*/ {
-    static final CraftMetaItem.ItemMetaKeyType<WritableBookContentComponent> BOOK_CONTENT = new CraftMetaItem.ItemMetaKeyType<WritableBookContentComponent>(DataComponentTypes.WRITABLE_BOOK_CONTENT);
+    static final CraftMetaItem.ItemMetaKeyType<WritableBookContent> BOOK_CONTENT = new CraftMetaItem.ItemMetaKeyType<WritableBookContent>(DataComponents.WRITABLE_BOOK_CONTENT);
     static final CraftMetaItem.ItemMetaKey BOOK_PAGES = new CraftMetaItem.ItemMetaKey("pages");
     static final int MAX_PAGES = Integer.MAX_VALUE;
     static final int MAX_PAGE_LENGTH = 1024;
@@ -64,10 +63,10 @@ implements BookMeta // ,
         }
     }
 
-    CraftMetaBook(ComponentChanges tag, Set<ComponentType<?>> extraHandledDcts) {
+    CraftMetaBook(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         CraftMetaBook.getOrEmpty(tag, BOOK_CONTENT).ifPresent(writable -> {
-            List<RawFilteredPair<String>> pages = writable.pages();
+            List<Filterable<String>> pages = writable.pages();
             this.pages = new ArrayList<String>(pages.size());
             for (int i2 = 0; i2 < Math.min(pages.size(), Integer.MAX_VALUE); ++i2) {
                 String page = pages.get(i2).raw();
@@ -93,11 +92,11 @@ implements BookMeta // ,
     void applyToItem(CraftMetaItem.Applicator itemData) {
         super.applyToItem(itemData);
         if (this.pages != null) {
-            ArrayList<RawFilteredPair<String>> list = new ArrayList<RawFilteredPair<String>>();
+            ArrayList<Filterable<String>> list = new ArrayList<Filterable<String>>();
             for (String page : this.pages) {
-                list.add(RawFilteredPair.of(FilteredMessage.permitted(page)));
+                list.add(Filterable.from(FilteredText.passThrough(page)));
             }
-            itemData.put(BOOK_CONTENT, new WritableBookContentComponent(list));
+            itemData.put(BOOK_CONTENT, new WritableBookContent(list));
         }
     }
 
@@ -357,7 +356,7 @@ implements BookMeta // ,
         }
 
         private String pageToJSON(String page) {
-            Text component = CraftChatMessage.fromString(page, true, true)[0];
+            net.minecraft.network.chat.Component component = CraftChatMessage.fromString(page, true, true)[0];
             return CraftChatMessage.toJSON(component);
         }
 

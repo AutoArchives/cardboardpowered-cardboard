@@ -1,13 +1,12 @@
 package org.cardboardpowered.impl.entity;
 
+import net.minecraft.world.entity.Mob;
 import org.bukkit.craftbukkit.CraftServer;
-
-import net.minecraft.entity.mob.MobEntity;
 
 @Deprecated
 public class CardboardFlying extends CraftMob {
 
-	public CardboardFlying(CraftServer server, MobEntity entity) {
+	public CardboardFlying(CraftServer server, Mob entity) {
 		super(server, entity);
 	}
 	

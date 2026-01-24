@@ -1,7 +1,9 @@
 package org.cardboardpowered.mixin.entity.block;
 
 import java.util.List;
-
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.entity.HumanEntity;
@@ -11,22 +13,18 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import org.cardboardpowered.interfaces.IMixinInventory;
 
-import net.minecraft.block.entity.ShulkerBoxBlockEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.collection.DefaultedList;
-
 @Mixin(ShulkerBoxBlockEntity.class)
 public class MixinShulkerBoxBlockEntity implements IMixinInventory {
 
     @Shadow
-    public DefaultedList<ItemStack> inventory;
+    public NonNullList<ItemStack> itemStacks;
 
     public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
     private int maxStack = MAX_STACK;
 
     @Override
     public List<ItemStack> getContents() {
-        return inventory;
+        return itemStacks;
     }
 
     @Override
@@ -45,12 +43,12 @@ public class MixinShulkerBoxBlockEntity implements IMixinInventory {
     }
 
     @Override
-    public void setMaxStackSize(int size) {
+    public void setCardboardMaxStackSize(int size) {
         this.maxStack = size;
     }
 
     @Override
-    public int getMaxStackSize() {
+    public int getCardboardMaxStackSize() {
         return maxStack;
     }
 

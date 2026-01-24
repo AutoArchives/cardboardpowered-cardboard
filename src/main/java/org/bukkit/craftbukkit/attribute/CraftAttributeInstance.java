@@ -11,10 +11,10 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
 public class CraftAttributeInstance implements AttributeInstance {
 
-    private final net.minecraft.entity.attribute.EntityAttributeInstance handle;
+    private final net.minecraft.world.entity.ai.attributes.AttributeInstance handle;
     private final Attribute attribute;
 
-    public CraftAttributeInstance(net.minecraft.entity.attribute.EntityAttributeInstance handle, Attribute attribute) {
+    public CraftAttributeInstance(net.minecraft.world.entity.ai.attributes.AttributeInstance handle, Attribute attribute) {
         this.handle = handle;
         this.attribute = attribute;
     }
@@ -37,7 +37,7 @@ public class CraftAttributeInstance implements AttributeInstance {
     @Override
     public Collection<AttributeModifier> getModifiers() {
         List<AttributeModifier> result = new ArrayList<AttributeModifier>();
-        for (net.minecraft.entity.attribute.EntityAttributeModifier nms : this.handle.getModifiers()) {
+        for (net.minecraft.world.entity.ai.attributes.AttributeModifier nms : this.handle.getModifiers()) {
             result.add(CraftAttributeInstance.convert(nms));
         }
 
@@ -48,7 +48,7 @@ public class CraftAttributeInstance implements AttributeInstance {
     @Override
     public AttributeModifier getModifier(final net.kyori.adventure.key.Key key) {
         Preconditions.checkArgument(key != null, "Key cannot be null");
-        net.minecraft.entity.attribute.EntityAttributeModifier modifier = this.handle.getModifier(io.papermc.paper.adventure.PaperAdventure.asVanilla(key));
+        net.minecraft.world.entity.ai.attributes.AttributeModifier modifier = this.handle.getModifier(io.papermc.paper.adventure.PaperAdventure.asVanilla(key));
         return modifier == null ? null : CraftAttributeInstance.convert(modifier);
     }
 
@@ -74,14 +74,14 @@ public class CraftAttributeInstance implements AttributeInstance {
     @Override
     public void addModifier(AttributeModifier modifier) {
         Preconditions.checkArgument(modifier != null, "modifier");
-        this.handle.addPersistentModifier(CraftAttributeInstance.convert(modifier));
+        this.handle.addPermanentModifier(CraftAttributeInstance.convert(modifier));
     }
 
     // Paper start - Transient modifier API
     @Override
     public void addTransientModifier(AttributeModifier modifier) {
         Preconditions.checkArgument(modifier != null, "modifier");
-        this.handle.addTemporaryModifier(CraftAttributeInstance.convert(modifier));
+        this.handle.addTransientModifier(CraftAttributeInstance.convert(modifier));
     }
     // Paper end
 
@@ -101,15 +101,15 @@ public class CraftAttributeInstance implements AttributeInstance {
        return this.handle.getAttribute().value().getDefaultValue();
     }
 
-    public static net.minecraft.entity.attribute.EntityAttributeModifier convert(AttributeModifier bukkit) {
-        return new net.minecraft.entity.attribute.EntityAttributeModifier(CraftNamespacedKey.toMinecraft(bukkit.getKey()), bukkit.getAmount(), net.minecraft.entity.attribute.EntityAttributeModifier.Operation.values()[bukkit.getOperation().ordinal()]);
+    public static net.minecraft.world.entity.ai.attributes.AttributeModifier convert(AttributeModifier bukkit) {
+        return new net.minecraft.world.entity.ai.attributes.AttributeModifier(CraftNamespacedKey.toMinecraft(bukkit.getKey()), bukkit.getAmount(), net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.values()[bukkit.getOperation().ordinal()]);
     }
 
-    public static AttributeModifier convert(net.minecraft.entity.attribute.EntityAttributeModifier nms) {
-        return new AttributeModifier(CraftNamespacedKey.fromMinecraft(nms.id()), nms.value(), AttributeModifier.Operation.values()[nms.operation().ordinal()], org.bukkit.inventory.EquipmentSlotGroup.ANY);
+    public static AttributeModifier convert(net.minecraft.world.entity.ai.attributes.AttributeModifier nms) {
+        return new AttributeModifier(CraftNamespacedKey.fromMinecraft(nms.id()), nms.amount(), AttributeModifier.Operation.values()[nms.operation().ordinal()], org.bukkit.inventory.EquipmentSlotGroup.ANY);
     }
 
-    public static AttributeModifier convert(net.minecraft.entity.attribute.EntityAttributeModifier nms, net.minecraft.component.type.AttributeModifierSlot slot) { // Paper
-        return new AttributeModifier(CraftNamespacedKey.fromMinecraft(nms.id()), nms.value(), AttributeModifier.Operation.values()[nms.operation().ordinal()], org.bukkit.craftbukkit.CraftEquipmentSlot.getSlot(slot)); // Paper
+    public static AttributeModifier convert(net.minecraft.world.entity.ai.attributes.AttributeModifier nms, net.minecraft.world.entity.EquipmentSlotGroup slot) { // Paper
+        return new AttributeModifier(CraftNamespacedKey.fromMinecraft(nms.id()), nms.amount(), AttributeModifier.Operation.values()[nms.operation().ordinal()], org.bukkit.craftbukkit.CraftEquipmentSlot.getSlot(slot)); // Paper
     }
 }

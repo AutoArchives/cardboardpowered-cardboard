@@ -1,26 +1,25 @@
 package org.bukkit.craftbukkit.scoreboard;
 
-import net.minecraft.scoreboard.ScoreboardCriterion;
-import net.minecraft.scoreboard.ScoreboardDisplaySlot;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.RenderType;
 
 final class CardboardScoreboardTranslations {
     private CardboardScoreboardTranslations() {}
 
-    static DisplaySlot toBukkitSlot(ScoreboardDisplaySlot slot) {
+    static DisplaySlot toBukkitSlot(net.minecraft.world.scores.DisplaySlot slot) {
         return DisplaySlot.values()[slot.ordinal()];
     }
 
-    static ScoreboardDisplaySlot fromBukkitSlot(DisplaySlot slot) {
-        return ScoreboardDisplaySlot.values()[slot.ordinal()];
+    static net.minecraft.world.scores.DisplaySlot fromBukkitSlot(DisplaySlot slot) {
+        return net.minecraft.world.scores.DisplaySlot.values()[slot.ordinal()];
     }
 
-    static RenderType toBukkitRender(ScoreboardCriterion.RenderType display) {
+    static RenderType toBukkitRender(ObjectiveCriteria.RenderType display) {
         return RenderType.valueOf(display.name());
     }
 
-    static ScoreboardCriterion.RenderType fromBukkitRender(RenderType render) {
-        return ScoreboardCriterion.RenderType.valueOf(render.name());
+    static ObjectiveCriteria.RenderType fromBukkitRender(RenderType render) {
+        return ObjectiveCriteria.RenderType.valueOf(render.name());
     }
 }

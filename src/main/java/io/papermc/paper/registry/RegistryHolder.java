@@ -4,7 +4,7 @@ import com.google.common.base.Suppliers;
 import io.papermc.paper.registry.legacy.DelayedRegistry;
 import io.papermc.paper.registry.legacy.DelayedRegistryEntry;
 import java.util.function.Supplier;
-import net.minecraft.registry.Registry;
+import net.minecraft.core.Registry;
 import org.bukkit.Keyed;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.DefaultQualifier;

@@ -9,13 +9,13 @@ public final class CraftBlastFurnace extends org.bukkit.craftbukkit.block.data.C
         super();
     }
 
-    public CraftBlastFurnace(net.minecraft.block.BlockState state) {
+    public CraftBlastFurnace(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftDirectional
 
-    private static final net.minecraft.state.property.EnumProperty<?> FACING = getEnum(net.minecraft.block.BlastFurnaceBlock.class, "facing");
+    private static final net.minecraft.world.level.block.state.properties.EnumProperty<?> FACING = getEnum(net.minecraft.world.level.block.BlastFurnaceBlock.class, "facing");
 
     @Override
     public org.bukkit.block.BlockFace getFacing() {
@@ -34,7 +34,7 @@ public final class CraftBlastFurnace extends org.bukkit.craftbukkit.block.data.C
 
     // org.bukkit.craftbukkit.block.data.CraftLightable
 
-    private static final net.minecraft.state.property.BooleanProperty LIT = getBoolean(net.minecraft.block.BlastFurnaceBlock.class, "lit");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty LIT = getBoolean(net.minecraft.world.level.block.BlastFurnaceBlock.class, "lit");
 
     @Override
     public boolean isLit() {

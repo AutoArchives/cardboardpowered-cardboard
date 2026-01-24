@@ -1,13 +1,12 @@
 package org.cardboardpowered.impl.entity;
 
 import net.kyori.adventure.text.Component;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.FishingBobberEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.FishingHook;
+import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftServer;
@@ -24,13 +23,13 @@ public class CardboardFishHook extends CraftProjectile implements FishHook {
 
     private double biteChance = -1;
 
-    public CardboardFishHook(CraftServer server, FishingBobberEntity entity) {
+    public CardboardFishHook(CraftServer server, FishingHook entity) {
         super(server, entity);
     }
 
     @Override
-    public FishingBobberEntity getHandle() {
-        return (FishingBobberEntity) nms;
+    public FishingHook getHandle() {
+        return (FishingHook) nms;
     }
 
     @Override
@@ -45,9 +44,9 @@ public class CardboardFishHook extends CraftProjectile implements FishHook {
 
     @Override
     public double getBiteChance() {
-        FishingBobberEntity hook = getHandle();
+        FishingHook hook = getHandle();
         if (this.biteChance == -1) {
-            if (hook.getEntityWorld().hasRain(new BlockPos(MathHelper.floor(hook.getX()), MathHelper.floor(hook.getY()) + 1, MathHelper.floor(hook.getZ()))))
+            if (hook.level().isRainingAt(new BlockPos(Mth.floor(hook.getX()), Mth.floor(hook.getY()) + 1, Mth.floor(hook.getZ()))))
                 return 1 / 300.0;
             return 1 / 500.0;
         }
@@ -123,7 +122,7 @@ public class CardboardFishHook extends CraftProjectile implements FishHook {
     @Override
     public boolean isInOpenWater() {
         // TODO Auto-generated method stub
-        return nms.isTouchingWater();
+        return nms.isInWater();
     }
 
     @Override
@@ -259,18 +258,18 @@ public class CardboardFishHook extends CraftProjectile implements FishHook {
 
 	@Override
 	public void resetFishingState() {
-        FishingBobberEntity hook = this.getHandle();
+        FishingHook hook = this.getHandle();
         // hook.resetTimeUntilLured();
         // hook.fishTravelCountdown = 0;
 	}
 
 	@Override
 	public int retrieve(EquipmentSlot slot) {
-        FishingBobberEntity fishingHook = this.getHandle();
-        PlayerEntity playerOwner = fishingHook.getPlayerOwner();
-        Hand hand = CraftEquipmentSlot.getHand(slot);
-        ItemStack itemInHand = playerOwner.getStackInHand(hand);
-        return fishingHook.use(itemInHand); // .retrieve(itemInHand, hand);
+        FishingHook fishingHook = this.getHandle();
+        Player playerOwner = fishingHook.getPlayerOwner();
+        InteractionHand hand = CraftEquipmentSlot.getHand(slot);
+        ItemStack itemInHand = playerOwner.getItemInHand(hand);
+        return fishingHook.retrieve(itemInHand); // .retrieve(itemInHand, hand);
     }
 
 }

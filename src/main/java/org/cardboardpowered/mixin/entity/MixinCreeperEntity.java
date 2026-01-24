@@ -6,37 +6,35 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.level.Level;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LightningEntity;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
-
-@Mixin(CreeperEntity.class)
+@Mixin(Creeper.class)
 public abstract class MixinCreeperEntity extends Entity implements ICreeperEntity {
 
-    public MixinCreeperEntity(EntityType<?> type, World world) {
+    public MixinCreeperEntity(EntityType<?> type, Level world) {
         super(type, world);
     }
 
     @Shadow
-    public static TrackedData<Boolean> CHARGED;
+    public static EntityDataAccessor<Boolean> DATA_IS_POWERED;
 
     @Shadow
     public int explosionRadius = 3;
 
     @Shadow
-    public int fuseTime = 30;
+    public int maxSwell = 30;
 
-    @Inject(at = @At("HEAD"), method="onStruckByLightning", cancellable = true)
-    public void invokeCreeperPowerEvent(ServerWorld worldserver, LightningEntity lightning, CallbackInfo ci) {
-        super.onStruckByLightning(worldserver, lightning);
-        if (CraftEventFactory.callCreeperPowerEvent((CreeperEntity)(Object)this, lightning, org.bukkit.event.entity.CreeperPowerEvent.PowerCause.LIGHTNING).isCancelled()) {
+    @Inject(at = @At("HEAD"), method="thunderHit", cancellable = true)
+    public void invokeCreeperPowerEvent(ServerLevel worldserver, LightningBolt lightning, CallbackInfo ci) {
+        super.thunderHit(worldserver, lightning);
+        if (CraftEventFactory.callCreeperPowerEvent((Creeper)(Object)this, lightning, org.bukkit.event.entity.CreeperPowerEvent.PowerCause.LIGHTNING).isCancelled()) {
             ci.cancel();
             return;
         }
@@ -47,16 +45,16 @@ public abstract class MixinCreeperEntity extends Entity implements ICreeperEntit
 
     @Override
     public void setPowered(boolean powered) {
-        this.dataTracker.set(CHARGED, powered);
+        this.entityData.set(DATA_IS_POWERED, powered);
     }
 
     @Override
     public void explodeBF() {
-        explode();
+        explodeCreeper();
     }
 
     @Shadow
-    public void explode() {
+    public void explodeCreeper() {
     }
 
     @Override
@@ -71,17 +69,17 @@ public abstract class MixinCreeperEntity extends Entity implements ICreeperEntit
 
     @Override
     public void setFuseTimeBF(int ticks) {
-        this.fuseTime = ticks;
+        this.maxSwell = ticks;
     }
 
     @Override
     public int getFuseTimeBF() {
-        return this.fuseTime;
+        return this.maxSwell;
     }
 
     @Override
     public boolean isPoweredBF() {
-        return (Boolean) this.dataTracker.get(CHARGED);
+        return (Boolean) this.entityData.get(DATA_IS_POWERED);
     }
 
 

@@ -1,6 +1,6 @@
 package org.cardboardpowered.impl.inventory;
 
-import net.minecraft.inventory.Inventory;
+import net.minecraft.world.Container;
 import org.bukkit.block.BrewingStand;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.BrewerInventory;
@@ -10,7 +10,7 @@ import org.cardboardpowered.interfaces.IMixinInventory;
 
 public class CardboardBrewerInventory extends CraftInventory implements BrewerInventory {
 
-    public CardboardBrewerInventory(Inventory inventory) {
+    public CardboardBrewerInventory(Container inventory) {
         super(inventory);
     }
 

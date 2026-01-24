@@ -1,13 +1,12 @@
 package org.cardboardpowered.interfaces;
 
 import java.util.Optional;
-
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.resources.ResourceKey;
 
 public interface IRegistryWrapperImpl<T> {
 
 	/**
 	 */
-	public Optional<T> getValueForCopying(RegistryKey<T> var1);
+	public Optional<T> getValueForCopying(ResourceKey<T> var1);
 
 }

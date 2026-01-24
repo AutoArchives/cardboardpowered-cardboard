@@ -50,62 +50,55 @@ import com.mojang.serialization.Codec;
 
 import io.papermc.paper.util.CoordinateUtils;
 import me.isaiah.common.cmixin.IMixinHeightmap;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.SectionPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.world.chunk.SerializedChunk;
-import net.minecraft.world.chunk.SerializedChunk.ChunkLoadingException;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.LightType;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeKeys;
-import net.minecraft.world.chunk.ChunkNibbleArray;
-import net.minecraft.world.chunk.ChunkSection;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.chunk.PalettedContainer;
-import net.minecraft.world.chunk.WrapperProtoChunk;
-import net.minecraft.world.chunk.ReadableContainer;
-import net.minecraft.world.chunk.light.LightingProvider;
-// TODO 1.18: import net.minecraft.world.gen.ChunkRandom;
-
-// import net.minecraft.world.chunk.ReadOnlyChunk; //.WrapperProtoChunk;
-import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.chunk.DataLayer;
+import net.minecraft.world.level.chunk.ImposterProtoChunk;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.chunk.PalettedContainer;
+import net.minecraft.world.level.chunk.PalettedContainerRO;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.chunk.storage.SerializableChunkData;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.lighting.LevelLightEngine;
 
 public class CardboardChunk implements Chunk {
 
-    private WeakReference<net.minecraft.world.chunk.WorldChunk> weakChunk;
-    private final ServerWorld worldServer;
+    private WeakReference<net.minecraft.world.level.chunk.LevelChunk> weakChunk;
+    private final ServerLevel worldServer;
     private final int x;
     private final int z;
-    private static PalettedContainer<net.minecraft.block.BlockState> emptyBlockIDs;// = new ChunkSection(0).getContainer(); // TODO 1.18: ChunkSection contructor changed
+    private static PalettedContainer<net.minecraft.world.level.block.state.BlockState> emptyBlockIDs;// = new ChunkSection(0).getContainer(); // TODO 1.18: ChunkSection contructor changed
     private static final byte[] emptyLight = new byte[2048];
     
     private static final byte[] FULL_LIGHT = new byte[2048];
     private static final byte[] EMPTY_LIGHT = new byte[2048];
     
-    public static void setEmptyBlockIds(net.minecraft.world.World world) {
+    public static void setEmptyBlockIds(net.minecraft.world.level.Level world) {
         if (null == emptyBlockIDs) {
             me.isaiah.common.cmixin.IMixinWorld ic = (me.isaiah.common.cmixin.IMixinWorld) world;
             emptyBlockIDs = ic.I_emptyBlockIDs();
         }
     }
 
-    public CardboardChunk(net.minecraft.world.chunk.WorldChunk chunk) {
+    public CardboardChunk(net.minecraft.world.level.chunk.LevelChunk chunk) {
         this.weakChunk = new WeakReference<>(chunk);
 
-        worldServer = (ServerWorld) getHandle().getWorld();
+        worldServer = (ServerLevel) getHandle().getLevel();
         x = getHandle().getPos().x;
         z = getHandle().getPos().z;
     }
 
-    public CardboardChunk(ServerWorld worldServer, int x2, int z2) {
+    public CardboardChunk(ServerLevel worldServer, int x2, int z2) {
         this.worldServer = worldServer;
         this.x = x2;
         this.z = z2;
@@ -113,15 +106,15 @@ public class CardboardChunk implements Chunk {
 
 	@Override
     public CraftWorld getWorld() {
-        return ((IMixinWorld)worldServer.toServerWorld()).getCraftWorld();
+        return ((IMixinWorld)worldServer.getLevel()).getCraftWorld();
     }
 
     public CraftWorld getCraftWorld() {
         return (CraftWorld)this.getWorld();
     }
 
-    public net.minecraft.world.chunk.WorldChunk getHandle() {
-        net.minecraft.world.chunk.WorldChunk c = weakChunk.get();
+    public net.minecraft.world.level.chunk.LevelChunk getHandle() {
+        net.minecraft.world.level.chunk.LevelChunk c = weakChunk.get();
 
         if (c == null) {
             c = worldServer.getChunk(x, z);
@@ -130,12 +123,12 @@ public class CardboardChunk implements Chunk {
         return c;
     }
     
-    public net.minecraft.world.chunk.Chunk getHandle(ChunkStatus chunkStatus) {
-        net.minecraft.world.chunk.Chunk chunkAccess = worldServer.getChunk(x, z, chunkStatus);
+    public net.minecraft.world.level.chunk.ChunkAccess getHandle(ChunkStatus chunkStatus) {
+        net.minecraft.world.level.chunk.ChunkAccess chunkAccess = worldServer.getChunk(x, z, chunkStatus);
 
         // SPIGOT-7332: Get unwrapped extension
-        if (chunkAccess instanceof WrapperProtoChunk extension) {
-            return extension.getWrappedChunk();
+        if (chunkAccess instanceof ImposterProtoChunk extension) {
+            return extension.getWrapped();
         }
 
         return chunkAccess;
@@ -184,7 +177,7 @@ public class CardboardChunk implements Chunk {
         if (!isLoaded()) getWorld().getChunkAt(x, z);
 
         int index = 0;
-        net.minecraft.world.chunk.WorldChunk chunk = getHandle();
+        net.minecraft.world.level.chunk.LevelChunk chunk = getHandle();
 
         BlockState[] entities = new BlockState[chunk.getBlockEntities().size()];
 
@@ -267,9 +260,9 @@ public class CardboardChunk implements Chunk {
     public boolean contains(BlockData block) {
         Preconditions.checkArgument(block != null, "Block cannot be null");
 
-        Predicate<net.minecraft.block.BlockState> nms = Predicates.equalTo(((CraftBlockData) block).getState());
-        for (ChunkSection section : getHandle().getSectionArray())
-            if (section != null && section.getBlockStateContainer().hasAny(nms)) return true;
+        Predicate<net.minecraft.world.level.block.state.BlockState> nms = Predicates.equalTo(((CraftBlockData) block).getState());
+        for (LevelChunkSection section : getHandle().getSections())
+            if (section != null && section.getStates().maybeHas(nms)) return true;
         return false;
     }
 
@@ -348,8 +341,8 @@ public class CardboardChunk implements Chunk {
     
     @Override
     public ChunkSnapshot getChunkSnapshot(boolean includeMaxBlockY, boolean includeBiome, boolean includeBiomeTempRain) {
-        net.minecraft.world.chunk.Chunk chunk = this.getHandle(ChunkStatus.FULL);
-        ChunkSection[] cs = chunk.getSectionArray();
+        net.minecraft.world.level.chunk.ChunkAccess chunk = this.getHandle(ChunkStatus.FULL);
+        LevelChunkSection[] cs = chunk.getSections();
         PalettedContainer[] sectionBlockIDs = new PalettedContainer[cs.length];
         
         // TODO: Update api to 1.21.9
@@ -358,55 +351,55 @@ public class CardboardChunk implements Chunk {
         byte[][] sectionSkyLights = includeLightData ? new byte[cs.length][] : null;
         byte[][] sectionEmitLights = includeLightData ? new byte[cs.length][] : null;
         boolean[] sectionEmpty = new boolean[cs.length];
-        ReadableContainer<RegistryEntry<Biome>>[] biome = !includeBiome && !includeBiomeTempRain ? null : new PalettedContainer[cs.length];
+        PalettedContainerRO<Holder<Biome>>[] biome = !includeBiome && !includeBiomeTempRain ? null : new PalettedContainer[cs.length];
 
         for (int i = 0; i < cs.length; i++) {
-           sectionEmpty[i] = cs[i].isEmpty();
+           sectionEmpty[i] = cs[i].hasOnlyAir();
            if (!sectionEmpty[i]) {
-              sectionBlockIDs[i] = cs[i].getBlockStateContainer().copy();
+              sectionBlockIDs[i] = cs[i].getStates().copy();
            } else {
               sectionBlockIDs[i] = emptyBlockIDs;
            }
 
            if (includeLightData) {
-              LightingProvider lightEngine = this.worldServer.getLightingProvider();
-              ChunkNibbleArray skyLightArray = lightEngine.get(LightType.SKY).getLightSection(ChunkSectionPos.from(this.x, chunk.sectionIndexToCoord(i), this.z));
+              LevelLightEngine lightEngine = this.worldServer.getLightEngine();
+              DataLayer skyLightArray = lightEngine.getLayerListener(LightLayer.SKY).getDataLayerData(SectionPos.of(this.x, chunk.getSectionYFromSectionIndex(i), this.z));
               if (skyLightArray == null) {
-                 sectionSkyLights[i] = this.worldServer.getDimension().hasSkyLight() ? FULL_LIGHT : EMPTY_LIGHT;
+                 sectionSkyLights[i] = this.worldServer.dimensionType().hasSkyLight() ? FULL_LIGHT : EMPTY_LIGHT;
               } else {
                  sectionSkyLights[i] = new byte[2048];
-                 System.arraycopy(skyLightArray.asByteArray(), 0, sectionSkyLights[i], 0, 2048);
+                 System.arraycopy(skyLightArray.getData(), 0, sectionSkyLights[i], 0, 2048);
               }
 
-              ChunkNibbleArray emitLightArray = lightEngine.get(LightType.BLOCK)
-                 .getLightSection(ChunkSectionPos.from(this.x, chunk.sectionIndexToCoord(i), this.z));
+              DataLayer emitLightArray = lightEngine.getLayerListener(LightLayer.BLOCK)
+                 .getDataLayerData(SectionPos.of(this.x, chunk.getSectionYFromSectionIndex(i), this.z));
               if (emitLightArray == null) {
                  sectionEmitLights[i] = EMPTY_LIGHT;
               } else {
                  sectionEmitLights[i] = new byte[2048];
-                 System.arraycopy(emitLightArray.asByteArray(), 0, sectionEmitLights[i], 0, 2048);
+                 System.arraycopy(emitLightArray.getData(), 0, sectionEmitLights[i], 0, 2048);
               }
            }
 
            if (biome != null) {
-              biome[i] = cs[i].getBiomeContainer().copy();
+              biome[i] = cs[i].getBiomes().copy();
            }
         }
 
         Heightmap heightmap = null;
         if (includeMaxBlockY) {
-           heightmap = new Heightmap(chunk, Heightmap.Type.MOTION_BLOCKING);
-           heightmap.setTo(chunk, Heightmap.Type.MOTION_BLOCKING, chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING).asLongArray());
+           heightmap = new Heightmap(chunk, Heightmap.Types.MOTION_BLOCKING);
+           heightmap.setRawData(chunk, Heightmap.Types.MOTION_BLOCKING, chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.MOTION_BLOCKING).getRawData());
         }
 
-        net.minecraft.registry.Registry<Biome> iregistry = worldServer.getRegistryManager().getOrThrow(RegistryKeys.BIOME);
+        net.minecraft.core.Registry<Biome> iregistry = worldServer.registryAccess().lookupOrThrow(Registries.BIOME);
 
         World world = this.getWorld();
         return new CardboardChunkSnapshot(
            this.getX(),
            this.getZ(),
-           chunk.getBottomY(),
-           chunk.getTopYInclusive(),
+           chunk.getMinY(),
+           chunk.getMaxY(),
            world.getSeaLevel(),
            world.getName(),
            world.getFullTime(),
@@ -482,18 +475,18 @@ public class CardboardChunk implements Chunk {
     */
     
     public static ChunkSnapshot getEmptyChunkSnapshot(int x, int z, CraftWorld world, boolean includeBiome, boolean includeBiomeTempRain) {
-        net.minecraft.world.chunk.Chunk actual = world.getHandle().getChunk(x, z, (includeBiome || includeBiomeTempRain) ? ChunkStatus.BIOMES : ChunkStatus.EMPTY);
+        net.minecraft.world.level.chunk.ChunkAccess actual = world.getHandle().getChunk(x, z, (includeBiome || includeBiomeTempRain) ? ChunkStatus.BIOMES : ChunkStatus.EMPTY);
 
         /* Fill with empty data */
-        int hSection = actual.countVerticalSections();
+        int hSection = actual.getSectionsCount();
         PalettedContainer[] blockIDs = new PalettedContainer[hSection];
         byte[][] skyLight = new byte[hSection][];
         byte[][] emitLight = new byte[hSection][];
         boolean[] empty = new boolean[hSection];
-        net.minecraft.registry.Registry<Biome> iregistry = world.getHandle().getRegistryManager().getOrThrow(RegistryKeys.BIOME);
-        PalettedContainer<RegistryEntry<Biome>>[] biome = (includeBiome || includeBiomeTempRain) ? new PalettedContainer[hSection] : null;
+        net.minecraft.core.Registry<Biome> iregistry = world.getHandle().registryAccess().lookupOrThrow(Registries.BIOME);
+        PalettedContainer<Holder<Biome>>[] biome = (includeBiome || includeBiomeTempRain) ? new PalettedContainer[hSection] : null;
         // Codec<ReadableContainer<RegistryEntry<Biome>>> biomeCodec = PalettedContainer.createReadableContainerCodec(iregistry.getIndexedEntries(), iregistry.getEntryCodec(), PalettedContainer.PaletteProvider.BIOME, iregistry.getOrThrow(BiomeKeys.PLAINS));
-        Codec<ReadableContainer<RegistryEntry<Biome>>> biomeCodec = world.getHandle().getPalettesFactory().biomeContainerCodec();
+        Codec<PalettedContainerRO<Holder<Biome>>> biomeCodec = world.getHandle().palettedContainerFactory().biomeContainerCodec();
         
         for (int i = 0; i < hSection; i++) {
             blockIDs[i] = emptyBlockIDs;
@@ -503,12 +496,12 @@ public class CardboardChunk implements Chunk {
 
             if (biome != null) {
                 // biome[i] = (PalettedContainer<RegistryEntry<Biome>>) biomeCodec.parse(NbtOps.INSTANCE, biomeCodec.encodeStart(NbtOps.INSTANCE, actual.getSection(i).getBiomeContainer()).get().left().get()).get().left().get();
-                biome[i] = (PalettedContainer<RegistryEntry<Biome>>) biomeCodec.parse(NbtOps.INSTANCE, biomeCodec.encodeStart(NbtOps.INSTANCE, actual.getSection(i).getBiomeContainer()).getOrThrow()).getOrThrow(SerializedChunk.ChunkLoadingException::new);
+                biome[i] = (PalettedContainer<Holder<Biome>>) biomeCodec.parse(NbtOps.INSTANCE, biomeCodec.encodeStart(NbtOps.INSTANCE, actual.getSection(i).getBiomes()).getOrThrow()).getOrThrow(SerializableChunkData.ChunkReadException::new);
 
             }
         }
 
-        return new CardboardChunkSnapshot(x, z, world.getMinHeight(), world.getMaxHeight(), world.getSeaLevel(), world.getName(), world.getFullTime(), blockIDs, skyLight, emitLight, empty, new Heightmap(actual, Heightmap.Type.MOTION_BLOCKING), iregistry, biome);
+        return new CardboardChunkSnapshot(x, z, world.getMinHeight(), world.getMaxHeight(), world.getSeaLevel(), world.getName(), world.getFullTime(), blockIDs, skyLight, emitLight, empty, new Heightmap(actual, Heightmap.Types.MOTION_BLOCKING), iregistry, biome);
     }
 
     static void validateChunkCoordinates(int x, int y, int z) {
@@ -547,7 +540,7 @@ public class CardboardChunk implements Chunk {
         BlockState[] bk = new BlockState[map.size()];
         int i = 0;
         for (BlockEntity e : map.values()) {
-            bk[i] = CraftBlockState.getBlockState(this.worldServer, e.getPos());
+            bk[i] = CraftBlockState.getBlockState(this.worldServer, e.getBlockPos());
             i++;
         }
         return bk;
@@ -559,7 +552,7 @@ public class CardboardChunk implements Chunk {
         if (!this.isLoaded()) {
             this.getWorld().getChunkAt(this.x, this.z);
         }
-        net.minecraft.world.chunk.Chunk chunk = this.getHandle(ChunkStatus.FULL);
+        net.minecraft.world.level.chunk.ChunkAccess chunk = this.getHandle(ChunkStatus.FULL);
         ArrayList<BlockState> entities = new ArrayList<BlockState>();
 
         for (BlockPos position : ((IMixinChunk)chunk).cardboard_getBlockEntities().keySet()) {
@@ -572,19 +565,19 @@ public class CardboardChunk implements Chunk {
 
     @Override
     public boolean isEntitiesLoaded() {
-        return this.getCraftWorld().getHandle().isChunkLoaded(CoordinateUtils.getChunkKey(this.x, this.z));
+        return this.getCraftWorld().getHandle().areEntitiesLoaded(CoordinateUtils.getChunkKey(this.x, this.z));
 
     }
 
 	//@Override
 	public boolean contains(org.bukkit.block.@NotNull Biome biome) {
         Preconditions.checkArgument((biome != null ? 1 : 0) != 0, (Object)"Biome cannot be null");
-        net.minecraft.world.chunk.Chunk chunk = this.getHandle(ChunkStatus.BIOMES);
+        net.minecraft.world.level.chunk.ChunkAccess chunk = this.getHandle(ChunkStatus.BIOMES);
         
         com.google.common.base.Predicate nms = Predicates.equalTo(CraftBlock.biomeToBiomeBase(((IMixinChunk)chunk).bridge$biomeRegistry(), biome));
 
-        for (ChunkSection section : chunk.getSectionArray()) {
-            if (section == null || !section.getBiomeContainer().hasAny((Predicate<RegistryEntry<net.minecraft.world.biome.Biome>>)nms)) continue;
+        for (LevelChunkSection section : chunk.getSections()) {
+            if (section == null || !section.getBiomes().maybeHas((Predicate<Holder<net.minecraft.world.level.biome.Biome>>)nms)) continue;
             return true;
         }
         return false;
@@ -592,21 +585,21 @@ public class CardboardChunk implements Chunk {
 
 	@Override
     public Chunk.LoadLevel getLoadLevel() {
-		if (!this.worldServer.isChunkLoaded(this.getX(), this.getZ())) {
+		if (!this.worldServer.hasChunk(this.getX(), this.getZ())) {
 			return Chunk.LoadLevel.UNLOADED;
 		}
 		
-        WorldChunk chunk = this.worldServer.getChunk(this.getX(), this.getZ()); // getChunkIfLoaded
+        LevelChunk chunk = this.worldServer.getChunk(this.getX(), this.getZ()); // getChunkIfLoaded
         if (chunk == null) {
             return Chunk.LoadLevel.UNLOADED;
         }
-        return Chunk.LoadLevel.values()[chunk.getLevelType().ordinal()];
+        return Chunk.LoadLevel.values()[chunk.getFullStatus().ordinal()];
     }
 
 	// @Override
     public boolean isGenerated() {
-        net.minecraft.world.chunk.Chunk chunk = this.getHandle(ChunkStatus.EMPTY);
-        return chunk.getStatus().isAtLeast(ChunkStatus.FULL);
+        net.minecraft.world.level.chunk.ChunkAccess chunk = this.getHandle(ChunkStatus.EMPTY);
+        return chunk.getPersistedStatus().isOrAfter(ChunkStatus.FULL);
     }
 
     // 1.20.4 API
@@ -614,44 +607,44 @@ public class CardboardChunk implements Chunk {
 	@Override
 	public ChunkSnapshot getChunkSnapshot(boolean includeMaxBlockY, boolean includeBiome,
 			boolean includeBiomeTempRain, boolean includeLightData) {
-		net.minecraft.world.chunk.Chunk chunk = this.getHandle(ChunkStatus.FULL);
-        ChunkSection[] cs = chunk.getSectionArray();
+		net.minecraft.world.level.chunk.ChunkAccess chunk = this.getHandle(ChunkStatus.FULL);
+        LevelChunkSection[] cs = chunk.getSections();
         PalettedContainer[] sectionBlockIDs = new PalettedContainer[cs.length];
         byte[][] sectionSkyLights = includeLightData ? new byte[cs.length][] : null;
         byte[][] sectionEmitLights = includeLightData ? new byte[cs.length][] : null;
         boolean[] sectionEmpty = new boolean[cs.length];
         PalettedContainer[] biome = includeBiome || includeBiomeTempRain ? new PalettedContainer[cs.length] : null;
-        Registry<net.minecraft.world.biome.Biome> iregistry = this.worldServer.getRegistryManager().getOrThrow(RegistryKeys.BIOME);
+        Registry<net.minecraft.world.level.biome.Biome> iregistry = this.worldServer.registryAccess().lookupOrThrow(Registries.BIOME);
         for (int i2 = 0; i2 < cs.length; ++i2) {
-            sectionEmpty[i2] = cs[i2].isEmpty();
-            sectionBlockIDs[i2] = !sectionEmpty[i2] ? cs[i2].getBlockStateContainer().copy() : emptyBlockIDs;
+            sectionEmpty[i2] = cs[i2].hasOnlyAir();
+            sectionBlockIDs[i2] = !sectionEmpty[i2] ? cs[i2].getStates().copy() : emptyBlockIDs;
             if (includeLightData) {
-                LightingProvider lightengine = this.worldServer.getLightingProvider();
-                ChunkNibbleArray skyLightArray = lightengine.get(LightType.SKY).getLightSection(ChunkSectionPos.from(this.x, chunk.sectionIndexToCoord(i2), this.z));
+                LevelLightEngine lightengine = this.worldServer.getLightEngine();
+                DataLayer skyLightArray = lightengine.getLayerListener(LightLayer.SKY).getDataLayerData(SectionPos.of(this.x, chunk.getSectionYFromSectionIndex(i2), this.z));
                 if (skyLightArray == null) {
-                    sectionSkyLights[i2] = this.worldServer.getDimension().hasSkyLight() ? FULL_LIGHT : EMPTY_LIGHT;
+                    sectionSkyLights[i2] = this.worldServer.dimensionType().hasSkyLight() ? FULL_LIGHT : EMPTY_LIGHT;
                 } else {
                     sectionSkyLights[i2] = new byte[2048];
-                    System.arraycopy(skyLightArray.asByteArray(), 0, sectionSkyLights[i2], 0, 2048);
+                    System.arraycopy(skyLightArray.getData(), 0, sectionSkyLights[i2], 0, 2048);
                 }
-                ChunkNibbleArray emitLightArray = lightengine.get(LightType.BLOCK).getLightSection(ChunkSectionPos.from(this.x, chunk.sectionIndexToCoord(i2), this.z));
+                DataLayer emitLightArray = lightengine.getLayerListener(LightLayer.BLOCK).getDataLayerData(SectionPos.of(this.x, chunk.getSectionYFromSectionIndex(i2), this.z));
                 if (emitLightArray == null) {
                     sectionEmitLights[i2] = EMPTY_LIGHT;
                 } else {
                     sectionEmitLights[i2] = new byte[2048];
-                    System.arraycopy(emitLightArray.asByteArray(), 0, sectionEmitLights[i2], 0, 2048);
+                    System.arraycopy(emitLightArray.getData(), 0, sectionEmitLights[i2], 0, 2048);
                 }
             }
             if (biome == null) continue;
-            biome[i2] = ((PalettedContainer)cs[i2].getBiomeContainer()).copy();
+            biome[i2] = ((PalettedContainer)cs[i2].getBiomes()).copy();
         }
         Heightmap hmap = null;
         if (includeMaxBlockY) {
-            hmap = new Heightmap(chunk, Heightmap.Type.MOTION_BLOCKING);
-            hmap.setTo(chunk, Heightmap.Type.MOTION_BLOCKING, chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING).asLongArray());
+            hmap = new Heightmap(chunk, Heightmap.Types.MOTION_BLOCKING);
+            hmap.setRawData(chunk, Heightmap.Types.MOTION_BLOCKING, chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.MOTION_BLOCKING).getRawData());
         }
         World world = this.getWorld();
-        return new CardboardChunkSnapshot(this.getX(), this.getZ(), chunk.getBottomY(), chunk.getTopYInclusive(), world.getSeaLevel(), world.getName(), world.getFullTime(), sectionBlockIDs, sectionSkyLights, sectionEmitLights, sectionEmpty, hmap, iregistry, biome);
+        return new CardboardChunkSnapshot(this.getX(), this.getZ(), chunk.getMinY(), chunk.getMaxY(), world.getSeaLevel(), world.getName(), world.getFullTime(), sectionBlockIDs, sectionSkyLights, sectionEmitLights, sectionEmpty, hmap, iregistry, biome);
 	}
 
 	@Override

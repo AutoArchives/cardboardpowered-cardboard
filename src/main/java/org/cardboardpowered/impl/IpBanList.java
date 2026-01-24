@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
-
+import net.minecraft.server.players.IpBanListEntry;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.BanEntry;
 import org.bukkit.Bukkit;
@@ -19,26 +19,23 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.net.InetAddresses;
 
-import net.minecraft.server.BannedIpEntry;
-import net.minecraft.server.BannedIpList;
-
 public class IpBanList implements org.bukkit.BanList {
 
-    private final BannedIpList list;
+    private final net.minecraft.server.players.IpBanList list;
 
-    public IpBanList(BannedIpList list) {
+    public IpBanList(net.minecraft.server.players.IpBanList list) {
         this.list = list;
     }
 
     @Override
     public org.bukkit.BanEntry getBanEntry(String target) {
-        BannedIpEntry entry = list.get(target);
+        IpBanListEntry entry = list.get(target);
         return (entry == null) ? null : new IpBanEntry(target, entry, list);
     }
 
     @Override
     public org.bukkit.BanEntry addBan(String target, String reason, Date expires, String source) {
-        BannedIpEntry entry = new BannedIpEntry(target, new Date(), StringUtils.isBlank(source) ? null : source, expires, StringUtils.isBlank(reason) ? null : reason);
+        IpBanListEntry entry = new IpBanListEntry(target, new Date(), StringUtils.isBlank(source) ? null : source, expires, StringUtils.isBlank(reason) ? null : reason);
         list.add(entry);
 
         try {
@@ -52,7 +49,7 @@ public class IpBanList implements org.bukkit.BanList {
     @Override
     public Set<org.bukkit.BanEntry> getBanEntries() {
         ImmutableSet.Builder<org.bukkit.BanEntry> builder = ImmutableSet.builder();
-        for (String target : list.getNames())
+        for (String target : list.getUserList())
             builder.add(new IpBanEntry(target, Objects.requireNonNull(list.get(target)), list));
         return builder.build();
     }
@@ -69,19 +66,19 @@ public class IpBanList implements org.bukkit.BanList {
 
     public static class IpBanEntry implements BanEntry {
 
-        private final BannedIpList list;
+        private final net.minecraft.server.players.IpBanList list;
         private final String target;
         private Date created;
         private String source;
         private Date expiration;
         private String reason;
 
-        public IpBanEntry(String target, BannedIpEntry entry, BannedIpList list) {
+        public IpBanEntry(String target, IpBanListEntry entry, net.minecraft.server.players.IpBanList list) {
             this.list = list;
             this.target = target;
             this.created = null; // TODO Cardboard
             this.source = entry.getSource();
-            this.expiration = entry.getExpiryDate() != null ? new Date(entry.getExpiryDate().getTime()) : null;
+            this.expiration = entry.getExpires() != null ? new Date(entry.getExpires().getTime()) : null;
             this.reason = entry.getReason();
         }
 
@@ -134,7 +131,7 @@ public class IpBanList implements org.bukkit.BanList {
 
         @Override
         public void save() {
-            BannedIpEntry entry = new BannedIpEntry(target, this.created, this.source, this.expiration, this.reason);
+            IpBanListEntry entry = new IpBanListEntry(target, this.created, this.source, this.expiration, this.reason);
             this.list.add(entry);
             try {
                 this.list.save();
@@ -182,8 +179,8 @@ public class IpBanList implements org.bukkit.BanList {
 
 	public Set<BanEntry<InetAddress>> getEntries() {
         ImmutableSet.Builder<BanEntry<InetAddress>> builder = ImmutableSet.builder();
-        for (String target : this.list.getNames()) {
-            BannedIpEntry ipBanEntry = this.list.get(target);
+        for (String target : this.list.getUserList()) {
+            IpBanListEntry ipBanEntry = this.list.get(target);
             if (ipBanEntry == null) continue;
             builder.add(new IpBanEntry(target, ipBanEntry, this.list));
         }

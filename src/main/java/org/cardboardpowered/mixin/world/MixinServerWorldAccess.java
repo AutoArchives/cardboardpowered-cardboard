@@ -1,16 +1,15 @@
 package org.cardboardpowered.mixin.world;
 
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.ServerLevelAccessor;
 import org.spongepowered.asm.mixin.Mixin;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.world.ServerWorldAccess;
-import net.minecraft.world.WorldAccess;
-
-@Mixin(ServerWorldAccess.class)
-public interface MixinServerWorldAccess extends WorldAccess {
+@Mixin(ServerLevelAccessor.class)
+public interface MixinServerWorldAccess extends LevelAccessor {
 
     default boolean addAllEntities(Entity entity, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason reason) {
-        entity.streamSelfAndPassengers().forEach((e) -> this.spawnEntity(e));
+        entity.getSelfAndPassengers().forEach((e) -> this.addFreshEntity(e));
         return !entity.isRemoved();
     }
 

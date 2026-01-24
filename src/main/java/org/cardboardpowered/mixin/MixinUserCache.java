@@ -1,11 +1,10 @@
 package org.cardboardpowered.mixin;
 
+import net.minecraft.server.players.CachedUserNameToIdResolver;
 import org.cardboardpowered.interfaces.IUserCache;
 import org.spongepowered.asm.mixin.Mixin;
 
-import net.minecraft.util.UserCache;
-
-@Mixin(UserCache.class)
+@Mixin(CachedUserNameToIdResolver.class)
 public class MixinUserCache implements IUserCache {
 
 	/*

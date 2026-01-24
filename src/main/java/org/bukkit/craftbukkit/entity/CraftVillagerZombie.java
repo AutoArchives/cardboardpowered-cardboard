@@ -2,12 +2,7 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import java.util.Locale;
-
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.ZombieVillagerEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.village.VillagerProfession;
-import net.minecraft.registry.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.apache.commons.lang.Validate;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.craftbukkit.CraftServer;
@@ -21,13 +16,13 @@ import org.cardboardpowered.impl.entity.CraftVillager;
 
 public class CraftVillagerZombie extends CraftZombie implements ZombieVillager {
 
-    public CraftVillagerZombie(CraftServer server, ZombieVillagerEntity entity) {
+    public CraftVillagerZombie(CraftServer server, net.minecraft.world.entity.monster.zombie.ZombieVillager entity) {
         super(server, entity);
     }
 
     @Override
-    public ZombieVillagerEntity getHandle() {
-        return (ZombieVillagerEntity) super.getHandle();
+    public net.minecraft.world.entity.monster.zombie.ZombieVillager getHandle() {
+        return (net.minecraft.world.entity.monster.zombie.ZombieVillager) super.getHandle();
     }
 
     @Override
@@ -42,7 +37,7 @@ public class CraftVillagerZombie extends CraftZombie implements ZombieVillager {
 
     @Override
     public Villager.Profession getVillagerProfession() {
-        return Villager.Profession.valueOf(Registries.VILLAGER_PROFESSION.getId(getHandle().getVillagerData().profession().value()).getPath().toUpperCase(Locale.ROOT));
+        return Villager.Profession.valueOf(BuiltInRegistries.VILLAGER_PROFESSION.getKey(getHandle().getVillagerData().profession().value()).getPath().toUpperCase(Locale.ROOT));
     }
 
     @Override
@@ -57,7 +52,7 @@ public class CraftVillagerZombie extends CraftZombie implements ZombieVillager {
 
     @Override
     public Villager.Type getVillagerType() {
-        return Villager.Type.valueOf(Registries.VILLAGER_TYPE.getId(getHandle().getVillagerData().type().value()).getPath().toUpperCase(Locale.ROOT));
+        return Villager.Type.valueOf(BuiltInRegistries.VILLAGER_TYPE.getKey(getHandle().getVillagerData().type().value()).getPath().toUpperCase(Locale.ROOT));
     }
 
     @Override

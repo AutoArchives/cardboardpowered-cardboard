@@ -1,12 +1,12 @@
 package org.cardboardpowered.impl.block;
 
-import net.minecraft.block.entity.EndPortalBlockEntity;
+import net.minecraft.world.level.block.entity.TheEndPortalBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.World;
 
-public class CraftEndPortal extends CardboardBlockEntityState<EndPortalBlockEntity> {
+public class CraftEndPortal extends CardboardBlockEntityState<TheEndPortalBlockEntity> {
 
-    public CraftEndPortal(World world, EndPortalBlockEntity tileEntity) {
+    public CraftEndPortal(World world, TheEndPortalBlockEntity tileEntity) {
         super(world, tileEntity);
     }
 

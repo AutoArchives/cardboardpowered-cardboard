@@ -1,5 +1,10 @@
 package org.cardboardpowered.mixin.entity;
 
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow.Pickup;
+import net.minecraft.world.item.ItemStack;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.event.player.PlayerPickupArrowEvent;
@@ -13,19 +18,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinPersistentProjectileEntity;
 
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity.PickupPermission;
-import net.minecraft.item.ItemStack;
-
-@Mixin(PersistentProjectileEntity.class)
+@Mixin(AbstractArrow.class)
 public abstract class MixinPersistentProjectileEntity implements IMixinPersistentProjectileEntity {
 
     // @Shadow public boolean inGround;
     @Shadow public int life;
     // @Shadow public int punch;
-    @Shadow public PersistentProjectileEntity.PickupPermission pickupType;
+    @Shadow public AbstractArrow.Pickup pickup;
 
     @Override
     public int getPunchBF() {
@@ -48,17 +47,17 @@ public abstract class MixinPersistentProjectileEntity implements IMixinPersisten
         return false; // Shadowed
     }
 
-    private PersistentProjectileEntity getBF() {
-        return (PersistentProjectileEntity)(Object)this;
+    private AbstractArrow getBF() {
+        return (AbstractArrow)(Object)this;
     }
 
     @SuppressWarnings("deprecation")
-    @Inject(at = @At("HEAD"), method = "onPlayerCollision", cancellable = true)
-    public void doBukkitEvent_PlayerPickupArrowEvent(PlayerEntity entityhuman, CallbackInfo ci) {
-        if (!getBF().getEntityWorld().isClient() && (this.isInGround() || getBF().isNoClip()) && getBF().shake <= 0) {
-            ItemStack itemstack = this.asItemStack();
-            if (this.pickupType == PickupPermission.ALLOWED && !itemstack.isEmpty()) {
-                ItemEntity item = new ItemEntity(getBF().getEntityWorld(), getBF().getX(), getBF().getY(), getBF().getZ(), itemstack);
+    @Inject(at = @At("HEAD"), method = "playerTouch", cancellable = true)
+    public void doBukkitEvent_PlayerPickupArrowEvent(Player entityhuman, CallbackInfo ci) {
+        if (!getBF().level().isClientSide() && (this.isInGround() || getBF().isNoPhysics()) && getBF().shakeTime <= 0) {
+            ItemStack itemstack = this.getPickupItem();
+            if (this.pickup == Pickup.ALLOWED && !itemstack.isEmpty()) {
+                ItemEntity item = new ItemEntity(getBF().level(), getBF().getX(), getBF().getY(), getBF().getZ(), itemstack);
                 PlayerPickupArrowEvent event = new PlayerPickupArrowEvent((org.bukkit.entity.Player) ((IMixinEntity)entityhuman).getBukkitEntity(), new ItemEntityImpl(CraftServer.INSTANCE, getBF(), item), (org.bukkit.entity.AbstractArrow) ((IMixinEntity)this).getBukkitEntity());
                 Bukkit.getServer().getPluginManager().callEvent(event);
 
@@ -66,9 +65,9 @@ public abstract class MixinPersistentProjectileEntity implements IMixinPersisten
                     ci.cancel();
                     return;
                 }
-                itemstack = item.getStack();
+                itemstack = item.getItem();
             }
-            boolean flag = this.pickupType == PersistentProjectileEntity.PickupPermission.ALLOWED || this.pickupType == PersistentProjectileEntity.PickupPermission.CREATIVE_ONLY && entityhuman.getAbilities().creativeMode || getBF().isNoClip() && getBF().getOwner().getUuid() == entityhuman.getUuid();
+            boolean flag = this.pickup == AbstractArrow.Pickup.ALLOWED || this.pickup == AbstractArrow.Pickup.CREATIVE_ONLY && entityhuman.getAbilities().instabuild || getBF().isNoPhysics() && getBF().getOwner().getUUID() == entityhuman.getUUID();
             if (!flag) {
                 ci.cancel();
                 return;
@@ -77,6 +76,6 @@ public abstract class MixinPersistentProjectileEntity implements IMixinPersisten
     }
 
     @Shadow
-    public abstract ItemStack asItemStack();
+    public abstract ItemStack getPickupItem();
 
 }

@@ -4,18 +4,6 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinLivingEntity;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.AttributeContainer;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Arm;
-import net.minecraft.world.rule.GameRules;
-import net.minecraft.world.World;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -32,6 +20,16 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeMap;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRules;
 
 @Mixin(LivingEntity.class)
 public abstract class MixinLivingEntity extends MixinEntity implements IMixinLivingEntity {
@@ -42,7 +40,7 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
     }
 
     @Shadow
-    private AttributeContainer attributes;
+    private AttributeMap attributes;
 
     private boolean PICE_canceled = false;
     // private CardboardAttributable craftAttributes;
@@ -57,27 +55,27 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
         return craftAttributes;
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;finishUsing(Lnet/minecraft/world/World;Lnet/minecraft/entity/LivingEntity;)Lnet/minecraft/item/ItemStack;"), 
-            method = "consumeItem")
-    public ItemStack doBukkitEvent_PlayerItemConsumeEvent(ItemStack s, World w, LivingEntity e) {
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;finishUsingItem(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;)Lnet/minecraft/world/item/ItemStack;"), 
+            method = "completeUsingItem")
+    public ItemStack doBukkitEvent_PlayerItemConsumeEvent(ItemStack s, Level w, LivingEntity e) {
         PICE_canceled = false;
-        if (get() instanceof ServerPlayerEntity) {
-            org.bukkit.inventory.ItemStack craftItem = CraftItemStack.asBukkitCopy(get().activeItemStack);
-            PlayerItemConsumeEvent event = new PlayerItemConsumeEvent((Player) ((IMixinServerEntityPlayer)((ServerPlayerEntity) get())).getBukkitEntity(), craftItem);
+        if (get() instanceof ServerPlayer) {
+            org.bukkit.inventory.ItemStack craftItem = CraftItemStack.asBukkitCopy(get().useItem);
+            PlayerItemConsumeEvent event = new PlayerItemConsumeEvent((Player) ((IMixinServerEntityPlayer)((ServerPlayer) get())).getBukkitEntity(), craftItem);
             Bukkit.getServer().getPluginManager().callEvent(event);
 
             if (event.isCancelled()) {
-                ((Player)((IMixinServerEntityPlayer)((ServerPlayerEntity) get())).getBukkitEntity()).updateInventory();
-                ((CraftPlayer)((IMixinServerEntityPlayer)((ServerPlayerEntity) get())).getBukkitEntity()).updateScaledHealth();
+                ((Player)((IMixinServerEntityPlayer)((ServerPlayer) get())).getBukkitEntity()).updateInventory();
+                ((CraftPlayer)((IMixinServerEntityPlayer)((ServerPlayer) get())).getBukkitEntity()).updateScaledHealth();
                 PICE_canceled = true;
                 return null;
             }
-            return (craftItem.equals(event.getItem())) ? get().activeItemStack.finishUsing(get().getEntityWorld(), get()) : CraftItemStack.asNMSCopy(event.getItem()).finishUsing(get().getEntityWorld(), get());
-        } else return get().activeItemStack.finishUsing(get().getEntityWorld(), get());
+            return (craftItem.equals(event.getItem())) ? get().useItem.finishUsingItem(get().level(), get()) : CraftItemStack.asNMSCopy(event.getItem()).finishUsingItem(get().level(), get());
+        } else return get().useItem.finishUsingItem(get().level(), get());
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;setStackInHand(Lnet/minecraft/util/Hand;Lnet/minecraft/item/ItemStack;)V"),
-            method = "consumeItem", cancellable = true)
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;setItemInHand(Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/ItemStack;)V"),
+            method = "completeUsingItem", cancellable = true)
     public void doBukkitEvent_PlayerItemConsumeEvent_FixCancel(CallbackInfo ci) {
         if (PICE_canceled) {
             ci.cancel();
@@ -86,24 +84,24 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
     }
     
     @Shadow
-    public void dropInventory( ServerWorld world) {
+    public void dropEquipment( ServerLevel world) {
     	// Shadowed
     }
 
-    @Inject(at = @At("HEAD"), method = "drop", cancellable = true)
-    public void cardboard_doDrop(ServerWorld world, DamageSource damagesource, CallbackInfo ci) {
-        Entity entity = damagesource.getAttacker();
+    @Inject(at = @At("HEAD"), method = "dropAllDeathLoot", cancellable = true)
+    public void cardboard_doDrop(ServerLevel world, DamageSource damagesource, CallbackInfo ci) {
+        Entity entity = damagesource.getEntity();
 
-        boolean flag = get().playerHitTimer > 0;
-        this.dropInventory(world);
-        if (!get().isBaby() && world.getGameRules().getValue(GameRules.DO_MOB_LOOT)) {
-            this.dropLoot(world, damagesource, flag);
-            this.dropEquipment((ServerWorld) world, damagesource, flag);
+        boolean flag = get().lastHurtByPlayerMemoryTime > 0;
+        this.dropEquipment(world);
+        if (!get().isBaby() && world.getGameRules().get(GameRules.MOB_DROPS)) {
+            this.dropFromLootTable(world, damagesource, flag);
+            this.dropCustomDeathLoot((ServerLevel) world, damagesource, flag);
         }
 
         CraftEventFactory.callEntityDeathEvent(get(), damagesource, ((IMixinEntity)this).cardboard_getDrops());
         ((IMixinEntity)this).cardboard_setDrops(new ArrayList<>());
-        this.dropExperience(world, damagesource.getAttacker());
+        this.dropExperience(world, damagesource.getEntity());
         ci.cancel();
         return;
     }
@@ -117,24 +115,24 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
     // TODO: getExperienceToDrop
     
     @Shadow
-    public int getExperienceToDrop(ServerWorld world) {
+    public int getBaseExperienceReward(ServerLevel world) {
     	return 0; // Shadowed
     }
     
     @Shadow
-    public boolean shouldAlwaysDropExperience() {
+    public boolean isAlwaysExperienceDropper() {
     	return true; // Shadowed
     }
     
     @Override
     public int getExpReward() {
-    	World w = this.mc_world();
+    	Level w = this.mc_world();
     	
-    	if (w instanceof ServerWorld) {
-    		ServerWorld sw = (ServerWorld) w;
-            if ((this.shouldAlwaysDropExperience() || get().lastDamageTime > 0 && this.shouldAlwaysDropExperience() && sw.getGameRules().getValue(GameRules.DO_MOB_LOOT))) {
+    	if (w instanceof ServerLevel) {
+    		ServerLevel sw = (ServerLevel) w;
+            if ((this.isAlwaysExperienceDropper() || get().lastDamageStamp > 0 && this.isAlwaysExperienceDropper() && sw.getGameRules().get(GameRules.MOB_DROPS))) {
                 //int i = getXpToDrop(get().attackingPlayer);
-            	int i = getExperienceToDrop(sw);
+            	int i = getBaseExperienceReward(sw);
             	return i;
             }
     	}
@@ -148,7 +146,7 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
     }
 
     @Shadow
-    public void dropLoot(ServerWorld world, DamageSource damagesource, boolean flag) {
+    public void dropFromLootTable(ServerLevel world, DamageSource damagesource, boolean flag) {
     }
 
     //@Shadow
@@ -156,13 +154,13 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
     //}
     
     @Shadow
-    public void dropEquipment( ServerWorld world, DamageSource source, boolean causedByPlayer) {
+    public void dropCustomDeathLoot( ServerLevel world, DamageSource source, boolean causedByPlayer) {
     }
     
     @Shadow
-    public void dropExperience( ServerWorld world, Entity attacker) {}// dropXp( Entity attacker) {}
+    public void dropExperience( ServerLevel world, Entity attacker) {}// dropXp( Entity attacker) {}
 
-	@Shadow public abstract Arm getMainArm();
+	@Shadow public abstract HumanoidArm getMainArm();
 	/**
      * @reason Bukkit RegainHealthEvent
      */

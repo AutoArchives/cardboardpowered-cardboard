@@ -9,13 +9,13 @@ public final class CraftStepAbstract extends org.bukkit.craftbukkit.block.data.C
         super();
     }
 
-    public CraftStepAbstract(net.minecraft.block.BlockState state) {
+    public CraftStepAbstract(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftSlab
 
-    private static final net.minecraft.state.property.EnumProperty<?> TYPE = getEnum(net.minecraft.block.SlabBlock.class, "type");
+    private static final net.minecraft.world.level.block.state.properties.EnumProperty<?> TYPE = getEnum(net.minecraft.world.level.block.SlabBlock.class, "type");
 
     @Override
     public Type getType() {
@@ -29,7 +29,7 @@ public final class CraftStepAbstract extends org.bukkit.craftbukkit.block.data.C
 
     // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final net.minecraft.state.property.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.block.SlabBlock.class, "waterlogged");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.world.level.block.SlabBlock.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {

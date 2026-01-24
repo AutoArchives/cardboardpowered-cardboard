@@ -7,36 +7,35 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.PlainTextContent.Literal;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextContent;
+import net.minecraft.network.chat.ComponentContents;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.contents.PlainTextContents.LiteralContents;
+import net.minecraft.util.FormattedCharSequence;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
 import java.util.List;
 
-public final class CardboardAdventureComponent implements Text {
+public final class CardboardAdventureComponent implements net.minecraft.network.chat.Component {
 
     public final Component adventure;
-    private @MonotonicNonNull Text vanilla;
+    private net.minecraft.network.chat.@MonotonicNonNull Component vanilla;
 
     public CardboardAdventureComponent(Component adventure) {
         this.adventure = adventure;
     }
 
-    public Text deepConverted() {
-        Text vanilla = this.vanilla;
+    public net.minecraft.network.chat.Component deepConverted() {
+        net.minecraft.network.chat.Component vanilla = this.vanilla;
         if (vanilla == null) {
             this.vanilla = vanilla = CardboardAdventure.WRAPPER_AWARE_SERIALIZER.serialize(this.adventure);
         }
         return vanilla;
     }
 
-    public @Nullable Text deepConvertedIfPresent() {
+    public @Nullable net.minecraft.network.chat.Component deepConvertedIfPresent() {
         return this.vanilla;
     }
 
@@ -46,11 +45,11 @@ public final class CardboardAdventureComponent implements Text {
     }
 
     @Override
-    public TextContent getContent() {
+    public ComponentContents getContents() {
         if (this.adventure instanceof TextComponent) {
-            return new Literal(((TextComponent)this.adventure).content());
+            return new LiteralContents(((TextComponent)this.adventure).content());
         }
-        return this.deepConverted().getContent();
+        return this.deepConverted().getContents();
     }
 
     @Override
@@ -59,23 +58,23 @@ public final class CardboardAdventureComponent implements Text {
     }
 
     @Override
-    public List<Text> getSiblings() {
+    public List<net.minecraft.network.chat.Component> getSiblings() {
         return this.deepConverted().getSiblings();
     }
 
     @Override
-    public MutableText copyContentOnly() {
-        return this.deepConverted().copyContentOnly();
+    public MutableComponent plainCopy() {
+        return this.deepConverted().plainCopy();
     }
 
     @Override
-    public MutableText copy() {
+    public MutableComponent copy() {
         return this.deepConverted().copy();
     }
 
     @Override
-    public OrderedText asOrderedText() {
-        return this.deepConverted().asOrderedText();
+    public FormattedCharSequence getVisualOrderText() {
+        return this.deepConverted().getVisualOrderText();
     }
 
     public static class Serializer

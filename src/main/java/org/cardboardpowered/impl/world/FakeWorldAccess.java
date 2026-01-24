@@ -23,73 +23,71 @@ import java.util.Random;
 import java.util.function.Predicate;
 
 import org.bukkit.craftbukkit.CraftServer;
-
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.world.BiomeColorCache;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.particle.ParticleEffect;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.TypeFilter;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.resource.featuretoggle.FeatureSet;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.LocalDifficulty;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldProperties;
-import net.minecraft.world.attribute.EnvironmentAttributeAccess;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.source.BiomeAccess;
-import net.minecraft.world.border.WorldBorder;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkManager;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.chunk.light.LightingProvider;
-import net.minecraft.world.dimension.DimensionType;
-import net.minecraft.world.event.GameEvent;
-import net.minecraft.world.event.GameEvent.Emitter;
-import net.minecraft.world.tick.QueryableTickScheduler;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.attribute.EnvironmentAttributeReader;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.ChunkSource;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gameevent.GameEvent.Context;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.lighting.LevelLightEngine;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.storage.LevelData;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.ticks.LevelTickAccess;
 
-public class FakeWorldAccess implements WorldAccess {
+public class FakeWorldAccess implements LevelAccessor {
 
-    public static final WorldAccess INSTANCE = new FakeWorldAccess();
+    public static final LevelAccessor INSTANCE = new FakeWorldAccess();
 
     protected FakeWorldAccess() {
     }
 
     @Override
-    public QueryableTickScheduler<Block> getBlockTickScheduler() {
+    public LevelTickAccess<Block> getBlockTicks() {
         return null;//TODO
     }
 
     @Override
-    public QueryableTickScheduler<Fluid> getFluidTickScheduler() {
+    public LevelTickAccess<Fluid> getFluidTicks() {
         return null;//TODO
     }
 
     @Override
-    public WorldProperties getLevelProperties() {
+    public LevelData getLevelData() {
         throw new UnsupportedOperationException("Not supported");
     }
 
     // @Override
-    public LocalDifficulty getLocalDifficulty(BlockPos blockposition) {
+    public DifficultyInstance getLocalDifficulty(BlockPos blockposition) {
         throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
-    public ChunkManager getChunkManager() {
+    public ChunkSource getChunkSource() {
         throw new UnsupportedOperationException("Not supported");
     }
 
@@ -99,28 +97,28 @@ public class FakeWorldAccess implements WorldAccess {
     }*/
 
 	@Override
-	public void addParticleClient(ParticleEffect parameters, double x, double y, double z, double velocityX,
+	public void addParticle(ParticleOptions parameters, double x, double y, double z, double velocityX,
 			double velocityY, double velocityZ) {
 		throw new UnsupportedOperationException("Not supported");
 	}
 
 	@Override
-	public void playSound(Entity arg0, BlockPos arg1, SoundEvent arg2, SoundCategory arg3, float arg4, float arg5) {
+	public void playSound(Entity arg0, BlockPos arg1, SoundEvent arg2, SoundSource arg3, float arg4, float arg5) {
 		throw new UnsupportedOperationException("Not supported");
 	}
 
 	@Override
-	public void syncWorldEvent(Entity arg0, int arg1, BlockPos arg2, int arg3) {
+	public void levelEvent(Entity arg0, int arg1, BlockPos arg2, int arg3) {
 		throw new UnsupportedOperationException("Not supported");
 	}
 
     @Override
-    public DynamicRegistryManager getRegistryManager() {
+    public RegistryAccess registryAccess() {
         throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
-    public List<Entity> getOtherEntities(Entity entity, Box aabb, Predicate<? super Entity> prdct) {
+    public List<Entity> getEntities(Entity entity, AABB aabb, Predicate<? super Entity> prdct) {
         throw new UnsupportedOperationException("Not supported");
     }
 
@@ -130,39 +128,39 @@ public class FakeWorldAccess implements WorldAccess {
    // }
 
     @Override
-    public List<? extends PlayerEntity> getPlayers() {
+    public List<? extends Player> players() {
         throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
-    public Chunk getChunk(int i, int i1, ChunkStatus cs, boolean bln) {
+    public ChunkAccess getChunk(int i, int i1, ChunkStatus cs, boolean bln) {
         throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
-    public int getTopY(Heightmap.Type type, int i, int i1) {
+    public int getHeight(Heightmap.Types type, int i, int i1) {
         throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
-    public int getAmbientDarkness() {
+    public int getSkyDarken() {
         throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
-    public BiomeAccess getBiomeAccess() {
+    public BiomeManager getBiomeManager() {
         throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
     // 1.18.1: Biome
     // 1.18.2: RegistryEntry<Biome> 
-    public RegistryEntry<Biome> getGeneratorStoredBiome(int i, int i1, int i2) {
+    public Holder<Biome> getUncachedNoiseBiome(int i, int i1, int i2) {
         throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
-    public boolean isClient() {
+    public boolean isClientSide() {
         throw new UnsupportedOperationException("Not supported");
     }
 
@@ -172,12 +170,12 @@ public class FakeWorldAccess implements WorldAccess {
     }
 
     @Override
-    public DimensionType getDimension() {
+    public DimensionType dimensionType() {
         throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
-    public LightingProvider getLightingProvider() {
+    public LevelLightEngine getLightEngine() {
         throw new UnsupportedOperationException("Not supported");
     }
 
@@ -202,12 +200,12 @@ public class FakeWorldAccess implements WorldAccess {
     }
 
     @Override
-    public boolean testBlockState(BlockPos bp, Predicate<BlockState> prdct) {
+    public boolean isStateAtPosition(BlockPos bp, Predicate<BlockState> prdct) {
         throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
-    public boolean setBlockState(BlockPos blockposition, BlockState iblockdata, int i, int j) {
+    public boolean setBlock(BlockPos blockposition, BlockState iblockdata, int i, int j) {
         return false;
     }
 
@@ -217,24 +215,24 @@ public class FakeWorldAccess implements WorldAccess {
     }
 
     @Override
-    public boolean breakBlock(BlockPos blockposition, boolean flag, Entity entity, int i) {
+    public boolean destroyBlock(BlockPos blockposition, boolean flag, Entity entity, int i) {
         throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
-    public float getBrightness(Direction arg0, boolean arg1) {
+    public float getShade(Direction arg0, boolean arg1) {
         return 0;
     }
 
     @Override
-    public <T extends Entity> List<T> getEntitiesByType(TypeFilter<Entity, T> filter, Box box,
+    public <T extends Entity> List<T> getEntities(EntityTypeTest<Entity, T> filter, AABB box,
             Predicate<? super T> predicate) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public boolean testFluidState(BlockPos pos, Predicate<FluidState> state) {
+    public boolean isFluidAtPosition(BlockPos pos, Predicate<FluidState> state) {
         // TODO Auto-generated method stub
         return false;
     }
@@ -252,38 +250,38 @@ public class FakeWorldAccess implements WorldAccess {
     }
 
     // TODO
-    public long getTickOrder() {
+    public long nextSubTickCount() {
         // TODO Auto-generated method stub
         return 0;
     }
 
 	// @Override
-	public void emitGameEvent(GameEvent event, Vec3d emitterPos, Emitter emitter) {
+	public void emitGameEvent(GameEvent event, Vec3 emitterPos, Context emitter) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public net.minecraft.util.math.random.Random getRandom() {
+	public net.minecraft.util.RandomSource getRandom() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public FeatureSet getEnabledFeatures() {
+	public FeatureFlagSet enabledFeatures() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	// @Override
-	public void emitGameEvent(RegistryEntry<GameEvent> event, Vec3d emitterPos, Emitter emitter) {
+	public void gameEvent(Holder<GameEvent> event, Vec3 emitterPos, Context emitter) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public EnvironmentAttributeAccess getEnvironmentAttributes() {
-		return EnvironmentAttributeAccess.DEFAULT;
+	public EnvironmentAttributeReader environmentAttributes() {
+		return EnvironmentAttributeReader.EMPTY;
 	}
 
 }

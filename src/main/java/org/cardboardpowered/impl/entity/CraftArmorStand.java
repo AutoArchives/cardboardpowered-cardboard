@@ -1,10 +1,7 @@
 package org.cardboardpowered.impl.entity;
 
-import net.minecraft.entity.decoration.ArmorStandEntity;
-import net.minecraft.util.Hand;
-
 import java.util.Set;
-
+import net.minecraft.world.InteractionHand;
 import org.bukkit.Chunk;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -32,7 +29,7 @@ import io.papermc.paper.math.Rotations;
 @SuppressWarnings("deprecation")
 public class CraftArmorStand extends LivingEntityImpl implements ArmorStand {
 
-    public CraftArmorStand(CraftServer server, ArmorStandEntity entity) {
+    public CraftArmorStand(CraftServer server, net.minecraft.world.entity.decoration.ArmorStand entity) {
         super(server, entity);
     }
 
@@ -47,8 +44,8 @@ public class CraftArmorStand extends LivingEntityImpl implements ArmorStand {
     }
 
     @Override
-    public ArmorStandEntity getHandle() {
-        return (ArmorStandEntity) super.getHandle();
+    public net.minecraft.world.entity.decoration.ArmorStand getHandle() {
+        return (net.minecraft.world.entity.decoration.ArmorStand) super.getHandle();
     }
 
     @Override
@@ -103,67 +100,67 @@ public class CraftArmorStand extends LivingEntityImpl implements ArmorStand {
 
     @Override
     public EulerAngle getBodyPose() {
-        return fromNMS(getHandle().getBodyRotation());
+        return fromNMS(getHandle().getBodyPose());
     }
 
     @Override
     public void setBodyPose(EulerAngle pose) {
-        getHandle().setBodyRotation(toNMS(pose));
+        getHandle().setBodyPose(toNMS(pose));
     }
 
     @Override
     public EulerAngle getLeftArmPose() {
-        return fromNMS(getHandle().getLeftArmRotation());
+        return fromNMS(getHandle().getLeftArmPose());
     }
 
     @Override
     public void setLeftArmPose(EulerAngle pose) {
-        getHandle().setLeftArmRotation(toNMS(pose));
+        getHandle().setLeftArmPose(toNMS(pose));
     }
 
     @Override
     public EulerAngle getRightArmPose() {
-        return fromNMS(getHandle().getRightArmRotation());
+        return fromNMS(getHandle().getRightArmPose());
     }
 
     @Override
     public void setRightArmPose(EulerAngle pose) {
-        getHandle().setRightArmRotation(toNMS(pose));
+        getHandle().setRightArmPose(toNMS(pose));
     }
 
     @Override
     public EulerAngle getLeftLegPose() {
-        return fromNMS(getHandle().getLeftLegRotation());
+        return fromNMS(getHandle().getLeftLegPose());
     }
 
     @Override
     public void setLeftLegPose(EulerAngle pose) {
-        getHandle().setLeftLegRotation(toNMS(pose));
+        getHandle().setLeftLegPose(toNMS(pose));
     }
 
     @Override
     public EulerAngle getRightLegPose() {
-        return fromNMS(getHandle().getRightLegRotation());
+        return fromNMS(getHandle().getRightLegPose());
     }
 
     @Override
     public void setRightLegPose(EulerAngle pose) {
-        getHandle().setRightLegRotation(toNMS(pose));
+        getHandle().setRightLegPose(toNMS(pose));
     }
 
     @Override
     public EulerAngle getHeadPose() {
-        return fromNMS(getHandle().getHeadRotation());
+        return fromNMS(getHandle().getHeadPose());
     }
 
     @Override
     public void setHeadPose(EulerAngle pose) {
-        getHandle().setHeadRotation(toNMS(pose));
+        getHandle().setHeadPose(toNMS(pose));
     }
 
     @Override
     public boolean hasBasePlate() {
-        return getHandle().shouldShowBasePlate();
+        return getHandle().showBasePlate();
     }
 
     @Override
@@ -175,7 +172,7 @@ public class CraftArmorStand extends LivingEntityImpl implements ArmorStand {
     public void setGravity(boolean gravity) {
         super.setGravity(gravity);
         // Armor stands are special
-        getHandle().noClip = !gravity;
+        getHandle().noPhysics = !gravity;
     }
 
     @Override
@@ -190,7 +187,7 @@ public class CraftArmorStand extends LivingEntityImpl implements ArmorStand {
 
     @Override
     public boolean hasArms() {
-        return getHandle().shouldShowArms();
+        return getHandle().showArms();
     }
 
     @Override
@@ -208,16 +205,16 @@ public class CraftArmorStand extends LivingEntityImpl implements ArmorStand {
         ((IMixinArmorStandEntity)getHandle()).setSmallBF(small);
     }
 
-    private static EulerAngle fromNMS(net.minecraft.util.math.EulerAngle old) {
+    private static EulerAngle fromNMS(net.minecraft.core.Rotations old) {
         return new EulerAngle(
-            Math.toRadians(old.pitch()),
-            Math.toRadians(old.yaw()),
-            Math.toRadians(old.roll())
+            Math.toRadians(old.x()),
+            Math.toRadians(old.y()),
+            Math.toRadians(old.z())
         );
     }
 
-    private static net.minecraft.util.math.EulerAngle toNMS(EulerAngle old) {
-        return new net.minecraft.util.math.EulerAngle(
+    private static net.minecraft.core.Rotations toNMS(EulerAngle old) {
+        return new net.minecraft.core.Rotations(
             (float) Math.toDegrees(old.getX()),
             (float) Math.toDegrees(old.getY()),
             (float) Math.toDegrees(old.getZ())
@@ -431,7 +428,7 @@ public class CraftArmorStand extends LivingEntityImpl implements ArmorStand {
     public ItemStack getItem(EquipmentSlot slot) {
         // TODO Auto-generated method stub
         if (slot == EquipmentSlot.HAND) {
-            CraftItemStack.asCraftMirror(nms.getStackInHand(Hand.MAIN_HAND));
+            CraftItemStack.asCraftMirror(nms.getItemInHand(InteractionHand.MAIN_HAND));
         }
         return null;
     }

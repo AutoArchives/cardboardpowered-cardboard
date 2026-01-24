@@ -7,17 +7,15 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Pillager;
 import org.bukkit.inventory.Inventory;
 
-import net.minecraft.entity.mob.PillagerEntity;
-
 public class CardboardPillager extends CraftIllager implements Pillager {
 
-    public CardboardPillager(CraftServer server, PillagerEntity entity) {
+    public CardboardPillager(CraftServer server, net.minecraft.world.entity.monster.illager.Pillager entity) {
         super(server, entity);
     }
 
     @Override
-    public PillagerEntity getHandle() {
-        return (PillagerEntity) super.getHandle();
+    public net.minecraft.world.entity.monster.illager.Pillager getHandle() {
+        return (net.minecraft.world.entity.monster.illager.Pillager) super.getHandle();
     }
 
     @Override

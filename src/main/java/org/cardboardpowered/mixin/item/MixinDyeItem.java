@@ -1,5 +1,13 @@
 package org.cardboardpowered.mixin.item;
 
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.sheep.Sheep;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.ItemStack;
 import org.bukkit.Bukkit;
 import org.bukkit.event.entity.SheepDyeWoolEvent;
 import org.cardboardpowered.util.MixinInfo;
@@ -9,21 +17,12 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import org.cardboardpowered.interfaces.IMixinEntity;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.passive.SheepEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.DyeItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Hand;
-
 @MixinInfo(events = {"SheepDyeWoolEvent"})
 @Mixin(value = DyeItem.class, priority = 900)
 public class MixinDyeItem {
 
     @Shadow
-    public DyeColor color;
+    public DyeColor dyeColor;
 
     /**
      * @reason .
@@ -31,23 +30,23 @@ public class MixinDyeItem {
      */
     @SuppressWarnings("deprecation")
     @Overwrite
-    public ActionResult useOnEntity(ItemStack itemstack, PlayerEntity entityhuman, LivingEntity entityliving, Hand enumhand) {
-        if (!(entityliving instanceof SheepEntity)) return ActionResult.PASS;
+    public InteractionResult interactLivingEntity(ItemStack itemstack, Player entityhuman, LivingEntity entityliving, InteractionHand enumhand) {
+        if (!(entityliving instanceof Sheep)) return InteractionResult.PASS;
 
-        SheepEntity entitysheep = (SheepEntity) entityliving;
-        if (entitysheep.isAlive() && !entitysheep.isSheared() && entitysheep.getColor() != this.color) {
-            if (!entityhuman.getEntityWorld().isClient()) {
-                byte bColor = (byte) this.color.getIndex();
+        Sheep entitysheep = (Sheep) entityliving;
+        if (entitysheep.isAlive() && !entitysheep.isSheared() && entitysheep.getColor() != this.dyeColor) {
+            if (!entityhuman.level().isClientSide()) {
+                byte bColor = (byte) this.dyeColor.getId();
                 SheepDyeWoolEvent event = new SheepDyeWoolEvent((org.bukkit.entity.Sheep) ((IMixinEntity)entitysheep).getBukkitEntity(), org.bukkit.DyeColor.getByWoolData(bColor));
                 Bukkit.getServer().getPluginManager().callEvent(event);
-                if (event.isCancelled()) return ActionResult.PASS;
+                if (event.isCancelled()) return InteractionResult.PASS;
 
-                entitysheep.setColor(DyeColor.byIndex((byte) event.getColor().getWoolData()));
-                itemstack.decrement(1);
+                entitysheep.setColor(DyeColor.byId((byte) event.getColor().getWoolData()));
+                itemstack.shrink(1);
             }
-            return ActionResult.SUCCESS; // ActionResult.success(entityhuman.getWorld().isClient);
+            return InteractionResult.SUCCESS; // ActionResult.success(entityhuman.getWorld().isClient);
         }
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 
 }

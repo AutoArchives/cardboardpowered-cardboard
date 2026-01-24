@@ -3,7 +3,7 @@
  */
 package org.bukkit.craftbukkit.block.impl;
 
-import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 public final class CraftMinecartTrack extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.Rail {
 
@@ -11,13 +11,13 @@ public final class CraftMinecartTrack extends org.bukkit.craftbukkit.block.data.
         super();
     }
 
-    public CraftMinecartTrack(net.minecraft.block.BlockState state) {
+    public CraftMinecartTrack(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftRail
 
-    private static final net.minecraft.state.property.EnumProperty<?> SHAPE = getEnum(net.minecraft.block.RailBlock.class, "shape");
+    private static final net.minecraft.world.level.block.state.properties.EnumProperty<?> SHAPE = getEnum(net.minecraft.world.level.block.RailBlock.class, "shape");
 
     @Override
     public Shape getShape() {
@@ -36,7 +36,7 @@ public final class CraftMinecartTrack extends org.bukkit.craftbukkit.block.data.
 
     // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final BooleanProperty WATERLOGGED = getBoolean(net.minecraft.block.RailBlock.class, "waterlogged");
+    private static final BooleanProperty WATERLOGGED = getBoolean(net.minecraft.world.level.block.RailBlock.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {

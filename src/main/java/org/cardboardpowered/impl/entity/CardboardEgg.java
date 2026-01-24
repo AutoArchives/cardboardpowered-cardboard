@@ -1,19 +1,19 @@
 package org.cardboardpowered.impl.entity;
 
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Egg;
 import org.bukkit.entity.EntityType;
-import net.minecraft.entity.projectile.thrown.EggEntity;
 
 public class CardboardEgg extends ThrowableProjectileImpl implements Egg {
 
-    public CardboardEgg(CraftServer server, EggEntity entity) {
+    public CardboardEgg(CraftServer server, ThrownEgg entity) {
         super(server, entity);
     }
 
     @Override
-    public EggEntity getHandle() {
-        return (EggEntity) nms;
+    public ThrownEgg getHandle() {
+        return (ThrownEgg) nms;
     }
 
     @Override

@@ -3,11 +3,9 @@ package org.bukkit.craftbukkit.inventory.view;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.recipe.display.CuttingRecipeDisplay;
-import net.minecraft.screen.StonecutterScreenHandler;
-
+import net.minecraft.world.inventory.StonecutterMenu;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.SelectableRecipe;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.entity.HumanEntity;
@@ -19,15 +17,15 @@ import org.jetbrains.annotations.NotNull;
 
 import org.cardboardpowered.interfaces.IMixinRecipe;
 
-public class CraftStonecutterView extends CraftInventoryView<StonecutterScreenHandler, StonecutterInventory> implements StonecutterView {
+public class CraftStonecutterView extends CraftInventoryView<StonecutterMenu, StonecutterInventory> implements StonecutterView {
 
-    public CraftStonecutterView(final HumanEntity player, final StonecutterInventory viewing, final StonecutterScreenHandler container) {
+    public CraftStonecutterView(final HumanEntity player, final StonecutterInventory viewing, final StonecutterMenu container) {
         super(player, viewing, container);
     }
 
     @Override
     public int getSelectedRecipeIndex() {
-        return ((StonecutterScreenHandler)this.container).getSelectedRecipe();
+        return ((StonecutterMenu)this.container).getSelectedRecipeIndex();
     }
     
     // @Override
@@ -45,12 +43,12 @@ public class CraftStonecutterView extends CraftInventoryView<StonecutterScreenHa
     @Override
     public List<StonecuttingRecipe> getRecipes() {
         final List<StonecuttingRecipe> recipes = new ArrayList<>();
-        for (final CuttingRecipeDisplay.GroupEntry<net.minecraft.recipe.StonecuttingRecipe> recipe : ((StonecutterScreenHandler)this.container).getAvailableRecipes().entries()) {
+        for (final SelectableRecipe.SingleInputEntry<net.minecraft.world.item.crafting.StonecutterRecipe> recipe : ((StonecutterMenu)this.container).getVisibleRecipes().entries()) {
             
-        	Optional<RecipeEntry<net.minecraft.recipe.StonecuttingRecipe>> opt = recipe.recipe().recipe();
+        	Optional<RecipeHolder<net.minecraft.world.item.crafting.StonecutterRecipe>> opt = recipe.recipe().recipe();
         	
         	if (opt.isPresent()) {
-        		RecipeEntry<net.minecraft.recipe.StonecuttingRecipe> rep = opt.get();
+        		RecipeHolder<net.minecraft.world.item.crafting.StonecutterRecipe> rep = opt.get();
 
         		Recipe bukkit = ((IMixinRecipe) (Object) rep).toBukkitRecipe();
         		recipes.add((StonecuttingRecipe) bukkit);
@@ -63,6 +61,6 @@ public class CraftStonecutterView extends CraftInventoryView<StonecutterScreenHa
 
     @Override
     public int getRecipeAmount() {
-        return ((StonecutterScreenHandler)this.container).getAvailableRecipeCount();
+        return ((StonecutterMenu)this.container).getNumberOfVisibleRecipes();
     }
 }
