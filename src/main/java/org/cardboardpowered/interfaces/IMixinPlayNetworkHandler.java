@@ -40,4 +40,9 @@ public interface IMixinPlayNetworkHandler {
 	 */
 	CraftPlayer getPlayer();
 
+	/**
+	 * player -> spigot -> reset
+	 */
+	void cardboard$spigot_player_respawn();
+
 }

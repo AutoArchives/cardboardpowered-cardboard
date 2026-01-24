@@ -19,9 +19,12 @@ project.compileJava.dependsOn(createVersionFile)
 //sourceCompatibility = JavaVersion.VERSION_21
 //targetCompatibility = JavaVersion.VERSION_21
 
-//archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
+
+base {
+	archivesName = project.archives_base_name
+}
 
 configurations { 
     extraLibs
@@ -50,7 +53,7 @@ configurations.all {
 
 // Paper-API
 def PAPER_VER_A = "1.21.11-R0.1-SNAPSHOT"
-def PAPER_VER_B = "1.21.11-R0.1-20251209.225848-3"
+def PAPER_VER_B = "1.21.11-R0.1-20251226.165711-17"
 
 def PAPER_API_VER = "io.papermc.paper:paper-api:" + PAPER_VER_B
 
@@ -97,8 +100,6 @@ dependencies {
 	// Paper-API libs
 	modImplementation(PAPER_API_VER)
 	
-	// compileOnly fileTree(dir: 'libs', include: 'paper-api-25w45a-R0.1-SNAPSHOT.jar')
-	
 	modImplementation("net.md-5:bungeecord-chat:1.21-R0.2")
 	modImplementation("net.kyori:adventure-api:4.25.0")
 	modImplementation("net.kyori:adventure-text-serializer-gson:4.25.0")
@@ -138,7 +139,6 @@ dependencies {
     include(modImplementation('org.spongepowered:configurate-hocon:4.2.0'))
     
     // Remove parts that are included with Minecraft or Downloaded
-    
     removeLibs group: "com.google.guava", name: "guava", version: "21.0"
     removeLibs group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
     removeLibs group: 'org.apache.commons', name: 'commons-collections4', version: '4.2'
@@ -213,7 +213,7 @@ modrinth {
     token = System.getenv("MODRINTH") // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
     projectId = "MLYQ9VGP"
     versionNumber = "1.21.11-" + System.env.BUILD_NUMBER
-    versionType = "alpha"
+    versionType = "beta"
     uploadFile = remapJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
     gameVersions = ["1.21.11"]
     loaders = ["fabric"]
@@ -263,7 +263,7 @@ ext.downloadPaperFile = {
 // Make sure paper-api on the repo is kept updated.
 publishing {
 //	configurations.api.setCanBeResolved(true)
-	downloadPaperFile()
+	// downloadPaperFile()
     publications {
         mavenJava(MavenPublication) {
 			groupId = 'io.papermc.paper'

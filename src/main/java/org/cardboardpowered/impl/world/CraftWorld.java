@@ -60,6 +60,7 @@ import org.bukkit.craftbukkit.generator.structure.CraftGeneratedStructure;
 import org.bukkit.craftbukkit.generator.structure.CraftStructure;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftBiomeSearchResult;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.*;
@@ -113,6 +114,8 @@ import io.papermc.paper.block.fluid.FluidData;
 import io.papermc.paper.event.world.WorldGameRuleChangeEvent;
 import io.papermc.paper.math.Position;
 import io.papermc.paper.raytracing.PositionedRayTraceConfigurationBuilder;
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.world.MoonPhase;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import me.isaiah.common.cmixin.IMixinWorld;
@@ -121,6 +124,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -2760,19 +2764,41 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     }
 
 	@Override
-	public @Nullable StructureSearchResult locateNearestStructure(@NotNull Location arg0,
-			org.bukkit.generator.structure.@NotNull StructureType arg1, int arg2, boolean arg3) {
-		// TODO Auto-generated method stub
-		return null;
+	public StructureSearchResult locateNearestStructure(Location origin, org.bukkit.generator.structure.StructureType structureType, int radius, boolean findUnexplored) {
+		List<Structure> structures = new ArrayList<>();
+		for (Structure structure : RegistryAccess.registryAccess().getRegistry(RegistryKey.STRUCTURE)) {
+			if (structure.getStructureType() == structureType) {
+				structures.add(structure);
+			}
+		}
+
+		return this.locateNearestStructure(origin, structures, radius, findUnexplored);
 	}
 
 	@Override
-	public @Nullable StructureSearchResult locateNearestStructure(@NotNull Location arg0, @NotNull Structure arg1,
-			int arg2, boolean arg3) {
-		// TODO Auto-generated method stub
-		return null;
+	public StructureSearchResult locateNearestStructure(Location origin, Structure structure, int radius, boolean findUnexplored) {
+		return this.locateNearestStructure(origin, List.of(structure), radius, findUnexplored);
 	}
-	
+
+	private StructureSearchResult locateNearestStructure(Location origin, List<Structure> structures, int radius, boolean findUnexplored) {
+		// Cardboard: TODO
+		return null;
+		/*
+		Pair<BlockPos, Holder<net.minecraft.world.level.levelgen.structure.Structure>> found = this.getHandle().getChunkSource().getGenerator().findNearestMapStructure(
+				this.getHandle(),
+				HolderSet.direct(CraftStructure::bukkitToMinecraftHolder, structures),
+				CraftLocation.toBlockPosition(origin),
+				radius,
+				findUnexplored
+				);
+		if (found == null) {
+			return null;
+		}
+
+		return new CraftStructureSearchResult(CraftStructure.minecraftHolderToBukkit(found.getSecond()), CraftLocation.toBukkit(found.getFirst(), this));
+		*/
+	}
+
 	// 1.19.4
 
 	// @Override
@@ -2893,7 +2919,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
     public BiomeSearchResult locateNearestBiome(Location origin, int radius, int horizontalInterval, int verticalInterval, org.bukkit.block.Biome ... biomes) {
-        BlockPos originPos = BlockPos.containing(origin.getX(), origin.getY(), origin.getZ());
+        BlockPos originPos = CraftLocation.toBlockPosition(origin);
         HashSet<Holder<net.minecraft.world.level.biome.Biome>> holders = new HashSet<Holder<net.minecraft.world.level.biome.Biome>>();
         for (org.bukkit.block.Biome biome : biomes) {
             holders.add(CraftBiome.bukkitToMinecraftHolder(biome));

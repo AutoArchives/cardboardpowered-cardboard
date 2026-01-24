@@ -6,11 +6,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.Chunk;
+import org.bukkit.Color;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -47,6 +50,7 @@ import com.destroystokyo.paper.entity.TargetEntityInfo;
 import com.google.common.collect.Sets;
 import com.javazilla.bukkitfabric.Utils;
 
+import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.world.damagesource.CombatTracker;
 
 import org.cardboardpowered.interfaces.IMixinArrowEntity;
@@ -55,12 +59,15 @@ import org.cardboardpowered.interfaces.IMixinLivingEntity;
 
 import me.isaiah.common.ICommonMod;
 import me.isaiah.common.cmixin.IMixinMinecraftServer;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.util.TriState;
 import net.minecraft.Optionull;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.waypoints.ServerWaypointManager;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
@@ -82,6 +89,9 @@ import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownSplas
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.waypoints.WaypointStyleAsset;
+import net.minecraft.world.waypoints.WaypointStyleAssets;
+
 import org.apache.commons.lang.Validate;
 import org.bukkit.Chunk;
 import org.bukkit.FluidCollisionMode;
@@ -1253,6 +1263,44 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 		// TODO Auto-generated method stub
 		// TODO: return this.getHandle().getDamageTracker().paperCombatTracker;
 		return null;
+	}
+
+	@Override
+	public void setWaypointStyle(@Nullable Key key) {
+		final ResourceKey<WaypointStyleAsset> newKey = key == null
+				? WaypointStyleAssets.DEFAULT
+						: PaperAdventure.asVanilla(WaypointStyleAssets.ROOT_ID, key);
+		if (Objects.equals(getHandle().waypointIcon().style, newKey)) return;
+
+		getHandle().waypointIcon().style = newKey;
+		retrack_waypoint();
+	}
+
+	@Override
+	public void setWaypointColor(@Nullable Color color) {
+		final Optional<Integer> newColor = Optional.ofNullable(color).map(Color::asARGB);
+        if (Objects.equals(getHandle().waypointIcon().color, newColor)) {
+        	return;
+        }
+
+        getHandle().waypointIcon().color = newColor;
+        retrack_waypoint();
+	}
+	
+	private void retrack_waypoint() {
+        ServerWaypointManager manager = ((ServerLevel) getHandle().level()).getWaypointManager();
+        manager.untrackWaypoint(getHandle());
+        manager.trackWaypoint(getHandle());
+    }
+
+	@Override
+	public Key getWaypointStyle() {
+		return PaperAdventure.asAdventure(getHandle().waypointIcon().style.identifier());
+	}
+
+	@Override
+	public Color getWaypointColor() {
+		return getHandle().waypointIcon().color.map(Color::fromARGB).orElse(null);
 	}
 
 }

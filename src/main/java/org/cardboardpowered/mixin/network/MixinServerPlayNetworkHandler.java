@@ -821,4 +821,12 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonPacketLi
 	}
 
 
+	@Shadow
+	void restartClientLoadTimerAfterRespawn( ) {}
+	
+	@Override
+	public void cardboard$spigot_player_respawn() {
+		restartClientLoadTimerAfterRespawn();
+	}
+	
 }

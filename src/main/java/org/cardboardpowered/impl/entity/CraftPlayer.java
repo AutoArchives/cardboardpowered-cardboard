@@ -1461,8 +1461,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         @Override
         public void respawn() {
-            if (getHealth() <= 0 && isOnline())
+            if (getHealth() <= 0 && isOnline()) {
                 nms.level().getServer().getPlayerList().respawn( getHandle(), false, RemovalReason.KILLED );
+
+                IMixinPlayNetworkHandler imix = (IMixinPlayNetworkHandler) CraftPlayer.this.getHandle().connection;
+                imix.cardboard$spigot_player_respawn();
+            }
         }
 
         @Override

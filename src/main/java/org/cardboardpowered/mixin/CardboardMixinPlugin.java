@@ -77,8 +77,6 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         List<Library> libraries = new ArrayList<>();
 
         // Paper API
-        // libraries.add( new Library("io.papermc", "paper-api", "1.21.10-R0.1-20251020.022259-22", SHA1, "ecd306f6c6e7e715ebccb6cb7706c5f932bd639b", "paper"));
-        
         libraries.add( new Library("io.papermc", "paper-api", "1.21.11-R0.1-20251209.225848-3", SHA1, "691ee5296d074a64e899f1e8d3d7640fd16bc292", "paper"));
 
         // For Snapshots:
