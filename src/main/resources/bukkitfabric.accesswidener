@@ -586,3 +586,12 @@ accessible field net/minecraft/world/level/gamerules/GameRules rules Lnet/minecr
 accessible method net/minecraft/server/MinecraftServer selectLevelLoadFocusPos ()Lnet/minecraft/core/GlobalPos;
 accessible field net/minecraft/world/item/component/ResolvableProfile$Partial MAP_CODEC Lcom/mojang/serialization/MapCodec;
 accessible method net/minecraft/network/chat/contents/TranslatableContents filterAllowedArguments (Ljava/lang/Object;)Lcom/mojang/serialization/DataResult;
+accessible field net/minecraft/world/entity/decoration/Mannequin VALID_POSES Ljava/util/Set;
+accessible method net/minecraft/world/entity/decoration/Mannequin getProfile ()Lnet/minecraft/world/item/component/ResolvableProfile;
+accessible method net/minecraft/world/entity/decoration/Mannequin setProfile (Lnet/minecraft/world/item/component/ResolvableProfile;)V
+accessible field net/minecraft/world/entity/Avatar DATA_PLAYER_MODE_CUSTOMISATION Lnet/minecraft/network/syncher/EntityDataAccessor;
+accessible method net/minecraft/world/entity/decoration/Mannequin getImmovable ()Z
+accessible method net/minecraft/world/entity/decoration/Mannequin setImmovable (Z)V
+accessible method net/minecraft/world/entity/decoration/Mannequin getDescription ()Lnet/minecraft/network/chat/Component;
+accessible method net/minecraft/world/entity/decoration/Mannequin setHideDescription (Z)V
+accessible method net/minecraft/world/entity/decoration/Mannequin setDescription (Lnet/minecraft/network/chat/Component;)V

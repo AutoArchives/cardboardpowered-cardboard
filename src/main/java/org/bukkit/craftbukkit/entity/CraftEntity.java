@@ -1362,6 +1362,13 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 		// TODO Auto-generated method stub
 		
 	}
+	
+    public void setPose0(net.minecraft.world.entity.Pose pose, boolean fixed) {
+        final net.minecraft.world.entity.Entity handle = this.getHandle();
+        // handle.fixedPose = false;
+        handle.setPose(pose);
+        // handle.fixedPose = fixed;
+    }
 
 	@Override
 	public boolean hasFixedPose() {
