@@ -19,7 +19,7 @@ import net.kyori.adventure.text.*;
 //import net.minecraft.text.Style;
 import net.kyori.adventure.text.format.Style;
 
-public final class AdventureCodecs {
+public class AdventureCodecs {
     
 	// public static final Codec<Component> COMPONENT_CODEC = Codec.recursive((String)"adventure Component", AdventureCodecs::createCodec);
  

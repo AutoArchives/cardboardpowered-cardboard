@@ -78,10 +78,12 @@ import com.mojang.datafixers.DSL.TypeReference;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JavaOps;
 import com.mojang.serialization.JsonOps;
 
 import io.izzel.arclight.api.EnumHelper;
 import io.izzel.arclight.api.Unsafe;
+import io.papermc.paper.adventure.AdventureCodecs;
 import io.papermc.paper.entity.EntitySerializationFlag;
 import io.papermc.paper.inventory.ItemRarity;
 import io.papermc.paper.inventory.tooltip.TooltipContext;
@@ -90,6 +92,8 @@ import io.papermc.paper.plugin.lifecycle.event.PaperLifecycleEventManager;
 import io.papermc.paper.registry.RegistryKey;
 import me.isaiah.common.cmixin.IMixinItemStack;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.event.HoverEvent.ShowItem;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.RegistryAccess;
@@ -1199,6 +1203,17 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
      */
     public CompoundTag platformhooks$convertNBT(TypeReference type, DataFixer dataFixer, CompoundTag nbt, int fromVersion, int toVersion) {
     	return (CompoundTag)dataFixer.update(type, new Dynamic<>(NbtOps.INSTANCE, nbt), fromVersion, toVersion).getValue();
+    }
+
+    @Override
+    public ItemStack deserializeItemHover(final ShowItem itemHover) {
+        final RegistryOps<Object> ops = CraftRegistry.getMinecraftRegistry().createSerializationContext(JavaOps.INSTANCE);
+        final Object encoded = AdventureCodecs.SHOW_ITEM_CODEC.codec()
+            .encodeStart(ops, HoverEvent.showItem(itemHover)).getOrThrow(IllegalStateException::new);
+
+        return CraftItemStack.asBukkitCopy(net.minecraft.network.chat.HoverEvent.ShowItem.CODEC.codec()
+            .parse(ops, encoded).getOrThrow(IllegalStateException::new)
+            .item());
     }
 
 

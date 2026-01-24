@@ -53,7 +53,7 @@ configurations.all {
 
 // Paper-API
 def PAPER_VER_A = "1.21.11-R0.1-SNAPSHOT"
-def PAPER_VER_B = "1.21.11-R0.1-20251226.165711-17"
+def PAPER_VER_B = "1.21.11-R0.1-20251229.220606-27"
 
 def PAPER_API_VER = "io.papermc.paper:paper-api:" + PAPER_VER_B
 

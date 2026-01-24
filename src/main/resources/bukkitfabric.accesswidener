@@ -584,3 +584,5 @@ accessible field net/minecraft/world/level/pathfinder/PathFinder nodeEvaluator L
 accessible field net/minecraft/world/level/pathfinder/Path nodes Ljava/util/List;
 accessible field net/minecraft/world/level/gamerules/GameRules rules Lnet/minecraft/world/level/gamerules/GameRuleMap;
 accessible method net/minecraft/server/MinecraftServer selectLevelLoadFocusPos ()Lnet/minecraft/core/GlobalPos;
+accessible field net/minecraft/world/item/component/ResolvableProfile$Partial MAP_CODEC Lcom/mojang/serialization/MapCodec;
+accessible method net/minecraft/network/chat/contents/TranslatableContents filterAllowedArguments (Ljava/lang/Object;)Lcom/mojang/serialization/DataResult;

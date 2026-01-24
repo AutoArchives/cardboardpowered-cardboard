@@ -2,8 +2,12 @@ package io.papermc.paper.adventure;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,6 +21,7 @@ import org.cardboardpowered.adventure.NBTLegacyHoverEventSerializer;
 import org.cardboardpowered.adventure.WrapperAwareSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.intellij.lang.annotations.Subst;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.JavaOps;
@@ -30,7 +35,10 @@ import net.kyori.adventure.nbt.api.BinaryTagHolder;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.text.event.DataComponentValue;
+import net.kyori.adventure.text.event.DataComponentValueConverterRegistry;
 import net.kyori.adventure.text.flattener.ComponentFlattener;
+import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
@@ -42,13 +50,17 @@ import net.kyori.adventure.util.Codec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.locale.Language;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.network.Filterable;
 import net.minecraft.sounds.SoundEvent;
@@ -56,6 +68,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.WrittenBookContent;
+import net.minecraft.nbt.Tag;
 
 // Paper Adventure
 public class PaperAdventure {
@@ -111,7 +124,23 @@ public class PaperAdventure {
         .legacyHoverEventSerializer(NBTLegacyHoverEventSerializer.INSTANCE)
         .downsampleColors()
         .build();
-    private static final Codec<CompoundTag, String, IOException, IOException> NBT_CODEC = new Codec<CompoundTag, String, IOException, IOException>() {
+    
+    private static final TagParser<Tag> NBT_PARSER = TagParser.create(NbtOps.INSTANCE);
+    
+    public static final Codec<Tag, String, CommandSyntaxException, RuntimeException> NBT_CODEC = new Codec<>() {
+        @Override
+        public Tag decode(final String encoded) throws CommandSyntaxException {
+            return NBT_PARSER.parseFully(encoded);
+        }
+
+        @Override
+        public String encode(final Tag decoded) {
+            return decoded.toString();
+        }
+    };
+    
+    /*
+    public static final Codec<CompoundTag, String, IOException, IOException> NBT_CODEC = new Codec<CompoundTag, String, IOException, IOException>() {
         @Override
         public @NonNull CompoundTag decode(final @NonNull String encoded) throws IOException {
             try {
@@ -126,6 +155,7 @@ public class PaperAdventure {
             return decoded.toString();
         }
     };
+    */
 
     //static final WrapperAwareSerializer WRAPPER_AWARE_SERIALIZER = new WrapperAwareSerializer();
     public static final ComponentSerializer<Component, Component, net.minecraft.network.chat.Component> WRAPPER_AWARE_SERIALIZER = new WrapperAwareSerializer(() -> CraftRegistry.getMinecraftRegistry().createSerializationContext(JavaOps.INSTANCE));
@@ -156,6 +186,14 @@ public class PaperAdventure {
 
     public static ArrayList<Component> asAdventure(final List<net.minecraft.network.chat.Component> vanillas) {
         final ArrayList<Component> adventures = new ArrayList<>(vanillas.size());
+        for (final net.minecraft.network.chat.Component vanilla : vanillas) {
+            adventures.add(asAdventure(vanilla));
+        }
+        return adventures;
+    }
+    
+    public static List<Component> asAdventure(final net.minecraft.network.chat.Component[] vanillas) {
+        final List<Component> adventures = new ArrayList<>(vanillas.length);
         for (final net.minecraft.network.chat.Component vanilla : vanillas) {
             adventures.add(asAdventure(vanilla));
         }
@@ -384,11 +422,7 @@ public class PaperAdventure {
         if (tag == null) {
             return null;
         }
-        try {
-            return BinaryTagHolder.encode(tag, NBT_CODEC);
-        } catch (final IOException e) {
-            return null;
-        }
+        return BinaryTagHolder.encode(tag, NBT_CODEC);
     }
 
     // Colors
@@ -402,6 +436,15 @@ public class PaperAdventure {
 
     public static @Nullable ChatFormatting asVanilla(TextColor color) {
         return ChatFormatting.getById(color.value());
+    }
+    
+    public static Style asAdventure(final net.minecraft.network.chat.Style style) {
+        final RegistryOps<Object> ops = CraftRegistry.getMinecraftRegistry().createSerializationContext(JavaOps.INSTANCE);
+        final Object encoded = net.minecraft.network.chat.Style.Serializer.CODEC
+            .encodeStart(ops, style).getOrThrow(IllegalStateException::new);
+
+        return AdventureCodecs.STYLE_MAP_CODEC.codec()
+            .parse(ops, encoded).getOrThrow(IllegalStateException::new);
     }
 
     public static net.minecraft.network.chat.Component asVanillaNullToEmpty(Component component) {
@@ -431,5 +474,54 @@ public class PaperAdventure {
 	public static <T> ResourceKey<T> asVanilla(ResourceKey<? extends Registry<T>> registry, Key key) {
         return ResourceKey.create(registry, PaperAdventure.asVanilla(key));
     }
+
+	// NBT
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static Map<Key, ? extends DataComponentValue> asAdventure(
+        final DataComponentPatch patch
+    ) {
+        if (patch.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        final Map<Key, DataComponentValue> map = new HashMap<>();
+        for (final Map.Entry<DataComponentType<?>, Optional<?>> entry : patch.entrySet()) {
+            if (entry.getKey().isTransient()) continue;
+            @Subst("key:value") final String typeKey = Objects.requireNonNull(BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(entry.getKey())).toString();
+            if (entry.getValue().isEmpty()) {
+                   map.put(Key.key(typeKey), DataComponentValue.removed());
+            } else {
+                map.put(Key.key(typeKey), new DataComponentValueImpl(entry.getKey().codec(), entry.getValue().get()));
+            }
+        }
+        return map;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static DataComponentPatch asVanilla(final Map<? extends Key, ? extends DataComponentValue> map) {
+        if (map.isEmpty()) {
+            return DataComponentPatch.EMPTY;
+        }
+        final DataComponentPatch.Builder builder = DataComponentPatch.builder();
+        map.forEach((key, dataComponentValue) -> {
+            final DataComponentType<?> type = Objects.requireNonNull(BuiltInRegistries.DATA_COMPONENT_TYPE.getValue(asVanilla(key)));
+            if (dataComponentValue instanceof DataComponentValue.Removed) {
+                builder.remove(type);
+                return;
+            }
+            final DataComponentValueImpl<?> converted = DataComponentValueConverterRegistry.convert(DataComponentValueImpl.class, key, dataComponentValue);
+            builder.set((DataComponentType) type, (Object) converted.value());
+        });
+        return builder.build();
+    }
+
+    public record DataComponentValueImpl<T>(com.mojang.serialization.Codec<T> codec, T value) implements DataComponentValue.TagSerializable {
+
+        @Override
+        public BinaryTagHolder asBinaryTag() {
+            return BinaryTagHolder.encode(this.codec.encodeStart(CraftRegistry.getMinecraftRegistry().createSerializationContext(NbtOps.INSTANCE), this.value).getOrThrow(IllegalArgumentException::new), NBT_CODEC);
+        }
+    }
+
 
 }
