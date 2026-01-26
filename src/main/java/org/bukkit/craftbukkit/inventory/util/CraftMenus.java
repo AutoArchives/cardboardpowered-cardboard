@@ -23,8 +23,8 @@ import org.bukkit.inventory.view.StonecutterView;
 import org.bukkit.inventory.view.builder.InventoryViewBuilder;
 import org.jspecify.annotations.NullMarked;
 
-import org.cardboardpowered.interfaces.IMixinScreenHandler;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 import java.util.function.Supplier;
 import net.minecraft.network.chat.Component;
@@ -62,7 +62,7 @@ public final class CraftMenus {
     // This is a temporary measure that will likely be removed with the rewrite of HumanEntity#open[] methods
     public static void openMerchantMenu(final ServerPlayer player, final MerchantMenu merchant) {
     	
-    	IMixinScreenHandler ish = (IMixinScreenHandler) merchant;
+    	AbstractContainerMenuBridge ish = (AbstractContainerMenuBridge) merchant;
     	CraftMerchantView view = (CraftMerchantView)  ish.getBukkitView();
     	CraftMerchant merch = (CraftMerchant) view.getMerchant();
     	final Merchant minecraftMerchant = merch.getMerchant();
@@ -74,7 +74,7 @@ public final class CraftMenus {
         }
 
         if (minecraftMerchant.getTradingPlayer() != null) { // merchant's can only have one trader
-            ((IMixinServerEntityPlayer) minecraftMerchant.getTradingPlayer()).closeHandledScreen();
+            ((ServerPlayerBridge) minecraftMerchant.getTradingPlayer()).closeHandledScreen();
         }
 
         minecraftMerchant.setTradingPlayer(player);

@@ -1,16 +1,12 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.kyori.adventure.text.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.entity.CraftEntity;
-import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.TNTPrimed;
@@ -56,7 +52,7 @@ public class CraftTNTPrimed extends CraftEntity implements TNTPrimed {
 
     @Override
     public PrimedTnt getHandle() {
-        return (PrimedTnt) nms;
+        return (PrimedTnt) entity;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package org.cardboardpowered.mixin.entity;
 
 import org.bukkit.projectiles.ProjectileSource;
+import org.cardboardpowered.mixin.world.entity.EntityMixin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,7 +17,7 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinEntity;
 
 @Mixin(Projectile.class)
-public class MixinProjectileEntity extends MixinEntity {
+public class MixinProjectileEntity extends EntityMixin {
 
     @Inject(at = @At("TAIL"), method = "setOwner")
     public void setProjectileSource(EntityReference<Entity> entity, CallbackInfo ci) {

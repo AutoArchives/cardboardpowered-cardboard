@@ -21,7 +21,7 @@ extends CraftAnimals
 
     @Override
     public AbstractCow getHandle() {
-        return (AbstractCow)this.nms;
+        return (AbstractCow)this.entity;
     }
 
 }

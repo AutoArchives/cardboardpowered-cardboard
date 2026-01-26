@@ -1,5 +1,6 @@
 package org.cardboardpowered.impl.inventory.recipe;
 
+import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinRecipeManager;
 import org.bukkit.NamespacedKey;
@@ -9,7 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.recipe.CookingBookCategory;
 
-public class CardboardBlastingRecipe extends BlastingRecipe implements RecipeInterface {
+public class CardboardBlastingRecipe extends BlastingRecipe implements CraftRecipe {
 
     public CardboardBlastingRecipe(NamespacedKey key, ItemStack result, RecipeChoice source, float experience, int cookingTime) {
         super(key, result, source, experience, cookingTime);
@@ -29,7 +30,7 @@ public class CardboardBlastingRecipe extends BlastingRecipe implements RecipeInt
         // ((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(getKey(), new net.minecraft.recipe.BlastingRecipe(this.getGroup(), RecipeInterface.getCategory(this.getCategory()), toNMS(this.getInputChoice(), true), CraftItemStack.asNMSCopy(result), getExperience(), getCookingTime()));
     
         
-        ((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(new net.minecraft.world.item.crafting.RecipeHolder<net.minecraft.world.item.crafting.BlastingRecipe>(RecipeInterface.toMinecraft(this.getKey()), new net.minecraft.world.item.crafting.BlastingRecipe(this.getGroup(), RecipeInterface.getCategory(this.getCategory()), this.toNMS(this.getInputChoice(), true), CraftItemStack.asNMSCopy(result), this.getExperience(), this.getCookingTime())));
+        ((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(new net.minecraft.world.item.crafting.RecipeHolder<net.minecraft.world.item.crafting.BlastingRecipe>(CraftRecipe.toMinecraft(this.getKey()), new net.minecraft.world.item.crafting.BlastingRecipe(this.getGroup(), CraftRecipe.getCategory(this.getCategory()), this.toNMS(this.getInputChoice(), true), CraftItemStack.asNMSCopy(result), this.getExperience(), this.getCookingTime())));
 
     
     }

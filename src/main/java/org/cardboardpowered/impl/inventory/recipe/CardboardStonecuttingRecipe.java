@@ -1,5 +1,6 @@
 package org.cardboardpowered.impl.inventory.recipe;
 
+import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinRecipeManager;
 import org.bukkit.NamespacedKey;
@@ -8,7 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.StonecuttingRecipe;
 
-public class CardboardStonecuttingRecipe extends StonecuttingRecipe implements RecipeInterface {
+public class CardboardStonecuttingRecipe extends StonecuttingRecipe implements CraftRecipe {
 
     public CardboardStonecuttingRecipe(NamespacedKey key, ItemStack result, RecipeChoice source) {
         super(key, result, source);

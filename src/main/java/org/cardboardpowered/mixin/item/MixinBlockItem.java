@@ -44,7 +44,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 @Mixin(value = BlockItem.class, priority = 999) // Priority 999 to allow Carpet Mod
 public class MixinBlockItem implements IBlockItem {
@@ -107,7 +107,7 @@ public class MixinBlockItem implements IBlockItem {
         CollisionContext voxelshapecollision = entityhuman == null ? CollisionContext.empty() : CollisionContext.of((Entity) entityhuman);
 
         boolean defaultReturn = (!this.mustSurvive() || iblockdata.canSurvive(blockactioncontext.getLevel(), blockactioncontext.getClickedPos())) && blockactioncontext.getLevel().isUnobstructed(iblockdata, blockactioncontext.getClickedPos(), voxelshapecollision);
-        org.bukkit.entity.Player player = (blockactioncontext.getPlayer() instanceof ServerPlayer) ? (org.bukkit.entity.Player) ((IMixinServerEntityPlayer)blockactioncontext.getPlayer()).getBukkitEntity() : null;
+        org.bukkit.entity.Player player = (blockactioncontext.getPlayer() instanceof ServerPlayer) ? (org.bukkit.entity.Player) ((ServerPlayerBridge)blockactioncontext.getPlayer()).getBukkitEntity() : null;
 
         BlockCanBuildEvent event = new BlockCanBuildEvent(CraftBlock.at((ServerLevel) blockactioncontext.getLevel(), blockactioncontext.getClickedPos()), player, CraftBlockData.fromData(iblockdata), defaultReturn);
         CraftServer.INSTANCE.getPluginManager().callEvent(event);

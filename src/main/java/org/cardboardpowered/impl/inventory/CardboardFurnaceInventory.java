@@ -7,7 +7,7 @@ import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.bridge.world.ContainerBridge;
 
 public class CardboardFurnaceInventory extends CraftInventory implements FurnaceInventory {
 
@@ -47,7 +47,7 @@ public class CardboardFurnaceInventory extends CraftInventory implements Furnace
 
     @Override
     public Furnace getHolder() {
-        return (Furnace) ((IMixinInventory)(Object)inventory).getOwner();
+        return (Furnace) ((ContainerBridge)(Object)inventory).getOwner();
     }
 
 	@Override

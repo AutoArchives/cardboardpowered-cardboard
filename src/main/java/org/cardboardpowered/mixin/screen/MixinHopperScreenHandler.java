@@ -6,6 +6,7 @@ import net.minecraft.world.inventory.HopperMenu;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.entity.Player;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import org.cardboardpowered.mixin.world.inventory.AbstractContainerMenuMixin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.cardboardpowered.interfaces.IMixinEntity;
 
 @Mixin(HopperMenu.class)
-public class MixinHopperScreenHandler extends MixinScreenHandler {
+public class MixinHopperScreenHandler extends AbstractContainerMenuMixin {
 
     @Shadow
     public Container hopper;

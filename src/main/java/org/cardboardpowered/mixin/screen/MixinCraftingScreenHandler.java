@@ -2,10 +2,11 @@ package org.cardboardpowered.mixin.screen;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinScreenHandler;
+import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
 import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
 import org.bukkit.entity.Player;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import org.cardboardpowered.mixin.world.inventory.AbstractContainerMenuMixin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -31,7 +32,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 
 @Mixin(CraftingMenu.class)
-public class MixinCraftingScreenHandler extends MixinScreenHandler {
+public class MixinCraftingScreenHandler extends AbstractContainerMenuMixin {
 
 	// Lnet/minecraft/screen/CraftingScreenHandler;input:Lnet/minecraft/inventory/RecipeInputInventory;
 	
@@ -75,7 +76,7 @@ public class MixinCraftingScreenHandler extends MixinScreenHandler {
                 if (inventorycraftresult.setRecipeUsed(entityplayer, recipecrafting))
                     itemstack = recipecrafting.value().assemble(craftinginput, world.registryAccess());
             }
-            itemstack = CraftEventFactory.callPreCraftEvent(inventorycrafting, inventorycraftresult, itemstack, ((IMixinScreenHandler)container).getBukkitView(), false);
+            itemstack = CraftEventFactory.callPreCraftEvent(inventorycrafting, inventorycraftresult, itemstack, ((AbstractContainerMenuBridge)container).getBukkitView(), false);
             inventorycraftresult.setItem(0, itemstack);
             entityplayer.connection.send(new ClientboundContainerSetSlotPacket(i, container.incrementStateId(), 0, itemstack));
         }

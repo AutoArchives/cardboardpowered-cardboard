@@ -3,6 +3,7 @@ package org.cardboardpowered.mixin.entity.block;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -22,11 +23,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.cardboardpowered.interfaces.IMixinBrewingStandBlockEntity;
-import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.bridge.world.ContainerBridge;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
 @Mixin(BrewingStandBlockEntity.class)
-public class MixinBrewingStandBlockEntity implements IMixinInventory, IMixinBrewingStandBlockEntity {
+public abstract class MixinBrewingStandBlockEntity implements Container, ContainerBridge, IMixinBrewingStandBlockEntity {
 
     @Shadow
     public int fuel;
@@ -58,12 +59,12 @@ public class MixinBrewingStandBlockEntity implements IMixinInventory, IMixinBrew
     }
 
     @Override
-    public int getCardboardMaxStackSize() {
+    public int getMaxStackSize() {
         return maxStack;
     }
 
     @Override
-    public void setCardboardMaxStackSize(int size) {
+    public void cardboard$setMaxStackSize(int size) {
         maxStack = size;
     }
 

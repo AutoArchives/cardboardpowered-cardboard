@@ -1,7 +1,6 @@
 package org.cardboardpowered.impl.entity;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.util.TriState;
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.level.block.state.BlockState;
 import java.util.Optional;
@@ -75,7 +74,7 @@ public class CardboardMinecart extends CraftVehicle implements Minecart {
 
     @Override
     public AbstractMinecart getHandle() {
-        return (AbstractMinecart) nms;
+        return (AbstractMinecart) entity;
     }
 
     @Override

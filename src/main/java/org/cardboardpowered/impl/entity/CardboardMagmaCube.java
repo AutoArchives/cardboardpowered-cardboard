@@ -12,7 +12,7 @@ public class CardboardMagmaCube extends CraftSlime implements MagmaCube {
 
     @Override
     public net.minecraft.world.entity.monster.MagmaCube getHandle() {
-        return (net.minecraft.world.entity.monster.MagmaCube) nms;
+        return (net.minecraft.world.entity.monster.MagmaCube) entity;
     }
 
     @Override

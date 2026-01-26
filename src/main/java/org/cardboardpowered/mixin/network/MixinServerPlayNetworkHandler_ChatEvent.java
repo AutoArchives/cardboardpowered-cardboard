@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.network;
 
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import net.minecraft.network.Connection;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -11,8 +11,6 @@ import net.minecraft.world.phys.Vec3;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 @Mixin(value = ServerGamePacketListenerImpl.class, priority = 999)
 public abstract class MixinServerPlayNetworkHandler_ChatEvent extends ServerCommonPacketListenerImpl {
@@ -54,7 +52,7 @@ public abstract class MixinServerPlayNetworkHandler_ChatEvent extends ServerComm
     }
 
     public CraftPlayer getPlayer_0() {
-        return (CraftPlayer) ((IMixinServerEntityPlayer)(Object)this.player).getBukkitEntity();
+        return (CraftPlayer) ((ServerPlayerBridge)(Object)this.player).getBukkitEntity();
     }
 
 	// Content phase testing, with variable info

@@ -12,7 +12,7 @@ public class CardboardBlaze extends CraftMonster implements Blaze {
 
     @Override
     public net.minecraft.world.entity.monster.Blaze getHandle() {
-        return (net.minecraft.world.entity.monster.Blaze) nms;
+        return (net.minecraft.world.entity.monster.Blaze) entity;
     }
 
     @Override

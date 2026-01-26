@@ -1,37 +1,25 @@
 package org.cardboardpowered.mixin.screen;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.EnchantmentMenu;
-import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.util.CraftNamespacedKey;
-import org.bukkit.enchantments.EnchantmentOffer;
 import org.bukkit.entity.Player;
-import org.bukkit.event.enchantment.EnchantItemEvent;
-import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.cardboardpowered.impl.inventory.CardboardEnchantingInventory;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
-import org.cardboardpowered.util.MixinInfo;
+import org.cardboardpowered.mixin.world.inventory.AbstractContainerMenuMixin;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinScreenHandlerContext;
 
 // MixinInfo(events = {"PrepareItemEnchantEvent", "EnchantItemEvent"})
 @Mixin(EnchantmentMenu.class)
-public class MixinEnchantmentScreenHandler extends MixinScreenHandler {
+public class MixinEnchantmentScreenHandler extends AbstractContainerMenuMixin {
 
 	// TODO: Update!
 	// TODO: 1.20.5

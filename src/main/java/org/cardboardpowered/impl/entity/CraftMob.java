@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.vehicle.boat.Boat;
 import java.util.Random;
-import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -14,14 +13,10 @@ import org.bukkit.Sound;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
-import org.bukkit.entity.Projectile;
 import org.bukkit.loot.LootTable;
-import org.bukkit.util.Vector;
 
 import com.destroystokyo.paper.entity.PaperPathfinder;
 import com.destroystokyo.paper.entity.Pathfinder;
@@ -72,7 +67,7 @@ public class CraftMob extends LivingEntityImpl implements Mob {
 
     @Override
     public net.minecraft.world.entity.Mob getHandle() {
-        return (net.minecraft.world.entity.Mob) nms;
+        return (net.minecraft.world.entity.Mob) entity;
     }
 
     @Override

@@ -5,6 +5,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.api.event.CardboardFireworkExplodeEvent;
+import org.cardboardpowered.mixin.world.entity.EntityMixin;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @MixinInfo(events = {"FireworkExplodeEvent", "CardboradFireworkExplodeEvent"})
 @Mixin(FireworkRocketEntity.class)
-public class MixinFireworkRocketEntity extends MixinEntity{
+public class MixinFireworkRocketEntity extends EntityMixin {
 
     @Inject(method = "tick", cancellable = true, at = @At("HEAD"))
     private void bukkitFireworksExplode(CallbackInfo ci) {

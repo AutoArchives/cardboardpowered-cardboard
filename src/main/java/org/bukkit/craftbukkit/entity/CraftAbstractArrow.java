@@ -13,13 +13,10 @@ import net.minecraft.world.level.BlockCollisions;
 import net.minecraft.world.phys.AABB;
 import java.util.List;
 
-import org.apache.commons.lang.Validate;
-import org.bukkit.Chunk;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.CraftBlock;
-import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Entity;
@@ -145,7 +142,7 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
 
     @Override
     public net.minecraft.world.entity.projectile.arrow.AbstractArrow getHandle() {
-        return (net.minecraft.world.entity.projectile.arrow.AbstractArrow) nms;
+        return (net.minecraft.world.entity.projectile.arrow.AbstractArrow) entity;
     }
 
     @Override

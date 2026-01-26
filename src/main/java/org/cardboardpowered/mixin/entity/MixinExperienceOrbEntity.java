@@ -9,8 +9,9 @@ import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.bukkit.event.player.PlayerExpCooldownChangeEvent.ChangeReason;
 import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.bukkit.event.player.PlayerItemMendEvent;
+import org.cardboardpowered.mixin.world.entity.EntityMixin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,7 +28,7 @@ import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
 
 @Mixin(value = net.minecraft.world.entity.ExperienceOrb.class, priority = 900)
-public class MixinExperienceOrbEntity extends MixinEntity {
+public class MixinExperienceOrbEntity extends EntityMixin {
 
 	private static final ThreadLocal<net.minecraft.world.entity.player.Player> currentPlayer = new ThreadLocal<>();
 
@@ -49,7 +50,7 @@ public class MixinExperienceOrbEntity extends MixinEntity {
 		if (player instanceof ServerPlayer serverPlayer
 				&& player.takeXpDelay == 0
 				&& new PlayerPickupExperienceEvent(
-						(Player) ((IMixinServerEntityPlayer)serverPlayer).getBukkitEntity(),
+						(Player) ((ServerPlayerBridge)serverPlayer).getBukkitEntity(),
 						(ExperienceOrb) ((IMixinEntity) ((net.minecraft.world.entity.ExperienceOrb) (Object) this)).getBukkitEntity()
 					).callEvent()) {
 			// Continue
@@ -117,6 +118,4 @@ public class MixinExperienceOrbEntity extends MixinEntity {
     private int repairPlayerItems(ServerPlayer player, int amount) {
         return 0;
     }
-    
-
 }

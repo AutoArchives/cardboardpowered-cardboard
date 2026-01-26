@@ -1,9 +1,9 @@
 package org.cardboardpowered.impl.block;
 
+import org.cardboardpowered.bridge.world.level.block.entity.BlockEntityBridge;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.slf4j.Logger;
 
-import com.google.common.base.Preconditions;
 import com.mojang.logging.LogUtils;
 
 import me.isaiah.common.ICommonMod;
@@ -21,12 +21,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.block.TileState;
 import org.bukkit.craftbukkit.CraftRegistry;
-import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.persistence.PersistentDataContainer;
 
@@ -248,7 +245,7 @@ public abstract class CardboardBlockEntityState<T extends BlockEntity> extends C
 
     @Override
     public PersistentDataContainer getPersistentDataContainer() {
-        return ((org.cardboardpowered.interfaces.IMixinBlockEntity)(Object)getSnapshot()).getPersistentDataContainer();
+        return ((BlockEntityBridge)(Object)getSnapshot()).getPersistentDataContainer();
     }
     
     // @Override

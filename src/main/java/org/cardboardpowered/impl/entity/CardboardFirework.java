@@ -42,7 +42,7 @@ public class CardboardFirework extends CraftProjectile implements Firework {
 
     @Override
     public FireworkRocketEntity getHandle() {
-        return (FireworkRocketEntity) nms;
+        return (FireworkRocketEntity) entity;
     }
 
     @Override

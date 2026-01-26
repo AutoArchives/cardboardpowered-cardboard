@@ -62,7 +62,7 @@ public class CardboardHanging extends CraftEntity implements Hanging {
 
     @Override
     public HangingEntity getHandle() {
-        return (HangingEntity) nms;
+        return (HangingEntity) entity;
     }
 
     @Override

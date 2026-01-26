@@ -1,23 +1,18 @@
 package org.cardboardpowered.mixin.world;
 
 import org.cardboardpowered.CardboardMod;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import org.cardboardpowered.interfaces.IMixinWorldSaveHandler;
 import com.mojang.datafixers.DataFixer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.world.level.storage.PlayerDataStorage;
-import org.cardboardpowered.impl.entity.CraftPlayer;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.Optional;
 
 @Mixin(value = PlayerDataStorage.class, priority = 999)
 public class MixinWorldSaveHandler implements IMixinWorldSaveHandler {

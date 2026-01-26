@@ -26,7 +26,7 @@ public class LightningStrikeImpl extends CraftEntity implements LightningStrike 
 
     @Override
     public LightningBolt getHandle() {
-        return (LightningBolt) nms;
+        return (LightningBolt) entity;
     }
 
     @Override

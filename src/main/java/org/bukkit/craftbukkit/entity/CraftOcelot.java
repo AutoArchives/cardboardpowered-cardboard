@@ -13,7 +13,7 @@ public class CraftOcelot extends CraftAnimals implements Ocelot {
 
     @Override
     public net.minecraft.world.entity.animal.feline.Ocelot getHandle() {
-        return (net.minecraft.world.entity.animal.feline.Ocelot) nms;
+        return (net.minecraft.world.entity.animal.feline.Ocelot) entity;
     }
 
     @SuppressWarnings("deprecation")

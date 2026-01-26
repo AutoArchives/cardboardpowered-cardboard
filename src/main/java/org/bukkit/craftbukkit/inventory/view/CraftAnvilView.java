@@ -7,9 +7,6 @@ import org.bukkit.inventory.view.AnvilView;
 import org.cardboardpowered.impl.inventory.CardboardAnvilInventory;
 import org.jetbrains.annotations.Nullable;
 
-import org.cardboardpowered.interfaces.IMixinScreenHandler;
-
-import io.papermc.paper.adventure.PaperAdventure;
 import net.minecraft.world.inventory.AnvilMenu;
 
 public class CraftAnvilView extends CraftInventoryView<AnvilMenu, AnvilInventory> implements AnvilView {

@@ -1,6 +1,5 @@
 package org.cardboardpowered.mixin.entity;
 
-import java.util.UUID;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -8,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
+import org.cardboardpowered.mixin.world.entity.EntityMixin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,11 +18,11 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.impl.entity.ItemEntityImpl;
 import org.cardboardpowered.interfaces.CardboardItemEntity;
 import org.cardboardpowered.interfaces.IMixinPlayerInventory;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 @Mixin(ItemEntity.class)
 @SuppressWarnings("deprecation")
-public class MixinItemEntity extends MixinEntity implements CardboardItemEntity {
+public class MixinItemEntity extends EntityMixin implements CardboardItemEntity {
 
 	/**
 	 * net.minecraft.class_1542.field_7201
@@ -78,9 +78,9 @@ public class MixinItemEntity extends MixinEntity implements CardboardItemEntity 
     // public UUID owner;
 
     @Inject(at = @At(value = "HEAD"), method = "tick()V")
-    public void setBukkit(CallbackInfo callbackInfo) {
-        if (null == bukkit)
-            this.bukkit = new ItemEntityImpl(CraftServer.INSTANCE, (ItemEntity) (Object) this, (ItemEntity) (Object) this);
+    public void setBukkitEntity(CallbackInfo callbackInfo) {
+        if (null == bukkitEntity)
+            this.bukkitEntity = new ItemEntityImpl(CraftServer.INSTANCE, (ItemEntity) (Object) this, (ItemEntity) (Object) this);
     }
 
     @Inject(at = @At("HEAD"), method = "merge(Lnet/minecraft/world/entity/item/ItemEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/item/ItemEntity;Lnet/minecraft/world/item/ItemStack;)V", cancellable = true)
@@ -107,7 +107,7 @@ public class MixinItemEntity extends MixinEntity implements CardboardItemEntity 
         if (this.pickupDelay <= 0 && canHold > 0) {
             itemstack.setCount(canHold);
             // Call legacy event
-            PlayerPickupItemEvent playerEvent = new PlayerPickupItemEvent((org.bukkit.entity.Player) ((IMixinServerEntityPlayer)entityhuman).getBukkitEntity(), (org.bukkit.entity.Item) this.getBukkitEntity(), remaining);
+            PlayerPickupItemEvent playerEvent = new PlayerPickupItemEvent((org.bukkit.entity.Player) ((ServerPlayerBridge)entityhuman).getBukkitEntity(), (org.bukkit.entity.Item) this.getBukkitEntity(), remaining);
             //playerEvent.setCancelled(!entityhuman.canPickUpLoot);
             Bukkit.getServer().getPluginManager().callEvent(playerEvent);
             if (playerEvent.isCancelled()) {
@@ -116,7 +116,7 @@ public class MixinItemEntity extends MixinEntity implements CardboardItemEntity 
             }
 
             // Call newer event afterwards
-            EntityPickupItemEvent entityEvent = new EntityPickupItemEvent((org.bukkit.entity.Player) ((IMixinServerEntityPlayer)entityhuman).getBukkitEntity(), (org.bukkit.entity.Item) this.getBukkitEntity(), remaining);
+            EntityPickupItemEvent entityEvent = new EntityPickupItemEvent((org.bukkit.entity.Player) ((ServerPlayerBridge)entityhuman).getBukkitEntity(), (org.bukkit.entity.Item) this.getBukkitEntity(), remaining);
             //entityEvent.setCancelled(!entityhuman.canPickUpLoot);
             Bukkit.getServer().getPluginManager().callEvent(entityEvent);
             if (entityEvent.isCancelled()) {

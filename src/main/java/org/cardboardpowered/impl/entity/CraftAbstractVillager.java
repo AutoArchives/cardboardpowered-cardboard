@@ -16,7 +16,7 @@ public abstract class CraftAbstractVillager extends CraftAgeable implements Craf
 	}
 
 	public net.minecraft.world.entity.npc.villager.AbstractVillager getHandle() {
-		return (Villager) super.nms;
+		return (Villager) super.entity;
 	}
 
 	@Override

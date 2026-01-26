@@ -3,17 +3,18 @@
  */
 package org.cardboardpowered.interfaces;
 
-import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import org.bukkit.inventory.InventoryView;
+import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
 
 /**
  * Injection interface for ScreenHandler
  * 
  * @author Cardboard Mod
  * @see {@link net.minecraft.world.inventory.AbstractContainerMenu}
- * @see {@link org.cardboardpowered.interfaces.IMixinScreenHandler}
+ * @see {@link AbstractContainerMenuBridge}
  */
 public interface IScreenHandler {
 
-	CardboardInventoryView getBukkitView();
+	InventoryView getBukkitView();
 
 }

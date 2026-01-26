@@ -11,7 +11,7 @@ public class CardboardSquid extends CraftAgeable implements Squid {
 
     @Override
     public net.minecraft.world.entity.animal.squid.Squid getHandle() {
-        return (net.minecraft.world.entity.animal.squid.Squid) this.nms;
+        return (net.minecraft.world.entity.animal.squid.Squid) this.entity;
     }
 
     @Override

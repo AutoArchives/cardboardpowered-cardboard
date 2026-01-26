@@ -58,7 +58,7 @@ public class CardboardThrownPotion extends CraftProjectile implements ThrownPoti
 
     @Override
     public AbstractThrownPotion getHandle() {
-        return (AbstractThrownPotion) nms;
+        return (AbstractThrownPotion) entity;
     }
 
     @Override

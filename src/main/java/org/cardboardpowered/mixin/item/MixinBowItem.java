@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.interfaces.IMixinEntity;
 
 @MixinInfo(events = {"EntityShootBowEvent"})
@@ -72,7 +72,7 @@ public class MixinBowItem {
             stack.hurtAndBreak(this.getDurabilityUse(itemStack), shooter, hand.asEquipmentSlot());
             if (event.getProjectile() != ((IMixinEntity)projectileEntity).getBukkitEntity() || world.addFreshEntity(projectileEntity)) continue;
             if (shooter instanceof ServerPlayer) {
-            	((Player) ((IMixinServerEntityPlayer)  ((ServerPlayer)shooter) ).getBukkitEntity()).updateInventory();
+            	((Player) ((ServerPlayerBridge)  ((ServerPlayer)shooter) ).getBukkitEntity()).updateInventory();
             }
             return;
         }

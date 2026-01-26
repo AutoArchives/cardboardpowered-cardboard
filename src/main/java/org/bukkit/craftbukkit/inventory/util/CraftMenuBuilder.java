@@ -9,18 +9,18 @@ import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 public interface CraftMenuBuilder {
 
     public AbstractContainerMenu build(ServerPlayer var1, MenuType<?> var2);
 
     public static CraftMenuBuilder worldAccess(LocationBoundContainerBuilder builder) {
-        return (player, type) -> builder.build(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory(), ContainerLevelAccess.create(player.level(), player.blockPosition()));
+        return (player, type) -> builder.build(((ServerPlayerBridge)player).cardboard$nextContainerCounter(), player.getInventory(), ContainerLevelAccess.create(player.level(), player.blockPosition()));
     }
 
     public static CraftMenuBuilder tileEntity(TileEntityObjectBuilder objectBuilder, Block block) {
-        return (player, type) -> objectBuilder.build(player.blockPosition(), block.defaultBlockState()).createMenu(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory(), player);
+        return (player, type) -> objectBuilder.build(player.blockPosition(), block.defaultBlockState()).createMenu(((ServerPlayerBridge)player).cardboard$nextContainerCounter(), player.getInventory(), player);
     }
 
     public static interface LocationBoundContainerBuilder {

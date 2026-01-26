@@ -2,10 +2,9 @@ package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.interfaces.IMixinTradeOffer;
 
-import java.util.Collections;
 import java.util.List;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
@@ -52,7 +51,7 @@ public interface CraftMerchant extends org.bukkit.inventory.Merchant {
 
 	default HumanEntity getTrader() {
 		net.minecraft.world.entity.player.Player eh = this.getMerchant().getTradingPlayer();
-		return eh == null ? null : (Player)((IMixinServerEntityPlayer)eh).getBukkitEntity();
+		return eh == null ? null : (Player)((ServerPlayerBridge)eh).getBukkitEntity();
 	}
 
 	/*

@@ -17,7 +17,7 @@ public class CardboardThrownExpBottle extends ThrowableProjectileImpl implements
 
     @Override
     public ThrownExperienceBottle getHandle() {
-        return (ThrownExperienceBottle) nms;
+        return (ThrownExperienceBottle) entity;
     }
 
     @Override

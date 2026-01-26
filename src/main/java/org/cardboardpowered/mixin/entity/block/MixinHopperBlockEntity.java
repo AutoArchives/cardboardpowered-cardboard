@@ -18,7 +18,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.inventory.InventoryHolder;
-import org.cardboardpowered.impl.inventory.CardboardDoubleChestInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryDoubleChest;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,11 +26,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.bridge.world.ContainerBridge;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
 @Mixin(HopperBlockEntity.class)
-public class MixinHopperBlockEntity implements IMixinInventory {
+public abstract class MixinHopperBlockEntity implements Container, ContainerBridge {
 
     @Shadow
     public NonNullList<ItemStack> items;
@@ -55,11 +55,11 @@ public class MixinHopperBlockEntity implements IMixinInventory {
     }
 
     @Override
-    public int getCardboardMaxStackSize() {
+    public int getMaxStackSize() {
         return maxStack;
     }
 
-    public void setCardboardMaxStackSize(int size) {
+    public void cardboard$setMaxStackSize(int size) {
         maxStack = size;
     }
 
@@ -85,8 +85,8 @@ public class MixinHopperBlockEntity implements IMixinInventory {
     @Inject(at = @At("HEAD"), method = "addItem(Lnet/minecraft/world/Container;Lnet/minecraft/world/entity/item/ItemEntity;)Z", cancellable = true)
     private static void extract1(net.minecraft.world.Container iinventory, ItemEntity entityitem, CallbackInfoReturnable<Boolean> ci) {
         try {
-            if (iinventory instanceof IMixinInventory) {
-                InventoryPickupItemEvent event = new InventoryPickupItemEvent(((IMixinInventory)iinventory).getOwner().getInventory(),(org.bukkit.entity.Item) ((IMixinEntity)entityitem).getBukkitEntity());
+            if (iinventory instanceof ContainerBridge) {
+                InventoryPickupItemEvent event = new InventoryPickupItemEvent(((ContainerBridge)iinventory).getOwner().getInventory(),(org.bukkit.entity.Item) ((IMixinEntity)entityitem).getBukkitEntity());
                 Bukkit.getServer().getPluginManager().callEvent(event);
                 if (event.isCancelled())
                     ci.setReturnValue(false);
@@ -104,11 +104,11 @@ public class MixinHopperBlockEntity implements IMixinInventory {
         try {
             if (!itemstack.isEmpty() && canTakeItemFromContainer(ihopper, iinventory, itemstack, i, enumdirection)) {
                 ItemStack itemstack1 = itemstack.copy();
-                if (iinventory instanceof IMixinInventory && ihopper instanceof IMixinInventory) {
+                if (iinventory instanceof ContainerBridge && ihopper instanceof ContainerBridge) {
                     CraftItemStack oitemstack = CraftItemStack.asCraftMirror(iinventory.removeItem(i, 1));
                     org.bukkit.inventory.Inventory sourceInventory;
                     if (iinventory instanceof CompoundContainer) {
-                        sourceInventory = new CardboardDoubleChestInventory((CompoundContainer) iinventory);
+                        sourceInventory = new CraftInventoryDoubleChest((CompoundContainer) iinventory);
                     } else {
                        // sourceInventory = ((IMixinInventory)iinventory).getOwner().getInventory();
                     }
@@ -116,7 +116,7 @@ public class MixinHopperBlockEntity implements IMixinInventory {
                     sourceInventory = new CraftInventory(iinventory);
 
 
-                    InventoryMoveItemEvent event = new InventoryMoveItemEvent(sourceInventory, oitemstack.clone(), ((IMixinInventory)ihopper).getOwner().getInventory(), false);
+                    InventoryMoveItemEvent event = new InventoryMoveItemEvent(sourceInventory, oitemstack.clone(), ((ContainerBridge)ihopper).getOwner().getInventory(), false);
                     Bukkit.getServer().getPluginManager().callEvent(event);
                     if (event.isCancelled()) {
                         iinventory.setItem(i, itemstack1);

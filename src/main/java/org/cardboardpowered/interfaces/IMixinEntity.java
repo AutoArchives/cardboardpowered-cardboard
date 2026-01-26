@@ -4,6 +4,7 @@
  */
 package org.cardboardpowered.interfaces;
 
+import net.minecraft.world.entity.Entity;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.inventory.ItemStack;
@@ -48,4 +49,8 @@ public interface IMixinEntity {
 
 	CraftEntity getBukkitEntityRaw();
 
+    boolean cardboard$isCollidable(boolean ignoreClimbing);
+
+    // CraftBukkit start - collidable API
+    boolean cardboard$canCollideWithBukkit(Entity entity);
 }

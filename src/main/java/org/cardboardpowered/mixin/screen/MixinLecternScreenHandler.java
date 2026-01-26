@@ -7,9 +7,10 @@ import net.minecraft.world.inventory.LecternMenu;
 import net.minecraft.world.item.ItemStack;
 import org.bukkit.Bukkit;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
-import org.cardboardpowered.impl.inventory.CardboardLecternInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryLectern;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTakeLecternBookEvent;
+import org.cardboardpowered.mixin.world.inventory.AbstractContainerMenuMixin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -20,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.cardboardpowered.interfaces.IMixinEntity;
 
 @Mixin(LecternMenu.class)
-public class MixinLecternScreenHandler extends MixinScreenHandler {
+public class MixinLecternScreenHandler extends AbstractContainerMenuMixin {
 
     @Shadow
     public Container lectern;
@@ -40,7 +41,7 @@ public class MixinLecternScreenHandler extends MixinScreenHandler {
     public CardboardInventoryView getBukkitView() {
         if (bukkitEntity != null) return bukkitEntity;
 
-        CardboardLecternInventory inventory = new CardboardLecternInventory(this.lectern);
+        CraftInventoryLectern inventory = new CraftInventoryLectern(this.lectern);
         bukkitEntity = new CardboardInventoryView(this.player, inventory, (LecternMenu)(Object)this);
         return bukkitEntity;
     }
@@ -70,7 +71,7 @@ public class MixinLecternScreenHandler extends MixinScreenHandler {
                 case 3:
                     if (!entityhuman.mayBuild()) return false;
 
-                    PlayerTakeLecternBookEvent event = new PlayerTakeLecternBookEvent(player, ((CardboardLecternInventory) getBukkitView().getTopInventory()).getHolder());
+                    PlayerTakeLecternBookEvent event = new PlayerTakeLecternBookEvent(player, ((CraftInventoryLectern) getBukkitView().getTopInventory()).getHolder());
                     Bukkit.getServer().getPluginManager().callEvent(event);
                     if (event.isCancelled()) return false;
 

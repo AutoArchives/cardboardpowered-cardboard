@@ -29,7 +29,7 @@ public class ItemEntityImpl extends CraftEntity implements Item {
     }
     
     public ItemEntity getHandle() {
-    	return (ItemEntity) this.nms;
+    	return (ItemEntity) this.entity;
     }
 
     @Override

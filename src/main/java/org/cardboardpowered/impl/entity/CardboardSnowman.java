@@ -26,7 +26,7 @@ public class CardboardSnowman extends CardboardGolem implements Snowman {
 
     @Override
     public SnowGolem getHandle() {
-        return (SnowGolem) nms;
+        return (SnowGolem) entity;
     }
 
     @Override

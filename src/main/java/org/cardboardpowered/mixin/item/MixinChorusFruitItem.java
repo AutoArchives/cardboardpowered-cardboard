@@ -1,14 +1,7 @@
 package org.cardboardpowered.mixin.item;
 
 import net.minecraft.world.item.consume_effects.TeleportRandomlyConsumeEffect;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 @Mixin(value = TeleportRandomlyConsumeEffect.class, priority = 900)
 public class MixinChorusFruitItem { // extends Item {

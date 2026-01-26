@@ -20,7 +20,7 @@ public class CardboardFishTropical extends CardboardFish implements TropicalFish
 
     @Override
     public net.minecraft.world.entity.animal.fish.TropicalFish getHandle() {
-        return (net.minecraft.world.entity.animal.fish.TropicalFish) nms;
+        return (net.minecraft.world.entity.animal.fish.TropicalFish) entity;
     }
 
     @Override

@@ -12,7 +12,7 @@ public class CardboardIronGolem extends CardboardGolem implements IronGolem {
 
     @Override
     public net.minecraft.world.entity.animal.golem.IronGolem getHandle() {
-        return (net.minecraft.world.entity.animal.golem.IronGolem) nms;
+        return (net.minecraft.world.entity.animal.golem.IronGolem) entity;
     }
 
     @Override

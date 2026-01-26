@@ -36,7 +36,7 @@ public class CardboardPigZombie extends CraftZombie implements PigZombie {
 
     @Override
     public ZombifiedPiglin getHandle() {
-        return (ZombifiedPiglin) nms;
+        return (ZombifiedPiglin) entity;
     }
 
     @Override

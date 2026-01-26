@@ -1,17 +1,16 @@
 package org.cardboardpowered.impl.inventory.recipe;
 
+import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinRecipeManager;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.ComplexRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.CraftingRecipe;
 
-public class CardboardComplexRecipe extends CraftingRecipe implements RecipeInterface, ComplexRecipe {
+public class CardboardComplexRecipe extends CraftingRecipe implements CraftRecipe, ComplexRecipe {
 
     // private final RecipeEntry<SpecialCraftingRecipe> recipe;
 
@@ -45,7 +44,7 @@ public class CardboardComplexRecipe extends CraftingRecipe implements RecipeInte
     
     @Override
     public void addToCraftingManager() {
-    	((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(new RecipeHolder<>(RecipeInterface.toMinecraft(this.getKey()), this.recipe));
+    	((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(new RecipeHolder<>(CraftRecipe.toMinecraft(this.getKey()), this.recipe));
     }
     
 

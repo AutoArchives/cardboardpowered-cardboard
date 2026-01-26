@@ -2,13 +2,11 @@ package org.cardboardpowered.mixin.network.handler;
 
 import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import com.mojang.brigadier.ParseResults;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.cardboardpowered.CardboardConfig;
-import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.util.LazyPlayerSet;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;

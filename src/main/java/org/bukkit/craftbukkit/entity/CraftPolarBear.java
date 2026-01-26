@@ -13,7 +13,7 @@ public class CraftPolarBear extends CraftAnimals implements PolarBear {
 
     @Override
     public net.minecraft.world.entity.animal.polarbear.PolarBear getHandle() {
-        return (net.minecraft.world.entity.animal.polarbear.PolarBear) nms;
+        return (net.minecraft.world.entity.animal.polarbear.PolarBear) entity;
     }
 
     @Override

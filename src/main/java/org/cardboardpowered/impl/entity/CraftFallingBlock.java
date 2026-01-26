@@ -23,7 +23,7 @@ public class CraftFallingBlock extends CraftEntity implements FallingBlock {
 
     @Override
     public FallingBlockEntity getHandle() {
-        return (FallingBlockEntity) nms;
+        return (FallingBlockEntity) entity;
     }
 
     @Override

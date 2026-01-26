@@ -14,7 +14,7 @@ public class CardboardDrowned extends CraftZombie implements Drowned {
 
     @Override
     public net.minecraft.world.entity.monster.zombie.Drowned getHandle() {
-        return (net.minecraft.world.entity.monster.zombie.Drowned) nms;
+        return (net.minecraft.world.entity.monster.zombie.Drowned) entity;
     }
 
     @Override

@@ -11,7 +11,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.commons.lang.Validate;
 import org.bukkit.Chunk;
 import org.bukkit.Color;
 import org.bukkit.FluidCollisionMode;
@@ -34,7 +33,6 @@ import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
@@ -53,14 +51,10 @@ import com.javazilla.bukkitfabric.Utils;
 import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.world.damagesource.CombatTracker;
 
-import org.cardboardpowered.interfaces.IMixinArrowEntity;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinLivingEntity;
 
-import me.isaiah.common.ICommonMod;
-import me.isaiah.common.cmixin.IMixinMinecraftServer;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.util.TriState;
 import net.minecraft.Optionull;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -92,58 +86,21 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.waypoints.WaypointStyleAsset;
 import net.minecraft.world.waypoints.WaypointStyleAssets;
 
-import org.apache.commons.lang.Validate;
-import org.bukkit.Chunk;
-import org.bukkit.FluidCollisionMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeInstance;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.entity.CraftEntity;
-import org.bukkit.craftbukkit.entity.CraftHumanEntity;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.*;
-import org.bukkit.entity.memory.MemoryKey;
-import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
-import org.bukkit.inventory.EntityEquipment;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionData;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.potion.PotionType;
-import org.bukkit.util.BlockIterator;
-import org.bukkit.util.RayTraceResult;
-import org.bukkit.util.Vector;
-import org.cardboardpowered.impl.CardboardPotionEffectType;
 import org.cardboardpowered.impl.CardboardPotionUtil;
 import org.cardboardpowered.impl.inventory.CardboardEntityEquipment;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Quaternionf;
-import org.joml.Quaternionfc;
-import org.joml.Vector3f;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 @SuppressWarnings({"deprecation", "removal"})
 public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
-    public net.minecraft.world.entity.LivingEntity nms;
     private CardboardEntityEquipment equipment;
 
     public LivingEntityImpl(net.minecraft.world.entity.Entity entity) {
         super(entity);
-        this.nms = (net.minecraft.world.entity.LivingEntity) entity;
+        this.entity = (net.minecraft.world.entity.LivingEntity) entity;
         if (entity instanceof Mob || entity instanceof ArmorStand) {
             equipment = new CardboardEntityEquipment(this);
         }
@@ -156,7 +113,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
     @Override
     public AttributeInstance getAttribute(Attribute att) {
 
-        return ((IMixinLivingEntity) nms).cardboard_getAttr().getAttribute(att); //.getAttribute(att, nms.getAttributes());
+        return ((IMixinLivingEntity) entity).cardboard_getAttr().getAttribute(att); //.getAttribute(att, nms.getAttributes());
     }
 
     @Override
@@ -189,18 +146,18 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public double getAbsorptionAmount() {
-        return nms.getAbsorptionAmount();
+        return this.getHandle().getAbsorptionAmount();
     }
 
     @Override
     public double getHealth() {
-        return nms.getHealth();
+        return this.getHandle().getHealth();
     }
 
     @Override
     public double getMaxHealth() {
         // TODO Auto-generated method stub
-        return nms.getMaxHealth();
+        return this.getHandle().getMaxHealth();
     }
 
     @Override
@@ -210,18 +167,18 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public void setAbsorptionAmount(double arg0) {
-        nms.setAbsorptionAmount((float)arg0);
+        this.getHandle().setAbsorptionAmount((float)arg0);
     }
 
     @Override
     public void setHealth(double arg0) {
-        nms.setHealth((float) arg0);
+        this.getHandle().setHealth((float) arg0);
     }
 
     @Override
     public void setMaxHealth(double arg0) {
         // TODO Max health
-        nms.setHealth((float) arg0);
+        this.getHandle().setHealth((float) arg0);
     }
 
     @Override
@@ -231,7 +188,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public net.minecraft.world.entity.LivingEntity getHandle() {
-        return nms;
+        return (net.minecraft.world.entity.LivingEntity) this.entity;
     }
 
     @Override
@@ -248,7 +205,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
     public boolean addPotionEffect(PotionEffect effect, boolean force) {
         MobEffect type = BuiltInRegistries.MOB_EFFECT.byId(effect.getType().getId());
 
-        me.isaiah.common.cmixin.IMixinEntity ic = ((me.isaiah.common.cmixin.IMixinEntity)(Object)nms);
+        me.isaiah.common.cmixin.IMixinEntity ic = ((me.isaiah.common.cmixin.IMixinEntity)(Object) entity);
         ic.IC$add_status_effect(type, effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles());
         
         // nms.addStatusEffect(new StatusEffectInstance(type, effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles())/*, EntityPotionEffectEvent.Cause.PLUGIN*/);
@@ -266,13 +223,13 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public void attack(Entity arg0) {
-        nms.doAutoAttackOnTouch(((LivingEntityImpl)arg0).nms);
+        this.getHandle().doAutoAttackOnTouch(((LivingEntityImpl)arg0).getHandle());
     }
 
     @Override
     public Collection<PotionEffect> getActivePotionEffects() {
         List<PotionEffect> effects = new ArrayList<>();
-        for (MobEffectInstance handle : nms.activeEffects.values()) {
+        for (MobEffectInstance handle :  this.getHandle().activeEffects.values()) {
                 // effects.add(new PotionEffect(PotionEffectType.getById(Registries.STATUS_EFFECT.getRawId(handle.getEffectType())), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.shouldShowParticles()));
                 effects.add(CardboardPotionUtil.toBukkit(handle));
         
@@ -295,7 +252,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public double getEyeHeight() {
-        return nms.getEyeHeight();
+        return entity.getEyeHeight();
     }
 
     @Override
@@ -318,7 +275,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public double getLastDamage() {
-        return nms.lastHurt;
+        return  this.getHandle().lastHurt;
     }
 
     @Override
@@ -328,7 +285,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public Entity getLeashHolder() throws IllegalStateException {
-        return ((IMixinEntity)((Mob) nms).getLeashHolder()).getBukkitEntity();
+        return ((IMixinEntity)((Mob) entity).getLeashHolder()).getBukkitEntity();
     }
 
     private List<Block> getLineOfSight(Set<Material> transparent, int maxDistance, int maxLength) {
@@ -358,7 +315,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public int getMaximumAir() {
-        return nms.getMaxAirSupply();
+        return entity.getMaxAirSupply();
     }
 
     @Override
@@ -370,18 +327,18 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getMemory(MemoryKey<T> arg0) {
-        return (T) nms.getBrain().getMemoryInternal(Utils.fromMemoryKey(arg0)).map(Utils::fromNmsGlobalPos).orElse(null);
+        return (T)  this.getHandle().getBrain().getMemoryInternal(Utils.fromMemoryKey(arg0)).map(Utils::fromNmsGlobalPos).orElse(null);
     }
 
     @Override
     public int getNoDamageTicks() {
-        return nms.invulnerableTime;
+        return entity.invulnerableTime;
     }
 
     @Override
     public PotionEffect getPotionEffect(PotionEffectType arg0) {
     	
-    	me.isaiah.common.cmixin.IMixinEntity ic = ((me.isaiah.common.cmixin.IMixinEntity)(Object)nms);
+    	me.isaiah.common.cmixin.IMixinEntity ic = ((me.isaiah.common.cmixin.IMixinEntity)(Object) entity);
 
     	MobEffectInstance handle = ic.IC$get_status_effect(arg0.getId());
     	
@@ -391,7 +348,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public int getRemainingAir() {
-        return nms.getAirSupply();
+        return entity.getAirSupply();
     }
 
     @Override
@@ -424,12 +381,12 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public boolean hasLineOfSight(Entity arg0) {
-        return nms.hasLineOfSight(((CraftEntity)arg0).nms);
+        return  this.getHandle().hasLineOfSight(((CraftEntity)arg0).entity);
     }
 
     @Override
     public boolean hasPotionEffect(PotionEffectType arg0) {
-    	me.isaiah.common.cmixin.IMixinEntity ic = ((me.isaiah.common.cmixin.IMixinEntity)(Object)nms);
+    	me.isaiah.common.cmixin.IMixinEntity ic = ((me.isaiah.common.cmixin.IMixinEntity)(Object) entity);
     	return ic.IC$has_status_effect(BuiltInRegistries.MOB_EFFECT.byId(arg0.getId()));
         // return nms.hasStatusEffect(Registries.STATUS_EFFECT.get(arg0.getId()));
     }
@@ -455,17 +412,17 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public boolean isRiptiding() {
-        return nms.isAutoSpinAttack();
+        return  this.getHandle().isAutoSpinAttack();
     }
 
     @Override
     public boolean isSleeping() {
-        return nms.isSleeping();
+        return  this.getHandle().isSleeping();
     }
 
     @Override
     public boolean isSwimming() {
-        return nms.isSwimming();
+        return entity.isSwimming();
     }
 
     @Override
@@ -482,7 +439,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public void removePotionEffect(PotionEffectType type) {
-    	me.isaiah.common.cmixin.IMixinEntity ic = ((me.isaiah.common.cmixin.IMixinEntity)(Object)nms);
+    	me.isaiah.common.cmixin.IMixinEntity ic = ((me.isaiah.common.cmixin.IMixinEntity)(Object) entity);
     	
     	ic.IC$remove_status_effect( BuiltInRegistries.MOB_EFFECT.byId(type.getId()) );
     	
@@ -507,17 +464,17 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public void setGliding(boolean arg0) {
-        nms.setSharedFlag(7, arg0);
+        entity.setSharedFlag(7, arg0);
     }
 
     @Override
     public void setLastDamage(double arg0) {
-        nms.lastHurt = (float) arg0;
+        this.getHandle().lastHurt = (float) arg0;
     }
 
     @Override
     public boolean setLeashHolder(Entity holder) {
-        if ((nms instanceof WitherBoss) || !(nms instanceof Mob))
+        if ((entity instanceof WitherBoss) || !(entity instanceof Mob))
             return false;
 
         if (holder == null)
@@ -527,7 +484,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
             return false;
 
         unleash();
-        ((Mob) nms).setLeashedTo(((CraftEntity) holder).getHandle(), true);
+        ((Mob) entity).setLeashedTo(((CraftEntity) holder).getHandle(), true);
         return true;
     }
 
@@ -573,17 +530,17 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public void setSwimming(boolean arg0) {
-        nms.setSwimming(arg0);
+        entity.setSwimming(arg0);
     }
 
     @Override
     public void swingMainHand() {
-        nms.swing(InteractionHand.MAIN_HAND);
+        this.getHandle().swing(InteractionHand.MAIN_HAND);
     }
 
     @Override
     public void swingOffHand() {
-        nms.swing(InteractionHand.OFF_HAND);
+        this.getHandle().swing(InteractionHand.OFF_HAND);
     }
 
     @Override
@@ -786,7 +743,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
     public void registerAttribute(Attribute att) {
     	
     	if (this.craftAttributes == null) {
-    		this.craftAttributes = new CraftAttributeMap( nms.getAttributes());
+    		this.craftAttributes = new CraftAttributeMap( this.getHandle().getAttributes());
     	}
     	
         // ((IMixinLivingEntity) nms).cardboard_getAttr().registerAttribute(att);
@@ -795,7 +752,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public @NotNull EquipmentSlot getHandRaised() {
-        InteractionHand hand = nms.getUsedItemHand();
+        InteractionHand hand = this.getHandle().getUsedItemHand();
         return hand == InteractionHand.MAIN_HAND ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
     }
 
@@ -808,7 +765,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
     // 1.17 API START
     @Override
     public boolean isClimbing() {
-        return nms.onClimbable();
+        return this.getHandle().onClimbable();
     }
 
     @Override

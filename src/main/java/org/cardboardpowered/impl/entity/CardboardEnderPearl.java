@@ -15,7 +15,7 @@ public class CardboardEnderPearl extends ThrowableProjectileImpl implements Ende
 
     @Override
     public ThrownEnderpearl getHandle() {
-        return (ThrownEnderpearl) nms;
+        return (ThrownEnderpearl) entity;
     }
 
     @Override

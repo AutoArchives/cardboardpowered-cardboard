@@ -22,14 +22,14 @@ public abstract class CraftProjectile extends AbstractProjectile implements Proj
 
     @Override
     public void setShooter(ProjectileSource shooter) {
-        if (shooter instanceof LivingEntityImpl) getHandle().setOwner((LivingEntity) ((LivingEntityImpl) shooter).nms);
+        if (shooter instanceof LivingEntityImpl) getHandle().setOwner((LivingEntity) ((LivingEntityImpl) shooter).entity);
         else getHandle().setOwner(null);
         ((IMixinEntity)getHandle()).setProjectileSourceBukkit(shooter);
     }
 
     @Override
     public net.minecraft.world.entity.projectile.Projectile getHandle() {
-        return (net.minecraft.world.entity.projectile.Projectile) nms;
+        return (net.minecraft.world.entity.projectile.Projectile) entity;
     }
 
     @Override

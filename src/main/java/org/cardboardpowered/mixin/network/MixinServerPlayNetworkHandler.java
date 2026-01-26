@@ -2,8 +2,8 @@ package org.cardboardpowered.mixin.network;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
-import org.cardboardpowered.interfaces.IMixinScreenHandler;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.interfaces.IMixinServerPlayerInteractionManager;
 import me.isaiah.common.cmixin.IMixinEntity;
 import net.minecraft.ChatFormatting;
@@ -58,7 +58,6 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerResourcePackStatusEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
@@ -69,8 +68,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import com.mojang.authlib.GameProfile;
 
 import io.papermc.paper.connection.PaperPlayerGameConnection;
 import io.papermc.paper.connection.PlayerGameConnection;
@@ -174,7 +171,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonPacketLi
 
     @Override
     public CraftPlayer getPlayer() {
-        return (CraftPlayer) ((IMixinServerEntityPlayer)(Object)this.player).getBukkitEntity();
+        return (CraftPlayer) ((ServerPlayerBridge)(Object)this.player).getBukkitEntity();
     }
 
     // TODO: 1.19
@@ -741,7 +738,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonPacketLi
             }
 
             if (cancelled) {
-                ((Player)((IMixinServerEntityPlayer)this.player).getBukkitEntity()).updateInventory(); // SPIGOT-2524
+                ((Player)((ServerPlayerBridge)this.player).getBukkitEntity()).updateInventory(); // SPIGOT-2524
                 ci.cancel();
                 return;
             }
@@ -776,7 +773,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonPacketLi
     @Inject(at = @At("TAIL"), method = "handlePlayerAbilities")
     public void doBukkitEvent_PlayerToggleFlightEvent(ServerboundPlayerAbilitiesPacket packet, CallbackInfo ci) {
         if (this.player.abilities.mayfly && this.player.abilities.flying != packet.isFlying()) {
-            PlayerToggleFlightEvent event = new PlayerToggleFlightEvent((Player)(((IMixinServerEntityPlayer)this.player).getBukkitEntity()), packet.isFlying());
+            PlayerToggleFlightEvent event = new PlayerToggleFlightEvent((Player)(((ServerPlayerBridge)this.player).getBukkitEntity()), packet.isFlying());
             Bukkit.getPluginManager().callEvent(event);
             if (!event.isCancelled()) {
                 this.player.abilities.flying = packet.isFlying();
@@ -796,12 +793,12 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonPacketLi
     // 1.19.4 = onHandledScreenClosed
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;doCloseContainer()V", shift = At.Shift.BEFORE), method = "handleContainerClose")
     public void doBukkit_InventoryCloseEvent(CallbackInfo ci) {
-        IMixinScreenHandler handler = (IMixinScreenHandler) player.containerMenu;
+        AbstractContainerMenuBridge handler = (AbstractContainerMenuBridge) player.containerMenu;
         CardboardInventoryView view = handler.getBukkitView();
-        view.setPlayerIfNotSet(((IMixinServerEntityPlayer)player).getBukkit());
+        view.setPlayerIfNotSet(((ServerPlayerBridge)player).getBukkit());
         InventoryCloseEvent event = new InventoryCloseEvent(view);
         Bukkit.getServer().getPluginManager().callEvent(event);
-        handler.transferTo(player.inventoryMenu, ((IMixinServerEntityPlayer)player).getBukkit());
+        handler.transferTo(player.inventoryMenu, ((ServerPlayerBridge)player).getBukkit());
     }
 
     

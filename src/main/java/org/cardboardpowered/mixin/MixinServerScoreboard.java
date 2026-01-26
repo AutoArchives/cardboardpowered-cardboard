@@ -1,13 +1,12 @@
 package org.cardboardpowered.mixin;
 
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.network.protocol.Packet;
@@ -74,7 +73,7 @@ public class MixinServerScoreboard extends Scoreboard {
     public void startTrackingObjective(Objective objective) {
         List<Packet<?>> list = ((ServerScoreboard)(Object)this).getStartTrackingPackets(objective);
         for (ServerPlayer entityplayer : CraftServer.INSTANCE.getHandle().getPlayerList().getPlayers()) {
-            if (((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue;
+            if (((CraftPlayer)((ServerPlayerBridge)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue;
             for (Packet<?> packet : list) {
                 entityplayer.connection.send(packet);
             }
@@ -90,7 +89,7 @@ public class MixinServerScoreboard extends Scoreboard {
     public void stopTrackingObjective(Objective objective) {
         List<Packet<?>> list = ((ServerScoreboard)(Object)this).getStopTrackingPackets(objective);
         for (ServerPlayer entityplayer : CraftServer.INSTANCE.getHandle().getPlayerList().getPlayers()) {
-            if (((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue;
+            if (((CraftPlayer)((ServerPlayerBridge)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue;
             for (Packet<?> packet : list) {
                 entityplayer.connection.send(packet);
             }
@@ -104,7 +103,7 @@ public class MixinServerScoreboard extends Scoreboard {
      */
     private void broadcastAll(Packet packet) {
         for (ServerPlayer entityplayer : CraftServer.INSTANCE.getHandle().getPlayerList().players) {
-            if (((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != this) continue;
+            if (((CraftPlayer)((ServerPlayerBridge)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != this) continue;
             entityplayer.connection.send(packet);
         }
     }

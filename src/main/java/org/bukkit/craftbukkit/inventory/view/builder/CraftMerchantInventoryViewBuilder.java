@@ -1,8 +1,8 @@
 package org.bukkit.craftbukkit.inventory.view.builder;
 
 import com.google.common.base.Preconditions;
-import org.cardboardpowered.interfaces.IMixinScreenHandler;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 import io.papermc.paper.adventure.PaperAdventure;
 import net.kyori.adventure.text.Component;
@@ -59,18 +59,18 @@ public class CraftMerchantInventoryViewBuilder<V extends InventoryView> extends 
         	return null;
         	// container = new MerchantScreenHandler(serverPlayer.nextContainerCounter(), serverPlayer.getInventory(), new CraftMerchantCustom(title).getMerchant());
         } else {
-            container = new MerchantMenu(((IMixinServerEntityPlayer)serverPlayer).nextContainerCounter(), serverPlayer.getInventory(), this.merchant);
+            container = new MerchantMenu(((ServerPlayerBridge)serverPlayer).cardboard$nextContainerCounter(), serverPlayer.getInventory(), this.merchant);
         }
         
-        IMixinScreenHandler sh = (IMixinScreenHandler) container;
+        AbstractContainerMenuBridge sh = (AbstractContainerMenuBridge) container;
 
-        sh.setCheckReachable( super.checkReachable );
+        sh.cardboard$setCheckReachable( super.checkReachable );
         sh.setTitle( PaperAdventure.asVanilla(this.title) );
         
         
         // container.checkReachable = super.checkReachable;
         // container.setTitle(PaperAdventure.asVanilla(this.title));
-        return (V) ((IMixinScreenHandler)container).getBukkitView();
+        return (V) ((AbstractContainerMenuBridge)container).getBukkitView();
     }
 
     @Override

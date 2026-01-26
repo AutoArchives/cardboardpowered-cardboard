@@ -15,7 +15,7 @@
 package org.cardboardpowered.mixin;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.interfaces.IMixinServerPlayerInteractionManager;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -169,7 +169,7 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
             // TODO 1.17ify packet.state = Blocks.AIR.getDefaultState();
             this.player.connection.send(packet);
         }
-        BlockBreakEvent event = new BlockBreakEvent(bblock, (Player) ((IMixinServerEntityPlayer)this.player).getBukkitEntity());
+        BlockBreakEvent event = new BlockBreakEvent(bblock, (Player) ((ServerPlayerBridge)this.player).getBukkitEntity());
         event.setCancelled(isSwordNoBreak);
 
         CraftServer.INSTANCE.getPluginManager().callEvent(event);
@@ -251,7 +251,7 @@ public class MixinServerPlayerInteractionManager implements IMixinServerPlayerIn
             } else if (iblockdata.getBlock() instanceof CakeBlock) {
                 // TODO ((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).sendHealthUpdate();
             }
-            ((CraftPlayer)((IMixinServerEntityPlayer)entityplayer).getBukkitEntity()).updateInventory();
+            ((CraftPlayer)((ServerPlayerBridge)entityplayer).getBukkitEntity()).updateInventory();
             enuminteractionresult = (event.useItemInHand() != Event.Result.ALLOW) ? InteractionResult.SUCCESS : InteractionResult.PASS;
         } else if (this.gameModeForPlayer == GameType.SPECTATOR) {
             MenuProvider itileinventory = iblockdata.getMenuProvider(world, blockposition);

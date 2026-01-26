@@ -14,7 +14,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.meta.KnowledgeBookMeta;
-import org.cardboardpowered.impl.inventory.recipe.RecipeInterface;
 
 @DelegateDeserialization(SerializableMeta.class)
 public class CraftMetaKnowledgeBook extends CraftMetaItem implements KnowledgeBookMeta {
@@ -65,7 +64,7 @@ public class CraftMetaKnowledgeBook extends CraftMetaItem implements KnowledgeBo
         if (this.hasRecipes()) {
             List<ResourceKey<Recipe<?>>> list = new ArrayList<>();
             for (NamespacedKey recipe : this.recipes) {
-                list.add(RecipeInterface.toMinecraft(recipe));
+                list.add(CraftRecipe.toMinecraft(recipe));
             }
             itemData.put(CraftMetaKnowledgeBook.BOOK_RECIPES, list);
         }

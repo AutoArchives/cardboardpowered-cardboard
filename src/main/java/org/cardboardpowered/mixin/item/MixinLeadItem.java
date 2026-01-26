@@ -2,7 +2,7 @@ package org.cardboardpowered.mixin.item;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.block.CraftBlock;
@@ -55,7 +55,7 @@ public class MixinLeadItem extends Item {
                 if (leashKnotEntity == null) {
                     leashKnotEntity = LeashFenceKnotEntity.getOrCreateKnot(world, pos);
 
-                    HangingPlaceEvent event = new HangingPlaceEvent((Hanging) ((IMixinEntity) leashKnotEntity).getBukkitEntity(), player != null ? (Player) ((IMixinServerEntityPlayer) player).getBukkit() : null, CraftBlock.at((ServerLevel) world, pos), BlockFace.SELF, EquipmentSlot.HAND);
+                    HangingPlaceEvent event = new HangingPlaceEvent((Hanging) ((IMixinEntity) leashKnotEntity).getBukkitEntity(), player != null ? (Player) ((ServerPlayerBridge) player).getBukkit() : null, CraftBlock.at((ServerLevel) world, pos), BlockFace.SELF, EquipmentSlot.HAND);
                     Bukkit.getPluginManager().callEvent(event);
 
                     if (event.isCancelled()) {

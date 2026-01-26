@@ -13,7 +13,7 @@ public class CardboardAmbient extends CraftMob implements Ambient {
 
     @Override
     public AmbientCreature getHandle() {
-        return (AmbientCreature) nms;
+        return (AmbientCreature) entity;
     }
 
     @Override

@@ -5,11 +5,10 @@ import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.Inventory;
-import org.cardboardpowered.impl.inventory.CardboardDoubleChestInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryDoubleChest;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,7 +69,7 @@ public class CardboardChest extends CardboardLootableBlock<ChestBlockEntity> imp
         ChestBlock blockChest = (ChestBlock) (this.getType() == Material.CHEST ? Blocks.CHEST : Blocks.TRAPPED_CHEST);
         MenuProvider nms = blockChest.getMenuProvider(data, world.getHandle(), this.getPosition());
 
-        return (nms instanceof CompoundContainer) ? (inventory = new CardboardDoubleChestInventory((CompoundContainer) nms)) : inventory;
+        return (nms instanceof CompoundContainer) ? (inventory = new CraftInventoryDoubleChest((CompoundContainer) nms)) : inventory;
     }
 
     @Override

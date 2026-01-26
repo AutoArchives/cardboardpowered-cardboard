@@ -6,7 +6,6 @@ import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
@@ -46,7 +45,7 @@ public class CraftEnderman extends CraftMonster implements Enderman {
 
     @Override
     public EnderMan getHandle() {
-        return (EnderMan) nms;
+        return (EnderMan) entity;
     }
 
     @Override

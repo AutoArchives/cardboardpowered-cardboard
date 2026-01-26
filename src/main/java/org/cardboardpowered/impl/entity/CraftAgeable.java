@@ -59,7 +59,7 @@ public class CraftAgeable extends CraftCreature implements Ageable {
 
     @Override
     public AgeableMob getHandle() {
-        return (AgeableMob) nms;
+        return (AgeableMob) entity;
     }
 
     @Override

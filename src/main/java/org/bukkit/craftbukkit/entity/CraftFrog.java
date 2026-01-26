@@ -7,10 +7,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.frog.FrogVariant;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.entity.Frog;
 import org.cardboardpowered.impl.entity.CraftAnimals;
@@ -23,7 +21,7 @@ public class CraftFrog extends CraftAnimals implements Frog {
 
     @Override
     public net.minecraft.world.entity.animal.frog.Frog getHandle() {
-        return (net.minecraft.world.entity.animal.frog.Frog) this.nms;//this.entity;
+        return (net.minecraft.world.entity.animal.frog.Frog) this.entity;//this.entity;
     }
 
     @Override

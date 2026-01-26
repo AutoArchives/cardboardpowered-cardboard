@@ -13,6 +13,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import org.bukkit.entity.Player;
 import org.cardboardpowered.impl.inventory.CardboardFurnaceInventory;
+import org.cardboardpowered.mixin.world.inventory.AbstractContainerMenuMixin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.cardboardpowered.interfaces.IMixinEntity;
 
 @Mixin(AbstractFurnaceMenu.class)
-public class MixinAbstractFurnaceScreenHandler extends MixinScreenHandler {
+public class MixinAbstractFurnaceScreenHandler extends AbstractContainerMenuMixin {
 
     @Shadow
     public Container container;

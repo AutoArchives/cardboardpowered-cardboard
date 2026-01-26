@@ -56,7 +56,7 @@ public class CardboardPig extends CraftAnimals implements Pig {
 
     @Override
     public net.minecraft.world.entity.animal.pig.Pig getHandle() {
-        return (net.minecraft.world.entity.animal.pig.Pig)this.nms;
+        return (net.minecraft.world.entity.animal.pig.Pig)this.entity;
     }
 
     @Override

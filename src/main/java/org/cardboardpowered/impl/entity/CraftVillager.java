@@ -14,11 +14,9 @@ import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
-import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.ZombieVillager;
@@ -222,7 +220,7 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
 
     @Override
     public net.minecraft.world.entity.npc.villager.Villager getHandle() {
-        return (net.minecraft.world.entity.npc.villager.Villager) nms;
+        return (net.minecraft.world.entity.npc.villager.Villager) entity;
     }
 
     @Override

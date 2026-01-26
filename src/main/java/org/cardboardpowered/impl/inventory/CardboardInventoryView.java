@@ -6,7 +6,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import org.bukkit.GameMode;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.inventory.CraftContainer;
-import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.inventory.CraftMenuType;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
@@ -19,7 +18,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MenuType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.cardboardpowered.interfaces.IMixinScreenHandler;
+import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
 
 // public class CardboardInventoryView extends InventoryView {
 public class CardboardInventoryView<T extends AbstractContainerMenu, I extends Inventory> extends CardboardAbstractInventoryView {
@@ -34,7 +33,7 @@ public class CardboardInventoryView<T extends AbstractContainerMenu, I extends I
         this.player = (null !=player) ? (CraftHumanEntity) player : null;
         this.viewing = viewing;
         this.container = container;
-        this.title = this.originalTitle = CraftChatMessage.fromComponent(((IMixinScreenHandler)container).getTitle() );
+        this.title = this.originalTitle = CraftChatMessage.fromComponent(((AbstractContainerMenuBridge)container).getTitle() );
     }
 
     public void setPlayerIfNotSet(HumanEntity player) {

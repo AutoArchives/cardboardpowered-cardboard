@@ -1,7 +1,7 @@
 package org.cardboardpowered.mixin.item;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.interfaces.IMixinWorld;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.block.CraftBlockState;
@@ -87,7 +87,7 @@ public class MixinItemStack implements IItemStack {
 
             if (player != null) {
                 j = EnchantmentHelper.processDurabilityChange(player.level(), ((ItemStack)(Object)this), i);
-                PlayerItemDamageEvent event = new PlayerItemDamageEvent((Player) ((IMixinServerEntityPlayer)player).getBukkitEntity(), CraftItemStack.asCraftMirror((ItemStack)(Object)this), i, j);
+                PlayerItemDamageEvent event = new PlayerItemDamageEvent((Player) ((ServerPlayerBridge)player).getBukkitEntity(), CraftItemStack.asCraftMirror((ItemStack)(Object)this), i, j);
                 event.getPlayer().getServer().getPluginManager().callEvent(event);
 
                 if (i != event.getDamage() || event.isCancelled()) event.getPlayer().updateInventory();
@@ -162,7 +162,7 @@ public class MixinItemStack implements IItemStack {
                         context.getLevel().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
     
                     context.getItemInHand().grow(1);
-                    ((Player)((IMixinServerEntityPlayer)context.getPlayer()).getBukkitEntity()).updateInventory();
+                    ((Player)((ServerPlayerBridge)context.getPlayer()).getBukkitEntity()).updateInventory();
                     return InteractionResult.FAIL;
                 }
             }

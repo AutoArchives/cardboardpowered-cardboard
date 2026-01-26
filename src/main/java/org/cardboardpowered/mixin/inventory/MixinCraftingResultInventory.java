@@ -3,6 +3,7 @@ package org.cardboardpowered.mixin.inventory;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.NonNullList;
+import net.minecraft.world.Container;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.item.ItemStack;
 import org.bukkit.Location;
@@ -12,10 +13,10 @@ import org.bukkit.inventory.InventoryHolder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.bridge.world.ContainerBridge;
 
 @Mixin(ResultContainer.class)
-public class MixinCraftingResultInventory implements IMixinInventory {
+public abstract class MixinCraftingResultInventory implements Container, ContainerBridge {
 
     @Shadow public NonNullList<ItemStack> itemStacks;
 
@@ -37,7 +38,7 @@ public class MixinCraftingResultInventory implements IMixinInventory {
     }
 
     @Override
-    public void setCardboardMaxStackSize(int size) {
+    public void cardboard$setMaxStackSize(int size) {
         maxStack = size;
     }
 
@@ -47,7 +48,7 @@ public class MixinCraftingResultInventory implements IMixinInventory {
     }
 
     @Override
-    public int getCardboardMaxStackSize() {
+    public int getMaxStackSize() {
         return maxStack;
     }
 

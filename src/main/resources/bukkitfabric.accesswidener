@@ -595,3 +595,31 @@ accessible method net/minecraft/world/entity/decoration/Mannequin setImmovable (
 accessible method net/minecraft/world/entity/decoration/Mannequin getDescription ()Lnet/minecraft/network/chat/Component;
 accessible method net/minecraft/world/entity/decoration/Mannequin setHideDescription (Z)V
 accessible method net/minecraft/world/entity/decoration/Mannequin setDescription (Lnet/minecraft/network/chat/Component;)V
+accessible method net/minecraft/advancements/Advancement decorateName (Lnet/minecraft/advancements/DisplayInfo;)Lnet/minecraft/network/chat/Component;
+accessible field net/minecraft/world/entity/animal/equine/AbstractHorse inventory Lnet/minecraft/world/SimpleContainer;
+accessible class net/minecraft/world/level/block/ComposterBlock$EmptyContainer
+accessible class net/minecraft/world/level/block/ComposterBlock$InputContainer
+accessible class net/minecraft/world/level/block/ComposterBlock$OutputContainer
+accessible method net/minecraft/world/entity/projectile/hurtingprojectile/AbstractHurtingProjectile assignDirectionalMovement (Lnet/minecraft/world/phys/Vec3;D)V
+accessible method net/minecraft/world/entity/projectile/FireworkRocketEntity getDefaultItem ()Lnet/minecraft/world/item/ItemStack;
+accessible method net/minecraft/server/level/ServerPlayer nextContainerCounter ()V
+accessible method net/minecraft/world/entity/player/Player isImmobile ()Z
+accessible field net/minecraft/world/inventory/AbstractMountInventoryMenu mount Lnet/minecraft/world/entity/LivingEntity;
+accessible method net/minecraft/world/entity/player/Player closeContainer ()V
+accessible field net/minecraft/server/level/ServerPlayer containerSynchronizer Lnet/minecraft/world/inventory/ContainerSynchronizer;
+accessible field net/minecraft/world/food/FoodData saturationLevel F
+accessible field net/minecraft/world/food/FoodData foodLevel I
+accessible field net/minecraft/world/entity/player/Player hurtDir F
+accessible field net/minecraft/world/inventory/AbstractContainerMenu lastSlots Lnet/minecraft/core/NonNullList;
+mutable field net/minecraft/world/inventory/AbstractContainerMenu lastSlots Lnet/minecraft/core/NonNullList;
+accessible field net/minecraft/world/inventory/AbstractContainerMenu remoteSlots Lnet/minecraft/core/NonNullList;
+mutable field net/minecraft/world/inventory/AbstractContainerMenu remoteSlots Lnet/minecraft/core/NonNullList;
+accessible field net/minecraft/world/inventory/AbstractContainerMenu dataSlots Ljava/util/List;
+mutable field net/minecraft/world/inventory/AbstractContainerMenu dataSlots Ljava/util/List;
+accessible field net/minecraft/world/inventory/AbstractContainerMenu remoteDataSlots Lit/unimi/dsi/fastutil/ints/IntList;
+mutable field net/minecraft/world/inventory/AbstractContainerMenu remoteDataSlots Lit/unimi/dsi/fastutil/ints/IntList;
+accessible field net/minecraft/world/inventory/AbstractContainerMenu slots Lnet/minecraft/core/NonNullList;
+mutable field net/minecraft/world/inventory/AbstractContainerMenu slots Lnet/minecraft/core/NonNullList;
+accessible method net/minecraft/world/entity/item/FallingBlockEntity <init> (Lnet/minecraft/world/level/Level;DDDLnet/minecraft/world/level/block/state/BlockState;)V
+accessible field net/minecraft/world/entity/animal/nautilus/AbstractNautilus inventory Lnet/minecraft/world/SimpleContainer;
+accessible field net/minecraft/world/entity/animal/equine/SkeletonHorse trapTime I

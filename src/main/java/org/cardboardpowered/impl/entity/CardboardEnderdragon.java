@@ -41,7 +41,7 @@ public class CardboardEnderdragon extends CardboardComplexEntity implements Ende
 
     @Override
     public net.minecraft.world.entity.boss.enderdragon.EnderDragon getHandle() {
-        return (net.minecraft.world.entity.boss.enderdragon.EnderDragon) nms;
+        return (net.minecraft.world.entity.boss.enderdragon.EnderDragon) entity;
     }
 
     @Override

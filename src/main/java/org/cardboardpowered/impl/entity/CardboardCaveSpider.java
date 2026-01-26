@@ -13,7 +13,7 @@ public class CardboardCaveSpider extends CraftSpider implements CaveSpider {
 
     @Override
     public net.minecraft.world.entity.monster.spider.CaveSpider getHandle() {
-        return (net.minecraft.world.entity.monster.spider.CaveSpider) nms;
+        return (net.minecraft.world.entity.monster.spider.CaveSpider) entity;
     }
 
     @Override

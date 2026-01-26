@@ -14,7 +14,7 @@ public class CardboardBat extends CardboardAmbient implements Bat {
 
     @Override
     public net.minecraft.world.entity.ambient.Bat getHandle() {
-        return (net.minecraft.world.entity.ambient.Bat) nms;
+        return (net.minecraft.world.entity.ambient.Bat) entity;
     }
 
     @Override

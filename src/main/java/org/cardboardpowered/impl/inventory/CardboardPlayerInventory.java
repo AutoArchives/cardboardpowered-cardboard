@@ -1,7 +1,7 @@
 package org.cardboardpowered.impl.inventory;
 
 import com.google.common.base.Preconditions;
-import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.bridge.world.ContainerBridge;
 import org.cardboardpowered.interfaces.IMixinPlayerInventory;
 import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
@@ -230,7 +230,7 @@ public class CardboardPlayerInventory extends CraftInventory implements org.bukk
 
     @Override
     public HumanEntity getHolder() {
-        return (HumanEntity) ((IMixinInventory)inventory).getOwner();
+        return (HumanEntity) ((ContainerBridge)inventory).getOwner();
     }
 
     @Override

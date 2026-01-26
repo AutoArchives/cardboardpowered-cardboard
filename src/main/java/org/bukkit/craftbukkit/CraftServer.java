@@ -28,17 +28,13 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
+import net.minecraft.world.level.dimension.LevelStem;
+import org.bukkit.generator.BiomeProvider;
 import org.cardboardpowered.BukkitLogger;
-import org.cardboardpowered.CardboardLogger;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.impl.MetadataStoreImpl;
 import org.bukkit.craftbukkit.scheduler.CraftScheduler;
-import org.cardboardpowered.interfaces.IMixinAdvancement;
-import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
-import org.cardboardpowered.interfaces.IMixinRecipe;
-import org.cardboardpowered.interfaces.IMixinRecipeManager;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.interfaces.*;
 import com.mohistmc.banner.bukkit.nms.utils.RemapUtils;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -50,7 +46,6 @@ import io.papermc.paper.configuration.PaperServerConfiguration;
 import io.papermc.paper.configuration.ServerConfiguration;
 import io.papermc.paper.datapack.DatapackManager;
 import io.papermc.paper.math.Position;
-import io.papermc.paper.pluginremap.PluginRemapper;
 import io.papermc.paper.profile.PaperFilledProfileCache;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
@@ -180,7 +175,6 @@ import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.CardboardBossBar;
 import org.cardboardpowered.impl.CraftProfileBanList;
 import org.cardboardpowered.impl.IpBanList;
-import org.cardboardpowered.impl.ProfileBanList;
 import org.cardboardpowered.impl.command.BukkitCommandWrapper;
 import org.cardboardpowered.impl.command.CardboardConsoleCommandSender;
 import org.cardboardpowered.impl.command.CommandMapImpl;
@@ -197,7 +191,7 @@ import org.cardboardpowered.impl.inventory.recipe.CardboardShapelessRecipe;
 import org.cardboardpowered.impl.inventory.recipe.CardboardSmithingRecipe;
 import org.cardboardpowered.impl.inventory.recipe.CardboardSmokingRecipe;
 import org.cardboardpowered.impl.inventory.recipe.CardboardStonecuttingRecipe;
-import org.cardboardpowered.impl.inventory.recipe.RecipeInterface;
+import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.cardboardpowered.impl.inventory.recipe.RecipeIterator;
 import org.cardboardpowered.impl.map.MapViewImpl;
 import org.cardboardpowered.impl.tag.CraftBlockTag;
@@ -210,9 +204,7 @@ import org.cardboardpowered.impl.util.IconCacheImpl;
 import org.cardboardpowered.impl.util.SimpleHelpMap;
 import org.cardboardpowered.impl.world.ChunkDataImpl;
 import org.cardboardpowered.impl.world.CraftWorld;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.cardboardpowered.interfaces.IMixinMapState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spigotmc.SpigotConfig;
@@ -226,7 +218,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -333,7 +324,7 @@ public class CraftServer implements Server {
         this.playerView = Collections.unmodifiableList(Lists.transform(server.playerList.players, new Function<ServerPlayer, CraftPlayer>() {
             @Override
             public CraftPlayer apply(ServerPlayer player) {
-                return ((IMixinServerEntityPlayer)player).getBukkit();
+                return ((ServerPlayerBridge)player).getBukkit();
             }
         }));
         
@@ -594,9 +585,9 @@ public class CraftServer implements Server {
 
     @Override
     public boolean addRecipe(Recipe recipe) {
-        RecipeInterface toAdd;
-        if (recipe instanceof RecipeInterface) {
-            toAdd = (RecipeInterface) recipe;
+        CraftRecipe toAdd;
+        if (recipe instanceof CraftRecipe) {
+            toAdd = (CraftRecipe) recipe;
         } else {
             if (recipe instanceof ShapedRecipe) {
                 toAdd = CardboardShapedRecipe.fromBukkitRecipe((ShapedRecipe) recipe);
@@ -840,37 +831,46 @@ public class CraftServer implements Server {
     @SuppressWarnings("resource")
     @Override
     public World createWorld(WorldCreator creator) {
-        System.out.println("Bukkit#createWorld 0");
+        Preconditions.checkState(this.console.getAllLevels().iterator().hasNext(), "Cannot create additional worlds on STARTUP");
+        //Preconditions.checkState(!this.console.isIteratingOverLevels, "Cannot create a world while worlds are being ticked"); // Paper - Cat - Temp disable. We'll see how this goes.
+        Preconditions.checkArgument(creator != null, "WorldCreator cannot be null");
+
         String name = creator.name();
-        ChunkGenerator generator = creator.generator();
-        File folder = new File(getWorldContainer(), name);
-        World world = getWorld(name);
+        ChunkGenerator chunkGenerator = creator.generator();
+        BiomeProvider biomeProvider = creator.biomeProvider();
+        File folder = new File(this.getWorldContainer(), name);
+        World world = this.getWorld(name);
 
-        if (world != null)
-            return world;
+        // Paper start
+        World worldByKey = this.getWorld(creator.key());
+        if (world != null || worldByKey != null) {
+            if (world == worldByKey) {
+                return world;
+            }
+            throw new IllegalArgumentException("Cannot create a world with key " + creator.key() + " and name " + name + " one (or both) already match a world that exists");
+        }
+        // Paper end
 
-        /*if ((folder.exists()) && (!folder.isDirectory()))
-            throw new IllegalArgumentException("File exists with the name '" + name + "' and isn't a folder");
-
-        if (generator == null)
-            generator = getGenerator(name);
-
-        RegistryKey<DimensionOptions> actualDimension;
-        switch (creator.environment()) {
-            case NORMAL:
-                actualDimension = DimensionOptions.OVERWORLD;
-                break;
-            case NETHER:
-                actualDimension = DimensionOptions.NETHER;
-                break;
-            case THE_END:
-                actualDimension = DimensionOptions.END;
-                break;
-            default:
-                throw new IllegalArgumentException("Illegal dimension");
+        if (folder.exists()) {
+            Preconditions.checkArgument(folder.isDirectory(), "File (%s) exists and isn't a folder", name);
         }
 
-        LevelStorage.Session worldSession;
+        if (chunkGenerator == null) {
+            chunkGenerator = this.getGenerator(name);
+        }
+
+        if (biomeProvider == null) {
+            biomeProvider = this.getBiomeProvider(name);
+        }
+
+        ResourceKey<LevelStem> actualDimension = switch (creator.environment()) {
+            case NORMAL -> LevelStem.OVERWORLD;
+            case NETHER -> LevelStem.NETHER;
+            case THE_END -> LevelStem.END;
+            default -> throw new IllegalArgumentException("Illegal dimension (" + creator.environment() + ")");
+        };
+
+       /* LevelStorage.Session worldSession;
         try {
             worldSession = LevelStorage.create(getWorldContainer().toPath()).createSession(name);
         } catch (IOException ex) {
@@ -909,7 +909,7 @@ public class CraftServer implements Server {
             dimensionmanager = //(DimensionType) server.getRegistryManager().getDimensionTypes().getOrThrow(DimensionType.OVERWORLD_REGISTRY_KEY);
             server.getOverworld().getDimension();
             GeneratorOptions.createOverworldGenerator(null, 0);
-            
+
             me.isaiah.common.cmixin.IMixinMinecraftServer ic = (me.isaiah.common.cmixin.IMixinMinecraftServer) server;
             chunkgenerator = ic.I_createOverworldGenerator();
         } else {
@@ -985,11 +985,47 @@ public class CraftServer implements Server {
         return result;
     }
 
+    public BiomeProvider getBiomeProvider(String world) {
+        ConfigurationSection section = this.configuration.getConfigurationSection("worlds");
+        BiomeProvider result = null;
+
+        if (section != null) {
+            section = section.getConfigurationSection(world);
+
+            if (section != null) {
+                String name = section.getString("biome-provider");
+
+                if (name != null && !name.isEmpty()) {
+                    String[] split = name.split(":", 2);
+                    String id = (split.length > 1) ? split[1] : null;
+                    Plugin plugin = this.pluginManager.getPlugin(split[0]);
+
+                    if (plugin == null) {
+                        this.getLogger().severe("Could not set biome provider for default world '" + world + "': Plugin '" + split[0] + "' does not exist");
+                    } else if (!plugin.isEnabled()) {
+                        this.getLogger().severe("Could not set biome provider for default world '" + world + "': Plugin '" + plugin.getDescription().getFullName() + "' is not enabled yet (is it load:STARTUP?)");
+                    } else {
+                        try {
+                            result = plugin.getDefaultBiomeProvider(world, id);
+                            if (result == null) {
+                                this.getLogger().severe("Could not set biome provider for default world '" + world + "': Plugin '" + plugin.getDescription().getFullName() + "' lacks a default world biome provider");
+                            }
+                        } catch (Throwable t) {
+                            plugin.getLogger().log(Level.SEVERE, "Could not set biome provider for default world '" + world + "': Plugin '" + plugin.getDescription().getFullName(), t);
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
 	@Override
 	public boolean dispatchCommand(CommandSender sender, String commandLine) throws CommandException {
 		if(sender instanceof Entity) {
-			ServerLevel world = (ServerLevel) ((CraftEntity) sender).nms.level();
-			CommandSourceStack source = ((CraftEntity) sender).nms.createCommandSourceStackForNameResolution(world);
+			ServerLevel world = (ServerLevel) ((CraftEntity) sender).entity.level();
+			CommandSourceStack source = ((CraftEntity) sender).entity.createCommandSourceStackForNameResolution(world);
 
 			try {
 				String theCommand;
@@ -1306,7 +1342,7 @@ public class CraftServer implements Server {
         this.playerView = Collections.unmodifiableList(Lists.transform(server.playerList.players, new Function<ServerPlayer, CraftPlayer>() {
             @Override
             public CraftPlayer apply(ServerPlayer player) {
-                return ((IMixinServerEntityPlayer)player).getBukkit();
+                return ((ServerPlayerBridge)player).getBukkit();
             }
         }));
         return this.playerView;
@@ -1333,7 +1369,7 @@ public class CraftServer implements Server {
     public Player getPlayer(ServerPlayer e) {
         if (null == e)
             return null;
-        return (Player) ((IMixinServerEntityPlayer)(Object)e).getBukkitEntity();
+        return (Player) ((ServerPlayerBridge)(Object)e).getBukkitEntity();
     }
 
     @Override
@@ -1972,7 +2008,7 @@ public class CraftServer implements Server {
     @Override
     public Recipe getRecipe(NamespacedKey recipeKey) {
         Preconditions.checkArgument(recipeKey != null, "recipeKey == null");
-        Optional<RecipeHolder<?>> opt = getServer().getRecipeManager().byKey(RecipeInterface.toMinecraft(recipeKey));
+        Optional<RecipeHolder<?>> opt = getServer().getRecipeManager().byKey(CraftRecipe.toMinecraft(recipeKey));
 
         return !opt.isPresent() ? null : ((IMixinRecipe)(Object) opt.get()).toBukkitRecipe();
     }

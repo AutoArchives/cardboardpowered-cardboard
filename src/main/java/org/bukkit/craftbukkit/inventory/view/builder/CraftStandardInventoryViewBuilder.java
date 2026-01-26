@@ -6,7 +6,7 @@ import net.minecraft.world.inventory.MenuType;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.view.builder.InventoryViewBuilder;
 
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 public class CraftStandardInventoryViewBuilder<V extends InventoryView> extends CraftAbstractInventoryViewBuilder<V> {
 
@@ -16,7 +16,7 @@ public class CraftStandardInventoryViewBuilder<V extends InventoryView> extends 
 
     @Override
     protected AbstractContainerMenu buildContainer(final ServerPlayer player) {
-        return super.handle.create(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory());
+        return super.handle.create(((ServerPlayerBridge)player).cardboard$nextContainerCounter(), player.getInventory());
     }
 
     @Override

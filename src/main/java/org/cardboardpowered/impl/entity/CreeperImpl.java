@@ -79,7 +79,7 @@ public class CreeperImpl extends CraftMonster implements Creeper {
 
     @Override
     public net.minecraft.world.entity.monster.Creeper getHandle() {
-        return (net.minecraft.world.entity.monster.Creeper) nms;
+        return (net.minecraft.world.entity.monster.Creeper) entity;
     }
 
     @Override

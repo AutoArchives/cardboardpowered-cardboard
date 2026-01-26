@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.network.handler;
 
-import org.cardboardpowered.interfaces.IMixinScreenHandler;
+import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -52,7 +52,7 @@ public class MixinSPNH_InventoryClickEvent {
             return;
 
         this.doCl = false;
-        CardboardInventoryView inventory = ((IMixinScreenHandler) player.containerMenu).getBukkitView();
+        CardboardInventoryView inventory = ((AbstractContainerMenuBridge) player.containerMenu).getBukkitView();
         inventory.setPlayerIfNotSet((HumanEntity) ((org.cardboardpowered.interfaces.IMixinEntity)this.player).getBukkitEntity());
 
         InventoryType.SlotType type = inventory.getSlotType(packet.slotNum());

@@ -4,20 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import net.minecraft.world.entity.monster.Slime;
-import org.bukkit.Bukkit;
-import org.bukkit.event.entity.EntityTransformEvent;
-import org.bukkit.event.entity.SlimeSplitEvent;
+import org.cardboardpowered.mixin.world.entity.EntityMixin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.ISlimeEntity;
 
 @Mixin(Slime.class)
-public class MixinSlimeEntity extends MixinEntity implements ISlimeEntity {
+public class MixinSlimeEntity extends EntityMixin implements ISlimeEntity {
 
     @Shadow public int getSize() {return 0;}
     @Shadow public void setSize(int i, boolean flag) {}

@@ -14,7 +14,7 @@ public class CraftParrot extends CraftTameableAnimal implements Parrot {
 
     @Override
     public net.minecraft.world.entity.animal.parrot.Parrot getHandle() {
-        return (net.minecraft.world.entity.animal.parrot.Parrot) nms;
+        return (net.minecraft.world.entity.animal.parrot.Parrot) entity;
     }
 
     @Override

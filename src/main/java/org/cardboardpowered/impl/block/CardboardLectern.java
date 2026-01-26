@@ -5,10 +5,9 @@ import net.minecraft.world.level.block.entity.LecternBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.block.Lectern;
 import org.bukkit.inventory.Inventory;
-import org.cardboardpowered.impl.inventory.CardboardLecternInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryLectern;
 
 public class CardboardLectern extends CardboardBlockEntityState<LecternBlockEntity> implements Lectern {
 
@@ -42,12 +41,12 @@ public class CardboardLectern extends CardboardBlockEntityState<LecternBlockEnti
 
     @Override
     public Inventory getSnapshotInventory() {
-        return new CardboardLecternInventory(this.getSnapshot().bookAccess);
+        return new CraftInventoryLectern(this.getSnapshot().bookAccess);
     }
 
     @Override
     public Inventory getInventory() {
-        return (!this.isPlaced()) ? this.getSnapshotInventory() : new CardboardLecternInventory(this.getTileEntity().bookAccess);
+        return (!this.isPlaced()) ? this.getSnapshotInventory() : new CraftInventoryLectern(this.getTileEntity().bookAccess);
     }
 
     @Override

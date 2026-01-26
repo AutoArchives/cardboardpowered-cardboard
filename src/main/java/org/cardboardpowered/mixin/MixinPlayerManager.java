@@ -24,19 +24,17 @@ import com.google.common.collect.Lists;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
 import org.cardboardpowered.interfaces.IMixinPlayerManager;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.interfaces.IMixinServerLoginNetworkHandler;
 import org.cardboardpowered.interfaces.IMixinWorld;
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 
 import me.isaiah.common.ICommonMod;
-import me.isaiah.common.cmixin.IMixinMinecraftServer;
 //=======
 import java.net.SocketAddress;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -64,7 +62,6 @@ import org.cardboardpowered.ChunkTicketBridge;
 import org.cardboardpowered.extras.PlayerManager_LoginResult;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.world.CraftWorld;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -191,11 +188,11 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         boolean isRespawn = false;
         boolean isAnchorSpawn = false;
         if (location == null) {
-            teleportTransition = ((IMixinServerEntityPlayer) player).findRespawnPositionAndUseSpawnBlock(!keepInventory, TeleportTransition.DO_NOTHING, eventReason);
+            teleportTransition = ((ServerPlayerBridge) player).findRespawnPositionAndUseSpawnBlock(!keepInventory, TeleportTransition.DO_NOTHING, eventReason);
             // teleportTransition = player.getRespawnTarget(!keepInventory, TeleportTarget.NO_OP);
             
             if (!keepInventory) {
-                ((IMixinServerEntityPlayer)player).reset();
+                ((ServerPlayerBridge)player).reset();
             }
             if (teleportTransition == null) {
                 return player;
@@ -209,7 +206,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
             return player;
         }
         ServerLevel level = teleportTransition.newLevel();
-        ((IMixinServerEntityPlayer)serverPlayer).spawnIn(level);
+        ((ServerPlayerBridge)serverPlayer).spawnIn(level);
         serverPlayer.unsetRemoved();
         serverPlayer.setShiftKeyDown(false);
         Vec3 vec3 = teleportTransition.position();
@@ -279,7 +276,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         }
         player.triggerDimensionChangeTriggers(level);
         if (fromWorld != level) {
-            PlayerChangedWorldEvent event = new PlayerChangedWorldEvent((Player)((IMixinServerEntityPlayer)player).getBukkitEntity(), fromWorld.getWorld());
+            PlayerChangedWorldEvent event = new PlayerChangedWorldEvent((Player)((ServerPlayerBridge)player).getBukkitEntity(), fromWorld.getWorld());
             CraftServer.INSTANCE.getPluginManager().callEvent(event);
         }
         if (player.hasDisconnected()) {
@@ -287,7 +284,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         }
         if (isRespawn) {
         	// TODO
-            new PlayerPostRespawnEvent((Player)((IMixinServerEntityPlayer)player).getBukkitEntity(), location, isBedSpawn, isAnchorSpawn, teleportTransition.missingRespawnBlock(), eventReason).callEvent();
+            new PlayerPostRespawnEvent((Player)((ServerPlayerBridge)player).getBukkitEntity(), location, isBedSpawn, isAnchorSpawn, teleportTransition.missingRespawnBlock(), eventReason).callEvent();
         }
         return serverPlayer;
     }
@@ -536,7 +533,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         ServerLevel spawnWorld = null != spawnPos ? ((CraftWorld) spawnPos.getWorld()).getHandle() : CraftServer.server.getLevel(Level.OVERWORLD);
         
         ServerPlayer entity = new ServerPlayer(CraftServer.server, spawnWorld, profile, ClientInformation.createDefault());
-        Player player = (Player) ((IMixinServerEntityPlayer)entity).getBukkitEntity();
+        Player player = (Player) ((ServerPlayerBridge)entity).getBukkitEntity();
         
         if (null != spawnPos) {
         	entity.snapTo(BlockPos.containing(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ()), spawnPos.getYaw(), spawnPos.getPitch());
@@ -616,9 +613,9 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         boolean isAnchorSpawn = false;
         TeleportTransition teleportTransition;
         if (location == null) {
-            teleportTransition = ((IMixinServerEntityPlayer) player).findRespawnPositionAndUseSpawnBlock(!keepInventory, TeleportTransition.DO_NOTHING, eventReason);
+            teleportTransition = ((ServerPlayerBridge) player).findRespawnPositionAndUseSpawnBlock(!keepInventory, TeleportTransition.DO_NOTHING, eventReason);
             if (!keepInventory) {
-            	((IMixinServerEntityPlayer) player).reset();
+            	((ServerPlayerBridge) player).reset();
             }
 
             if (teleportTransition == null) {
@@ -648,11 +645,11 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
             return player;
         } else {
             ServerLevel level = teleportTransition.newLevel();
-            ((IMixinServerEntityPlayer) player).spawnIn(level);
+            ((ServerPlayerBridge) player).spawnIn(level);
             serverPlayer.unsetRemoved();
             serverPlayer.setShiftKeyDown(false);
             Vec3 vec3 = teleportTransition.position();
-            ((IMixinServerEntityPlayer) serverPlayer).spigot$forceSetPositionRotation(vec3.x, vec3.y, vec3.z, teleportTransition.yRot(), teleportTransition.xRot());
+            ((ServerPlayerBridge) serverPlayer).spigot$forceSetPositionRotation(vec3.x, vec3.y, vec3.z, teleportTransition.yRot(), teleportTransition.xRot());
             level.getChunkSource().addTicketWithRadius(ChunkTicketBridge.POST_TELEPORT, new ChunkPos(Mth.floor(vec3.x()) >> 4, Mth.floor(vec3.z()) >> 4), 1);
             if (teleportTransition.missingRespawnBlock()) {
             	if (CardboardConfig.DEBUG_PLAYER) {
@@ -729,7 +726,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
 
             player.triggerDimensionChangeTriggers(level);
             if (fromWorld != level) {
-                PlayerChangedWorldEvent event = new PlayerChangedWorldEvent((Player) (Player)((IMixinServerEntityPlayer)player).getBukkitEntity(), ((IMixinWorld) fromWorld).getCraftWorld());
+                PlayerChangedWorldEvent event = new PlayerChangedWorldEvent((Player) (Player)((ServerPlayerBridge)player).getBukkitEntity(), ((IMixinWorld) fromWorld).getCraftWorld());
                 CraftServer.INSTANCE.getPluginManager().callEvent(event);
             }
 
@@ -738,7 +735,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
             }
 
             if (isRespawn) {
-                new PlayerPostRespawnEvent((Player) (Player)((IMixinServerEntityPlayer)player).getBukkitEntity(), location, isBedSpawn, isAnchorSpawn, teleportTransition.missingRespawnBlock(), eventReason).callEvent();
+                new PlayerPostRespawnEvent((Player) (Player)((ServerPlayerBridge)player).getBukkitEntity(), location, isBedSpawn, isAnchorSpawn, teleportTransition.missingRespawnBlock(), eventReason).callEvent();
             }
 
             return serverPlayer;

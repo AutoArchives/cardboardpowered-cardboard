@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.inventory.view.builder;
 
 import com.google.common.base.Preconditions;
-import org.cardboardpowered.interfaces.IMixinScreenHandler;
+import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
 
 import io.papermc.paper.adventure.PaperAdventure;
 import net.kyori.adventure.text.Component;
@@ -43,14 +43,14 @@ public abstract class CraftAbstractInventoryViewBuilder<V extends InventoryView>
         final AbstractContainerMenu container = buildContainer(serverPlayer);
         
         
-        IMixinScreenHandler sh = (IMixinScreenHandler) container;
-        sh.setCheckReachable( this.checkReachable );
+        AbstractContainerMenuBridge sh = (AbstractContainerMenuBridge) container;
+        sh.cardboard$setCheckReachable( this.checkReachable );
         sh.setTitle( PaperAdventure.asVanilla(this.title) );
         
         
         // container.checkReachable = this.checkReachable;
         // container.setTitle(PaperAdventure.asVanilla(this.title));
-        return (V) ((IMixinScreenHandler)container).getBukkitView();
+        return (V) ((AbstractContainerMenuBridge)container).getBukkitView();
     }
 
     protected abstract AbstractContainerMenu buildContainer(ServerPlayer player);

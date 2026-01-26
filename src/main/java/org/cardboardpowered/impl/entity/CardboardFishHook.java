@@ -17,7 +17,6 @@ import org.bukkit.entity.FishHook;
 import org.bukkit.inventory.EquipmentSlot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Range;
 
 public class CardboardFishHook extends CraftProjectile implements FishHook {
 
@@ -29,7 +28,7 @@ public class CardboardFishHook extends CraftProjectile implements FishHook {
 
     @Override
     public FishingHook getHandle() {
-        return (FishingHook) nms;
+        return (FishingHook) entity;
     }
 
     @Override
@@ -122,7 +121,7 @@ public class CardboardFishHook extends CraftProjectile implements FishHook {
     @Override
     public boolean isInOpenWater() {
         // TODO Auto-generated method stub
-        return nms.isInWater();
+        return entity.isInWater();
     }
 
     @Override

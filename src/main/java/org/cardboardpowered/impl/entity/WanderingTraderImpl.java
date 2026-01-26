@@ -14,7 +14,7 @@ public class WanderingTraderImpl extends CraftAbstractVillager implements Wander
 
     @Override
     public net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader getHandle() {
-        return (net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader) nms;
+        return (net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader) entity;
     }
 
     @Override

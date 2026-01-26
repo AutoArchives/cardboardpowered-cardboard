@@ -2,11 +2,9 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import java.util.Optional;
+
 import org.bukkit.Color;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
-import org.bukkit.craftbukkit.potion.CraftPotionType;
 import org.bukkit.entity.Arrow;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
@@ -21,7 +19,7 @@ public class CraftArrow extends CraftAbstractArrow implements Arrow {
 
     @Override
     public net.minecraft.world.entity.projectile.arrow.Arrow getHandle() {
-        return (net.minecraft.world.entity.projectile.arrow.Arrow) this.nms;
+        return (net.minecraft.world.entity.projectile.arrow.Arrow) this.entity;
     }
 
     @Override

@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +44,6 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.boss.DragonBattle;
 import org.bukkit.craftbukkit.CraftFeatureFlag;
 import org.bukkit.craftbukkit.CraftGameRule;
-import org.bukkit.craftbukkit.CraftParticle;
 import org.bukkit.craftbukkit.CraftRegionAccessor;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
@@ -106,12 +104,11 @@ import org.cardboardpowered.impl.MetadataStoreImpl;
 import org.cardboardpowered.interfaces.IMixinArrowEntity;
 import org.cardboardpowered.interfaces.IMixinChunkHolder;
 import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.interfaces.IMixinThreadedAnvilChunkStorage;
 import com.mojang.datafixers.util.Pair;
 
 import io.papermc.paper.block.fluid.FluidData;
-import io.papermc.paper.event.world.WorldGameRuleChangeEvent;
 import io.papermc.paper.math.Position;
 import io.papermc.paper.raytracing.PositionedRayTraceConfigurationBuilder;
 import io.papermc.paper.registry.RegistryAccess;
@@ -124,7 +121,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -137,7 +133,6 @@ import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Unit;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.decoration.HangingEntity;
@@ -904,7 +899,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 		List<Player> list = new ArrayList<>(nms.players().size());
 
 		for(ServerPlayer player : nms.players())
-			list.add((Player) ((IMixinServerEntityPlayer) player).getBukkitEntity());
+			list.add((Player) ((ServerPlayerBridge) player).getBukkitEntity());
 
 		return list;
 	}
@@ -3044,7 +3039,11 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         if (players.isEmpty()) {
             return Collections.emptySet();
         }
-        return players.stream().filter(Objects::nonNull).map(IMixinServerEntityPlayer::getBukkit).collect(Collectors.toUnmodifiableSet());
+
+		return players.stream()
+				.filter(Objects::nonNull)
+				.map((serverPlayer -> ((CraftPlayer)((IMixinEntity)serverPlayer).getBukkitEntity())))
+				.collect(Collectors.toUnmodifiableSet());
 	}
 	
 	// 1.21:

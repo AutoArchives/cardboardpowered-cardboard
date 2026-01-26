@@ -12,10 +12,10 @@ import org.bukkit.inventory.InventoryHolder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.bridge.world.ContainerBridge;
 
 @Mixin(CompoundContainer.class)
-public class MixinDoubleInventory implements IMixinInventory {
+public abstract class MixinDoubleInventory implements Container, ContainerBridge {
 
     @Shadow public Container container1;
     @Shadow public Container container2;
@@ -60,18 +60,18 @@ public class MixinDoubleInventory implements IMixinInventory {
     }
 
     @Override
-    public void setCardboardMaxStackSize(int size) {
-        ((IMixinInventory)this.container1).setCardboardMaxStackSize(size);
-        ((IMixinInventory)this.container2).setCardboardMaxStackSize(size);
+    public void cardboard$setMaxStackSize(int size) {
+        ((ContainerBridge)this.container1).cardboard$setMaxStackSize(size);
+        ((ContainerBridge)this.container2).cardboard$setMaxStackSize(size);
     }
 
     @Override
     public Location getLocation() {
-        return ((IMixinInventory)this.container1).getLocation();
+        return ((ContainerBridge)this.container1).getLocation();
     }
 
     @Override
-    public int getCardboardMaxStackSize() {
+    public int getMaxStackSize() {
         return MAX_STACK;
     }
 

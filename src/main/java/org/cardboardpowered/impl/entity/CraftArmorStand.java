@@ -1,13 +1,14 @@
 package org.cardboardpowered.impl.entity;
 
 import java.util.Set;
+
+import com.google.common.base.Preconditions;
 import net.minecraft.world.InteractionHand;
 import org.bukkit.Chunk;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.cardboardpowered.impl.entity.LivingEntityImpl;
 import org.jetbrains.annotations.NotNull;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -425,12 +426,10 @@ public class CraftArmorStand extends LivingEntityImpl implements ArmorStand {
     }
 
     @Override
-    public ItemStack getItem(EquipmentSlot slot) {
-        // TODO Auto-generated method stub
-        if (slot == EquipmentSlot.HAND) {
-            CraftItemStack.asCraftMirror(nms.getItemInHand(InteractionHand.MAIN_HAND));
-        }
-        return null;
+    public ItemStack getItem(org.bukkit.inventory.EquipmentSlot slot) {
+        Preconditions.checkArgument(slot != null, "slot cannot be null");
+        Preconditions.checkArgument(slot != EquipmentSlot.BODY, "Cannot get body item");
+        return this.getEquipment().getItem(slot);
     }
 
     @Override

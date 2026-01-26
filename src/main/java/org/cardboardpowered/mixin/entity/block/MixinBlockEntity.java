@@ -3,13 +3,13 @@ package org.cardboardpowered.mixin.entity.block;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.minecraft.server.level.ServerLevel;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry;
-import org.bukkit.inventory.InventoryHolder;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.cardboardpowered.interfaces.IMixinBlockEntity;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.block.entity.BlockEntityBridge;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
@@ -21,7 +21,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 @Mixin(BlockEntity.class)
-public class MixinBlockEntity implements IMixinBlockEntity {
+public class MixinBlockEntity implements BlockEntityBridge {
 
     private static final CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new CraftPersistentDataTypeRegistry();
     public CraftPersistentDataContainer persistentDataContainer;
@@ -37,24 +37,20 @@ public class MixinBlockEntity implements IMixinBlockEntity {
         return persistentDataContainer;
     }
 
+    // CraftBukkit start - add method
     @Override
-    public InventoryHolder getOwner_() {
-        return getOwner(true);
+    public org.bukkit.inventory.@Nullable InventoryHolder cardboard$getOwner() {
+        return cardboard$getOwner(true);
     }
 
-    public InventoryHolder getOwner(boolean useSnapshot) {
-        if (level == null) return null;
-
-        org.bukkit.block.Block block = ((IMixinWorld)this.level).getCraftWorld().getBlockAt(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
-        if (block == null) {
-            org.bukkit.Bukkit.getLogger().warning("No block for owner at " + level + ", pos: " + worldPosition);
-            return null;
-        }
-        org.bukkit.block.BlockState state = block.getState(useSnapshot); // Paper: useSnapshot
-        if (state instanceof InventoryHolder) return (InventoryHolder) state;
-        System.out.println("STATE NOT INSTANCEOF INVENTORYHOLDER!!");
-        return null;
+    @Override
+    public org.bukkit.inventory.@Nullable InventoryHolder cardboard$getOwner(boolean useSnapshot) {
+        if (this.level == null) return null;
+        org.bukkit.block.Block block = org.bukkit.craftbukkit.block.CraftBlock.at((ServerLevel) this.level, this.worldPosition);
+        org.bukkit.block.BlockState state = block.getState(useSnapshot); // Paper
+        return state instanceof final org.bukkit.inventory.InventoryHolder inventoryHolder ? inventoryHolder : null;
     }
+    // CraftBukkit end
 
     @Override
     public void setCardboardPersistentDataContainer(CraftPersistentDataContainer c) {

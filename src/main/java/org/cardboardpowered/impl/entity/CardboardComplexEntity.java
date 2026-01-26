@@ -12,7 +12,7 @@ public abstract class CardboardComplexEntity extends LivingEntityImpl implements
 
     @Override
     public LivingEntity getHandle() {
-        return (LivingEntity) nms;
+        return (LivingEntity) entity;
     }
 
 }

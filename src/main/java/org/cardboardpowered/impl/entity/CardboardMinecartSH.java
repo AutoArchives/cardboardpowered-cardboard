@@ -21,7 +21,7 @@ public abstract class CardboardMinecartSH extends CardboardMinecart implements L
 
     @Override
     public AbstractMinecartContainer getHandle() {
-        return (AbstractMinecartContainer) nms;
+        return (AbstractMinecartContainer) entity;
     }
 
     @Override

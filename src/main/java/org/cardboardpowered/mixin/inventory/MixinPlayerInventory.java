@@ -5,6 +5,10 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -14,104 +18,141 @@ import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.InventoryHolder;
+import org.cardboardpowered.interfaces.IMixinEntity;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 
-import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.bridge.world.ContainerBridge;
 import org.cardboardpowered.interfaces.IMixinPlayerInventory;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 @Mixin(Inventory.class)
-public class MixinPlayerInventory implements IMixinInventory, IMixinPlayerInventory {
+public abstract class MixinPlayerInventory implements Container, ContainerBridge, IMixinPlayerInventory {
+    @Shadow
+    @Final
+    public Player player;
+    @Shadow
+    @Final
+    public EntityEquipment equipment;
+    @Shadow
+    @Final
+    public static Int2ObjectMap<EquipmentSlot> EQUIPMENT_SLOT_MAPPING;
+    @Shadow
+    @Final
+    public NonNullList<ItemStack> items;
 
-	@Unique
-    private Inventory get() {
-        return (Inventory) (Object) this;
-    }
+    @Shadow
+    public abstract boolean hasRemainingSpaceForItem(ItemStack itemStack, ItemStack itemStack2);
 
-    @Override
-    public List<ItemStack> getContents() {
-        // TODO Auto-generated method stub
-        return get().items;
-    }
-
-    @Override
-    public void onOpen(CraftHumanEntity who) {
-        get().startOpen((Player) who.nms);
-    }
-
-    @Override
-    public void onClose(CraftHumanEntity who) {
-        get().stopOpen((Player) who.nms);
-    }
-
-    @Override
-    public List<HumanEntity> getViewers() {
-        // TODO Auto-generated method stub
-        return Arrays.asList(((CraftPlayer)((IMixinServerEntityPlayer)get().player).getBukkitEntity()));
-    }
-
-    @Override
-    public InventoryHolder getOwner() {
-        return ((CraftPlayer)((IMixinServerEntityPlayer)get().player).getBukkitEntity());
-    }
+    // Paper start - add fields and methods
+    @Unique
+    private static final EquipmentSlot[] EQUIPMENT_SLOTS_SORTED_BY_INDEX = EQUIPMENT_SLOT_MAPPING.int2ObjectEntrySet()
+            .stream()
+            .sorted(java.util.Comparator.comparingInt(it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry::getIntKey))
+            .map(java.util.Map.Entry::getValue).toArray(EquipmentSlot[]::new);
+    @Unique
+    public java.util.List<org.bukkit.entity.HumanEntity> transaction = new java.util.ArrayList<>();
+    @Unique
+    private int maxStack = MAX_STACK;
 
     @Override
-    public void setCardboardMaxStackSize(int size) {
-    }
-
-    @Override
-    public Location getLocation() {
-        return ((CraftPlayer)((IMixinServerEntityPlayer)get().player).getBukkitEntity()).getLocation();
-    }
-
-    @Override
-    public int getCardboardMaxStackSize() {
-        return get().getMaxStackSize();
-    }
-
-    @Override
-    public int canHold(ItemStack itemstack) {
-        int remains = itemstack.getCount();
-        for (int i = 0; i < get().items.size(); ++i) {
-            ItemStack itemstack1 = get().getItem(i);
-            if (itemstack1.isEmpty()) return itemstack.getCount();
-
-            if (get().hasRemainingSpaceForItem(itemstack1, itemstack))
-                remains -= (itemstack1.getMaxStackSize() < getCardboardMaxStackSize() ? itemstack1.getMaxStackSize() : getCardboardMaxStackSize()) - itemstack1.getCount();
-            if (remains <= 0) return itemstack.getCount();
-        }
-
-        ItemStack offhandItemStack = get().equipment.get(EquipmentSlot.OFFHAND); // get().getStack(get().main.size() + get().armor.size());
-        if (get().hasRemainingSpaceForItem(offhandItemStack, itemstack))
-            remains -= (offhandItemStack.getMaxStackSize() < get().getMaxStackSize() ? offhandItemStack.getMaxStackSize() : get().getMaxStackSize()) - offhandItemStack.getCount();
-        if (remains <= 0) return itemstack.getCount();
-
-        return itemstack.getCount() - remains;
-    }
-    
-    private static final EquipmentSlot[] EQUIPMENT_SLOTS_SORTED_BY_INDEX = (EquipmentSlot[])Inventory.EQUIPMENT_SLOT_MAPPING.int2ObjectEntrySet().stream().sorted(Comparator.comparingInt(Int2ObjectMap.Entry::getIntKey)).map(Map.Entry::getValue).toArray(EquipmentSlot[]::new);
-    
-    @Override
-    public List<ItemStack> getArmorContents() {
-        ArrayList<ItemStack> items = new ArrayList<ItemStack>(4);
+    public java.util.List<ItemStack> getContents() {
+        java.util.List<ItemStack> combined = new java.util.ArrayList<>(this.items.size() + EQUIPMENT_SLOT_MAPPING.size());
+        combined.addAll(this.items);
         for (EquipmentSlot equipmentSlot : EQUIPMENT_SLOTS_SORTED_BY_INDEX) {
-            if (equipmentSlot.getType() != EquipmentSlot.Type.HUMANOID_ARMOR) continue;
-            items.add(get().equipment.get(equipmentSlot));
+            ItemStack itemStack = this.equipment.get(equipmentSlot);
+            combined.add(itemStack); // Include empty items
+        };
+        return combined;
+    }
+
+    public java.util.List<ItemStack> getArmorContents() {
+        java.util.List<ItemStack> items = new java.util.ArrayList<>(4);
+        for (EquipmentSlot equipmentSlot : EQUIPMENT_SLOTS_SORTED_BY_INDEX) {
+            if (equipmentSlot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
+                items.add(this.equipment.get(equipmentSlot));
+            }
+        }
+        return items;
+    }
+
+    public java.util.List<ItemStack> getExtraContent() {
+        java.util.List<ItemStack> items = new java.util.ArrayList<>();
+        for (EquipmentSlot equipmentSlot : EQUIPMENT_SLOTS_SORTED_BY_INDEX) {
+            if (equipmentSlot.getType() != EquipmentSlot.Type.HUMANOID_ARMOR) { // Non humanoid armor is considered extra
+                items.add(this.equipment.get(equipmentSlot));
+            }
         }
         return items;
     }
 
     @Override
-    public List<ItemStack> getExtraContent() {
-        ArrayList<ItemStack> items = new ArrayList<ItemStack>();
-        for (EquipmentSlot equipmentSlot : EQUIPMENT_SLOTS_SORTED_BY_INDEX) {
-            if (equipmentSlot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) continue;
-            items.add(get().equipment.get(equipmentSlot));
-        }
-        return items;
+    public void onOpen(org.bukkit.craftbukkit.entity.CraftHumanEntity player) {
+        this.transaction.add(player);
     }
 
+    @Override
+    public void onClose(org.bukkit.craftbukkit.entity.CraftHumanEntity player) {
+        this.transaction.remove(player);
+    }
+
+    @Override
+    public java.util.List<org.bukkit.entity.HumanEntity> getViewers() {
+        return this.transaction;
+    }
+
+    @Override
+    public org.bukkit.inventory.InventoryHolder getOwner() {
+        return (InventoryHolder) ((IMixinEntity)this.player).getBukkitEntity();
+    }
+
+    @Override
+    public int getMaxStackSize() {
+        return this.maxStack;
+    }
+
+    @Override
+    public void cardboard$setMaxStackSize(int size) {
+        this.maxStack = size;
+    }
+
+    @Override
+    public org.bukkit.Location getLocation() {
+        return ((IMixinEntity)this.player).getBukkitEntity().getLocation();
+    }
+    // Paper end - add fields and methods
+
+    // CraftBukkit start - Watch method above! :D
+    @Override
+    public int canHold(ItemStack itemStack) {
+        int remains = itemStack.getCount();
+        for (int slot = 0; slot < this.items.size(); ++slot) {
+            ItemStack itemInSlot = this.getItem(slot);
+            if (itemInSlot.isEmpty()) {
+                return itemStack.getCount();
+            }
+
+            if (this.hasRemainingSpaceForItem(itemInSlot, itemStack)) {
+                remains -= (itemInSlot.getMaxStackSize() < this.getMaxStackSize() ? itemInSlot.getMaxStackSize() : this.getMaxStackSize()) - itemInSlot.getCount();
+            }
+            if (remains <= 0) {
+                return itemStack.getCount();
+            }
+        }
+
+        ItemStack itemInOffhand = this.equipment.get(EquipmentSlot.OFFHAND);
+        if (this.hasRemainingSpaceForItem(itemInOffhand, itemStack)) {
+            remains -= (itemInOffhand.getMaxStackSize() < this.getMaxStackSize() ? itemInOffhand.getMaxStackSize() : this.getMaxStackSize()) - itemInOffhand.getCount();
+        }
+        if (remains <= 0) {
+            return itemStack.getCount();
+        }
+
+        return itemStack.getCount() - remains;
+    }
+    // CraftBukkit end
 }

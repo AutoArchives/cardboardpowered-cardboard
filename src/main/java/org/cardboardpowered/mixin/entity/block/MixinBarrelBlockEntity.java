@@ -3,6 +3,7 @@ package org.cardboardpowered.mixin.entity.block;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -12,11 +13,11 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.InventoryHolder;
 import org.spongepowered.asm.mixin.Mixin;
 
-import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.bridge.world.ContainerBridge;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
 @Mixin(BarrelBlockEntity.class)
-public class MixinBarrelBlockEntity implements IMixinInventory {
+public abstract class MixinBarrelBlockEntity implements Container, ContainerBridge {
 
     public List<HumanEntity> transaction = new ArrayList<>();
     private int maxStack = MAX_STACK;
@@ -49,7 +50,7 @@ public class MixinBarrelBlockEntity implements IMixinInventory {
     }
 
     @Override
-    public void setCardboardMaxStackSize(int size) {
+    public void cardboard$setMaxStackSize(int size) {
         maxStack = size;
     }
 
@@ -60,7 +61,7 @@ public class MixinBarrelBlockEntity implements IMixinInventory {
     }
 
     @Override
-    public int getCardboardMaxStackSize() {
+    public int getMaxStackSize() {
         return maxStack;
     }
 

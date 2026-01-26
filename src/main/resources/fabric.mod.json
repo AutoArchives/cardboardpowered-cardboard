@@ -36,9 +36,9 @@
   },
   "custom": {
     "loom:injected_interfaces": {
-      "net/minecraft/server/MinecraftServer": ["org/cardboardpowered/interfaces/IMixinMinecraftServer"],
+      "net/minecraft/server/MinecraftServer": ["org/cardboardpowered/bridge/server/MinecraftServerBridge"],
       "net/minecraft/class_1297": ["org/cardboardpowered/interfaces/IMixinEntity"],
-      "net/minecraft/class_3222": ["org/cardboardpowered/interfaces/IMixinServerEntityPlayer"],
+      "net/minecraft/class_3222": ["org/cardboardpowered/bridge/server/level/ServerPlayerBridge"],
       "net/minecraft/class_1937": ["org/cardboardpowered/interfaces/IMixinWorld"],
       "net/minecraft/class_3218": ["org/cardboardpowered/interfaces/IServerWorld"],
       "net/minecraft/class_1703": ["org/cardboardpowered/interfaces/IScreenHandler"],

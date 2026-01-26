@@ -8,7 +8,7 @@ import net.minecraft.world.inventory.MenuType;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.view.builder.LocationInventoryViewBuilder;
 
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 public class CraftAccessLocationInventoryViewBuilder<V extends InventoryView> extends CraftAbstractLocationInventoryViewBuilder<V> {
 
@@ -28,7 +28,7 @@ public class CraftAccessLocationInventoryViewBuilder<V extends InventoryView> ex
             access = ContainerLevelAccess.create(super.world, super.position);
         }
 
-        return this.containerBuilder.build(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory(), access);
+        return this.containerBuilder.build(((ServerPlayerBridge)player).cardboard$nextContainerCounter(), player.getInventory(), access);
     }
 
     @Override

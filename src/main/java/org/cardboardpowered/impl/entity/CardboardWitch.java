@@ -14,7 +14,7 @@ public class CardboardWitch extends CardboardRaider implements Witch {
 
     @Override
     public net.minecraft.world.entity.monster.Witch getHandle() {
-        return (net.minecraft.world.entity.monster.Witch) nms;
+        return (net.minecraft.world.entity.monster.Witch) entity;
     }
 
     @Override

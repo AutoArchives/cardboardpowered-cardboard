@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
 @Mixin(PlayerEnderChestContainer.class)
-public class MixinEnderChestInventory extends MixinSimpleInventory {
+public abstract class MixinEnderChestInventory extends MixinSimpleInventory {
 
     @Shadow private EnderChestBlockEntity activeChest;
 

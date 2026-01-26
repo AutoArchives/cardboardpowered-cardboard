@@ -1,6 +1,5 @@
 package org.cardboardpowered.mixin.network;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 import net.minecraft.network.protocol.PacketUtils;
@@ -30,7 +29,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 import io.papermc.paper.event.player.PlayerFailMoveEvent;
 
@@ -326,7 +325,7 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                                         return;
                                     }
                                     if (!oldTo.equals((Object)event6.getTo()) && !event6.isCancelled()) {
-                                        ((IMixinServerEntityPlayer)this.player).getBukkitEntity().teleport(event6.getTo(), PlayerTeleportEvent.TeleportCause.PLUGIN);
+                                        ((ServerPlayerBridge)this.player).getBukkitEntity().teleport(event6.getTo(), PlayerTeleportEvent.TeleportCause.PLUGIN);
                                         return;
                                     }
                                     if (!from.equals((Object)this.getCraftPlayer().getLocation()) && this.justTeleported) {

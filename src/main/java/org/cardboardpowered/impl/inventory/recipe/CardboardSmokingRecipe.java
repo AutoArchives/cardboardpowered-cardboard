@@ -1,5 +1,6 @@
 package org.cardboardpowered.impl.inventory.recipe;
 
+import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinRecipeManager;
 import org.bukkit.NamespacedKey;
@@ -9,7 +10,7 @@ import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.SmokingRecipe;
 import org.bukkit.inventory.recipe.CookingBookCategory;
 
-public class CardboardSmokingRecipe extends SmokingRecipe implements RecipeInterface {
+public class CardboardSmokingRecipe extends SmokingRecipe implements CraftRecipe {
 
     public CardboardSmokingRecipe(NamespacedKey key, ItemStack result, RecipeChoice source, float experience, int cookingTime) {
         super(key, result, source, experience, cookingTime);
@@ -25,7 +26,7 @@ public class CardboardSmokingRecipe extends SmokingRecipe implements RecipeInter
     @Override
     public void addToCraftingManager() {
         ItemStack result = this.getResult();
-        ((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(getKey(), new net.minecraft.world.item.crafting.SmokingRecipe(this.getGroup(), RecipeInterface.getCategory(this.getCategory()), toNMS(this.getInputChoice(), true), CraftItemStack.asNMSCopy(result), getExperience(), getCookingTime()));
+        ((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(getKey(), new net.minecraft.world.item.crafting.SmokingRecipe(this.getGroup(), CraftRecipe.getCategory(this.getCategory()), toNMS(this.getInputChoice(), true), CraftItemStack.asNMSCopy(result), getExperience(), getCookingTime()));
     }
 
     

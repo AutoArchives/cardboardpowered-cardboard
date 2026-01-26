@@ -12,7 +12,7 @@ public class CardboardGolem extends CraftCreature implements Golem {
 
     @Override
     public AbstractGolem getHandle() {
-        return (AbstractGolem) nms;
+        return (AbstractGolem) entity;
     }
 
     @Override

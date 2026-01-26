@@ -38,9 +38,9 @@ import org.cardboardpowered.api.event.CardboardEventManager;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.world.CraftWorld;
 
-import org.cardboardpowered.interfaces.IMixinBlockEntity;
+import org.cardboardpowered.bridge.world.level.block.entity.BlockEntityBridge;
 import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
 import me.isaiah.common.event.EventHandler;
@@ -117,7 +117,7 @@ public class CardboardMod implements ModInitializer {
     }
 
     public CraftPlayer getPlayer_0(ServerPlayer e) {
-        return (CraftPlayer) ((IMixinServerEntityPlayer)(Object)e).getBukkitEntity();
+        return (CraftPlayer) ((ServerPlayerBridge)(Object)e).getBukkitEntity();
     }
 
     @EventHandler
@@ -253,7 +253,7 @@ public class CardboardMod implements ModInitializer {
 
     @EventHandler
     public void onBlockEntityLoadEnd(BlockEntityLoadEvent ev) {
-        IMixinBlockEntity mc = (IMixinBlockEntity) ((BlockEntity) ev.getMC());
+        BlockEntityBridge mc = (BlockEntityBridge) ((BlockEntity) ev.getMC());
 
         mc.setCardboardPersistentDataContainer( new CraftPersistentDataContainer(mc.getCardboardDTR()) );
 
@@ -264,7 +264,7 @@ public class CardboardMod implements ModInitializer {
     
     @EventHandler
     public void onBlockEntitySaveEnd(BlockEntityWriteNbtEvent ev) {
-        IMixinBlockEntity mc = (IMixinBlockEntity) ((BlockEntity) ev.getMC());
+        BlockEntityBridge mc = (BlockEntityBridge) ((BlockEntity) ev.getMC());
 
         CompoundTag tag = (CompoundTag) ev.getElement();
         CraftPersistentDataContainer persistentDataContainer = mc.getPersistentDataContainer();

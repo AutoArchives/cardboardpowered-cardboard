@@ -3,13 +3,10 @@
 package org.cardboardpowered.interfaces;
 
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.util.CraftNamespacedKey;
-import org.cardboardpowered.impl.inventory.recipe.RecipeInterface;
+import org.bukkit.craftbukkit.inventory.CraftRecipe;
 
 import com.google.common.collect.Multimap;
 
-import java.util.Map;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -19,7 +16,7 @@ public interface IMixinRecipeManager {
 
     default void addRecipe(NamespacedKey key, Recipe<?> recipe) {
         addRecipe(new RecipeHolder<>(
-        		RecipeInterface.toMinecraft(key),
+        		CraftRecipe.toMinecraft(key),
                 recipe
         ));
     }

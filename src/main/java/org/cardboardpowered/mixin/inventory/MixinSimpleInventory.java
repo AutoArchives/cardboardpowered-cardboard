@@ -1,6 +1,7 @@
 package org.cardboardpowered.mixin.inventory;
 
-import org.cardboardpowered.interfaces.IMixinInventory;
+import net.minecraft.world.Container;
+import org.cardboardpowered.bridge.world.ContainerBridge;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.entity.HumanEntity;
@@ -15,7 +16,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 
 @Mixin(SimpleContainer.class)
-public class MixinSimpleInventory implements IMixinInventory {
+public abstract class MixinSimpleInventory implements Container, ContainerBridge {
 
     @Final @Shadow
     public NonNullList<ItemStack> items;
@@ -63,7 +64,7 @@ public class MixinSimpleInventory implements IMixinInventory {
     }
 
     @Override
-    public void setCardboardMaxStackSize(int size) {
+    public void cardboard$setMaxStackSize(int size) {
         maxStack_BF = size;
     }
 
@@ -73,7 +74,7 @@ public class MixinSimpleInventory implements IMixinInventory {
     }
 
     @Override
-    public int getCardboardMaxStackSize() {
+    public int getMaxStackSize() {
         return maxStack_BF;
     }
 

@@ -12,7 +12,7 @@ public class CardboardGhast extends CraftMob implements Ghast {
 
     @Override
     public net.minecraft.world.entity.monster.Ghast getHandle() {
-        return (net.minecraft.world.entity.monster.Ghast) nms;
+        return (net.minecraft.world.entity.monster.Ghast) entity;
     }
 
     @Override

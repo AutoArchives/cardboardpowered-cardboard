@@ -21,16 +21,16 @@ package org.bukkit.craftbukkit.event;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 
+import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.extras.PlayerManager_LoginResult;
 import org.cardboardpowered.BukkitLogger;
 import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.bridge.world.ContainerBridge;
 import org.cardboardpowered.interfaces.IMixinLivingEntity;
-import org.cardboardpowered.interfaces.IMixinLootManager;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
-import org.cardboardpowered.interfaces.IMixinScreenHandler;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
 import io.papermc.paper.adventure.PaperAdventure;
@@ -82,7 +82,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.block.sign.Side;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftGameRule;
@@ -143,7 +142,6 @@ import org.bukkit.event.player.PlayerLevelChangeEvent;
 import org.bukkit.event.player.PlayerRecipeDiscoverEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.player.PlayerSignOpenEvent;
-import org.bukkit.event.player.PlayerSignOpenEvent.Cause;
 import org.bukkit.event.player.PlayerStatisticIncrementEvent;
 import org.bukkit.event.player.PlayerUnleashEntityEvent;
 import org.bukkit.event.server.ServerListPingEvent;
@@ -155,7 +153,6 @@ import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.entity.UnknownEntity;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.impl.world.CraftWorld;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.InetAddress;
@@ -193,7 +190,7 @@ public class CraftEventFactory {
         CraftWorld CraftWorld = ((IMixinWorld)world).getCraftWorld();
         CraftServer craftServer = CraftServer.INSTANCE;
 
-        Player player = (Player) ((IMixinServerEntityPlayer) who).getBukkitEntity();
+        Player player = (Player) ((ServerPlayerBridge) who).getBukkitEntity();
 
         Block blockClicked = CraftWorld.getBlockAt(x, y, z);
         Block placedBlock = replacedBlockState.getBlock();
@@ -258,7 +255,7 @@ public class CraftEventFactory {
     }
 
     public static PlayerInteractEvent callPlayerInteractEvent(ServerPlayer who, Action action, BlockPos position, Direction direction, ItemStack itemstack, boolean cancelledBlock, InteractionHand hand) {
-        Player player = (who == null) ? null : (Player) ((IMixinServerEntityPlayer)who).getBukkitEntity();
+        Player player = (who == null) ? null : (Player) ((ServerPlayerBridge)who).getBukkitEntity();
         CraftItemStack itemInHand = CraftItemStack.asCraftMirror(itemstack);
 
         assert player != null;
@@ -293,7 +290,7 @@ public class CraftEventFactory {
     }
 
     public static BlockDamageEvent callBlockDamageEvent(ServerPlayer who, int x, int y, int z, ItemStack itemstack, boolean instaBreak) {
-        Player player = (who == null) ? null : (Player) ((IMixinServerEntityPlayer)who).getBukkitEntity();
+        Player player = (who == null) ? null : (Player) ((ServerPlayerBridge)who).getBukkitEntity();
         CraftItemStack itemInHand = CraftItemStack.asCraftMirror(itemstack);
 
         assert player != null;
@@ -315,7 +312,7 @@ public class CraftEventFactory {
     }
 
     public static boolean handlePlayerRecipeListUpdateEvent(net.minecraft.world.entity.player.Player who, Identifier recipe) {
-        PlayerRecipeDiscoverEvent event = new PlayerRecipeDiscoverEvent((Player) ((IMixinServerEntityPlayer)who).getBukkitEntity(), CraftNamespacedKey.fromMinecraft(recipe), true);
+        PlayerRecipeDiscoverEvent event = new PlayerRecipeDiscoverEvent((Player) ((ServerPlayerBridge)who).getBukkitEntity(), CraftNamespacedKey.fromMinecraft(recipe), true);
         Bukkit.getPluginManager().callEvent(event);
         return !event.isCancelled();
     }
@@ -339,7 +336,7 @@ public class CraftEventFactory {
 
         CraftEntity e = ((IMixinEntity)entity).getBukkitEntity();
         if (!(e instanceof Projectile)) {
-            BukkitLogger.getLogger().warning("Entity \"" + e.nms.getName().getString() + "\" is not an instance of Projectile! Can not fire ProjectileHitEvent!");
+            BukkitLogger.getLogger().warning("Entity \"" + e.entity.getName().getString() + "\" is not an instance of Projectile! Can not fire ProjectileHitEvent!");
             return;
         }
 
@@ -347,20 +344,16 @@ public class CraftEventFactory {
         Bukkit.getServer().getPluginManager().callEvent(event);
     }
 
-    public static AbstractContainerMenu callInventoryOpenEvent(ServerPlayer player, AbstractContainerMenu container) {
-        return callInventoryOpenEvent(player, container, false);
-    }
-
     public static AbstractContainerMenu callInventoryOpenEvent(ServerPlayer player, AbstractContainerMenu container, boolean cancelled) {
-        CraftPlayer CraftPlayer = (CraftPlayer) ((IMixinServerEntityPlayer)player).getBukkitEntity();
-        if (!(player.containerMenu instanceof IMixinScreenHandler))
+        CraftPlayer CraftPlayer = (CraftPlayer) ((ServerPlayerBridge)player).getBukkitEntity();
+        if (!(player.containerMenu instanceof AbstractContainerMenuBridge))
             return container;
 
-        CardboardInventoryView bv = ((IMixinScreenHandler)container).getBukkitView();
-        bv.setPlayerIfNotSet((CraftPlayer) ((IMixinServerEntityPlayer)player).getBukkitEntity());
+        CardboardInventoryView bv = ((AbstractContainerMenuBridge)container).getBukkitView();
+        bv.setPlayerIfNotSet((CraftPlayer) ((ServerPlayerBridge)player).getBukkitEntity());
 
         try {
-            ((IMixinScreenHandler)player.containerMenu).transferTo(container, CraftPlayer);
+            ((AbstractContainerMenuBridge)player.containerMenu).transferTo(container, CraftPlayer);
         } catch (ClassCastException e) {
             e.printStackTrace();
             return container;
@@ -371,11 +364,43 @@ public class CraftEventFactory {
         CraftServer.INSTANCE.getPluginManager().callEvent(event);
 
         if (event.isCancelled()) {
-            ((IMixinScreenHandler)container).transferTo(player.containerMenu, CraftPlayer);
+            ((AbstractContainerMenuBridge)container).transferTo(player.containerMenu, CraftPlayer);
             return null;
         }
 
         return container;
+    }
+
+    public static @Nullable AbstractContainerMenu callInventoryOpenEvent(ServerPlayer player, AbstractContainerMenu container) {
+        // Paper start - Add titleOverride to InventoryOpenEvent
+        return callInventoryOpenEventWithTitle(player, container).getSecond();
+    }
+
+    public static com.mojang.datafixers.util.Pair<net.kyori.adventure.text.@Nullable Component, @Nullable AbstractContainerMenu> callInventoryOpenEventWithTitle(ServerPlayer player, AbstractContainerMenu container) {
+        return callInventoryOpenEventWithTitle(player, container, false);
+        // Paper end - Add titleOverride to InventoryOpenEvent
+    }
+
+    public static com.mojang.datafixers.util.Pair<net.kyori.adventure.text.@Nullable Component, @Nullable AbstractContainerMenu> callInventoryOpenEventWithTitle(ServerPlayer player, AbstractContainerMenu container, boolean cancelled) {
+        ((AbstractContainerMenuBridge)container).cardboard$startOpen(); // delegate start open logic to before InventoryOpenEvent is fired
+        if (player.containerMenu != player.inventoryMenu) { // fire INVENTORY_CLOSE if one already open
+            player.connection.handleContainerClose(new ServerboundContainerClosePacket(player.containerMenu.containerId));
+        }
+
+        CraftServer server = player.level().getCraftServer();
+        CraftPlayer craftPlayer = (CraftPlayer) ((IMixinEntity)player).getBukkitEntity();
+        ((AbstractContainerMenuBridge)player.containerMenu).transferTo(container, craftPlayer);
+
+        InventoryOpenEvent event = new InventoryOpenEvent(container.getBukkitView());
+        event.setCancelled(cancelled);
+        server.getPluginManager().callEvent(event);
+
+        if (event.isCancelled()) {
+            ((AbstractContainerMenuBridge)container).transferTo(player.containerMenu, craftPlayer);
+            return com.mojang.datafixers.util.Pair.of(null, null); // Paper - Add titleOverride to InventoryOpenEvent
+        }
+
+        return com.mojang.datafixers.util.Pair.of(event.titleOverride(), container); // Paper - Add titleOverride to InventoryOpenEvent
     }
 
     public static FireworkExplodeEvent callFireworkExplodeEvent(FireworkRocketEntity firework) {
@@ -408,7 +433,7 @@ public class CraftEventFactory {
 
     @SuppressWarnings("unchecked")
     public static Cancellable handleStatisticsIncrease(net.minecraft.world.entity.player.Player entityHuman, net.minecraft.stats.Stat<?> statistic, int current, int newValue) {
-        Player player = (Player) ((IMixinServerEntityPlayer) entityHuman).getBukkitEntity();
+        Player player = (Player) ((ServerPlayerBridge) entityHuman).getBukkitEntity();
         Event event;
 		// Handle stats, which are missing in Bukkit API
 		if (!Arrays.asList(Statistic.values()).contains(statistic)) {
@@ -543,10 +568,10 @@ public class CraftEventFactory {
         return event;
     }
 
-    public static HorseJumpEvent callHorseJumpEvent(Entity horse, float power) {
+    public static boolean callHorseJumpEvent(Entity horse, float power) {
         HorseJumpEvent event = new HorseJumpEvent((AbstractHorse) ((IMixinEntity)horse).getBukkitEntity(), power);
-        Bukkit.getServer().getPluginManager().callEvent(event);
-        return event;
+        ((IMixinEntity)horse).getBukkitEntity().getServer().getPluginManager().callEvent(event);
+        return !event.isCancelled();
     }
 
     /**
@@ -563,7 +588,7 @@ public class CraftEventFactory {
     }
 
     public static PlayerDeathEvent callPlayerDeathEvent(ServerPlayer victim, DamageSource damageSource, List<org.bukkit.inventory.ItemStack> drops, String deathMessage, boolean keepInventory) {
-        CraftPlayer entity = (CraftPlayer) ((IMixinServerEntityPlayer)victim).getBukkitEntity();
+        CraftPlayer entity = (CraftPlayer) ((ServerPlayerBridge)victim).getBukkitEntity();
         
         CraftDamageSource bukkitDamageSource = new CraftDamageSource(damageSource);
         
@@ -595,7 +620,7 @@ public class CraftEventFactory {
 
         List<org.bukkit.inventory.ItemStack> bukkitLoot = loot.stream().map(CraftItemStack::asCraftMirror).collect(Collectors.toCollection(ArrayList::new));
 
-        LootGenerateEvent event = new LootGenerateEvent(world, (entity != null ? ((IMixinEntity)entity).getBukkitEntity() : null), ((IMixinInventory)inventory).getOwner(), craftLootTable, CraftLootTable.convertContext(lootInfo), bukkitLoot, plugin);
+        LootGenerateEvent event = new LootGenerateEvent(world, (entity != null ? ((IMixinEntity)entity).getBukkitEntity() : null), ((ContainerBridge)inventory).getOwner(), craftLootTable, CraftLootTable.convertContext(lootInfo), bukkitLoot, plugin);
         Bukkit.getPluginManager().callEvent(event);
         return event;
     }
@@ -603,7 +628,7 @@ public class CraftEventFactory {
     public static EntityDeathEvent callEntityDeathEvent(net.minecraft.world.entity.LivingEntity victim, DamageSource damageSource, List<org.bukkit.inventory.ItemStack> drops) {
         if (((IMixinEntity)victim).getBukkitEntity() instanceof UnknownEntity) {
             UnknownEntity uk = (UnknownEntity) ((IMixinEntity)victim).getBukkitEntity();
-            CardboardMod.LOGGER.info("Oh no! " + net.minecraft.world.entity.EntityType.getKey(uk.nms.getType()).toString() + " is an unknown bukkit entity!");
+            CardboardMod.LOGGER.info("Oh no! " + net.minecraft.world.entity.EntityType.getKey(uk.entity.getType()).toString() + " is an unknown bukkit entity!");
         }
         LivingEntityImpl entity = (LivingEntityImpl) ((IMixinEntity)victim).getBukkitEntity();
         
@@ -689,7 +714,7 @@ public class CraftEventFactory {
 
     private static PlayerEvent getPlayerBucketEvent(boolean isFilling, Level world, net.minecraft.world.entity.player.Player who, BlockPos changed, BlockPos clicked, Direction clickedFace, ItemStack itemstack, net.minecraft.world.item.Item item, InteractionHand enumHand) {
         // Paper end
-        Player player = (Player) ((IMixinServerEntityPlayer)who).getBukkitEntity();
+        Player player = (Player) ((ServerPlayerBridge)who).getBukkitEntity();
         CraftItemStack itemInHand = CraftItemStack.asNewCraftStack(item);
         Material bucket = CraftMagicNumbers.getMaterial(itemstack.getItem());
 
@@ -962,7 +987,7 @@ public class CraftEventFactory {
     public static PlayerExpCooldownChangeEvent callPlayerXpCooldownEvent(
     		net.minecraft.world.entity.player.Player entity, int newCooldown, org.bukkit.event.player.PlayerExpCooldownChangeEvent.ChangeReason changeReason
     		) {
-    	Player player = (Player) ((IMixinServerEntityPlayer) entity).getBukkitEntity();
+    	Player player = (Player) ((ServerPlayerBridge) entity).getBukkitEntity();
     	PlayerExpCooldownChangeEvent event = new PlayerExpCooldownChangeEvent(player, newCooldown, changeReason);
     	Bukkit.getPluginManager().callEvent(event);
     	return event;

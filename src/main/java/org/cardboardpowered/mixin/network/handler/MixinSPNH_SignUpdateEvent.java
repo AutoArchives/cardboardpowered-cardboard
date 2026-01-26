@@ -1,7 +1,7 @@
 package org.cardboardpowered.mixin.network.handler;
 
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.interfaces.IMixinSignBlockEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.protocol.game.ServerboundSignUpdatePacket;
@@ -33,7 +33,7 @@ public class MixinSPNH_SignUpdateEvent {
         try {
             String[] astring = packet.getLines();
     
-            Player player = (Player) ((IMixinServerEntityPlayer)this.player).getBukkitEntity();
+            Player player = (Player) ((ServerPlayerBridge)this.player).getBukkitEntity();
             int x = packet.getPos().getX();
             int y = packet.getPos().getY();
             int z = packet.getPos().getZ();

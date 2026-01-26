@@ -23,7 +23,7 @@ public class CraftSlime extends CraftMob implements Slime {
 
     @Override
     public net.minecraft.world.entity.monster.Slime getHandle() {
-        return (net.minecraft.world.entity.monster.Slime) nms;
+        return (net.minecraft.world.entity.monster.Slime) entity;
     }
 
     @Override

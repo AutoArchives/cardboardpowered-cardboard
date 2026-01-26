@@ -8,7 +8,6 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Animals;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
 public class CraftAnimals extends CraftAgeable implements Animals {
 
@@ -18,7 +17,7 @@ public class CraftAnimals extends CraftAgeable implements Animals {
 
     @Override
     public Animal getHandle() {
-        return (Animal) nms;
+        return (Animal) entity;
     }
 
     @Override

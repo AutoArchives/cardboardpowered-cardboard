@@ -37,7 +37,7 @@ public class CraftWolf extends CraftTameableAnimal implements Wolf {
 
     @Override
     public net.minecraft.world.entity.animal.wolf.Wolf getHandle() {
-        return (net.minecraft.world.entity.animal.wolf.Wolf) nms;
+        return (net.minecraft.world.entity.animal.wolf.Wolf) entity;
     }
 
     @Override

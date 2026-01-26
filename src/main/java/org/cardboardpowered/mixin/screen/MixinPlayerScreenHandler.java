@@ -8,16 +8,16 @@ import net.minecraft.world.inventory.InventoryMenu;
 import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
 import org.bukkit.entity.Player;
 import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import org.cardboardpowered.mixin.world.inventory.AbstractContainerMenuMixin;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 @Mixin(InventoryMenu.class)
-public class MixinPlayerScreenHandler extends MixinScreenHandler implements MenuProvider {
+public class MixinPlayerScreenHandler extends AbstractContainerMenuMixin implements MenuProvider {
 
 	// @Shadow public RecipeInputInventory craftingInput;
     // @Shadow private CraftingResultInventory craftingResult;
@@ -44,7 +44,7 @@ public class MixinPlayerScreenHandler extends MixinScreenHandler implements Menu
         InventoryMenu thiz = (InventoryMenu)(Object)this;
 
         CraftInventoryCrafting inventory = new CraftInventoryCrafting(thiz.craftSlots, thiz.resultSlots);
-        bukkitEntity = new CardboardInventoryView((Player)((IMixinServerEntityPlayer)this.player.player).getBukkitEntity(), inventory, (InventoryMenu)(Object)this);
+        bukkitEntity = new CardboardInventoryView((Player)((ServerPlayerBridge)this.player.player).getBukkitEntity(), inventory, (InventoryMenu)(Object)this);
         return bukkitEntity;
     }
 

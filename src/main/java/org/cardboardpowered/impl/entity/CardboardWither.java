@@ -20,7 +20,7 @@ public class CardboardWither extends CraftMonster implements Wither {
 
     @Override
     public WitherBoss getHandle() {
-        return (WitherBoss) nms;
+        return (WitherBoss) entity;
     }
 
     @Override

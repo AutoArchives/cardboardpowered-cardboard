@@ -13,7 +13,7 @@ import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.view.builder.LocationInventoryViewBuilder;
 import org.jspecify.annotations.Nullable;
 
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 public class CraftBlockEntityInventoryViewBuilder<V extends InventoryView> extends CraftAbstractLocationInventoryViewBuilder<V> {
 
@@ -41,7 +41,7 @@ public class CraftBlockEntityInventoryViewBuilder<V extends InventoryView> exten
             return buildFakeTile(player);
         }
 
-        final AbstractContainerMenu atBlock = container.createMenu(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory(), player);
+        final AbstractContainerMenu atBlock = container.createMenu(((ServerPlayerBridge)player).cardboard$nextContainerCounter(), player.getInventory(), player);
         if (atBlock.getType() != super.handle) {
             return buildFakeTile(player);
         }
@@ -51,13 +51,13 @@ public class CraftBlockEntityInventoryViewBuilder<V extends InventoryView> exten
 
     private AbstractContainerMenu buildFakeTile(final ServerPlayer player) {
         if (this.builder == null) {
-            return handle.create(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory());
+            return handle.create(((ServerPlayerBridge)player).cardboard$nextContainerCounter(), player.getInventory());
         }
         final MenuProvider inventory = this.builder.build(this.position, this.block.defaultBlockState());
         if (inventory instanceof final BlockEntity tile) {
             tile.setLevel(this.world);
         }
-        return inventory.createMenu(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory(), player);
+        return inventory.createMenu(((ServerPlayerBridge)player).cardboard$nextContainerCounter(), player.getInventory(), player);
     }
 
     @Override

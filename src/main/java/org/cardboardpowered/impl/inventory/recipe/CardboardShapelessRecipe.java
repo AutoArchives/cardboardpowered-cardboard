@@ -1,5 +1,6 @@
 package org.cardboardpowered.impl.inventory.recipe;
 
+import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinRecipeManager;
 import org.bukkit.NamespacedKey;
@@ -15,7 +16,7 @@ import java.util.List;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Ingredient;
 
-public class CardboardShapelessRecipe extends ShapelessRecipe implements RecipeInterface {
+public class CardboardShapelessRecipe extends ShapelessRecipe implements CraftRecipe {
 
     private net.minecraft.world.item.crafting.ShapelessRecipe recipe;
 
@@ -49,7 +50,7 @@ public class CardboardShapelessRecipe extends ShapelessRecipe implements RecipeI
             data.add(this.toNMS(i, true));
         }
         
-        ((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(getKey(), new net.minecraft.world.item.crafting.ShapelessRecipe(this.getGroup(), RecipeInterface.getCategory(this.getCategory()), CraftItemStack.asNMSCopy(this.getResult()), data));
+        ((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(getKey(), new net.minecraft.world.item.crafting.ShapelessRecipe(this.getGroup(), CraftRecipe.getCategory(this.getCategory()), CraftItemStack.asNMSCopy(this.getResult()), data));
     }
     
     // TODO: Update API to 1.19.4

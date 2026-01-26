@@ -1,5 +1,6 @@
 package org.cardboardpowered.impl.inventory.recipe;
 
+import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinRecipeManager;
 import org.bukkit.NamespacedKey;
@@ -10,8 +11,6 @@ import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.recipe.CraftingBookCategory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.NonNullList;
@@ -19,7 +18,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 
-public class CardboardShapedRecipe extends ShapedRecipe implements RecipeInterface {
+public class CardboardShapedRecipe extends ShapedRecipe implements CraftRecipe {
 
     // TODO: Could eventually use this to add a matches() method or some such
     private net.minecraft.world.item.crafting.ShapedRecipe recipe;
@@ -66,7 +65,7 @@ public class CardboardShapedRecipe extends ShapedRecipe implements RecipeInterfa
         		getKey(),
         		new net.minecraft.world.item.crafting.ShapedRecipe(
         				this.getGroup(),
-        				RecipeInterface.getCategory(this.getCategory()),
+        				CraftRecipe.getCategory(this.getCategory()),
         				new ShapedRecipePattern(width, shape.length, data, Optional.empty()),
         				CraftItemStack.asNMSCopy(this.getResult())
         		)

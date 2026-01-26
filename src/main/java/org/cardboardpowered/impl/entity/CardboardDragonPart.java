@@ -21,7 +21,7 @@ public class CardboardDragonPart extends CardboardComplexPart implements EnderDr
 
     @Override
     public net.minecraft.world.entity.boss.enderdragon.EnderDragonPart getHandle() {
-        return (net.minecraft.world.entity.boss.enderdragon.EnderDragonPart) nms;
+        return (net.minecraft.world.entity.boss.enderdragon.EnderDragonPart) entity;
     }
 
     @Override

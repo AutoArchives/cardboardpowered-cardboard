@@ -1,9 +1,12 @@
 package org.cardboardpowered.mixin.entity;
 
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.item.ItemEntity;
+import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinLivingEntity;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -12,6 +15,8 @@ import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.cardboardpowered.mixin.world.entity.EntityMixin;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -32,7 +37,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRules;
 
 @Mixin(LivingEntity.class)
-public abstract class MixinLivingEntity extends MixinEntity implements IMixinLivingEntity {
+public abstract class MixinLivingEntity extends EntityMixin implements IMixinLivingEntity {
 
     private transient EntityPotionEffectEvent.Cause bukkitCause;
     private LivingEntity get() {
@@ -61,12 +66,12 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
         PICE_canceled = false;
         if (get() instanceof ServerPlayer) {
             org.bukkit.inventory.ItemStack craftItem = CraftItemStack.asBukkitCopy(get().useItem);
-            PlayerItemConsumeEvent event = new PlayerItemConsumeEvent((Player) ((IMixinServerEntityPlayer)((ServerPlayer) get())).getBukkitEntity(), craftItem);
+            PlayerItemConsumeEvent event = new PlayerItemConsumeEvent((Player) ((ServerPlayerBridge)((ServerPlayer) get())).getBukkitEntity(), craftItem);
             Bukkit.getServer().getPluginManager().callEvent(event);
 
             if (event.isCancelled()) {
-                ((Player)((IMixinServerEntityPlayer)((ServerPlayer) get())).getBukkitEntity()).updateInventory();
-                ((CraftPlayer)((IMixinServerEntityPlayer)((ServerPlayer) get())).getBukkitEntity()).updateScaledHealth();
+                ((Player)((ServerPlayerBridge)((ServerPlayer) get())).getBukkitEntity()).updateInventory();
+                ((CraftPlayer)((ServerPlayerBridge)((ServerPlayer) get())).getBukkitEntity()).updateScaledHealth();
                 PICE_canceled = true;
                 return null;
             }
@@ -161,7 +166,21 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
     public void dropExperience( ServerLevel world, Entity attacker) {}// dropXp( Entity attacker) {}
 
 	@Shadow public abstract HumanoidArm getMainArm();
-	/**
+
+    @Shadow
+    @Nullable
+    protected abstract ItemEntity createItemStackToDrop(ItemStack itemStack, boolean bl, boolean bl2);
+
+    @Shadow
+    public abstract void swing(InteractionHand interactionHand);
+
+    @Shadow
+    public ItemStack useItem;
+
+    @Shadow
+    public abstract void stopUsingItem();
+
+    /**
      * @reason Bukkit RegainHealthEvent
      */
     @Inject(at = @At("HEAD"), method = "heal", cancellable = true)
@@ -181,4 +200,52 @@ public abstract class MixinLivingEntity extends MixinEntity implements IMixinLiv
         }
     }
 
+    // Paper start - Extend dropItem API
+    @Override
+    public final @Nullable ItemEntity cardboard$drop(ItemStack stack, boolean randomizeMotion, boolean includeThrower) {
+        return this.cardboard$drop(stack, randomizeMotion, includeThrower, true, null);
+    }
+
+    @Override
+    public @Nullable ItemEntity cardboard$drop(ItemStack stack, boolean randomizeMotion, boolean includeThrower, boolean callEvent, java.util.function.@Nullable Consumer<org.bukkit.entity.Item> entityOperation) {
+        // Paper end - Extend dropItem API
+        if (stack.isEmpty()) {
+            return null;
+        } else if (this.level().isClientSide()) {
+            this.swing(InteractionHand.MAIN_HAND);
+            return null;
+        } else {
+            ItemEntity itemEntity = this.createItemStackToDrop(stack, randomizeMotion, includeThrower);
+            if (itemEntity != null) {
+                // CraftBukkit start - fire PlayerDropItemEvent
+                if (entityOperation != null) entityOperation.accept((org.bukkit.entity.Item)((IMixinEntity)itemEntity).getBukkitEntity());
+                if (callEvent && this.getBukkitEntity() instanceof org.bukkit.entity.Player player) {
+                    org.bukkit.entity.Item drop = (org.bukkit.entity.Item)((IMixinEntity)itemEntity).getBukkitEntity();
+
+                    org.bukkit.event.player.PlayerDropItemEvent event = new org.bukkit.event.player.PlayerDropItemEvent(player, drop);
+                    CraftServer.INSTANCE.getPluginManager().callEvent(event);
+
+                    if (event.isCancelled()) {
+                        org.bukkit.inventory.ItemStack inHandItem = player.getInventory().getItemInMainHand();
+                        if (includeThrower && inHandItem.getAmount() == 0) {
+                            // The complete stack was dropped
+                            player.getInventory().setItemInMainHand(drop.getItemStack());
+                        } else if (includeThrower && inHandItem.isSimilar(drop.getItemStack()) && inHandItem.getAmount() < inHandItem.getMaxStackSize() && drop.getItemStack().getAmount() == 1) {
+                            // Only one item is dropped
+                            inHandItem.setAmount(inHandItem.getAmount() + 1);
+                            player.getInventory().setItemInMainHand(inHandItem);
+                        } else {
+                            // Fallback
+                            player.getInventory().addItem(drop.getItemStack());
+                        }
+                        return null;
+                    }
+                }
+                // CraftBukkit end
+                this.level().addFreshEntity(itemEntity);
+            }
+
+            return itemEntity;
+        }
+    }
 }

@@ -1,7 +1,6 @@
 package org.cardboardpowered.mixin.entity;
 
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -15,8 +14,6 @@ import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRules;
-import org.bukkit.GameRule;
-import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -28,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.bridge.world.ContainerBridge;
 import com.mojang.authlib.GameProfile;
 
 // TODO: Fix this whole thing as some items don't drop.
@@ -67,7 +64,7 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends Player {
         // boolean keepInventory = cb$this().getEntityWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || cb$this().isSpectator();
         
         if (!keepInventory) {
-            for (ItemStack item : ((IMixinInventory) ((ServerPlayer) (Object) this).getInventory()).getContents()) {
+            for (ItemStack item : ((ContainerBridge) ((ServerPlayer) (Object) this).getInventory()).getContents()) {
                 if (!item.isEmpty() && !EnchantmentHelper.has(item, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
                     loot.add(CraftItemStack.asCraftMirror(item));
                 }

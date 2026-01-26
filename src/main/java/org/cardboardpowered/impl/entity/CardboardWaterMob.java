@@ -12,7 +12,7 @@ public class CardboardWaterMob extends CraftCreature implements WaterMob {
 
     @Override
     public WaterAnimal getHandle() {
-        return (WaterAnimal) nms;
+        return (WaterAnimal) entity;
     }
 
     @Override

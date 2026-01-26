@@ -13,7 +13,7 @@ public class CardboardEgg extends ThrowableProjectileImpl implements Egg {
 
     @Override
     public ThrownEgg getHandle() {
-        return (ThrownEgg) nms;
+        return (ThrownEgg) entity;
     }
 
     @Override

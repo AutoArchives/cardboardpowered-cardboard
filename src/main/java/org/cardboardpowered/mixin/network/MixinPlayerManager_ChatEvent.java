@@ -2,7 +2,7 @@ package org.cardboardpowered.mixin.network;
 
 import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.OutgoingChatMessage;
@@ -46,7 +46,7 @@ public class MixinPlayerManager_ChatEvent {
     
     
     public CraftPlayer getPlayer_0(ServerPlayer e) {
-        return (CraftPlayer) ((IMixinServerEntityPlayer)(Object)e).getBukkitEntity();
+        return (CraftPlayer) ((ServerPlayerBridge)(Object)e).getBukkitEntity();
     }
     
     @Inject(method = "broadcastChatMessage(Lnet/minecraft/network/chat/PlayerChatMessage;Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/network/chat/ChatType$Bound;)V", at = @At("HEAD"), cancellable = true)

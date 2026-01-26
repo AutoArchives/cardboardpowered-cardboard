@@ -7,16 +7,17 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.BrewingStandMenu;
 import net.minecraft.world.inventory.ContainerData;
 import org.bukkit.entity.Player;
+import org.cardboardpowered.mixin.world.inventory.AbstractContainerMenuMixin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 @Mixin(BrewingStandMenu.class)
-public class MixinBrewingStandScreenHandler extends MixinScreenHandler {
+public class MixinBrewingStandScreenHandler extends AbstractContainerMenuMixin {
 
     @Shadow
     public Container brewingStand;
@@ -34,7 +35,7 @@ public class MixinBrewingStandScreenHandler extends MixinScreenHandler {
         if (bukkitEntity != null) return bukkitEntity;
 
         CardboardBrewerInventory inventory = new CardboardBrewerInventory(this.brewingStand);
-        bukkitEntity = new CardboardInventoryView((Player)((IMixinServerEntityPlayer)this.player.player).getBukkitEntity(), inventory, (BrewingStandMenu)(Object)this);
+        bukkitEntity = new CardboardInventoryView((Player)((ServerPlayerBridge)this.player.player).getBukkitEntity(), inventory, (BrewingStandMenu)(Object)this);
         return bukkitEntity;
     }
 

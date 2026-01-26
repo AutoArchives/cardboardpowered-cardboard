@@ -16,7 +16,7 @@ public class CraftZombie extends CraftMonster implements Zombie {
 
     @Override
     public net.minecraft.world.entity.monster.zombie.Zombie getHandle() {
-        return (net.minecraft.world.entity.monster.zombie.Zombie) nms;
+        return (net.minecraft.world.entity.monster.zombie.Zombie) entity;
     }
 
     @Override

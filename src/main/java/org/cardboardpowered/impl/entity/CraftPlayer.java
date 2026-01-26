@@ -39,7 +39,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -64,7 +63,6 @@ import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.Statistic;
 import org.bukkit.WeatherType;
-import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -100,16 +98,12 @@ import org.bukkit.entity.Firework;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.inventory.InventoryCloseEvent.Reason;
-import org.bukkit.event.player.PlayerExpCooldownChangeEvent;
-import org.bukkit.event.player.PlayerItemMendEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerKickEvent.Cause;
 import org.bukkit.event.player.PlayerRegisterChannelEvent;
 import org.bukkit.event.player.PlayerResourcePackStatusEvent.Status;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.event.player.PlayerUnregisterChannelEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryView;
@@ -120,13 +114,11 @@ import org.bukkit.plugin.messaging.StandardMessenger;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.util.Vector;
 import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.block.CardboardSign;
 
 import com.destroystokyo.paper.ClientOption;
 import com.destroystokyo.paper.Title;
-import com.destroystokyo.paper.event.player.PlayerSetSpawnEvent;
 import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
 // import com.github.bsideup.jabel.Desugar;
@@ -135,15 +127,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.BaseEncoding;
 import org.cardboardpowered.CardboardMod;
-import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.interfaces.IChunkDeltaUpdateS2CPacket;
-import org.cardboardpowered.util.nms.ReflectionRemapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
-import org.jetbrains.annotations.Unmodifiable;
 import org.jetbrains.annotations.UnmodifiableView;
 import org.spigotmc.AsyncCatcher;
 
@@ -151,12 +140,9 @@ import org.cardboardpowered.interfaces.IMixinClientConnection;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
-import org.cardboardpowered.interfaces.IMixinPlayerManager;
 import org.cardboardpowered.interfaces.IMixinSignBlockEntity;
-import org.cardboardpowered.interfaces.IMixinWorld;
 import com.mojang.authlib.GameProfile;
 
-import io.netty.buffer.Unpooled;
 import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.connection.PlayerGameConnection;
 import io.papermc.paper.entity.LookAnchor;
@@ -164,7 +150,6 @@ import io.papermc.paper.entity.PaperPlayerGiveResult;
 import io.papermc.paper.entity.PlayerGiveResult;
 import io.papermc.paper.math.Position;
 import io.papermc.paper.util.MCUtil;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import it.unimi.dsi.fastutil.shorts.ShortArraySet;
 import it.unimi.dsi.fastutil.shorts.ShortSet;
@@ -217,8 +202,6 @@ import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.phys.Vec3;
-import org.bukkit.map.MapCursor;
-import org.bukkit.map.MapView;
 
 @DelegateDeserialization(CraftOfflinePlayer.class)
 public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -226,10 +209,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     private final Set<String> channels = new HashSet<String>();
     public ServerPlayer nms;
 
-    public CraftPlayer(ServerPlayer entity) {
-        super(entity);
-        super.nms = entity;
-        this.nms = entity;
+    public CraftPlayer(CraftServer server, ServerPlayer entity) {
+        super(server, entity);
+        this.nms = entity; // Cardboard
+        //this.firstPlayed = System.currentTimeMillis();
     }
 
     @Override
@@ -1595,7 +1578,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     public void setHandle(ServerPlayer plr) {
         this.nms = plr;
-        super.nms = plr;
+        super.entity = plr;
     }
 
     // PaperAPI - START
@@ -1678,72 +1661,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     // PaperAPI - END
 
     @Override
-    public void closeInventory(Reason arg0) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public Location getPotentialBedLocation() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public InventoryView openAnvil(Location arg0, boolean arg1) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public InventoryView openCartographyTable(Location arg0, boolean arg1) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public InventoryView openGrindstone(Location arg0, boolean arg1) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public InventoryView openLoom(Location arg0, boolean arg1) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void openSign(Sign arg0) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public InventoryView openSmithingTable(Location arg0, boolean arg1) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public InventoryView openStonecutter(Location arg0, boolean arg1) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Entity releaseLeftShoulderEntity() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Entity releaseRightShoulderEntity() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public long getLastLogin() {
         // TODO Auto-generated method stub
         return 0;
@@ -1754,7 +1671,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     	if (this.isOnline()) {
     		return System.currentTimeMillis();
     	}
-    	
+
         // TODO Auto-generated method stub
         return 0;
     }

@@ -1,6 +1,5 @@
 package org.cardboardpowered.mixin.item;
 
-import com.destroystokyo.paper.event.player.PlayerLaunchProjectileEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -11,10 +10,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SnowballItem;
 import net.minecraft.world.level.Level;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
@@ -37,8 +33,8 @@ public class MixinSnowballItem extends Item {
             snowballEntity.setItem(itemStack);
             snowballEntity.shootFromRotation(user, user.getXRot(), user.getYRot(), 0.0F, 1.5F, 1.0F);
             if (!world.addFreshEntity(snowballEntity)) {
-                if (user instanceof IMixinServerEntityPlayer) {
-                    ((IMixinServerEntityPlayer) user).getBukkit().updateInventory();
+                if (user instanceof ServerPlayerBridge) {
+                    ((ServerPlayerBridge) user).getBukkit().updateInventory();
                 }
                 return InteractionResult.FAIL;
             }

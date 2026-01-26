@@ -32,7 +32,7 @@ public class CraftMannequin extends LivingEntityImpl implements Mannequin {
 
     @Override
     public net.minecraft.world.entity.decoration.Mannequin getHandle() {
-        return (net.minecraft.world.entity.decoration.Mannequin) this.nms;
+        return (net.minecraft.world.entity.decoration.Mannequin) this.entity;
     }
 
     @Override

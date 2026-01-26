@@ -2,6 +2,7 @@ package org.cardboardpowered.mixin.entity.block;
 
 import java.util.List;
 
+import net.minecraft.world.Container;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.entity.HumanEntity;
@@ -13,10 +14,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.bridge.world.ContainerBridge;
 import org.cardboardpowered.interfaces.IMixinWorld;
 
-import me.isaiah.common.cmixin.IMixinChestBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.ContainerUser;
@@ -29,7 +29,7 @@ import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
  * @see {@link me.isaiah.common.cmixin.IMixinChestBlockEntity}
  */
 @Mixin(ChestBlockEntity.class)
-public class MixinChestBlockEntity implements IMixinInventory {
+public abstract class MixinChestBlockEntity implements Container, ContainerBridge {
 	
     @Shadow
     private ContainerOpenersCounter openersCounter;
@@ -60,12 +60,12 @@ public class MixinChestBlockEntity implements IMixinInventory {
     }
 
     @Override
-    public void setCardboardMaxStackSize(int size) {
+    public void cardboard$setMaxStackSize(int size) {
         maxStack = size;
     }
 
     @Override
-    public int getCardboardMaxStackSize() {
+    public int getMaxStackSize() {
         return maxStack;
     }
 

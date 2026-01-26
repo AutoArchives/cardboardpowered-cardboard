@@ -15,7 +15,7 @@ public class CardboardFish extends CardboardWaterMob implements Fish {
 
     @Override
     public AbstractFish getHandle() {
-        return (AbstractFish) nms;
+        return (AbstractFish) entity;
     }
 
     @Override

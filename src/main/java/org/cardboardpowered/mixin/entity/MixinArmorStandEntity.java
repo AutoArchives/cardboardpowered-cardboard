@@ -11,6 +11,7 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.cardboardpowered.mixin.world.entity.EntityMixin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,7 +22,7 @@ import org.cardboardpowered.interfaces.IMixinArmorStandEntity;
 import org.cardboardpowered.interfaces.IMixinEntity;
 
 @Mixin(net.minecraft.world.entity.decoration.ArmorStand.class)
-public class MixinArmorStandEntity extends MixinEntity implements IMixinArmorStandEntity {
+public class MixinArmorStandEntity extends EntityMixin implements IMixinArmorStandEntity {
 
     public boolean canMove = true; // Paper
 

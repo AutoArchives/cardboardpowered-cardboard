@@ -2,6 +2,7 @@ package org.cardboardpowered.mixin.inventory;
 
 import java.util.List;
 import net.minecraft.core.NonNullList;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Player;
@@ -16,10 +17,10 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import org.cardboardpowered.impl.entity.CraftAbstractVillager;
 import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.bridge.world.ContainerBridge;
 
 @Mixin(MerchantContainer.class)
-public class MixinTraderInventory implements IMixinInventory {
+public abstract class MixinTraderInventory implements Container, ContainerBridge {
 
     @Shadow
     public NonNullList<ItemStack> itemStacks;
@@ -52,12 +53,12 @@ public class MixinTraderInventory implements IMixinInventory {
     }
 
     @Override
-    public int getCardboardMaxStackSize() {
+    public int getMaxStackSize() {
         return maxStack;
     }
 
     @Override
-    public void setCardboardMaxStackSize(int i) {
+    public void cardboard$setMaxStackSize(int i) {
         maxStack = i;
     }
 

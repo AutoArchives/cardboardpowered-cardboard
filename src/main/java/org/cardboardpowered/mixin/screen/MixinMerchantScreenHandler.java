@@ -7,6 +7,7 @@ import net.minecraft.world.inventory.MerchantContainer;
 import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.item.trading.Merchant;
 import org.bukkit.entity.Player;
+import org.cardboardpowered.mixin.world.inventory.AbstractContainerMenuMixin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.cardboardpowered.interfaces.IMixinEntity;
 
 @Mixin(MerchantMenu.class)
-public class MixinMerchantScreenHandler extends MixinScreenHandler {
+public class MixinMerchantScreenHandler extends AbstractContainerMenuMixin {
 
     @Shadow public Merchant trader;
     @Shadow public MerchantContainer tradeContainer;

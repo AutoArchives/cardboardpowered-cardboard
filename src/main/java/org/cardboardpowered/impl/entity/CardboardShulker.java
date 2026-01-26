@@ -27,7 +27,7 @@ public class CardboardShulker extends CardboardGolem implements Shulker {
 
     @Override
     public net.minecraft.world.entity.monster.Shulker getHandle() {
-        return (net.minecraft.world.entity.monster.Shulker) nms;
+        return (net.minecraft.world.entity.monster.Shulker) entity;
     }
 
     @SuppressWarnings({ "unchecked", "deprecation" })

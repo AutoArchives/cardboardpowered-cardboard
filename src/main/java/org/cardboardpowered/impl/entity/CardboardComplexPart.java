@@ -41,7 +41,7 @@ public class CardboardComplexPart extends CraftEntity implements ComplexEntityPa
 
     @Override
     public EnderDragonPart getHandle() {
-        return (EnderDragonPart) nms;
+        return (EnderDragonPart) entity;
     }
 
     @Override

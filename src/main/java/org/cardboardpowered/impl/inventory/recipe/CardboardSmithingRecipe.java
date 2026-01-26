@@ -1,11 +1,12 @@
 package org.cardboardpowered.impl.inventory.recipe;
 
 import org.bukkit.NamespacedKey;
+import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.SmithingRecipe;
 
-public class CardboardSmithingRecipe extends SmithingRecipe implements RecipeInterface {
+public class CardboardSmithingRecipe extends SmithingRecipe implements CraftRecipe {
 
     public CardboardSmithingRecipe(NamespacedKey key, ItemStack result, RecipeChoice base, RecipeChoice addition) {
         super(key, result, base, addition);

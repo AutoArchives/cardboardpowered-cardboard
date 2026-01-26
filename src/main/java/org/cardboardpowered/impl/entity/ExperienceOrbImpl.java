@@ -27,7 +27,7 @@ public class ExperienceOrbImpl extends CraftEntity implements ExperienceOrb {
 
     @Override
     public net.minecraft.world.entity.ExperienceOrb getHandle() {
-        return (net.minecraft.world.entity.ExperienceOrb) nms;
+        return (net.minecraft.world.entity.ExperienceOrb) entity;
     }
 
     @Override

@@ -6,7 +6,7 @@ import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.JukeboxInventory;
 
-import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.bridge.world.ContainerBridge;
 
 public class CraftInventoryJukebox
 extends CraftInventory
@@ -28,7 +28,7 @@ implements JukeboxInventory {
     }
 
     public Jukebox getHolder() {
-        return (Jukebox) ((IMixinInventory)this.inventory).getOwner();
+        return (Jukebox) ((ContainerBridge)this.inventory).getOwner();
     }
 }
 

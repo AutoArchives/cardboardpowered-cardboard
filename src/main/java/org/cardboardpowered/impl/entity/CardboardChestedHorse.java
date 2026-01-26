@@ -3,10 +3,11 @@ package org.cardboardpowered.impl.entity;
 import java.util.UUID;
 import net.minecraft.world.entity.animal.equine.AbstractChestedHorse;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftAbstractHorse;
 import org.bukkit.entity.ChestedHorse;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class CardboardChestedHorse extends CardboardAbstractHorse implements ChestedHorse {
+public abstract class CardboardChestedHorse extends CraftAbstractHorse implements ChestedHorse {
 
     public CardboardChestedHorse(CraftServer server, AbstractChestedHorse entity) {
         super(server, entity);

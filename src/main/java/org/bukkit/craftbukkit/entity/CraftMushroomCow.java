@@ -8,17 +8,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import java.util.List;
-import java.util.function.Consumer;
 
-import org.bukkit.SoundCategory;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.entity.CraftCow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.MushroomCow;
-import org.bukkit.entity.Projectile;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.util.Vector;
 import org.cardboardpowered.adventure.CardboardAdventure;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,7 +27,7 @@ public class CraftMushroomCow extends CraftAbstractCow implements MushroomCow {
 
     @Override
     public net.minecraft.world.entity.animal.cow.MushroomCow getHandle() {
-        return (net.minecraft.world.entity.animal.cow.MushroomCow) nms;
+        return (net.minecraft.world.entity.animal.cow.MushroomCow) entity;
     }
 
     @Override

@@ -12,7 +12,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
@@ -35,8 +35,8 @@ public class MixinEnderPearlItem extends Item {
             enderPearlEntity.setItem(itemStack);
             enderPearlEntity.shootFromRotation(user, user.getXRot(), user.getYRot(), 0.0F, 1.5F, 1.0F);
             if (!world.addFreshEntity(enderPearlEntity)) {
-                if (user instanceof IMixinServerEntityPlayer) {
-                    ((IMixinServerEntityPlayer) user).getBukkit().updateInventory();
+                if (user instanceof ServerPlayerBridge) {
+                    ((ServerPlayerBridge) user).getBukkit().updateInventory();
                 }
                 return InteractionResult.FAIL;
                 // return TypedActionResult.fail(itemStack);

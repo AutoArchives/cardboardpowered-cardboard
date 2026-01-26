@@ -33,7 +33,7 @@ public class ThrowableProjectileImpl extends CraftProjectile implements Throwabl
 
     @Override
     public ThrowableItemProjectile getHandle() {
-        return (ThrowableItemProjectile) nms;
+        return (ThrowableItemProjectile) entity;
     }
 
 

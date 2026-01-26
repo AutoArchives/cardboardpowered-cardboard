@@ -6,7 +6,7 @@ import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.ItemStack;
 
-import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.bridge.world.ContainerBridge;
 
 public class CardboardBrewerInventory extends CraftInventory implements BrewerInventory {
 
@@ -26,7 +26,7 @@ public class CardboardBrewerInventory extends CraftInventory implements BrewerIn
 
     @Override
     public BrewingStand getHolder() {
-        return (BrewingStand) ((IMixinInventory)(Object)inventory).getOwner();
+        return (BrewingStand) ((ContainerBridge)(Object)inventory).getOwner();
     }
 
     @Override
