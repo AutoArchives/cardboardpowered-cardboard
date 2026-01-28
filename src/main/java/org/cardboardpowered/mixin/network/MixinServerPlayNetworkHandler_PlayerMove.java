@@ -27,7 +27,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
@@ -101,7 +101,7 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
     public Vec3 awaitingPositionFromClient;
 	
 	public CraftPlayer getCraftPlayer() {
-        return this.player == null ? null : (CraftPlayer) ((IMixinEntity)this.player).getBukkitEntity();
+        return this.player == null ? null : (CraftPlayer) ((EntityBridge)this.player).getBukkitEntity();
     }
 	
 	// Cardboard - Paper start

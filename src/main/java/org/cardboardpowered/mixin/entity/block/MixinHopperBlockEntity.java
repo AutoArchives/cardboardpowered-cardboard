@@ -25,9 +25,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.world.ContainerBridge;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 @Mixin(HopperBlockEntity.class)
 public abstract class MixinHopperBlockEntity implements Container, ContainerBridge {
@@ -67,7 +67,7 @@ public abstract class MixinHopperBlockEntity implements Container, ContainerBrid
     public InventoryHolder getOwner() {
         HopperBlockEntity b = (HopperBlockEntity) (Object)this;
         if (b.level == null) return null;
-        org.bukkit.block.Block block = ((IMixinWorld)b.level).getCraftWorld().getBlockAt(b.worldPosition.getX(), b.worldPosition.getY(), b.worldPosition.getZ());
+        org.bukkit.block.Block block = ((LevelBridge)b.level).getCraftWorld().getBlockAt(b.worldPosition.getX(), b.worldPosition.getY(), b.worldPosition.getZ());
         if (block == null) {
             org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING, "No block for owner at %s %d %d %d", new Object[]{b.level, b.worldPosition.getX(), b.worldPosition.getY(), b.worldPosition.getZ()});
             return null;
@@ -79,14 +79,14 @@ public abstract class MixinHopperBlockEntity implements Container, ContainerBrid
     @Override
     public Location getLocation() {
         HopperBlockEntity b = (HopperBlockEntity) (Object)this;
-        return new Location(((IMixinWorld)b.level).getCraftWorld(), b.worldPosition.getX(), b.worldPosition.getY(), b.worldPosition.getZ());
+        return new Location(((LevelBridge)b.level).getCraftWorld(), b.worldPosition.getX(), b.worldPosition.getY(), b.worldPosition.getZ());
     }
 
     @Inject(at = @At("HEAD"), method = "addItem(Lnet/minecraft/world/Container;Lnet/minecraft/world/entity/item/ItemEntity;)Z", cancellable = true)
     private static void extract1(net.minecraft.world.Container iinventory, ItemEntity entityitem, CallbackInfoReturnable<Boolean> ci) {
         try {
             if (iinventory instanceof ContainerBridge) {
-                InventoryPickupItemEvent event = new InventoryPickupItemEvent(((ContainerBridge)iinventory).getOwner().getInventory(),(org.bukkit.entity.Item) ((IMixinEntity)entityitem).getBukkitEntity());
+                InventoryPickupItemEvent event = new InventoryPickupItemEvent(((ContainerBridge)iinventory).getOwner().getInventory(),(org.bukkit.entity.Item) ((EntityBridge)entityitem).getBukkitEntity());
                 Bukkit.getServer().getPluginManager().callEvent(event);
                 if (event.isCancelled())
                     ci.setReturnValue(false);

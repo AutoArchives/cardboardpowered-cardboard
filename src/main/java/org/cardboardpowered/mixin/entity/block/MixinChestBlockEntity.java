@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.bridge.world.ContainerBridge;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -78,7 +78,7 @@ public abstract class MixinChestBlockEntity implements Container, ContainerBridg
     @Override
     public Location getLocation() {
         BlockPos pos = ((ChestBlockEntity)(Object)this).worldPosition;
-        return new Location(((IMixinWorld)(((ChestBlockEntity)(Object)this).level)).getCraftWorld(), pos.x, pos.y, pos.z);
+        return new Location(((LevelBridge)(((ChestBlockEntity)(Object)this).level)).getCraftWorld(), pos.x, pos.y, pos.z);
     }
 
     private int oldPower_B;

@@ -1,90 +1,33 @@
 package org.bukkit.craftbukkit.map;
 
-import java.util.Locale;
+import io.papermc.paper.util.OldEnumHolderable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.saveddata.maps.MapDecorationType;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
-import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.map.MapCursor;
 
 public final class CraftMapCursor {
 
-    public static final class CraftType
-    implements MapCursor.Type,
-    Handleable<MapDecorationType> {
-        private static int count = 0;
-        private final NamespacedKey key;
-        private final MapDecorationType mapDecorationType;
-        private final String name;
-        private final int ordinal;
+    public static final class CraftType extends OldEnumHolderable<MapCursor.Type, MapDecorationType> implements MapCursor.Type {
 
-        public static MapCursor.Type minecraftToBukkit(MapDecorationType minecraft) {
-            return (MapCursor.Type)CraftRegistry.minecraftToBukkit(minecraft, Registries.MAP_DECORATION_TYPE);
-        }
+        private static int count = 0;
 
         public static MapCursor.Type minecraftHolderToBukkit(Holder<MapDecorationType> minecraft) {
-            return CraftType.minecraftToBukkit(minecraft.value());
-        }
-
-        public static MapDecorationType bukkitToMinecraft(MapCursor.Type bukkit) {
-            return (MapDecorationType)CraftRegistry.bukkitToMinecraft(bukkit);
+            return CraftRegistry.minecraftHolderToBukkit(minecraft, Registries.MAP_DECORATION_TYPE);
         }
 
         public static Holder<MapDecorationType> bukkitToMinecraftHolder(MapCursor.Type bukkit) {
-            return CraftRegistry.bukkitToMinecraftHolder(bukkit, Registries.MAP_DECORATION_TYPE);
+            return CraftRegistry.bukkitToMinecraftHolder(bukkit);
         }
 
-        public CraftType(NamespacedKey key, MapDecorationType mapDecorationType) {
-            this.key = key;
-            this.mapDecorationType = mapDecorationType;
-            this.name = "minecraft".equals(key.getNamespace()) ? key.getKey().toUpperCase(Locale.ROOT) : key.toString();
-            this.ordinal = count++;
+        public CraftType(final Holder<MapDecorationType> holder) {
+            super(holder, count++);
         }
 
         @Override
-        public MapDecorationType getHandle() {
-            return this.mapDecorationType;
-        }
-
-        public NamespacedKey getKey() {
-            return this.key;
-        }
-
-        public int compareTo(MapCursor.Type type) {
-            return this.ordinal - type.ordinal();
-        }
-
-        public String name() {
-            return this.name;
-        }
-
-        public int ordinal() {
-            return this.ordinal;
-        }
-
-        public String toString() {
-            return this.name();
-        }
-
-        public boolean equals(Object other) {
-            if (this == other) {
-                return true;
-            }
-            if (!(other instanceof CraftType)) {
-                return false;
-            }
-            return this.getKey().equals((Object)((MapCursor.Type)other).getKey());
-        }
-
-        public int hashCode() {
-            return this.getKey().hashCode();
-        }
-
         public byte getValue() {
-            return (byte)CraftRegistry.getMinecraftRegistry(Registries.MAP_DECORATION_TYPE).getId(this.getHandle());
+            return (byte) CraftRegistry.getMinecraftRegistry(Registries.MAP_DECORATION_TYPE).getId(this.getHandle());
         }
     }
 }

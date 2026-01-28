@@ -15,12 +15,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.world.SimpleContainer;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.world.ContainerBridge;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(net.minecraft.world.entity.animal.equine.AbstractHorse.class)
-public abstract class AbstractHorseMixin extends Animal implements AbstractHorseBridge, IMixinEntity {
+public abstract class AbstractHorseMixin extends Animal implements AbstractHorseBridge, EntityBridge {
 
     @Unique
     public int maxDomestication = 100; // CraftBukkit - store max domestication value

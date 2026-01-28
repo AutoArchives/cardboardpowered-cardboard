@@ -10,9 +10,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 
 @Mixin(net.minecraft.world.entity.ambient.Bat.class)
 public class MixinBatEntity {
@@ -39,7 +38,7 @@ public class MixinBatEntity {
 
     // note: 1.21.4: awake is always == true.
     private static boolean handleBatToggleSleepEvent(Entity bat, boolean awake) {
-        BatToggleSleepEvent event = new BatToggleSleepEvent((Bat) ((IMixinEntity)bat).getBukkitEntity(), awake);
+        BatToggleSleepEvent event = new BatToggleSleepEvent((Bat) ((EntityBridge)bat).getBukkitEntity(), awake);
         Bukkit.getPluginManager().callEvent(event);
         return !event.isCancelled();
     }

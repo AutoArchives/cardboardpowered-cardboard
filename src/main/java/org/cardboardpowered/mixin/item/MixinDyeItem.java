@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 
 @MixinInfo(events = {"SheepDyeWoolEvent"})
 @Mixin(value = DyeItem.class, priority = 900)
@@ -37,7 +37,7 @@ public class MixinDyeItem {
         if (entitysheep.isAlive() && !entitysheep.isSheared() && entitysheep.getColor() != this.dyeColor) {
             if (!entityhuman.level().isClientSide()) {
                 byte bColor = (byte) this.dyeColor.getId();
-                SheepDyeWoolEvent event = new SheepDyeWoolEvent((org.bukkit.entity.Sheep) ((IMixinEntity)entitysheep).getBukkitEntity(), org.bukkit.DyeColor.getByWoolData(bColor));
+                SheepDyeWoolEvent event = new SheepDyeWoolEvent((org.bukkit.entity.Sheep) ((EntityBridge)entitysheep).getBukkitEntity(), org.bukkit.DyeColor.getByWoolData(bColor));
                 Bukkit.getServer().getPluginManager().callEvent(event);
                 if (event.isCancelled()) return InteractionResult.PASS;
 

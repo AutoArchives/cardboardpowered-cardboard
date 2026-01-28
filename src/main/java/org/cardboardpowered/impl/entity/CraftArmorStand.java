@@ -3,12 +3,10 @@ package org.cardboardpowered.impl.entity;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.world.InteractionHand;
 import org.bukkit.Chunk;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -23,7 +21,7 @@ import org.bukkit.util.EulerAngle;
 import com.destroystokyo.paper.block.TargetBlockInfo;
 import com.destroystokyo.paper.block.TargetBlockInfo.FluidMode;
 import com.destroystokyo.paper.entity.TargetEntityInfo;
-import org.cardboardpowered.interfaces.IMixinArmorStandEntity;
+import org.cardboardpowered.bridge.world.entity.decoration.ArmorStandBridge;
 
 import io.papermc.paper.math.Rotations;
 
@@ -166,7 +164,7 @@ public class CraftArmorStand extends LivingEntityImpl implements ArmorStand {
 
     @Override
     public void setBasePlate(boolean basePlate) {
-        ((IMixinArmorStandEntity)getHandle()).setHideBasePlateBF(!basePlate);
+        ((ArmorStandBridge)getHandle()).setHideBasePlateBF(!basePlate);
     }
 
     @Override
@@ -193,7 +191,7 @@ public class CraftArmorStand extends LivingEntityImpl implements ArmorStand {
 
     @Override
     public void setArms(boolean arms) {
-        ((IMixinArmorStandEntity)getHandle()).setShowArmsBF(arms);
+        ((ArmorStandBridge)getHandle()).setShowArmsBF(arms);
     }
 
     @Override
@@ -203,7 +201,7 @@ public class CraftArmorStand extends LivingEntityImpl implements ArmorStand {
 
     @Override
     public void setSmall(boolean small) {
-        ((IMixinArmorStandEntity)getHandle()).setSmallBF(small);
+        ((ArmorStandBridge)getHandle()).setSmallBF(small);
     }
 
     private static EulerAngle fromNMS(net.minecraft.core.Rotations old) {
@@ -229,7 +227,7 @@ public class CraftArmorStand extends LivingEntityImpl implements ArmorStand {
 
     @Override
     public void setMarker(boolean marker) {
-        ((IMixinArmorStandEntity)getHandle()).setMarkerBF(marker);
+        ((ArmorStandBridge)getHandle()).setMarkerBF(marker);
     }
 
     @Override
@@ -250,11 +248,11 @@ public class CraftArmorStand extends LivingEntityImpl implements ArmorStand {
 
     // Paper - START
     public boolean canMove() {
-        return ((IMixinArmorStandEntity)getHandle()).canMoveBF();
+        return ((ArmorStandBridge)getHandle()).canMoveBF();
     }
 
     public void setCanMove(boolean move) {
-        ((IMixinArmorStandEntity)getHandle()).setCanMoveBF(move);
+        ((ArmorStandBridge)getHandle()).setCanMoveBF(move);
     }
     // Paper - END
 

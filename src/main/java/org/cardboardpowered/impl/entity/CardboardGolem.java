@@ -2,6 +2,7 @@ package org.cardboardpowered.impl.entity;
 
 import net.minecraft.world.entity.animal.golem.AbstractGolem;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftCreature;
 import org.bukkit.entity.Golem;
 
 public class CardboardGolem extends CraftCreature implements Golem {

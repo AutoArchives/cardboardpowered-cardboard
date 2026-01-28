@@ -24,18 +24,23 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
-import org.cardboardpowered.impl.inventory.CardboardInventoryView;
-import org.cardboardpowered.interfaces.IScreenHandler;
+import org.bukkit.inventory.InventoryView;
 
-public interface AbstractContainerMenuBridge extends IScreenHandler {
+public interface AbstractContainerMenuBridge {
 
-    CardboardInventoryView getBukkitView();
+    default InventoryView getBukkitView() {
+        return null;
+    }
 
-    Component getTitle();
+    default Component getTitle() {
+        return null;
+    }
 
-    void setTitle(Component title);
+    default void setTitle(Component title) {
+    }
 
-    void transferTo(AbstractContainerMenu other, CraftHumanEntity player);
+    default void transferTo(AbstractContainerMenu other, CraftHumanEntity player) {
+    }
 
     /*
     public default void transferTo(ScreenHandler other, CraftHumanEntity player) {
@@ -50,20 +55,28 @@ public interface AbstractContainerMenuBridge extends IScreenHandler {
     */
 
 
-    NonNullList<ItemStack> getTrackedStacksBF();
+    default NonNullList<ItemStack> getTrackedStacksBF() {
+        return null;
+    }
 
-    void setTrackedStacksBF(NonNullList<ItemStack> trackedStacks);
+    default void setTrackedStacksBF(NonNullList<ItemStack> trackedStacks) {
+    }
 
-    void cardboard$setCheckReachable(boolean bl);
+    default void cardboard$setCheckReachable(boolean bl) {
+    }
 
-    void cardboard_setSlots(NonNullList<Slot> slots);
+    default void cardboard_setSlots(NonNullList<Slot> slots) {
+    }
 
-    NonNullList<ItemStack> cardboard_previousTrackedStacks();
+    default NonNullList<ItemStack> cardboard_previousTrackedStacks() {
+        return null;
+    }
 
-    void cardboard_previousTrackedStacks(NonNullList<ItemStack> s);
+    default void cardboard_previousTrackedStacks(NonNullList<ItemStack> s) {
+    }
 
-    // CraftBukkit start - from synchronizeCarriedToRemote
-    void cardboard$broadcastCarriedItem();
+    default void cardboard$broadcastCarriedItem() {
+    }
 
     default void cardboard$startOpen() {}
 }

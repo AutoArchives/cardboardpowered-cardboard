@@ -3,23 +3,17 @@ package org.cardboardpowered.impl.command;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
-import java.util.logging.Level;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandException;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.Player;
 import org.cardboardpowered.interfaces.IServerCommandSource;
 
-import com.google.common.collect.ImmutableList;
 import org.cardboardpowered.interfaces.IMixinCommandOutput;
-import org.cardboardpowered.interfaces.IMixinWorld;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;

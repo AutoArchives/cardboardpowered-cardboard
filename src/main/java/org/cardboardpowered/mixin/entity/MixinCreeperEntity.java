@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.entity;
 
-import org.cardboardpowered.interfaces.ICreeperEntity;
+import org.cardboardpowered.bridge.world.entity.monster.CreeperBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,7 +16,7 @@ import net.minecraft.world.level.Level;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 @Mixin(Creeper.class)
-public abstract class MixinCreeperEntity extends Entity implements ICreeperEntity {
+public abstract class MixinCreeperEntity extends Entity implements CreeperBridge {
 
     public MixinCreeperEntity(EntityType<?> type, Level world) {
         super(type, world);

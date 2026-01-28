@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.entity.ai;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -23,7 +23,7 @@ public class MixinLookTargetUtil {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"))
     private static void cardboard$targetutil_entityDropItem(LivingEntity entity, ItemStack stack, Vec3 targetLocation, Vec3 velocityFactor, float yOffset, CallbackInfo ci, double d, ItemEntity itemEntity, Vec3 vec3d) {
         // CraftBukkit start
-        EntityDropItemEvent event = new EntityDropItemEvent(((IMixinEntity)entity).getBukkitEntity(), (Item) ((IMixinEntity)itemEntity).getBukkitEntity());
+        EntityDropItemEvent event = new EntityDropItemEvent(((EntityBridge)entity).getBukkitEntity(), (Item) ((EntityBridge)itemEntity).getBukkitEntity());
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             ci.cancel();

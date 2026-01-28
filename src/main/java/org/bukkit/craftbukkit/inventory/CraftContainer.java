@@ -29,10 +29,10 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.MenuType;
-import org.cardboardpowered.impl.inventory.CardboardAbstractInventoryView;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 
-public class CraftContainer extends AbstractContainerMenu {
+public class CraftContainer extends AbstractContainerMenu implements AbstractContainerMenuBridge {
 
     private final InventoryView view;
     private InventoryType cachedType;
@@ -49,7 +49,7 @@ public class CraftContainer extends AbstractContainerMenu {
     }
 
     public CraftContainer(final Inventory inventory, final Player player, int id) {
-        this(new CardboardAbstractInventoryView() {
+        this(new CraftAbstractInventoryView() {
 
             private final String originalTitle = inventory instanceof CraftInventoryCustom ? ((CraftInventoryCustom) inventory).getTitle() : inventory.getType().getDefaultTitle(); // Paper
             private String title = this.originalTitle;
@@ -66,7 +66,7 @@ public class CraftContainer extends AbstractContainerMenu {
 
             @Override
             public HumanEntity getPlayer() {
-                return (HumanEntity) ((IMixinEntity)player).getBukkitEntity();
+                return (HumanEntity) ((EntityBridge)player).getBukkitEntity();
             }
 
             @Override

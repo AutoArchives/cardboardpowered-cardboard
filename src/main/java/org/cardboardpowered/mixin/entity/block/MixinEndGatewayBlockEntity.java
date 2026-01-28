@@ -1,17 +1,7 @@
 package org.cardboardpowered.mixin.entity.block;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
-import org.cardboardpowered.interfaces.IMixinWorld;
 import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
-import org.bukkit.Location;
-import org.bukkit.event.player.PlayerTeleportEvent;
-import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(TheEndGatewayBlockEntity.class)
 public class MixinEndGatewayBlockEntity {

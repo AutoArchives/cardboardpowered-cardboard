@@ -8,11 +8,10 @@ import org.bukkit.inventory.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -45,8 +44,8 @@ public class MixinPlayerEntity {
         if (stack.isEmpty()) {
             return;
         }
-        Player player = (Player)(((IMixinEntity)this).getBukkitEntity());
-        Item drop = (Item) ((IMixinEntity)itemEntity).getBukkitEntity();
+        Player player = (Player)(((EntityBridge)this).getBukkitEntity());
+        Item drop = (Item) ((EntityBridge)itemEntity).getBukkitEntity();
         PlayerDropItemEvent event = new PlayerDropItemEvent(player, drop);
         Bukkit.getServer().getPluginManager().callEvent(event);
 

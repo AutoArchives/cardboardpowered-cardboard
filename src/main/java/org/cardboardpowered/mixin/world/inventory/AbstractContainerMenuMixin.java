@@ -4,7 +4,8 @@ import net.minecraft.world.inventory.ContainerSynchronizer;
 import net.minecraft.world.inventory.RemoteSlot;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
-import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import org.bukkit.inventory.InventoryView;
+import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.cardboardpowered.impl.inventory.CustomInventoryView;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -30,7 +31,8 @@ public abstract class AbstractContainerMenuMixin implements AbstractContainerMen
 
     public boolean checkReachable = true;
 
-    public CardboardInventoryView getBukkitView() {
+    @Override
+    public InventoryView getBukkitView() {
         CraftInventory cbi = new CraftInventory(new SimpleContainer( ((AbstractContainerMenu)(Object)this).getItems().toArray(new ItemStack[0]) ));
         return new CustomInventoryView(null, cbi, ((AbstractContainerMenu)(Object)this));
     }
@@ -68,9 +70,7 @@ public abstract class AbstractContainerMenuMixin implements AbstractContainerMen
 
     @Override
     public void transferTo(AbstractContainerMenu other, CraftHumanEntity player) {
-        CardboardInventoryView source = this.getBukkitView(), destination = ((AbstractContainerMenuBridge)other).getBukkitView();
-        source.setPlayerIfNotSet(player);
-        destination.setPlayerIfNotSet(player);
+        InventoryView source = this.getBukkitView(), destination = ((AbstractContainerMenuBridge)other).getBukkitView();
 
         if ((source.getTopInventory() instanceof CustomInventoryView) || source.getBottomInventory() instanceof CustomInventoryView ||
                 destination.getTopInventory() instanceof CustomInventoryView || destination.getBottomInventory() instanceof CustomInventoryView) {

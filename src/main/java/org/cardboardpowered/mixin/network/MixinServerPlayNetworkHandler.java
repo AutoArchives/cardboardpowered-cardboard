@@ -1,6 +1,7 @@
 package org.cardboardpowered.mixin.network;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
 import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
@@ -60,7 +61,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.cardboardpowered.impl.entity.CraftPlayer;
-import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -599,7 +600,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonPacketLi
                                         }
 
                                         if (!oldTo.equals(event.getTo()) && !event.isCancelled()) {
-                                            ((Player)((org.cardboardpowered.interfaces.IMixinEntity)this.player).getBukkitEntity()).
+                                            ((Player)((EntityBridge)this.player).getBukkitEntity()).
                                                     teleport(event.getTo(), PlayerTeleportEvent.TeleportCause.PLUGIN);
                                             return;
                                         }
@@ -793,12 +794,8 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonPacketLi
     // 1.19.4 = onHandledScreenClosed
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;doCloseContainer()V", shift = At.Shift.BEFORE), method = "handleContainerClose")
     public void doBukkit_InventoryCloseEvent(CallbackInfo ci) {
-        AbstractContainerMenuBridge handler = (AbstractContainerMenuBridge) player.containerMenu;
-        CardboardInventoryView view = handler.getBukkitView();
-        view.setPlayerIfNotSet(((ServerPlayerBridge)player).getBukkit());
-        InventoryCloseEvent event = new InventoryCloseEvent(view);
-        Bukkit.getServer().getPluginManager().callEvent(event);
-        handler.transferTo(player.inventoryMenu, ((ServerPlayerBridge)player).getBukkit());
+        if (this.player.isImmobile()) return; // CraftBukkit
+        CraftEventFactory.handleInventoryCloseEvent(this.player, InventoryCloseEvent.Reason.UNKNOWN); // CraftBukkit // Paper
     }
 
     

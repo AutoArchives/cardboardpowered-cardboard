@@ -18,8 +18,8 @@
  */
 package org.cardboardpowered.mixin;
 
-import org.cardboardpowered.interfaces.IMixinAdvancement;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.advancements.AdvancementHolderBridge;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.level.ServerPlayer;
@@ -55,7 +55,7 @@ public class MixinPlayerAdvancementTracker {
     @SuppressWarnings("rawtypes")
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/advancements/AdvancementRewards;grant(Lnet/minecraft/server/level/ServerPlayer;)V"), method = "award")
     public void fireBukkitEvent(AdvancementHolder advancement, String criterionName, CallbackInfoReturnable<Boolean> cir) {
-        Bukkit.getServer().getPluginManager().callEvent(new org.bukkit.event.player.PlayerAdvancementDoneEvent((Player) ((IMixinEntity)this.player).getBukkitEntity(), ((IMixinAdvancement)(Object) advancement).getBukkitAdvancement())); // Bukkit
+        Bukkit.getServer().getPluginManager().callEvent(new org.bukkit.event.player.PlayerAdvancementDoneEvent((Player) ((EntityBridge)this.player).getBukkitEntity(), ((AdvancementHolderBridge)(Object) advancement).getBukkitAdvancement())); // Bukkit
     }
 
 }

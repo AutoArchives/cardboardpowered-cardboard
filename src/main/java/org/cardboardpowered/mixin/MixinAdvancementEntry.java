@@ -20,12 +20,11 @@ package org.cardboardpowered.mixin;
 
 import net.minecraft.advancements.AdvancementHolder;
 import org.bukkit.craftbukkit.advancement.CraftAdvancement;
-import org.cardboardpowered.interfaces.IMixinAdvancement;
+import org.cardboardpowered.bridge.advancements.AdvancementHolderBridge;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(AdvancementHolder.class)
-public class MixinAdvancementEntry implements IMixinAdvancement {
+public class MixinAdvancementEntry implements AdvancementHolderBridge {
 
     // @Unique
     private final CraftAdvancement bukkit = new CraftAdvancement((AdvancementHolder)(Object)this);

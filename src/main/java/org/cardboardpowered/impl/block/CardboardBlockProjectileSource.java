@@ -5,7 +5,7 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.projectiles.BlockProjectileSource;
 // import org.bukkit.util.Consumer;
 import org.bukkit.util.Vector;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 
 import com.google.common.base.Preconditions;
@@ -43,7 +43,7 @@ public class CardboardBlockProjectileSource implements BlockProjectileSource {
 
     @Override
     public Block getBlock() {
-        return ((IMixinWorld)(Object)dispenserBlock.getLevel()).getCraftWorld().getBlockAt(dispenserBlock.getBlockPos().getX(), dispenserBlock.getBlockPos().getY(), dispenserBlock.getBlockPos().getZ());
+        return ((LevelBridge)(Object)dispenserBlock.getLevel()).getCraftWorld().getBlockAt(dispenserBlock.getBlockPos().getX(), dispenserBlock.getBlockPos().getY(), dispenserBlock.getBlockPos().getZ());
     }
 
     @Override

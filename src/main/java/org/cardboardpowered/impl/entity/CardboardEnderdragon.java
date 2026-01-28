@@ -3,7 +3,7 @@ package org.cardboardpowered.impl.entity;
 import com.destroystokyo.paper.entity.Pathfinder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 
 import java.util.Set;
 
@@ -35,7 +35,7 @@ public class CardboardEnderdragon extends CardboardComplexEntity implements Ende
     public Set<ComplexEntityPart> getParts() {
         Builder<ComplexEntityPart> builder = ImmutableSet.builder();
         for (EnderDragonPart part : getHandle().subEntities)
-            builder.add((ComplexEntityPart) ((IMixinEntity)part).getBukkitEntity());
+            builder.add((ComplexEntityPart) ((EntityBridge)part).getBukkitEntity());
         return builder.build();
     }
 

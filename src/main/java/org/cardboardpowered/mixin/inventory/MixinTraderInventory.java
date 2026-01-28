@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import org.cardboardpowered.impl.entity.CraftAbstractVillager;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.world.ContainerBridge;
 
 @Mixin(MerchantContainer.class)
@@ -64,12 +64,12 @@ public abstract class MixinTraderInventory implements Container, ContainerBridge
 
     @Override
     public org.bukkit.inventory.InventoryHolder getOwner() {
-        return (merchant instanceof AbstractVillager) ? (CraftAbstractVillager) ((IMixinEntity)((AbstractVillager) this.merchant)).getBukkitEntity() : null;
+        return (merchant instanceof AbstractVillager) ? (CraftAbstractVillager) ((EntityBridge)((AbstractVillager) this.merchant)).getBukkitEntity() : null;
     }
 
     @Override
     public Location getLocation() {
-        return (merchant instanceof Villager) ? ((IMixinEntity)((Villager) this.merchant)).getBukkitEntity().getLocation() : null;
+        return (merchant instanceof Villager) ? ((EntityBridge)((Villager) this.merchant)).getBukkitEntity().getLocation() : null;
     }
 
 }

@@ -4,7 +4,7 @@ import org.cardboardpowered.extras.PlayerManager_LoginResult;
 import org.cardboardpowered.interfaces.IMixinClientConnection;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.interfaces.IMixinPlayerManager;
-import org.cardboardpowered.interfaces.IMixinServerLoginNetworkHandler;
+import org.cardboardpowered.bridge.server.network.ServerLoginPacketListenerImplBridge;
 
 import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
@@ -70,7 +70,7 @@ import io.papermc.paper.connection.PaperPlayerLoginConnection;
 
 @SuppressWarnings("deprecation")
 @Mixin(value = ServerLoginPacketListenerImpl.class, priority = 999)
-public abstract class MixinServerLoginNetworkHandler implements IMixinServerLoginNetworkHandler {
+public abstract class MixinServerLoginNetworkHandler implements ServerLoginPacketListenerImplBridge {
 
 	private static Logger LOGGER_BF = LoggerFactory.getLogger("PaperMC|ServerLoginNetworkHandler"); // LogManager.getLogger("Bukkit|ServerLoginNetworkHandler");
 	
@@ -360,8 +360,8 @@ public abstract class MixinServerLoginNetworkHandler implements IMixinServerLogi
 	 * @author cardboard mod
 	 * @reason We create the ServerPlayerEntity using attemptLogin
 	 */
-	@Overwrite
-    private void verifyLoginAndFinishConnectionSetup(GameProfile profile) {
+	//@Overwrite
+    private void verifyLoginAndFinishConnectionSetupdd(GameProfile profile) {
         PlayerList playerManager = this.server.getPlayerList();
         
         net.minecraft.network.chat.Component text = playerManager.canPlayerLogin(this.connection.getRemoteAddress(), new NameAndId(profile));

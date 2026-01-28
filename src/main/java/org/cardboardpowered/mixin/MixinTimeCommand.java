@@ -18,17 +18,8 @@
  */
 package org.cardboardpowered.mixin;
 
-import java.util.Iterator;
 import net.minecraft.server.commands.TimeCommand;
-import org.bukkit.Bukkit;
-import org.bukkit.event.world.TimeSkipEvent;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import org.cardboardpowered.interfaces.IMixinWorld;
 
 @Mixin(TimeCommand.class)
 public class MixinTimeCommand {

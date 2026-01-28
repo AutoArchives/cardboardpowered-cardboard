@@ -9,7 +9,7 @@ import net.kyori.adventure.text.Component;
 import net.minecraft.network.Connection;
 import net.minecraft.server.network.ServerLoginPacketListenerImpl;
 import org.cardboardpowered.interfaces.IMixinClientConnection;
-import org.cardboardpowered.interfaces.IMixinServerLoginNetworkHandler;
+import org.cardboardpowered.bridge.server.network.ServerLoginPacketListenerImplBridge;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -22,16 +22,16 @@ public class PaperPlayerLoginConnection extends ReadablePlayerCookieConnectionIm
 		return (IMixinClientConnection) packetListener_connection();
 	}
 	
-	private IMixinServerLoginNetworkHandler ipacketListener() {
-		return ((IMixinServerLoginNetworkHandler) this.packetListener);
+	private ServerLoginPacketListenerImplBridge ipacketListener() {
+		return ((ServerLoginPacketListenerImplBridge) this.packetListener);
 	}
 	
 	private Connection packetListener_connection() {
-		return ((IMixinServerLoginNetworkHandler) this.packetListener).cb_get_connection();
+		return ((ServerLoginPacketListenerImplBridge) this.packetListener).cb_get_connection();
 	}
 
 	public PaperPlayerLoginConnection(ServerLoginPacketListenerImpl packetListener) {
-		super(((IMixinServerLoginNetworkHandler) packetListener).cb_get_connection());
+		super(((ServerLoginPacketListenerImplBridge) packetListener).cb_get_connection());
 		this.packetListener = packetListener;
 	}
 

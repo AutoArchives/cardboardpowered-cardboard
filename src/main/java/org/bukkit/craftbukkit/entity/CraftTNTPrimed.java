@@ -11,7 +11,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.TNTPrimed;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.interfaces.ITnt;
 
 public class CraftTNTPrimed extends CraftEntity implements TNTPrimed {
@@ -68,7 +68,7 @@ public class CraftTNTPrimed extends CraftEntity implements TNTPrimed {
     @Override
     public Entity getSource() {
         LivingEntity source = getHandle().getOwner(); //.getCausingEntity();
-        return (source != null) ? ((IMixinEntity)source).getBukkitEntity() : null;
+        return (source != null) ? ((EntityBridge)source).getBukkitEntity() : null;
     }
 
     public void setSource(Entity source) {

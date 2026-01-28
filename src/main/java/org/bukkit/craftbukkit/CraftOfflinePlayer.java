@@ -109,15 +109,15 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
     @Override
     public boolean isOp() {
-        return server.getHandle().getPlayerList().isOp(this.nameAndId);
+        return server.getHandle().isOp(this.nameAndId);
     }
 
     @Override
     public void setOp(boolean value) {
         if (value == isOp()) return;
 
-        if (value) server.getHandle().getPlayerList().op(this.nameAndId);
-        else server.getHandle().getPlayerList().deop(this.nameAndId);
+        if (value) server.getHandle().op(this.nameAndId);
+        else server.getHandle().deop(this.nameAndId);
     }
 
     @Override
@@ -139,15 +139,15 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
     @Override
     public boolean isWhitelisted() {
-        return server.getHandle().getPlayerList().getWhiteList().isWhiteListed(this.nameAndId);
+        return server.getHandle().getWhiteList().isWhiteListed(this.nameAndId);
     }
 
     @Override
     public void setWhitelisted(boolean value) {
         if (value) {
-            server.getHandle().getPlayerList().getWhiteList().add(new UserWhiteListEntry(this.nameAndId));
+            server.getHandle().getWhiteList().add(new UserWhiteListEntry(this.nameAndId));
         } else {
-            server.getHandle().getPlayerList().getWhiteList().remove(this.nameAndId);
+            server.getHandle().getWhiteList().remove(this.nameAndId);
         }
     }
 

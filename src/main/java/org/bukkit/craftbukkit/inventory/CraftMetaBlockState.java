@@ -34,7 +34,7 @@ import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.util.BlockVector;
 import org.cardboardpowered.TypedEntityDataExtra;
 import org.cardboardpowered.impl.block.CardboardBlockEntityState;
-import org.cardboardpowered.interfaces.IComponentChanges;
+import org.cardboardpowered.bridge.core.component.DataComponentPatch_BuilderBridge;
 import org.cardboardpowered.bridge.world.level.block.entity.BlockEntityBridge;
 
 @DelegateDeserialization(SerializableMeta.class)
@@ -118,7 +118,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
          Set<DataComponentType<?>> applied = ( (BlockEntityBridge) dummyBlockEntity).applyComponentsSet(DataComponentMap.EMPTY, DataComponentPatch.EMPTY);
 
          for (DataComponentType<?> seen : applied) {
-        	 ((IComponentChanges)super.unhandledTags).clear(seen);
+        	 ((DataComponentPatch_BuilderBridge)super.unhandledTags).clear(seen);
          }
 
          if (!applied.isEmpty()) {

@@ -3,6 +3,7 @@ package org.cardboardpowered.impl.entity;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftAnimals;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Pig;
 

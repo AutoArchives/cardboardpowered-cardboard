@@ -2,11 +2,11 @@ package org.cardboardpowered.mixin.block;
 
 import net.minecraft.world.level.block.state.BlockBehaviour.BlockStateBase;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
-import org.cardboardpowered.interfaces.IBlockState;
+import org.cardboardpowered.bridge.world.level.block.state.BlockStateBaseBridge;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(BlockStateBase.class)
-public class MixinAbstractBlockState implements IBlockState {
+public class MixinAbstractBlockState implements BlockStateBaseBridge {
 
 	private CraftBlockData cachedCraftBlockData;
 	

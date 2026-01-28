@@ -14,7 +14,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.spongepowered.asm.mixin.Mixin;
 
 import org.cardboardpowered.bridge.world.ContainerBridge;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 @Mixin(BarrelBlockEntity.class)
 public abstract class MixinBarrelBlockEntity implements Container, ContainerBridge {
@@ -57,7 +57,7 @@ public abstract class MixinBarrelBlockEntity implements Container, ContainerBrid
     @Override
     public Location getLocation() {
         BlockPos pos = ((BlockEntity)(Object)this).getBlockPos();
-        return new Location(((IMixinWorld)((BlockEntity)(Object)this).getLevel()).getCraftWorld(), pos.x, pos.y, pos.z);
+        return new Location(((LevelBridge)((BlockEntity)(Object)this).getLevel()).getCraftWorld(), pos.x, pos.y, pos.z);
     }
 
     @Override

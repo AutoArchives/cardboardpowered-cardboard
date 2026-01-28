@@ -1,5 +1,6 @@
 package io.papermc.paper.registry.data;
 
+import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.registry.PaperRegistryBuilder;
 import io.papermc.paper.registry.data.PaintingVariantRegistryEntry;
 import io.papermc.paper.registry.data.util.Checks;
@@ -11,7 +12,6 @@ import net.kyori.adventure.text.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.decoration.painting.PaintingVariant;
 import org.bukkit.Art;
-import org.cardboardpowered.adventure.CardboardAdventure;
 import org.jetbrains.annotations.Range;
 import org.jspecify.annotations.Nullable;
 
@@ -53,7 +53,7 @@ implements PaintingVariantRegistryEntry {
     }
 
     public Key assetId() {
-        return CardboardAdventure.asAdventure(Checks.asConfigured(this.assetId, "assetId"));
+        return PaperAdventure.asAdventure(Checks.asConfigured(this.assetId, "assetId"));
     }
 
     public static final class PaperBuilder
@@ -85,7 +85,7 @@ implements PaintingVariantRegistryEntry {
         }
 
         public PaintingVariantRegistryEntry.Builder assetId(Key assetId) {
-            this.assetId = CardboardAdventure.asVanilla(Checks.asArgument(assetId, "assetId"));
+            this.assetId = PaperAdventure.asVanilla(Checks.asArgument(assetId, "assetId"));
             return this;
         }
 

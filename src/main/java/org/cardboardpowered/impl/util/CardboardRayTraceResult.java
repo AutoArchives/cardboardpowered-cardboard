@@ -14,7 +14,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 
 public final class CardboardRayTraceResult {
 
@@ -26,7 +26,7 @@ public final class CardboardRayTraceResult {
         BlockFace hitBlockFace = null;
 
         if (nmsHitResult.getType() == Type.ENTITY) {
-            Entity hitEntity = ((IMixinEntity)((EntityHitResult) nmsHitResult).getEntity()).getBukkitEntity();
+            Entity hitEntity = ((EntityBridge)((EntityHitResult) nmsHitResult).getEntity()).getBukkitEntity();
             return new RayTraceResult(hitPosition, hitEntity, null);
         }
 

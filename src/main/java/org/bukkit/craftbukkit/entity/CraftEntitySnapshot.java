@@ -3,10 +3,9 @@ package org.bukkit.craftbukkit.entity;
 import com.google.common.base.Preconditions;
 import com.mojang.logging.LogUtils;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.slf4j.Logger;
 
-import java.util.function.Function;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.EntityProcessor;
@@ -43,7 +42,7 @@ public class CraftEntitySnapshot implements EntitySnapshot {
     public Entity createEntity(World world) {
         net.minecraft.world.entity.Entity internal = this.createInternal(world);
 
-        return ((IMixinEntity)internal).getBukkitEntity();
+        return ((EntityBridge)internal).getBukkitEntity();
     }
 
     @Override
@@ -53,7 +52,7 @@ public class CraftEntitySnapshot implements EntitySnapshot {
         net.minecraft.world.entity.Entity internal = this.createInternal(location.getWorld());
 
         internal.setPos(location.getX(), location.getY(), location.getZ());
-        return location.getWorld().addEntity(((IMixinEntity)internal).getBukkitEntity());
+        return location.getWorld().addEntity(((EntityBridge)internal).getBukkitEntity());
     }
 
     // @Override

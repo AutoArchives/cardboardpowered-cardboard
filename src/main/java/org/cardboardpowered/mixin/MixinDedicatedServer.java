@@ -26,8 +26,7 @@ import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.plugin.PluginLoadOrder;
 import org.bukkit.plugin.java.JavaPluginLoader;
 import org.cardboardpowered.CardboardConfig;
-import org.cardboardpowered.impl.CardboardEnchantment;
-import org.cardboardpowered.interfaces.IDedicatedServer;
+import org.cardboardpowered.bridge.server.dedicated.DedicatedServerBridge;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -44,7 +43,7 @@ import net.minecraft.server.dedicated.DedicatedPlayerList;
 import net.minecraft.server.dedicated.DedicatedServer;
 
 @Mixin(DedicatedServer.class)
-public abstract class MixinDedicatedServer extends MixinMCServer implements IDedicatedServer {
+public abstract class MixinDedicatedServer extends MixinMCServer implements DedicatedServerBridge {
 
 	@Shadow
 	@Final

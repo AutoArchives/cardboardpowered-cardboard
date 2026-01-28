@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.screen;
 
-import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.cardboardpowered.impl.inventory.CardboardSmithingInventory;
 import net.minecraft.world.inventory.SmithingMenu;
 import org.bukkit.entity.Player;
@@ -11,14 +11,14 @@ import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 @Mixin(SmithingMenu.class)
 public class MixinSmithingScreenHandler extends MixinForgingScreenHandler {
 
-    private CardboardInventoryView bukkitEntity;
+    private CraftInventoryView bukkitEntity;
 
     @Override
-    public CardboardInventoryView getBukkitView() {
+    public CraftInventoryView getBukkitView() {
         if (bukkitEntity != null) return bukkitEntity;
 
         CardboardSmithingInventory inventory = new CardboardSmithingInventory(this.inputSlots, this.resultSlots);
-        bukkitEntity = new CardboardInventoryView((Player)((ServerPlayerBridge)this.player).getBukkitEntity(), inventory, (SmithingMenu)(Object)this);
+        bukkitEntity = new CraftInventoryView((Player)((ServerPlayerBridge)this.player).getBukkitEntity(), inventory, (SmithingMenu)(Object)this);
         return bukkitEntity;
     }
 

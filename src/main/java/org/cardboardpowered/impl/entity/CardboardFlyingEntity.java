@@ -2,6 +2,7 @@ package org.cardboardpowered.impl.entity;
 
 import net.minecraft.world.entity.Mob;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftMob;
 
 /**
  * @deprecated FlyingEntity removed in 1.21.8 API

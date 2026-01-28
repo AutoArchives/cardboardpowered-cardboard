@@ -2,7 +2,7 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.interfaces.IMixinPersistentProjectileEntity;
 
 import net.kyori.adventure.text.Component;
@@ -83,7 +83,7 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
 
     @Override
     public ProjectileSource getShooter() {
-        return ((IMixinEntity)getHandle()).getProjectileSourceBukkit();
+        return ((EntityBridge)getHandle()).getProjectileSourceBukkit();
     }
 
     @Override
@@ -93,7 +93,7 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
         } else {
             getHandle().setOwner(null);
         }
-        ((IMixinEntity)getHandle()).setProjectileSourceBukkit(shooter);
+        ((EntityBridge)getHandle()).setProjectileSourceBukkit(shooter);
     }
 
     @Override

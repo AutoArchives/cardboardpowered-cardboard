@@ -21,7 +21,7 @@ import org.cardboardpowered.impl.entity.CraftPlayer;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 
 public class CardboardBossBar implements BossBar, KeyedBossBar {
 
@@ -184,7 +184,7 @@ public class CardboardBossBar implements BossBar, KeyedBossBar {
     public List<Player> getPlayers() {
         ImmutableList.Builder<Player> players = ImmutableList.builder();
         for (ServerPlayer p : handle.getPlayers())
-            players.add((Player)((IMixinEntity)p).getBukkitEntity());
+            players.add((Player)((EntityBridge)p).getBukkitEntity());
         return players.build();
     }
 

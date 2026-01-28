@@ -5,7 +5,7 @@ package org.cardboardpowered.mixin.world;
 
 import net.minecraft.server.level.TicketType;
 import org.cardboardpowered.ChunkTicketBridge;
-import org.cardboardpowered.interfaces.IChunkTicketType;
+import org.cardboardpowered.bridge.server.level.TicketTypeBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.Shadow;
  * @see {@link https://github.com/PaperMC/Paper/blob/main/paper-server/patches/sources/net/minecraft/server/level/TicketType.java.patch}
  */
 @Mixin(TicketType.class)
-public class MixinChunkTicketType implements IChunkTicketType {
+public class MixinChunkTicketType implements TicketTypeBridge {
 
     // Bukkit
 	private static final TicketType PLUGIN = TicketType.register("plugin", 0L, 6);

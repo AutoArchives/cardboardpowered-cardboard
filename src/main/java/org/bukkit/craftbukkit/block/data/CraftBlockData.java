@@ -830,7 +830,7 @@ public class CraftBlockData implements BlockData {
 
     private static CraftBlockData createNewData(BlockType blockType, String data) {
     	net.minecraft.world.level.block.state.BlockState blockData;
-    	net.minecraft.world.level.block.Block block = blockType == null ? null : ((CraftBlockType)blockType).getHandle();
+        Block block = blockType == null ? null : ((CraftBlockType<?>) blockType).getHandle();
     	Map<Property<?>, Comparable<?>> parsed = null;
     	if (data != null) {
     		try {

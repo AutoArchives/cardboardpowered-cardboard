@@ -33,7 +33,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 @SuppressWarnings("deprecation")
 public class CraftBlockState implements BlockState {
@@ -117,7 +117,7 @@ public class CraftBlockState implements BlockState {
     }
 
     public static CraftBlockState getBlockState(net.minecraft.world.level.Level world, net.minecraft.core.BlockPos pos, int flag) {
-        return new CraftBlockState(((IMixinWorld)(Object)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), flag);
+        return new CraftBlockState(((LevelBridge)(Object)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), flag);
     }
     
     /*

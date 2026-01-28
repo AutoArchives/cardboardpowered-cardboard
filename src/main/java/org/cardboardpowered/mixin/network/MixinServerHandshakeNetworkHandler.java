@@ -1,7 +1,7 @@
 package org.cardboardpowered.mixin.network;
 
 import org.cardboardpowered.interfaces.IMixinClientConnection;
-import org.cardboardpowered.interfaces.IMixinServerLoginNetworkHandler;
+import org.cardboardpowered.bridge.server.network.ServerLoginPacketListenerImplBridge;
 
 import me.isaiah.common.GameVersion;
 import net.minecraft.network.Connection;
@@ -44,7 +44,7 @@ public class MixinServerHandshakeNetworkHandler {
                     }
                     if ( split.length == 4 ) ((IMixinClientConnection)connection).setSpoofedProfile(gson.fromJson(split[3], com.mojang.authlib.properties.Property[].class));
                 }
-                ((IMixinServerLoginNetworkHandler)((ServerLoginPacketListenerImpl) this.connection.getPacketListener())).setHostname(packet.hostName + ":" + packet.port()); // Bukkit - set hostname
+                ((ServerLoginPacketListenerImplBridge)((ServerLoginPacketListenerImpl) this.connection.getPacketListener())).setHostname(packet.hostName + ":" + packet.port()); // Bukkit - set hostname
             }
         }
     }

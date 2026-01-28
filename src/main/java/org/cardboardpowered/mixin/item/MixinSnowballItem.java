@@ -11,6 +11,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SnowballItem;
 import net.minecraft.world.level.Level;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
+import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
@@ -34,7 +36,7 @@ public class MixinSnowballItem extends Item {
             snowballEntity.shootFromRotation(user, user.getXRot(), user.getYRot(), 0.0F, 1.5F, 1.0F);
             if (!world.addFreshEntity(snowballEntity)) {
                 if (user instanceof ServerPlayerBridge) {
-                    ((ServerPlayerBridge) user).getBukkit().updateInventory();
+                    ((CraftPlayer)((EntityBridge) user).getBukkitEntity()).updateInventory();
                 }
                 return InteractionResult.FAIL;
             }

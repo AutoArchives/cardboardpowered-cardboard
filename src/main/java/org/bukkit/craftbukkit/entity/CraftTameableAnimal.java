@@ -5,7 +5,6 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Tameable;
-import org.cardboardpowered.impl.entity.CraftAnimals;
 
 import me.isaiah.common.cmixin.IMixinTameableEntity;
 import net.minecraft.Optionull;

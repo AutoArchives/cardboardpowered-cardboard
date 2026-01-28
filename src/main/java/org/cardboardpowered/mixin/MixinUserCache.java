@@ -1,11 +1,11 @@
 package org.cardboardpowered.mixin;
 
 import net.minecraft.server.players.CachedUserNameToIdResolver;
-import org.cardboardpowered.interfaces.IUserCache;
+import org.cardboardpowered.bridge.server.players.CachedUserNameToIdResolverBridge;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(CachedUserNameToIdResolver.class)
-public class MixinUserCache implements IUserCache {
+public class MixinUserCache implements CachedUserNameToIdResolverBridge {
 
 	/*
     @Shadow private Map<UUID, Entry> byUuid;

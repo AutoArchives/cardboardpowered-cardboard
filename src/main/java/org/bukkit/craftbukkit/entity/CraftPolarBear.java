@@ -3,7 +3,6 @@ package org.bukkit.craftbukkit.entity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.PolarBear;
-import org.cardboardpowered.impl.entity.CraftAnimals;
 
 public class CraftPolarBear extends CraftAnimals implements PolarBear {
 

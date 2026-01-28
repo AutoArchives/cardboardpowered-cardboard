@@ -50,12 +50,11 @@ import org.bukkit.util.Vector;
 import com.destroystokyo.paper.block.BlockSoundGroup;
 import com.google.common.base.Preconditions;
 
-import org.cardboardpowered.impl.block.*;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 public class CraftBlock implements Block {
 
@@ -85,7 +84,7 @@ public class CraftBlock implements Block {
 
     @Override
     public World getWorld() {
-        return ((IMixinWorld)world).getCraftWorld();
+        return ((LevelBridge)world).getCraftWorld();
     }
 
     public CraftWorld getCraftWorld() {

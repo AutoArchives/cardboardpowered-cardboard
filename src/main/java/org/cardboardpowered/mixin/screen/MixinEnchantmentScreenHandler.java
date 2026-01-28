@@ -2,12 +2,12 @@ package org.cardboardpowered.mixin.screen;
 
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.EnchantmentMenu;
-import org.bukkit.entity.Player;
 import org.cardboardpowered.impl.inventory.CardboardEnchantingInventory;
-import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.cardboardpowered.mixin.world.inventory.AbstractContainerMenuMixin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -15,7 +15,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 // MixinInfo(events = {"PrepareItemEnchantEvent", "EnchantItemEvent"})
 @Mixin(EnchantmentMenu.class)
@@ -33,12 +34,12 @@ public class MixinEnchantmentScreenHandler extends AbstractContainerMenuMixin {
     @Shadow public int[] enchantClue;
     @Shadow public int[] levelClue;
 
-    private CardboardInventoryView bukkitEntity = null;
-    private Player player;
+    private CraftInventoryView bukkitEntity = null;
+    private org.bukkit.entity.Player player;
 
     @Inject(method = "<init>(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/inventory/ContainerLevelAccess;)V", at = @At("TAIL"))
     public void setPlayerInv(int i, Inventory playerinventory, ContainerLevelAccess containeraccesss, CallbackInfo ci) {
-        this.player = (Player)((IMixinEntity)playerinventory.player).getBukkitEntity();
+        this.player = (org.bukkit.entity.Player)((EntityBridge)playerinventory.player).getBukkitEntity();
     }
 
     // TODO: Fix this!
@@ -210,13 +211,16 @@ public class MixinEnchantmentScreenHandler extends AbstractContainerMenuMixin {
     //public List<EnchantmentLevelEntry> generateEnchantments(ItemStack itemstack, int i, int j) {return null;}
 
     @Override
-    public CardboardInventoryView getBukkitView() {
+    public CraftInventoryView getBukkitView() {
         if (bukkitEntity != null) return bukkitEntity;
 
         CardboardEnchantingInventory inventory = new CardboardEnchantingInventory(this.enchantSlots);
-        bukkitEntity = new CardboardInventoryView(this.player, inventory, (EnchantmentMenu)(Object)this);
+        bukkitEntity = new CraftInventoryView(this.player, inventory, (EnchantmentMenu)(Object)this);
         return bukkitEntity;
     }
 
-
+    @Inject(method = "stillValid", at = @At("HEAD"), cancellable = true)
+    public void stillValidCraftBukkit(Player player, CallbackInfoReturnable<Boolean> cir) {
+        if (!this.checkReachable) cir.setReturnValue(true); // CraftBukkit
+    }
 }

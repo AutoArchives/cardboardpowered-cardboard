@@ -17,8 +17,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 @MixinInfo(events = {"EntityPortalEnterEvent"})
 @Mixin(EndPortalBlock.class)
@@ -27,7 +27,7 @@ public class MixinEndPortalBlock {
     @Inject(at = @At("HEAD"), method = "entityInside")
     public void callBukkitEvent_EntityPortalEnterEvent(BlockState state, Level world, BlockPos pos, Entity entity, InsideBlockEffectApplier ech, boolean b, CallbackInfo ci) {
         if (world instanceof ServerLevel && !entity.isPassenger() && !entity.isVehicle() && entity.canUsePortal(true) && Shapes.joinIsNotEmpty(Shapes.create(entity.getBoundingBox().move(-pos.getX(), -pos.getY(), -pos.getZ())), state.getShape(world, pos), BooleanOp.AND)) {
-            EntityPortalEnterEvent event = new EntityPortalEnterEvent(((IMixinEntity)entity).getBukkitEntity(), new org.bukkit.Location(((IMixinWorld)world).getCraftWorld(), pos.getX(), pos.getY(), pos.getZ()));
+            EntityPortalEnterEvent event = new EntityPortalEnterEvent(((EntityBridge)entity).getBukkitEntity(), new org.bukkit.Location(((LevelBridge)world).getCraftWorld(), pos.getX(), pos.getY(), pos.getZ()));
             Bukkit.getPluginManager().callEvent(event);
         }
     }

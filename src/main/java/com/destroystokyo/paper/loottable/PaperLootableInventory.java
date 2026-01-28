@@ -1,6 +1,6 @@
 package com.destroystokyo.paper.loottable;
 
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 import java.util.UUID;
 import net.minecraft.world.level.Level;
@@ -16,7 +16,7 @@ Lootable {
     public Level getNMSWorld();
 
     default public org.bukkit.World getBukkitWorld() {
-        return ((IMixinWorld)this.getNMSWorld()).getCraftWorld();
+        return ((LevelBridge)this.getNMSWorld()).getCraftWorld();
     }
 
     default public boolean isRefillEnabled() {

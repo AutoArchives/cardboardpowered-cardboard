@@ -3,6 +3,7 @@ package org.cardboardpowered.impl.entity;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.item.trading.Merchant;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftAgeable;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftMerchant;
 import org.bukkit.entity.AbstractVillager;

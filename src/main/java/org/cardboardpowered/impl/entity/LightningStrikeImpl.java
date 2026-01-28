@@ -11,7 +11,7 @@ import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 
 public class LightningStrikeImpl extends CraftEntity implements LightningStrike {
 
@@ -116,7 +116,7 @@ public class LightningStrikeImpl extends CraftEntity implements LightningStrike 
 	@Override
 	public Player getCausingPlayer() {
 		ServerPlayer player = this.getHandle().getCause();
-        return player != null ? (Player) ((IMixinEntity)player).getBukkitEntity() : null;
+        return player != null ? (Player) ((EntityBridge)player).getBukkitEntity() : null;
 	}
 
 }

@@ -12,9 +12,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
-import com.javazilla.bukkitfabric.Utils;
 import com.mojang.logging.LogUtils;
 
+import io.papermc.paper.adventure.PaperAdventure;
 import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
 
 import me.isaiah.common.ICommonMod;
@@ -86,7 +86,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.Validate;
-import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -106,7 +105,6 @@ import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey.Specific;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKeyType;
 import org.bukkit.craftbukkit.inventory.components.CraftCustomModelDataComponent;
 import org.bukkit.craftbukkit.inventory.components.CraftEquippableComponent;
 import org.bukkit.craftbukkit.inventory.components.CraftToolComponent;
@@ -136,12 +134,11 @@ import org.bukkit.inventory.meta.components.UseCooldownComponent;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.tag.DamageTypeTags;
-import org.cardboardpowered.adventure.CardboardAdventure;
-import org.cardboardpowered.impl.CardboardEnchantment;
+import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import org.cardboardpowered.interfaces.IComponentChanges;
+import org.cardboardpowered.bridge.core.component.DataComponentPatch_BuilderBridge;
 
 @SuppressWarnings({"deprecation", "rawtypes"})
 @DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
@@ -820,7 +817,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             Holder<net.minecraft.world.item.enchantment.Enchantment> id = entry.getKey();
             int level = entry.getIntValue();
 
-            Enchantment enchant = CardboardEnchantment.minecraftHolderToBukkit(id);
+            Enchantment enchant = CraftEnchantment.minecraftHolderToBukkit(id);
             if (enchant != null) {
                 enchantments.put(enchant, level);
             }
@@ -1115,7 +1112,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                 RegistryOps<net.minecraft.nbt.Tag> ops = ICommonMod.getIServer().getMinecraft().registryAccess().createSerializationContext(NbtOps.INSTANCE);
 
                 
-                ((IComponentChanges)(Object)this.unhandledTags.build()).copy(DataComponentPatch.CODEC.parse(ops, unhandledTag).result().get());
+                ((DataComponentPatch_BuilderBridge)(Object)this.unhandledTags.build()).copy(DataComponentPatch.CODEC.parse(ops, unhandledTag).result().get());
                 
                 /*NbtCompound unhandledTag = NbtIo.readCompressed(buf, NbtSizeTracker.ofUnlimitedBytes());
                 ComponentChanges patch = (ComponentChanges)ComponentChanges.CODEC.parse(ops, unhandledTag).result().get();
@@ -1648,7 +1645,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         ItemEnchantments.Mutable list = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
 
         for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
-            list.set(CardboardEnchantment.bukkitToMinecraftHolder(entry.getKey()), entry.getValue());
+            list.set(CraftEnchantment.bukkitToMinecraftHolder(entry.getKey()), entry.getValue());
         }
 
         // TODO: 1.20.6
@@ -3116,12 +3113,12 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
 	@Override
 	public @NotNull Component itemName() {
-		return CardboardAdventure.asAdventure(this.itemName);
+		return PaperAdventure.asAdventure(this.itemName);
 	}
 
 	@Override
 	public void itemName(Component name) {
-		this.itemName = CardboardAdventure.asVanilla(name);
+		this.itemName = PaperAdventure.asVanilla(name);
 	}
 
 	@Override
@@ -3283,12 +3280,12 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
 	@Override
 	public @Nullable Component customName() {
-		 return displayName == null ? null : CardboardAdventure.asAdventure(displayName);
+		 return displayName == null ? null : PaperAdventure.asAdventure(displayName);
 	}
 
 	@Override
 	public void customName(@Nullable Component customName) {
-		this.displayName = customName == null ? null : CardboardAdventure.asVanilla(customName);
+		this.displayName = customName == null ? null : PaperAdventure.asVanilla(customName);
 	}
 
 	@Override

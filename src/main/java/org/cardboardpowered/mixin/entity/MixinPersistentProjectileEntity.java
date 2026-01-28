@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.interfaces.IMixinPersistentProjectileEntity;
 
 @Mixin(AbstractArrow.class)
@@ -58,7 +58,7 @@ public abstract class MixinPersistentProjectileEntity implements IMixinPersisten
             ItemStack itemstack = this.getPickupItem();
             if (this.pickup == Pickup.ALLOWED && !itemstack.isEmpty()) {
                 ItemEntity item = new ItemEntity(getBF().level(), getBF().getX(), getBF().getY(), getBF().getZ(), itemstack);
-                PlayerPickupArrowEvent event = new PlayerPickupArrowEvent((org.bukkit.entity.Player) ((IMixinEntity)entityhuman).getBukkitEntity(), new ItemEntityImpl(CraftServer.INSTANCE, getBF(), item), (org.bukkit.entity.AbstractArrow) ((IMixinEntity)this).getBukkitEntity());
+                PlayerPickupArrowEvent event = new PlayerPickupArrowEvent((org.bukkit.entity.Player) ((EntityBridge)entityhuman).getBukkitEntity(), new ItemEntityImpl(CraftServer.INSTANCE, getBF(), item), (org.bukkit.entity.AbstractArrow) ((EntityBridge)this).getBukkitEntity());
                 Bukkit.getServer().getPluginManager().callEvent(event);
 
                 if (event.isCancelled()) {

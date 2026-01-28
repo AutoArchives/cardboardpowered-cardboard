@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.block;
 
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.event.block.BlockPistonEvent;
@@ -10,7 +10,6 @@ import org.cardboardpowered.extras.DualBlockList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
@@ -40,7 +39,7 @@ public class MixinPistonBlock {
     public void cardboard_doPistonEvents(Level world, BlockPos pos, Direction dir, boolean retract, CallbackInfoReturnable<Boolean> ci,
     		BlockPos blockPos, PistonStructureResolver helper) {
 
-        final org.bukkit.block.Block bblock = ((IMixinWorld)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
+        final org.bukkit.block.Block bblock = ((LevelBridge)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
 
 		// TODO: Fix null
 		//if (null == cardboard_ph) {

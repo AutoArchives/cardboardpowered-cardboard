@@ -23,7 +23,7 @@ import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import net.minecraft.server.level.ServerLevel.EntityCallbacks;
 import net.minecraft.world.entity.Entity;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -34,14 +34,14 @@ public class MixinServerEntityHandler {
 
     @Inject(at = @At("TAIL"), method = "onTrackingEnd(Lnet/minecraft/world/entity/Entity;)V")
     public void unvalidateEntityBF(Entity entity, CallbackInfo ci) {
-        IMixinEntity bf = (IMixinEntity) entity;
+        EntityBridge bf = (EntityBridge) entity;
         bf.setValid(false);
         CraftEventFactory.callEvent( new EntityRemoveFromWorldEvent(bf.getBukkitEntity(), entity.level().getCraftWorld()) );
     }
 
     @Inject(at = @At("TAIL"), method = "onTickingStart(Lnet/minecraft/world/entity/Entity;)V")
     public void validateEntityBF(Entity entity, CallbackInfo ci) {
-        IMixinEntity bf = (IMixinEntity) entity;
+        EntityBridge bf = (EntityBridge) entity;
         bf.setValid(true);
         bf.cb$setInWorld(true);
         

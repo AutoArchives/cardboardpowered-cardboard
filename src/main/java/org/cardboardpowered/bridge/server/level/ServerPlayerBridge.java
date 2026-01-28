@@ -26,12 +26,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.portal.TeleportTransition.PostTeleportTransition;
 import org.bukkit.event.player.PlayerRespawnEvent;
-import org.cardboardpowered.impl.entity.CraftPlayer;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.jetbrains.annotations.Nullable;
 
-public interface ServerPlayerBridge extends IMixinEntity {
+public interface ServerPlayerBridge extends EntityBridge {
 
     void reset();
 
@@ -44,10 +43,6 @@ public interface ServerPlayerBridge extends IMixinEntity {
     void setConnectionBF(Connection connection);
 
     Connection getConnectionBF();
-
-    void setBukkit(CraftPlayer plr);
-
-    public CraftPlayer getBukkit();
 
 	void spawnIn(ServerLevel worldserver1);
 

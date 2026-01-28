@@ -18,11 +18,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import org.cardboardpowered.interfaces.IMixinArmorStandEntity;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.decoration.ArmorStandBridge;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 
 @Mixin(net.minecraft.world.entity.decoration.ArmorStand.class)
-public class MixinArmorStandEntity extends EntityMixin implements IMixinArmorStandEntity {
+public class MixinArmorStandEntity extends EntityMixin implements ArmorStandBridge {
 
     public boolean canMove = true; // Paper
 
@@ -82,8 +82,8 @@ public class MixinArmorStandEntity extends EntityMixin implements IMixinArmorSta
         org.bukkit.inventory.ItemStack armorStandItem = CraftItemStack.asCraftMirror(itemStack1);
         org.bukkit.inventory.ItemStack playerHeldItem = CraftItemStack.asCraftMirror(itemStack);
 
-        Player player = (Player) ((IMixinEntity) playerEntity).getBukkitEntity();
-        ArmorStand self = (ArmorStand) ((IMixinEntity) this).getBukkitEntity();
+        Player player = (Player) ((EntityBridge) playerEntity).getBukkitEntity();
+        ArmorStand self = (ArmorStand) ((EntityBridge) this).getBukkitEntity();
 
         EquipmentSlot slot = CraftEquipmentSlot.getSlot(slotType);
         

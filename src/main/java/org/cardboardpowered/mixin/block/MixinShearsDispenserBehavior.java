@@ -1,8 +1,8 @@
 package org.cardboardpowered.mixin.block;
 
 import com.google.common.collect.Lists;
-import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 import java.util.Collections;
 import java.util.List;
 import net.minecraft.core.dispenser.BlockSource;
@@ -36,7 +36,7 @@ public class MixinShearsDispenserBehavior {
 
     @Inject(at = @At("HEAD"), method = "execute")
     protected void cardboard_dispenseSilently(BlockSource pointer, ItemStack stack, CallbackInfoReturnable<ItemStack> ci) {
-        cardboard_block = ((IMixinWorld)pointer.level()).getCraftWorld().getBlockAt(pointer.pos().getX(), pointer.pos().getY(), pointer.pos().getZ());
+        cardboard_block = ((LevelBridge)pointer.level()).getCraftWorld().getBlockAt(pointer.pos().getX(), pointer.pos().getY(), pointer.pos().getZ());
         cardboard_saved = CraftItemStack.asCraftMirror(stack);
 
         BlockDispenseEvent event = new BlockDispenseEvent(cardboard_block, cardboard_saved.clone(), new org.bukkit.util.Vector(0, 0, 0));
@@ -80,7 +80,7 @@ public class MixinShearsDispenserBehavior {
 
     	BlockShearEntityEvent bse = new BlockShearEntityEvent(
     			dispenser,
-    			((IMixinEntity)animal).getBukkitEntity(),
+    			((EntityBridge)animal).getBukkitEntity(),
     			is,
     			Lists.transform(drops, CraftItemStack::asCraftMirror)
     	);

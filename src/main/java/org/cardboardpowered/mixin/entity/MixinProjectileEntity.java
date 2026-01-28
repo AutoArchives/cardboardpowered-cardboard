@@ -14,7 +14,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 
 @Mixin(Projectile.class)
 public class MixinProjectileEntity extends EntityMixin {
@@ -39,7 +39,7 @@ public class MixinProjectileEntity extends EntityMixin {
         if (fillCache) {
             this.getOwner();
         }
-        if ((owner = this.getOwner()) != null && this.projectileSource == null && (craftEntity = ((IMixinEntity)owner).getBukkitEntity()) instanceof ProjectileSource) {
+        if ((owner = this.getOwner()) != null && this.projectileSource == null && (craftEntity = ((EntityBridge)owner).getBukkitEntity()) instanceof ProjectileSource) {
             ProjectileSource source = (ProjectileSource)craftEntity;
             this.projectileSource = source;
         }

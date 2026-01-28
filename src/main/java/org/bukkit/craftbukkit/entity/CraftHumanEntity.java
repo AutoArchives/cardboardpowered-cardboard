@@ -75,7 +75,7 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryDoubleChest;
 import org.bukkit.craftbukkit.inventory.CraftInventoryLectern;
 import org.cardboardpowered.impl.inventory.CardboardPlayerInventory;
 import org.bukkit.craftbukkit.inventory.CraftRecipe;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.interfaces.IMixinLivingEntity;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
@@ -191,7 +191,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
         if (getHandle().fishing == null) {
             return null;
         }
-        return (org.bukkit.entity.FishHook) ((IMixinEntity) getHandle().fishing).getBukkitEntity();
+        return (org.bukkit.entity.FishHook) ((EntityBridge) getHandle().fishing).getBukkitEntity();
     }
 
     @Override
@@ -337,7 +337,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
     @Override
     public InventoryView getOpenInventory() {
-        return this.getHandle().containerMenu.getBukkitView();
+        return ((AbstractContainerMenuBridge)this.getHandle().containerMenu).getBukkitView();
     }
 
     @Override
@@ -381,7 +381,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
             return null;
         }
         ((AbstractContainerMenuBridge)this.getHandle().containerMenu).cardboard$setCheckReachable(false);
-        return this.getHandle().containerMenu.getBukkitView();
+        return ((AbstractContainerMenuBridge)this.getHandle().containerMenu).getBukkitView();
     }
 
     private static void openCustomInventory(Inventory inventory, ServerPlayer player, MenuType<?> windowType) {
@@ -396,8 +396,8 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
         if (container == null) return;
 
         //String title = container.getBukkitView().getTitle(); // Paper - comment
-        net.kyori.adventure.text.Component adventure$title = container.getBukkitView().title(); // Paper
-        if (adventure$title == null) adventure$title = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(container.getBukkitView().getTitle()); // Paper
+        net.kyori.adventure.text.Component adventure$title = ((AbstractContainerMenuBridge)container).getBukkitView().title(); // Paper
+        if (adventure$title == null) adventure$title = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(((AbstractContainerMenuBridge)container).getBukkitView().getTitle()); // Paper
         if (result.getFirst() != null) adventure$title = result.getFirst(); // Paper - Add titleOverride to InventoryOpenEvent
 
         //player.connection.send(new ClientboundOpenScreenPacket(container.containerId, windowType, CraftChatMessage.fromString(title)[0])); // Paper - comment
@@ -421,7 +421,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
         if (force) {
             ((AbstractContainerMenuBridge)this.getHandle().containerMenu).cardboard$setCheckReachable(false);
         }
-        return this.getHandle().containerMenu.getBukkitView();
+        return ((AbstractContainerMenuBridge)this.getHandle().containerMenu).getBukkitView();
     }
 
     @Override
@@ -454,7 +454,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
         if (force) {
             ((AbstractContainerMenuBridge)this.getHandle().containerMenu).cardboard$setCheckReachable(false);
         }
-        return this.getHandle().containerMenu.getBukkitView();
+        return ((AbstractContainerMenuBridge)this.getHandle().containerMenu).getBukkitView();
     }
 
     @Override
@@ -545,7 +545,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
         mcMerchant.setTradingPlayer(this.getHandle());
         mcMerchant.openTradingScreen(this.getHandle(), name, level);
 
-        return this.getHandle().containerMenu.getBukkitView();
+        return ((AbstractContainerMenuBridge)this.getHandle().containerMenu).getBukkitView();
     }
 
     @Override
@@ -607,7 +607,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
         }
         this.getHandle().openMenu(block.getMenuProvider(null, this.getHandle().level(), new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ())));
         ((AbstractContainerMenuBridge)this.getHandle().containerMenu).cardboard$setCheckReachable(!force);
-        return this.getHandle().containerMenu.getBukkitView();
+        return ((AbstractContainerMenuBridge)this.getHandle().containerMenu).getBukkitView();
     }
 
     @Override
@@ -824,7 +824,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
         // This will return the itemstack back to its original amount in case events fail
         final ItemEntity droppedEntity = ((IMixinLivingEntity)this.getHandle()).cardboard$drop(dropContent, throwRandomly, true, true, entityOperation);
-        return droppedEntity == null ? null : (Item) ((IMixinEntity)droppedEntity).getBukkitEntity();
+        return droppedEntity == null ? null : (Item) ((EntityBridge)droppedEntity).getBukkitEntity();
     }
 
     @Override
@@ -839,7 +839,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
         // Do *not* call the event here, the item is not in the player inventory, they are not dropping it / do not need recovering logic (which would be a dupe).
         final ItemEntity droppedEntity = ((IMixinLivingEntity)this.getHandle()).cardboard$drop(nmsItemStack, throwRandomly, true, false, entityOperation);
-        return droppedEntity == null ? null : (Item) ((IMixinEntity)droppedEntity).getBukkitEntity();
+        return droppedEntity == null ? null : (Item) ((EntityBridge)droppedEntity).getBukkitEntity();
     }
 
     @Override
@@ -928,7 +928,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
         FireworkRocketEntity fireworks = new FireworkRocketEntity(this.getHandle().level(), CraftItemStack.asNMSCopy(fireworkItemStack), this.getHandle());
         boolean success = this.getHandle().level().addFreshEntity(fireworks);
-        return success ? (Firework) ((IMixinEntity)fireworks).getBukkitEntity() : null;
+        return success ? (Firework) ((EntityBridge)fireworks).getBukkitEntity() : null;
     }
 
     @Override

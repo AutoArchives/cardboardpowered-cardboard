@@ -1,8 +1,8 @@
 package org.cardboardpowered.impl.entity;
 
 import com.google.common.base.Preconditions;
-import org.cardboardpowered.interfaces.ICreeperEntity;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.monster.CreeperBridge;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Creeper;
@@ -20,26 +20,26 @@ public class CreeperImpl extends CraftMonster implements Creeper {
 
     @Override
     public boolean isPowered() {
-        return ((ICreeperEntity)getHandle()).isPoweredBF();
+        return ((CreeperBridge)getHandle()).isPoweredBF();
     }
 
     @Override
     public void setPowered(boolean powered) {
         CraftServer server = this.server;
-        Creeper entity = (Creeper) ((IMixinEntity)this.getHandle()).getBukkitEntity();
+        Creeper entity = (Creeper) ((EntityBridge)this.getHandle()).getBukkitEntity();
 
         if (powered) {
             CreeperPowerEvent event = new CreeperPowerEvent(entity, CreeperPowerEvent.PowerCause.SET_ON);
             server.getPluginManager().callEvent(event);
 
             if (!event.isCancelled())
-                ((ICreeperEntity)getHandle()).setPowered(true);
+                ((CreeperBridge)getHandle()).setPowered(true);
         } else {
             CreeperPowerEvent event = new CreeperPowerEvent(entity, CreeperPowerEvent.PowerCause.SET_OFF);
             server.getPluginManager().callEvent(event);
 
             if (!event.isCancelled())
-                ((ICreeperEntity)getHandle()).setPowered(false);
+                ((CreeperBridge)getHandle()).setPowered(false);
         }
     }
 
@@ -47,29 +47,29 @@ public class CreeperImpl extends CraftMonster implements Creeper {
     public void setMaxFuseTicks(int ticks) {
         Preconditions.checkArgument(ticks >= 0, "ticks < 0");
 
-        ((ICreeperEntity)getHandle()).setFuseTimeBF(ticks);
+        ((CreeperBridge)getHandle()).setFuseTimeBF(ticks);
     }
 
     @Override
     public int getMaxFuseTicks() {
-        return ((ICreeperEntity)getHandle()).getFuseTimeBF();
+        return ((CreeperBridge)getHandle()).getFuseTimeBF();
     }
 
     @Override
     public void setExplosionRadius(int radius) {
         Preconditions.checkArgument(radius >= 0, "radius < 0");
 
-        ((ICreeperEntity)getHandle()).setExplosionRadiusBF(radius);
+        ((CreeperBridge)getHandle()).setExplosionRadiusBF(radius);
     }
 
     @Override
     public int getExplosionRadius() {
-        return ((ICreeperEntity)getHandle()).getExplosionRadiusBF();
+        return ((CreeperBridge)getHandle()).getExplosionRadiusBF();
     }
 
     @Override
     public void explode() {
-        ((ICreeperEntity)getHandle()).explodeBF();
+        ((CreeperBridge)getHandle()).explodeBF();
     }
 
     @Override

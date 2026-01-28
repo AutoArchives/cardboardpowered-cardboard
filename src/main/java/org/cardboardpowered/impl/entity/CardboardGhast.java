@@ -1,6 +1,7 @@
 package org.cardboardpowered.impl.entity;
 
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftMob;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Ghast;
 

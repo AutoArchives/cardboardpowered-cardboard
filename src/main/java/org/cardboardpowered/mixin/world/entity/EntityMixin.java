@@ -18,113 +18,18 @@
 package org.cardboardpowered.mixin.world.entity;
 
 import org.cardboardpowered.interfaces.IMixinCommandOutput;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 // import com.llamalad7.mixinextras.sugar.Local;
 
 import me.isaiah.common.entity.IRemoveReason;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.ExperienceOrb;
-import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.ambient.AmbientCreature;
-import net.minecraft.world.entity.ambient.Bat;
-import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.chicken.Chicken;
-import net.minecraft.world.entity.animal.cow.Cow;
-import net.minecraft.world.entity.animal.cow.MushroomCow;
-import net.minecraft.world.entity.animal.dolphin.Dolphin;
-import net.minecraft.world.entity.animal.equine.AbstractChestedHorse;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
-import net.minecraft.world.entity.animal.equine.Donkey;
-import net.minecraft.world.entity.animal.equine.Horse;
-import net.minecraft.world.entity.animal.equine.Llama;
-import net.minecraft.world.entity.animal.equine.Mule;
-import net.minecraft.world.entity.animal.feline.Cat;
-import net.minecraft.world.entity.animal.feline.Ocelot;
-import net.minecraft.world.entity.animal.fish.AbstractFish;
-import net.minecraft.world.entity.animal.fish.Cod;
-import net.minecraft.world.entity.animal.fish.Pufferfish;
-import net.minecraft.world.entity.animal.fish.Salmon;
-import net.minecraft.world.entity.animal.fish.TropicalFish;
-import net.minecraft.world.entity.animal.fish.WaterAnimal;
-import net.minecraft.world.entity.animal.golem.AbstractGolem;
-import net.minecraft.world.entity.animal.golem.IronGolem;
-import net.minecraft.world.entity.animal.golem.SnowGolem;
-import net.minecraft.world.entity.animal.panda.Panda;
-import net.minecraft.world.entity.animal.parrot.Parrot;
-import net.minecraft.world.entity.animal.pig.Pig;
-import net.minecraft.world.entity.animal.polarbear.PolarBear;
-import net.minecraft.world.entity.animal.squid.Squid;
-import net.minecraft.world.entity.animal.turtle.Turtle;
-import net.minecraft.world.entity.animal.wolf.Wolf;
-import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
-import net.minecraft.world.entity.boss.wither.WitherBoss;
-import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.decoration.HangingEntity;
-import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.item.PrimedTnt;
-import net.minecraft.world.entity.monster.Blaze;
-import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.monster.ElderGuardian;
-import net.minecraft.world.entity.monster.EnderMan;
-import net.minecraft.world.entity.monster.Endermite;
-import net.minecraft.world.entity.monster.Ghast;
-import net.minecraft.world.entity.monster.Giant;
-import net.minecraft.world.entity.monster.Guardian;
-import net.minecraft.world.entity.monster.MagmaCube;
-import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.monster.Phantom;
-import net.minecraft.world.entity.monster.Shulker;
-import net.minecraft.world.entity.monster.Silverfish;
-import net.minecraft.world.entity.monster.Slime;
-import net.minecraft.world.entity.monster.Vex;
-import net.minecraft.world.entity.monster.Witch;
-import net.minecraft.world.entity.monster.illager.AbstractIllager;
-import net.minecraft.world.entity.monster.illager.Evoker;
-import net.minecraft.world.entity.monster.illager.Illusioner;
-import net.minecraft.world.entity.monster.illager.Pillager;
-import net.minecraft.world.entity.monster.illager.SpellcasterIllager;
-import net.minecraft.world.entity.monster.illager.Vindicator;
-import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
-import net.minecraft.world.entity.monster.skeleton.Stray;
-import net.minecraft.world.entity.monster.skeleton.WitherSkeleton;
-import net.minecraft.world.entity.monster.spider.CaveSpider;
-import net.minecraft.world.entity.monster.spider.Spider;
-import net.minecraft.world.entity.monster.zombie.Drowned;
-import net.minecraft.world.entity.monster.zombie.Husk;
-import net.minecraft.world.entity.monster.zombie.Zombie;
-import net.minecraft.world.entity.monster.zombie.ZombieVillager;
-import net.minecraft.world.entity.monster.zombie.ZombifiedPiglin;
-import net.minecraft.world.entity.npc.villager.AbstractVillager;
-import net.minecraft.world.entity.npc.villager.Villager;
-import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.FireworkRocketEntity;
-import net.minecraft.world.entity.projectile.FishingHook;
-import net.minecraft.world.entity.projectile.LlamaSpit;
-import net.minecraft.world.entity.projectile.ThrowableProjectile;
-import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
-import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
-import net.minecraft.world.entity.projectile.hurtingprojectile.AbstractHurtingProjectile;
-import net.minecraft.world.entity.projectile.throwableitemprojectile.AbstractThrownPotion;
-import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
-import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg;
-import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
-import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownExperienceBottle;
-import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.minecart.Minecart;
-import net.minecraft.world.entity.vehicle.minecart.MinecartChest;
-import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
-import net.minecraft.world.entity.vehicle.minecart.MinecartTNT;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -143,7 +48,6 @@ import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDropItemEvent;
 import org.bukkit.event.entity.EntityPoseChangeEvent;
 import org.bukkit.projectiles.ProjectileSource;
-import org.cardboardpowered.impl.entity.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -155,7 +59,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.ArrayList;
 
 @Mixin(Entity.class)
-public abstract class EntityMixin implements IMixinCommandOutput, IMixinEntity {
+public abstract class EntityMixin implements IMixinCommandOutput, EntityBridge {
 
     public CraftEntity bukkitEntity;
     public org.bukkit.projectiles.ProjectileSource projectileSource;
@@ -253,7 +157,7 @@ public abstract class EntityMixin implements IMixinCommandOutput, IMixinEntity {
 
         entityitem.setDefaultPickUpDelay();
 
-        EntityDropItemEvent event = new EntityDropItemEvent(this.getBukkitEntity(), (org.bukkit.entity.Item) ((IMixinEntity)entityitem).getBukkitEntity());
+        EntityDropItemEvent event = new EntityDropItemEvent(this.getBukkitEntity(), (org.bukkit.entity.Item) ((EntityBridge)entityitem).getBukkitEntity());
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled())
             return false;
@@ -288,7 +192,7 @@ public abstract class EntityMixin implements IMixinCommandOutput, IMixinEntity {
     @Inject(at = @At("HEAD"), method = "restoreFrom(Lnet/minecraft/world/entity/Entity;)V")
     public void cardboard$setBukkitHandleForCopy(Entity entity, CallbackInfo ci) {
         // Paper start - Forward CraftEntity in teleport command
-        org.bukkit.craftbukkit.entity.CraftEntity bukkitEntity = ((IMixinEntity)entity).getBukkitEntityRaw();
+        org.bukkit.craftbukkit.entity.CraftEntity bukkitEntity = ((EntityBridge)entity).getBukkitEntityRaw();
         if (bukkitEntity != null) {
             bukkitEntity.setHandle((Entity)(Object)this);
             this.bukkitEntity = bukkitEntity;

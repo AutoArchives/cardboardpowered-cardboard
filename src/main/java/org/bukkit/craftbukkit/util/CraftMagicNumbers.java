@@ -15,6 +15,7 @@ import java.util.function.BooleanSupplier;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
+import io.papermc.paper.adventure.PaperAdventure;
 import org.bukkit.Bukkit;
 import org.bukkit.FeatureFlag;
 import org.bukkit.Fluid;
@@ -57,7 +58,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionType.InternalPotionData;
-import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.CardboardModdedBlock;
 import org.cardboardpowered.impl.CardboardModdedItem;
 import org.cardboardpowered.impl.entity.CraftPlayer;
@@ -723,27 +723,27 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     // Paper start
     @Override
     public net.kyori.adventure.text.flattener.ComponentFlattener componentFlattener() {
-        return CardboardAdventure.FLATTENER;
+        return PaperAdventure.FLATTENER;
     }
 
     @Override
     public net.kyori.adventure.text.serializer.gson.GsonComponentSerializer colorDownsamplingGsonComponentSerializer() {
-        return CardboardAdventure.COLOR_DOWNSAMPLING_GSON;
+        return net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.colorDownsamplingGson();
     }
 
     @Override
     public net.kyori.adventure.text.serializer.gson.GsonComponentSerializer gsonComponentSerializer() {
-        return CardboardAdventure.GSON;
+        return net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson();
     }
 
     @Override
     public net.kyori.adventure.text.serializer.plain.PlainComponentSerializer plainComponentSerializer() {
-        return CardboardAdventure.PLAIN;
+        return PaperAdventure.PLAIN;
     }
 
     @Override
     public net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer legacyComponentSerializer() {
-        return CardboardAdventure.LEGACY_SECTION_UXRC;
+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection();
     }
     // Paper end
 
@@ -870,10 +870,10 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 	
 	// 1.20.4 API:
 
-	@Override
-	public String getTranslationKey(Attribute attribute) {
-        return CraftAttribute.bukkitToMinecraft(attribute).getDescriptionId();
-	}
+    @Override
+    public String getTranslationKey(final Attribute attribute) {
+        return attribute.getTranslationKey();
+    }
 
 	// @Override
 	public @Nullable DamageEffect getDamageEffect(String key) {
@@ -916,7 +916,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         		),
         		player == null ? null : ((CraftPlayer)player).getHandle(), default_type
         );
-        return lines.stream().map(CardboardAdventure::asAdventure).toList();
+        return lines.stream().map(PaperAdventure::asAdventure).toList();
     }
 	
 	@Override

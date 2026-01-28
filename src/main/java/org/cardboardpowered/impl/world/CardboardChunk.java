@@ -45,11 +45,10 @@ import org.jetbrains.annotations.NotNull;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import org.cardboardpowered.interfaces.IMixinChunk;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 import com.mojang.serialization.Codec;
 
 import io.papermc.paper.util.CoordinateUtils;
-import me.isaiah.common.cmixin.IMixinHeightmap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -106,7 +105,7 @@ public class CardboardChunk implements Chunk {
 
 	@Override
     public CraftWorld getWorld() {
-        return ((IMixinWorld)worldServer.getLevel()).getCraftWorld();
+        return ((LevelBridge)worldServer.getLevel()).getCraftWorld();
     }
 
     public CraftWorld getCraftWorld() {
@@ -185,7 +184,7 @@ public class CardboardChunk implements Chunk {
             if (!(obj instanceof BlockPos)) continue;
 
             BlockPos position = (BlockPos) obj;
-            entities[index++] = ((IMixinWorld)(Object)worldServer).getCraftWorld().getBlockAt(position.getX(), position.getY(), position.getZ()).getState();
+            entities[index++] = ((LevelBridge)(Object)worldServer).getCraftWorld().getBlockAt(position.getX(), position.getY(), position.getZ()).getState();
         }
 
         return entities;
@@ -556,7 +555,7 @@ public class CardboardChunk implements Chunk {
         ArrayList<BlockState> entities = new ArrayList<BlockState>();
 
         for (BlockPos position : ((IMixinChunk)chunk).cardboard_getBlockEntities().keySet()) {
-            Block block = ((IMixinWorld)this.worldServer).getCraftWorld().getBlockAt(position.getX(), position.getY(), position.getZ());
+            Block block = ((LevelBridge)this.worldServer).getCraftWorld().getBlockAt(position.getX(), position.getY(), position.getZ());
             if (!blockPredicate.test(block)) continue;
             entities.add(block.getState(useSnapshot));
         }

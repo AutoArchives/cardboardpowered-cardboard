@@ -13,7 +13,7 @@ import org.bukkit.advancement.AdvancementRequirements;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.cardboardpowered.bridge.advancements.DisplayInfoBridge;
-import org.cardboardpowered.interfaces.IMixinAdvancement;
+import org.cardboardpowered.bridge.advancements.AdvancementHolderBridge;
 import org.jetbrains.annotations.Nullable;
 
 public class CraftAdvancement implements org.bukkit.advancement.Advancement {
@@ -71,7 +71,7 @@ public class CraftAdvancement implements org.bukkit.advancement.Advancement {
 		if (entry.isEmpty()) {
 			return null;
 		}
-		return ((IMixinAdvancement) (Object) entry.get()).toBukkit();
+		return ((AdvancementHolderBridge) (Object) entry.get()).toBukkit();
 	}
 
 	@Override
@@ -80,7 +80,7 @@ public class CraftAdvancement implements org.bukkit.advancement.Advancement {
 		final net.minecraft.advancements.AdvancementNode advancementNode = cardboard$getAdvancements().tree().get(this.handle);
 		if (advancementNode != null) {
 			for (final net.minecraft.advancements.AdvancementNode child : advancementNode.children()) {
-				children.add(((IMixinAdvancement)(Object)child.holder()).toBukkit());
+				children.add(((AdvancementHolderBridge)(Object)child.holder()).toBukkit());
 			}
 		}
 		return children.build();
@@ -91,6 +91,6 @@ public class CraftAdvancement implements org.bukkit.advancement.Advancement {
 		final net.minecraft.advancements.AdvancementNode advancementNode = cardboard$getAdvancements().tree().get(this.handle);
 		AdvancementNode root = java.util.Objects.requireNonNull(advancementNode, "could not find internal advancement node for advancement " + this.handle.id()).root();
 
-		return ((IMixinAdvancement)(Object)root.holder()).toBukkit();
+		return ((AdvancementHolderBridge)(Object)root.holder()).toBukkit();
 	}
 }

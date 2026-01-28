@@ -72,7 +72,7 @@ public class MixinServerScoreboard extends Scoreboard {
     @Overwrite
     public void startTrackingObjective(Objective objective) {
         List<Packet<?>> list = ((ServerScoreboard)(Object)this).getStartTrackingPackets(objective);
-        for (ServerPlayer entityplayer : CraftServer.INSTANCE.getHandle().getPlayerList().getPlayers()) {
+        for (ServerPlayer entityplayer : CraftServer.INSTANCE.getHandle().getPlayers()) {
             if (((CraftPlayer)((ServerPlayerBridge)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue;
             for (Packet<?> packet : list) {
                 entityplayer.connection.send(packet);
@@ -88,7 +88,7 @@ public class MixinServerScoreboard extends Scoreboard {
     @Overwrite
     public void stopTrackingObjective(Objective objective) {
         List<Packet<?>> list = ((ServerScoreboard)(Object)this).getStopTrackingPackets(objective);
-        for (ServerPlayer entityplayer : CraftServer.INSTANCE.getHandle().getPlayerList().getPlayers()) {
+        for (ServerPlayer entityplayer : CraftServer.INSTANCE.getHandle().getPlayers()) {
             if (((CraftPlayer)((ServerPlayerBridge)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != (ServerScoreboard)(Object)this) continue;
             for (Packet<?> packet : list) {
                 entityplayer.connection.send(packet);
@@ -102,7 +102,7 @@ public class MixinServerScoreboard extends Scoreboard {
      * @reason bukkitize scoreboard
      */
     private void broadcastAll(Packet packet) {
-        for (ServerPlayer entityplayer : CraftServer.INSTANCE.getHandle().getPlayerList().players) {
+        for (ServerPlayer entityplayer : CraftServer.INSTANCE.getHandle().players) {
             if (((CraftPlayer)((ServerPlayerBridge)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != this) continue;
             entityplayer.connection.send(packet);
         }

@@ -5,7 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 import me.isaiah.common.cmixin.IMixinBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -47,11 +47,11 @@ public final class CapturedBlockState extends CraftBlockState {
     }
 
     public static CapturedBlockState getBlockState(Level world, BlockPos pos, int flag) {
-        return new CapturedBlockState(((IMixinWorld)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), flag, false);
+        return new CapturedBlockState(((LevelBridge)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), flag, false);
     }
 
     public static CapturedBlockState getTreeBlockState(Level world, BlockPos pos, int flag) {
-        return new CapturedBlockState(((IMixinWorld)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), flag, true);
+        return new CapturedBlockState(((LevelBridge)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), flag, true);
     }
 
 }

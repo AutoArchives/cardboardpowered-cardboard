@@ -4,7 +4,6 @@ import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Chicken;
 import org.bukkit.entity.EntityType;
-import org.cardboardpowered.impl.entity.CraftAnimals;
 
 import io.papermc.paper.registry.HolderableBase;
 import net.minecraft.core.Holder;

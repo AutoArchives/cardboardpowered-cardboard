@@ -2,10 +2,8 @@ package com.destroystokyo.paper.profile;
 
 // import com.destroystokyo.paper.PaperConfig;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import org.cardboardpowered.interfaces.IUserCache;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;

@@ -7,7 +7,7 @@ import org.cardboardpowered.impl.entity.LivingEntityImpl;
 import org.bukkit.entity.Projectile;
 import org.bukkit.projectiles.ProjectileSource;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 
 public abstract class CraftProjectile extends AbstractProjectile implements Projectile {
 
@@ -17,14 +17,14 @@ public abstract class CraftProjectile extends AbstractProjectile implements Proj
 
     @Override
     public ProjectileSource getShooter() {
-        return ((IMixinEntity)getHandle()).getProjectileSourceBukkit();
+        return ((EntityBridge)getHandle()).getProjectileSourceBukkit();
     }
 
     @Override
     public void setShooter(ProjectileSource shooter) {
         if (shooter instanceof LivingEntityImpl) getHandle().setOwner((LivingEntity) ((LivingEntityImpl) shooter).entity);
         else getHandle().setOwner(null);
-        ((IMixinEntity)getHandle()).setProjectileSourceBukkit(shooter);
+        ((EntityBridge)getHandle()).setProjectileSourceBukkit(shooter);
     }
 
     @Override

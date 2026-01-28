@@ -1,19 +1,13 @@
 package org.cardboardpowered.mixin.network;
 
-import java.util.UUID;
-
-import org.cardboardpowered.interfaces.IGameMessagePacket;
+import org.cardboardpowered.bridge.network.protocol.game.ClientboundSystemChatPacketBridge;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 
 @Mixin(ClientboundSystemChatPacket.class)
-public class MixinGameMessageS2CPacket implements IGameMessagePacket {
+public class MixinGameMessageS2CPacket implements ClientboundSystemChatPacketBridge {
 
     //@Shadow private Text message;
     //@Shadow private UUID sender;

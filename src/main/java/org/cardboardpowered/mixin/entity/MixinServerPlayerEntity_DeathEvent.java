@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.world.ContainerBridge;
 import com.mojang.authlib.GameProfile;
 
@@ -83,13 +83,13 @@ public abstract class MixinServerPlayerEntity_DeathEvent extends Player {
         // SPIGOT-5071: manually add player loot tables (SPIGOT-5195 - ignores keepInventory rule)
         this.dropFromLootTable(cb$this().level(), damageSource, cb$this().lastHurtByPlayerMemoryTime > 0);
 
-        ((IMixinEntity)(Object)this).cardboard_getDrops();
+        ((EntityBridge)(Object)this).cardboard_getDrops();
 
-        for (org.bukkit.inventory.ItemStack item : ((IMixinEntity)(Object)this).cardboard_getDrops()) {
+        for (org.bukkit.inventory.ItemStack item : ((EntityBridge)(Object)this).cardboard_getDrops()) {
             loot.add(item);
         }
         // SPIGOT-5188: make sure to clear
-        ((IMixinEntity)(Object)this).cardboard_getDrops().clear();
+        ((EntityBridge)(Object)this).cardboard_getDrops().clear();
 
         Component defaultMessage = cb$this().getCombatTracker().getDeathMessage();
         String deathmessage = defaultMessage.getString();

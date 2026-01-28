@@ -21,8 +21,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.destroystokyo.paper.event.entity.ThrownEggHatchEvent;
-import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 @MixinInfo(events = {"ThrownEggHatchEvent", "PlayerEggThrowEvent"})
 @Mixin(value = ThrownEgg.class, priority = 999)
@@ -46,7 +46,7 @@ public abstract class MixinEggEntity {
 
             Entity shooter = egg.getOwner();
             if (shooter instanceof ServerPlayer) {
-                PlayerEggThrowEvent event = new PlayerEggThrowEvent((Player) ((IMixinEntity)shooter).getBukkitEntity(), (org.bukkit.entity.Egg) ((IMixinEntity)egg).getBukkitEntity(), hatching, b0, hatchingType);
+                PlayerEggThrowEvent event = new PlayerEggThrowEvent((Player) ((EntityBridge)shooter).getBukkitEntity(), (org.bukkit.entity.Egg) ((EntityBridge)egg).getBukkitEntity(), hatching, b0, hatchingType);
                 CraftServer.INSTANCE.getPluginManager().callEvent(event);
 
                 b0 = event.getNumHatches();
@@ -55,7 +55,7 @@ public abstract class MixinEggEntity {
             }
 
             // Paper start
-            ThrownEggHatchEvent event = new ThrownEggHatchEvent((org.bukkit.entity.Egg) ((IMixinEntity)egg).getBukkitEntity(), hatching, b0, hatchingType);
+            ThrownEggHatchEvent event = new ThrownEggHatchEvent((org.bukkit.entity.Egg) ((EntityBridge)egg).getBukkitEntity(), hatching, b0, hatchingType);
             event.callEvent();
 
             b0 = event.getNumHatches();
@@ -64,10 +64,10 @@ public abstract class MixinEggEntity {
             // Paper end
             if (hatching) {
                 for (int i = 0; i < b0; ++i) {
-                    CraftWorld cw = ((IMixinWorld)world).getCraftWorld();
+                    CraftWorld cw = ((LevelBridge)world).getCraftWorld();
                     Entity entity = cw.createEntity_Old(new org.bukkit.Location(cw, egg.getX(), egg.getY(), egg.getZ(), egg.getYRot(), 0.0F), hatchingType.getEntityClass());
-                    if (((IMixinEntity)entity).getBukkitEntity() instanceof Ageable)
-                        ((Ageable) ((IMixinEntity)entity).getBukkitEntity()).setBaby();
+                    if (((EntityBridge)entity).getBukkitEntity() instanceof Ageable)
+                        ((Ageable) ((EntityBridge)entity).getBukkitEntity()).setBaby();
                     cw.addEntity(entity, SpawnReason.EGG);
                 }
             }

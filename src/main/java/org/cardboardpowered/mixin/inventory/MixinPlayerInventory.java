@@ -1,11 +1,5 @@
 package org.cardboardpowered.mixin.inventory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EntityEquipment;
@@ -13,12 +7,8 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import org.bukkit.Location;
-import org.bukkit.craftbukkit.entity.CraftHumanEntity;
-import org.cardboardpowered.impl.entity.CraftPlayer;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.InventoryHolder;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -28,7 +18,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 
 import org.cardboardpowered.bridge.world.ContainerBridge;
 import org.cardboardpowered.interfaces.IMixinPlayerInventory;
-import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 @Mixin(Inventory.class)
 public abstract class MixinPlayerInventory implements Container, ContainerBridge, IMixinPlayerInventory {
@@ -107,7 +96,7 @@ public abstract class MixinPlayerInventory implements Container, ContainerBridge
 
     @Override
     public org.bukkit.inventory.InventoryHolder getOwner() {
-        return (InventoryHolder) ((IMixinEntity)this.player).getBukkitEntity();
+        return (InventoryHolder) ((EntityBridge)this.player).getBukkitEntity();
     }
 
     @Override
@@ -122,7 +111,7 @@ public abstract class MixinPlayerInventory implements Container, ContainerBridge
 
     @Override
     public org.bukkit.Location getLocation() {
-        return ((IMixinEntity)this.player).getBukkitEntity().getLocation();
+        return ((EntityBridge)this.player).getBukkitEntity().getLocation();
     }
     // Paper end - add fields and methods
 

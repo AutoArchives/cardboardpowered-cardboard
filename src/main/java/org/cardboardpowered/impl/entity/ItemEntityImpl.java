@@ -10,7 +10,7 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
-import org.cardboardpowered.interfaces.CardboardItemEntity;
+import org.cardboardpowered.bridge.world.entity.item.ItemEntityBridge;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -114,7 +114,7 @@ public class ItemEntityImpl extends CraftEntity implements Item {
     @Override
     public void setWillAge(boolean willAge) {
         // TODO Auto-generated method stub
-    	( (CardboardItemEntity) this.getHandle() ).cardboard$setItemAge( willAge ? 0 : -32768 );
+    	( (ItemEntityBridge) this.getHandle() ).cardboard$setItemAge( willAge ? 0 : -32768 );
     }
 
     @Override
@@ -125,7 +125,7 @@ public class ItemEntityImpl extends CraftEntity implements Item {
 
 	@Override
 	public int getHealth() {
-		return ( (CardboardItemEntity) this.getHandle() ).cardboard$getHealth();
+		return ( (ItemEntityBridge) this.getHandle() ).cardboard$getHealth();
 	}
 
 	@Override
@@ -135,12 +135,12 @@ public class ItemEntityImpl extends CraftEntity implements Item {
 
 	@Override
 	public void setHealth(int health) {
-		( (CardboardItemEntity) this.getHandle() ).cardboard$setHealth(health);
+		( (ItemEntityBridge) this.getHandle() ).cardboard$setHealth(health);
 	}
 
 	@Override
 	public void setUnlimitedLifetime(boolean arg0) {
-		( (CardboardItemEntity) this.getHandle() ).cardboard$setUnlimitedAge(arg0);
+		( (ItemEntityBridge) this.getHandle() ).cardboard$setUnlimitedAge(arg0);
 	}
 
 	@Override

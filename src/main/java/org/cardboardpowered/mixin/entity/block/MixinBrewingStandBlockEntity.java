@@ -22,12 +22,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import org.cardboardpowered.interfaces.IMixinBrewingStandBlockEntity;
+import org.cardboardpowered.bridge.world.level.block.entity.BrewingStandBlockEntityBridge;
 import org.cardboardpowered.bridge.world.ContainerBridge;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 @Mixin(BrewingStandBlockEntity.class)
-public abstract class MixinBrewingStandBlockEntity implements Container, ContainerBridge, IMixinBrewingStandBlockEntity {
+public abstract class MixinBrewingStandBlockEntity implements Container, ContainerBridge, BrewingStandBlockEntityBridge {
 
     @Shadow
     public int fuel;
@@ -74,10 +74,10 @@ public abstract class MixinBrewingStandBlockEntity implements Container, Contain
      */
     @Inject(at = @At("HEAD"), method = "serverTick", cancellable = true)
     private static void doBukkitEvent_BrewingStandFuelEvent(Level world, BlockPos pos, BlockState state, BrewingStandBlockEntity be, CallbackInfo ci) {
-        ItemStack itemstack = (ItemStack) ((IMixinBrewingStandBlockEntity)be).cardboard_getInventory().get(4);
+        ItemStack itemstack = (ItemStack) ((BrewingStandBlockEntityBridge)be).cardboard_getInventory().get(4);
 
         if (be.fuel <= 0 && itemstack.getItem() == Items.BLAZE_POWDER) {
-            BrewingStandFuelEvent event = new BrewingStandFuelEvent(((IMixinWorld)be.level).getCraftWorld().getBlockAt(be.worldPosition.getX(), be.worldPosition.getY(), be.worldPosition.getZ()), CraftItemStack.asCraftMirror(itemstack), 20);
+            BrewingStandFuelEvent event = new BrewingStandFuelEvent(((LevelBridge)be.level).getCraftWorld().getBlockAt(be.worldPosition.getX(), be.worldPosition.getY(), be.worldPosition.getZ()), CraftItemStack.asCraftMirror(itemstack), 20);
             CraftServer.INSTANCE.getPluginManager().callEvent(event);
 
             if (event.isCancelled()) {

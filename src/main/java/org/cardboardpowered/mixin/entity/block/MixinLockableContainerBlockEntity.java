@@ -6,7 +6,7 @@ import org.bukkit.Location;
 import org.spongepowered.asm.mixin.Mixin;
 
 import org.cardboardpowered.interfaces.IMixinLockableContainerBlockEntity;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 @Mixin(BaseContainerBlockEntity.class)
 public class MixinLockableContainerBlockEntity implements IMixinLockableContainerBlockEntity {
@@ -15,7 +15,7 @@ public class MixinLockableContainerBlockEntity implements IMixinLockableContaine
     public Location getLocation() {
         BaseContainerBlockEntity lc = (BaseContainerBlockEntity)(Object)this;
         BlockPos pos = lc.getBlockPos();
-        return new Location(((IMixinWorld)lc.level).getCraftWorld(), pos.getX(), pos.getY(), pos.getZ());
+        return new Location(((LevelBridge)lc.level).getCraftWorld(), pos.getX(), pos.getY(), pos.getZ());
     }
 
 }

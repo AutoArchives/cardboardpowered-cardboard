@@ -28,10 +28,14 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
+import io.papermc.paper.adventure.PaperAdventure;
 import net.minecraft.world.level.dimension.LevelStem;
 import org.bukkit.generator.BiomeProvider;
 import org.cardboardpowered.BukkitLogger;
+import org.cardboardpowered.bridge.advancements.AdvancementHolderBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 import org.cardboardpowered.impl.MetadataStoreImpl;
 import org.bukkit.craftbukkit.scheduler.CraftScheduler;
 import org.cardboardpowered.interfaces.*;
@@ -74,7 +78,6 @@ import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.ConsoleInput;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.bossevents.CustomBossEvent;
 import net.minecraft.server.dedicated.DedicatedPlayerList;
 import net.minecraft.server.dedicated.DedicatedServer;
@@ -171,7 +174,6 @@ import org.bukkit.structure.StructureManager;
 import org.bukkit.util.StringUtil;
 import org.bukkit.util.permissions.DefaultPermissions;
 import org.cardboardpowered.RegistryUtil;
-import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.CardboardBossBar;
 import org.cardboardpowered.impl.CraftProfileBanList;
 import org.cardboardpowered.impl.IpBanList;
@@ -181,7 +183,7 @@ import org.cardboardpowered.impl.command.CommandMapImpl;
 import org.cardboardpowered.impl.command.MinecraftCommandWrapper;
 import org.cardboardpowered.impl.command.VersionCommand;
 import org.cardboardpowered.impl.entity.CraftPlayer;
-import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.cardboardpowered.impl.inventory.InventoryCreator;
 import org.cardboardpowered.impl.inventory.recipe.CardboardBlastingRecipe;
 import org.cardboardpowered.impl.inventory.recipe.CardboardCampfireRecipe;
@@ -324,7 +326,7 @@ public class CraftServer implements Server {
         this.playerView = Collections.unmodifiableList(Lists.transform(server.playerList.players, new Function<ServerPlayer, CraftPlayer>() {
             @Override
             public CraftPlayer apply(ServerPlayer player) {
-                return ((ServerPlayerBridge)player).getBukkit();
+                return (CraftPlayer) ((EntityBridge)player).getBukkitEntity();
             }
         }));
         
@@ -511,6 +513,7 @@ public class CraftServer implements Server {
         }
     }
 
+
     @SuppressWarnings("unchecked")
     private void syncCommands() {
         // Clear existing commands
@@ -536,7 +539,7 @@ public class CraftServer implements Server {
         }
 
         // Refresh commands
-        for (ServerPlayer player : getHandle().getPlayerList().getPlayers())
+        for (ServerPlayer player : getHandle().getPlayers())
             dispatcher.sendCommands(player);
     }
 
@@ -618,7 +621,7 @@ public class CraftServer implements Server {
         return Iterators.unmodifiableIterator(Iterators.transform(server.getAdvancements().getAllAdvancements().iterator(), new Function<AdvancementHolder, org.bukkit.advancement.Advancement>() {
             @Override
             public Advancement apply(AdvancementHolder advancement) {
-                return ((IMixinAdvancement)(Object) advancement).getBukkitAdvancement();
+                return ((AdvancementHolderBridge)(Object) advancement).getBukkitAdvancement();
             }
         }));
     }
@@ -707,7 +710,7 @@ public class CraftServer implements Server {
         return Iterators.unmodifiableIterator(Iterators.transform(getServer().getCustomBossEvents().getEvents().iterator(), new Function<CustomBossEvent, org.bukkit.boss.KeyedBossBar>() {
             @Override
             public org.bukkit.boss.KeyedBossBar apply(CustomBossEvent bossBattleCustom) {
-                return (KeyedBossBar) ((IMixinEntity)bossBattleCustom).getBukkitEntity();
+                return (KeyedBossBar) ((EntityBridge)bossBattleCustom).getBukkitEntity();
             }
         }));
     }
@@ -716,7 +719,7 @@ public class CraftServer implements Server {
     public KeyedBossBar getBossBar(NamespacedKey key) {
         Preconditions.checkArgument(key != null, "key");
         net.minecraft.server.bossevents.CustomBossEvent bossBattleCustom = getServer().getCustomBossEvents().get(CraftNamespacedKey.toMinecraft(key));
-        return (bossBattleCustom == null) ? null : (KeyedBossBar) ((IMixinEntity)bossBattleCustom).getBukkitEntity();
+        return (bossBattleCustom == null) ? null : (KeyedBossBar) ((EntityBridge)bossBattleCustom).getBukkitEntity();
     }
 
     @Override
@@ -1024,8 +1027,8 @@ public class CraftServer implements Server {
 	@Override
 	public boolean dispatchCommand(CommandSender sender, String commandLine) throws CommandException {
 		if(sender instanceof Entity) {
-			ServerLevel world = (ServerLevel) ((CraftEntity) sender).entity.level();
-			CommandSourceStack source = ((CraftEntity) sender).entity.createCommandSourceStackForNameResolution(world);
+			ServerLevel world = (ServerLevel) ((CraftEntity) sender).getHandle().level();
+			CommandSourceStack source = ((CraftEntity) sender).getHandle().createCommandSourceStackForNameResolution(world);
 
 			try {
 				String theCommand;
@@ -1079,7 +1082,7 @@ public class CraftServer implements Server {
     @Override
     public Advancement getAdvancement(NamespacedKey arg0) {
         AdvancementHolder advancement = server.getAdvancements().get(CraftNamespacedKey.toMinecraft(arg0));
-        return (advancement == null) ? null : ((IMixinAdvancement)(Object) advancement)
+        return (advancement == null) ? null : ((AdvancementHolderBridge)(Object) advancement)
                 .getBukkitAdvancement();
     }
 
@@ -1169,7 +1172,7 @@ public class CraftServer implements Server {
         for (ServerLevel world : getServer().getAllLevels()) {
             net.minecraft.world.entity.Entity entity = world.getEntity(uuid);
             if (entity != null)
-                return ((IMixinEntity)entity).getBukkitEntity();
+                return ((EntityBridge)entity).getBukkitEntity();
         }
 
         return null;
@@ -1342,7 +1345,7 @@ public class CraftServer implements Server {
         this.playerView = Collections.unmodifiableList(Lists.transform(server.playerList.players, new Function<ServerPlayer, CraftPlayer>() {
             @Override
             public CraftPlayer apply(ServerPlayer player) {
-                return ((ServerPlayerBridge)player).getBukkit();
+                return (CraftPlayer) ((EntityBridge)player).getBukkitEntity();
             }
         }));
         return this.playerView;
@@ -1765,7 +1768,7 @@ public class CraftServer implements Server {
         } catch (CommandSyntaxException ex) {
             throw new IllegalArgumentException("Could not parse selector: " + selector, ex);
         }
-        return new ArrayList<>(Lists.transform(nms, (entity) -> ((IMixinEntity)entity).getBukkitEntity()));
+        return new ArrayList<>(Lists.transform(nms, (entity) -> ((EntityBridge)entity).getBukkitEntity()));
     }
 
     @Override
@@ -1902,7 +1905,7 @@ public class CraftServer implements Server {
                 message = message.substring(1);
 
             completions = (pos == null) ? getCommandMap().tabComplete(player, message) :
-                    getCommandMap().tabComplete(player, message, new Location(((IMixinWorld)(Object)world).getCraftWorld(), pos.x, pos.y, pos.z));
+                    getCommandMap().tabComplete(player, message, new Location(((LevelBridge)(Object)world).getCraftWorld(), pos.x, pos.y, pos.z));
         } catch (CommandException ex) {
             player.sendMessage(ChatColor.RED + "An internal error occurred while attempting to tab-complete this command");
             getLogger().log(Level.SEVERE, "Exception when " + player.getName() + " attempted to tab complete " + message, ex);
@@ -1931,8 +1934,8 @@ public class CraftServer implements Server {
         return completions;
     }
 
-    public MinecraftServer getHandle() {
-        return getServer();
+    public DedicatedPlayerList getHandle() {
+        return this.playerList;
     }
 
     public CommandMapImpl getCommandMap() {
@@ -2200,7 +2203,7 @@ public class CraftServer implements Server {
         for (ServerLevel world : server.levels.values()) {
             Identifier name = world.dimension().identifier();
             if (name.equals(id))
-                return ((IMixinWorld)world).getCraftWorld();
+                return ((LevelBridge)world).getCraftWorld();
         }
 
         return null;
@@ -2229,7 +2232,7 @@ public class CraftServer implements Server {
         AbstractContainerMenu container = new AbstractContainerMenu(null, -1){
 
             //@Override
-            public CardboardInventoryView getBukkitView() {
+            public CraftInventoryView getBukkitView() {
                 return null;
             }
 
@@ -2625,7 +2628,7 @@ public class CraftServer implements Server {
 
 	@Override
 	public World getWorld(Key worldKey) {
-        ServerLevel worldServer = this.server.getLevel(ResourceKey.create(Registries.DIMENSION, CardboardAdventure.asVanilla(worldKey)));
+        ServerLevel worldServer = this.server.getLevel(ResourceKey.create(Registries.DIMENSION, PaperAdventure.asVanilla(worldKey)));
         if (worldServer == null) {
             return null;
         }

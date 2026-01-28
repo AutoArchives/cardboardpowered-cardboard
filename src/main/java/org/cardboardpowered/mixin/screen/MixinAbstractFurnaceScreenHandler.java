@@ -1,6 +1,7 @@
 package org.cardboardpowered.mixin.screen;
 
-import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import net.minecraft.world.entity.player.Player;
+import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -11,7 +12,6 @@ import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
-import org.bukkit.entity.Player;
 import org.cardboardpowered.impl.inventory.CardboardFurnaceInventory;
 import org.cardboardpowered.mixin.world.inventory.AbstractContainerMenuMixin;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,7 +20,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractFurnaceMenu.class)
 public class MixinAbstractFurnaceScreenHandler extends AbstractContainerMenuMixin {
@@ -28,7 +29,7 @@ public class MixinAbstractFurnaceScreenHandler extends AbstractContainerMenuMixi
     @Shadow
     public Container container;
 
-    private CardboardInventoryView bukkitEntity = null;
+    private CraftInventoryView bukkitEntity = null;
     private Inventory playerInv;
 
     // Caused by: org.spongepowered.asm.mixin.injection.throwables.InvalidInjectionException: Invalid descriptor on bukkitfabric.mixins.json:screen.MixinAbstractFurnaceScreenHandler from mod cardboard->@Inject:
@@ -72,13 +73,16 @@ public class MixinAbstractFurnaceScreenHandler extends AbstractContainerMenuMixi
     }
 
     @Override
-    public CardboardInventoryView getBukkitView() {
+    public CraftInventoryView getBukkitView() {
         if (bukkitEntity != null) return bukkitEntity;
 
         CardboardFurnaceInventory inventory = new CardboardFurnaceInventory((AbstractFurnaceBlockEntity) this.container);
-        bukkitEntity = new CardboardInventoryView((Player)((IMixinEntity)this.playerInv.player).getBukkitEntity(), inventory, (AbstractFurnaceMenu)(Object)this);
+        bukkitEntity = new CraftInventoryView((org.bukkit.entity.Player)((EntityBridge)this.playerInv.player).getBukkitEntity(), inventory, (AbstractFurnaceMenu)(Object)this);
         return bukkitEntity;
     }
 
-
+    @Inject(method = "stillValid", at = @At("HEAD"), cancellable = true)
+    public void stillValidCraftBukkit(Player player, CallbackInfoReturnable<Boolean> cir) {
+        if (!this.checkReachable) cir.setReturnValue(true); // CraftBukkit
+    }
 }

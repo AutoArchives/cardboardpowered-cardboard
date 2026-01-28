@@ -2,6 +2,7 @@ package org.cardboardpowered.impl.block;
 
 import java.util.UUID;
 
+import io.papermc.paper.adventure.PaperAdventure;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -9,7 +10,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Hopper;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.Inventory;
-import org.cardboardpowered.adventure.CardboardAdventure;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
@@ -103,13 +103,13 @@ public class CardboardHopper extends CardboardLootableBlock<HopperBlockEntity> i
     @Override
     public @Nullable Component customName() {
         // TODO Auto-generated method stub
-        return CardboardAdventure.asAdventure(net.minecraft.network.chat.Component.nullToEmpty(this.getCustomName()));
+        return PaperAdventure.asAdventure(net.minecraft.network.chat.Component.nullToEmpty(this.getCustomName()));
     }
 
     @Override
     public void customName(@Nullable Component arg0) {
         // TODO Auto-generated method stub
-    	this.setCustomName( CardboardAdventure.asVanilla(arg0).tryCollapseToString() );
+    	this.setCustomName( PaperAdventure.asVanilla(arg0).tryCollapseToString() );
     }
     
     // 1.20.4 API:

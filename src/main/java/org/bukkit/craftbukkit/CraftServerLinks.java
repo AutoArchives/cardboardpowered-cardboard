@@ -4,11 +4,12 @@ import com.google.common.base.Preconditions;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.papermc.paper.adventure.PaperAdventure;
 import net.kyori.adventure.text.Component;
 import net.minecraft.server.dedicated.DedicatedServer;
 import org.bukkit.ServerLinks;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
-import org.cardboardpowered.adventure.CardboardAdventure;
 
 /**
  * Cardboard Implmentation for {@link org.bukkit.ServerLinks}
@@ -55,7 +56,7 @@ public class CraftServerLinks implements ServerLinks {
     }
 
     public ServerLinks.ServerLink addLink(Component displayName, URI url) {
-        CraftServerLink link = new CraftServerLink(net.minecraft.server.ServerLinks.Entry.custom(CardboardAdventure.asVanilla(displayName), url));
+        CraftServerLink link = new CraftServerLink(net.minecraft.server.ServerLinks.Entry.custom(PaperAdventure.asVanilla(displayName), url));
         this.addLink(link);
         return link;
     }
@@ -119,7 +120,7 @@ public class CraftServerLinks implements ServerLinks {
         }
 
         public Component displayName() {
-            return CardboardAdventure.asAdventure(this.handle.displayName());
+            return PaperAdventure.asAdventure(this.handle.displayName());
         }
 
         public URI getUrl() {

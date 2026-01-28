@@ -10,7 +10,7 @@ import org.bukkit.World;
 import org.cardboardpowered.impl.world.CraftWorld;
 
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 public final class CraftLocation {
 
@@ -30,7 +30,7 @@ public final class CraftLocation {
     }
     
     public static Location toBukkit(Vec3 vec3D, net.minecraft.world.level.Level world, float yaw, float pitch) {
-        return new Location( ((IMixinWorld) world).getCraftWorld(), vec3D.x(), vec3D.y(), vec3D.z(), yaw, pitch);
+        return new Location( ((LevelBridge) world).getCraftWorld(), vec3D.x(), vec3D.y(), vec3D.z(), yaw, pitch);
     }
 
     public static Location toBukkit(BlockPos BlockPos) {
@@ -38,7 +38,7 @@ public final class CraftLocation {
     }
 
     public static Location toBukkit(BlockPos blockPosition, net.minecraft.world.level.Level world) {
-        return toBukkit(blockPosition, ((IMixinWorld) world).getCraftWorld(), 0.0F, 0.0F);
+        return toBukkit(blockPosition, ((LevelBridge) world).getCraftWorld(), 0.0F, 0.0F);
     }
 
     public static Location toBukkit(BlockPos BlockPos, World world) {
@@ -50,7 +50,7 @@ public final class CraftLocation {
     }
     
     public static Location toBukkit(BlockPos BlockPos, ServerLevel world, float yaw, float pitch) {
-        return new Location(((IMixinWorld) world).getCraftWorld(), BlockPos.getX(), BlockPos.getY(), BlockPos.getZ(), yaw, pitch);
+        return new Location(((LevelBridge) world).getCraftWorld(), BlockPos.getX(), BlockPos.getY(), BlockPos.getZ(), yaw, pitch);
     }
 
     /*public static Location toBukkit(PositionImpl position) {
@@ -96,7 +96,7 @@ public final class CraftLocation {
 	}
 
 	public static Location toBukkit(Node node, net.minecraft.world.level.Level world) {
-		return new Location(((IMixinWorld) world).getCraftWorld(), node.x, node.y, node.z);
+		return new Location(((LevelBridge) world).getCraftWorld(), node.x, node.y, node.z);
 	}
 
 }

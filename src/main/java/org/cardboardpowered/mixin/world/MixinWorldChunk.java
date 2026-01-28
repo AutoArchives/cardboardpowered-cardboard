@@ -8,10 +8,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import org.cardboardpowered.interfaces.IWorldChunk;
+import org.cardboardpowered.bridge.world.level.chunk.LevelChunkBridge;
 
 @Mixin(LevelChunk.class)
-public class MixinWorldChunk implements IWorldChunk {
+public class MixinWorldChunk implements LevelChunkBridge {
 
     private Chunk bukkit;
 

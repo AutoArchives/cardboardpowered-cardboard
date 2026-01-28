@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.item;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,11 +32,11 @@ public class MixinDecorationItem {
     @Inject(method = "useOn", cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD,
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/decoration/HangingEntity;playPlacementSound()V"))
     private void bukkitUseOnBlock(UseOnContext context, CallbackInfoReturnable<InteractionResult> cir, BlockPos blockPos, Direction direction, BlockPos blockPos2, net.minecraft.world.entity.player.Player playerEntity, ItemStack itemStack, Level world, HangingEntity abstractDecorationEntity) {
-        Player who = (context.getPlayer() == null) ? null : (Player) ((ServerPlayerBridge) context.getPlayer()).getBukkit();
+        Player who = (context.getPlayer() == null) ? null : (Player) ((ServerPlayerBridge) context.getPlayer()).getBukkitEntity();
         org.bukkit.block.Block blockClicked = CraftBlock.at((ServerLevel) world, blockPos);
         org.bukkit.block.BlockFace blockFace = CraftBlock.notchToBlockFace(direction);
 
-        HangingPlaceEvent event = new HangingPlaceEvent((Hanging) ((IMixinEntity) abstractDecorationEntity).getBukkitEntity(), who, blockClicked, blockFace, EquipmentSlot.HAND, CraftItemStack.asBukkitCopy(itemStack));
+        HangingPlaceEvent event = new HangingPlaceEvent((Hanging) ((EntityBridge) abstractDecorationEntity).getBukkitEntity(), who, blockClicked, blockFace, EquipmentSlot.HAND, CraftItemStack.asBukkitCopy(itemStack));
         Bukkit.getPluginManager().callEvent(event);
 
         if (event.isCancelled()) {

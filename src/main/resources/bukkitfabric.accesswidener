@@ -623,3 +623,20 @@ mutable field net/minecraft/world/inventory/AbstractContainerMenu slots Lnet/min
 accessible method net/minecraft/world/entity/item/FallingBlockEntity <init> (Lnet/minecraft/world/level/Level;DDDLnet/minecraft/world/level/block/state/BlockState;)V
 accessible field net/minecraft/world/entity/animal/nautilus/AbstractNautilus inventory Lnet/minecraft/world/SimpleContainer;
 accessible field net/minecraft/world/entity/animal/equine/SkeletonHorse trapTime I
+accessible method net/minecraft/server/network/ServerGamePacketListenerImpl isChatMessageIllegal (Ljava/lang/String;)Z
+accessible field net/minecraft/world/inventory/AbstractContainerMenu menuType Lnet/minecraft/world/inventory/MenuType;
+accessible field net/minecraft/world/level/block/entity/ChestBlockEntity DEFAULT_NAME Lnet/minecraft/network/chat/Component;
+accessible class net/minecraft/world/effect/MobEffect$AttributeTemplate
+accessible field net/minecraft/world/effect/MobEffect attributeModifiers Ljava/util/Map;
+accessible field net/minecraft/world/level/block/FireBlock igniteOdds Lit/unimi/dsi/fastutil/objects/Object2IntMap;
+accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase destroySpeed F
+accessible field net/minecraft/world/level/block/state/BlockBehaviour hasCollision Z
+accessible method net/minecraft/world/entity/animal/wolf/Wolf setSoundVariant (Lnet/minecraft/core/Holder;)V
+accessible method net/minecraft/world/entity/animal/wolf/Wolf getSoundVariant ()Lnet/minecraft/core/Holder;
+accessible method net/minecraft/world/entity/animal/feline/Cat setVariant (Lnet/minecraft/core/Holder;)V
+accessible field net/minecraft/world/entity/animal/Animal loveCause Lnet/minecraft/world/entity/EntityReference;
+accessible field net/minecraft/world/entity/animal/Animal inLove I
+accessible method net/minecraft/world/entity/Mob getAmbientSound ()Lnet/minecraft/sounds/SoundEvent;
+accessible field net/minecraft/world/entity/Mob lootTable Ljava/util/Optional;
+accessible method net/minecraft/world/entity/Mob isSunBurnTick ()Z
+accessible field net/minecraft/world/entity/Entity random Lnet/minecraft/util/RandomSource;

@@ -64,11 +64,10 @@ public class CardboardRaider extends CraftMonster implements Raider {
         getHandle().setCanJoinRaid(join);
     }
 
-	@Override
-	public @NotNull Sound getCelebrationSound() {
-        return CraftSound.getBukkit(this.getHandle().getCelebrateSound());
-
-	}
+    @Override
+    public Sound getCelebrationSound() {
+        return CraftSound.minecraftToBukkit(this.getHandle().getCelebrateSound());
+    }
 
 	@Override
 	public boolean isCelebrating() {
@@ -83,7 +82,7 @@ public class CardboardRaider extends CraftMonster implements Raider {
 	@Override
 	public void setRaid(@Nullable Raid raid) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -101,7 +100,7 @@ public class CardboardRaider extends CraftMonster implements Raider {
 	@Override
 	public void setWave(int wave) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -113,7 +112,7 @@ public class CardboardRaider extends CraftMonster implements Raider {
 	@Override
 	public void setTicksOutsideRaid(int ticks) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

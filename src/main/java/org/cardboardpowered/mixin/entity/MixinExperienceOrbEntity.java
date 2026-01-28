@@ -8,7 +8,7 @@ import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.bukkit.event.player.PlayerExpCooldownChangeEvent.ChangeReason;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.bukkit.event.player.PlayerItemMendEvent;
 import org.cardboardpowered.mixin.world.entity.EntityMixin;
@@ -51,7 +51,7 @@ public class MixinExperienceOrbEntity extends EntityMixin {
 				&& player.takeXpDelay == 0
 				&& new PlayerPickupExperienceEvent(
 						(Player) ((ServerPlayerBridge)serverPlayer).getBukkitEntity(),
-						(ExperienceOrb) ((IMixinEntity) ((net.minecraft.world.entity.ExperienceOrb) (Object) this)).getBukkitEntity()
+						(ExperienceOrb) ((EntityBridge) ((net.minecraft.world.entity.ExperienceOrb) (Object) this)).getBukkitEntity()
 					).callEvent()) {
 			// Continue
 		} else {

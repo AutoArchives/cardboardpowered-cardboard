@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.scoreboard;
 
+import io.papermc.paper.adventure.PaperAdventure;
 import net.kyori.adventure.text.Component;
 import net.minecraft.world.scores.Scoreboard;
 import org.apache.commons.lang.Validate;
@@ -11,7 +12,6 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Score;
-import org.cardboardpowered.adventure.CardboardAdventure;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -160,7 +160,7 @@ public class CardboardObjective extends CardboardScoreboardComponent implements 
     @Override
     public @NotNull Component displayName() throws IllegalStateException {
         CardboardScoreboard scoreboard = this.checkState();
-        return CardboardAdventure.asAdventure(this.objective.getDisplayName());
+        return PaperAdventure.asAdventure(this.objective.getDisplayName());
     }
 
     @Override

@@ -2,6 +2,7 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 
+import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.potion.SuspiciousEffectEntry;
 import net.kyori.adventure.sound.Sound.Source;
 import net.minecraft.server.level.ServerLevel;
@@ -14,7 +15,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.MushroomCow;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.cardboardpowered.adventure.CardboardAdventure;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -90,7 +90,7 @@ public class CraftMushroomCow extends CraftAbstractCow implements MushroomCow {
 		// this.getHandle().sheared(net.minecraft.sound.SoundCategory.AMBIENT);
 
 		if (!(this.getHandle().level() instanceof final ServerLevel serverLevel)) return;
-        this.getHandle().shear(serverLevel, CardboardAdventure.asVanilla(arg0), new ItemStack(Items.SHEARS));
+        this.getHandle().shear(serverLevel, PaperAdventure.asVanilla(arg0), new ItemStack(Items.SHEARS));
 	}
 	
 	// 1.20.2 API:

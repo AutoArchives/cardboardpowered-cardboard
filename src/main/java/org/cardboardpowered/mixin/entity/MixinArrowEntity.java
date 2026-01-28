@@ -1,15 +1,12 @@
 package org.cardboardpowered.mixin.entity;
 
-import java.util.Collection;
-import java.util.Set;
 import net.minecraft.world.entity.projectile.arrow.Arrow;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 
-import org.cardboardpowered.interfaces.IMixinArrowEntity;
+import org.cardboardpowered.bridge.world.entity.projectile.arrow.ArrowBridge;
 
 @Mixin(Arrow.class)
-public class MixinArrowEntity implements IMixinArrowEntity {
+public class MixinArrowEntity implements ArrowBridge {
 
     //@Shadow
     //public Potion potion;

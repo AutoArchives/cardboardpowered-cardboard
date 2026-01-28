@@ -13,7 +13,7 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.recipe.CookingBookCategory;
 import org.bukkit.inventory.recipe.CraftingBookCategory;
-import org.cardboardpowered.interfaces.IIngredient;
+import org.cardboardpowered.bridge.world.item.crafting.IngredientBridge;
 
 public interface CraftRecipe extends Recipe {
 
@@ -36,7 +36,7 @@ public interface CraftRecipe extends Recipe {
         } else if (bukkit instanceof RecipeChoice.MaterialChoice) {
             stack = Ingredient.of(((RecipeChoice.MaterialChoice) bukkit).getChoices().stream().map((mat) -> CraftItemType.bukkitToMinecraft(mat)));
         } else if (bukkit instanceof RecipeChoice.ExactChoice) {
-            stack = IIngredient.cb$ofStacks(((RecipeChoice.ExactChoice) bukkit).getChoices().stream().map((mat) -> CraftItemStack.asNMSCopy(mat)).toList());
+            stack = IngredientBridge.cb$ofStacks(((RecipeChoice.ExactChoice) bukkit).getChoices().stream().map((mat) -> CraftItemStack.asNMSCopy(mat)).toList());
             // Paper start - support "empty" choices - legacy method that spigot might incorrectly call
             // Their impl of Ingredient.of() will error, ingredients need at least one entry.
             // Callers running into this exception may have passed an incorrect empty() recipe choice to a non-empty slot or
@@ -64,7 +64,7 @@ public interface CraftRecipe extends Recipe {
             return RecipeChoice.empty(); // Paper - null breaks API contracts
         }
 
-        IIngredient cblist = (IIngredient) list;
+        IngredientBridge cblist = (IngredientBridge) list;
 
         if (cblist.cb$isExact()) {
             List<org.bukkit.inventory.ItemStack> choices = new ArrayList<>(cblist.cb$itemStacks().size());

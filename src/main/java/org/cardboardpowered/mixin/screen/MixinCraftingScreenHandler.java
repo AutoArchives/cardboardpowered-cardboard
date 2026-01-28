@@ -1,11 +1,11 @@
 package org.cardboardpowered.mixin.screen;
 
+import net.minecraft.world.entity.player.Player;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
 import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
-import org.bukkit.entity.Player;
-import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.cardboardpowered.mixin.world.inventory.AbstractContainerMenuMixin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -30,6 +30,7 @@ import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(CraftingMenu.class)
 public class MixinCraftingScreenHandler extends AbstractContainerMenuMixin {
@@ -43,7 +44,7 @@ public class MixinCraftingScreenHandler extends AbstractContainerMenuMixin {
     @Shadow public ContainerLevelAccess access;
     @Shadow public net.minecraft.world.entity.player.Player player;
 
-    private CardboardInventoryView bukkitEntity = null;
+    private CraftInventoryView bukkitEntity = null;
     private Inventory playerInv;
 
     @Inject(method = "<init>(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/inventory/ContainerLevelAccess;)V", at = @At("TAIL"))
@@ -52,14 +53,14 @@ public class MixinCraftingScreenHandler extends AbstractContainerMenuMixin {
     }
 
     @Override
-    public CardboardInventoryView getBukkitView() {
+    public CraftInventoryView getBukkitView() {
         if (bukkitEntity != null)
             return bukkitEntity;
 
         CraftingMenu thiz = (CraftingMenu) (Object) this;
 
         CraftInventoryCrafting inventory = new CraftInventoryCrafting(thiz.craftSlots, thiz.resultSlots);
-        bukkitEntity = new CardboardInventoryView((Player)((IMixinEntity)this.playerInv.player).getBukkitEntity(), inventory, (CraftingMenu)(Object)this);
+        bukkitEntity = new CraftInventoryView((org.bukkit.entity.Player)((EntityBridge)this.playerInv.player).getBukkitEntity(), inventory, (CraftingMenu)(Object)this);
         return bukkitEntity;
     }
 
@@ -94,4 +95,8 @@ public class MixinCraftingScreenHandler extends AbstractContainerMenuMixin {
         });
     }
 
+    @Inject(method = "stillValid", at = @At("HEAD"), cancellable = true)
+    public void stillValidCraftBukkit(Player player, CallbackInfoReturnable<Boolean> cir) {
+        if (!this.checkReachable) cir.setReturnValue(true); // CraftBukkit
+    }
 }

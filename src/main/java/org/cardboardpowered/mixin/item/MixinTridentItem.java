@@ -12,10 +12,9 @@ import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 
 @MixinInfo(events = {"PlayerRiptideEvent"})
 @Mixin(TridentItem.class)
@@ -31,7 +30,7 @@ public class MixinTridentItem {
     public void doBukkitEvent_PlayerRiptideEvent(ItemStack itemstack, Level world, LivingEntity entity, int i, CallbackInfoReturnable<Boolean> ci) {
         float k = EnchantmentHelper.getTridentSpinAttackStrength(itemstack, entity);
         if (k > 0.0f) {
-            PlayerRiptideEvent event = new PlayerRiptideEvent((Player)((IMixinEntity)entity).getBukkitEntity(), CraftItemStack.asCraftMirror(itemstack));
+            PlayerRiptideEvent event = new PlayerRiptideEvent((Player)((EntityBridge)entity).getBukkitEntity(), CraftItemStack.asCraftMirror(itemstack));
             event.getPlayer().getServer().getPluginManager().callEvent(event);
         }
     }

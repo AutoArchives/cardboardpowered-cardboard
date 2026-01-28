@@ -17,10 +17,7 @@ package io.papermc.paper.world.damagesource;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import io.papermc.paper.adventure.PaperAdventure;
-import io.papermc.paper.world.damagesource.CombatEntry;
-import io.papermc.paper.world.damagesource.CombatTracker;
-import io.papermc.paper.world.damagesource.FallLocationType;
-import io.papermc.paper.world.damagesource.PaperCombatEntryWrapper;
+
 import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.Component;
@@ -28,7 +25,7 @@ import net.minecraft.Optionull;
 import net.minecraft.util.Util;
 import net.minecraft.world.damagesource.FallLocation;
 import org.bukkit.entity.LivingEntity;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -49,7 +46,7 @@ public record PaperCombatTrackerWrapper(net.minecraft.world.damagesource.CombatT
     });
 
     public LivingEntity getEntity() {
-        return (LivingEntity) ( (IMixinEntity) this.handle.mob) .getBukkitEntity();
+        return (LivingEntity) ( (EntityBridge) this.handle.mob) .getBukkitEntity();
     }
 
     public List<CombatEntry> getCombatEntries() {

@@ -1,6 +1,7 @@
 package org.cardboardpowered.impl.entity;
 
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftCreature;
 import org.bukkit.entity.Monster;
 
 public class CraftMonster extends CraftCreature implements Monster {

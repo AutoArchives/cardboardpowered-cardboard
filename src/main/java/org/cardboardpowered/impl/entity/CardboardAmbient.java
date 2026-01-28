@@ -2,6 +2,7 @@ package org.cardboardpowered.impl.entity;
 
 import net.minecraft.world.entity.ambient.AmbientCreature;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftMob;
 import org.bukkit.entity.Ambient;
 import org.bukkit.entity.EntityType;
 

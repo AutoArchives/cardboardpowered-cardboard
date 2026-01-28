@@ -5,13 +5,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
+import io.papermc.paper.adventure.PaperAdventure;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
 import org.cardboardpowered.impl.entity.UnknownEntity;
-import org.cardboardpowered.interfaces.IItemStack;
+import org.cardboardpowered.bridge.world.item.ItemStackBridge;
 import org.cardboardpowered.interfaces.IMixinCommandOutput;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.logging.LogUtils;
 
@@ -71,7 +72,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import org.cardboardpowered.impl.world.CraftWorld;
-import org.cardboardpowered.interfaces.IWorldChunk;
+import org.cardboardpowered.bridge.world.level.chunk.LevelChunkBridge;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -83,7 +84,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 
 import io.papermc.paper.datacomponent.DataComponentType;
@@ -319,13 +319,13 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         List<org.bukkit.entity.Entity> bukkitEntityList = new java.util.ArrayList<org.bukkit.entity.Entity>(notchEntityList.size());
 
         for (net.minecraft.world.entity.Entity e : notchEntityList)
-            bukkitEntityList.add(((IMixinEntity)e).getBukkitEntity());
+            bukkitEntityList.add(((EntityBridge)e).getBukkitEntity());
         return bukkitEntityList;
     }
 
     @Override
     public Entity getPassenger() {
-        return isEmpty() ? null : ((IMixinEntity)getHandle().getFirstPassenger()).getBukkitEntity();
+        return isEmpty() ? null : ((EntityBridge)getHandle().getFirstPassenger()).getBukkitEntity();
     }
 
     @Override
@@ -333,7 +333,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         return Lists.newArrayList(Lists.transform(getHandle().getPassengers(), new Function<net.minecraft.world.entity.Entity, org.bukkit.entity.Entity>() {
             @Override
             public org.bukkit.entity.Entity apply(net.minecraft.world.entity.Entity input) {
-                return ((IMixinEntity)input).getBukkitEntity();
+                return ((EntityBridge)input).getBukkitEntity();
             }
         }));
     }
@@ -378,7 +378,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     public Entity getVehicle() {
         if (!isInsideVehicle())
             return null;
-        return ((IMixinEntity) entity.getVehicle()).getBukkitEntity();
+        return ((EntityBridge) entity.getVehicle()).getBukkitEntity();
     }
 
     @Override
@@ -394,7 +394,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public World getWorld() {
-        return ((IMixinWorld) entity.level()).getCraftWorld();
+        return ((LevelBridge) entity.level()).getCraftWorld();
     }
 
     @Override
@@ -669,7 +669,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     // PaperAPI - START
     public Location getOrigin() {
-        Location origin = ((IMixinEntity)getHandle()).getOriginBF();
+        Location origin = ((EntityBridge)getHandle()).getOriginBF();
         return origin == null ? null : origin.clone();
     }
 
@@ -691,7 +691,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
     @Override
     public Chunk getChunk() {
-        IWorldChunk wc = (IWorldChunk) entity.level().getChunkAt(entity.blockPosition());
+        LevelChunkBridge wc = (LevelChunkBridge) entity.level().getChunkAt(entity.blockPosition());
         return wc.getBukkitChunk();
     }
 
@@ -742,12 +742,12 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 	@Override
 	public Component customName() {
         net.minecraft.network.chat.Component name = this.getHandle().getCustomName();
-        return name != null ? CardboardAdventure.asAdventure(name) : null;
+        return name != null ? PaperAdventure.asAdventure(name) : null;
     }
 
 	@Override
     public void customName(Component customName) {
-        this.getHandle().setCustomName(customName != null ? CardboardAdventure.asVanilla(customName) : null);
+        this.getHandle().setCustomName(customName != null ? PaperAdventure.asVanilla(customName) : null);
     }
 
     @Override
@@ -841,7 +841,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
 	@Override
     public boolean collidesAt(@NotNull Location location) {
-        AABB aabb = ((IMixinEntity)this.getHandle()).cardboad_getBoundingBoxAt(location.getX(), location.getY(), location.getZ());
+        AABB aabb = ((EntityBridge)this.getHandle()).cardboad_getBoundingBoxAt(location.getX(), location.getY(), location.getZ());
         return !this.getHandle().level().noCollision(this.getHandle(), aabb);
     }
 
@@ -1051,7 +1051,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         if (entityTracker != null) {
             for (ServerPlayerConnection connection : entityTracker.seenBy) {
                 players.add(
-                		(Player)( (IMixinEntity)  connection.getPlayer()).getBukkitEntity()
+                		(Player)( (EntityBridge)  connection.getPlayer()).getBukkitEntity()
                 	);
             }
         }
@@ -1067,7 +1067,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
     public Entity copy() {
         net.minecraft.world.entity.Entity copy = this.copy(this.getHandle().level());
         Preconditions.checkArgument((copy != null ? 1 : 0) != 0, (Object)"Error creating new entity.");
-        return ((IMixinEntity)copy).getBukkitEntity();
+        return ((EntityBridge)copy).getBukkitEntity();
     }
 
     public Entity copy(Location location) {
@@ -1075,7 +1075,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
         net.minecraft.world.entity.Entity copy = this.copy(((CraftWorld)location.getWorld()).getHandle());
         Preconditions.checkArgument((copy != null ? 1 : 0) != 0, (Object)"Error creating new entity.");
         copy.setPos(location.getX(), location.getY(), location.getZ());
-        return ((CraftWorld)location.getWorld()).addEntity( (Entity)((IMixinEntity)copy).getBukkitEntity() );
+        return ((CraftWorld)location.getWorld()).addEntity( (Entity)((EntityBridge)copy).getBukkitEntity() );
     }
 
     private net.minecraft.world.entity.Entity copy(net.minecraft.world.level.Level level) {
@@ -1100,7 +1100,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 
 	@Override
     public boolean isInWorld() {
-        return ((IMixinEntity)this.getHandle()).cb$getInWorld();
+        return ((EntityBridge)this.getHandle()).cb$getInWorld();
     }
 	
 	// 1.20.4 API:
@@ -1241,7 +1241,7 @@ public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
 	@Override
 	public @NotNull ItemStack getPickItemStack() {
 		net.minecraft.world.item.ItemStack stack = this.getHandle().getPickResult();
-        return stack == null ? ItemStack.empty() : ((IItemStack) stack).asBukkitCopy();
+        return stack == null ? ItemStack.empty() : ((ItemStackBridge) stack).asBukkitCopy();
 	}
 
 	@Override

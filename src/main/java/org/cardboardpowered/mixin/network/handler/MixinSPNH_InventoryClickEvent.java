@@ -1,5 +1,6 @@
 package org.cardboardpowered.mixin.network.handler;
 
+import org.bukkit.inventory.InventoryView;
 import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
@@ -13,14 +14,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
-import org.cardboardpowered.impl.inventory.CardboardInventoryView;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -52,8 +51,7 @@ public class MixinSPNH_InventoryClickEvent {
             return;
 
         this.doCl = false;
-        CardboardInventoryView inventory = ((AbstractContainerMenuBridge) player.containerMenu).getBukkitView();
-        inventory.setPlayerIfNotSet((HumanEntity) ((org.cardboardpowered.interfaces.IMixinEntity)this.player).getBukkitEntity());
+        InventoryView inventory = ((AbstractContainerMenuBridge) player.containerMenu).getBukkitView();
 
         InventoryType.SlotType type = inventory.getSlotType(packet.slotNum());
 

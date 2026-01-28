@@ -42,10 +42,10 @@ import org.cardboardpowered.CardboardConfig;
 import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.TeleportTargetExtra;
 import org.cardboardpowered.impl.entity.CraftPlayer;
-import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.interfaces.IMixinCommandOutput;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.mixin.world.entity.player.PlayerMixin;
@@ -131,33 +131,24 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements IMixinCom
 			
 			// @Override
             public CommandSender getBukkitSender(CommandSourceStack wrapper) {
-                return ( (IMixinEntity)  ((ServerPlayer) (Object) this) ) .getBukkitEntity();
+                return ( (EntityBridge)  ((ServerPlayer) (Object) this) ) .getBukkitEntity();
             }
 			
 		};
 		
 	}
 
-    private CraftPlayer bukkit;
     public Connection connectionBF;
 
     @Shadow
     public int containerCounter;
 
+    // CraftBukkit start
     @Override
-    public void setBukkit(CraftPlayer plr) {
-        this.bukkit = plr;
+    public org.bukkit.command.CommandSender getBukkitSender(CommandSourceStack wrapper) {
+        return this.getBukkitEntity();
     }
-
-    @Override
-    public CraftPlayer getBukkit() {
-        return bukkit;
-    }
-
-    @Override
-    public CommandSender getBukkitSender(CommandSourceStack wrapper) {
-        return bukkit;
-    }
+    // CraftBukkit end
 
     @Override
     public org.bukkit.craftbukkit.entity.CraftHumanEntity getBukkitEntity() {
@@ -386,7 +377,8 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements IMixinCom
                 ((AbstractContainerMenuBridge)container).setTitle(factory.getDisplayName());
 
                 boolean cancelled = false;
-                container = CraftEventFactory.callInventoryOpenEvent((ServerPlayer)(Object)this, container, cancelled);
+                final com.mojang.datafixers.util.Pair<net.kyori.adventure.text.Component, AbstractContainerMenu> result = org.bukkit.craftbukkit.event.CraftEventFactory.callInventoryOpenEventWithTitle(((ServerPlayer)(Object)this), container, cancelled);
+                container = result.getSecond();
                 if (container == null && !cancelled) {
                     if (factory instanceof Container) {
                         ((Container) factory).stopOpen((ServerPlayer)(Object)this);
@@ -569,12 +561,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements IMixinCom
     
     @Inject(at = @At("HEAD"), method = "closeContainer")
     public void cardboard_doInventoryCloseEvent(CallbackInfo ci) {
-        AbstractContainerMenuBridge handler = (AbstractContainerMenuBridge) ((ServerPlayer)(Object)this).containerMenu;
-        CardboardInventoryView view = handler.getBukkitView();
-        view.setPlayerIfNotSet(getBukkit());
-        InventoryCloseEvent event = new InventoryCloseEvent(view);
-        Bukkit.getPluginManager().callEvent(event);
-        handler.transferTo(((ServerPlayer)(Object)this).inventoryMenu, getBukkitEntity());
+        org.bukkit.craftbukkit.event.CraftEventFactory.handleInventoryCloseEvent(((ServerPlayer)(Object)this), InventoryCloseEvent.Reason.UNKNOWN); // CraftBukkit
     }
 
     @Override

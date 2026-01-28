@@ -2,14 +2,14 @@ package org.cardboardpowered.mixin.item;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
-import org.cardboardpowered.interfaces.IItemStack;
+import org.cardboardpowered.bridge.world.item.ItemStackBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -36,7 +36,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 
 @Mixin(value = ItemStack.class, priority = 999)
-public class MixinItemStack implements IItemStack {
+public class MixinItemStack implements ItemStackBridge {
 
     @Shadow
     private Item item;
@@ -143,18 +143,18 @@ public class MixinItemStack implements IItemStack {
                 /*&& !((ItemStack)(Object)this).canPlaceOn(context.getWorld().getTagManager(), cachedBlockPosition)*/) {
             return InteractionResult.PASS;
         }
-        ((IMixinWorld)context.getLevel()).setCaptureBlockStates_BF(true);
+        ((LevelBridge)context.getLevel()).setCaptureBlockStates_BF(true);
 
         Item item = ((ItemStack)(Object)this).getItem();
         InteractionResult actionResult = item.useOn(context);
 
         if (actionResult != InteractionResult.FAIL) {
-            if (((IMixinWorld)context.getLevel()).getCapturedBlockStates_BF().size() > 0) {
-                List<BlockState> blocks = new java.util.ArrayList<>(((IMixinWorld)context.getLevel()).getCapturedBlockStates_BF().values());
-                ((IMixinWorld)context.getLevel()).getCapturedBlockStates_BF().clear();
+            if (((LevelBridge)context.getLevel()).getCapturedBlockStates_BF().size() > 0) {
+                List<BlockState> blocks = new java.util.ArrayList<>(((LevelBridge)context.getLevel()).getCapturedBlockStates_BF().values());
+                ((LevelBridge)context.getLevel()).getCapturedBlockStates_BF().clear();
                 BlockPlaceEvent placeEvent = CraftEventFactory.callBlockPlaceEvent((ServerLevel)context.getLevel(), playerEntity, InteractionHand.MAIN_HAND, blocks.get(0), blockPos.getX(), blockPos.getY(), blockPos.getZ()); 
                 if ((placeEvent.isCancelled() || !placeEvent.canBuild())) {
-                    ((IMixinWorld)context.getLevel()).setCaptureBlockStates_BF(false);
+                    ((LevelBridge)context.getLevel()).setCaptureBlockStates_BF(false);
     
                     CraftBlockState b = (CraftBlockState) blocks.get(0);
                     BlockPos pos = b.getPosition();
@@ -171,7 +171,7 @@ public class MixinItemStack implements IItemStack {
         if (playerEntity != null && actionResult.consumesAction()) {
             playerEntity.awardStat(Stats.ITEM_USED.get(item));
         }
-        ((IMixinWorld)context.getLevel()).setCaptureBlockStates_BF(false);
+        ((LevelBridge)context.getLevel()).setCaptureBlockStates_BF(false);
         return actionResult;
     }
     

@@ -18,14 +18,12 @@
  */
 package org.cardboardpowered.mixin.server;
 
-import com.mojang.datafixers.DataFixer;
 import net.minecraft.server.*;
-import net.minecraft.server.packs.repository.PackRepository;
 import org.cardboardpowered.CardboardMod;
 import org.bukkit.craftbukkit.scheduler.CraftScheduler;
 import org.cardboardpowered.bridge.server.MinecraftServerBridge;
 import org.cardboardpowered.interfaces.IMixinMinecraftServer;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
@@ -74,7 +72,7 @@ import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.generator.WorldInfo;
 import org.cardboardpowered.interfaces.INetworkIo;
-import org.cardboardpowered.interfaces.IServerWorld;
+import org.cardboardpowered.bridge.server.level.ServerLevelBridge;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -85,7 +83,6 @@ import com.google.common.collect.ImmutableList;
 import io.papermc.paper.world.PaperWorldLoader;
 
 import java.lang.reflect.Method;
-import java.net.Proxy;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -209,10 +206,10 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
                 // TODO IMPORTANT
             	
             	// ServerWorld world, ServerWorldProperties worldProperties, boolean bonusChest, boolean debugWorld, ChunkLoadProgress loadProgress
-            	setInitialSpawn(worldserver, worldserver.serverLevelData, false, false, ((IServerWorld) worldserver).cardboard$levelLoadListener());
+            	setInitialSpawn(worldserver, worldserver.serverLevelData, false, false, ((ServerLevelBridge) worldserver).cardboard$levelLoadListener());
             	
             	// this.loadSpawn(worldserver.getChunkManager().chunkLoadingManager.worldGenerationProgressListener, worldserver);
-                CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldLoadEvent(((IMixinWorld)worldserver).getCraftWorld()));
+                CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldLoadEvent(((LevelBridge)worldserver).getCraftWorld()));
             }
         }
 
@@ -397,7 +394,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
     		}
     	});
 
-    	IServerWorld world = (IServerWorld) serverLevel;
+    	ServerLevelBridge world = (ServerLevelBridge) serverLevel;
 
     	world.cardboard$levelLoadListener().start(LevelLoadListener.Stage.LOAD_INITIAL_CHUNKS, chunkLoadCounter.totalChunks());
 
@@ -533,12 +530,12 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
 
         this.paper$initWorldBorder(worldProperties, worldserver);
         
-        Bukkit.getPluginManager().callEvent(new WorldInitEvent(((IMixinWorld) worldserver).getCraftWorld()));
+        Bukkit.getPluginManager().callEvent(new WorldInitEvent(((LevelBridge) worldserver).getCraftWorld()));
         
         if (!worldProperties.isInitialized()) {
             try {
             	// TODO IMPORTANT
-                setInitialSpawn(worldserver, worldProperties, generatorsettings.generateBonusChest(), flag, ((IServerWorld) worldserver).cardboard$levelLoadListener());
+                setInitialSpawn(worldserver, worldProperties, generatorsettings.generateBonusChest(), flag, ((ServerLevelBridge) worldserver).cardboard$levelLoadListener());
                 worldProperties.setInitialized(true);
             } catch (Throwable throwable) {
                 CrashReport crashreport = CrashReport.forThrowable(throwable, "Exception initializing level");
@@ -549,7 +546,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
         }
         
         GlobalPos globalPos = ((MinecraftServer) (Object) this).selectLevelLoadFocusPos();
-        ((IServerWorld) worldserver).cardboard$levelLoadListener().updateFocus(globalPos.dimension(), new ChunkPos(globalPos.pos()));
+        ((ServerLevelBridge) worldserver).cardboard$levelLoadListener().updateFocus(globalPos.dimension(), new ChunkPos(globalPos.pos()));
         /*
         if (worldProperties.getCustomBossEvents() != null) {
            this.getBossBarManager().readNbt(serverLevelData.getCustomBossEvents(), this.getRegistryManager());

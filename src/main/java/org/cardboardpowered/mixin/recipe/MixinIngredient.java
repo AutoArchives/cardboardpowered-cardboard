@@ -5,7 +5,7 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import org.cardboardpowered.interfaces.IIngredient;
+import org.cardboardpowered.bridge.world.item.crafting.IngredientBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Ingredient.class)
-public class MixinIngredient implements IIngredient {
+public class MixinIngredient implements IngredientBridge {
 
 	@Shadow
 	private HolderSet<Item> values;
@@ -110,7 +110,7 @@ public class MixinIngredient implements IIngredient {
             cancellable = true)
     private void cardboard$does_ingredient_equal(Object other, CallbackInfoReturnable<Boolean> cir) {
     	if (other instanceof Ingredient ingredient) {
-    		boolean paper_equals = Objects.equals(this.itemStacks, ((IIngredient)ingredient).cb$itemStacks());
+    		boolean paper_equals = Objects.equals(this.itemStacks, ((IngredientBridge)ingredient).cb$itemStacks());
     		if (!paper_equals) {
     			cir.setReturnValue(false);
     			return;

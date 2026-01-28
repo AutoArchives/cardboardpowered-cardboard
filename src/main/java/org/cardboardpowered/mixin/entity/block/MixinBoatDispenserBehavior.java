@@ -4,7 +4,7 @@
  */
 package org.cardboardpowered.mixin.entity.block;
 
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.dispenser.BlockSource;
@@ -53,7 +53,7 @@ public class MixinBoatDispenserBehavior {
        // }
 
         ItemStack itemstack1 = itemstack.split(1);
-        org.bukkit.block.Block block = ((IMixinWorld)worldserver).getCraftWorld().getBlockAt(isourceblock.pos().getX(), isourceblock.pos().getY(), isourceblock.pos().getZ());
+        org.bukkit.block.Block block = ((LevelBridge)worldserver).getCraftWorld().getBlockAt(isourceblock.pos().getX(), isourceblock.pos().getY(), isourceblock.pos().getZ());
         CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack1);
 
         BlockDispenseEvent event = new BlockDispenseEvent(block, craftItem.clone(), new org.bukkit.util.Vector(d0, d1 + d3, d2));

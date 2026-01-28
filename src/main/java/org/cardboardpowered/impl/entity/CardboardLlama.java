@@ -1,7 +1,7 @@
 package org.cardboardpowered.impl.entity;
 
 import com.google.common.base.Preconditions;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
@@ -92,7 +92,7 @@ public class CardboardLlama extends CardboardChestedHorse implements Llama {
 
 	@Override
     public Llama getCaravanHead() {
-        return this.getHandle().getCaravanHead() == null ? null : (Llama)((IMixinEntity)this.getHandle().getCaravanHead()).getBukkitEntity();
+        return this.getHandle().getCaravanHead() == null ? null : (Llama)((EntityBridge)this.getHandle().getCaravanHead()).getBukkitEntity();
     }
 
 	@Override

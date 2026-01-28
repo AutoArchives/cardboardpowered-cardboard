@@ -25,8 +25,8 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
 import org.cardboardpowered.interfaces.IMixinPlayerManager;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
-import org.cardboardpowered.interfaces.IMixinServerLoginNetworkHandler;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.server.network.ServerLoginPacketListenerImplBridge;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 
@@ -377,13 +377,13 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
         }
 
         String key = "multiplayer.player.joined";
-        Component name = plr.nms.getDisplayName();
+        Component name = plr.getHandle().getDisplayName();
 
         String joinMessage = ChatFormatting.YELLOW + Component.translatable(key, name).getString();
 
         PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(plr, joinMessage);
         CraftEventFactory.callEvent(playerJoinEvent);
-        IMixinPlayNetworkHandler ims = (IMixinPlayNetworkHandler)plr.nms.connection;
+        IMixinPlayNetworkHandler ims = (IMixinPlayNetworkHandler)plr.getHandle().connection;
 
         if (!ims.cb_get_connection().isConnected()) {
             return;
@@ -522,7 +522,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
             entityplayer.connection.disconnect(Component.nullToEmpty("multiplayer.disconnect.duplicate_login"));
         }
 
-        IMixinServerLoginNetworkHandler ims = (IMixinServerLoginNetworkHandler)nethand;
+        ServerLoginPacketListenerImplBridge ims = (ServerLoginPacketListenerImplBridge)nethand;
         SocketAddress address = ims.cb_get_connection().getRemoteAddress();
 
         // me.isaiah.common.cmixin.IMixinPlayerManager imixin = (me.isaiah.common.cmixin.IMixinPlayerManager) (Object)this;
@@ -726,7 +726,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
 
             player.triggerDimensionChangeTriggers(level);
             if (fromWorld != level) {
-                PlayerChangedWorldEvent event = new PlayerChangedWorldEvent((Player) (Player)((ServerPlayerBridge)player).getBukkitEntity(), ((IMixinWorld) fromWorld).getCraftWorld());
+                PlayerChangedWorldEvent event = new PlayerChangedWorldEvent((Player) (Player)((ServerPlayerBridge)player).getBukkitEntity(), ((LevelBridge) fromWorld).getCraftWorld());
                 CraftServer.INSTANCE.getPluginManager().callEvent(event);
             }
 

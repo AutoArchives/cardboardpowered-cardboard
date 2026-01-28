@@ -2,13 +2,13 @@ package org.cardboardpowered.mixin.screen;
 
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.LecternMenu;
 import net.minecraft.world.item.ItemStack;
 import org.bukkit.Bukkit;
-import org.cardboardpowered.impl.inventory.CardboardInventoryView;
+import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.craftbukkit.inventory.CraftInventoryLectern;
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTakeLecternBookEvent;
 import org.cardboardpowered.mixin.world.inventory.AbstractContainerMenuMixin;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,7 +18,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LecternMenu.class)
 public class MixinLecternScreenHandler extends AbstractContainerMenuMixin {
@@ -29,20 +30,20 @@ public class MixinLecternScreenHandler extends AbstractContainerMenuMixin {
     @Shadow
     public ContainerData lecternData;
 
-    private CardboardInventoryView bukkitEntity = null;
-    private Player player;
+    private CraftInventoryView bukkitEntity = null;
+    private org.bukkit.entity.Player player;
 
     @Inject(method = "<init>(ILnet/minecraft/world/Container;Lnet/minecraft/world/inventory/ContainerData;)V", at = @At("TAIL"))
     public void setPlayerInv(int i, Container iinventory, ContainerData icontainerproperties, CallbackInfo ci) {
-        this.player = (Player)((IMixinEntity)((Inventory)iinventory).player).getBukkitEntity();
+        this.player = (org.bukkit.entity.Player)((EntityBridge)((Inventory)iinventory).player).getBukkitEntity();
     }
 
     @Override
-    public CardboardInventoryView getBukkitView() {
+    public CraftInventoryView getBukkitView() {
         if (bukkitEntity != null) return bukkitEntity;
 
         CraftInventoryLectern inventory = new CraftInventoryLectern(this.lectern);
-        bukkitEntity = new CardboardInventoryView(this.player, inventory, (LecternMenu)(Object)this);
+        bukkitEntity = new CraftInventoryView(this.player, inventory, (LecternMenu)(Object)this);
         return bukkitEntity;
     }
 
@@ -51,7 +52,7 @@ public class MixinLecternScreenHandler extends AbstractContainerMenuMixin {
      * @author .
      */
     @Overwrite
-    public boolean clickMenuButton(net.minecraft.world.entity.player.Player entityhuman, int i) {
+    public boolean clickMenuButton(Player entityhuman, int i) {
         int j;
 
         if (i >= 100) {
@@ -86,4 +87,8 @@ public class MixinLecternScreenHandler extends AbstractContainerMenuMixin {
         }
     }
 
+    @Inject(method = "stillValid", at = @At("HEAD"), cancellable = true)
+    public void stillValidCraftBukkit(Player player, CallbackInfoReturnable<Boolean> cir) {
+        if (!this.checkReachable) cir.setReturnValue(true); // CraftBukkit
+    }
 }

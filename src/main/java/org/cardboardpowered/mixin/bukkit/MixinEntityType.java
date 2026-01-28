@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.EntityType;
-import org.cardboardpowered.interfaces.IEntityType;
+import org.cardboardpowered.bridge.bukkit.entity.BukkitEntityTypeBridge;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(value = EntityType.class, remap = false)
-public class MixinEntityType implements IEntityType {
+public class MixinEntityType implements BukkitEntityTypeBridge {
 
 	@Shadow
 	private static final Map<String, EntityType> NAME_MAP = new HashMap<String, EntityType>();

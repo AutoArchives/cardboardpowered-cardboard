@@ -6,8 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
-import org.cardboardpowered.interfaces.ILevelProperties;
-import org.cardboardpowered.util.MixinInfo;
+import org.cardboardpowered.bridge.world.level.storage.PrimaryLevelDataBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 // @MixinInfo(events = {"ThunderChangeEvent","WeatherChangeEvent"})
 @Mixin(PrimaryLevelData.class)
-public class MixinLevelProperties implements ILevelProperties {
+public class MixinLevelProperties implements PrimaryLevelDataBridge {
 
     @Shadow
     private LevelSettings settings;

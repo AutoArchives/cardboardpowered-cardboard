@@ -1,6 +1,5 @@
 package org.bukkit.craftbukkit.inventory;
 
-import static org.bukkit.craftbukkit.inventory.CraftMetaItem.ENCHANTMENTS;
 // import static org.bukkit.craftbukkit.inventory.CraftMetaItem.ENCHANTMENTS_ID;
 // import static org.bukkit.craftbukkit.inventory.CraftMetaItem.ENCHANTMENTS_LVL;
 
@@ -12,25 +11,20 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang.Validate;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
+        import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.util.CraftLegacy;
+        import org.bukkit.craftbukkit.util.CraftLegacy;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
-import org.cardboardpowered.impl.CardboardEnchantment;
-import org.cardboardpowered.interfaces.IItemStack;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
+import org.cardboardpowered.bridge.world.item.ItemStackBridge;
 
-import com.google.common.collect.ImmutableMap;
-import com.mojang.authlib.GameProfile;
-import com.mojang.serialization.Dynamic;
-import net.minecraft.advancements.criterion.DataComponentMatchers;
+        import com.google.common.collect.ImmutableMap;
+        import net.minecraft.advancements.criterion.DataComponentMatchers;
 import net.minecraft.advancements.criterion.ItemPredicate;
 import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.core.Holder;
@@ -42,8 +36,7 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.Identifier;
+        import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -320,7 +313,7 @@ public final class CraftItemStack extends ItemStack {
     @Override
     public int getEnchantmentLevel(Enchantment ench) {
         
-        return (handle == null) ? 0 : EnchantmentHelper.getItemEnchantmentLevel(CardboardEnchantment.bukkitToMinecraftHolder(ench), handle);
+        return (handle == null) ? 0 : EnchantmentHelper.getItemEnchantmentLevel(CraftEnchantment.bukkitToMinecraftHolder(ench), handle);
 
     	
     	//return (handle == null) ? 0 : EnchantmentHelper.getLevel(CardboardEnchantment.getRaw(ench), handle);
@@ -835,7 +828,7 @@ public final class CraftItemStack extends ItemStack {
             return false;
         }
         if (CraftItemFactory.instance().equals(itemMeta, null)) {
-        	((IItemStack)item).cardboard$restore_patch(DataComponentPatch.EMPTY);
+        	((ItemStackBridge)item).cardboard$restore_patch(DataComponentPatch.EMPTY);
             return true;
         }
         if (!CraftItemFactory.instance().isApplicable(itemMeta, CraftItemStack.getType(item))) {
@@ -847,7 +840,7 @@ public final class CraftItemStack extends ItemStack {
         }
         Item oldItem = item.getItem();
         if (oldItem != (newItem = CraftItemType.bukkitToMinecraft(CraftItemFactory.instance().updateMaterial(itemMeta, CraftItemType.minecraftToBukkit(oldItem))))) {
-        	((IItemStack)item).cb$setItem(newItem);
+        	((ItemStackBridge)item).cb$setItem(newItem);
         }
         if (!((CraftMetaItem)itemMeta).isEmpty()) {
             CraftMetaItem.Applicator tag = new CraftMetaItem.Applicator(){
@@ -859,7 +852,7 @@ public final class CraftItemStack extends ItemStack {
             };
             ((CraftMetaItem)itemMeta).applyToItem(tag);
             // item.restorePatch(tag.build());
-            ((IItemStack)item).cardboard$restore_patch(tag.build());
+            ((ItemStackBridge)item).cardboard$restore_patch(tag.build());
         }
         if (item.getItem() != null && item.getMaxDamage() > 0) {
             item.setDamageValue(item.getDamageValue());
@@ -1042,7 +1035,7 @@ public final class CraftItemStack extends ItemStack {
     }
 
     private <A, V> void setDataInternal(final io.papermc.paper.datacomponent.PaperDataComponentType<A, V> type, final A value) {
-        this.handle.set(type.getHandle(), type.getAdapter().toVanilla(value));
+        this.handle.set(type.getHandle(), type.getAdapter().toVanilla(value, type.getHolder()));
     }
 
     @Override

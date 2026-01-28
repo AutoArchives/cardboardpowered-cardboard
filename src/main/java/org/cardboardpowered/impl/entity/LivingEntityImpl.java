@@ -51,7 +51,7 @@ import com.javazilla.bukkitfabric.Utils;
 import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.world.damagesource.CombatTracker;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.interfaces.IMixinLivingEntity;
 
 import net.kyori.adventure.key.Key;
@@ -269,7 +269,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public Player getKiller() {
-        return Optionull.map(this.getHandle().getLastHurtByPlayer(), player -> (Player) ((IMixinEntity)player).getBukkitEntity());
+        return Optionull.map(this.getHandle().getLastHurtByPlayer(), player -> (Player) ((EntityBridge)player).getBukkitEntity());
     }
 
 
@@ -285,7 +285,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
 
     @Override
     public Entity getLeashHolder() throws IllegalStateException {
-        return ((IMixinEntity)((Mob) entity).getLeashHolder()).getBukkitEntity();
+        return ((EntityBridge)((Mob) entity).getLeashHolder()).getBukkitEntity();
     }
 
     private List<Block> getLineOfSight(Set<Material> transparent, int maxDistance, int maxLength) {

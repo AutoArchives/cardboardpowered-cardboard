@@ -4,7 +4,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.interfaces.IMixinLivingEntity;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.bukkit.Bukkit;
@@ -104,8 +104,8 @@ public abstract class MixinLivingEntity extends EntityMixin implements IMixinLiv
             this.dropCustomDeathLoot((ServerLevel) world, damagesource, flag);
         }
 
-        CraftEventFactory.callEntityDeathEvent(get(), damagesource, ((IMixinEntity)this).cardboard_getDrops());
-        ((IMixinEntity)this).cardboard_setDrops(new ArrayList<>());
+        CraftEventFactory.callEntityDeathEvent(get(), damagesource, ((EntityBridge)this).cardboard_getDrops());
+        ((EntityBridge)this).cardboard_setDrops(new ArrayList<>());
         this.dropExperience(world, damagesource.getEntity());
         ci.cancel();
         return;
@@ -218,9 +218,9 @@ public abstract class MixinLivingEntity extends EntityMixin implements IMixinLiv
             ItemEntity itemEntity = this.createItemStackToDrop(stack, randomizeMotion, includeThrower);
             if (itemEntity != null) {
                 // CraftBukkit start - fire PlayerDropItemEvent
-                if (entityOperation != null) entityOperation.accept((org.bukkit.entity.Item)((IMixinEntity)itemEntity).getBukkitEntity());
+                if (entityOperation != null) entityOperation.accept((org.bukkit.entity.Item)((EntityBridge)itemEntity).getBukkitEntity());
                 if (callEvent && this.getBukkitEntity() instanceof org.bukkit.entity.Player player) {
-                    org.bukkit.entity.Item drop = (org.bukkit.entity.Item)((IMixinEntity)itemEntity).getBukkitEntity();
+                    org.bukkit.entity.Item drop = (org.bukkit.entity.Item)((EntityBridge)itemEntity).getBukkitEntity();
 
                     org.bukkit.event.player.PlayerDropItemEvent event = new org.bukkit.event.player.PlayerDropItemEvent(player, drop);
                     CraftServer.INSTANCE.getPluginManager().callEvent(event);

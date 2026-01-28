@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
 import org.cardboardpowered.interfaces.IMixinScreenHandlerContext;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 @Mixin(ContainerLevelAccess.class)
 public interface MixinScreenHandlerContext extends IMixinScreenHandlerContext {
@@ -26,7 +26,7 @@ public interface MixinScreenHandlerContext extends IMixinScreenHandlerContext {
 
     @Override
     default org.bukkit.Location getLocation() {
-        return new org.bukkit.Location(((IMixinWorld)getWorld()).getCraftWorld(), getPosition().getX(), getPosition().getY(), getPosition().getZ());
+        return new org.bukkit.Location(((LevelBridge)getWorld()).getCraftWorld(), getPosition().getX(), getPosition().getY(), getPosition().getZ());
     }
 
     /**

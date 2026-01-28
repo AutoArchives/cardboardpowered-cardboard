@@ -4,7 +4,6 @@ import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Turtle;
-import org.cardboardpowered.impl.entity.CraftAnimals;
 
 public class CraftTurtle extends CraftAnimals implements Turtle {
 

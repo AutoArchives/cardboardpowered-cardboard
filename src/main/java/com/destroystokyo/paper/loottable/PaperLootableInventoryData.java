@@ -1,14 +1,10 @@
 package com.destroystokyo.paper.loottable;
 
-import com.destroystokyo.paper.loottable.LootableInventoryReplenishEvent;
-import com.destroystokyo.paper.loottable.PaperLootableInventory;
-import com.mojang.datafixers.kinds.App;
-import com.mojang.datafixers.kinds.Applicative;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import org.cardboardpowered.CardboardMod;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 
 //import io.papermc.paper.configuration.WorldConfiguration;
 //import io.papermc.paper.configuration.type.DurationOrDisabled;
@@ -16,7 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.level.storage.ValueInput;
@@ -73,7 +68,7 @@ public class PaperLootableInventoryData {
             return false;
         }
 
-        Player bukkitPlayer = (Player)((IMixinEntity) player).getBukkitEntity();
+        Player bukkitPlayer = (Player)((EntityBridge) player).getBukkitEntity();
         LootableInventoryReplenishEvent event = new LootableInventoryReplenishEvent(bukkitPlayer, this.lootable.getAPILootableInventory());
         event.setCancelled(!this.canPlayerLoot(player.getUUID(), null));
         return event.callEvent();

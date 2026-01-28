@@ -18,8 +18,7 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.potion.PotionType;
 
-import org.cardboardpowered.CardboardMod;
-import org.cardboardpowered.interfaces.IEntityType;
+import org.cardboardpowered.bridge.bukkit.entity.BukkitEntityTypeBridge;
 
 import io.izzel.arclight.api.EnumHelper;
 
@@ -67,7 +66,7 @@ public class RegistryUtil {
                 		List.of(entityType.toLowerCase(), Entity.class, typeId, false)
                 );
                 
-                IEntityType cb = (IEntityType) (Object) bukkitType;
+                BukkitEntityTypeBridge cb = (BukkitEntityTypeBridge) (Object) bukkitType;
                 
                 cb.cardboard$setKey(key);
                 cb.cardboard$addToMaps(entityType.toLowerCase(), (short) typeId);

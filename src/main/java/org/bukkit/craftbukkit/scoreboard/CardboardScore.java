@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.scoreboard;
 
+import io.papermc.paper.adventure.PaperAdventure;
 import net.kyori.adventure.text.Component;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.ScoreHolder;
@@ -9,7 +10,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
-import org.cardboardpowered.adventure.CardboardAdventure;
 import org.jetbrains.annotations.Nullable;
 
 import io.papermc.paper.scoreboard.numbers.NumberFormat;
@@ -105,13 +105,13 @@ public final class CardboardScore implements Score {
             return null;
         }
         net.minecraft.network.chat.Component display = board.getOrCreatePlayerScore(this.entry, this.objective.getHandle()).display();
-        return display == null ? null : CardboardAdventure.asAdventure(display);
+        return display == null ? null : PaperAdventure.asAdventure(display);
 	}
 
 	@Override
 	public void customName(@Nullable Component customName) {
 		Scoreboard board = this.objective.checkState().board;
-        board.getOrCreatePlayerScore(this.entry, this.objective.getHandle()).display(CardboardAdventure.asVanilla(customName));
+        board.getOrCreatePlayerScore(this.entry, this.objective.getHandle()).display(PaperAdventure.asVanilla(customName));
 	}
 
 	@Override

@@ -3,12 +3,12 @@ package org.cardboardpowered.mixin.screen;
 import net.minecraft.world.CompoundContainer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftInventoryDoubleChest;
-import org.cardboardpowered.impl.inventory.CardboardInventoryView;
-import org.bukkit.entity.Player;
+import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.cardboardpowered.impl.inventory.CardboardPlayerInventory;
 import org.cardboardpowered.mixin.world.inventory.AbstractContainerMenuMixin;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ChestMenu.class)
 public class MixinGenericContainerScreenHandler extends AbstractContainerMenuMixin {
@@ -25,7 +26,7 @@ public class MixinGenericContainerScreenHandler extends AbstractContainerMenuMix
     @Shadow
     public Container container;
 
-    private CardboardInventoryView bukkitEntity = null;
+    private CraftInventoryView bukkitEntity = null;
     private Inventory inventory;
 
     @Inject(method = "<init>(Lnet/minecraft/world/inventory/MenuType;ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/Container;I)V", at = @At("TAIL"))
@@ -34,7 +35,7 @@ public class MixinGenericContainerScreenHandler extends AbstractContainerMenuMix
     }
 
     @Override
-    public CardboardInventoryView getBukkitView() {
+    public CraftInventoryView getBukkitView() {
         if (bukkitEntity != null)
             return bukkitEntity;
 
@@ -45,12 +46,17 @@ public class MixinGenericContainerScreenHandler extends AbstractContainerMenuMix
             inventory = new CraftInventoryDoubleChest((CompoundContainer) this.container);
         } else inventory = new CraftInventory(this.container);
 
-        bukkitEntity = new CardboardInventoryView((Player)((ServerPlayerBridge)this.inventory.player).getBukkitEntity(), inventory, (ChestMenu)(Object)this);
+        bukkitEntity = new CraftInventoryView((org.bukkit.entity.Player)((ServerPlayerBridge)this.inventory.player).getBukkitEntity(), inventory, (ChestMenu)(Object)this);
         return bukkitEntity;
     }
 
     @Override
     public void cardboard$startOpen() {
         this.container.startOpen(this.inventory.player);
+    }
+
+    @Inject(method = "stillValid", at = @At("HEAD"), cancellable = true)
+    public void stillValidCraftBukkit(Player player, CallbackInfoReturnable<Boolean> cir) {
+        if (!this.checkReachable) cir.setReturnValue(true); // CraftBukkit
     }
 }

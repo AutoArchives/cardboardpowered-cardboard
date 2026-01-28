@@ -7,7 +7,7 @@ import java.util.concurrent.Executor;
 import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.CardboardConfig;
 import org.cardboardpowered.impl.world.CraftWorld;
-import org.cardboardpowered.interfaces.IServerWorld;
+import org.cardboardpowered.bridge.server.level.ServerLevelBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.cardboardpowered.CardboardMod;
 import com.javazilla.bukkitfabric.Utils;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -34,7 +34,7 @@ import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.ServerLevelData;
 
 @Mixin(ServerLevel.class)
-public class MixinServerWorld extends MixinWorld implements IServerWorld {
+public class MixinServerWorld extends MixinWorld implements ServerLevelBridge {
 
    // @Shadow
    // public boolean inEntityTick;
@@ -87,7 +87,7 @@ public class MixinServerWorld extends MixinWorld implements IServerWorld {
     
     @Override
     public CraftWorld getWorld() {
-        return ((IMixinWorld)(Object)this).getCraftWorld();
+        return ((LevelBridge)(Object)this).getCraftWorld();
     }
 
 	@Override

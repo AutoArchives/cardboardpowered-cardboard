@@ -1,5 +1,6 @@
 package org.cardboardpowered.impl.block;
 
+import io.papermc.paper.adventure.PaperAdventure;
 import net.kyori.adventure.text.Component;
 import net.minecraft.world.level.block.entity.BrewingStandBlockEntity;
 import org.bukkit.Location;
@@ -9,7 +10,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BrewingStand;
 import org.bukkit.craftbukkit.block.CraftContainer;
 import org.bukkit.inventory.BrewerInventory;
-import org.cardboardpowered.adventure.CardboardAdventure;
 import org.cardboardpowered.impl.inventory.CardboardBrewerInventory;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
@@ -76,7 +76,7 @@ public class CardboardBrewingStand extends CraftContainer<BrewingStandBlockEntit
     @Override
     public @Nullable Component customName() {
         // TODO Auto-generated method stub
-        return CardboardAdventure.asAdventure(net.minecraft.network.chat.Component.nullToEmpty(super.getCustomName()));
+        return PaperAdventure.asAdventure(net.minecraft.network.chat.Component.nullToEmpty(super.getCustomName()));
     }
 
     @Override

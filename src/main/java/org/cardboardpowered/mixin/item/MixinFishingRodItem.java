@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 
 @MixinInfo(events = {"PlayerFishEvent"})
 @Mixin(FishingRodItem.class)
@@ -32,7 +32,7 @@ public class MixinFishingRodItem {
             int j = EnchantmentHelper.getFishingLuckBonus((ServerLevel) world, itemstack, entityhuman);
             
             FishingHook entityfishinghook = new FishingHook(entityhuman, world, j, i);
-            PlayerFishEvent playerFishEvent = new PlayerFishEvent((org.bukkit.entity.Player) ((IMixinEntity)entityhuman).getBukkitEntity(), null, (org.bukkit.entity.FishHook) ((IMixinEntity)entityfishinghook).getBukkitEntity(), PlayerFishEvent.State.FISHING);
+            PlayerFishEvent playerFishEvent = new PlayerFishEvent((org.bukkit.entity.Player) ((EntityBridge)entityhuman).getBukkitEntity(), null, (org.bukkit.entity.FishHook) ((EntityBridge)entityfishinghook).getBukkitEntity(), PlayerFishEvent.State.FISHING);
             Bukkit.getPluginManager().callEvent(playerFishEvent);
     
             if (playerFishEvent.isCancelled()) {

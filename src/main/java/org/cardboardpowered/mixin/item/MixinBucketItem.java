@@ -14,7 +14,7 @@ import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.BlockHitResult;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.spongepowered.asm.mixin.Mixin;
@@ -72,7 +72,7 @@ public class MixinBucketItem extends Item {
 	                PlayerBucketEmptyEvent event = CraftEventFactory.callPlayerBucketEmptyEvent(world, (net.minecraft.world.entity.player.Player) player, blockposition, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getDirection(), player.getItemInHand(player.getUsedItemHand()), player.getUsedItemHand());
 	                if (event.isCancelled()) {
 	                    ((ServerPlayer) player).connection.send(new ClientboundBlockUpdatePacket(world, blockposition));
-	                    ((Player)((IMixinEntity) player).getBukkitEntity()).updateInventory();
+	                    ((Player)((EntityBridge) player).getBukkitEntity()).updateInventory();
 	                    ci.setReturnValue(false);
 	                    return;
 	                }

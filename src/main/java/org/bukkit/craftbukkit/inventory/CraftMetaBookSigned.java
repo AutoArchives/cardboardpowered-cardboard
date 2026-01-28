@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
+import io.papermc.paper.adventure.PaperAdventure;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -29,7 +31,6 @@ import org.bukkit.craftbukkit.inventory.CraftMetaItem;
 import org.bukkit.craftbukkit.inventory.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.inventory.meta.BookMeta;
-import org.cardboardpowered.adventure.CardboardAdventure;
 
 @DelegateDeserialization(value=SerializableMeta.class)
 public class CraftMetaBookSigned
@@ -338,7 +339,7 @@ implements BookMeta {
         super((CraftMetaItem)Bukkit.getItemFactory().getItemMeta(Material.WRITABLE_BOOK));
         this.title = title == null ? null : LEGACY_DOWNSAMPLING_COMPONENT_SERIALIZER.serialize(title);
         this.author = author == null ? null : LEGACY_DOWNSAMPLING_COMPONENT_SERIALIZER.serialize(author);
-        this.pages = CardboardAdventure.asVanilla(pages.subList(0, Math.min(Integer.MAX_VALUE, pages.size())));
+        this.pages = PaperAdventure.asVanilla(pages.subList(0, Math.min(Integer.MAX_VALUE, pages.size())));
     }
 
     public BookMeta.BookMetaBuilder toBuilder() {
@@ -365,21 +366,21 @@ implements BookMeta {
 
     public Component page(int page) {
         Preconditions.checkArgument((boolean)this.isValidPage(page), "Invalid page number");
-        return CardboardAdventure.asAdventure(this.pages.get(page - 1));
+        return PaperAdventure.asAdventure(this.pages.get(page - 1));
     }
 
     public void page(int page, Component data) {
         if (!this.isValidPage(page)) {
             throw new IllegalArgumentException("Invalid page number " + page + "/" + this.pages.size());
         }
-        this.pages.set(page - 1, CardboardAdventure.asVanillaNullToEmpty(data));
+        this.pages.set(page - 1, PaperAdventure.asVanillaNullToEmpty(data));
     }
 
     public List<Component> pages() {
         if (this.pages == null) {
             return ImmutableList.of();
         }
-        return (List)this.pages.stream().map(CardboardAdventure::asAdventure).collect(ImmutableList.toImmutableList());
+        return (List)this.pages.stream().map(PaperAdventure::asAdventure).collect(ImmutableList.toImmutableList());
     }
 
     public BookMeta pages(List<Component> pages) {
@@ -408,7 +409,7 @@ implements BookMeta {
             if (this.pages.size() >= Integer.MAX_VALUE) {
                 return;
             }
-            this.pages.add(CardboardAdventure.asVanillaNullToEmpty(page));
+            this.pages.add(PaperAdventure.asVanillaNullToEmpty(page));
         }
     }
 

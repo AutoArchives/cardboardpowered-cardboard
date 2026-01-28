@@ -7,13 +7,13 @@ import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelStorageSource.LevelStorageAccess;
 import net.minecraft.world.level.validation.ContentValidationException;
-import org.cardboardpowered.interfaces.ILevelStorage;
-import org.cardboardpowered.interfaces.ILevelStorageSession;
+import org.cardboardpowered.bridge.world.level.storage.LevelStorageSourceBridge;
+import org.cardboardpowered.bridge.world.level.storage.LevelStorageSource_LevelStorageAccessBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(LevelStorageSource.class)
-public class MixinLevelStorage implements ILevelStorage {
+public class MixinLevelStorage implements LevelStorageSourceBridge {
 
 	@Override
 	public Path getStorageFolder(Path path, ResourceKey<LevelStem> dimensionType) {
@@ -31,7 +31,7 @@ public class MixinLevelStorage implements ILevelStorage {
 	@Override
 	public LevelStorageSource.LevelStorageAccess validateAndCreateAccess(String saveName, ResourceKey<LevelStem> dimensionType) throws IOException, ContentValidationException {
 		LevelStorageSource.LevelStorageAccess vanilla = this.validateAndCreateAccess(saveName);
-		((ILevelStorageSession) vanilla).cardboard$set_dimensionType(dimensionType); // Paper-ize
+		((LevelStorageSource_LevelStorageAccessBridge) vanilla).cardboard$set_dimensionType(dimensionType); // Paper-ize
 		return vanilla;
 	}
 	

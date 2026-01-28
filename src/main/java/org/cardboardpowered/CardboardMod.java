@@ -39,9 +39,9 @@ import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.world.CraftWorld;
 
 import org.cardboardpowered.bridge.world.level.block.entity.BlockEntityBridge;
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 import me.isaiah.common.event.EventHandler;
 import me.isaiah.common.event.EventRegistery;
@@ -122,7 +122,7 @@ public class CardboardMod implements ModInitializer {
 
     @EventHandler
     public void on_leaves_decay(LeavesDecayEvent ev) {
-    	CraftWorld w = ((IMixinWorld)ev.world).getCraftWorld();
+    	CraftWorld w = ((LevelBridge)ev.world).getCraftWorld();
     	org.bukkit.event.block.LeavesDecayEvent event = 
 				new org.bukkit.event.block.LeavesDecayEvent(w.getBlockAt(ev.pos.getX(), ev.pos.getY(), ev.pos.getZ()));
         Bukkit.getPluginManager().callEvent(event);
@@ -216,10 +216,10 @@ public class CardboardMod implements ModInitializer {
             }
             
 
-            ((IMixinWorld)nms).set_bukkit_world( new CraftWorld(name, nms) );
-            CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldInitEvent(((IMixinWorld)nms).getCraftWorld()));
+            ((LevelBridge)nms).set_bukkit_world( new CraftWorld(name, nms) );
+            CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldInitEvent(((LevelBridge)nms).getCraftWorld()));
         } else {
-            ((IMixinWorld)nms).set_bukkit_world( new CraftWorld(name, nms) );
+            ((LevelBridge)nms).set_bukkit_world( new CraftWorld(name, nms) );
         }
         
         // Object o = nms.convertable;
@@ -227,7 +227,7 @@ public class CardboardMod implements ModInitializer {
         // this.uuid = WorldUUID.getUUID(levelStorageAccess.getDimensionPath(nms.getDimension()).toFile());
         // nms.cardboard$set_uuid(Utils.getWorldUUID(((IMixinWorld)nms).getCraftWorld().getWorldFolder())); 
         
-        ((CraftServer)Bukkit.getServer()).addWorldToMap( ((IMixinWorld)nms).getCraftWorld() );
+        ((CraftServer)Bukkit.getServer()).addWorldToMap( ((LevelBridge)nms).getCraftWorld() );
     }
     
     // TODO
@@ -244,7 +244,7 @@ public class CardboardMod implements ModInitializer {
     @SuppressWarnings("removal")
 	@EventHandler
     public void onGamemodeChange(PlayerGamemodeChangeEvent ev) {
-        PlayerGameModeChangeEvent event = new PlayerGameModeChangeEvent((Player) ((IMixinEntity)ev.getPlayer().getMC()).getBukkitEntity(), GameMode.getByValue(ev.getNewGamemode().getId()));
+        PlayerGameModeChangeEvent event = new PlayerGameModeChangeEvent((Player) ((EntityBridge)ev.getPlayer().getMC()).getBukkitEntity(), GameMode.getByValue(ev.getNewGamemode().getId()));
         CraftServer.INSTANCE.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             ev.setCanceled(true);
@@ -308,7 +308,7 @@ public class CardboardMod implements ModInitializer {
     	Level world = ev.getEntity().level(); // TODO: should we add EntityPortalCollideEvent.getWorld() ?
 
     	if (!entity.isPassenger() && !entity.isVehicle() && entity.canUsePortal(true)) {
-            EntityPortalEnterEvent event = new EntityPortalEnterEvent(((IMixinEntity)entity).getBukkitEntity(), new org.bukkit.Location(((IMixinWorld)world).getCraftWorld(), pos.getX(), pos.getY(), pos.getZ()));
+            EntityPortalEnterEvent event = new EntityPortalEnterEvent(((EntityBridge)entity).getBukkitEntity(), new org.bukkit.Location(((LevelBridge)world).getCraftWorld(), pos.getX(), pos.getY(), pos.getZ()));
             Bukkit.getPluginManager().callEvent(event);
         }
     }

@@ -7,8 +7,8 @@ import net.minecraft.world.level.Level;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.cardboardpowered.bridge.world.entity.MobBridge;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
-import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IServerWorld;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
+import org.cardboardpowered.bridge.server.level.ServerLevelBridge;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Mob.class)
-public abstract class MobMixin extends LivingEntity implements MobBridge, IMixinEntity {
+public abstract class MobMixin extends LivingEntity implements MobBridge, EntityBridge {
     @Shadow
     @Nullable
     public LivingEntity target;
@@ -48,7 +48,7 @@ public abstract class MobMixin extends LivingEntity implements MobBridge, IMixin
                 reason = this.getTarget().isAlive() ? EntityTargetEvent.TargetReason.FORGOT_TARGET : EntityTargetEvent.TargetReason.TARGET_DIED;
             }
             if (reason == EntityTargetEvent.TargetReason.UNKNOWN) {
-                ((IServerWorld)this.level()).getCraftServer().getLogger().log(java.util.logging.Level.WARNING, "Unknown target reason, please report on the issue tracker", new Exception());
+                ((ServerLevelBridge)this.level()).getCraftServer().getLogger().log(java.util.logging.Level.WARNING, "Unknown target reason, please report on the issue tracker", new Exception());
             }
             LivingEntityImpl ctarget = null;
             if (target != null) {

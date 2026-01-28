@@ -2,7 +2,7 @@ package org.cardboardpowered.mixin;
 
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 
-import org.cardboardpowered.interfaces.IComponentChanges;
+import org.cardboardpowered.bridge.core.component.DataComponentPatch_BuilderBridge;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -12,7 +12,7 @@ import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
 
 @Mixin(DataComponentPatch.Builder.class)
-public class MixinComponentChanges implements IComponentChanges {
+public class MixinComponentChanges implements DataComponentPatch_BuilderBridge {
 
     @Shadow @Final private Reference2ObjectMap<DataComponentType<?>, Optional<?>> map;
 

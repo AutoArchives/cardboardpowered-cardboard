@@ -7,7 +7,7 @@ import org.bukkit.entity.LlamaSpit;
 import org.bukkit.projectiles.ProjectileSource;
 import org.jetbrains.annotations.Nullable;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 
 public class CardboardLlamaSpit extends AbstractProjectile implements LlamaSpit {
 
@@ -32,7 +32,7 @@ public class CardboardLlamaSpit extends AbstractProjectile implements LlamaSpit 
 
     @Override
     public ProjectileSource getShooter() {
-        return (getHandle().getOwner() != null) ? (ProjectileSource) ((IMixinEntity)getHandle().getOwner()).getBukkitEntity() : null;
+        return (getHandle().getOwner() != null) ? (ProjectileSource) ((EntityBridge)getHandle().getOwner()).getBukkitEntity() : null;
     }
 
     @Override

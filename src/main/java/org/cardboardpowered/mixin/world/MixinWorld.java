@@ -1,9 +1,8 @@
 package org.cardboardpowered.mixin.world;
 
 import org.cardboardpowered.CardboardMod;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 
-import me.isaiah.common.fabric.FabricWorld;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
@@ -29,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Mixin(Level.class)
-public abstract class MixinWorld implements IMixinWorld {
+public abstract class MixinWorld implements LevelBridge {
 
     @Shadow public LevelChunk getChunkAt(BlockPos pos) {return null;}
     private CraftWorld bukkit;

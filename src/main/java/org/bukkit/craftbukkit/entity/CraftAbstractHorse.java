@@ -14,7 +14,6 @@ import org.bukkit.entity.Horse;
 import org.bukkit.inventory.AbstractHorseInventory;
 import org.cardboardpowered.bridge.world.entity.MobBridge;
 import org.cardboardpowered.bridge.world.entity.animal.equine.AbstractHorseBridge;
-import org.cardboardpowered.impl.entity.CraftAnimals;
 
 public abstract class CraftAbstractHorse extends CraftAnimals implements AbstractHorse {
 

@@ -1,7 +1,7 @@
 package org.cardboardpowered.impl.inventory;
 
 import com.google.common.base.Preconditions;
-import org.cardboardpowered.interfaces.IMixinAnvilScreenHandler;
+import org.cardboardpowered.bridge.world.inventory.AnvilMenuBridge;
 import java.util.function.Consumer;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.AnvilMenu;
@@ -37,28 +37,28 @@ public class CardboardAnvilInventory extends CraftResultInventory implements Anv
 
     @Override
     public String getRenameText() {
-        return ((IMixinAnvilScreenHandler)container).getNewItemName_BF();
+        return ((AnvilMenuBridge)container).getNewItemName_BF();
     }
 
     @Override
     public int getRepairCost() {
-        return ((IMixinAnvilScreenHandler)container).getLevelCost_BF();
+        return ((AnvilMenuBridge)container).getLevelCost_BF();
     }
 
     @Override
     public void setRepairCost(int i) {
-        ((IMixinAnvilScreenHandler)container).setLevelCost_BF(i);
+        ((AnvilMenuBridge)container).setLevelCost_BF(i);
     }
 
     @Override
     public int getMaximumRepairCost() {
-        return ((IMixinAnvilScreenHandler)container).getMaxRepairCost_BF();
+        return ((AnvilMenuBridge)container).getMaxRepairCost_BF();
     }
 
     @Override
     public void setMaximumRepairCost(int levels) {
         Preconditions.checkArgument(levels >= 0, "Maximum repair cost must be positive (or 0)");
-        ((IMixinAnvilScreenHandler)container).setMaxRepairCost_BF(levels);
+        ((AnvilMenuBridge)container).setMaxRepairCost_BF(levels);
     }
 
 	@Override
