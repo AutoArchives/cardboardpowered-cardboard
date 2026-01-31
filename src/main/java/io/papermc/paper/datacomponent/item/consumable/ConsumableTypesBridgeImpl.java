@@ -12,7 +12,7 @@ import net.minecraft.core.registries.Registries;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.cardboardpowered.Registries_Bridge;
-import org.cardboardpowered.impl.CardboardPotionUtil;
+import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.NullMarked;
 
@@ -25,7 +25,7 @@ public class ConsumableTypesBridgeImpl implements ConsumableTypesBridge {
         Preconditions.checkArgument(0 <= probability && probability <= 1, "probability must be between 0-1, was %s", probability);
         return new PaperApplyStatusEffects(
             new net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect(
-                new ArrayList<>(Lists.transform(effectList, CardboardPotionUtil::fromBukkit)),
+                new ArrayList<>(Lists.transform(effectList, CraftPotionUtil::fromBukkit)),
                 probability
             )
         );

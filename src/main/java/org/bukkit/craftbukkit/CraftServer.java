@@ -30,6 +30,7 @@ import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
 import io.papermc.paper.adventure.PaperAdventure;
 import net.minecraft.world.level.dimension.LevelStem;
+import org.bukkit.block.BlockType;
 import org.bukkit.generator.BiomeProvider;
 import org.cardboardpowered.BukkitLogger;
 import org.cardboardpowered.bridge.advancements.AdvancementHolderBridge;
@@ -702,9 +703,15 @@ public class CraftServer implements Server {
     }
 
     @Override
-    public BlockData createBlockData(Material material, String data) throws IllegalArgumentException {
-        Validate.isTrue(material != null || data != null, "Must provide one of material or data");
-        return CraftBlockData.newData(material, data);
+    public BlockData createBlockData(org.bukkit.Material material, String data) {
+        Preconditions.checkArgument(material != null || data != null, "Must provide one of material or data");
+        BlockType type = null;
+        if (material != null) {
+            type = material.asBlockType();
+            Preconditions.checkArgument(type != null, "Provided material must be a block");
+        }
+
+        return CraftBlockData.newData(type, data);
     }
 
     @Override

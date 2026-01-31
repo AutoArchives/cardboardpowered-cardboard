@@ -2,24 +2,24 @@ package org.bukkit.craftbukkit.potion;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
-
-import me.isaiah.common.ICommonMod;
+import io.papermc.paper.registry.RegistryKey;
+import java.util.List;
+import java.util.Locale;
+import java.util.function.Supplier;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.alchemy.Potion;
-import java.util.List;
-import java.util.function.Supplier;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.legacy.FieldRename;
+import org.bukkit.craftbukkit.util.ApiVersion;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
-import org.bukkit.potion.PotionType.InternalPotionData;
-import org.cardboardpowered.impl.CardboardPotionUtil;
 
-public class CraftPotionType /*implements PotionType.InternalPotionData*/ implements InternalPotionData {
+public class CraftPotionType implements PotionType.InternalPotionData {
 
     public static PotionType minecraftHolderToBukkit(Holder<Potion> minecraft) {
         return CraftPotionType.minecraftToBukkit(minecraft.value());
@@ -29,8 +29,10 @@ public class CraftPotionType /*implements PotionType.InternalPotionData*/ implem
         Preconditions.checkArgument(minecraft != null);
 
         net.minecraft.core.Registry<Potion> registry = CraftRegistry.getMinecraftRegistry(Registries.POTION);
-        PotionType bukkit = (PotionType)Registry.POTION.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().identifier()));
-        
+        PotionType bukkit = Registry.POTION.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().identifier()));
+
+        Preconditions.checkArgument(bukkit != null);
+
         return bukkit;
     }
 
@@ -44,7 +46,7 @@ public class CraftPotionType /*implements PotionType.InternalPotionData*/ implem
     public static Holder<Potion> bukkitToMinecraftHolder(PotionType bukkit) {
         Preconditions.checkArgument(bukkit != null);
 
-        net.minecraft.core.Registry<Potion> registry = ICommonMod.getIServer().getMinecraft().registryAccess().lookupOrThrow(Registries.POTION);
+        net.minecraft.core.Registry<Potion> registry = CraftRegistry.getMinecraftRegistry(Registries.POTION);
 
         if (registry.wrapAsHolder(CraftPotionType.bukkitToMinecraft(bukkit)) instanceof Holder.Reference<Potion> holder) {
             return holder;
@@ -54,14 +56,24 @@ public class CraftPotionType /*implements PotionType.InternalPotionData*/ implem
                 + ", this can happen if a plugin creates its own sound effect with out properly registering it.");
     }
 
-    public static String bukkitToString(PotionType potionType) {
-        Preconditions.checkArgument(potionType != null);
-        return potionType.getKey().toString();
+    public static String bukkitToString(PotionType bukkit) {
+        Preconditions.checkArgument(bukkit != null);
+
+        return bukkit.getKey().toString();
     }
 
     public static PotionType stringToBukkit(String string) {
         Preconditions.checkArgument(string != null);
-        return Registry.POTION.get(NamespacedKey.fromString(string));
+
+        // We currently do not have any version-dependent remapping, so we can use current version
+        // First convert from when only the names where saved
+        string = FieldRename.convertPotionTypeName(ApiVersion.CURRENT, string);
+        string = string.toLowerCase(Locale.ROOT);
+        NamespacedKey key = NamespacedKey.fromString(string);
+        if (key == null) return null; // Paper - Fixup NamespacedKey handling
+
+        // Now also convert from when keys where saved
+        return CraftRegistry.get(RegistryKey.POTION, key, ApiVersion.CURRENT);
     }
 
     private final NamespacedKey key;
@@ -74,11 +86,7 @@ public class CraftPotionType /*implements PotionType.InternalPotionData*/ implem
     public CraftPotionType(NamespacedKey key, Potion potion) {
         this.key = key;
         this.potion = potion;
-        this.potionEffects = Suppliers.memoize(() -> potion.getEffects().stream().map(CardboardPotionUtil::toBukkit).toList());
-        
-        // this.upgradeable = Suppliers.ofInstance(false);
-        // this.extendable = Suppliers.ofInstance(false);
-        
+        this.potionEffects = Suppliers.memoize(() -> potion.getEffects().stream().map(CraftPotionUtil::toBukkit).toList());
         this.upgradeable = Suppliers.memoize(() -> Registry.POTION.get(new NamespacedKey(key.getNamespace(), "strong_" + key.getKey())) != null);
         this.extendable = Suppliers.memoize(() -> Registry.POTION.get(new NamespacedKey(key.getNamespace(), "long_" + key.getKey())) != null);
         this.maxLevel = Suppliers.memoize(() -> this.isUpgradeable() ? 2 : 1);
@@ -113,5 +121,4 @@ public class CraftPotionType /*implements PotionType.InternalPotionData*/ implem
     public int getMaxLevel() {
         return this.maxLevel.get();
     }
-
 }

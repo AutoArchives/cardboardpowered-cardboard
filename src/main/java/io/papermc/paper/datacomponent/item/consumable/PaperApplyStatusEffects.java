@@ -3,7 +3,7 @@ package io.papermc.paper.datacomponent.item.consumable;
 import java.util.List;
 import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 import org.bukkit.potion.PotionEffect;
-import org.cardboardpowered.impl.CardboardPotionUtil;
+import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 
 import static io.papermc.paper.util.MCUtil.transformUnmodifiable;
 
@@ -13,7 +13,7 @@ public record PaperApplyStatusEffects(
 
     @Override
     public List<PotionEffect> effects() {
-        return transformUnmodifiable(this.impl().effects(), CardboardPotionUtil::toBukkit);
+        return transformUnmodifiable(this.impl().effects(), CraftPotionUtil::toBukkit);
     }
 
     @Override

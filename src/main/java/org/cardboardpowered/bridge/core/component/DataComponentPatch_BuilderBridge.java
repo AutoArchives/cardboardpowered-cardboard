@@ -9,6 +9,7 @@ public interface DataComponentPatch_BuilderBridge {
 
 	void clear(DataComponentType<?> type);
 
-	boolean isEmpty();
+	boolean isSet(DataComponentType<?> type);
 
+	boolean isEmpty();
 }

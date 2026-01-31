@@ -40,6 +40,7 @@ import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.*;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import org.apache.commons.lang.Validate;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
@@ -172,7 +173,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.*;
 import org.cardboardpowered.ChunkTicketBridge;
-import org.cardboardpowered.impl.CardboardPotionUtil;
+import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.cardboardpowered.bridge.world.level.chunk.LevelChunkBridge;
 
 @SuppressWarnings("deprecation")
@@ -2009,31 +2010,27 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	}
 
 	@Override
-	public Arrow spawnArrow(Location loc, Vector velocity, float speed, float spread) {
-		return spawnArrow(loc, velocity, speed, spread, Arrow.class);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T extends AbstractArrow> T spawnArrow(Location loc, Vector velocity, float speed, float spread, Class<T> clazz) {
-		Validate.notNull(loc, "Cant spawn arrow with a null location");
-		Validate.notNull(velocity, "Cant spawn arrow with a null velocity");
-		Validate.notNull(clazz, "Cant spawn an arrow with no class");
+	public <T extends AbstractArrow> T spawnArrow(Location location, Vector direction, float speed, float spread, Class<T> clazz) {
+		Preconditions.checkArgument(location != null, "Location cannot be null");
+		Preconditions.checkArgument(direction != null, "Vector cannot be null");
+		Preconditions.checkArgument(clazz != null, "clazz Entity for the arrow cannot be null");
 
 		net.minecraft.world.entity.projectile.arrow.AbstractArrow arrow;
-		if(TippedArrow.class.isAssignableFrom(clazz)) {
-			arrow = net.minecraft.world.entity.EntityType.ARROW.create(world, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
-			((ArrowBridge) arrow).setType(CardboardPotionUtil.fromBukkit(new PotionData(PotionType.WATER, false, false)));
-		} else if(SpectralArrow.class.isAssignableFrom(clazz)) {
-			arrow = net.minecraft.world.entity.EntityType.SPECTRAL_ARROW.create(world, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
-		} else if(Trident.class.isAssignableFrom(clazz)) {
-			arrow = net.minecraft.world.entity.EntityType.TRIDENT.create(world, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
-		} else arrow = net.minecraft.world.entity.EntityType.ARROW.create(world, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+		if (TippedArrow.class.isAssignableFrom(clazz)) {
+			arrow = net.minecraft.world.entity.EntityType.ARROW.create(this.world, EntitySpawnReason.COMMAND);
+			((Arrow) arrow.getBukkitEntity()).setBasePotionType(PotionType.WATER);
+		} else if (SpectralArrow.class.isAssignableFrom(clazz)) {
+			arrow = net.minecraft.world.entity.EntityType.SPECTRAL_ARROW.create(this.world, EntitySpawnReason.COMMAND);
+		} else if (Trident.class.isAssignableFrom(clazz)) {
+			arrow = net.minecraft.world.entity.EntityType.TRIDENT.create(this.world, EntitySpawnReason.COMMAND);
+		} else {
+			arrow = net.minecraft.world.entity.EntityType.ARROW.create(this.world, EntitySpawnReason.COMMAND);
+		}
 
-		arrow.snapTo(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
-		arrow.shoot(velocity.getX(), velocity.getY(), velocity.getZ(), speed, spread);
-		world.addFreshEntity(arrow);
-		return (T) ((EntityBridge) arrow).getBukkitEntity();
+		arrow.snapTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+		arrow.shoot(direction.getX(), direction.getY(), direction.getZ(), speed, spread);
+		this.world.addFreshEntity(arrow);
+		return (T) arrow.getBukkitEntity();
 	}
 
 	@Override

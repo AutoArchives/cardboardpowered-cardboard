@@ -1,59 +1,68 @@
-/**
- * Automatically generated file, changes will be lost.
- */
 package org.bukkit.craftbukkit.block.impl;
 
-public final class CraftBed extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.type.Bed, org.bukkit.block.data.Directional {
+import com.google.common.base.Preconditions;
+import io.papermc.paper.annotation.GeneratedClass;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.type.Bed;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.jspecify.annotations.NullMarked;
 
-    public CraftBed() {
-        super();
-    }
+import java.util.Set;
 
-    public CraftBed(net.minecraft.world.level.block.state.BlockState state) {
+@NullMarked
+@GeneratedClass
+public class CraftBed extends CraftBlockData implements Bed {
+    private static final EnumProperty<Direction> FACING = BedBlock.FACING;
+
+    private static final BooleanProperty OCCUPIED = BedBlock.OCCUPIED;
+
+    private static final EnumProperty<BedPart> PART = BedBlock.PART;
+
+    public CraftBed(BlockState state) {
         super(state);
     }
 
-    // org.bukkit.craftbukkit.v1_19_R3.block.data.type.CraftBed
-
-    private static final net.minecraft.world.level.block.state.properties.EnumProperty<?> PART = getEnum(net.minecraft.world.level.block.BedBlock.class, "part");
-    private static final net.minecraft.world.level.block.state.properties.BooleanProperty OCCUPIED = getBoolean(net.minecraft.world.level.block.BedBlock.class, "occupied");
-
     @Override
-    public org.bukkit.block.data.type.Bed.Part getPart() {
-        return get(PART, org.bukkit.block.data.type.Bed.Part.class);
+    public BlockFace getFacing() {
+        return this.get(FACING, BlockFace.class);
     }
 
     @Override
-    public void setPart(org.bukkit.block.data.type.Bed.Part part) {
-        set(PART, part);
+    public void setFacing(final BlockFace blockFace) {
+        Preconditions.checkArgument(blockFace != null, "blockFace cannot be null!");
+        Preconditions.checkArgument(blockFace.isCartesian() && blockFace.getModY() == 0, "Invalid face, only cartesian horizontal face are allowed for this property!");
+        this.set(FACING, blockFace);
+    }
+
+    @Override
+    public Set<BlockFace> getFaces() {
+        return this.getValues(FACING, BlockFace.class);
     }
 
     @Override
     public boolean isOccupied() {
-        return get(OCCUPIED);
-    }
-
-    // org.bukkit.craftbukkit.v1_19_R3.block.data.CraftDirectional
-
-    private static final net.minecraft.world.level.block.state.properties.EnumProperty<?> FACING = getEnum(net.minecraft.world.level.block.BedBlock.class, "facing");
-
-    @Override
-    public org.bukkit.block.BlockFace getFacing() {
-        return get(FACING, org.bukkit.block.BlockFace.class);
+        return this.get(OCCUPIED);
     }
 
     @Override
-    public void setFacing(org.bukkit.block.BlockFace facing) {
-        set(FACING, facing);
+    public void setOccupied(final boolean occupied) {
+        this.set(OCCUPIED, occupied);
     }
 
     @Override
-    public java.util.Set<org.bukkit.block.BlockFace> getFaces() {
-        return getValues(FACING, org.bukkit.block.BlockFace.class);
+    public Part getPart() {
+        return this.get(PART, Part.class);
     }
 
-	@Override
-	public void setOccupied(boolean arg0) {
-		set(OCCUPIED, arg0);
-	}
+    @Override
+    public void setPart(final Part part) {
+        Preconditions.checkArgument(part != null, "part cannot be null!");
+        this.set(PART, part);
+    }
 }

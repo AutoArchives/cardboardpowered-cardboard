@@ -5,13 +5,17 @@ import net.minecraft.world.item.Item;
 import org.bukkit.inventory.ItemStack;
 
 public interface ItemStackBridge {
-
 	void cardboard$restore_patch(DataComponentPatch changes);
 
-	public ItemStack getBukkitStack();
+	public ItemStack cardboard$getBukkitStack();
 
-	void cb$setItem(Item item);
+	void cardboard$setItem(Item item);
 
-	ItemStack asBukkitCopy();
+	ItemStack cardboard$asBukkitMirror();
 
+	ItemStack cardboard$asBukkitCopy();
+
+	static net.minecraft.world.item.ItemStack fromBukkitCopy(org.bukkit.inventory.ItemStack itemstack) {
+		return org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(itemstack);
+	}
 }

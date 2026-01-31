@@ -20,13 +20,13 @@ public record PaperBlockItemDataProperties(
     public BlockData createBlockData(final BlockType blockType) {
         final Block block = CraftBlockType.bukkitToMinecraftNew(blockType);
         final BlockState defaultState = block.defaultBlockState();
-        return ( (BlockStateBaseBridge) this.impl.apply(defaultState) ).createCraftBlockData();
+        return ( (BlockStateBaseBridge) this.impl.apply(defaultState) ).cardboard$createCraftBlockData();
     }
 
     @Override
     public BlockData applyTo(final BlockData blockData) {
         final BlockState state = ((CraftBlockData) blockData).getState();
-        return ( (BlockStateBaseBridge) this.impl.apply(state) ).createCraftBlockData();
+        return ( (BlockStateBaseBridge) this.impl.apply(state) ).cardboard$createCraftBlockData();
     }
 
     @Override

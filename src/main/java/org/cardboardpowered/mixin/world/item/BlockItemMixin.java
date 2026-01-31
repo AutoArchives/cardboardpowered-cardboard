@@ -90,7 +90,7 @@ public class BlockItemMixin implements BlockItemBridge {
             Level world = context.getLevel();
             Player entityhuman = context.getPlayer();
 
-            BlockPlaceEvent placeEvent = CraftEventFactory.callBlockPlaceEvent((ServerLevel) world, entityhuman, context.getHand(), bukkit_state, pos.getX(), pos.getY(), pos.getZ());
+            BlockPlaceEvent placeEvent = CraftEventFactory.callBlockPlaceEvent((ServerLevel) world, entityhuman, context.getHand(), bukkit_state, pos);
             if (placeEvent.isCancelled() || !placeEvent.canBuild()) {
                 bukkit_state.update(true, false);
                 ci.setReturnValue(InteractionResult.FAIL);

@@ -1,22 +1,26 @@
 package org.cardboardpowered.mixin.block;
 
 import net.minecraft.world.level.block.state.BlockBehaviour.BlockStateBase;
+import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.cardboardpowered.bridge.world.level.block.state.BlockStateBaseBridge;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(BlockStateBase.class)
-public class MixinAbstractBlockState implements BlockStateBaseBridge {
+public abstract class MixinAbstractBlockState implements BlockStateBaseBridge {
+    @Shadow
+    public abstract BlockState asState();
 
-	private CraftBlockData cachedCraftBlockData;
+    // Paper start - Perf: impl cached craft block data, lazy load to fix issue with loading at the wrong time
+    @Unique
+    private CraftBlockData cachedCraftBlockData;
 	
 	@Override
-	public CraftBlockData createCraftBlockData() {
-        if (this.cachedCraftBlockData == null) {
-        	BlockStateBase thiz = (BlockStateBase) (Object) this;
-            this.cachedCraftBlockData = CraftBlockData.createData(thiz.asState());
-        }
-        return (CraftBlockData)this.cachedCraftBlockData.clone();
+    public org.bukkit.craftbukkit.block.data.CraftBlockData cardboard$createCraftBlockData() {
+        if (this.cachedCraftBlockData == null) this.cachedCraftBlockData = org.bukkit.craftbukkit.block.data.CraftBlockData.createData(this.asState());
+        return (org.bukkit.craftbukkit.block.data.CraftBlockData) this.cachedCraftBlockData.clone();
     }
-	
+    // Paper end - Perf: impl cached craft block data, lazy load to fix issue with loading at the wrong time
 }

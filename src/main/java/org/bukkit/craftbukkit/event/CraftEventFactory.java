@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
+import org.bukkit.craftbukkit.*;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.cardboardpowered.CardboardMod;
@@ -86,10 +87,6 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.block.sign.Side;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.CraftGameRule;
-import org.bukkit.craftbukkit.CraftLootTable;
-import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.CraftStatistic;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.CraftBlockStates;
@@ -187,26 +184,17 @@ public class CraftEventFactory {
         return event;
     }
 
-    public static BlockPlaceEvent callBlockPlaceEvent(ServerLevel world, net.minecraft.world.entity.player.Player who, InteractionHand hand, BlockState replacedBlockState, int x, int y, int z) {
-        CraftWorld CraftWorld = ((LevelBridge)world).getCraftWorld();
-        CraftServer craftServer = CraftServer.INSTANCE;
+    public static BlockPlaceEvent callBlockPlaceEvent(ServerLevel level, net.minecraft.world.entity.player.Player player, InteractionHand hand, BlockState replacedSnapshot, BlockPos clickedPos) {
+        Player cplayer = (Player) ((EntityBridge)player).getBukkitEntity();
 
-        Player player = (Player) ((ServerPlayerBridge) who).getBukkitEntity();
+        Block clickedBlock = CraftBlock.at(level, clickedPos);
+        Block placedBlock = replacedSnapshot.getBlock();
 
-        Block blockClicked = CraftWorld.getBlockAt(x, y, z);
-        Block placedBlock = replacedBlockState.getBlock();
+        boolean canBuild = CraftEventFactory.canBuild(level, cplayer, placedBlock.getX(), placedBlock.getZ());
 
-        boolean canBuild = canBuild(world, player, placedBlock.getX(), placedBlock.getZ());
-        boolean isMainHand = (hand == InteractionHand.MAIN_HAND);
-
-        org.bukkit.inventory.ItemStack item;
-        EquipmentSlot equipmentSlot;
-
-        item = isMainHand ? player.getInventory().getItemInMainHand() : player.getInventory().getItemInOffHand();
-        equipmentSlot = isMainHand ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
-
-        BlockPlaceEvent event = new BlockPlaceEvent(placedBlock, replacedBlockState, blockClicked, item, player, canBuild, equipmentSlot);
-        craftServer.getPluginManager().callEvent(event);
+        EquipmentSlot handSlot = CraftEquipmentSlot.getHand(hand);
+        BlockPlaceEvent event = new BlockPlaceEvent(placedBlock, replacedSnapshot, clickedBlock, cplayer.getInventory().getItem(handSlot), cplayer, canBuild, handSlot);
+        event.callEvent();
 
         return event;
     }

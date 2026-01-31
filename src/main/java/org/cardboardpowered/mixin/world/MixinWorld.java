@@ -68,17 +68,6 @@ public abstract class MixinWorld implements LevelBridge {
     	CardboardMod.on_world_init_mc(nms);
     }
 
-
-    // protected World(MutableWorldProperties properties, RegistryKey<World> registryRef, RegistryEntry<DimensionType> registryEntry, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed) {
-
-
-    // Note: moved to use ServerWorldInitEvent
-    // @Inject(method = "<init>", at = @At("TAIL"))
-    // public void init(MutableWorldProperties a, RegistryKey<?> b, DimensionType d, Supplier<Boolean> e, boolean f, boolean g, long h, CallbackInfo ci){
-    // public void init(MutableWorldProperties a, RegistryKey<?> b, RegistryEntry<DimensionType> registryEntry, Supplier<Profiler> profiler, boolean f, boolean g, long h, CallbackInfo ci){
-    //    System.out.println("MixnWorld.init");
-    // }
-
     @Override
     public CraftWorld getCraftWorld() {
         return bukkit;
@@ -106,5 +95,4 @@ public abstract class MixinWorld implements LevelBridge {
     public void setCaptureBlockStates_BF(boolean b) {
         this.captureBlockStates = b;
     }
-
 }

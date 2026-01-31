@@ -87,7 +87,7 @@ import net.minecraft.world.waypoints.WaypointStyleAsset;
 import net.minecraft.world.waypoints.WaypointStyleAssets;
 
 import org.bukkit.entity.*;
-import org.cardboardpowered.impl.CardboardPotionUtil;
+import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.cardboardpowered.impl.inventory.CardboardEntityEquipment;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
@@ -231,7 +231,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
         List<PotionEffect> effects = new ArrayList<>();
         for (MobEffectInstance handle :  this.getHandle().activeEffects.values()) {
                 // effects.add(new PotionEffect(PotionEffectType.getById(Registries.STATUS_EFFECT.getRawId(handle.getEffectType())), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.shouldShowParticles()));
-                effects.add(CardboardPotionUtil.toBukkit(handle));
+                effects.add(CraftPotionUtil.toBukkit(handle));
         
         }
         return effects;

@@ -1241,7 +1241,7 @@ public class CraftEntity implements Entity, CommandSender, CommandSourceBridge {
 	@Override
 	public @NotNull ItemStack getPickItemStack() {
 		net.minecraft.world.item.ItemStack stack = this.getHandle().getPickResult();
-        return stack == null ? ItemStack.empty() : ((ItemStackBridge) stack).asBukkitCopy();
+        return stack == null ? ItemStack.empty() : ((ItemStackBridge) stack).cardboard$asBukkitCopy();
 	}
 
 	@Override

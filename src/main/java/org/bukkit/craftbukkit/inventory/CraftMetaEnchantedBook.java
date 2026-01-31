@@ -1,64 +1,54 @@
 package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.collect.ImmutableMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import com.google.common.collect.ImmutableMap.Builder;
 import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem;
-import org.bukkit.craftbukkit.inventory.SerializableMeta;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 
-@DelegateDeserialization(value=SerializableMeta.class)
-class CraftMetaEnchantedBook
-extends CraftMetaItem
-implements EnchantmentStorageMeta {
-    static final CraftMetaItem.ItemMetaKeyType<ItemEnchantments> STORED_ENCHANTMENTS = new CraftMetaItem.ItemMetaKeyType<ItemEnchantments>(DataComponents.STORED_ENCHANTMENTS, "stored-enchants");
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+@DelegateDeserialization(SerializableMeta.class)
+class CraftMetaEnchantedBook extends CraftMetaItem implements EnchantmentStorageMeta {
+    static final ItemMetaKeyType<ItemEnchantments> STORED_ENCHANTMENTS = new ItemMetaKeyType<>(DataComponents.STORED_ENCHANTMENTS, "stored-enchants");
+
     private Map<Enchantment, Integer> enchantments;
 
     CraftMetaEnchantedBook(CraftMetaItem meta) {
         super(meta);
-        if (!(meta instanceof CraftMetaEnchantedBook)) {
+
+        if (!(meta instanceof final CraftMetaEnchantedBook enchantedBookMeta)) {
             return;
         }
-        CraftMetaEnchantedBook that = (CraftMetaEnchantedBook)meta;
-        if (that.hasEnchants()) {
-            this.enchantments = new LinkedHashMap<Enchantment, Integer>(that.enchantments);
+
+        if (enchantedBookMeta.hasEnchants()) {
+            this.enchantments = new LinkedHashMap<>(enchantedBookMeta.enchantments);
         }
     }
 
-    CraftMetaEnchantedBook(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaEnchantedBook(DataComponentPatch tag, java.util.Set<net.minecraft.core.component.DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
-        CraftMetaEnchantedBook.getOrEmpty(tag, STORED_ENCHANTMENTS).ifPresent(itemEnchantments -> {
-            this.enchantments = CraftMetaEnchantedBook.buildEnchantments(itemEnchantments);
-            // TODO: 1.20.6
-            //if (!itemEnchantments.showInTooltip) {
-            //    this.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-            //}
+
+        getOrEmpty(tag, CraftMetaEnchantedBook.STORED_ENCHANTMENTS).ifPresent((itemEnchantments) -> {
+            this.enchantments = buildEnchantments(itemEnchantments);
         });
     }
 
     CraftMetaEnchantedBook(Map<String, Object> map) {
         super(map);
-        this.enchantments = CraftMetaEnchantedBook.buildEnchantments(map, STORED_ENCHANTMENTS);
+
+        this.enchantments = buildEnchantments(map, CraftMetaEnchantedBook.STORED_ENCHANTMENTS);
     }
 
     @Override
-    void applyToItem(CraftMetaItem.Applicator itemTag) {
-        super.applyToItem(itemTag);
-        this.applyEnchantments(this.enchantments, itemTag, STORED_ENCHANTMENTS, ItemFlag.HIDE_ENCHANTS);
-    }
+    void applyToItem(Applicator tag) {
+        super.applyToItem(tag);
 
-    @Override
-    boolean applicableTo(Material type) {
-        return type == Material.ENCHANTED_BOOK;
+        this.applyEnchantments(this.enchantments, tag, CraftMetaEnchantedBook.STORED_ENCHANTMENTS);
     }
 
     @Override
@@ -71,9 +61,8 @@ implements EnchantmentStorageMeta {
         if (!super.equalsCommon(meta)) {
             return false;
         }
-        if (meta instanceof CraftMetaEnchantedBook) {
-            CraftMetaEnchantedBook that = (CraftMetaEnchantedBook)meta;
-            return this.hasStoredEnchants() ? that.hasStoredEnchants() && this.enchantments.equals(that.enchantments) : !that.hasStoredEnchants();
+        if (meta instanceof final CraftMetaEnchantedBook other) {
+            return (this.hasStoredEnchants() ? other.hasStoredEnchants() && this.enchantments.equals(other.enchantments) : !other.hasStoredEnchants());
         }
         return true;
     }
@@ -85,27 +74,33 @@ implements EnchantmentStorageMeta {
 
     @Override
     int applyHash() {
-        int original;
+        final int original;
         int hash = original = super.applyHash();
+
         if (this.hasStoredEnchants()) {
             hash = 61 * hash + this.enchantments.hashCode();
         }
+
         return original != hash ? CraftMetaEnchantedBook.class.hashCode() ^ hash : hash;
     }
 
     @Override
     public CraftMetaEnchantedBook clone() {
-        CraftMetaEnchantedBook meta = (CraftMetaEnchantedBook)super.clone();
+        CraftMetaEnchantedBook meta = (CraftMetaEnchantedBook) super.clone();
+
         if (this.enchantments != null) {
-            meta.enchantments = new LinkedHashMap<Enchantment, Integer>(this.enchantments);
+            meta.enchantments = new LinkedHashMap<>(this.enchantments);
         }
+
         return meta;
     }
 
     @Override
-    ImmutableMap.Builder<String, Object> serialize(ImmutableMap.Builder<String, Object> builder) {
+    Builder<String, Object> serialize(Builder<String, Object> builder) {
         super.serialize(builder);
-        CraftMetaEnchantedBook.serializeEnchantments(this.enchantments, builder, STORED_ENCHANTMENTS);
+
+        serializeEnchantments(this.enchantments, builder, CraftMetaEnchantedBook.STORED_ENCHANTMENTS);
+
         return builder;
     }
 
@@ -113,44 +108,50 @@ implements EnchantmentStorageMeta {
         return !this.hasStoredEnchants();
     }
 
-    public boolean hasStoredEnchant(Enchantment ench) {
-        return this.hasStoredEnchants() && this.enchantments.containsKey(ench);
+    @Override
+    public boolean hasStoredEnchant(Enchantment enchant) {
+        return this.hasStoredEnchants() && this.enchantments.containsKey(enchant);
     }
 
-    public int getStoredEnchantLevel(Enchantment ench) {
-        Integer level;
-        Integer n = level = this.hasStoredEnchants() ? this.enchantments.get(ench) : null;
+    @Override
+    public int getStoredEnchantLevel(Enchantment enchant) {
+        Integer level = this.hasStoredEnchants() ? this.enchantments.get(enchant) : null;
         if (level == null) {
             return 0;
         }
         return level;
     }
 
+    @Override
     public Map<Enchantment, Integer> getStoredEnchants() {
-        return this.hasStoredEnchants() ? ImmutableMap.copyOf(this.enchantments) : ImmutableMap.of();
+        return this.hasStoredEnchants() ? ImmutableMap.copyOf(this.enchantments) : ImmutableMap.<Enchantment, Integer>of();
     }
 
-    public boolean addStoredEnchant(Enchantment ench, int level, boolean ignoreRestrictions) {
+    @Override
+    public boolean addStoredEnchant(Enchantment enchant, int level, boolean ignoreRestrictions) {
         if (this.enchantments == null) {
-            this.enchantments = new LinkedHashMap<Enchantment, Integer>(4);
+            this.enchantments = new LinkedHashMap<>(4);
         }
-        if (ignoreRestrictions || level >= ench.getStartLevel() && level <= ench.getMaxLevel()) {
-            Integer old = this.enchantments.put(ench, level);
+
+        if (ignoreRestrictions || level >= enchant.getStartLevel() && level <= enchant.getMaxLevel()) {
+            Integer old = this.enchantments.put(enchant, level);
             return old == null || old != level;
         }
         return false;
     }
 
-    public boolean removeStoredEnchant(Enchantment ench) {
-        return this.hasStoredEnchants() && this.enchantments.remove(ench) != null;
+    @Override
+    public boolean removeStoredEnchant(Enchantment enchant) {
+        return this.hasStoredEnchants() && this.enchantments.remove(enchant) != null;
     }
 
+    @Override
     public boolean hasStoredEnchants() {
-        return this.enchantments != null && !this.enchantments.isEmpty();
+        return !(this.enchantments == null || this.enchantments.isEmpty());
     }
 
-    public boolean hasConflictingStoredEnchant(Enchantment ench) {
-        return CraftMetaEnchantedBook.checkConflictingEnchants(this.enchantments, ench);
+    @Override
+    public boolean hasConflictingStoredEnchant(Enchantment enchant) {
+        return checkConflictingEnchants(this.enchantments, enchant);
     }
 }
-

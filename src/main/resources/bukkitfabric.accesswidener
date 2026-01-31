@@ -640,3 +640,6 @@ accessible method net/minecraft/world/entity/Mob getAmbientSound ()Lnet/minecraf
 accessible field net/minecraft/world/entity/Mob lootTable Ljava/util/Optional;
 accessible method net/minecraft/world/entity/Mob isSunBurnTick ()Z
 accessible field net/minecraft/world/entity/Entity random Lnet/minecraft/util/RandomSource;
+accessible field net/minecraft/world/level/block/state/properties/IntegerProperty max I
+accessible field net/minecraft/world/level/block/state/properties/IntegerProperty min I
+accessible field net/minecraft/world/effect/MobEffectInstance hiddenEffect Lnet/minecraft/world/effect/MobEffectInstance;

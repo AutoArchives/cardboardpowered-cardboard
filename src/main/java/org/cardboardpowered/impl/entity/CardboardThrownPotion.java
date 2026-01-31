@@ -19,7 +19,7 @@ import org.bukkit.entity.ThrownPotion;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
-import org.cardboardpowered.impl.CardboardPotionUtil;
+import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,7 +36,7 @@ public class CardboardThrownPotion extends CraftProjectile implements ThrownPoti
         IMixinItemStack stack = (IMixinItemStack) (Object) getHandle().getItem();
         
         for (MobEffectInstance effect : stack.IC$get_potion_status_effects())
-            builder.add(CardboardPotionUtil.toBukkit(effect));
+            builder.add(CraftPotionUtil.toBukkit(effect));
         
         //for (StatusEffectInstance effect : PotionUtil.getPotionEffects(getHandle().getStack()))
         //    builder.add(CardboardPotionUtil.toBukkit(effect));

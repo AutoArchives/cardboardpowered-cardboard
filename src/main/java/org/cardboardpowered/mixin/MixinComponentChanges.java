@@ -13,9 +13,10 @@ import net.minecraft.core.component.DataComponentType;
 
 @Mixin(DataComponentPatch.Builder.class)
 public class MixinComponentChanges implements DataComponentPatch_BuilderBridge {
+    @Shadow @Final
+    public Reference2ObjectMap<DataComponentType<?>, Optional<?>> map;
 
-    @Shadow @Final private Reference2ObjectMap<DataComponentType<?>, Optional<?>> map;
-
+    // CraftBukkit start
     @Override
     public void copy(DataComponentPatch orig) {
         this.map.putAll(orig.map);
@@ -26,18 +27,22 @@ public class MixinComponentChanges implements DataComponentPatch_BuilderBridge {
         this.map.remove(type);
     }
 
+    public boolean isSet(DataComponentType<?> type) {
+        return this.map.containsKey(type);
+    }
+
     @Override
     public boolean isEmpty() {
         return this.map.isEmpty();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object object) {
+        if (this == object) {
             return true;
         }
 
-        if (obj instanceof DataComponentPatch.Builder patch) {
+        if (object instanceof DataComponentPatch.Builder patch) {
             return this.map.equals(patch.map);
         }
 
@@ -48,4 +53,5 @@ public class MixinComponentChanges implements DataComponentPatch_BuilderBridge {
     public int hashCode() {
         return this.map.hashCode();
     }
+    // CraftBukkit end
 }
