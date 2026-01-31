@@ -17,10 +17,10 @@ import org.spongepowered.asm.mixin.Unique;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 
 import org.cardboardpowered.bridge.world.ContainerBridge;
-import org.cardboardpowered.interfaces.IMixinPlayerInventory;
+import org.cardboardpowered.bridge.world.entity.player.InventoryBridge;
 
 @Mixin(Inventory.class)
-public abstract class MixinPlayerInventory implements Container, ContainerBridge, IMixinPlayerInventory {
+public abstract class MixinPlayerInventory implements Container, ContainerBridge, InventoryBridge {
     @Shadow
     @Final
     public Player player;

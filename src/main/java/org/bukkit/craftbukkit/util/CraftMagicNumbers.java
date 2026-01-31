@@ -3,7 +3,6 @@ package org.bukkit.craftbukkit.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -37,7 +36,6 @@ import org.bukkit.craftbukkit.CraftFeatureFlag;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftStatistic;
-import org.bukkit.craftbukkit.attribute.CraftAttribute;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.legacy.FieldRename;
@@ -71,8 +69,8 @@ import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.cardboardpowered.CardboardMod;
-import org.cardboardpowered.interfaces.IMixinMaterial;
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.bridge.bukkit.BukkitMaterialBridge;
+import org.cardboardpowered.bridge.server.MinecraftServerBridge;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.DSL.TypeReference;
 import com.mojang.datafixers.DataFixer;
@@ -225,7 +223,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     
     public static boolean has_mixin_interface(Material m) {
     	// Make sure mixin has applied
-    	if ( (Object) m instanceof IMixinMaterial) {
+    	if ( (Object) m instanceof BukkitMaterialBridge) {
     		return true;
     	}
     	return false;
@@ -269,7 +267,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
                     return;
                 }
 
-                ((IMixinMaterial)(Object)material).setModdedData(new CardboardModdedBlock(id.toString()));
+                ((BukkitMaterialBridge)(Object)material).setModdedData(new CardboardModdedBlock(id.toString()));
                 MATERIAL_BLOCK.put(material, block);
                 BY_NAME.put(name, material);
                 list.add(material);
@@ -310,7 +308,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
                     return;
                 }
 
-                ((IMixinMaterial)(Object)material).setModdedData(new CardboardModdedItem(id.toString()));
+                ((BukkitMaterialBridge)(Object)material).setModdedData(new CardboardModdedItem(id.toString()));
                 MATERIAL_ITEM.put(material, item);
                 BY_NAME.put(name, material);
                 list.add(material);
@@ -397,11 +395,11 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     }
 
     private static Item getModdedItem(Material mat) {
-        if (!((Object)mat instanceof IMixinMaterial)) {
+        if (!((Object)mat instanceof BukkitMaterialBridge)) {
             // Dev env
             return null;
         }
-        IMixinMaterial mm = (IMixinMaterial)(Object) mat;
+        BukkitMaterialBridge mm = (BukkitMaterialBridge)(Object) mat;
         if (!mm.isModded()) return null;
 
         Identifier id = Identifier.parse(mm.getModdedData().getId());
@@ -412,11 +410,11 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 
     private static Block getModdedBlock(Material mat) {
         if (null == mat) return Blocks.STONE;
-        if (!((Object)mat instanceof IMixinMaterial)) {
+        if (!((Object)mat instanceof BukkitMaterialBridge)) {
             // Dev env
         	return Blocks.STONE;
         }
-        IMixinMaterial mm = (IMixinMaterial)(Object) mat;
+        BukkitMaterialBridge mm = (BukkitMaterialBridge)(Object) mat;
         if (!mm.isModded()) return null;
 
         Identifier id = Identifier.parse(mm.getModdedData().getId());
@@ -790,7 +788,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 	@SuppressWarnings("resource")
 	@Override
 	public @NotNull String getMainLevelName() {
-        return ((net.minecraft.server.dedicated.DedicatedServer) IMixinMinecraftServer.getServer()).getProperties().levelName;
+        return ((net.minecraft.server.dedicated.DedicatedServer) MinecraftServerBridge.getServer()).getProperties().levelName;
 	}
 
 	@Override

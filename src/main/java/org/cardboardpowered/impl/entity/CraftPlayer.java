@@ -63,7 +63,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.Particle;
 import org.bukkit.ServerLinks;
 import org.bukkit.Sound;
-import org.bukkit.SoundCategory;
 import org.bukkit.Statistic;
 import org.bukkit.WeatherType;
 import org.bukkit.WorldBorder;
@@ -137,11 +136,11 @@ import org.jetbrains.annotations.UnmodifiableView;
 import org.jspecify.annotations.NonNull;
 import org.spigotmc.AsyncCatcher;
 
-import org.cardboardpowered.interfaces.IMixinClientConnection;
+import org.cardboardpowered.bridge.network.ConnectionBridge;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
-import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
-import org.cardboardpowered.interfaces.IMixinSignBlockEntity;
+import org.cardboardpowered.bridge.server.MinecraftServerBridge;
+import org.cardboardpowered.bridge.server.network.ServerGamePacketListenerImplBridge;
+import org.cardboardpowered.bridge.world.level.block.entity.SignBlockEntityBridge;
 import com.mojang.authlib.GameProfile;
 
 import io.papermc.paper.adventure.PaperAdventure;
@@ -464,7 +463,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void chat(String message) {
-        ((IMixinPlayNetworkHandler)(Object)this.getHandle().connection).chat(message, false);
+        ((ServerGamePacketListenerImplBridge)(Object)this.getHandle().connection).chat(message, false);
     }
 
     @Override
@@ -666,7 +665,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
  	public void loadData() {
- 		((IMixinMinecraftServer)CraftServer.server).getSaveHandler_BF()
+ 		((MinecraftServerBridge)CraftServer.server).getSaveHandler_BF()
         .load(this.getHandle().nameAndId())
         .map(tag -> TagValueInput.create(ProblemReporter.DISCARDING, super.server.getServer().registryAccess(), tag))
         .ifPresent(this.getHandle()::load);
@@ -834,7 +833,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void saveData() {
-        ((IMixinMinecraftServer)CraftServer.server).getSaveHandler_BF().save(this.getHandle());
+        ((MinecraftServerBridge)CraftServer.server).getSaveHandler_BF().save(this.getHandle());
     }
 
     @Override
@@ -928,7 +927,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         SignBlockEntity sign = new SignBlockEntity(new BlockPos(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), null);
         //sign.setPos(new BlockPos(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
         sign.getFrontText().setColor(net.minecraft.world.item.DyeColor.byId(dyeColor.getWoolData()));
-        System.arraycopy(components, 0, ((IMixinSignBlockEntity)sign).getTextBF(), 0, ((IMixinSignBlockEntity)sign).getTextBF().length);
+        System.arraycopy(components, 0, ((SignBlockEntityBridge)sign).getTextBF(), 0, ((SignBlockEntityBridge)sign).getTextBF().length);
 
         getHandle().connection.send(sign.getUpdatePacket());
     }
@@ -1075,7 +1074,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void setScoreboard(Scoreboard scoreboard) {
         ServerGamePacketListenerImpl playerConnection = getHandle().connection;
         if (playerConnection == null) throw new IllegalStateException("Cannot set scoreboard yet");
-        if (((IMixinPlayNetworkHandler)playerConnection).isDisconnected())
+        if (((ServerGamePacketListenerImplBridge)playerConnection).isDisconnected())
             throw new IllegalStateException("Cannot set scoreboard for invalid CraftPlayer");
 
         this.server.getScoreboardManager().setPlayerBoard(this, scoreboard);
@@ -1443,8 +1442,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             }
         }
 		*/
-        IMixinPlayNetworkHandler im = (IMixinPlayNetworkHandler) this.getHandle().connection;
-        return (InetSocketAddress) ((IMixinClientConnection) (im.cb_get_connection())).getRawAddress();
+        ServerGamePacketListenerImplBridge im = (ServerGamePacketListenerImplBridge) this.getHandle().connection;
+        return (InetSocketAddress) ((ConnectionBridge) (im.cb_get_connection())).getRawAddress();
     }
 
     private final Player.Spigot spigot = new Player.Spigot() {
@@ -1482,7 +1481,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             if (getHealth() <= 0 && isOnline()) {
                 CraftPlayer.this.getHandle().level().getServer().getPlayerList().respawn( getHandle(), false, RemovalReason.KILLED );
 
-                IMixinPlayNetworkHandler imix = (IMixinPlayNetworkHandler) CraftPlayer.this.getHandle().connection;
+                ServerGamePacketListenerImplBridge imix = (ServerGamePacketListenerImplBridge) CraftPlayer.this.getHandle().connection;
                 imix.cardboard$spigot_player_respawn();
             }
         }
@@ -2857,7 +2856,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
 	@Override
 	public PlayerGameConnection getConnection() {
-		return ( (IMixinPlayNetworkHandler) this.getHandle().connection).cardboard$playerGameConnection();
+		return ( (ServerGamePacketListenerImplBridge) this.getHandle().connection).cardboard$playerGameConnection();
 	}
 	
 	@Override

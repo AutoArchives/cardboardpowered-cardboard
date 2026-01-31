@@ -5,10 +5,10 @@ import net.minecraft.world.level.BaseCommandBlock;
 import org.bukkit.command.CommandSender;
 import org.spongepowered.asm.mixin.Mixin;
 
-import org.cardboardpowered.interfaces.IMixinCommandOutput;
+import org.cardboardpowered.bridge.commands.CommandSourceBridge;
 
 @Mixin(BaseCommandBlock.class)
-public abstract class MixinCommandBlockExecutor implements IMixinCommandOutput {
+public abstract class MixinCommandBlockExecutor implements CommandSourceBridge {
 
     @Override
     public abstract CommandSender getBukkitSender(CommandSourceStack wrapper);

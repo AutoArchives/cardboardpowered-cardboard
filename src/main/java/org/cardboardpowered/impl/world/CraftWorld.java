@@ -108,10 +108,10 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.base.Preconditions;
 import org.cardboardpowered.impl.MetadataStoreImpl;
 import org.cardboardpowered.bridge.world.entity.projectile.arrow.ArrowBridge;
-import org.cardboardpowered.interfaces.IMixinChunkHolder;
+import org.cardboardpowered.bridge.server.level.ChunkHolderBridge;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
-import org.cardboardpowered.interfaces.IMixinThreadedAnvilChunkStorage;
+import org.cardboardpowered.bridge.server.level.ChunkMapBridge;
 import com.mojang.datafixers.util.Pair;
 
 import io.papermc.paper.block.fluid.FluidData;
@@ -830,10 +830,10 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	@SuppressWarnings("resource")
 	@Override
 	public Chunk[] getLoadedChunks() {
-		Long2ObjectLinkedOpenHashMap<ChunkHolder> chunks = ((IMixinThreadedAnvilChunkStorage) (world.getChunkSource().chunkMap)).getChunkHoldersBF();
+		Long2ObjectLinkedOpenHashMap<ChunkHolder> chunks = ((ChunkMapBridge) (world.getChunkSource().chunkMap)).getChunkHoldersBF();
 		return chunks.values()
 				.stream()
-				.map(IMixinChunkHolder::getFullChunkNow)
+				.map(ChunkHolderBridge::getFullChunkNow)
 				.filter(Objects::nonNull)
 				.map(CraftWorld::getBukkitChunkForChunk)
 				.toArray(Chunk[]::new);

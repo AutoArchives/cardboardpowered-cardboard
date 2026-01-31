@@ -22,8 +22,8 @@ import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent;
 //<<<<<<< HEAD
 import com.google.common.collect.Lists;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
-import org.cardboardpowered.interfaces.IMixinPlayerManager;
+import org.cardboardpowered.bridge.server.network.ServerGamePacketListenerImplBridge;
+import org.cardboardpowered.bridge.server.players.PlayerListBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.bridge.server.network.ServerLoginPacketListenerImplBridge;
 import org.cardboardpowered.bridge.world.level.LevelBridge;
@@ -124,7 +124,7 @@ import net.minecraft.resources.ResourceKey;
 
 // TODO: This breaks many thing like experience drop.
 @Mixin(PlayerList.class)
-public abstract class MixinPlayerManager implements IMixinPlayerManager {
+public abstract class MixinPlayerManager implements PlayerListBridge {
 
     @Shadow
     public List<ServerPlayer> players;
@@ -383,7 +383,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
 
         PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(plr, joinMessage);
         CraftEventFactory.callEvent(playerJoinEvent);
-        IMixinPlayNetworkHandler ims = (IMixinPlayNetworkHandler)plr.getHandle().connection;
+        ServerGamePacketListenerImplBridge ims = (ServerGamePacketListenerImplBridge)plr.getHandle().connection;
 
         if (!ims.cb_get_connection().isConnected()) {
             return;
@@ -670,7 +670,7 @@ public abstract class MixinPlayerManager implements IMixinPlayerManager {
             serverPlayer.connection.send(new ClientboundSetChunkCacheRadiusPacket(8)); // TODO
             serverPlayer.connection.send(new ClientboundSetSimulationDistancePacket(8));
             
-            IMixinPlayNetworkHandler iNetworkHandler = (IMixinPlayNetworkHandler) serverPlayer.connection;
+            ServerGamePacketListenerImplBridge iNetworkHandler = (ServerGamePacketListenerImplBridge) serverPlayer.connection;
             
             if (CardboardConfig.DEBUG_PLAYER) {
         		CardboardMod.LOGGER.info("tele to " + serverPlayer.position().toString());

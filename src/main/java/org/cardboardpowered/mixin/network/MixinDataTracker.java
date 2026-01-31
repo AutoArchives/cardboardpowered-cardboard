@@ -2,12 +2,12 @@ package org.cardboardpowered.mixin.network;
 
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
-import org.cardboardpowered.interfaces.IMixinDataTracker;
+import org.cardboardpowered.bridge.network.syncher.SynchedEntityDataBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(SynchedEntityData.class)
-public abstract class MixinDataTracker implements IMixinDataTracker {
+public abstract class MixinDataTracker implements SynchedEntityDataBridge {
 
     @Shadow protected abstract <T> SynchedEntityData.DataItem<T> getItem(EntityDataAccessor<T> trackedData);
 

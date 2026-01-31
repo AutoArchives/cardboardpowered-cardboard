@@ -4,10 +4,10 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import org.bukkit.craftbukkit.inventory.CraftMerchantRecipe;
 import org.spongepowered.asm.mixin.Mixin;
 
-import org.cardboardpowered.interfaces.IMixinTradeOffer;
+import org.cardboardpowered.bridge.world.item.trading.MerchantOfferBridge;
 
 @Mixin(MerchantOffer.class)
-public class MixinTradeOffer implements IMixinTradeOffer {
+public class MixinTradeOffer implements MerchantOfferBridge {
 
     private CraftMerchantRecipe bukkitHandle;
 

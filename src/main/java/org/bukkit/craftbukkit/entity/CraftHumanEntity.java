@@ -76,7 +76,7 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryLectern;
 import org.cardboardpowered.impl.inventory.CardboardPlayerInventory;
 import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
-import org.cardboardpowered.interfaces.IMixinLivingEntity;
+import org.cardboardpowered.bridge.world.entity.LivingEntityBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
 import org.jetbrains.annotations.NotNull;
@@ -823,7 +823,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
         final net.minecraft.world.item.ItemStack dropContent = nmsItemStack.split(amount);
 
         // This will return the itemstack back to its original amount in case events fail
-        final ItemEntity droppedEntity = ((IMixinLivingEntity)this.getHandle()).cardboard$drop(dropContent, throwRandomly, true, true, entityOperation);
+        final ItemEntity droppedEntity = ((LivingEntityBridge)this.getHandle()).cardboard$drop(dropContent, throwRandomly, true, true, entityOperation);
         return droppedEntity == null ? null : (Item) ((EntityBridge)droppedEntity).getBukkitEntity();
     }
 
@@ -838,7 +838,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
         final net.minecraft.world.item.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(itemStack);
 
         // Do *not* call the event here, the item is not in the player inventory, they are not dropping it / do not need recovering logic (which would be a dupe).
-        final ItemEntity droppedEntity = ((IMixinLivingEntity)this.getHandle()).cardboard$drop(nmsItemStack, throwRandomly, true, false, entityOperation);
+        final ItemEntity droppedEntity = ((LivingEntityBridge)this.getHandle()).cardboard$drop(nmsItemStack, throwRandomly, true, false, entityOperation);
         return droppedEntity == null ? null : (Item) ((EntityBridge)droppedEntity).getBukkitEntity();
     }
 

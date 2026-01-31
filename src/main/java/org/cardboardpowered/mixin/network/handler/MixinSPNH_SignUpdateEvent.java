@@ -1,8 +1,8 @@
 package org.cardboardpowered.mixin.network.handler;
 
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.bridge.server.MinecraftServerBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
-import org.cardboardpowered.interfaces.IMixinSignBlockEntity;
+import org.cardboardpowered.bridge.world.level.block.entity.SignBlockEntityBridge;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.protocol.game.ServerboundSignUpdatePacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -41,7 +41,7 @@ public class MixinSPNH_SignUpdateEvent {
     
             for (int i = 0; i < astring.length; ++i)
                 lines[i] = ChatFormatting.stripFormatting(ChatFormatting.stripFormatting(astring[i]));
-            ((IMixinMinecraftServer)CraftServer.server).cardboard_runOnMainThread(() -> {
+            ((MinecraftServerBridge)CraftServer.server).cardboard_runOnMainThread(() -> {
                 try {
                     SignChangeEvent event = new SignChangeEvent((org.bukkit.craftbukkit.block.CraftBlock) player.getWorld().getBlockAt(x, y, z), player, lines);
                     CraftServer.INSTANCE.getPluginManager().callEvent(event);
@@ -49,7 +49,7 @@ public class MixinSPNH_SignUpdateEvent {
                     if (!event.isCancelled()) {
                         BlockEntity tileentity = this.player.level().getBlockEntity(packet.getPos());
                         SignBlockEntity tileentitysign = (SignBlockEntity) tileentity;
-                        System.arraycopy(CardboardSign.sanitizeLines(event.getLines()), 0, ((IMixinSignBlockEntity)tileentitysign).getTextBF(), 0, 4);
+                        System.arraycopy(CardboardSign.sanitizeLines(event.getLines()), 0, ((SignBlockEntityBridge)tileentitysign).getTextBF(), 0, 4);
                         //tileentitysign.editable = false;
                      }
                 } catch (NullPointerException serverNoLikeSigns) {}

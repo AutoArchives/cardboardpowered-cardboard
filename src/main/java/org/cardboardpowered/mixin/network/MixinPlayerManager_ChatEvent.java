@@ -1,7 +1,7 @@
 package org.cardboardpowered.mixin.network;
 
 import org.cardboardpowered.CardboardMod;
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.bridge.server.MinecraftServerBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
@@ -115,7 +115,7 @@ public class MixinPlayerManager_ChatEvent {
             });
             
             if (async)
-                ((IMixinMinecraftServer)CraftServer.server).getProcessQueue().add(waitable);
+                ((MinecraftServerBridge)CraftServer.server).getProcessQueue().add(waitable);
             else waitable.run();
             try {
                 waitable.get();

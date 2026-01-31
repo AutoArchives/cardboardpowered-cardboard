@@ -28,7 +28,7 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
-import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
+import org.cardboardpowered.bridge.server.network.ServerGamePacketListenerImplBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 import io.papermc.paper.event.player.PlayerFailMoveEvent;
@@ -238,7 +238,7 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                                     this.player.jumpFromGround();
                                 } else {
                                     from = event5.getFrom();
-                                    ((IMixinPlayNetworkHandler)(Object)this).internalTeleport(new PositionMoveRotation(CraftLocation.toVec3D(from), Vec3.ZERO, from.getYaw(), from.getPitch()), Collections.emptySet());
+                                    ((ServerGamePacketListenerImplBridge)(Object)this).internalTeleport(new PositionMoveRotation(CraftLocation.toVec3D(from), Vec3.ZERO, from.getYaw(), from.getPitch()), Collections.emptySet());
                                     return;
                                 }
                             }
@@ -321,7 +321,7 @@ public class MixinServerPlayNetworkHandler_PlayerMove {
                                     PlayerMoveEvent event6 = new PlayerMoveEvent(player, from, to);
                                     CraftServer.INSTANCE.getPluginManager().callEvent(event6);
                                     if (event6.isCancelled()) {
-                                        ((IMixinPlayNetworkHandler)(Object)this).teleport(from);
+                                        ((ServerGamePacketListenerImplBridge)(Object)this).teleport(from);
                                         return;
                                     }
                                     if (!oldTo.equals((Object)event6.getTo()) && !event6.isCancelled()) {

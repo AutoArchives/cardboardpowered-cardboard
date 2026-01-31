@@ -42,9 +42,8 @@ import org.cardboardpowered.CardboardConfig;
 import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.TeleportTargetExtra;
 import org.cardboardpowered.impl.entity.CraftPlayer;
-import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.cardboardpowered.impl.world.CraftWorld;
-import org.cardboardpowered.interfaces.IMixinCommandOutput;
+import org.cardboardpowered.bridge.commands.CommandSourceBridge;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
@@ -90,7 +89,7 @@ import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 
 @Mixin(value = ServerPlayer.class, priority = 999)
-public abstract class ServerPlayerMixin extends PlayerMixin implements IMixinCommandOutput, ServerPlayerBridge {
+public abstract class ServerPlayerMixin extends PlayerMixin implements CommandSourceBridge, ServerPlayerBridge {
 
 	@Shadow
 	private CommandSource commandSource;

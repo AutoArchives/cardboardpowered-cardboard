@@ -4,7 +4,7 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftMob;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Slime;
-import org.cardboardpowered.interfaces.ISlimeEntity;
+import org.cardboardpowered.bridge.world.entity.monster.SlimeBridge;
 
 public class CraftSlime extends CraftMob implements Slime {
 
@@ -19,7 +19,7 @@ public class CraftSlime extends CraftMob implements Slime {
 
     @Override
     public void setSize(int size) {
-        ((ISlimeEntity)getHandle()).setSizeBF(size, true);
+        ((SlimeBridge)getHandle()).setSizeBF(size, true);
     }
 
     @Override

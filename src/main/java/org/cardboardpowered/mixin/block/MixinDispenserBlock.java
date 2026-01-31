@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.block;
 
-import org.cardboardpowered.interfaces.IMixinDispenserBlock;
+import org.cardboardpowered.bridge.world.level.block.DispenserBlockBridge;
 import net.minecraft.world.level.block.DispenserBlock;
 import org.cardboardpowered.impl.block.DispenserBlockHelper;
 import org.spongepowered.asm.mixin.Mixin;
@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(DispenserBlock.class)
-public class MixinDispenserBlock implements IMixinDispenserBlock {
+public class MixinDispenserBlock implements DispenserBlockBridge {
 
     /**
      * @author Cardboard

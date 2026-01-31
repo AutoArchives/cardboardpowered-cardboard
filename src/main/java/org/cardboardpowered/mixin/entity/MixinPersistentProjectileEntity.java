@@ -16,10 +16,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
-import org.cardboardpowered.interfaces.IMixinPersistentProjectileEntity;
+import org.cardboardpowered.bridge.world.entity.projectile.arrow.AbstractArrowBridge;
 
 @Mixin(AbstractArrow.class)
-public abstract class MixinPersistentProjectileEntity implements IMixinPersistentProjectileEntity {
+public abstract class MixinPersistentProjectileEntity implements AbstractArrowBridge {
 
     // @Shadow public boolean inGround;
     @Shadow public int life;

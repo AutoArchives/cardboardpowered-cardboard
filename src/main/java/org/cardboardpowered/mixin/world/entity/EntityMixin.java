@@ -17,7 +17,7 @@
  */
 package org.cardboardpowered.mixin.world.entity;
 
-import org.cardboardpowered.interfaces.IMixinCommandOutput;
+import org.cardboardpowered.bridge.commands.CommandSourceBridge;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
 // import com.llamalad7.mixinextras.sugar.Local;
 
@@ -59,7 +59,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.ArrayList;
 
 @Mixin(Entity.class)
-public abstract class EntityMixin implements IMixinCommandOutput, EntityBridge {
+public abstract class EntityMixin implements CommandSourceBridge, EntityBridge {
 
     public CraftEntity bukkitEntity;
     public org.bukkit.projectiles.ProjectileSource projectileSource;

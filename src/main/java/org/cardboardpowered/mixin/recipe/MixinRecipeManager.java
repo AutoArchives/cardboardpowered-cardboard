@@ -1,21 +1,9 @@
 package org.cardboardpowered.mixin.recipe;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
-import org.cardboardpowered.interfaces.IMixinPlayerManager;
-import org.cardboardpowered.interfaces.IMixinRecipeManager;
-import com.mojang.serialization.JsonOps;
+import org.cardboardpowered.bridge.world.item.crafting.RecipeManagerBridge;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -24,21 +12,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spigotmc.AsyncCatcher;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.gen.Invoker;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
 
 @Mixin(RecipeManager.class) // Note: 1.21.4: RecipeManager->ServerRecipeManager // 72, 79, 52, 55, 58, 66, 114
-public class MixinRecipeManager implements IMixinRecipeManager {
+public class MixinRecipeManager implements RecipeManagerBridge {
 
 	// TODO @Shadow
     // public Multimap<RecipeType<?>, RecipeEntry<?>> recipesByType = ImmutableMultimap.of();

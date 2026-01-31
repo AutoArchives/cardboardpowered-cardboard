@@ -16,7 +16,7 @@ package org.cardboardpowered.mixin;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
-import org.cardboardpowered.interfaces.IMixinServerPlayerInteractionManager;
+import org.cardboardpowered.bridge.server.level.ServerPlayerGameModeBridge;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
@@ -59,7 +59,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(value = ServerPlayerGameMode.class, priority = 999)
-public class MixinServerPlayerInteractionManager implements IMixinServerPlayerInteractionManager {
+public class MixinServerPlayerInteractionManager implements ServerPlayerGameModeBridge {
 
     @Shadow public ServerPlayer player;
     @Shadow public ServerLevel level;

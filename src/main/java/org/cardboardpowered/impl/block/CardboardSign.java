@@ -6,9 +6,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.sign.Side;
 import org.bukkit.block.sign.SignSide;
@@ -16,7 +14,7 @@ import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerSignOpenEvent;
 import org.cardboardpowered.impl.entity.CraftPlayer;
-import org.cardboardpowered.interfaces.IMixinSignBlockEntity;
+import org.cardboardpowered.bridge.world.level.block.entity.SignBlockEntityBridge;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,8 +51,8 @@ public class CardboardSign<T extends SignBlockEntity> extends CardboardBlockEnti
     @Override
     public void load(T sign) {
         super.load(sign);
-        lines = new String[((IMixinSignBlockEntity)sign).getTextBF().length];
-        System.arraycopy(revertComponents(((IMixinSignBlockEntity)sign).getTextBF()), 0, lines, 0, lines.length);
+        lines = new String[((SignBlockEntityBridge)sign).getTextBF().length];
+        System.arraycopy(revertComponents(((SignBlockEntityBridge)sign).getTextBF()), 0, lines, 0, lines.length);
        // editable = sign.editable;
         
         
@@ -100,7 +98,7 @@ public class CardboardSign<T extends SignBlockEntity> extends CardboardBlockEnti
         super.applyTo(sign);
 
         net.minecraft.network.chat.Component[] newLines = sanitizeLines(lines);
-        System.arraycopy(newLines, 0, ((IMixinSignBlockEntity)sign).getTextBF(), 0, 4);
+        System.arraycopy(newLines, 0, ((SignBlockEntityBridge)sign).getTextBF(), 0, 4);
       //  sign.editable = true;
     }
 
@@ -184,7 +182,7 @@ public class CardboardSign<T extends SignBlockEntity> extends CardboardBlockEnti
 
     public Side getInteractableSideFor(double x, double z) {
         this.requirePlaced();
-        return ( (IMixinSignBlockEntity) ((SignBlockEntity)this.getSnapshot()) ) .cardboard$isFacingFrontText(x, z) ? Side.FRONT : Side.BACK;
+        return ( (SignBlockEntityBridge) ((SignBlockEntity)this.getSnapshot()) ) .cardboard$isFacingFrontText(x, z) ? Side.FRONT : Side.BACK;
     }
 
     public static void openSign(Sign sign, Player player, Side side) {

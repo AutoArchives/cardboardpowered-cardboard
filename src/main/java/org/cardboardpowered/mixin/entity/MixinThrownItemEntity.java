@@ -5,10 +5,10 @@ import org.spongepowered.asm.mixin.Shadow;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import org.cardboardpowered.interfaces.IMixinThrownItemEntity;
+import org.cardboardpowered.bridge.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectileBridge;
 
 @Mixin(ThrowableItemProjectile.class)
-public abstract class MixinThrownItemEntity implements IMixinThrownItemEntity {
+public abstract class MixinThrownItemEntity implements ThrowableItemProjectileBridge {
 
     @Shadow
     public abstract Item getDefaultItem();

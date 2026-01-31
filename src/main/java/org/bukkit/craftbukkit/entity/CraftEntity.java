@@ -9,7 +9,7 @@ import io.papermc.paper.adventure.PaperAdventure;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
 import org.cardboardpowered.impl.entity.UnknownEntity;
 import org.cardboardpowered.bridge.world.item.ItemStackBridge;
-import org.cardboardpowered.interfaces.IMixinCommandOutput;
+import org.cardboardpowered.bridge.commands.CommandSourceBridge;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.bridge.world.level.LevelBridge;
@@ -92,7 +92,7 @@ import io.papermc.paper.entity.LookAnchor;
 import io.papermc.paper.entity.TeleportFlag;
 import io.papermc.paper.threadedregions.scheduler.EntityScheduler;
 
-public class CraftEntity implements Entity, CommandSender, IMixinCommandOutput {
+public class CraftEntity implements Entity, CommandSender, CommandSourceBridge {
 
 	
 	protected static final Logger LOGGER = LogUtils.getLogger();

@@ -1,9 +1,9 @@
 package org.cardboardpowered.mixin.network;
 
 import org.cardboardpowered.extras.PlayerManager_LoginResult;
-import org.cardboardpowered.interfaces.IMixinClientConnection;
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
-import org.cardboardpowered.interfaces.IMixinPlayerManager;
+import org.cardboardpowered.bridge.network.ConnectionBridge;
+import org.cardboardpowered.bridge.server.MinecraftServerBridge;
+import org.cardboardpowered.bridge.server.players.PlayerListBridge;
 import org.cardboardpowered.bridge.server.network.ServerLoginPacketListenerImplBridge;
 
 import com.destroystokyo.paper.profile.CraftPlayerProfile;
@@ -46,7 +46,7 @@ import org.bukkit.craftbukkit.util.Waitable;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerPreLoginEvent.Result;
-import org.cardboardpowered.interfaces.INetworkConfiguration;
+import org.cardboardpowered.bridge.server.network.ServerConfigurationPacketListenerImplBridge;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -283,7 +283,7 @@ public abstract class MixinServerLoginNetworkHandler implements ServerLoginPacke
 						return event.getResult();
 					}
 				};
-				((IMixinMinecraftServer) CraftServer.server).getProcessQueue().add(waitable);
+				((MinecraftServerBridge) CraftServer.server).getProcessQueue().add(waitable);
 				if (waitable.get() != Result.ALLOWED) {
 					this.disconnect(PaperAdventure.asVanilla(event.kickMessage()));
 				}
@@ -320,7 +320,7 @@ public abstract class MixinServerLoginNetworkHandler implements ServerLoginPacke
 				}
 			};
 
-			((IMixinMinecraftServer) CraftServer.server).getProcessQueue().add(waitable);
+			((MinecraftServerBridge) CraftServer.server).getProcessQueue().add(waitable);
 			if(waitable.get() != PlayerPreLoginEvent.Result.ALLOWED) {
 				disconnect(event.getKickMessage());
 				return;
@@ -366,7 +366,7 @@ public abstract class MixinServerLoginNetworkHandler implements ServerLoginPacke
         
         net.minecraft.network.chat.Component text = playerManager.canPlayerLogin(this.connection.getRemoteAddress(), new NameAndId(profile));
 
-        IMixinPlayerManager pm = ((IMixinPlayerManager) this.server.getPlayerList());
+        PlayerListBridge pm = ((PlayerListBridge) this.server.getPlayerList());
 
         PlayerManager_LoginResult paperizedResult = pm.cardboard$canPlayerLogin(text, new NameAndId(profile));
         text = CraftEventFactory.handleLoginResult(
@@ -431,8 +431,8 @@ public abstract class MixinServerLoginNetworkHandler implements ServerLoginPacke
 	// Spigot start
 	public void initUUID() {
 		UUID uuid;
-		if(((IMixinClientConnection) connection).getSpoofedUUID() != null)
-			uuid = ((IMixinClientConnection) connection).getSpoofedUUID();
+		if(((ConnectionBridge) connection).getSpoofedUUID() != null)
+			uuid = ((ConnectionBridge) connection).getSpoofedUUID();
 		else {
 			// Note: PlayerEntity (1.18) -> DynamicSerializableUuid (1.19) -> Uuids (1.19.4)
 			uuid = UUIDUtil.createOfflinePlayerUUID(this.authenticatedProfile.name());
@@ -440,8 +440,8 @@ public abstract class MixinServerLoginNetworkHandler implements ServerLoginPacke
 
 		this.authenticatedProfile = new GameProfile(uuid, this.authenticatedProfile.name());
 
-		if(((IMixinClientConnection) connection).getSpoofedProfile() != null)
-			for(com.mojang.authlib.properties.Property property : ((IMixinClientConnection) connection).getSpoofedProfile())
+		if(((ConnectionBridge) connection).getSpoofedProfile() != null)
+			for(com.mojang.authlib.properties.Property property : ((ConnectionBridge) connection).getSpoofedProfile())
 				this.authenticatedProfile.properties().put(property.name(), property);
 	}
 	// Spigot end
@@ -462,7 +462,7 @@ public abstract class MixinServerLoginNetworkHandler implements ServerLoginPacke
 
         // System.out.println("networkConfig: setting player");
         if(cardboard_player != null) {
-			((INetworkConfiguration) networkConfig).cardboard_setPlayer(cardboard_player);
+			((ServerConfigurationPacketListenerImplBridge) networkConfig).cardboard_setPlayer(cardboard_player);
 		}
         
         this.connection.setupInboundProtocol(ConfigurationProtocols.SERVERBOUND, networkConfig);

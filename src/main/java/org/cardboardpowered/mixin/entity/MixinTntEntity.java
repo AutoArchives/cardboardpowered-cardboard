@@ -5,10 +5,10 @@ import org.spongepowered.asm.mixin.Shadow;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
-import org.cardboardpowered.interfaces.ITnt;
+import org.cardboardpowered.bridge.world.entity.item.PrimedTntBridge;
 
 @Mixin(PrimedTnt.class)
-public class MixinTntEntity implements ITnt {
+public class MixinTntEntity implements PrimedTntBridge {
 
 	/**
 	 * @implNote LivingEntity (1.21.4) -> LazyEntityReference<LivingEntity> (1.21.8)

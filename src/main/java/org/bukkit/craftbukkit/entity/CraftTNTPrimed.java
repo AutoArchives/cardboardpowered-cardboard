@@ -12,7 +12,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.TNTPrimed;
 
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
-import org.cardboardpowered.interfaces.ITnt;
+import org.cardboardpowered.bridge.world.entity.item.PrimedTntBridge;
 
 public class CraftTNTPrimed extends CraftEntity implements TNTPrimed {
 
@@ -73,8 +73,8 @@ public class CraftTNTPrimed extends CraftEntity implements TNTPrimed {
 
     public void setSource(Entity source) {
         if (source instanceof LivingEntity) {
-            ((ITnt)getHandle()).cardboard$setSource(((LivingEntityImpl) source).getHandle());
-        } else ((ITnt)getHandle()).cardboard$setSource(null);
+            ((PrimedTntBridge)getHandle()).cardboard$setSource(((LivingEntityImpl) source).getHandle());
+        } else ((PrimedTntBridge)getHandle()).cardboard$setSource(null);
     }
     
     // 1.20.4 API:

@@ -1,6 +1,6 @@
 package org.cardboardpowered.mixin.recipe;
 
-import org.cardboardpowered.interfaces.IMixinRecipe;
+import org.cardboardpowered.bridge.world.item.crafting.RecipeHolderBridge;
 import java.util.Optional;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
@@ -33,7 +33,7 @@ import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(RecipeHolder.class)
-public class MixinRecipeEntry implements IMixinRecipe {
+public class MixinRecipeEntry implements RecipeHolderBridge {
 
 	// @Override
 	/*

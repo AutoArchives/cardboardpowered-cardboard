@@ -5,11 +5,11 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import org.bukkit.Location;
 import org.spongepowered.asm.mixin.Mixin;
 
-import org.cardboardpowered.interfaces.IMixinLockableContainerBlockEntity;
+import org.cardboardpowered.bridge.world.level.block.entity.BaseContainerBlockEntityBridge;
 import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 @Mixin(BaseContainerBlockEntity.class)
-public class MixinLockableContainerBlockEntity implements IMixinLockableContainerBlockEntity {
+public class MixinLockableContainerBlockEntity implements BaseContainerBlockEntityBridge {
 
     @Override
     public Location getLocation() {

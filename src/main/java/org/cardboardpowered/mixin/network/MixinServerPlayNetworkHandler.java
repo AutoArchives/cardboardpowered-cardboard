@@ -2,10 +2,9 @@ package org.cardboardpowered.mixin.network;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
-import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
-import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
+import org.cardboardpowered.bridge.server.network.ServerGamePacketListenerImplBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
-import org.cardboardpowered.interfaces.IMixinServerPlayerInteractionManager;
+import org.cardboardpowered.bridge.server.level.ServerPlayerGameModeBridge;
 import me.isaiah.common.cmixin.IMixinEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.Connection;
@@ -61,7 +60,6 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.cardboardpowered.impl.entity.CraftPlayer;
-import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -79,7 +77,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 @SuppressWarnings("deprecation")
 @Mixin(value = ServerGamePacketListenerImpl.class, priority = 800)
-public abstract class MixinServerPlayNetworkHandler extends ServerCommonPacketListenerImpl implements IMixinPlayNetworkHandler {
+public abstract class MixinServerPlayNetworkHandler extends ServerCommonPacketListenerImpl implements ServerGamePacketListenerImplBridge {
 
     public MixinServerPlayNetworkHandler(MinecraftServer server, Connection connection, CommonListenerCookie clientData) {
         super(server, connection, clientData);
@@ -161,7 +159,7 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonPacketLi
         reason = Component.nullToEmpty(event.getReason());
         final Component reason_final = reason;
 
-        IMixinPlayNetworkHandler im = (IMixinPlayNetworkHandler) get();
+        ServerGamePacketListenerImplBridge im = (ServerGamePacketListenerImplBridge) get();
         im.cb_get_connection().send(new ClientboundDisconnectPacket(reason), PacketSendListener.thenRun(() -> im.cb_get_connection().disconnect(reason_final)));
         get().onDisconnect(new DisconnectionDetails(reason));
         //im.cb_get_connection().disableAutoRead();
@@ -728,9 +726,9 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonPacketLi
                 org.bukkit.event.player.PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.player, Action.RIGHT_CLICK_AIR, itemstack, enumhand);
                 cancelled = event.useItemInHand() == org.bukkit.event.Event.Result.DENY;
             } else {
-                if (((IMixinServerPlayerInteractionManager)player.gameMode).getFiredInteractBF()) {
-                    ((IMixinServerPlayerInteractionManager)player.gameMode).setFiredInteractBF(false);
-                    cancelled = ((IMixinServerPlayerInteractionManager)player.gameMode).getInteractResultBF();
+                if (((ServerPlayerGameModeBridge)player.gameMode).getFiredInteractBF()) {
+                    ((ServerPlayerGameModeBridge)player.gameMode).setFiredInteractBF(false);
+                    cancelled = ((ServerPlayerGameModeBridge)player.gameMode).getInteractResultBF();
                 } else {
                     BlockHitResult movingobjectpositionblock = (BlockHitResult) movingobjectposition;
                     org.bukkit.event.player.PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(player, Action.RIGHT_CLICK_BLOCK, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getDirection(), itemstack, true, enumhand);

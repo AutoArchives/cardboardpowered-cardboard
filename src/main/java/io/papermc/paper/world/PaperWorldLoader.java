@@ -27,7 +27,7 @@ import org.bukkit.World.Environment;
 import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.bridge.world.level.storage.PrimaryLevelDataBridge;
 import org.cardboardpowered.bridge.world.level.storage.LevelStorageSourceBridge;
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.bridge.server.MinecraftServerBridge;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -116,13 +116,13 @@ public record PaperWorldLoader(MinecraftServer server, String levelId) {
 	}
 
 	public void loadInitialWorlds() {
-		IMixinMinecraftServer mc = (IMixinMinecraftServer) this.server; // Cardboard
+		MinecraftServerBridge mc = (MinecraftServerBridge) this.server; // Cardboard
 		
 		for (LevelStem stem : this.server.registryAccess().lookupOrThrow(Registries.LEVEL_STEM)) {
 			PaperWorldLoader.WorldLoadingInfo info = this.getWorldInfo(this.levelId, stem);
 			this.migrateWorldFolder(info);
 			if (info.enabled()) {
-				LevelStorageSource.LevelStorageAccess levelStorageAccess = ((IMixinMinecraftServer) this.server).getSessionBF();
+				LevelStorageSource.LevelStorageAccess levelStorageAccess = ((MinecraftServerBridge) this.server).getSessionBF();
 				if (info.dimension() != 0) {
 					try {
 						levelStorageAccess = ((LevelStorageSourceBridge) LevelStorageSource.createDefault(CraftServer.INSTANCE.getWorldContainer().toPath()))
@@ -174,7 +174,7 @@ public record PaperWorldLoader(MinecraftServer server, String levelId) {
 			}
 				 */
 
-				((IMixinMinecraftServer) this.server).createLevel(stem, info, levelStorageAccess, primaryLevelData);
+				((MinecraftServerBridge) this.server).createLevel(stem, info, levelStorageAccess, primaryLevelData);
 			}
 		}
 

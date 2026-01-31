@@ -44,7 +44,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
-import org.cardboardpowered.interfaces.IMixinChunk;
+import org.cardboardpowered.bridge.world.level.chunk.ChunkAccessBridge;
 import org.cardboardpowered.bridge.world.level.LevelBridge;
 import com.mojang.serialization.Codec;
 
@@ -554,7 +554,7 @@ public class CardboardChunk implements Chunk {
         net.minecraft.world.level.chunk.ChunkAccess chunk = this.getHandle(ChunkStatus.FULL);
         ArrayList<BlockState> entities = new ArrayList<BlockState>();
 
-        for (BlockPos position : ((IMixinChunk)chunk).cardboard_getBlockEntities().keySet()) {
+        for (BlockPos position : ((ChunkAccessBridge)chunk).cardboard_getBlockEntities().keySet()) {
             Block block = ((LevelBridge)this.worldServer).getCraftWorld().getBlockAt(position.getX(), position.getY(), position.getZ());
             if (!blockPredicate.test(block)) continue;
             entities.add(block.getState(useSnapshot));
@@ -573,7 +573,7 @@ public class CardboardChunk implements Chunk {
         Preconditions.checkArgument((biome != null ? 1 : 0) != 0, (Object)"Biome cannot be null");
         net.minecraft.world.level.chunk.ChunkAccess chunk = this.getHandle(ChunkStatus.BIOMES);
         
-        com.google.common.base.Predicate nms = Predicates.equalTo(CraftBlock.biomeToBiomeBase(((IMixinChunk)chunk).bridge$biomeRegistry(), biome));
+        com.google.common.base.Predicate nms = Predicates.equalTo(CraftBlock.biomeToBiomeBase(((ChunkAccessBridge)chunk).bridge$biomeRegistry(), biome));
 
         for (LevelChunkSection section : chunk.getSections()) {
             if (section == null || !section.getBiomes().maybeHas((Predicate<Holder<net.minecraft.world.level.biome.Biome>>)nms)) continue;

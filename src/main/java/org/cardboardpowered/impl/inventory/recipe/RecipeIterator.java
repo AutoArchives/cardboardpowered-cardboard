@@ -1,13 +1,13 @@
 package org.cardboardpowered.impl.inventory.recipe;
 
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
-import org.cardboardpowered.interfaces.IMixinRecipe;
-import org.cardboardpowered.interfaces.IMixinRecipeManager;
+import org.cardboardpowered.bridge.server.MinecraftServerBridge;
+import org.cardboardpowered.bridge.world.item.crafting.RecipeHolderBridge;
+import org.cardboardpowered.bridge.world.item.crafting.RecipeManagerBridge;
 import org.bukkit.inventory.Recipe;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
+
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 
@@ -20,7 +20,7 @@ public class RecipeIterator implements Iterator<Recipe> {
 
     public RecipeIterator() {
     	
-    	this.recipes = ((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).cb$get_recipesByType().entries().iterator();
+    	this.recipes = ((RecipeManagerBridge) MinecraftServerBridge.getServer().getRecipeManager()).cb$get_recipesByType().entries().iterator();
     	
         // this.recipes = ((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).getRecipes().entrySet().iterator();
     }
@@ -35,7 +35,7 @@ public class RecipeIterator implements Iterator<Recipe> {
         // if (current == null || !current.hasNext()) current = recipes.next().getValue().values().iterator();
         // return ((IMixinRecipe)(Object) current.next()).toBukkitRecipe();
         
-        return ( (IMixinRecipe) (Object) this.recipes.next().getValue() ) .toBukkitRecipe();
+        return ( (RecipeHolderBridge) (Object) this.recipes.next().getValue() ) .toBukkitRecipe();
     }
 
     @Override

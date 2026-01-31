@@ -7,13 +7,13 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SignBlock;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.phys.Vec3;
-import org.cardboardpowered.interfaces.IMixinSignBlockEntity;
+import org.cardboardpowered.bridge.world.level.block.entity.SignBlockEntityBridge;
 
 /**
  * @implSpec https://github.com/PaperMC/Paper/blob/main/paper-server/patches/sources/net/minecraft/world/level/block/entity/SignBlockEntity.java.patch
  */
 @Mixin(SignBlockEntity.class)
-public class MixinSignBlockEntity implements IMixinSignBlockEntity {
+public class MixinSignBlockEntity implements SignBlockEntityBridge {
 
    // @Shadow
    // public Text[] texts;

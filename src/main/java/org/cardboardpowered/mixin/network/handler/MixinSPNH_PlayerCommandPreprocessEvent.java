@@ -1,7 +1,7 @@
 package org.cardboardpowered.mixin.network.handler;
 
 import org.cardboardpowered.CardboardMod;
-import org.cardboardpowered.interfaces.IMixinPlayNetworkHandler;
+import org.cardboardpowered.bridge.server.network.ServerGamePacketListenerImplBridge;
 import com.mojang.brigadier.ParseResults;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.CraftServer;
@@ -29,7 +29,7 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.util.FutureChain;
 
 @Mixin(value = ServerGamePacketListenerImpl.class, priority = 800)
-public abstract class MixinSPNH_PlayerCommandPreprocessEvent implements IMixinPlayNetworkHandler {
+public abstract class MixinSPNH_PlayerCommandPreprocessEvent implements ServerGamePacketListenerImplBridge {
 
 	@Shadow
 	public ServerPlayer player;

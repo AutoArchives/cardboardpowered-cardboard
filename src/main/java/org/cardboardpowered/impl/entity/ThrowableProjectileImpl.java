@@ -8,7 +8,7 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.ThrowableProjectile;
 import org.bukkit.inventory.ItemStack;
 
-import org.cardboardpowered.interfaces.IMixinThrownItemEntity;
+import org.cardboardpowered.bridge.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectileBridge;
 
 public class ThrowableProjectileImpl extends CraftProjectile implements ThrowableProjectile {
 
@@ -19,7 +19,7 @@ public class ThrowableProjectileImpl extends CraftProjectile implements Throwabl
     @Override
     public ItemStack getItem() {
         if (this.getHandle().getItem().isEmpty()) {
-        	return CraftItemStack.asBukkitCopy(new net.minecraft.world.item.ItemStack(((IMixinThrownItemEntity)getHandle()).getDefaultItemPublic()));
+        	return CraftItemStack.asBukkitCopy(new net.minecraft.world.item.ItemStack(((ThrowableItemProjectileBridge)getHandle()).getDefaultItemPublic()));
         } else {
         	return CraftItemStack.asBukkitCopy(this.getHandle().getItem());
         }

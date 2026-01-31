@@ -25,10 +25,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.cardboardpowered.impl.map.MapViewImpl;
-import org.cardboardpowered.interfaces.IMixinMapState;
+import org.cardboardpowered.bridge.world.level.saveddata.maps.MapItemSavedDataBridge;
 
 @Mixin(MapItemSavedData.class)
-public class MixinMapState implements IMixinMapState {
+public class MixinMapState implements MapItemSavedDataBridge {
 
     public MapViewImpl mapView;
 

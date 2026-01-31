@@ -10,12 +10,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import org.cardboardpowered.interfaces.INetworkIo;
+import org.cardboardpowered.bridge.server.network.ServerConnectionListenerBridge;
 
 import io.netty.channel.ChannelFuture;
 
 @Mixin(ServerConnectionListener.class)
-public class MixinServerNetworkIo implements INetworkIo {
+public class MixinServerNetworkIo implements ServerConnectionListenerBridge {
 
     @Shadow
     @Final

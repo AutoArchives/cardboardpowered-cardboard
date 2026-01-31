@@ -3,7 +3,7 @@ package org.bukkit.craftbukkit.inventory;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
-import org.cardboardpowered.interfaces.IMixinTradeOffer;
+import org.cardboardpowered.bridge.world.item.trading.MerchantOfferBridge;
 
 import java.util.List;
 import net.minecraft.world.item.trading.MerchantOffer;
@@ -19,7 +19,7 @@ public interface CraftMerchant extends org.bukkit.inventory.Merchant {
 	default List<MerchantRecipe> getRecipes() {
 		return List.copyOf(Lists.transform(this.getMerchant().getOffers(), new Function<MerchantOffer, MerchantRecipe>() {
 			public MerchantRecipe apply(MerchantOffer recipe) {
-				return ((IMixinTradeOffer)recipe).asBukkit();
+				return ((MerchantOfferBridge)recipe).asBukkit();
 			}
 		}));
 	}
@@ -34,7 +34,7 @@ public interface CraftMerchant extends org.bukkit.inventory.Merchant {
 	}
 
 	default MerchantRecipe getRecipe(int i) {
-		return ((IMixinTradeOffer)this.getMerchant().getOffers().get(i)).asBukkit();
+		return ((MerchantOfferBridge)this.getMerchant().getOffers().get(i)).asBukkit();
 	}
 
 	default void setRecipe(int i, MerchantRecipe merchantRecipe) {

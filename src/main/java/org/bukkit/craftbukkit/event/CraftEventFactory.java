@@ -29,8 +29,8 @@ import org.cardboardpowered.extras.PlayerManager_LoginResult;
 import org.cardboardpowered.BukkitLogger;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.world.ContainerBridge;
-import org.cardboardpowered.interfaces.IMixinLivingEntity;
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.bridge.world.entity.LivingEntityBridge;
+import org.cardboardpowered.bridge.server.MinecraftServerBridge;
 import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.bridge.world.level.LevelBridge;
@@ -153,7 +153,6 @@ import org.bukkit.inventory.InventoryView;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
 import org.cardboardpowered.impl.entity.CraftPlayer;
 import org.cardboardpowered.impl.entity.UnknownEntity;
-import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.Nullable;
 
@@ -174,7 +173,7 @@ public class CraftEventFactory {
      */
     public static void callEvent(Event e) {
         if (!e.isAsynchronous() && !Bukkit.isPrimaryThread()) {
-            ((IMixinMinecraftServer)CraftServer.server).cardboard_runOnMainThread(() -> {
+            ((MinecraftServerBridge)CraftServer.server).cardboard_runOnMainThread(() -> {
                 CraftServer.INSTANCE.getPluginManager().callEvent(e);
             });
             return;
@@ -573,7 +572,7 @@ public class CraftEventFactory {
         
         CraftDamageSource bukkitDamageSource = new CraftDamageSource(damageSource);
         
-        PlayerDeathEvent event = new PlayerDeathEvent(entity, bukkitDamageSource, drops, ((IMixinLivingEntity)victim).getExpReward(), 0, deathMessage);
+        PlayerDeathEvent event = new PlayerDeathEvent(entity, bukkitDamageSource, drops, ((LivingEntityBridge)victim).getExpReward(), 0, deathMessage);
         event.setKeepInventory(keepInventory);
         org.bukkit.World world = entity.getWorld();
         Bukkit.getServer().getPluginManager().callEvent(event);
@@ -614,7 +613,7 @@ public class CraftEventFactory {
         LivingEntityImpl entity = (LivingEntityImpl) ((EntityBridge)victim).getBukkitEntity();
         
         CraftDamageSource bukkitDamageSource = new CraftDamageSource(damageSource);
-        EntityDeathEvent event = new EntityDeathEvent(entity, bukkitDamageSource, drops, ((IMixinLivingEntity)victim).getExpReward());
+        EntityDeathEvent event = new EntityDeathEvent(entity, bukkitDamageSource, drops, ((LivingEntityBridge)victim).getExpReward());
 
         if ((null == entity) || (null == entity.getWorld())) {
             boolean e = (null == entity);

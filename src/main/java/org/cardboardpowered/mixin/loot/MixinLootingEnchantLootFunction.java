@@ -1,12 +1,10 @@
 package org.cardboardpowered.mixin.loot;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.EnchantedCountIncreaseFunction;
-import org.cardboardpowered.interfaces.IMixinLootContextParameters;
 
 @Mixin(EnchantedCountIncreaseFunction.class)
 public class MixinLootingEnchantLootFunction {

@@ -2,7 +2,7 @@ package org.cardboardpowered.impl.inventory;
 
 import com.google.common.base.Preconditions;
 import org.cardboardpowered.bridge.world.ContainerBridge;
-import org.cardboardpowered.interfaces.IMixinPlayerInventory;
+import org.cardboardpowered.bridge.world.entity.player.InventoryBridge;
 import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -32,8 +32,8 @@ public class CardboardPlayerInventory extends CraftInventory implements org.bukk
     }
     
     // Get cast to Cardboard Interface
-    private IMixinPlayerInventory IgetInventory() {
-        return (IMixinPlayerInventory) (Inventory) inventory;
+    private InventoryBridge IgetInventory() {
+        return (InventoryBridge) (Inventory) inventory;
     }
 
     @Override

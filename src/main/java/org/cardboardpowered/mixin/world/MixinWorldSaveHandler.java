@@ -1,7 +1,7 @@
 package org.cardboardpowered.mixin.world;
 
 import org.cardboardpowered.CardboardMod;
-import org.cardboardpowered.interfaces.IMixinWorldSaveHandler;
+import org.cardboardpowered.bridge.world.level.storage.PlayerDataStorageBridge;
 import com.mojang.datafixers.DataFixer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
@@ -15,7 +15,7 @@ import java.io.File;
 import java.io.FileInputStream;
 
 @Mixin(value = PlayerDataStorage.class, priority = 999)
-public class MixinWorldSaveHandler implements IMixinWorldSaveHandler {
+public class MixinWorldSaveHandler implements PlayerDataStorageBridge {
 
     @Shadow
     @Final

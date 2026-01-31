@@ -1,15 +1,11 @@
 package org.bukkit.craftbukkit;
 
-import org.cardboardpowered.CardboardMod;
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
-import org.cardboardpowered.interfaces.IMixinWorldSaveHandler;
+import org.cardboardpowered.bridge.server.MinecraftServerBridge;
+import org.cardboardpowered.bridge.world.level.storage.PlayerDataStorageBridge;
 
 import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.mojang.authlib.GameProfile;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
 
-import io.papermc.paper.persistence.PaperPersistentDataContainerView;
 import io.papermc.paper.persistence.PersistentDataContainerView;
 
 import java.io.File;
@@ -20,10 +16,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
+
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
@@ -42,13 +37,11 @@ import org.bukkit.Statistic;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
-import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.profile.PlayerProfile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,7 +57,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 	protected CraftOfflinePlayer(CraftServer server, NameAndId nameAndId) {
 		this.server = server;
 		this.nameAndId = nameAndId;
-		this.storage = ((IMixinMinecraftServer)server.getServer()).getSaveHandler_BF();
+		this.storage = ((MinecraftServerBridge)server.getServer()).getSaveHandler_BF();
 	}
 
 	/*
@@ -199,7 +192,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     }
 
     private CompoundTag getData() {
-        return ((IMixinWorldSaveHandler)storage).getPlayerData(getUniqueId().toString());
+        return ((PlayerDataStorageBridge)storage).getPlayerData(getUniqueId().toString());
     }
 
     private CompoundTag getBukkitData() {

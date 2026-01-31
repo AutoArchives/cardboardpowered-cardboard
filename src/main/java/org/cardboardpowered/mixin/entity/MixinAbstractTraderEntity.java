@@ -4,10 +4,10 @@ import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import org.bukkit.craftbukkit.inventory.CraftMerchant;
 import org.spongepowered.asm.mixin.Mixin;
 import org.cardboardpowered.impl.entity.CraftAbstractVillager;
-import org.cardboardpowered.interfaces.IMixinTrader;
+import org.cardboardpowered.bridge.world.entity.npc.villager.AbstractVillagerBridge;
 
 @Mixin(AbstractVillager.class)
-public class MixinAbstractTraderEntity implements IMixinTrader {
+public class MixinAbstractTraderEntity implements AbstractVillagerBridge {
 
     // private CraftMerchant craftMerchant;
 

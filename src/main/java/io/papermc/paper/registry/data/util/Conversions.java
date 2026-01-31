@@ -22,8 +22,8 @@ import net.minecraft.resources.ResourceKey;
 import org.bukkit.Keyed;
 import org.bukkit.craftbukkit.CraftRegistry;
 import io.papermc.paper.adventure.WrapperAwareSerializer;
-import org.cardboardpowered.interfaces.IRegistryInfoGetter;
-import org.cardboardpowered.interfaces.IRegistryWrapperImpl;
+import org.cardboardpowered.bridge.resources.RegistryInfoLookupBridge;
+import org.cardboardpowered.bridge.core.RegistryLookupBridge;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
@@ -114,8 +114,8 @@ public class Conversions {
             final RegistryEntryMeta.Buildable<M, A, B> buildableMeta
     ) {
         final ResourceKey<? extends Registry<M>> resourceRegistryKey = PaperRegistries.registryToNms(registryKey);
-        final HolderLookup.RegistryLookup<M> lookupForBuilders = ((IRegistryInfoGetter)this.lookup).lookupForValueCopyViaBuilders().lookupOrThrow(resourceRegistryKey);
-        return new PaperRegistryBuilderFactory<>(resourceRegistryKey, this, buildableMeta.builderFiller(), ((IRegistryWrapperImpl)lookupForBuilders)::getValueForCopying);
+        final HolderLookup.RegistryLookup<M> lookupForBuilders = ((RegistryInfoLookupBridge)this.lookup).lookupForValueCopyViaBuilders().lookupOrThrow(resourceRegistryKey);
+        return new PaperRegistryBuilderFactory<>(resourceRegistryKey, this, buildableMeta.builderFiller(), ((RegistryLookupBridge)lookupForBuilders)::getValueForCopying);
     }
 
 }

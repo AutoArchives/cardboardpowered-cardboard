@@ -4,10 +4,10 @@ import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import org.bukkit.command.CommandSender;
 import org.spongepowered.asm.mixin.Mixin;
-import org.cardboardpowered.interfaces.IMixinCommandOutput;
+import org.cardboardpowered.bridge.commands.CommandSourceBridge;
 
 @Mixin(CommandSource.class)
-public interface MixinCommandOutput extends IMixinCommandOutput {
+public interface MixinCommandOutput extends CommandSourceBridge {
 
 	// @Override
 	// public CommandSender getBukkitSender(ServerCommandSource source);
@@ -16,11 +16,11 @@ public interface MixinCommandOutput extends IMixinCommandOutput {
 	default CommandSender getBukkitSender(CommandSourceStack source) {
 		if (source.isPlayer()) {
 			// Cardboard Note: Redirect ServerPlayerEntity$3 to ServerPlayerEntity
-			return ( (IMixinCommandOutput) source.getPlayer() ).getBukkitSender(source);
+			return ( (CommandSourceBridge) source.getPlayer() ).getBukkitSender(source);
 		}
 
 		if (null != source.entity) {
-			return ( (IMixinCommandOutput) source.getEntity() ).getBukkitSender(source);
+			return ( (CommandSourceBridge) source.getEntity() ).getBukkitSender(source);
 		}
 			
 		CommandSource output = source.source;

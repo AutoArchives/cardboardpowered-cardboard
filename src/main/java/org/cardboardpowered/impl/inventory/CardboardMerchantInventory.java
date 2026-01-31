@@ -5,8 +5,8 @@ import net.minecraft.world.item.trading.Merchant;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.inventory.MerchantRecipe;
 
-import org.cardboardpowered.interfaces.IMixinTradeOffer;
-import org.cardboardpowered.interfaces.IMixinTrader;
+import org.cardboardpowered.bridge.world.item.trading.MerchantOfferBridge;
+import org.cardboardpowered.bridge.world.entity.npc.villager.AbstractVillagerBridge;
 
 public class CardboardMerchantInventory extends CraftInventory implements org.bukkit.inventory.MerchantInventory {
 
@@ -25,7 +25,7 @@ public class CardboardMerchantInventory extends CraftInventory implements org.bu
     @Override
     public MerchantRecipe getSelectedRecipe() {
         net.minecraft.world.item.trading.MerchantOffer nmsRecipe = getInventory().getActiveOffer();
-        return (nmsRecipe == null) ? null : ((IMixinTradeOffer)nmsRecipe).asBukkit();
+        return (nmsRecipe == null) ? null : ((MerchantOfferBridge)nmsRecipe).asBukkit();
     }
 
     @Override
@@ -35,7 +35,7 @@ public class CardboardMerchantInventory extends CraftInventory implements org.bu
 
     @Override
     public org.bukkit.inventory.Merchant getMerchant() {
-        return ((IMixinTrader)merchant).getCraftMerchant();
+        return ((AbstractVillagerBridge)merchant).getCraftMerchant();
     }
 
 }

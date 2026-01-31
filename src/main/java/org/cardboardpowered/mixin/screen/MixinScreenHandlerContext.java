@@ -8,11 +8,11 @@ import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
-import org.cardboardpowered.interfaces.IMixinScreenHandlerContext;
+import org.cardboardpowered.bridge.world.inventory.ContainerLevelAccessBridge;
 import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 @Mixin(ContainerLevelAccess.class)
-public interface MixinScreenHandlerContext extends IMixinScreenHandlerContext {
+public interface MixinScreenHandlerContext extends ContainerLevelAccessBridge {
 
     @Override
     default Level getWorld() {

@@ -33,12 +33,15 @@ import net.minecraft.world.level.dimension.LevelStem;
 import org.bukkit.generator.BiomeProvider;
 import org.cardboardpowered.BukkitLogger;
 import org.cardboardpowered.bridge.advancements.AdvancementHolderBridge;
+import org.cardboardpowered.bridge.server.MinecraftServerBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
+import org.cardboardpowered.bridge.world.item.crafting.RecipeManagerBridge;
+import org.cardboardpowered.bridge.world.item.crafting.RecipeHolderBridge;
 import org.cardboardpowered.bridge.world.level.LevelBridge;
+import org.cardboardpowered.bridge.world.level.saveddata.maps.MapItemSavedDataBridge;
 import org.cardboardpowered.impl.MetadataStoreImpl;
 import org.bukkit.craftbukkit.scheduler.CraftScheduler;
-import org.cardboardpowered.interfaces.*;
 import com.mohistmc.banner.bukkit.nms.utils.RemapUtils;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -52,9 +55,6 @@ import io.papermc.paper.datapack.DatapackManager;
 import io.papermc.paper.math.Position;
 import io.papermc.paper.profile.PaperFilledProfileCache;
 import io.papermc.paper.registry.RegistryAccess;
-import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
-import io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler;
-import io.papermc.paper.threadedregions.scheduler.RegionScheduler;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
@@ -302,6 +302,27 @@ public class CraftServer implements Server {
     
     // @MonotonicNonNull
     // public final PluginRemapper pluginRemapper;
+
+    // Paper start - Folia region threading API
+    private final io.papermc.paper.threadedregions.scheduler.FallbackRegionScheduler regionizedScheduler = new io.papermc.paper.threadedregions.scheduler.FallbackRegionScheduler();
+    private final io.papermc.paper.threadedregions.scheduler.FoliaAsyncScheduler asyncScheduler = new io.papermc.paper.threadedregions.scheduler.FoliaAsyncScheduler();
+   // private final io.papermc.paper.threadedregions.scheduler.FoliaGlobalRegionScheduler globalRegionScheduler = new io.papermc.paper.threadedregions.scheduler.FoliaGlobalRegionScheduler();
+
+    @Override
+    public final io.papermc.paper.threadedregions.scheduler.RegionScheduler getRegionScheduler() {
+        return this.regionizedScheduler;
+    }
+
+    @Override
+    public final io.papermc.paper.threadedregions.scheduler.AsyncScheduler getAsyncScheduler() {
+        return this.asyncScheduler;
+    }
+
+    @Override
+    public final io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler getGlobalRegionScheduler() {
+        return null; // TODO
+    }
+    // Paper end - Folia reagion threading API
     
     public CraftServer(DedicatedServer nms) {
         INSTANCE = this;
@@ -517,7 +538,7 @@ public class CraftServer implements Server {
     @SuppressWarnings("unchecked")
     private void syncCommands() {
         // Clear existing commands
-        Commands dispatcher = ((IMixinMinecraftServer) server).setCommandManager(new Commands(Commands.CommandSelection.ALL, CommandBuildContext.simple(console.registryAccess(), FeatureFlagSet.of())));
+        Commands dispatcher = ((MinecraftServerBridge) server).setCommandManager(new Commands(Commands.CommandSelection.ALL, CommandBuildContext.simple(console.registryAccess(), FeatureFlagSet.of())));
 
         // Register all commands, vanilla ones will be using the old dispatcher references
         for (Map.Entry<String, Command> entry : commandMap.getKnownCommands().entrySet()) {
@@ -659,7 +680,7 @@ public class CraftServer implements Server {
 
     @Override
     public void clearRecipes() {
-        ((IMixinRecipeManager)getServer().getRecipeManager()).clearRecipes();
+        ((RecipeManagerBridge)getServer().getRecipeManager()).clearRecipes();
     }
 
     @Override
@@ -806,7 +827,7 @@ public class CraftServer implements Server {
         net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(Items.MAP, 1);
         // MapState worldmap = FilledMapItem.getOrCreateMapState(stack, ((CraftWorld) world).getHandle());
         MapItemSavedData worldmap = MapItem.getSavedData(stack, ((CraftWorld) world).getHandle());
-        return ((IMixinMapState)worldmap).getMapViewBF();
+        return ((MapItemSavedDataBridge)worldmap).getMapViewBF();
     }
 
     @Override
@@ -1231,7 +1252,7 @@ public class CraftServer implements Server {
         // MapState worldmap = server.getWorld(net.minecraft.world.World.OVERWORLD).getMapState("map_" + arg0);
         if (worldmap == null)
             return null;
-        return ((IMixinMapState)worldmap).getMapViewBF();
+        return ((MapItemSavedDataBridge)worldmap).getMapViewBF();
     }
 
     @Override
@@ -1314,7 +1335,7 @@ public class CraftServer implements Server {
 
     @Override
     public OfflinePlayer[] getOfflinePlayers() {
-        PlayerDataStorage storage = ((IMixinMinecraftServer)server).getSaveHandler_BF();
+        PlayerDataStorage storage = ((MinecraftServerBridge)server).getSaveHandler_BF();
         String[] files = storage.playerDir.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
@@ -1630,7 +1651,7 @@ public class CraftServer implements Server {
 
     @Override
     public File getWorldContainer() {
-        return ((IMixinMinecraftServer)this.getServer()).getSessionBF().getDimensionPath(net.minecraft.world.level.Level.OVERWORLD).getParent().toFile();
+        return ((MinecraftServerBridge)this.getServer()).getSessionBF().getDimensionPath(net.minecraft.world.level.Level.OVERWORLD).getParent().toFile();
     }
 
     @Override
@@ -1813,7 +1834,7 @@ public class CraftServer implements Server {
 
         ServerLevel handle = (ServerLevel) ((CraftWorld) world).getHandle();
 
-        if (!(((IMixinMinecraftServer)(Object)getServer()).getWorldMap().containsKey(handle.getLevel().dimension())))
+        if (!(((MinecraftServerBridge)(Object)getServer()).getWorldMap().containsKey(handle.getLevel().dimension())))
             return false;
 
         if (handle.getLevel().dimension() == ServerLevel.OVERWORLD || handle.players().size() > 0)
@@ -1832,7 +1853,7 @@ public class CraftServer implements Server {
         }
 
         worlds.remove(world.getName().toLowerCase(java.util.Locale.ENGLISH));
-        ((IMixinMinecraftServer)(Object)getServer()).getWorldMap().remove(handle.getLevel().dimension());
+        ((MinecraftServerBridge)(Object)getServer()).getWorldMap().remove(handle.getLevel().dimension());
         return true;
     }
 
@@ -1854,7 +1875,7 @@ public class CraftServer implements Server {
     public boolean removeRecipe(NamespacedKey recipeKey, boolean resendRecipes) {
         Preconditions.checkArgument((recipeKey != null ? 1 : 0) != 0, (Object)"recipeKey == null");
         Identifier mcKey = CraftNamespacedKey.toMinecraft(recipeKey);
-        boolean removed = ((IMixinRecipeManager)getServer().getRecipeManager()).removeRecipe(mcKey);
+        boolean removed = ((RecipeManagerBridge)getServer().getRecipeManager()).removeRecipe(mcKey);
         if (removed && resendRecipes) {
             this.playerList_reloadRecipeData();
         }
@@ -2013,7 +2034,7 @@ public class CraftServer implements Server {
         Preconditions.checkArgument(recipeKey != null, "recipeKey == null");
         Optional<RecipeHolder<?>> opt = getServer().getRecipeManager().byKey(CraftRecipe.toMinecraft(recipeKey));
 
-        return !opt.isPresent() ? null : ((IMixinRecipe)(Object) opt.get()).toBukkitRecipe();
+        return !opt.isPresent() ? null : ((RecipeHolderBridge)(Object) opt.get()).toBukkitRecipe();
     }
 
     public boolean dispatchServerCommand(CommandSender sender, ConsoleInput serverCommand) {
@@ -2256,7 +2277,7 @@ public class CraftServer implements Server {
         Optional<RecipeHolder<CraftingRecipe>> opt = this.getNMSRecipe(craftingMatrix, inventoryCrafting, (CraftWorld)world);
         if (opt.isEmpty()) { return null; }
 
-        return ((IMixinRecipe)(Object) opt.get()).toBukkitRecipe();
+        return ((RecipeHolderBridge)(Object) opt.get()).toBukkitRecipe();
     }
 
     private Optional<RecipeHolder<CraftingRecipe>> getNMSRecipe(ItemStack[] craftingMatrix, TransientCraftingContainer inventoryCrafting, CraftWorld world) {
@@ -2520,24 +2541,6 @@ public class CraftServer implements Server {
 	public void motd(@NotNull Component motd) {
 		// TODO Auto-generated method stub
 		
-	}
-
-	@Override
-	public @NotNull RegionScheduler getRegionScheduler() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public @NotNull AsyncScheduler getAsyncScheduler() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public @NotNull GlobalRegionScheduler getGlobalRegionScheduler() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 	
 	// 1.20.2 API:

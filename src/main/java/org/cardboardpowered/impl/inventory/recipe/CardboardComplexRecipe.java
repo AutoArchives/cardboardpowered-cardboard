@@ -1,8 +1,8 @@
 package org.cardboardpowered.impl.inventory.recipe;
 
 import org.bukkit.craftbukkit.inventory.CraftRecipe;
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
-import org.cardboardpowered.interfaces.IMixinRecipeManager;
+import org.cardboardpowered.bridge.server.MinecraftServerBridge;
+import org.cardboardpowered.bridge.world.item.crafting.RecipeManagerBridge;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import org.bukkit.NamespacedKey;
@@ -44,7 +44,7 @@ public class CardboardComplexRecipe extends CraftingRecipe implements CraftRecip
     
     @Override
     public void addToCraftingManager() {
-    	((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(new RecipeHolder<>(CraftRecipe.toMinecraft(this.getKey()), this.recipe));
+    	((RecipeManagerBridge) MinecraftServerBridge.getServer().getRecipeManager()).addRecipe(new RecipeHolder<>(CraftRecipe.toMinecraft(this.getKey()), this.recipe));
     }
     
 

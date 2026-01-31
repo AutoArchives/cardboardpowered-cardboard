@@ -9,7 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.cardboardpowered.impl.world.CraftWorld;
 
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.bridge.server.MinecraftServerBridge;
 import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 public final class CraftLocation {
@@ -83,7 +83,7 @@ public final class CraftLocation {
 
     public static Location fromGlobalPos(GlobalPos globalPos) {
         BlockPos pos = globalPos.pos();
-        return new Location((World)IMixinMinecraftServer.getServer().getLevel(globalPos.dimension()).getWorld(), (double)pos.getX(), (double)pos.getY(), (double)pos.getZ());
+        return new Location((World) MinecraftServerBridge.getServer().getLevel(globalPos.dimension()).getWorld(), (double)pos.getX(), (double)pos.getY(), (double)pos.getZ());
     }
 
 

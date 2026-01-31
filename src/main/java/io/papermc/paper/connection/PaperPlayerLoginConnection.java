@@ -8,7 +8,7 @@ import java.net.SocketAddress;
 import net.kyori.adventure.text.Component;
 import net.minecraft.network.Connection;
 import net.minecraft.server.network.ServerLoginPacketListenerImpl;
-import org.cardboardpowered.interfaces.IMixinClientConnection;
+import org.cardboardpowered.bridge.network.ConnectionBridge;
 import org.cardboardpowered.bridge.server.network.ServerLoginPacketListenerImplBridge;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -18,8 +18,8 @@ public class PaperPlayerLoginConnection extends ReadablePlayerCookieConnectionIm
 
 	private final ServerLoginPacketListenerImpl packetListener;
 	
-	private IMixinClientConnection iconnection() {
-		return (IMixinClientConnection) packetListener_connection();
+	private ConnectionBridge iconnection() {
+		return (ConnectionBridge) packetListener_connection();
 	}
 	
 	private ServerLoginPacketListenerImplBridge ipacketListener() {

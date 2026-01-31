@@ -3,13 +3,13 @@ package org.cardboardpowered.mixin.network;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
-import org.cardboardpowered.interfaces.INetworkConfiguration;
+import org.cardboardpowered.bridge.server.network.ServerConfigurationPacketListenerImplBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(ServerConfigurationPacketListenerImpl.class)
-public class MixinServerConfigurationNetworkHandler implements INetworkConfiguration {
+public class MixinServerConfigurationNetworkHandler implements ServerConfigurationPacketListenerImplBridge {
 
 	@Unique
 	private ServerPlayer cardboard$replacementPlayer;

@@ -9,10 +9,10 @@ import org.spongepowered.asm.mixin.Shadow;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.ItemBasedSteering;
-import org.cardboardpowered.interfaces.ISaddledComponent;
+import org.cardboardpowered.bridge.world.entity.ItemBasedSteeringBridge;
 
 @Mixin(ItemBasedSteering.class)
-public class MixinSaddledComponent implements ISaddledComponent {
+public class MixinSaddledComponent implements ItemBasedSteeringBridge {
 
     @Shadow public SynchedEntityData entityData;
     @Shadow public EntityDataAccessor<Integer> boostTimeAccessor;

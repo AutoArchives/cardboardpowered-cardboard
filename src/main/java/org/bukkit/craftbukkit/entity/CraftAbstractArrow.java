@@ -3,7 +3,7 @@ package org.bukkit.craftbukkit.entity;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
-import org.cardboardpowered.interfaces.IMixinPersistentProjectileEntity;
+import org.cardboardpowered.bridge.world.entity.projectile.arrow.AbstractArrowBridge;
 
 import net.kyori.adventure.text.Component;
 import net.minecraft.core.BlockPos;
@@ -45,7 +45,7 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
 
     @Override
     public int getKnockbackStrength() {
-        return ((IMixinPersistentProjectileEntity)getHandle()).getPunchBF();
+        return ((AbstractArrowBridge)getHandle()).getPunchBF();
     }
 
     @Override
@@ -98,7 +98,7 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
 
     @Override
     public boolean isInBlock() {
-        return ((IMixinPersistentProjectileEntity)getHandle()).getInGroundBF();
+        return ((AbstractArrowBridge)getHandle()).getInGroundBF();
     }
 
     @Override
@@ -125,7 +125,7 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
         super.setTicksLived(value);
 
         // Second field for EntityArrow
-        ((IMixinPersistentProjectileEntity)getHandle()).setLifeBF(value);
+        ((AbstractArrowBridge)getHandle()).setLifeBF(value);
     }
 
     @Override

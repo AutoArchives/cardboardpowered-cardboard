@@ -1,40 +1,25 @@
 package io.papermc.paper.registry;
 
-import com.google.common.base.Preconditions;
-import org.cardboardpowered.CardboardMod;
-import com.mojang.serialization.Lifecycle;
-import io.papermc.paper.plugin.bootstrap.BootstrapContext;
 // import io.papermc.paper.plugin.entrypoint.Entrypoint;
 // import io.papermc.paper.plugin.entrypoint.LaunchEntryPointHandler;
 // import io.papermc.paper.plugin.lifecycle.event.LifecycleEventRunner;
-import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEventType;
-import io.papermc.paper.registry.PaperRegistries;
-import io.papermc.paper.registry.PaperRegistryAccess;
-import io.papermc.paper.registry.PaperRegistryBuilder;
-import io.papermc.paper.registry.RegistryBuilder;
-import io.papermc.paper.registry.TypedKey;
-import io.papermc.paper.registry.WritableCraftRegistry;
 import io.papermc.paper.registry.data.util.Conversions;
 import io.papermc.paper.registry.entry.RegistryEntry;
 import io.papermc.paper.registry.entry.RegistryEntryInfo;
 import io.papermc.paper.registry.entry.RegistryEntryMeta;
 // import io.papermc.paper.registry.event.RegistryEntryAddEventImpl;
 // import io.papermc.paper.registry.event.RegistryEventMap;
-import io.papermc.paper.registry.event.RegistryEventProvider;
 // import io.papermc.paper.registry.event.RegistryFreezeEvent;
 // import io.papermc.paper.registry.event.RegistryFreezeEventImpl;
-import io.papermc.paper.registry.event.type.RegistryEntryAddEventType;
 // import io.papermc.paper.registry.event.type.RegistryEntryAddEventTypeImpl;
 // import io.papermc.paper.registry.event.type.RegistryLifecycleEventType;
-import java.util.Optional;
-import net.kyori.adventure.key.Key;
-import net.minecraft.core.Registry;
+        import net.minecraft.core.Registry;
 import net.minecraft.core.WritableRegistry;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import org.bukkit.Keyed;
 import org.cardboardpowered.Registries_Bridge;
-import org.cardboardpowered.interfaces.ISimpleRegistry;
+import org.cardboardpowered.bridge.core.MappedRegistryBridge;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class PaperRegistryListenerManager {
@@ -144,7 +129,7 @@ public class PaperRegistryListenerManager {
         
 
     	if (oldNms != null) {
-                ((ISimpleRegistry<M>) registry).clearIntrusiveHolder(oldNms);
+                ((MappedRegistryBridge<M>) registry).clearIntrusiveHolder(oldNms);
             }
             final M newNms = oldNms; // event.builder().build();
             /*

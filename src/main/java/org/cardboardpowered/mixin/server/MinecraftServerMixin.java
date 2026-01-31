@@ -22,7 +22,6 @@ import net.minecraft.server.*;
 import org.cardboardpowered.CardboardMod;
 import org.bukkit.craftbukkit.scheduler.CraftScheduler;
 import org.cardboardpowered.bridge.server.MinecraftServerBridge;
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
 import org.cardboardpowered.bridge.world.level.LevelBridge;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.CrashReport;
@@ -71,7 +70,7 @@ import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.generator.WorldInfo;
-import org.cardboardpowered.interfaces.INetworkIo;
+import org.cardboardpowered.bridge.server.network.ServerConnectionListenerBridge;
 import org.cardboardpowered.bridge.server.level.ServerLevelBridge;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -92,7 +91,7 @@ import java.util.Queue;
 import java.util.function.BooleanSupplier;
 
 @Mixin(value=MinecraftServer.class)
-public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<TickTask> implements IMixinMinecraftServer, MinecraftServerBridge {
+public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<TickTask> implements MinecraftServerBridge {
 	// public final WorldLoader.DataLoadContext worldLoaderContext;
 	public WorldLoader.DataLoadContext worldLoaderContext;
 	
@@ -215,7 +214,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
 
         CraftServer.INSTANCE.enablePlugins(org.bukkit.plugin.PluginLoadOrder.POSTWORLD);
         CraftServer.INSTANCE.getPluginManager().callEvent(new ServerLoadEvent(ServerLoadEvent.LoadType.STARTUP));
-        ((INetworkIo)(Object) getServer().getConnection()).acceptConnections();
+        ((ServerConnectionListenerBridge)(Object) getServer().getConnection()).acceptConnections();
 
         CraftMagicNumbers.setupUnknownModdedMaterials();
         fixBukkitWorldEdit();

@@ -5,7 +5,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
-import org.cardboardpowered.interfaces.IMixinLivingEntity;
+import org.cardboardpowered.bridge.world.entity.LivingEntityBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
@@ -37,7 +37,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRules;
 
 @Mixin(LivingEntity.class)
-public abstract class MixinLivingEntity extends EntityMixin implements IMixinLivingEntity {
+public abstract class MixinLivingEntity extends EntityMixin implements LivingEntityBridge {
 
     private transient EntityPotionEffectEvent.Cause bukkitCause;
     private LivingEntity get() {

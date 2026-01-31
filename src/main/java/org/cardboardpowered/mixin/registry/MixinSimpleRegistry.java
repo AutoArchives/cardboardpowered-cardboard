@@ -8,7 +8,7 @@ import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.RegistrationInfo;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import org.cardboardpowered.interfaces.ISimpleRegistry;
+import org.cardboardpowered.bridge.core.MappedRegistryBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MappedRegistry.class)
-public class MixinSimpleRegistry<T> implements ISimpleRegistry<T> {
+public class MixinSimpleRegistry<T> implements MappedRegistryBridge<T> {
 	
 	@Shadow
 	private Map<T, Holder.Reference<T>> unregisteredIntrusiveHolders;

@@ -2,10 +2,10 @@ package org.cardboardpowered.mixin.entity;
 
 import org.spongepowered.asm.mixin.Mixin;
 import net.minecraft.world.damagesource.DamageSource;
-import org.cardboardpowered.interfaces.IMixinDamageSource;
+import org.cardboardpowered.bridge.world.damagesource.DamageSourceBridge;
 
 @Mixin(DamageSource.class)
-public class MixinDamageSource implements IMixinDamageSource {
+public class MixinDamageSource implements DamageSourceBridge {
 
     private boolean sweep_BF;
 

@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import org.cardboardpowered.bridge.world.inventory.AnvilMenuBridge;
-import org.cardboardpowered.interfaces.IMixinScreenHandlerContext;
+import org.cardboardpowered.bridge.world.inventory.ContainerLevelAccessBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 @Mixin(AnvilMenu.class)
@@ -29,7 +29,7 @@ public class MixinAnvilScreenHandler extends MixinForgingScreenHandler implement
             return bukkitEntity;
 
         org.bukkit.craftbukkit.inventory.CraftInventory inventory = new CardboardAnvilInventory(
-                ((IMixinScreenHandlerContext)access).getLocation(), this.inputSlots, this.resultSlots, (AnvilMenu)(Object)this);
+                ((ContainerLevelAccessBridge)access).getLocation(), this.inputSlots, this.resultSlots, (AnvilMenu)(Object)this);
         bukkitEntity = new CraftInventoryView((Player)((ServerPlayerBridge)this.player).getBukkitEntity(), inventory, (AnvilMenu)(Object)this);
         return bukkitEntity;
     }

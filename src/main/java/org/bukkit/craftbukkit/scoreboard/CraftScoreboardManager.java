@@ -1,6 +1,6 @@
 package org.bukkit.craftbukkit.scoreboard;
 
-import org.cardboardpowered.interfaces.IMixinPlayerManager;
+import org.cardboardpowered.bridge.server.players.PlayerListBridge;
 import net.minecraft.network.protocol.game.ClientboundSetObjectivePacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
@@ -86,7 +86,7 @@ public final class CraftScoreboardManager implements ScoreboardManager {
         // TODO: 1.17ify    entityplayer.networkHandler.sendPacket(new TeamS2CPacket((Team) iterator.next(), 1));
 
         // The above is the reverse of the below method. 
-        ((IMixinPlayerManager)server.getPlayerList()).sendScoreboardBF((ServerScoreboard) newboard, player.getHandle());
+        ((PlayerListBridge)server.getPlayerList()).sendScoreboardBF((ServerScoreboard) newboard, player.getHandle());
     }
 
     // CardboardBukkit method

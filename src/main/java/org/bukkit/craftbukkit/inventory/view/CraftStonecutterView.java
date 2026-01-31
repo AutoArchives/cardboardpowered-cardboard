@@ -15,7 +15,7 @@ import org.bukkit.inventory.StonecuttingRecipe;
 import org.bukkit.inventory.view.StonecutterView;
 import org.jetbrains.annotations.NotNull;
 
-import org.cardboardpowered.interfaces.IMixinRecipe;
+import org.cardboardpowered.bridge.world.item.crafting.RecipeHolderBridge;
 
 public class CraftStonecutterView extends CraftInventoryView<StonecutterMenu, StonecutterInventory> implements StonecutterView {
 
@@ -50,7 +50,7 @@ public class CraftStonecutterView extends CraftInventoryView<StonecutterMenu, St
         	if (opt.isPresent()) {
         		RecipeHolder<net.minecraft.world.item.crafting.StonecutterRecipe> rep = opt.get();
 
-        		Recipe bukkit = ((IMixinRecipe) (Object) rep).toBukkitRecipe();
+        		Recipe bukkit = ((RecipeHolderBridge) (Object) rep).toBukkitRecipe();
         		recipes.add((StonecuttingRecipe) bukkit);
         	}
         	

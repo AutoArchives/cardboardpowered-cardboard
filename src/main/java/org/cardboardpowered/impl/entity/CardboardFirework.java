@@ -13,7 +13,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.meta.FireworkMeta;
-import org.cardboardpowered.interfaces.IMixinDataTracker;
+import org.cardboardpowered.bridge.network.syncher.SynchedEntityDataBridge;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -67,7 +67,7 @@ public class CardboardFirework extends CraftProjectile implements Firework {
         // Copied from FireworkRocketEntity constructor, update firework lifetime/power
         getHandle().lifetime = 10 * (1 + meta.getPower()) + random.nextInt(6) + random.nextInt(7);
 
-        ((IMixinDataTracker) getHandle().getEntityData()).markDirty(FireworkRocketEntity.DATA_ID_FIREWORKS_ITEM);
+        ((SynchedEntityDataBridge) getHandle().getEntityData()).markDirty(FireworkRocketEntity.DATA_ID_FIREWORKS_ITEM);
     }
 
     @Override

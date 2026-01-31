@@ -3,7 +3,7 @@ package io.papermc.paper.util;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.bridge.server.MinecraftServerBridge;
 
 import io.papermc.paper.math.BlockPosition;
 import io.papermc.paper.math.FinePosition;
@@ -107,7 +107,7 @@ public final class MCUtil {
             if (reason != null) {
                // MinecraftServer.LOGGER.warn("Asynchronous " + reason + "!", new IllegalStateException());
             }
-            ((IMixinMinecraftServer)MinecraftServer_getServer()).getProcessQueue().add(run);
+            ((MinecraftServerBridge)MinecraftServer_getServer()).getProcessQueue().add(run);
             return;
         }
         run.run();
@@ -131,7 +131,7 @@ public final class MCUtil {
                     return run.get();
                 }
             };
-            ((IMixinMinecraftServer)MinecraftServer_getServer()).getProcessQueue().add(wait);
+            ((MinecraftServerBridge)MinecraftServer_getServer()).getProcessQueue().add(wait);
             try {
                 return wait.get();
             } catch (InterruptedException | ExecutionException e) {

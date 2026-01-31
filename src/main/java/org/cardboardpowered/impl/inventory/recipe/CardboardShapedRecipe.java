@@ -1,8 +1,8 @@
 package org.cardboardpowered.impl.inventory.recipe;
 
 import org.bukkit.craftbukkit.inventory.CraftRecipe;
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
-import org.cardboardpowered.interfaces.IMixinRecipeManager;
+import org.cardboardpowered.bridge.server.MinecraftServerBridge;
+import org.cardboardpowered.bridge.world.item.crafting.RecipeManagerBridge;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
@@ -61,7 +61,7 @@ public class CardboardShapedRecipe extends ShapedRecipe implements CraftRecipe {
                 data.set(i * width + j, Optional.of(toNMS(ingred.get(row.charAt(j)), false)));
         }
 
-        ((IMixinRecipeManager)IMixinMinecraftServer.getServer().getRecipeManager()).addRecipe(
+        ((RecipeManagerBridge) MinecraftServerBridge.getServer().getRecipeManager()).addRecipe(
         		getKey(),
         		new net.minecraft.world.item.crafting.ShapedRecipe(
         				this.getGroup(),

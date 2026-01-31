@@ -52,7 +52,7 @@ import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.world.damagesource.CombatTracker;
 
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
-import org.cardboardpowered.interfaces.IMixinLivingEntity;
+import org.cardboardpowered.bridge.world.entity.LivingEntityBridge;
 
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.util.TriState;
@@ -113,7 +113,7 @@ public class LivingEntityImpl extends CraftEntity implements LivingEntity {
     @Override
     public AttributeInstance getAttribute(Attribute att) {
 
-        return ((IMixinLivingEntity) entity).cardboard_getAttr().getAttribute(att); //.getAttribute(att, nms.getAttributes());
+        return ((LivingEntityBridge) entity).cardboard_getAttr().getAttribute(att); //.getAttribute(att, nms.getAttributes());
     }
 
     @Override

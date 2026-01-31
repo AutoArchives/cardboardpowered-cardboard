@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.impl.entity.ItemEntityImpl;
 import org.cardboardpowered.bridge.world.entity.item.ItemEntityBridge;
-import org.cardboardpowered.interfaces.IMixinPlayerInventory;
+import org.cardboardpowered.bridge.world.entity.player.InventoryBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 @Mixin(ItemEntity.class)
@@ -101,7 +101,7 @@ public class ItemEntityMixin extends EntityMixin implements ItemEntityBridge {
         int i = itemstack.getCount();
 
         // CraftBukkit start - fire PlayerPickupItemEvent
-        int canHold = ((IMixinPlayerInventory)entityhuman.getInventory()).canHold(itemstack);
+        int canHold = ((InventoryBridge)entityhuman.getInventory()).canHold(itemstack);
         int remaining = i - canHold;
 
         if (this.pickupDelay <= 0 && canHold > 0) {

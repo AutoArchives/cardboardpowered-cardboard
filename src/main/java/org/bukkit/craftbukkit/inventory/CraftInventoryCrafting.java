@@ -8,7 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
 import org.cardboardpowered.bridge.world.ContainerBridge;
-import org.cardboardpowered.interfaces.IMixinRecipe;
+import org.cardboardpowered.bridge.world.item.crafting.RecipeHolderBridge;
 
 public class CraftInventoryCrafting extends CraftInventory implements CraftingInventory {
     private final Container resultInventory;
@@ -108,6 +108,6 @@ public class CraftInventoryCrafting extends CraftInventory implements CraftingIn
     @Override
     public Recipe getRecipe() {
         net.minecraft.world.item.crafting.Recipe recipe = ((ContainerBridge)getInventory()).getCurrentRecipe();
-        return recipe == null ? null : ((IMixinRecipe)recipe).toBukkitRecipe();
+        return recipe == null ? null : ((RecipeHolderBridge)recipe).toBukkitRecipe();
     }
 }

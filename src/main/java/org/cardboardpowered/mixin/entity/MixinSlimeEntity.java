@@ -7,10 +7,10 @@ import net.minecraft.world.entity.monster.Slime;
 import org.cardboardpowered.mixin.world.entity.EntityMixin;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.cardboardpowered.interfaces.ISlimeEntity;
+import org.cardboardpowered.bridge.world.entity.monster.SlimeBridge;
 
 @Mixin(Slime.class)
-public class MixinSlimeEntity extends EntityMixin implements ISlimeEntity {
+public class MixinSlimeEntity extends EntityMixin implements SlimeBridge {
 
     @Shadow public int getSize() {return 0;}
     @Shadow public void setSize(int i, boolean flag) {}

@@ -1,17 +1,14 @@
 package org.cardboardpowered.mixin.registry;
 
 import java.util.Optional;
-import java.util.stream.Stream;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceKey;
-import org.cardboardpowered.interfaces.IRegistryWrapperImpl;
+import org.cardboardpowered.bridge.core.RegistryLookupBridge;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-
-import com.google.common.base.Predicate;
 
 @Mixin(HolderLookup.RegistryLookup.class)
-public interface MixinWrapperImpl<T> extends IRegistryWrapperImpl<T> {
+public interface MixinWrapperImpl<T> extends RegistryLookupBridge<T> {
 
 	/**
 	 */
