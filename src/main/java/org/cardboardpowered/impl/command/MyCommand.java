@@ -27,7 +27,7 @@ public class MyCommand extends Command {
         this.description = "Testing";
         this.usageMessage = "/cardboardtest";
         
-        List<String> aka = Arrays.asList("cardboarddebug", "cardboardebug");
+        List<String> aka = Arrays.asList("cardboarddebug", "cardboardebug", "cardboard");
         
         this.setAliases(aka);
         this.setPermission("cardboard.command.admin");
@@ -66,7 +66,7 @@ public class MyCommand extends Command {
     		String ver = FabricLoader.getInstance().getModContainer("cardboard").get().getMetadata().getVersion().getFriendlyString();
             if (ver.contains("version")) ver = CraftServer.INSTANCE.getShortVersion(); // Dev ENV
 
-            String message = ChatColor.GOLD + "Cardboard" + ChatColor.RESET + " version " + ver + ChatColor.ITALIC + " (Implementing Paper API version " + KnotHelper.ver_paper + ")";
+            String message = ChatColor.GOLD + "Cardboard" + ChatColor.RESET + " version " + ver + ChatColor.ITALIC + " (Implementing Paper API version " + KnotHelper.paper_version + ")";
             sender.sendMessage(message);
     	}
     	

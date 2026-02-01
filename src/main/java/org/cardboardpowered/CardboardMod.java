@@ -98,7 +98,7 @@ public class CardboardMod implements ModInitializer {
 
 		new File("plugins").mkdirs();
 
-		var ver_paper = org.cardboardpowered.library.KnotHelper.ver_paper;
+		var ver_paper = org.cardboardpowered.library.KnotHelper.paper_version;
 		int r = EventRegistery.registerAll(this);
 
 		String details = " - Paper-API " + ver_paper + ". " + "Registered '" + r + "' iCommon events.";
