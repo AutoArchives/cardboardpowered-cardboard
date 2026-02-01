@@ -20,7 +20,7 @@ import net.fabricmc.mappingio.format.MappingFormat;
 import net.md_5.specialsource.provider.JointProvider;
 import org.cardboardpowered.CardboardConfig;
 import org.cardboardpowered.CardboardLogger;
-import org.cardboardpowered.util.mapping.MyMappingResolver;
+import org.cardboardpowered.util.nms.MyMappingResolver;
 import org.cardboardpowered.util.nms.MappingsReader;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
