@@ -41,6 +41,7 @@ import net.minecraft.server.level.*;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.level.LevelAccessor;
 import org.apache.commons.lang.Validate;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
@@ -48,12 +49,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.boss.DragonBattle;
-import org.bukkit.craftbukkit.CraftFeatureFlag;
-import org.bukkit.craftbukkit.CraftGameRule;
-import org.bukkit.craftbukkit.CraftRegionAccessor;
-import org.bukkit.craftbukkit.CraftRegistry;
-import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.CraftSound;
+import org.bukkit.craftbukkit.*;
 import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockType;
@@ -89,7 +85,6 @@ import org.bukkit.metadata.MetadataStoreBase;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 import org.bukkit.util.BiomeSearchResult;
 import org.bukkit.util.BoundingBox;
@@ -100,15 +95,13 @@ import org.bukkit.util.StructureSearchResult;
 import org.bukkit.util.Vector;
 import org.cardboardpowered.bridge.world.level.LevelBridge;
 import org.cardboardpowered.impl.entity.CraftPlayer;
-import org.cardboardpowered.impl.util.CardboardFluidRaytraceMode;
-import org.cardboardpowered.impl.util.CardboardRayTraceResult;
+import org.bukkit.craftbukkit.util.CraftRayTraceResult;
 import org.cardboardpowered.bridge.server.level.ServerLevelBridge;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Preconditions;
 import org.cardboardpowered.impl.MetadataStoreImpl;
-import org.cardboardpowered.bridge.world.entity.projectile.arrow.ArrowBridge;
 import org.cardboardpowered.bridge.server.level.ChunkHolderBridge;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
@@ -173,7 +166,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.*;
 import org.cardboardpowered.ChunkTicketBridge;
-import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.cardboardpowered.bridge.world.level.chunk.LevelChunkBridge;
 
 @SuppressWarnings("deprecation")
@@ -482,17 +474,6 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	}
 
 	@Override
-	public Biome getBiome(int arg0, int arg1, int arg2) {
-		try {
-			return CraftBlock.biomeBaseToBiome(getHandle().registryAccess()
-					.lookupOrThrow(Registries.BIOME), world.getNoiseBiome(arg0 >> 2, arg1 >> 2, arg2 >> 2).value());
-		} catch(Exception e) {
-			return CraftBlock.biomeBaseToBiome(getHandle().registryAccess().lookupOrThrow(Registries.BIOME),
-					(net.minecraft.world.level.biome.Biome) (Object) world.getNoiseBiome(arg0 >> 2, arg1 >> 2, arg2 >> 2));
-		}
-	}
-
-	@Override
 	public Block getBlockAt(Location loc) {
 		return getBlockAt(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
 	}
@@ -524,7 +505,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public ChunkSnapshot getEmptyChunkSnapshot(int arg0, int arg1, boolean arg2, boolean arg3) {
-		return CardboardChunk.getEmptyChunkSnapshot(arg0, arg1, this, arg2, arg3);
+		return CraftChunk.getEmptyChunkSnapshot(arg0, arg1, this, arg2, arg3);
 	}
 
 	@Override
@@ -1328,9 +1309,9 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 		Vec3 startPos = new Vec3(start.getX(), start.getY(), start.getZ());
 		Vec3 endPos = new Vec3(start.getX() + dir.getX(), start.getY() + dir.getY(), start.getZ() + dir.getZ());
 		HitResult nmsHitResult = this.getHandle().clip(new ClipContext(startPos, endPos, ignorePassableBlocks ?
-				ClipContext.Block.COLLIDER : ClipContext.Block.OUTLINE, CardboardFluidRaytraceMode.toMc(mode), (net.minecraft.world.entity.Entity) null));
+				ClipContext.Block.COLLIDER : ClipContext.Block.OUTLINE, CraftFluidCollisionMode.toFluid(mode), (net.minecraft.world.entity.Entity) null));
 
-		return CardboardRayTraceResult.fromNMS(this, nmsHitResult);
+		return CraftRayTraceResult.convertFromInternal((LevelAccessor) this, nmsHitResult);
 	}
 
 	@Override
@@ -2865,7 +2846,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         if (generate) {
             return this.getChunkAt(x2, z2);
         }
-        return new CardboardChunk(this.getHandle(), x2, z2);
+        return new CraftChunk(this.getHandle(), x2, z2);
     }
 
 	@Override

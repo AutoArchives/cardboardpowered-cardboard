@@ -383,20 +383,25 @@ public class CraftEventFactory {
         return event;
     }
 
-    public static boolean handleBlockFormEvent(Level world, BlockPos pos, net.minecraft.world.level.block.state.BlockState block, Entity entity) {
-        return handleBlockFormEvent(world, pos, block, 3, entity);
+    public static boolean handleBlockFormEvent(Level world, BlockPos pos, net.minecraft.world.level.block.state.BlockState state, @net.minecraft.world.level.block.Block.UpdateFlags int flags) {
+        return CraftEventFactory.handleBlockFormEvent(world, pos, state, flags, null);
     }
 
-    public static boolean handleBlockFormEvent(Level world, BlockPos pos, net.minecraft.world.level.block.state.BlockState block, int flag, Entity entity) {
-        CraftBlockState blockState = CraftBlockState.getBlockState(world, pos, flag);
-        blockState.setData(block);
+    public static boolean handleBlockFormEvent(Level world, BlockPos pos, net.minecraft.world.level.block.state.BlockState state, @net.minecraft.world.level.block.Block.UpdateFlags int flags, @Nullable Entity entity) {
+        return CraftEventFactory.handleBlockFormEvent(world, pos, state, flags, entity, false);
+    }
 
-        BlockFormEvent event = (entity == null) ? new BlockFormEvent(blockState.getBlock(), blockState) : new EntityBlockFormEvent(((EntityBridge)entity).getBukkitEntity(), blockState.getBlock(), blockState);
-        CraftServer.INSTANCE.getPluginManager().callEvent(event);
+    public static boolean handleBlockFormEvent(Level world, BlockPos pos, net.minecraft.world.level.block.state.BlockState state, @net.minecraft.world.level.block.Block.UpdateFlags int flags, @Nullable Entity entity, boolean checkSetResult) {
+        CraftBlockState snapshot = CraftBlockStates.getBlockState(world, pos);
+        snapshot.setData(state);
 
-        if (!event.isCancelled())
-            blockState.update(true);
-        return !event.isCancelled();
+        BlockFormEvent event = (entity == null) ? new BlockFormEvent(snapshot.getBlock(), snapshot) : new EntityBlockFormEvent(entity.getBukkitEntity(), snapshot.getBlock(), snapshot);
+        if (event.callEvent()) {
+            boolean result = snapshot.place(flags);
+            return !checkSetResult || result;
+        }
+
+        return false;
     }
 
     @SuppressWarnings("unchecked")
@@ -819,7 +824,7 @@ public class CraftEventFactory {
             return true;
         }
 
-        CraftBlockState state = CraftBlockState.getBlockState(world, target, flag);
+        CraftBlockState state = CraftBlockStates.getBlockState(world, target);
         state.setData(block);
 
         BlockSpreadEvent event = new BlockSpreadEvent(((LevelBridge) world).getCraftWorld().getBlockAt(target.getX(), target.getY(), target.getZ()), ((LevelBridge) world).getCraftWorld().getBlockAt(source.getX(), source.getY(), source.getZ()), state);
@@ -867,7 +872,7 @@ public class CraftEventFactory {
      * BlockFadeEvent
      */
     public static BlockFadeEvent callBlockFadeEvent(LevelAccessor world, BlockPos pos, net.minecraft.world.level.block.state.BlockState newBlock) {
-        CraftBlockState state = CraftBlockState.getBlockState(world, pos);
+        CraftBlockState state = CraftBlockStates.getBlockState(world, pos);
         state.setData(newBlock);
 
         BlockFadeEvent event = new BlockFadeEvent(state.getBlock(), state);

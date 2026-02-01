@@ -1,5 +1,6 @@
 package org.cardboardpowered.mixin.network.handler;
 
+import org.bukkit.craftbukkit.block.CraftSign;
 import org.cardboardpowered.bridge.server.MinecraftServerBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.bridge.world.level.block.entity.SignBlockEntityBridge;
@@ -12,7 +13,6 @@ import net.minecraft.world.level.block.entity.SignBlockEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.SignChangeEvent;
-import org.cardboardpowered.impl.block.CardboardSign;
 import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -49,7 +49,7 @@ public class MixinSPNH_SignUpdateEvent {
                     if (!event.isCancelled()) {
                         BlockEntity tileentity = this.player.level().getBlockEntity(packet.getPos());
                         SignBlockEntity tileentitysign = (SignBlockEntity) tileentity;
-                        System.arraycopy(CardboardSign.sanitizeLines(event.getLines()), 0, ((SignBlockEntityBridge)tileentitysign).getTextBF(), 0, 4);
+                        System.arraycopy(CraftSign.sanitizeLines(event.getLines()), 0, ((SignBlockEntityBridge)tileentitysign).getTextBF(), 0, 4);
                         //tileentitysign.editable = false;
                      }
                 } catch (NullPointerException serverNoLikeSigns) {}

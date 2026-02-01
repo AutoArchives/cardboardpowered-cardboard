@@ -1,9 +1,5 @@
 package com.mohistmc.banner.bukkit.nms.utils;
 
-import org.cardboardpowered.CardboardMod;
-import org.cardboardpowered.impl.block.CardboardBlockEntityState;
-import org.cardboardpowered.impl.block.CardboardSign;
-
 import com.mohistmc.banner.bukkit.nms.model.ClassMapping;
 import com.mohistmc.banner.bukkit.nms.remappers.BannerInheritanceMap;
 import com.mohistmc.banner.bukkit.nms.remappers.BannerInheritanceProvider;
@@ -159,10 +155,6 @@ public class RemapUtils {
         File bukkit_class_mappings_file = exportResource(bukkit_cl_srg, dir);
         
         jarMapping.classes.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/CraftWorld", "org/cardboardpowered/impl/world/CraftWorld");
-
-        // Remap Cardboard Implementation (Craft-board? ha) into CraftBukkit names
-        jarMapping.classes.put("org/bukkit/craftbukkit/block/CraftBlockEntityState", CardboardBlockEntityState.class.getName().replace('.', '/'));
-        jarMapping.classes.put("org/bukkit/craftbukkit/block/CraftSign", CardboardSign.class.getName().replace('.', '/'));
         
         // some missing
         jarMapping.classes.put("net/minecraft/nbt/ListTag", "net/minecraft/class_2499");

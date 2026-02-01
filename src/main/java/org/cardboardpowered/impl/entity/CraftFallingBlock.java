@@ -11,7 +11,7 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
-import org.cardboardpowered.impl.block.CardboardBlockEntityState;
+import org.bukkit.craftbukkit.block.CraftBlockEntityState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -159,8 +159,8 @@ public class CraftFallingBlock extends CraftEntity implements FallingBlock {
 	@Override
 	public void setBlockState(@NotNull BlockState blockState) {
         this.setBlockData(blockState.getBlockData());
-        if (blockState instanceof CardboardBlockEntityState) {
-        	CardboardBlockEntityState tileEntity = (CardboardBlockEntityState)blockState;
+        if (blockState instanceof CraftBlockEntityState) {
+        	CraftBlockEntityState tileEntity = (CraftBlockEntityState)blockState;
             this.getHandle().blockData = tileEntity.getSnapshotNBT();
         }
 	}

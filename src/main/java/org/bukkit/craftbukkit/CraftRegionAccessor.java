@@ -145,11 +145,13 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
         this.setBlockData(location.getBlockX(), location.getBlockY(), location.getBlockZ(), blockData);
     }
 
+    @Override
     public void setBlockData(int x, int y, int z, BlockData blockData) {
         WorldGenLevel world = this.getHandle();
         BlockPos pos = new BlockPos(x, y, z);
         net.minecraft.world.level.block.state.BlockState old = this.getHandle().getBlockState(pos);
-        CraftBlock.setTypeAndData((ServerLevel) world, pos, old, ((CraftBlockData)blockData).getState(), true);
+
+        CraftBlock.setBlockState(world, pos, old, ((CraftBlockData) blockData).getState(), true);
     }
 
     public void setType(Location location, Material material) {

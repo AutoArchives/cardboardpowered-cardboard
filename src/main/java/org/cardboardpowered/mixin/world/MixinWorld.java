@@ -15,7 +15,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.entity.LevelEntityGetter;
 import net.minecraft.world.level.storage.WritableLevelData;
-import org.cardboardpowered.impl.block.CapturedBlockState;
+import org.bukkit.craftbukkit.block.CapturedBlockState;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -84,7 +84,7 @@ public abstract class MixinWorld implements LevelBridge {
             LevelChunk chunk = getChunkAt(pos);
             boolean captured = false;
             if (this.captureBlockStates && !this.capturedBlockStates.containsKey(pos)) {
-                CapturedBlockState blockstate = CapturedBlockState.getBlockState((Level)(Object)this, pos, flags);
+                CapturedBlockState blockstate = CapturedBlockState.getTreeBlockState((Level)(Object)this, pos, flags);
                 this.capturedBlockStates.put(pos.immutable(), blockstate);
                 captured = true;
             }

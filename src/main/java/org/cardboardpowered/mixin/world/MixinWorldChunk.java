@@ -2,7 +2,7 @@ package org.cardboardpowered.mixin.world;
 
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.bukkit.Chunk;
-import org.cardboardpowered.impl.world.CardboardChunk;
+import org.bukkit.craftbukkit.CraftChunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -32,7 +32,7 @@ public class MixinWorldChunk implements LevelChunkBridge {
     
     public void cardboard_set() {
         if (null == bukkit) {
-            this.bukkit = new CardboardChunk((LevelChunk)(Object)this);
+            this.bukkit = new CraftChunk((LevelChunk)(Object)this);
         }
     }
 

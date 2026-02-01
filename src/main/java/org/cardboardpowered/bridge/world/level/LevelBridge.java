@@ -7,7 +7,7 @@ package org.cardboardpowered.bridge.world.level;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.entity.LevelEntityGetter;
-import org.cardboardpowered.impl.block.CapturedBlockState;
+import org.bukkit.craftbukkit.block.CapturedBlockState;
 import org.cardboardpowered.impl.world.CraftWorld;
 
 public interface LevelBridge {

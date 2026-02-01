@@ -25,7 +25,7 @@ import org.cardboardpowered.bridge.core.component.DataComponentPatch_BuilderBrid
 import org.cardboardpowered.bridge.world.item.component.TypedEntityDataBridge;
 import org.cardboardpowered.bridge.world.level.block.entity.BlockEntityBridge;
 import org.cardboardpowered.bridge.world.level.storage.TagValueOutputBridge;
-import org.cardboardpowered.impl.block.CardboardBlockEntityState;
+import org.bukkit.craftbukkit.block.CraftBlockEntityState;
 
 import java.util.Map;
 import java.util.Objects;
@@ -293,7 +293,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
 
     @Override
     // Paper start - create blockstate on-demand
-    public CardboardBlockEntityState<?> getBlockState() {
+    public CraftBlockEntityState<?> getBlockState() {
         BlockPos pos = BlockPos.ZERO;
         final Material stateMaterial = this.materialForBlockEntityType();
         if (!this.blockEntityTag.isEmpty()) {
@@ -314,11 +314,11 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
         blockEntity.applyComponents(nmsBlockState.getBlock().asItem().components(), patchedMap.asPatch());
 
         // This is expected to always return a CraftBlockEntityState for the passed material:
-        return (CardboardBlockEntityState<?>) CraftBlockStates.getBlockState(null, pos, nmsBlockState, blockEntity);
+        return (CraftBlockEntityState<?>) CraftBlockStates.getBlockState(null, pos, nmsBlockState, blockEntity);
         // Paper end
     }
 
-    private static CardboardBlockEntityState<?> getBlockState(Material material, CompoundTag blockEntityTag) {
+    private static CraftBlockEntityState<?> getBlockState(Material material, CompoundTag blockEntityTag) {
         BlockPos pos = BlockPos.ZERO;
         Material stateMaterial = (material != Material.SHIELD) ? material : CraftMetaBlockState.shieldToBannerHack(blockEntityTag); // Only actually used for jigsaws
         if (blockEntityTag != null) {
@@ -334,7 +334,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
         }
 
         // This is expected to always return a CraftBlockEntityState for the passed material:
-        return (CardboardBlockEntityState<?>) CraftBlockStates.getBlockState(CraftRegistry.getMinecraftRegistry(), pos, stateMaterial, blockEntityTag);
+        return (CraftBlockEntityState<?>) CraftBlockStates.getBlockState(CraftRegistry.getMinecraftRegistry(), pos, stateMaterial, blockEntityTag);
     }
 
     @Override
@@ -343,11 +343,11 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
 
         Material stateMaterial = (this.material != Material.SHIELD) ? this.material : CraftMetaBlockState.shieldToBannerHack(null);
         Class<?> blockStateType = CraftBlockStates.getBlockStateType(stateMaterial);
-        Preconditions.checkArgument(blockStateType == blockState.getClass() && blockState instanceof CardboardBlockEntityState, "Invalid blockState for %s", this.material);
+        Preconditions.checkArgument(blockStateType == blockState.getClass() && blockState instanceof CraftBlockEntityState, "Invalid blockState for %s", this.material);
 
         // Paper start - when a new BlockState is set, the components from that block entity
         // have to be used to update the fields on CraftMetaItem
-        final CardboardBlockEntityState<?> craftBlockState = (CardboardBlockEntityState<?>) blockState;
+        final CraftBlockEntityState<?> craftBlockState = (CraftBlockEntityState<?>) blockState;
         final CompoundTag data = craftBlockState.getSnapshotCustomNbtOnly();
         final PatchedDataComponentMap patchedMap = new PatchedDataComponentMap(craftBlockState.getHandle().getBlock().asItem().components());
         final DataComponentMap map = craftBlockState.collectComponents();

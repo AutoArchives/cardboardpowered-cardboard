@@ -85,6 +85,7 @@ import org.bukkit.craftbukkit.CraftStatistic;
 import org.bukkit.craftbukkit.advancement.CraftAdvancement;
 import org.bukkit.craftbukkit.advancement.CraftAdvancementProgress;
 import org.bukkit.craftbukkit.block.CraftBlockState;
+import org.bukkit.craftbukkit.block.CraftSign;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
@@ -114,7 +115,6 @@ import org.bukkit.plugin.messaging.StandardMessenger;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Scoreboard;
-import org.cardboardpowered.impl.block.CardboardSign;
 
 import com.destroystokyo.paper.ClientOption;
 import com.destroystokyo.paper.Title;
@@ -923,7 +923,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (lines.length < 4)
             throw new IllegalArgumentException("Must have at least 4 lines");
 
-        net.minecraft.network.chat.Component[] components = CardboardSign.sanitizeLines(lines);
+        net.minecraft.network.chat.Component[] components = CraftSign.sanitizeLines(lines);
         SignBlockEntity sign = new SignBlockEntity(new BlockPos(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), null);
         //sign.setPos(new BlockPos(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
         sign.getFrontText().setColor(net.minecraft.world.item.DyeColor.byId(dyeColor.getWoolData()));
@@ -2290,12 +2290,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 	@Override
 	public boolean hasSeenWinScreen() {
         return this.getHandle().seenCredits;
-	}
-
-	@Override
-	public void openSign(@NotNull Sign arg0, @NotNull Side arg1) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override

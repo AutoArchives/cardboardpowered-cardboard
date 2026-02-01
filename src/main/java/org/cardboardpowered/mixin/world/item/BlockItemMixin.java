@@ -75,7 +75,7 @@ public class BlockItemMixin implements BlockItemBridge {
     public void bukkitWaterlilyPlacementFix(BlockPlaceContext context, CallbackInfoReturnable<InteractionResult> ci) {
         bukkit_state = null;
         if (((BlockItem)(Object)this) instanceof PlaceOnWaterBlockItem)
-            bukkit_state = org.bukkit.craftbukkit.block.CraftBlockState.getBlockState(context.getLevel(), context.getClickedPos());
+            bukkit_state = org.bukkit.craftbukkit.block.CraftBlockStates.getBlockState(context.getLevel(), context.getClickedPos());
     }
 
     /**

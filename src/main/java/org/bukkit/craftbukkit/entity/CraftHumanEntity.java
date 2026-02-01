@@ -43,6 +43,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.block.CraftSign;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.inventory.CraftContainer;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
@@ -69,7 +70,6 @@ import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 import org.cardboardpowered.bridge.world.ContainerBridge;
-import org.cardboardpowered.impl.block.CardboardSign;
 import org.cardboardpowered.impl.entity.*;
 import org.bukkit.craftbukkit.inventory.CraftInventoryDoubleChest;
 import org.bukkit.craftbukkit.inventory.CraftInventoryLectern;
@@ -784,7 +784,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
     @Override
     public void openSign(final org.bukkit.block.Sign sign, final org.bukkit.block.sign.Side side) {
-        CardboardSign.openSign(sign, (CraftPlayer) this, side);
+        CraftSign.openSign(sign, (CraftPlayer) this, side);
     }
 
     @Override
