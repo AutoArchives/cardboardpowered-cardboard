@@ -1,13 +1,9 @@
 package org.cardboardpowered.mixin;
 
-import static org.cardboardpowered.library.LibraryManager.HashAlgorithm.SHA1;
-import static org.cardboardpowered.library.LibraryManager.HashAlgorithm.MD5;
-
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
@@ -32,15 +28,6 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public void onLoad(String mixinPackage) {
-    	
-    	// testing
-        /*if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
-        	System.out.println("HELLO");
-        	MappTest.do_test(null);
-        	System.exit(0);
-        	return;
-        }*/
-    	
         try {
             CardboardConfig.setup();
         } catch (Exception e) {
@@ -66,43 +53,39 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
     
     public static void loadLibs() {
     	List<Library> libraries = getLibs();
-    	
-    	String repository = "https://repo1.maven.org/maven2/"; 
-    	new LibraryManager(repository, "lib", true, 2, libraries).run();
+
+    	new LibraryManager("lib", true, 2, libraries).run();
     }
     
     public static List<Library> getLibs() {
-        String mcver = GameVersion.create().getReleaseTarget();
-
-        List<Library> libraries = new ArrayList<>();
-
-        // Paper API
-        libraries.add( new Library("io.papermc", "paper-api", "1.21.11-R0.1-20260120.191825-59", SHA1, "223f4b673a6cefe155849a18d7a82b422bf45335", "paper"));
-
-        // For Snapshots:
-        // LibraryManager.OVERRIDE_PAPER_API = true;
-        // LibraryManager.PAPER_API_OVERRIDE = "https://github.com/CardboardPowered/PaperAPI-releases/releases/download/25w45a-8e0412f/paper-api-25w45a-R0.1-SNAPSHOT.jar";
-
-        // Paper API Libraries
-        libraries.add( new Library("org.xerial", "sqlite-jdbc", "3.41.0.0", MD5, "0d63ee5b583e9a75ea1717ffce63fed8", null));
-        libraries.add( new Library("com.mysql", "mysql-connector-j", "8.0.32", MD5, "25bf3b3cd262065283962078dc82e99c", null));
-		libraries.add( new Library("commons-lang", "commons-lang", "2.6", SHA1, "0ce1edb914c94ebc388f086c6827e8bdeec71ac2", null) );
-        libraries.add( new Library("org.apache.commons", "commons-collections4", "4.4", SHA1, "62ebe7544cb7164d87e0637a2a6a2bdc981395e8", null) );
-        libraries.add( new Library("commons-collections", "commons-collections", "3.2.1", SHA1, "761ea405b9b37ced573d2df0d1e3a4e0f9edc668", null) );
-        libraries.add( new Library("net.md-5", "bungeecord-chat", "1.21-R0.2", SHA1, "64956ff493786f981a15697ce406fe39a2551692", null) );
-        
         // TODO: Keep Adventure version in check
         String adventureVersion = "4.25.0";
 
-        libraries.add( new Library("net.kyori", "adventure-api", adventureVersion, SHA1, "6bd10494eeb2f8eadce7226db4445e8728985cbb", null) );
-        libraries.add( new Library("net.kyori", "adventure-key", adventureVersion, SHA1, "eadeff9eeaa46f76de3f31fdff1d8e952273cf04", null) );
-        libraries.add( new Library("net.kyori", "adventure-text-serializer-gson", adventureVersion, SHA1, "e312e240fe82f4207ff2232b33ee4433855bdfff", null) );
-        libraries.add( new Library("net.kyori", "adventure-text-serializer-json", adventureVersion, SHA1, "ff6b4381dd8be9a40a1127937a4b71b9b010fcd6", null) );
-        libraries.add( new Library("net.kyori", "adventure-text-serializer-commons", adventureVersion, SHA1, "58708c96ea4292800f08360ca1ce8a31ef0cdf97", null) );
-        libraries.add( new Library("net.kyori", "adventure-text-serializer-legacy", adventureVersion, SHA1, "b12eaaac78d2534b9b1556049a8d95a046b0812d", null) );
-        libraries.add( new Library("net.kyori", "adventure-text-serializer-plain", adventureVersion, SHA1, "82f5d4188f3cb6da9654b4ceea8b4093af5f1243", null) );
-        libraries.add( new Library("net.kyori", "adventure-text-minimessage", adventureVersion, SHA1, "38f8f778c92f1ea848f79f992c99c4b98f96f23b", null) );
-        libraries.add( new Library("net.kyori", "option", "1.1.0", SHA1, "593fecb9c42688eebc7d8da5d6ea127f4d4c92a2", null) );
+        // Paper API
+        Library paperApi = Library.of("io.papermc", "paper-api", "1.21.11-R0.1-20260120.191825-59")
+        		.withSha1("223f4b673a6cefe155849a18d7a82b422bf45335")
+        		.overrideRepo("https://repo.papermc.io/repository/maven-snapshots/");
+
+        List<Library> libraries = List.of(
+        	paperApi,
+        	// Paper API Libraries
+        	Library.of("org.xerial", "sqlite-jdbc", "3.41.0.0", "86168d5ae9bfc54dab9c47cd6e1af751c1d15eb3"),
+        	Library.of("com.mysql", "mysql-connector-j", "8.0.32", "41ec3f8cdaccf6c46a47d7cd628eeb59a926d9d4"),
+        	Library.of("commons-lang", "commons-lang", "2.6", "0ce1edb914c94ebc388f086c6827e8bdeec71ac2"),
+        	Library.of("org.apache.commons", "commons-collections4", "4.4", "62ebe7544cb7164d87e0637a2a6a2bdc981395e8"),
+        	Library.of("commons-collections", "commons-collections", "3.2.1", "761ea405b9b37ced573d2df0d1e3a4e0f9edc668"),
+        	Library.of("net.md-5", "bungeecord-chat", "1.21-R0.2", "64956ff493786f981a15697ce406fe39a2551692"),
+        	// Adventure
+        	Library.of("net.kyori", "adventure-api", adventureVersion, "6bd10494eeb2f8eadce7226db4445e8728985cbb"),
+        	Library.of("net.kyori", "adventure-key", adventureVersion, "eadeff9eeaa46f76de3f31fdff1d8e952273cf04") ,
+        	Library.of("net.kyori", "adventure-text-serializer-gson", adventureVersion, "e312e240fe82f4207ff2232b33ee4433855bdfff") ,
+        	Library.of("net.kyori", "adventure-text-serializer-json", adventureVersion, "ff6b4381dd8be9a40a1127937a4b71b9b010fcd6") ,
+        	Library.of("net.kyori", "adventure-text-serializer-commons", adventureVersion, "58708c96ea4292800f08360ca1ce8a31ef0cdf97") ,
+        	Library.of("net.kyori", "adventure-text-serializer-legacy", adventureVersion, "b12eaaac78d2534b9b1556049a8d95a046b0812d") ,
+        	Library.of("net.kyori", "adventure-text-serializer-plain", adventureVersion, "82f5d4188f3cb6da9654b4ceea8b4093af5f1243") ,
+        	Library.of("net.kyori", "adventure-text-minimessage", adventureVersion, "38f8f778c92f1ea848f79f992c99c4b98f96f23b") ,
+        	Library.of("net.kyori", "option", "1.1.0", "593fecb9c42688eebc7d8da5d6ea127f4d4c92a2")
+        );
 
         // Set WorldEdit adapter class name here
         // as this provides more verbose stacktraces.
