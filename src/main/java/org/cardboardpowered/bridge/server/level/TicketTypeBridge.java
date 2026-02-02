@@ -1,11 +1,12 @@
 package org.cardboardpowered.bridge.server.level;
 
 import net.minecraft.server.level.TicketType;
+import org.cardboardpowered.mixin.server.level.TicketTypeMixin;
 
 /**
  * Injection Interface for ChunkTicketType.
  * 
- * @see {@link org.cardboardpowered.mixin.world.MixinChunkTicketType}
+ * @see {@link TicketTypeMixin}
  */
 public interface TicketTypeBridge {
 

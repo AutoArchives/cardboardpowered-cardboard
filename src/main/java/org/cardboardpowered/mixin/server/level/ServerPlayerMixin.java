@@ -21,6 +21,8 @@ package org.cardboardpowered.mixin.server.level;
 import java.util.Optional;
 import java.util.OptionalInt;
 
+import com.llamalad7.mixinextras.sugar.Local;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import org.bukkit.Bukkit;
@@ -29,13 +31,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.util.CraftLocation;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.player.PlayerChangedMainHandEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerLocaleChangeEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.MainHand;
 import org.cardboardpowered.CardboardConfig;
@@ -87,6 +86,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(value = ServerPlayer.class, priority = 999)
 public abstract class ServerPlayerMixin extends PlayerMixin implements CommandSourceBridge, ServerPlayerBridge {
@@ -648,5 +648,51 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements CommandSo
         }
 
         return this.cardboard$drop(itemStack, false, true) != null; // Paper - add back success return
+    }
+
+
+    // private ItemEntity cardboard_stored_entity;
+
+	/*
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ItemEntity;setPickupDelay(I)V"),
+            method = "dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;")
+    public void store_item_entity(ItemEntity ie, int i, net.minecraft.item.ItemStack stack, boolean z, boolean z2) {
+        ie.setPickupDelay(i);
+        cardboard_stored_entity = ie;
+    }
+    */
+
+    @SuppressWarnings("deprecation")
+    @Inject(at = @At("RETURN"),
+            method = "drop(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;",
+            cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
+    public void cardboard_doPlayerDropItemEvent(
+            net.minecraft.world.item.ItemStack stack,
+            boolean throwRandomly,
+            boolean retainOwnership,
+            CallbackInfoReturnable<ItemEntity> ci,
+            @Local ItemEntity itemEntity
+    ) {
+        if (stack.isEmpty()) {
+            return;
+        }
+        Player player = (Player)(((EntityBridge)this).getBukkitEntity());
+        Item drop = (Item) ((EntityBridge)itemEntity).getBukkitEntity();
+        PlayerDropItemEvent event = new PlayerDropItemEvent(player, drop);
+        Bukkit.getServer().getPluginManager().callEvent(event);
+
+        if (event.isCancelled()) {
+            org.bukkit.inventory.ItemStack cur = player.getInventory().getItemInHand();
+            if (retainOwnership && (cur == null || cur.getAmount() == 0)) {
+                player.getInventory().setItemInHand(drop.getItemStack());
+            } else if (retainOwnership && cur.isSimilar(drop.getItemStack()) && cur.getAmount() < cur.getMaxStackSize() && drop.getItemStack().getAmount() == 1) {
+                cur.setAmount(cur.getAmount() + 1);
+                player.getInventory().setItemInHand(cur);
+            } else player.getInventory().addItem(drop.getItemStack());
+
+            itemEntity = null;
+            ci.setReturnValue(null);
+        }
+        // cardboard_stored_entity = null;
     }
 }

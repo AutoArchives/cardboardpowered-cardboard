@@ -4,10 +4,12 @@
  */
 package org.cardboardpowered.bridge.world.entity;
 
+import org.cardboardpowered.mixin.world.entity.ItemBasedSteeringMixin;
+
 /**
  * Injection Interface for SaddledComponent.
  * 
- * @see {@link org.cardboardpowered.mixin.entity.MixinSaddledComponent}
+ * @see {@link ItemBasedSteeringMixin}
  */
 public interface ItemBasedSteeringBridge {
 

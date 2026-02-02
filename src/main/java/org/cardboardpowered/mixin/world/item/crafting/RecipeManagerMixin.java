@@ -1,0 +1,168 @@
+package org.cardboardpowered.mixin.world.item.crafting;
+
+import com.google.common.collect.Multimap;
+import org.cardboardpowered.bridge.world.item.crafting.RecipeManagerBridge;
+
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.spigotmc.AsyncCatcher;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
+
+@Mixin(RecipeManager.class) // Note: 1.21.4: RecipeManager->ServerRecipeManager // 72, 79, 52, 55, 58, 66, 114
+public class RecipeManagerMixin implements RecipeManagerBridge {
+
+	// TODO @Shadow
+    // public Multimap<RecipeType<?>, RecipeEntry<?>> recipesByType = ImmutableMultimap.of();
+	
+	// TODO @Shadow
+    // private Map<Identifier, RecipeEntry<?>> recipesById = ImmutableMap.of();
+	
+	// TODO @Shadow
+	// private RegistryWrapper.WrapperLookup registryLookup;
+	
+	@Override
+	public  Multimap<RecipeType<?>, RecipeHolder<?>> cb$get_recipesByType() {
+		return null; // TODO return recipesByType;
+	}
+
+    // TODO @Shadow public boolean errored;
+    // @Shadow public Map<RecipeType<?>, Map<Identifier, RecipeEntry<?>>> recipes = ImmutableMap.of();
+    // @Shadow public <C extends Inventory, T extends Recipe<C>> Map<Identifier, Recipe<C>> getAllOfType(RecipeType<T> recipes) {return null;}
+
+    @Unique private static final Logger LOGGER_BF = LogManager.getLogger("Bukkit|RecipeManager");
+
+    /*TODO@Inject(at = @At("RETURN"), method = "apply(Ljava/util/Map;Lnet/minecraft/resource/ResourceManager;Lnet/minecraft/util/profiler/Profiler;)V")
+    public void cardboard$apply_make_mut(Map<Identifier, JsonElement> map, ResourceManager rm, Profiler gameprofilerfiller, CallbackInfo ci) {
+    	this.recipesById = new HashMap<>(this.recipesById);
+        this.recipesByType = LinkedHashMultimap.create(this.recipesByType);
+        LOGGER_BF.info("Loaded " + this.recipesById.size() + " recipes");
+    }*/
+    
+    /*TODO@Inject(method = "setRecipes", at = @At("RETURN"))
+    private void cardboard$set_recipes_make_mut(Iterable<RecipeEntry<?>> recipes, CallbackInfo ci) {
+    	this.recipesById = new HashMap<>(this.recipesById);
+        this.recipesByType = LinkedHashMultimap.create(this.recipesByType);
+    }*/
+    
+    /*
+     * @author BukkitFabric
+     * @reason Properly fill recipe map
+     *
+    @Inject(at = @At("TAIL"), method = "apply(Ljava/util/Map;Lnet/minecraft/resource/ResourceManager;Lnet/minecraft/util/profiler/Profiler;)V")
+    public void apply(Map<Identifier, JsonElement> map, ResourceManager iresourcemanager, Profiler gameprofilerfiller, CallbackInfo ci) {
+
+        this.errored = false;
+        ImmutableMultimap.Builder builder = ImmutableMultimap.builder();
+        ImmutableMap.Builder com_google_common_collect_immutablemap_builder = ImmutableMap.builder();
+        RegistryOps<JsonElement> registryops = this.registryLookup.getOps(JsonOps.INSTANCE);
+        for (Map.Entry<Identifier, JsonElement> entry : map.entrySet()) {
+            Identifier minecraftkey = entry.getKey();
+            try {
+                Recipe irecipe = Recipe.CODEC.parse(registryops, entry.getValue()).getOrThrow(JsonParseException::new);
+                RecipeEntry<Recipe> recipeholder = new RecipeEntry<Recipe>(minecraftkey, irecipe);
+                builder.put(irecipe.getType(), recipeholder);
+                com_google_common_collect_immutablemap_builder.put((Object)minecraftkey, recipeholder);
+            }
+            catch (JsonParseException | IllegalArgumentException jsonparseexception) {
+            	LOGGER_BF.error("Parsing error loading recipe {}", (Object)minecraftkey, (Object)jsonparseexception);
+            }
+        }
+        this.recipesByType = LinkedHashMultimap.create(builder.build());
+        this.recipesById = Maps.newHashMap(com_google_common_collect_immutablemap_builder.build());
+        LOGGER_BF.info("Loaded " + this.recipesById.size() + " recipes");
+    }
+    */
+    
+    // TODO @Shadow
+    // public PreparedRecipes preparedRecipes = PreparedRecipes.EMPTY;
+    
+    private FeatureFlagSet featureflagset;
+    
+    @Override
+    public void addRecipe(RecipeHolder<?> irecipe) {
+        AsyncCatcher.catchOp("Recipe Add");
+        // this.preparedRecipes.addRecipe(irecipe);
+        // this.finalizeRecipeLoading();
+    }
+    
+    public void finalizeRecipeLoading() {
+        if (this.featureflagset != null) {
+            // this.initialize(this.featureflagset);
+
+            // TODO IMixinMinecraftServer.getServer().getPlayerManager().reloadRecipes();
+        }
+    }
+
+    /*
+    @Override
+    public void addRecipe(RecipeEntry<?> irecipe) {
+        // AsyncCatcher.catchOp("Recipe Add");
+        Collection map = this.recipesByType.get(irecipe.value().getType());
+        if (this.recipesById.containsKey(irecipe.id())) {
+            throw new IllegalStateException("Duplicate recipe ignored with ID " + String.valueOf(irecipe.id()));
+        }
+        map.add(irecipe);
+        this.recipesById.put(irecipe.id(), irecipe);
+    }
+    */
+    
+    // @Override
+    /*public void addRecipe_old(RecipeEntry<?> entry) {
+        Map<Identifier, RecipeEntry<?>> map = this.recipes.get(entry.value().getType());
+        if (map.containsKey(entry.id()))
+            throw new IllegalStateException("Duplicate recipe ignored with ID " + entry.toString());
+        else
+            map.put(entry.id(), entry);
+    }
+
+    /**
+     * @author BukkitFabric
+     * @reason Clear when no recipe is found
+     */
+    // FIXME: 1.18.2
+    /*@Overwrite
+    public <C extends Inventory, T extends Recipe<C>> Optional<T> getFirstMatch(RecipeType<T> recipes, C c0, World world) {
+        Optional<T> recipe = this.getAllOfType(recipes).values().stream().flatMap((irecipe) -> Util.stream(recipes.match(irecipe, world, c0))).findFirst();
+        ((IMixinInventory)c0).setCurrentRecipe(recipe.orElse(null)); // Clear recipe when no recipe is found
+        return recipe;
+    }*/
+    
+    @Override
+    public void clearRecipes() {
+        // TODO this.recipesByType = LinkedHashMultimap.create();
+        // TODO this.recipesById = Maps.newHashMap();
+    }
+    
+    @Override
+    public boolean removeRecipe(Identifier mcKey) {
+        /*Iterator iter = this.recipesByType.values().iterator();
+        while (iter.hasNext()) {
+            RecipeEntry recipe = (RecipeEntry)iter.next();
+            if (!recipe.id().equals(mcKey)) continue;
+            iter.remove();
+        }
+        return this.recipesById.remove(mcKey) != null;*/ return false; // TODO
+    }
+
+
+    /*
+    @Override
+    public void clearRecipes() {
+        this.recipes = Maps.newHashMap();
+        for (RecipeType<?> recipeType : Registries.RECIPE_TYPE)
+            this.recipes.put(recipeType, new Object2ObjectLinkedOpenHashMap<>());
+    }
+
+    @Override
+    public Map<RecipeType<?>, Map<Identifier, RecipeEntry<?>>> getRecipes() {
+        return recipes;
+    }
+    */
+
+}

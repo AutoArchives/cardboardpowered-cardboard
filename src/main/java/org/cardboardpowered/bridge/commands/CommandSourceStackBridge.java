@@ -5,11 +5,12 @@
 package org.cardboardpowered.bridge.commands;
 
 import org.bukkit.command.CommandSender;
+import org.cardboardpowered.mixin.commands.CommandSourceStackMixin;
 
 /**
  * Injection Interface for ServerCommandSource.
  * 
- * @see {@link org.cardboardpowered.mixin.MixinServerCommandSource}
+ * @see {@link CommandSourceStackMixin}
  */
 public interface CommandSourceStackBridge {
 
