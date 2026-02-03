@@ -10,8 +10,9 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
+
 import javax.net.ssl.HttpsURLConnection;
 
 import org.apache.logging.log4j.LogManager;
@@ -49,16 +50,38 @@ public final class LibraryManager {
         if (central == null) { central = "https://maven-central.storage-download.googleapis.com/maven2"; }
         return central;
     }
+    
+    public static LibraryManager INSTANCE;
 
     /**
      * Creates the instance.
      */
     public LibraryManager(String directoryName, boolean validateChecksum, int maxDownloadAttempts, Collection<Library> libraries) {
         checkNotNull(directoryName);
+        INSTANCE = this;
         this.directory = new File(directoryName);
         this.validateChecksums = validateChecksum;
         this.maxDownloadAttempts = maxDownloadAttempts;
         this.libraries = libraries;
+    }
+    
+    public String getPaperVersion() {
+    	return getLibVersion("paper-api").orElse("unknown?").replaceAll("(paper-api-[0-9.]+)-R.*(-\\d+)", "$1$2");
+    }
+
+    public Stream<Library> getLibs(String id) {
+    	return libraries.stream().filter(lib -> lib.artifactId.contains(id));
+    }
+
+    public String getVersion(String id) {
+    	return getLibVersion(id).orElse(null);
+    }
+    
+    public Optional<String> getLibVersion(String id) {
+    	for (Library lib : libraries)
+    		if (lib.artifactId.contains(id))
+    			return Optional.of(lib.version);
+    	return Optional.empty();
     }
 
     /**
@@ -73,6 +96,7 @@ public final class LibraryManager {
         for (Library lib : libraries) {
         	String fn = lib.getJarName();
         	File f = new File(directory, fn);
+        	System.out.println(lib);
         	if (f.isFile()) {
         		KnotHelper.propose(f);
         	} else {
@@ -80,23 +104,21 @@ public final class LibraryManager {
         	}
         }
 
-		String det = "Paper-API: " + KnotHelper.paper_version + "; " + KnotHelper.vers + " (" + KnotHelper.loaded_adventure + ")";
-        logger.info("Loaded " + KnotHelper.loaded + " libraries. " + det);
+        String det = "Paper-API: " + getPaperVersion() + "; Bungeechat: " + getVersion("bungeecord-chat") +
+        		"; Adventure: " + getVersion("adventure-api") + " (" + getLibs("adventure").count() + ")";
+        
+        logger.info("Loaded " + libraries.size() + " libraries. " + det);
     }
 
     public static void main(String[] args) throws Exception {
-    	List<Library> list = org.cardboardpowered.mixin.CardboardMixinPlugin.getLibs();
-    	for (Library l : list) {
-    		String s = "Unknown";
+    	for (Library l : org.cardboardpowered.mixin.CardboardMixinPlugin.getLibs()) {
 			try {
-				s = l.readChecksumFromRepo(l.repository.orElse(getCentral()));
+				String s = l.readChecksumFromRepo(l.repository.orElse(getCentral()));
+				logger.info("Library: " + l + ": Have: " + l.checksumValue + "; Need: " + s);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
-			logger.info("Library: " + l + ": Have: " + l.checksumValue + "; Need: " + s);
     	}
-    	KnotHelper.loaded = -9;
     	org.cardboardpowered.mixin.CardboardMixinPlugin.loadLibs();
     }
 
@@ -108,8 +130,8 @@ public final class LibraryManager {
     	File file = new File(directory, fileName);
 
     	if (!file.exists()) {
-    		attemptDownloadWithRetries(library, repository, fileName, file);
-    	} else if (needsChecksumValidation(library)) {
+    		attemptDownloadWithRetries(library, repository, file);
+    	} else if (this.validateChecksums && library.needsChecksumValidation()) {
     		if (!library.getChecksum(file)) {
     			logger.warn("Checksum mismatch for '" + fileName + "'. Delete it and restart to redownload.");
     		}
@@ -123,14 +145,14 @@ public final class LibraryManager {
     	}
     }
 
-    private void attemptDownloadWithRetries(Library library, String repository, String fileName, File file) {
+    private void attemptDownloadWithRetries(Library library, String repository, File file) {
     	for (int attempt = 1; attempt <= maxDownloadAttempts; attempt++) {
     		try {
     			logger.info("Downloading " + library + "...");
     			downloadPrimary(library, repository, file);
 
-    			if (needsChecksumValidation(library) && !library.getChecksum(file)) {
-    				if (!handleChecksumMismatch(library, repository, fileName, file, attempt)) {
+    			if (this.validateChecksums && library.needsChecksumValidation() && !library.getChecksum(file)) {
+    				if (!library.handleChecksumMismatch(repository, file, attempt, maxDownloadAttempts)) {
     					continue; // retry
     				}
     			}
@@ -139,11 +161,11 @@ public final class LibraryManager {
     			file.delete();
 
     			if (attempt == maxDownloadAttempts) {
-    				logger.warn("Restart the server to attempt downloading '" + fileName + "' again.");
+    				logger.warn("Restart the server to attempt downloading '" + file.getName() + "' again.");
     				return;
     			}
 
-    			logger.warn("Retrying '" + fileName + "' (" + (attempt + 1) + "/" + maxDownloadAttempts + ")");
+    			logger.warn("Retrying '" + file.getName() + "' (" + (attempt + 1) + "/" + maxDownloadAttempts + ")");
     		}
     	}
     }
@@ -180,25 +202,6 @@ public final class LibraryManager {
     			) {
     		output.getChannel().transferFrom(input, 0, Long.MAX_VALUE);
     	}
-    }
-
-    private boolean needsChecksumValidation(Library library) {
-    	return validateChecksums && library.checksumType != null && library.checksumValue != null;
-    }
-
-    private boolean handleChecksumMismatch(Library library, String repo, String fileName, File file, int attempt) throws IOException {
-    	String remoteHash = library.readChecksumFromRepo(repo);
-    	logger.info("Remote checksum: " + remoteHash);
-
-    	if (remoteHash != null && remoteHash.equals(library.fileHash)) {
-    		logger.info("Checksum matched for '" + fileName + "' (" + remoteHash + ")");
-    		return true;
-    	}
-
-    	logger.error("Checksum warn for '" + fileName + "'. Found: " + library.fileHash + ", Expect: " + library.checksumValue);
-
-    	file.delete();
-    	return attempt == maxDownloadAttempts; // true = stop, false = retry
     }
 
 }

@@ -11,6 +11,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.CardboardConfig;
+import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.library.KnotHelper;
 
 import java.util.Arrays;
@@ -66,7 +67,7 @@ public class MyCommand extends Command {
     		String ver = FabricLoader.getInstance().getModContainer("cardboard").get().getMetadata().getVersion().getFriendlyString();
             if (ver.contains("version")) ver = CraftServer.INSTANCE.getShortVersion(); // Dev ENV
 
-            String message = ChatColor.GOLD + "Cardboard" + ChatColor.RESET + " version " + ver + ChatColor.ITALIC + " (Implementing Paper API version " + KnotHelper.paper_version + ")";
+            String message = ChatColor.GOLD + "Cardboard" + ChatColor.RESET + " version " + ver + ChatColor.ITALIC + " (Reimplementing Paper API version " + CardboardMod.paperVersion + ")";
             sender.sendMessage(message);
     	}
     	

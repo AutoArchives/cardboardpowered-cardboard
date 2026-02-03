@@ -42,6 +42,7 @@ import org.cardboardpowered.interfaces.IMixinBlockEntity;
 import org.cardboardpowered.interfaces.IMixinEntity;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.library.LibraryManager;
 
 import me.isaiah.common.event.EventHandler;
 import me.isaiah.common.event.EventRegistery;
@@ -84,6 +85,9 @@ public class CardboardMod implements ModInitializer {
 
     public static Method GET_SERVER;
 
+    // Set by LibraryManager
+    public static String paperVersion = "";
+
     @Override
     public void onInitialize() {
         FabricLoader loader = FabricLoader.getInstance();
@@ -98,10 +102,10 @@ public class CardboardMod implements ModInitializer {
 
 		new File("plugins").mkdirs();
 
-		var ver_paper = org.cardboardpowered.library.KnotHelper.paper_version;
 		int r = EventRegistery.registerAll(this);
 
-		String details = " - Paper-API " + ver_paper + ". " + "Registered '" + r + "' iCommon events.";
+		paperVersion = LibraryManager.INSTANCE.getPaperVersion();
+		String details = " - Paper-API " + paperVersion + ". " + "Registered '" + r + "' iCommon events.";
 		
 		// Check for FabricBetterConsole
 		if (CardboardConfig.isBetterConsole()) {
