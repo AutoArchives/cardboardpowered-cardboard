@@ -893,12 +893,12 @@ public class CraftEventFactory {
         return !event.isCancelled();
     }
 
-    public static EntityBreedEvent callEntityBreedEvent(LivingEntity child, LivingEntity mother, LivingEntity father, LivingEntity breeder, ItemStack bredWith, int experience) {
-        org.bukkit.entity.LivingEntity breederEntity = (org.bukkit.entity.LivingEntity) (breeder == null ? null : ((EntityBridge)breeder).getBukkitEntity());
+    public static EntityBreedEvent callEntityBreedEvent(net.minecraft.world.entity.LivingEntity child, net.minecraft.world.entity.LivingEntity mother, net.minecraft.world.entity.LivingEntity father, net.minecraft.world.entity.LivingEntity breeder, ItemStack bredWith, int experience) {
+        LivingEntity breederEntity = breeder == null ? null : (LivingEntity) breeder.getBukkitEntity();
         CraftItemStack bredWithStack = bredWith == null ? null : CraftItemStack.asCraftMirror(bredWith).clone();
 
-        EntityBreedEvent event = new EntityBreedEvent((org.bukkit.entity.LivingEntity) ((EntityBridge)child).getBukkitEntity(), (org.bukkit.entity.LivingEntity) ((EntityBridge) mother).getBukkitEntity(), (org.bukkit.entity.LivingEntity) ((EntityBridge) father).getBukkitEntity(), breederEntity, bredWithStack, experience);
-        Bukkit.getPluginManager().callEvent(event);
+        EntityBreedEvent event = new EntityBreedEvent((LivingEntity) child.getBukkitEntity(), (LivingEntity) mother.getBukkitEntity(), (LivingEntity) father.getBukkitEntity(), breederEntity, bredWithStack, experience);
+        event.callEvent();
         return event;
     }
 

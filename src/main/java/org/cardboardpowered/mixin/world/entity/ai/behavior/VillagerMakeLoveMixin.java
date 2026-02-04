@@ -32,11 +32,11 @@ public class VillagerMakeLoveMixin {
                             Villager partner, CallbackInfoReturnable<Optional<Villager>> cir,
                             Villager villagerEntity) {
         // CraftBukkit start - call EntityBreedEvent
-        if (CraftEventFactory.callEntityBreedEvent((LivingEntity) villagerEntity, (LivingEntity) parent, (LivingEntity) partner, null, null, 0).isCancelled()) {
+        if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityBreedEvent(villagerEntity, parent, partner, null, null, 0).isCancelled()) {
             cir.setReturnValue(Optional.empty());
         }
-        // CraftBukkit end
         parent.setAge(6000);
         partner.setAge(6000);
+        // CraftBukkit end - call EntityBreedEvent
     }
 }
