@@ -34,8 +34,11 @@ public class WaterlilyBlockMixin {
     		method = "entityInside", cancellable = true, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;destroyBlock(Lnet/minecraft/core/BlockPos;ZLnet/minecraft/world/entity/Entity;)Z")
     )
     public void entityChangeBlock_1_21_10(BlockState state, Level world, BlockPos pos, Entity entity, InsideBlockEffectApplier ech, boolean b, CallbackInfo ci) {
-        if (CraftEventFactory.callEntityChangeBlockEvent(entity, pos, Blocks.AIR.defaultBlockState()).isCancelled()) {
+        // CraftBukkit start
+        if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(entity, pos, state.getFluidState().createLegacyBlock())) { // Paper - fix wrong block state
             ci.cancel();
+            return;
         }
+        // CraftBukkit end
     }
 }

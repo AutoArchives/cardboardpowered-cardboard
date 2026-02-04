@@ -832,17 +832,17 @@ public class CraftEventFactory {
         return !event.isCancelled();
     }
 
-    public static EntityChangeBlockEvent callEntityChangeBlockEvent(Entity entity, BlockPos position, net.minecraft.world.level.block.state.BlockState newBlock) {
-        return callEntityChangeBlockEvent(entity, position, newBlock, false);
+    public static boolean callEntityChangeBlockEvent(Entity entity, BlockPos pos, net.minecraft.world.level.block.state.BlockState newState) {
+        return CraftEventFactory.callEntityChangeBlockEvent(entity, pos, newState, false);
     }
 
-    public static EntityChangeBlockEvent callEntityChangeBlockEvent(Entity entity, BlockPos position, net.minecraft.world.level.block.state.BlockState newBlock, boolean cancelled) {
-        Block block = ((LevelBridge) entity).getCraftWorld().getBlockAt(position.getX(), position.getY(), position.getZ());
+    public static boolean callEntityChangeBlockEvent(Entity entity, BlockPos pos, net.minecraft.world.level.block.state.BlockState newState, boolean cancelled) {
+        Block block = CraftBlock.at(entity.level(), pos);
 
-        EntityChangeBlockEvent event = new EntityChangeBlockEvent(((EntityBridge) entity).getBukkitEntity(), block, CraftBlockData.fromData(newBlock));
+        EntityChangeBlockEvent event = new EntityChangeBlockEvent(entity.getBukkitEntity(), block, CraftBlockData.fromData(newState));
         event.setCancelled(cancelled);
         event.getEntity().getServer().getPluginManager().callEvent(event);
-        return event;
+        return !event.isCancelled();
     }
 
     public static boolean handleBlockGrowEvent(Level world, BlockPos pos, net.minecraft.world.level.block.state.BlockState block) {

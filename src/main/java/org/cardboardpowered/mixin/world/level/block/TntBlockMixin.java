@@ -21,7 +21,6 @@ public class TntBlockMixin {
             target = "Lnet/minecraft/world/level/block/TntBlock;prime(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/LivingEntity;)Z"),
             cancellable = true)
     private void bukkit_entityChangeBlockEvent(Level world, BlockState state, BlockHitResult hit, Projectile projectile, CallbackInfo ci) {
-        if (CraftEventFactory.callEntityChangeBlockEvent(projectile, hit.getBlockPos(), Blocks.AIR.defaultBlockState())
-                .isCancelled()) { ci.cancel(); }
+        if (!CraftEventFactory.callEntityChangeBlockEvent(projectile, hit.getBlockPos(), Blocks.AIR.defaultBlockState())) { ci.cancel(); }
     }
 }
