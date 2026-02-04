@@ -62,21 +62,11 @@ public abstract class ServerPlayerMixin_DeathEvent extends Player {
 
         Boolean keepInventory = cb$this().level().getGameRules().get(GameRules.KEEP_INVENTORY) || cb$this().isSpectator();
         // boolean keepInventory = cb$this().getEntityWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || cb$this().isSpectator();
-        
+
         if (!keepInventory) {
             for (ItemStack item : ((ContainerBridge) ((ServerPlayer) (Object) this).getInventory()).getContents()) {
                 if (!item.isEmpty() && !EnchantmentHelper.has(item, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
                     loot.add(CraftItemStack.asCraftMirror(item));
-                }
-            }
-            ItemStack[] armor = new ItemStack[4];
-            armor[0] = ((ServerPlayer) (Object) this).getItemBySlot(EquipmentSlot.HEAD);
-            armor[1] = ((ServerPlayer) (Object) this).getItemBySlot(EquipmentSlot.BODY);
-            armor[2] = ((ServerPlayer) (Object) this).getItemBySlot(EquipmentSlot.LEGS);
-            armor[3] = ((ServerPlayer) (Object) this).getItemBySlot(EquipmentSlot.FEET);
-            for(ItemStack armorPiece : armor){
-                if(!armorPiece.isEmpty() && !EnchantmentHelper.has(armorPiece, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)){
-                    loot.add(CraftItemStack.asCraftMirror(armorPiece));
                 }
             }
         }
