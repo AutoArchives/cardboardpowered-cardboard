@@ -16,7 +16,7 @@ import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerSignOpenEvent;
 import org.cardboardpowered.bridge.world.level.block.entity.SignBlockEntityBridge;
-import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jetbrains.annotations.NotNull;
 

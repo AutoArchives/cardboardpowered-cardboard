@@ -1,105 +1,103 @@
 package org.bukkit.craftbukkit.scoreboard;
 
-import org.cardboardpowered.bridge.server.players.PlayerListBridge;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.function.Consumer;
 import net.minecraft.network.protocol.game.ClientboundSetObjectivePacket;
+import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.ScoreAccess;
 import net.minecraft.world.scores.ScoreHolder;
-import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
-import org.apache.commons.lang.Validate;
-import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.ScoreboardManager;
-import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.cardboardpowered.impl.util.WeakCollection;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.function.Consumer;
-
 public final class CraftScoreboardManager implements ScoreboardManager {
-
-    private final CardboardScoreboard mainScoreboard;
+    private final CraftScoreboard mainScoreboard;
     private final MinecraftServer server;
-    private final Collection<CardboardScoreboard> scoreboards = new WeakCollection<CardboardScoreboard>();
-    private final Map<CraftPlayer, CardboardScoreboard> playerBoards = new HashMap<CraftPlayer, CardboardScoreboard>();
+    private final Collection<CraftScoreboard> scoreboards = new WeakCollection<>();
 
-    public CraftScoreboardManager(MinecraftServer minecraftserver, net.minecraft.world.scores.Scoreboard scoreboardServer) {
-        mainScoreboard = new CardboardScoreboard(scoreboardServer);
-        server = minecraftserver;
-        scoreboards.add(mainScoreboard);
+    public CraftScoreboardManager(MinecraftServer server, net.minecraft.world.scores.Scoreboard scoreboard) {
+        this.mainScoreboard = new CraftScoreboard(scoreboard);
+        this.mainScoreboard.registeredGlobally = true;
+        this.server = server;
+        this.scoreboards.add(this.mainScoreboard);
     }
 
     @Override
-    public CardboardScoreboard getMainScoreboard() {
-        return mainScoreboard;
+    public CraftScoreboard getMainScoreboard() {
+        return this.mainScoreboard;
     }
 
     @Override
-    public CardboardScoreboard getNewScoreboard() {
-        CardboardScoreboard scoreboard = new CardboardScoreboard(new ServerScoreboard(server));
-        scoreboards.add(scoreboard);
+    public CraftScoreboard getNewScoreboard() {
+        org.spigotmc.AsyncCatcher.catchOp("scoreboard creation"); // Spigot
+        CraftScoreboard scoreboard = new CraftScoreboard(new ServerScoreboard(this.server));
+        if (io.papermc.paper.configuration.GlobalConfiguration.get().scoreboards.trackPluginScoreboards) {
+            scoreboard.registeredGlobally = true;
+            this.scoreboards.add(scoreboard);
+        }
         return scoreboard;
     }
 
-    // CardboardBukkit method
-    public CardboardScoreboard getPlayerBoard(CraftPlayer player) {
-        CardboardScoreboard board = playerBoards.get(player);
-        return (CardboardScoreboard) (board == null ? getMainScoreboard() : board);
+    public void registerScoreboardForVanilla(CraftScoreboard scoreboard) {
+        org.spigotmc.AsyncCatcher.catchOp("scoreboard registration");
+        this.scoreboards.add(scoreboard);
     }
 
-    // CardboardBukkit method
-    public void setPlayerBoard(CraftPlayer player, org.bukkit.scoreboard.Scoreboard bukkitScoreboard) throws IllegalArgumentException {
-        Validate.isTrue(bukkitScoreboard instanceof CardboardScoreboard, "Cannot set player scoreboard to an unregistered Scoreboard");
+    public CraftScoreboard getPlayerBoard(CraftPlayer player) {
+        CraftScoreboard board = player.getScoreboardOverride();
+        return board == null ? this.getMainScoreboard() : board;
+    }
 
-        CardboardScoreboard scoreboard = (CardboardScoreboard) bukkitScoreboard;
-        net.minecraft.world.scores.Scoreboard oldboard = getPlayerBoard(player).getHandle();
-        net.minecraft.world.scores.Scoreboard newboard = scoreboard.getHandle();
-        ServerPlayer entityplayer = player.getHandle();
+    public void setPlayerBoard(CraftPlayer player, CraftScoreboard scoreboard) {
+        net.minecraft.world.scores.Scoreboard oldBoard = this.getPlayerBoard(player).getHandle();
+        net.minecraft.world.scores.Scoreboard newBoard = scoreboard.getHandle();
+        if (oldBoard == newBoard) {
+            return;
+        }
 
-        if (oldboard == newboard) return;
+        if (scoreboard == this.mainScoreboard) {
+            player.setScoreboardOverride(null);
+        } else {
+            player.setScoreboardOverride(scoreboard);
+        }
 
-        if (scoreboard == mainScoreboard) {
-            playerBoards.remove(player);
-        } else playerBoards.put(player, (CardboardScoreboard) scoreboard);
+        ServerPlayer serverPlayer = player.getHandle();
 
         // Old objective tracking
-        HashSet<Objective> removed = new HashSet<Objective>();
-        for (int i = 0; i < 3; ++i) {
-            Objective scoreboardobjective = oldboard.getDisplayObjective(DisplaySlot.values()[i]);
-            if (scoreboardobjective != null && !removed.contains(scoreboardobjective)) {
-                entityplayer.connection.send(new ClientboundSetObjectivePacket(scoreboardobjective, 1));
-                removed.add(scoreboardobjective);
+        HashSet<Objective> removed = new HashSet<>();
+        for (net.minecraft.world.scores.DisplaySlot displaySlot : net.minecraft.world.scores.DisplaySlot.values()) { // Paper - clear all display slots
+            Objective objective = oldBoard.getDisplayObjective(displaySlot); // Paper - clear all display slots
+            if (objective != null && !removed.contains(objective)) {
+                serverPlayer.connection.send(new ClientboundSetObjectivePacket(objective, ClientboundSetObjectivePacket.METHOD_REMOVE));
+                removed.add(objective);
             }
         }
 
         // Old team tracking
-        Iterator<?> iterator = oldboard.getPlayerTeams().iterator();
-        //while (iterator.hasNext())
-        // TODO: 1.17ify    entityplayer.networkHandler.sendPacket(new TeamS2CPacket((Team) iterator.next(), 1));
+        for (final PlayerTeam team : oldBoard.getPlayerTeams()) {
+            serverPlayer.connection.send(ClientboundSetPlayerTeamPacket.createRemovePacket(team));
+        }
 
-        // The above is the reverse of the below method. 
-        ((PlayerListBridge)server.getPlayerList()).sendScoreboardBF((ServerScoreboard) newboard, player.getHandle());
+        // The above is the reverse of the below method.
+        this.server.getPlayerList().updateEntireScoreboard((ServerScoreboard) newBoard, player.getHandle());
     }
 
-    // CardboardBukkit method
-    public void removePlayer(Player player) {
-        playerBoards.remove(player);
+    // CraftBukkit method
+    public void removePlayer(CraftPlayer player) {
+        player.setScoreboardOverride(null);
     }
 
-    // CardboardBukkit method
-    public void getScoreboardScores(ObjectiveCriteria criteria, ScoreHolder holder, Consumer<ScoreAccess> consumer) {
-        for (CardboardScoreboard scoreboard : scoreboards) {
-            Scoreboard board = scoreboard.board;
-            board.forAllObjectives(criteria, holder, consumer::accept);
+    // CraftBukkit method
+    public void forAllObjectives(ObjectiveCriteria criteria, ScoreHolder holder, Consumer<ScoreAccess> consumer) {
+        for (CraftScoreboard scoreboard : this.scoreboards) {
+            scoreboard.getHandle().forAllObjectives(criteria, holder, consumer);
         }
     }
-
 }

@@ -22,13 +22,23 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RespawnAnchorBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.portal.TeleportTransition.PostTeleportTransition;
+import net.minecraft.world.level.storage.LevelData;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.cardboardpowered.extras.ServerPlayer_RespawnPosAngle;
+import org.cardboardpowered.extras.ServerPlayer_RespawnResult;
 
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
-import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
 
 public interface ServerPlayerBridge extends EntityBridge {
 
@@ -50,9 +60,45 @@ public interface ServerPlayerBridge extends EntityBridge {
 
 	void spigot$forceSetPositionRotation(double x, double y, double z, float yaw, float pitch);
 
-	@Nullable
-	TeleportTransition findRespawnPositionAndUseSpawnBlock(boolean useCharge,
-			PostTeleportTransition postTeleportTransition, @Nullable PlayerRespawnEvent.RespawnReason respawnReason);
+    @org.jspecify.annotations.Nullable ServerPlayer_RespawnResult cardboard$findRespawnPositionAndUseSpawnBlock0(boolean useCharge, PostTeleportTransition postTeleportTransition, PlayerRespawnEvent.RespawnReason respawnReason);
 
     boolean cardboard$drop(boolean dropStack);
+
+    boolean cardboard$setRespawnPosition(ServerPlayer.@org.jspecify.annotations.Nullable RespawnConfig respawnConfig, boolean displayInChat, com.destroystokyo.paper.event.player.PlayerSetSpawnEvent.Cause cause);
+
+    static Optional<ServerPlayer_RespawnPosAngle> cardboard$findRespawnAndUseSpawnBlock(
+            ServerLevel level, ServerPlayer.RespawnConfig respawnConfig, boolean useCharge
+    ) {
+        LevelData.RespawnData respawnData = respawnConfig.respawnData();
+        BlockPos blockPos = respawnData.pos();
+        float yaw = respawnData.yaw();
+        float pitch = respawnData.pitch();
+        boolean flag = respawnConfig.forced();
+        BlockState blockState = level.getBlockState(blockPos);
+        Block block = blockState.getBlock();
+        if (block instanceof RespawnAnchorBlock
+                && (flag || blockState.getValue(RespawnAnchorBlock.CHARGE) > 0)
+                && RespawnAnchorBlock.canSetSpawn(level, blockPos)) {
+            Optional<Vec3> optional = RespawnAnchorBlock.findStandUpPosition(EntityType.PLAYER, level, blockPos);
+            Runnable consumeAnchorCharge = null; // Paper - Fix SPIGOT-5989 (don't use charge until after respawn event)
+            if (!flag && useCharge && optional.isPresent()) {
+                consumeAnchorCharge = () -> level.setBlock(blockPos, blockState.setValue(RespawnAnchorBlock.CHARGE, blockState.getValue(RespawnAnchorBlock.CHARGE) - 1), Block.UPDATE_ALL); // Paper - Fix SPIGOT-5989 (don't use charge until after respawn event)
+            }
+            final Runnable finalConsumeAnchorCharge = consumeAnchorCharge; // Paper - Fix SPIGOT-5989
+
+            return optional.map(pos -> ServerPlayer_RespawnPosAngle.of(pos, blockPos, 0.0F, false, true, finalConsumeAnchorCharge)); // Paper - Fix SPIGOT-5989 (don't use charge until after respawn event)
+        } else if (block instanceof BedBlock && level.environmentAttributes().getValue(EnvironmentAttributes.BED_RULE, blockPos).canSetSpawn(level)) {
+            return BedBlock.findStandUpPosition(EntityType.PLAYER, level, blockPos, blockState.getValue(BedBlock.FACING), yaw)
+                    .map(pos -> ServerPlayer_RespawnPosAngle.of(pos, blockPos, 0.0F, true, false, null)); // Paper - Fix SPIGOT-5989
+        } else if (!flag) {
+            return Optional.empty();
+        } else {
+            boolean isPossibleToRespawnInThis = block.isPossibleToRespawnInThis(blockState);
+            BlockState blockState1 = level.getBlockState(blockPos.above());
+            boolean isPossibleToRespawnInThis1 = blockState1.getBlock().isPossibleToRespawnInThis(blockState1);
+            return isPossibleToRespawnInThis && isPossibleToRespawnInThis1
+                    ? Optional.of(new ServerPlayer_RespawnPosAngle(new Vec3(blockPos.getX() + 0.5, blockPos.getY() + 0.1, blockPos.getZ() + 0.5), yaw, pitch, false, false, null)) // Paper - Fix SPIGOT-5989
+                    : Optional.empty();
+        }
+    }
 }

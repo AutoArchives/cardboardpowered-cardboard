@@ -59,11 +59,9 @@ import org.bukkit.event.player.PlayerResourcePackStatusEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
-import org.cardboardpowered.impl.entity.CraftPlayer;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.slf4j.Logger;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -237,38 +235,11 @@ public abstract class ServerGamePacketListenerImplMixin extends ServerCommonPack
     @Override
     public void teleport(Location dest) {
     	
-    	PositionMoveRotation pos = new PositionMoveRotation(CraftLocation.toVec3D(dest), Vec3.ZERO, dest.getYaw(), dest.getPitch());
+    	PositionMoveRotation pos = new PositionMoveRotation(CraftLocation.toVec3(dest), Vec3.ZERO, dest.getYaw(), dest.getPitch());
     	teleport(pos, Collections.emptySet());
     	
         // requestTeleport(dest.getX(), dest.getY(), dest.getZ(), dest.getYaw(), dest.getPitch(), Collections.emptySet());
     }
-    
-    /*
-    public boolean teleport(PlayerPosition positionmoverotation, Set<PositionFlag> set, PlayerTeleportEvent.TeleportCause cause) {
-        PlayerPosition absolutePosition;
-        Location to;
-        CraftPlayer player = this.getCraftPlayer();
-        Location from = player.getLocation();
-        if (from.equals((Object)(to = CraftLocation.toBukkit((absolutePosition = PlayerPosition.apply(PlayerPosition.fromEntity(this.player), positionmoverotation, set)).position(), this.getCraftPlayer().getWorld(), absolutePosition.yaw(), absolutePosition.pitch())))) {
-            this.internalTeleport(positionmoverotation, set);
-            return true;
-        }
-        EnumSet<TeleportFlag.Relative> relativeFlags = EnumSet.noneOf(TeleportFlag.Relative.class);
-        for (PositionFlag relativeArgument : set) {
-            TeleportFlag.Relative flag = CraftPlayer.deltaRelativeToAPI(relativeArgument);
-            if (flag == null) continue;
-            relativeFlags.add(flag);
-        }
-        PlayerTeleportEvent event = new PlayerTeleportEvent((Player)player, from.clone(), to.clone(), cause, Set.copyOf(relativeFlags));
-        this.cserver.getPluginManager().callEvent((Event)event);
-        if (event.isCancelled() || !to.equals((Object)event.getTo())) {
-            to = event.isCancelled() ? event.getFrom() : event.getTo();
-            positionmoverotation = new PlayerPosition(CraftLocation.toVec3D(to), Vec3d.ZERO, to.getYaw(), to.getPitch());
-        }
-        this.internalTeleport(positionmoverotation, set);
-        return !event.isCancelled();
-    }
-    */
 
     /**
      * @author cardboard
@@ -298,7 +269,7 @@ public abstract class ServerGamePacketListenerImplMixin extends ServerCommonPack
         Location to = new Location(this.getPlayer().getWorld(), x, y, z, yaw, pitch);
         // SPIGOT-5171: Triggered on join
         if (from.equals(to)) {
-        	this.internalTeleport(pos, flags);
+        	this.cardboard$internalTeleport(pos, flags);
         	// this.internalTeleport(d0, d1, d2, f, f1, set, false);
             return;
         }
@@ -322,75 +293,60 @@ public abstract class ServerGamePacketListenerImplMixin extends ServerCommonPack
         	flags.clear(); // Can't relative teleport
         	
             to = event.isCancelled() ? event.getFrom() : event.getTo();
-            pos = new PositionMoveRotation(CraftLocation.toVec3D(to), Vec3.ZERO, to.getYaw(), to.getPitch());
+            pos = new PositionMoveRotation(CraftLocation.toVec3(to), Vec3.ZERO, to.getYaw(), to.getPitch());
         }
 
-        this.internalTeleport(pos, flags);
+        this.cardboard$internalTeleport(pos, flags);
         
         // this.internalTeleport(d0, d1, d2, f, f1, set, false);
         return;
     }
-    
+
     @Override
-    public void internalTeleport(PositionMoveRotation positionmoverotation, Set<Relative> set) {
-        // AsyncCatcher.catchOp("teleport");
+    public void cardboard$internalTeleport(Location dest) {
+        this.cardboard$internalTeleport(dest.getX(), dest.getY(), dest.getZ(), dest.getYaw(), dest.getPitch());
+    }
+
+    @Override
+    public void cardboard$internalTeleport(double x, double y, double z, float yRot, float xRot) {
+        this.cardboard$internalTeleport(new PositionMoveRotation(new Vec3(x, y, z), Vec3.ZERO, yRot, xRot), Collections.emptySet());
+    }
+
+    @Override
+    public void cardboard$internalTeleport(PositionMoveRotation posMoveRotation, Set<Relative> relatives) {
+        org.spigotmc.AsyncCatcher.catchOp("teleport"); // Paper
+        // Paper start - Prevent teleporting dead entities
         if (this.player.isRemoved()) {
-            // LOGGER.info("Attempt to teleport removed player {} restricted", (Object)this.player.getNameForScoreboard());
-            // if (this.server.isDebugging()) {
-            //    TraceUtil.dumpTraceForThread("Attempt to teleport removed player");
-            //}
+            LOGGER.info("Attempt to teleport removed player {} restricted", player.getScoreboardName());
+            //if (this.server.isDebugging()) io.papermc.paper.util.TraceUtil.dumpTraceForThread("Attempt to teleport removed player");
             return;
         }
-        if (Float.isNaN(positionmoverotation.yRot())) {
-            positionmoverotation = new PositionMoveRotation(positionmoverotation.position(), positionmoverotation.deltaMovement(), 0.0f, positionmoverotation.xRot());
+        // Paper end - Prevent teleporting dead entities
+        if (Float.isNaN(posMoveRotation.yRot())) {
+            posMoveRotation = new PositionMoveRotation(posMoveRotation.position(), posMoveRotation.deltaMovement(), 0, posMoveRotation.xRot());
         }
-        if (Float.isNaN(positionmoverotation.xRot())) {
-            positionmoverotation = new PositionMoveRotation(positionmoverotation.position(), positionmoverotation.deltaMovement(), positionmoverotation.yRot(), 0.0f);
+        if (Float.isNaN(posMoveRotation.xRot())) {
+            posMoveRotation = new PositionMoveRotation(posMoveRotation.position(), posMoveRotation.deltaMovement(), posMoveRotation.yRot(), 0);
         }
+
         this.justTeleported = true;
+        // CraftBukkit end
         this.awaitingTeleportTime = this.tickCount;
         if (++this.awaitingTeleport == Integer.MAX_VALUE) {
             this.awaitingTeleport = 0;
         }
-        this.player.teleportSetPosition(positionmoverotation, set);
+
+        this.player.teleportSetPosition(posMoveRotation, relatives);
         this.awaitingPositionFromClient = this.player.position();
+        // CraftBukkit start - update last location
         this.lastPosX = this.awaitingPositionFromClient.x;
         this.lastPosY = this.awaitingPositionFromClient.y;
         this.lastPosZ = this.awaitingPositionFromClient.z;
         this.lastYaw = this.player.getYRot();
         this.lastPitch = this.player.getXRot();
-        this.player.connection.send(ClientboundPlayerPositionPacket.of(this.awaitingTeleport, positionmoverotation, set));
+        // CraftBukkit end
+        this.send(ClientboundPlayerPositionPacket.of(this.awaitingTeleport, posMoveRotation, relatives));
     }
-
-    /*
-    public void internalTeleport_dep(double d0, double d1, double d2, float f, float f1, Set<PositionFlag> set, boolean shouldDismount_unused) {
-        if (Float.isNaN(f)) f = 0.0f;
-        if (Float.isNaN(f1)) f1 = 0.0f;
-        
-
-        this.justTeleported = true;
-        double d3 = set.contains(PositionFlag.X) ? this.player.getX() : 0.0;
-        double d4 = set.contains(PositionFlag.Y) ? this.player.getY() : 0.0;
-        double d5 = set.contains(PositionFlag.Z) ? this.player.getZ() : 0.0;
-        float f2 = set.contains(PositionFlag.Y_ROT) ? this.player.getYaw() : 0.0f;
-        float f3 = set.contains(PositionFlag.X_ROT) ? this.player.getPitch() : 0.0f;
-
-        this.requestedTeleportPos = new Vec3d(d0, d1, d2);
-        if (++this.requestedTeleportId == Integer.MAX_VALUE)
-            this.requestedTeleportId = 0;
-
-        this.lastTeleportCheckTicks = this.ticks;
-        this.player.updatePositionAndAngles(d0, d1, d2, f, f1);
-
-        this.player.networkHandler.sendPacket(PlayerPositionLookS2CPacket.of(this.requestedTeleportId, positionmoverotation, set));
-
-        PlayerPosition pos = new PlayerPosition(requestedTeleportPos, requestedTeleportPos, f3, f3);
-
-        this.player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(d0 - d3, d1 - d4, d2 - d5, f - f2, f1 - f3, set, this.requestedTeleportId));
-    }
-    */
-    
-    
 
     /**
      * NOTE:
@@ -815,10 +771,13 @@ public abstract class ServerGamePacketListenerImplMixin extends ServerCommonPack
 
 	@Shadow
 	void restartClientLoadTimerAfterRespawn( ) {}
-	
-	@Override
+
+    @Shadow
+    @Final
+    private static Logger LOGGER;
+
+    @Override
 	public void cardboard$spigot_player_respawn() {
 		restartClientLoadTimerAfterRespawn();
 	}
-	
 }

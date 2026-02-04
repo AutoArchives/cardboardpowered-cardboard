@@ -35,7 +35,7 @@ import org.bukkit.event.block.BlockCookEvent;
 import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.cardboardpowered.api.event.CardboardEventManager;
-import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.cardboardpowered.impl.world.CraftWorld;
 
 import org.cardboardpowered.bridge.world.level.block.entity.BlockEntityBridge;

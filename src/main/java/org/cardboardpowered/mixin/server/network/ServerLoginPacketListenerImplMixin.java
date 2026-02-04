@@ -1,9 +1,7 @@
 package org.cardboardpowered.mixin.server.network;
 
-import org.cardboardpowered.extras.PlayerManager_LoginResult;
 import org.cardboardpowered.bridge.network.ConnectionBridge;
 import org.cardboardpowered.bridge.server.MinecraftServerBridge;
-import org.cardboardpowered.bridge.server.players.PlayerListBridge;
 import org.cardboardpowered.bridge.server.network.ServerLoginPacketListenerImplBridge;
 
 import com.destroystokyo.paper.profile.CraftPlayerProfile;
@@ -38,10 +36,10 @@ import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
 import org.apache.commons.lang3.Validate;
+import org.cardboardpowered.bridge.server.players.PlayerListBridge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.util.Waitable;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerPreLoginEvent;
@@ -346,60 +344,34 @@ public abstract class ServerLoginPacketListenerImplMixin implements ServerLoginP
 		}
 	}
 
-	private ServerPlayer cardboard_player;
-
-	@Override
-	public ServerPlayer cardboard$get_player() {
-		if (null == player) {
-			player = cardboard_player;
-		}
-		return player;
-	}
-
 	/**
 	 * @author cardboard mod
-	 * @reason We create the ServerPlayerEntity using attemptLogin
+	 * @reason
 	 */
-	//@Overwrite
-    private void verifyLoginAndFinishConnectionSetupdd(GameProfile profile) {
-        PlayerList playerManager = this.server.getPlayerList();
-        
-        net.minecraft.network.chat.Component text = playerManager.canPlayerLogin(this.connection.getRemoteAddress(), new NameAndId(profile));
+	// TODO: Overwrite can be replaced with something else.
+	@Overwrite
+	private void verifyLoginAndFinishConnectionSetup(GameProfile profile) {
+		PlayerList playerList = this.server.getPlayerList();
+		net.minecraft.network.chat.Component component = org.bukkit.craftbukkit.event.CraftEventFactory.handleLoginResult(((PlayerListBridge)playerList).cardboard$canPlayerLogin(this.connection.getRemoteAddress(), new NameAndId(profile)), this.paperLoginConnection(), this.connection, profile, this.server, true); // Paper
+		if (component != null) {
+			this.disconnect(component);
+		} else {
+			if (this.server.getCompressionThreshold() >= 0 && !this.connection.isMemoryConnection()) {
+				this.connection
+						.send(
+								new ClientboundLoginCompressionPacket(this.server.getCompressionThreshold()),
+								PacketSendListener.thenRun(() -> this.connection.setupCompression(this.server.getCompressionThreshold(), true))
+						);
+			}
 
-        PlayerListBridge pm = ((PlayerListBridge) this.server.getPlayerList());
-
-        PlayerManager_LoginResult paperizedResult = pm.cardboard$canPlayerLogin(text, new NameAndId(profile));
-        text = CraftEventFactory.handleLoginResult(
-        		paperizedResult,
-                this.paperLoginConnection(),
-                this.connection,
-                profile,
-                this.server,
-                true
-        );
-        
-        ServerPlayer s = pm.attemptLogin((ServerLoginPacketListenerImpl) (Object) this, this.authenticatedProfile, null, hostname);
-        this.cardboard_player = s;
-        this.player = s;
-        
-        //this.player = playerlist.canPlayerLogin(this, profile);
-        //if (this.player != null) {
-        
-        if (text != null) {
-            this.disconnect(text);
-        } else {
-            boolean bl;
-            if (this.server.getCompressionThreshold() >= 0 && !this.connection.isMemoryConnection()) {
-
-                this.connection.send(new ClientboundLoginCompressionPacket(this.server.getCompressionThreshold()), PacketSendListener.thenRun(() -> this.connection.setupCompression(this.server.getCompressionThreshold(), true)));
-            }
-            if (bl = playerManager.disconnectAllPlayersWithProfile(profile.id())) {
-                this.state = State.WAITING_FOR_DUPE_DISCONNECT;
-            } else {
-                this.finishLoginAndWaitForClient(profile);
-            }
-        }
-    }
+			boolean flag = playerList.disconnectAllPlayersWithProfile(profile.id());
+			if (flag) {
+				this.state = ServerLoginPacketListenerImpl.State.WAITING_FOR_DUPE_DISCONNECT;
+			} else {
+				this.finishLoginAndWaitForClient(profile);
+			}
+		}
+	}
     
     @Shadow
     private void finishLoginAndWaitForClient(GameProfile profile) {
@@ -448,27 +420,6 @@ public abstract class ServerLoginPacketListenerImplMixin implements ServerLoginP
 
     @Shadow
     private boolean transferred;
-     
-    /**
-     * @author cardboard mod
-     * @reason TODO: Injection here fails
-     */
-    @Overwrite
-    public void handleLoginAcknowledgement(ServerboundLoginAcknowledgedPacket packet) {
-        Validate.validState((this.state == State.PROTOCOL_SWITCHING ? 1 : 0) != 0, (String)"Unexpected login acknowledgement packet", (Object[])new Object[0]);
-        this.connection.setupOutboundProtocol(ConfigurationProtocols.CLIENTBOUND);
-        CommonListenerCookie commonlistenercookie = CommonListenerCookie.createInitial(Objects.requireNonNull(this.authenticatedProfile), this.transferred);
-        ServerConfigurationPacketListenerImpl networkConfig = new ServerConfigurationPacketListenerImpl(this.server, this.connection, commonlistenercookie);
-
-        // System.out.println("networkConfig: setting player");
-        if(cardboard_player != null) {
-			((ServerConfigurationPacketListenerImplBridge) networkConfig).cardboard_setPlayer(cardboard_player);
-		}
-        
-        this.connection.setupInboundProtocol(ConfigurationProtocols.SERVERBOUND, networkConfig);
-        networkConfig.startConfiguration();
-        this.state = State.ACCEPTED;
-    }
 
     /*
 	@Inject(method = "onEnterConfiguration",

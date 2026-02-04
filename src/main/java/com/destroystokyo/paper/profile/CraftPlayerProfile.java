@@ -22,7 +22,7 @@ import org.apache.commons.lang3.Validate;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.profile.CraftPlayerTextures;
 import org.bukkit.profile.PlayerTextures;
-import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spigotmc.SpigotConfig;

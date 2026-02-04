@@ -17,7 +17,7 @@ import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.Player;
-import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;

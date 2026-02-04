@@ -22,25 +22,36 @@ import java.util.Optional;
 import java.util.OptionalInt;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RespawnAnchorBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.LevelData;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.*;
-import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.MainHand;
 import org.cardboardpowered.CardboardConfig;
 import org.cardboardpowered.CardboardMod;
-import org.cardboardpowered.TeleportTargetExtra;
-import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.cardboardpowered.bridge.server.network.ServerGamePacketListenerImplBridge;
+import org.cardboardpowered.extras.ServerPlayer_RespawnPosAngle;
+import org.cardboardpowered.extras.ServerPlayer_RespawnResult;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.bridge.commands.CommandSourceBridge;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
@@ -48,6 +59,8 @@ import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.mixin.world.entity.player.PlayerMixin;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -155,53 +168,6 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements CommandSo
     }
 
     @Override
-    public void reset() {
-        ServerPlayer thiz = (ServerPlayer) (Object) this;
-    	
-    	float exp = 0.0F;
-        
-    	/*
-    	if (thiz.keepLevel) {
-           exp = super.experienceProgress;
-           thiz.newTotalExp = super.totalExperience;
-           thiz.newLevel = super.experienceLevel;
-        }
-        */
-
-        thiz.setHealth(thiz.getMaxHealth());
-        thiz.stopUsingItem();
-        thiz.setAirSupply(thiz.getMaxAirSupply());
-        thiz.setRemainingFireTicks(0);
-        thiz.fallDistance = 0.0;
-        thiz.foodData = new FoodData();
-        // thiz.experienceLevel = thiz.newLevel;
-        // thiz.totalExperience = thiz.newTotalExp;
-        thiz.experienceProgress = 0.0F;
-        thiz.deathTime = 0;
-        // thiz.setArrowCount(0, true);
-        thiz.removeAllEffects();
-        // thiz.removeAllEffects(org.bukkit.event.entity.EntityPotionEffectEvent.Cause.DEATH);
-        thiz.effectsDirty = true;
-        thiz.containerMenu = thiz.inventoryMenu;
-        thiz.lastHurtByPlayer = null;
-        thiz.lastHurtByMob = null;
-        thiz.combatTracker = new CombatTracker(thiz);
-        thiz.lastSentExp = -1;
-        
-        /*
-        if (thiz.keepLevel) {
-        	thiz.experienceProgress = exp;
-        } else {
-           thiz.addExperience(thiz.newExp);
-        }
-
-        thiz.keepLevel = false;
-        */
-        thiz.setDeltaMovement(0.0, 0.0, 0.0);
-        thiz.skipDropExperience = false;
-    }
-
-    @Override
     public BlockPos getSpawnPoint(Level world) {
         return ((ServerLevel)world).getRespawnData().pos();
     }
@@ -221,7 +187,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements CommandSo
     	if (CardboardConfig.DEBUG_PLAYER) {
     		CardboardMod.LOGGER.info("DEBUG: ServerPlayerEntity.cardboard$do_teleport_event called");
     	}
-    	
+
     	ServerPlayer thiz = (ServerPlayer) (Object) this;
     	cb$from = thiz.level(); // Cardboard - store from world
 
@@ -236,29 +202,29 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements CommandSo
         Bukkit.getPluginManager().callEvent(tpEvent);
 
         Location newExit = tpEvent.getTo();
-        
+
         if (tpEvent.isCancelled() || null == newExit) {
-        	
+
         	if (CardboardConfig.DEBUG_PLAYER) {
         		CardboardMod.LOGGER.info("DEBUG: Teleport: EventCanceled?=" + tpEvent.isCancelled() + ", newExit=" + newExit);
         	}
-        	
+
             ci.setReturnValue(null);
             return;
         }
-        
+
         if (!newExit.equals(exit)) {
         	// Set our new TeleportTarget
         	target.newLevel = ((CraftWorld)newExit.getWorld()).getHandle();
-        	target.position = CraftLocation.toVec3D(newExit);
+        	target.position = CraftLocation.toVec3(newExit);
         	target.deltaMovement = Vec3.ZERO;
         	target.yRot = newExit.getYaw();
         	target.xRot = newExit.getPitch();
-        	
+
         	if (CardboardConfig.DEBUG_PLAYER) {
         		CardboardMod.LOGGER.info("DEBUG: Teleport: Target=" + target);
         	}
-        	
+
         	/*
             target = new TeleportTarget(
             		((CraftWorld)newExit.getWorld()).getHandle(),
@@ -275,17 +241,17 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements CommandSo
             */
         }
     }
-    
+
     @Inject(at = @At(
     		value = "RETURN"
     ), method = "teleport(Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/server/level/ServerPlayer;")
     public void cardboard$do_world_change(TeleportTransition target, CallbackInfoReturnable<ServerPlayer> e) {
     	ServerPlayer thiz = (ServerPlayer) (Object) this;
-    	
+
     	if (thiz.isRemoved()) {
     		return;
     	}
-    	
+
     	ServerLevel serverWorld = target.newLevel();
 		ResourceKey<Level> registryKey = cb$from.dimension();
 
@@ -506,6 +472,31 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements CommandSo
 
     @Shadow public abstract OptionalInt openMenu(@Nullable MenuProvider factory);
     @Shadow private String language;
+
+    @Shadow
+    public abstract @org.jspecify.annotations.Nullable RespawnConfig getRespawnConfig();
+
+    @Shadow
+    @Final
+    private MinecraftServer server;
+
+    @Shadow
+    private @org.jspecify.annotations.Nullable RespawnConfig respawnConfig;
+
+    @Shadow
+    @Final
+    private static Component SPAWN_SET_MESSAGE;
+
+    @Shadow
+    public abstract void sendSystemMessage(Component component);
+
+    @Shadow
+    public ServerGamePacketListenerImpl connection;
+
+    @Shadow
+    @Final
+    private static Logger LOGGER;
+
     @Override
     public void setConnectionBF(Connection connection) {
         this.connectionBF = connection;
@@ -532,32 +523,6 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements CommandSo
         } catch (Throwable throwable) {}
     }
 
-    //@Overwrite
-    @Override
-    public void copyFrom_unused(ServerPlayer entityplayer, boolean flag) {
-        if (flag) {
-            ((ServerPlayer)(Object)this).inventory.replaceWith(entityplayer.inventory);
-            ((ServerPlayer)(Object)this).setHealth(entityplayer.getHealth());
-            ((ServerPlayer)(Object)this).foodData = entityplayer.foodData;
-            ((ServerPlayer)(Object)this).experienceLevel = entityplayer.experienceLevel;
-            ((ServerPlayer)(Object)this).totalExperience = entityplayer.totalExperience;
-            ((ServerPlayer)(Object)this).experienceProgress = entityplayer.experienceProgress;
-            ((ServerPlayer)(Object)this).setScore(entityplayer.getScore());
-        } else if (((ServerPlayer)(Object)this).level().getGameRules().get(GameRules.KEEP_INVENTORY) || entityplayer.isSpectator()) {
-            ((ServerPlayer)(Object)this).inventory.replaceWith(entityplayer.inventory);
-            ((ServerPlayer)(Object)this).experienceLevel = entityplayer.experienceLevel;
-            ((ServerPlayer)(Object)this).totalExperience = entityplayer.totalExperience;
-            ((ServerPlayer)(Object)this).experienceProgress = entityplayer.experienceProgress;
-            ((ServerPlayer)(Object)this).setScore(entityplayer.getScore());
-        }
-        ((ServerPlayer)(Object)this).enderChestInventory = entityplayer.enderChestInventory;
-        ((ServerPlayer)(Object)this).lastSentExp = -1;
-        ((ServerPlayer)(Object)this).lastSentHealth = -1.0F;
-        ((ServerPlayer)(Object)this).lastSentFood = -1;
-        ((ServerPlayer)(Object)this).seenCredits = entityplayer.seenCredits;
-        ((ServerPlayer)(Object)this).enteredNetherPosition = entityplayer.enteredNetherPosition;
-    }
-    
     @Inject(at = @At("HEAD"), method = "closeContainer")
     public void cardboard_doInventoryCloseEvent(CallbackInfo ci) {
         org.bukkit.craftbukkit.event.CraftEventFactory.handleInventoryCloseEvent(((ServerPlayer)(Object)this), InventoryCloseEvent.Reason.UNKNOWN); // CraftBukkit
@@ -580,60 +545,86 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements CommandSo
 		((ServerPlayer)(Object)this).snapTo(x, y, z, yaw, pitch);
 		((ServerPlayer)(Object)this).connection.resetPosition();
     }
-	
-	@Nullable
-	@Override
-    public TeleportTransition findRespawnPositionAndUseSpawnBlock(boolean useCharge, TeleportTransition.PostTeleportTransition postTeleportTransition, @Nullable PlayerRespawnEvent.RespawnReason respawnReason) {
-		if (CardboardConfig.DEBUG_PLAYER) {
-    		CardboardMod.LOGGER.info("findRespawnPosAndUseSpawnBlock");
-    	}
-		ServerPlayer thiz = (ServerPlayer) (Object) this;
-		TeleportTransition teleportTransition;
+
+    // Paper start
+    @Override
+    public @org.jspecify.annotations.Nullable ServerPlayer_RespawnResult cardboard$findRespawnPositionAndUseSpawnBlock0(boolean useCharge, TeleportTransition.PostTeleportTransition postTeleportTransition, org.bukkit.event.player.PlayerRespawnEvent.RespawnReason respawnReason) {
+        TeleportTransition teleportTransition;
         boolean isBedSpawn = false;
         boolean isAnchorSpawn = false;
         Runnable consumeAnchorCharge = null;
-        RespawnConfig respawnConfig = thiz.getRespawnConfig();
-        ServerLevel level = CraftServer.server.getLevel(RespawnConfig.getDimensionOrDefault(respawnConfig));
+        // Paper end
+        ServerPlayer.RespawnConfig respawnConfig = this.getRespawnConfig();
+        ServerLevel level = this.server.getLevel(ServerPlayer.RespawnConfig.getDimensionOrDefault(respawnConfig));
         if (level != null && respawnConfig != null) {
-            Optional<RespawnPosAngle> optional = ServerPlayer.findRespawnAndUseSpawnBlock(level, respawnConfig, useCharge);
+            Optional<ServerPlayer_RespawnPosAngle> optional = ServerPlayerBridge.cardboard$findRespawnAndUseSpawnBlock(level, respawnConfig, useCharge);
             if (optional.isPresent()) {
-                RespawnPosAngle respawnPosAngle = optional.get();
-                // isBedSpawn = respawnPosAngle.isBedSpawn();
-                // isAnchorSpawn = respawnPosAngle.isAnchorSpawn();
-                // consumeAnchorCharge = respawnPosAngle.consumeAnchorCharge();
-                teleportTransition = new TeleportTransition(level, respawnPosAngle.position(), Vec3.ZERO, respawnPosAngle.yaw(), 0.0f, postTeleportTransition);
+                ServerPlayer_RespawnPosAngle respawnPosAngle = optional.get();
+                // CraftBukkit start
+                isBedSpawn = respawnPosAngle.isBedSpawn();
+                isAnchorSpawn = respawnPosAngle.isAnchorSpawn();
+                consumeAnchorCharge = respawnPosAngle.consumeAnchorCharge();
+                teleportTransition = new TeleportTransition(
+                        level, respawnPosAngle.position(), Vec3.ZERO, respawnPosAngle.yaw(), respawnPosAngle.pitch(), postTeleportTransition
+                );
+                // CraftBukkit end
             } else {
-                teleportTransition = TeleportTransition.missingRespawnBlock(/*thiz.getEntityWorld().getServer().getOverworld(),*/ thiz, postTeleportTransition);
+                teleportTransition = TeleportTransition.missingRespawnBlock(((ServerPlayer)(Object)this), postTeleportTransition); // CraftBukkit
             }
         } else {
-            teleportTransition = TeleportTargetExtra.newTeleportTarget(CraftServer.server.overworld(), thiz, postTeleportTransition);
+            // CraftBukkit start
+            teleportTransition = TeleportTransition.createDefault(((ServerPlayer)(Object)this), postTeleportTransition);
         }
-        if (respawnReason == null) {
-            return teleportTransition;
-        }
-        CraftPlayer respawnPlayer = (CraftPlayer) this.getBukkitEntity();
-        Location location = CraftLocation.toBukkit(teleportTransition.position(), (org.bukkit.World)teleportTransition.newLevel().getWorld(), teleportTransition.yRot(), teleportTransition.xRot());
-        PlayerRespawnEvent respawnEvent = new PlayerRespawnEvent((Player)respawnPlayer, location, isBedSpawn, isAnchorSpawn, teleportTransition.missingRespawnBlock(), respawnReason);
-        thiz.level().getCraftServer().getPluginManager().callEvent(respawnEvent);
-        
-        /*
-        if (this.networkHandler.isDisconnected()) {
+
+        org.bukkit.entity.Player respawnPlayer = (Player) this.getBukkitEntity();
+        org.bukkit.Location location = org.bukkit.craftbukkit.util.CraftLocation.toBukkit(
+                teleportTransition.position(),
+                teleportTransition.newLevel(),
+                teleportTransition.yRot(),
+                teleportTransition.xRot()
+        );
+
+        // Paper start - respawn flags
+        org.bukkit.event.player.PlayerRespawnEvent respawnEvent = new org.bukkit.event.player.PlayerRespawnEvent(
+                respawnPlayer,
+                location,
+                isBedSpawn,
+                isAnchorSpawn,
+                teleportTransition.missingRespawnBlock(),
+                respawnReason
+        );
+        // Paper end - respawn flags
+        CraftServer.INSTANCE.getPluginManager().callEvent(respawnEvent);
+        // Spigot start
+        if (((ServerGamePacketListenerImplBridge)this.connection).isDisconnected()) {
             return null;
         }
-        */
-        
+        // Spigot end
+
+        // Paper start - consume anchor charge if location hasn't changed
         if (location.equals(respawnEvent.getRespawnLocation()) && consumeAnchorCharge != null) {
             consumeAnchorCharge.run();
         }
+        // Paper end - consume anchor charge if location hasn't changed
         location = respawnEvent.getRespawnLocation();
 
-        TeleportCause cause = TeleportCause.UNKNOWN;
-        
-        if (CardboardConfig.DEBUG_PLAYER) {
-    		CardboardMod.LOGGER.info("loc = " + location);
-    	}
-        
-        return new TeleportTransition(((CraftWorld)location.getWorld()).getHandle(), CraftLocation.toVec3(location), teleportTransition.deltaMovement(), location.getYaw(), location.getPitch(), teleportTransition.relatives(), teleportTransition.postTeleportTransition());
+        return new ServerPlayer_RespawnResult(
+                new TeleportTransition(
+                        ((CraftWorld) location.getWorld()).getHandle(),
+                        org.bukkit.craftbukkit.util.CraftLocation.toVec3(location),
+                        teleportTransition.deltaMovement(),
+                        location.getYaw(),
+                        location.getPitch(),
+                        teleportTransition.missingRespawnBlock(),
+                        teleportTransition.asPassenger(),
+                        teleportTransition.relatives(),
+                        teleportTransition.postTeleportTransition()
+                        //teleportTransition.cause()
+                ),
+                isBedSpawn,
+                isAnchorSpawn
+        );
+        // CraftBukkit end
     }
 
     @Override
@@ -694,5 +685,75 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements CommandSo
             ci.setReturnValue(null);
         }
         // cardboard_stored_entity = null;
+    }
+
+    @Inject(method = "setRespawnPosition", at = @At("HEAD"), cancellable = true)
+    public void setRespawnPositionPaper(RespawnConfig respawnConfig, boolean displayInChat, CallbackInfo ci) {
+        // Paper start - Add PlayerSetSpawnEvent
+        this.cardboard$setRespawnPosition(respawnConfig, displayInChat, com.destroystokyo.paper.event.player.PlayerSetSpawnEvent.Cause.UNKNOWN);
+        ci.cancel();
+    }
+
+    @Override
+    public boolean cardboard$setRespawnPosition(ServerPlayer.@org.jspecify.annotations.Nullable RespawnConfig respawnConfig, boolean displayInChat, com.destroystokyo.paper.event.player.PlayerSetSpawnEvent.Cause cause) {
+        org.bukkit.Location spawnLoc = null;
+        boolean actuallyDisplayInChat = false;
+        if (respawnConfig != null) {
+            actuallyDisplayInChat = displayInChat && !respawnConfig.isSamePosition(this.respawnConfig);
+            spawnLoc = org.bukkit.craftbukkit.util.CraftLocation.toBukkit(respawnConfig.respawnData().pos(), this.server.getLevel(respawnConfig.respawnData().dimension()));
+            spawnLoc.setYaw(respawnConfig.respawnData().yaw());
+            spawnLoc.setPitch(respawnConfig.respawnData().pitch());
+        }
+        org.bukkit.event.player.PlayerSpawnChangeEvent dumbEvent = new org.bukkit.event.player.PlayerSpawnChangeEvent(
+                (Player) this.getBukkitEntity(),
+                spawnLoc,
+                respawnConfig != null && respawnConfig.forced(),
+                cause == com.destroystokyo.paper.event.player.PlayerSetSpawnEvent.Cause.PLAYER_RESPAWN
+                        ? org.bukkit.event.player.PlayerSpawnChangeEvent.Cause.RESET
+                        : org.bukkit.event.player.PlayerSpawnChangeEvent.Cause.valueOf(cause.name())
+        );
+        dumbEvent.callEvent();
+
+        com.destroystokyo.paper.event.player.PlayerSetSpawnEvent event = new com.destroystokyo.paper.event.player.PlayerSetSpawnEvent(
+                (Player) this.getBukkitEntity(),
+                cause,
+                dumbEvent.getNewSpawn(),
+                dumbEvent.isForced(),
+                actuallyDisplayInChat,
+                actuallyDisplayInChat ? io.papermc.paper.adventure.PaperAdventure.asAdventure(SPAWN_SET_MESSAGE) : null
+        );
+        event.setCancelled(dumbEvent.isCancelled());
+        if (!event.callEvent()) {
+            return false;
+        }
+
+        if (event.getLocation() != null) {
+            respawnConfig = new ServerPlayer.RespawnConfig(
+                    net.minecraft.world.level.storage.LevelData.RespawnData.of(
+                            ((CraftWorld) event.getLocation().getWorld()).getHandle().dimension(),
+                            org.bukkit.craftbukkit.util.CraftLocation.toBlockPosition(event.getLocation()),
+                            event.getLocation().getYaw(),
+                            event.getLocation().getPitch()
+                    ),
+                    event.isForced()
+            );
+            if (event.willNotifyPlayer() && event.getNotification() != null) {
+                this.sendSystemMessage(io.papermc.paper.adventure.PaperAdventure.asVanilla(event.getNotification()));
+            }
+        }
+
+        this.respawnConfig = respawnConfig;
+        return true;
+        // Paper end - Add PlayerSetSpawnEvent
+    }
+
+    @Inject(method = "readAdditionalSaveData", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/storage/ValueInput;read(Ljava/lang/String;Lcom/mojang/serialization/Codec;)Ljava/util/Optional;", ordinal = 2, shift = At.Shift.AFTER))
+    protected void readAdditionalSaveDataPaper(ValueInput valueInput, CallbackInfo ci) {
+        ((CraftPlayer)this.getBukkitEntity()).readExtraData(valueInput); // CraftBukkit
+    }
+
+    @Inject(method = "addAdditionalSaveData", at = @At(value = "TAIL"))
+    protected void addAdditionalSaveDataPaper(ValueOutput valueOutput, CallbackInfo ci) {
+        ((CraftPlayer)this.getBukkitEntity()).setExtraData(valueOutput); // CraftBukkit
     }
 }

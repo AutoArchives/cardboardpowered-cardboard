@@ -1,11 +1,15 @@
 package org.cardboardpowered.mixin.server;
 
+import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.scores.PlayerTeam;
+import org.cardboardpowered.bridge.network.protocol.game.ClientboundSetPlayerTeamPacketBridge;
+import org.cardboardpowered.bridge.server.ServerScoreboardBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.bukkit.craftbukkit.CraftServer;
-import org.cardboardpowered.impl.entity.CraftPlayer;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.spongepowered.asm.mixin.*;
 
 import java.util.List;
 import java.util.Set;
@@ -16,7 +20,7 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Scoreboard;
 
 @Mixin(value = ServerScoreboard.class, priority = 900)
-public class ServerScoreboardMixin extends Scoreboard {
+public abstract class ServerScoreboardMixin extends Scoreboard implements ServerScoreboardBridge {
 
     @Shadow
     public Set<Objective> trackedObjectives;
@@ -64,7 +68,14 @@ public class ServerScoreboardMixin extends Scoreboard {
                 entityplayer.networkHandler.sendPacket(packet);
     }
     */
-    
+
+    @Shadow
+    protected abstract void setDirty();
+
+    @Shadow
+    @Final
+    private MinecraftServer server;
+
     /**
      * @author Cardboard
      * @reason bukkitize scoreboard
@@ -96,16 +107,47 @@ public class ServerScoreboardMixin extends Scoreboard {
         }
         this.trackedObjectives.remove(objective);
     }
-    
-    /**
-     * @author Cardboard
-     * @reason bukkitize scoreboard
-     */
-    private void broadcastAll(Packet packet) {
-        for (ServerPlayer entityplayer : CraftServer.INSTANCE.getHandle().players) {
-            if (((CraftPlayer)((ServerPlayerBridge)entityplayer).getBukkitEntity()).getScoreboard().getHandle() != this) continue;
-            entityplayer.connection.send(packet);
+
+    // Paper start - Multiple Entries with Scoreboards
+    @Override
+    public boolean cardboard$addPlayersToTeam(java.util.Collection<String> players, PlayerTeam team) {
+        boolean anyAdded = false;
+        for (String playerName : players) {
+            if (super.addPlayerToTeam(playerName, team)) {
+                anyAdded = true;
+            }
+        }
+
+        if (anyAdded) {
+            this.broadcastAll(ClientboundSetPlayerTeamPacketBridge.createMultiplePlayerPacket(team, players, ClientboundSetPlayerTeamPacket.Action.ADD));
+            this.setDirty();
+            return true;
+        } else {
+            return false;
         }
     }
+    // Paper end - Multiple Entries with Scoreboards
 
+    // Paper start - Multiple Entries with Scoreboards
+    @Override
+    public void cardboard$removePlayersFromTeam(java.util.Collection<String> players, PlayerTeam team) {
+        for (String playerName : players) {
+            super.removePlayerFromTeam(playerName, team);
+        }
+
+        this.broadcastAll(ClientboundSetPlayerTeamPacketBridge.createMultiplePlayerPacket(team, players, ClientboundSetPlayerTeamPacket.Action.REMOVE));
+        this.setDirty();
+    }
+    // Paper end - Multiple Entries with Scoreboards
+
+    // CraftBukkit start - Send to players
+    @Unique
+    private void broadcastAll(Packet<?> packet) {
+        for (ServerPlayer serverPlayer : this.server.getPlayerList().players) {
+            if (((CraftPlayer)((EntityBridge)serverPlayer).getBukkitEntity()).getScoreboard().getHandle() == this) {
+                serverPlayer.connection.send(packet);
+            }
+        }
+    }
+    // CraftBukkit end
 }

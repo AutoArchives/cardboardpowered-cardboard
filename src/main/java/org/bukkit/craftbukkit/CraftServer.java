@@ -41,6 +41,7 @@ import org.cardboardpowered.bridge.world.item.crafting.RecipeManagerBridge;
 import org.cardboardpowered.bridge.world.item.crafting.RecipeHolderBridge;
 import org.cardboardpowered.bridge.world.level.LevelBridge;
 import org.cardboardpowered.bridge.world.level.saveddata.maps.MapItemSavedDataBridge;
+import org.cardboardpowered.bridge.world.level.storage.PrimaryLevelDataBridge;
 import org.cardboardpowered.impl.MetadataStoreImpl;
 import org.bukkit.craftbukkit.scheduler.CraftScheduler;
 import com.mohistmc.banner.bukkit.nms.utils.RemapUtils;
@@ -183,7 +184,7 @@ import org.cardboardpowered.impl.command.CardboardConsoleCommandSender;
 import org.cardboardpowered.impl.command.CommandMapImpl;
 import org.cardboardpowered.impl.command.MinecraftCommandWrapper;
 import org.cardboardpowered.impl.command.VersionCommand;
-import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.cardboardpowered.impl.inventory.InventoryCreator;
 import org.cardboardpowered.impl.inventory.recipe.CardboardBlastingRecipe;
@@ -2707,12 +2708,13 @@ public class CraftServer implements Server {
 		return this.console.findRespawnDimension().getWorld();
 	}
 
-	@Override
-	public void setRespawnWorld(@NotNull World world) {
-		// TODO Auto-generated method stub
-		// this.console.getOverworld().worldProperties.respawnDimension = ((CraftWorld)world).getHandle().getRegistryKey();
-	    this.console.updateEffectiveRespawnData();
-	}
+    @Override
+    public void setRespawnWorld(final World world) {
+        Preconditions.checkArgument(world != null, "world cannot be null");
+
+        ((PrimaryLevelDataBridge)this.console.overworld().serverLevelData).cardboard$setRespawnDimension(((CraftWorld) world).getHandle().dimension());
+        this.console.updateEffectiveRespawnData();
+    }
     
     // public boolean isTickPaused() {
     //    return console.idleTickCount > 0 && console.idleTickCount >= console.getPauseWhenEmptySeconds() * 20;

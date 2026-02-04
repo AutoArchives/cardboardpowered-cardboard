@@ -14,7 +14,7 @@ import net.minecraft.network.Connection;
 import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.entity.Relative;
 import org.bukkit.Location;
-import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 
 import io.papermc.paper.connection.PlayerGameConnection;
 
@@ -28,7 +28,11 @@ public interface ServerGamePacketListenerImplBridge {
 
 	Connection cb_get_connection();
 
-	void internalTeleport(PositionMoveRotation positionmoverotation, Set<Relative> set);
+	void cardboard$internalTeleport(Location dest);
+
+	void cardboard$internalTeleport(double x, double y, double z, float yRot, float xRot);
+
+	void cardboard$internalTeleport(PositionMoveRotation positionmoverotation, Set<Relative> set);
 
 	/**
 	 */

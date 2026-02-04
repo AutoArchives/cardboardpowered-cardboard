@@ -19,6 +19,7 @@
 package org.cardboardpowered.mixin.server;
 
 import net.minecraft.server.*;
+import net.minecraft.world.level.storage.*;
 import org.cardboardpowered.CardboardMod;
 import org.bukkit.craftbukkit.scheduler.CraftScheduler;
 import org.cardboardpowered.bridge.server.MinecraftServerBridge;
@@ -51,13 +52,6 @@ import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.PatrolSpawner;
 import net.minecraft.world.level.levelgen.PhantomSpawner;
 import net.minecraft.world.level.levelgen.WorldOptions;
-import net.minecraft.world.level.storage.CommandStorage;
-import net.minecraft.world.level.storage.DimensionDataStorage;
-import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraft.world.level.storage.PlayerDataStorage;
-import net.minecraft.world.level.storage.PrimaryLevelData;
-import net.minecraft.world.level.storage.ServerLevelData;
-import net.minecraft.world.level.storage.WorldData;
 import net.minecraft.world.scores.ScoreboardSaveData;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -72,6 +66,9 @@ import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.generator.WorldInfo;
 import org.cardboardpowered.bridge.server.network.ServerConnectionListenerBridge;
 import org.cardboardpowered.bridge.server.level.ServerLevelBridge;
+import org.cardboardpowered.bridge.world.level.storage.LevelData_RespawnDataBridge;
+import org.cardboardpowered.bridge.world.level.storage.PrimaryLevelDataBridge;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -205,7 +202,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
                 // TODO IMPORTANT
             	
             	// ServerWorld world, ServerWorldProperties worldProperties, boolean bonusChest, boolean debugWorld, ChunkLoadProgress loadProgress
-            	setInitialSpawn(worldserver, worldserver.serverLevelData, false, false, ((ServerLevelBridge) worldserver).cardboard$levelLoadListener());
+            	//setInitialSpawn(worldserver, worldserver.serverLevelData, false, false, ((ServerLevelBridge) worldserver).cardboard$levelLoadListener()); // This breaks initial world spawn.
             	
             	// this.loadSpawn(worldserver.getChunkManager().chunkLoadingManager.worldGenerationProgressListener, worldserver);
                 CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldLoadEvent(((LevelBridge)worldserver).getCraftWorld()));
@@ -699,4 +696,33 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
     	// Shadowed
     }
 
+    @Shadow
+    public abstract ServerLevel findRespawnDimension();
+
+    @Shadow
+    public abstract WorldData getWorldData();
+
+    @Shadow
+    public abstract @Nullable ServerLevel getLevel(ResourceKey<Level> resourceKey);
+
+    @Shadow
+    private LevelData.RespawnData effectiveRespawnData;
+
+    // Paper start - per world respawn data - read "server global" respawn data from overworld dimension reference
+    @Inject(method = "updateEffectiveRespawnData", at = @At("HEAD"), cancellable = true)
+    public void updateEffectiveRespawnDataPaper(CallbackInfo ci) {
+        ServerLevel serverLevel = this.findRespawnDimension();
+        LevelData.RespawnData respawnData = serverLevel.serverLevelData.getRespawnData();
+        respawnData = ((LevelData_RespawnDataBridge)(Object)respawnData).cardboard$withLevel(serverLevel.dimension());
+        // Paper end - per world respawn data - read "server global" respawn data from overworld dimension reference
+        this.effectiveRespawnData = serverLevel.getWorldBorderAdjustedRespawnData(respawnData);
+        ci.cancel();
+    }
+
+    @Inject(method = "findRespawnDimension", at = @At("HEAD"), cancellable = true)
+    public void findRespawnDimensionPaper(CallbackInfoReturnable<ServerLevel> cir) {
+        ResourceKey<Level> resourceKey = ((PrimaryLevelDataBridge)((net.minecraft.world.level.storage.PrimaryLevelData) this.getWorldData().overworldData())).cardboard$getRespawnDimension(); // Paper - per world respawn data - read "server global" respawn data from overworld dimension reference
+        ServerLevel level = this.getLevel(resourceKey);
+        cir.setReturnValue(level != null ? level : this.overworld());
+    }
 }

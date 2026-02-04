@@ -4,11 +4,15 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 
+import net.minecraft.world.level.storage.LevelData;
 import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.CardboardConfig;
+import org.cardboardpowered.bridge.world.level.storage.LevelData_RespawnDataBridge;
+import org.cardboardpowered.bridge.world.level.storage.PrimaryLevelDataBridge;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.bridge.server.level.ServerLevelBridge;
 import org.cardboardpowered.mixin.world.level.LevelMixin;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -104,7 +108,11 @@ public class ServerLevelMixin extends LevelMixin implements ServerLevelBridge {
 	public LevelEntityGetter<Entity> getEntities() {
 		return this.entityManager.getEntityGetter();
 	}
-	
+
+	@Shadow
+	@Final
+	private MinecraftServer server;
+
 	@Override
 	public void cardboard$set_uuid(UUID id) {
 		this.cardboard$uuid = id;
@@ -151,6 +159,23 @@ public class ServerLevelMixin extends LevelMixin implements ServerLevelBridge {
                 bf.setOriginBF(bf.getBukkitEntity().getLocation());
             }
        // }
-    }*/ 
+    }*/
 
+	@Inject(method = "setRespawnData", at = @At("HEAD"), cancellable = true)
+	public void setRespawnDataPaper(LevelData.RespawnData respawnData, CallbackInfo ci) {
+		// Paper start
+		if (!((LevelData_RespawnDataBridge)(Object)this.serverLevelData.getRespawnData()).cardboard$positionEquals(respawnData)) {
+			org.bukkit.Location previousLocation = this.getWorld().getSpawnLocation();
+			this.serverLevelData.setSpawn(respawnData);
+			this.server.getPlayerList().broadcastAll(new net.minecraft.network.protocol.game.ClientboundSetDefaultSpawnPositionPacket(respawnData), this.dimension());
+			this.server.updateEffectiveRespawnData();
+			new org.bukkit.event.world.SpawnChangeEvent(this.getWorld(), previousLocation).callEvent();
+		}
+		if (((PrimaryLevelDataBridge)this.server.overworld().serverLevelData).cardboard$getRespawnDimension() != this.dimension()) {
+			((PrimaryLevelDataBridge)this.server.overworld().serverLevelData).cardboard$setRespawnDimension(this.dimension());
+			this.server.updateEffectiveRespawnData();
+		}
+		ci.cancel();
+		// Paper end
+	}
 }

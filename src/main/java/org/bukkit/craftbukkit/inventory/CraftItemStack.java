@@ -36,8 +36,8 @@ import org.bukkit.material.MaterialData;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.cardboardpowered.bridge.world.item.ItemStackBridge;
 import org.cardboardpowered.bridge.world.item.component.CustomDataBridge;
+import org.cardboardpowered.bridge.world.item.enchantment.EnchantmentHelperBridge;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
-import org.cardboardpowered.world.item.enchantment.CardboardEnchantmentHelper;
 import org.jetbrains.annotations.NotNull;
 
 @DelegateDeserialization(ItemStack.class)
@@ -275,7 +275,7 @@ public final class CraftItemStack extends ItemStack {
             return;
         }
 
-        CardboardEnchantmentHelper.updateEnchantments(this.handle, mutable -> { // data component api doesn't really support mutable things once already set yet
+        EnchantmentHelperBridge.updateEnchantments(this.handle, mutable -> { // data component api doesn't really support mutable things once already set yet
             mutable.set(CraftEnchantment.bukkitToMinecraftHolder(enchant), level);
         }, true);
     }

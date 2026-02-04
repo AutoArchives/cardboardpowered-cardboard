@@ -153,4 +153,10 @@ public class PlayerDataStorageMixin implements PlayerDataStorageBridge {
         return null;
     }
 
+    // CraftBukkit start
+    @Override
+    public File cardboard$getPlayerDir() {
+        return this.playerDir;
+    }
+    // CraftBukkit end
 }

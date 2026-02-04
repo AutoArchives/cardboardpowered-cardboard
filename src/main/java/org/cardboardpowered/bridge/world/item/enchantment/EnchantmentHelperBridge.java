@@ -1,4 +1,4 @@
-package org.cardboardpowered.world.item.enchantment;
+package org.cardboardpowered.bridge.world.item.enchantment;
 
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.item.ItemStack;
@@ -7,7 +7,7 @@ import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 import java.util.function.Consumer;
 
-public class CardboardEnchantmentHelper {
+public interface EnchantmentHelperBridge {
     public static ItemEnchantments updateEnchantments(ItemStack stack, Consumer<ItemEnchantments.Mutable> updater, final boolean createComponentIfMissing) {
         DataComponentType<ItemEnchantments> componentType = EnchantmentHelper.getComponentType(stack);
         ItemEnchantments itemEnchantments = createComponentIfMissing ? stack.getOrDefault(componentType, ItemEnchantments.EMPTY) : stack.get(componentType); // Paper - allowing updating enchantments on items without component

@@ -94,7 +94,7 @@ import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.StructureSearchResult;
 import org.bukkit.util.Vector;
 import org.cardboardpowered.bridge.world.level.LevelBridge;
-import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.util.CraftRayTraceResult;
 import org.cardboardpowered.bridge.server.level.ServerLevelBridge;
 import org.jetbrains.annotations.NotNull;
@@ -919,12 +919,6 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	}
 
 	@Override
-	public Location getSpawnLocation() {
-		BlockPos pos = world.getRespawnData().pos();
-		return new Location(this, pos.getX(), pos.getY(), pos.getZ());
-	}
-
-	@Override
 	public double getTemperature(int x, int z) {
 		return getTemperature(x, 0, z);
 	}
@@ -1543,28 +1537,34 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	}
 
 	@Override
-	public boolean setSpawnLocation(Location location) {
-		return equals(location.getWorld()) ? setSpawnLocation(location.getBlockX(), location.getBlockY(), location.getBlockZ()) : false;
+	public Location getSpawnLocation() {
+		final LevelData.RespawnData respawnData = this.world.serverLevelData.getRespawnData();
+		return CraftLocation.toBukkit(respawnData.pos(), this, respawnData.yaw(), respawnData.pitch());
 	}
 
 	@Override
-	public boolean setSpawnLocation(int x, int y, int z) {
-		return this.setSpawnLocation(x, y, z, 0.0F, 0.0F);
-		
-		/*
+	public boolean setSpawnLocation(Location location) {
+		Preconditions.checkArgument(location != null, "location");
+
+		return this.equals(location.getWorld()) ? this.setSpawnLocation(location.getBlockX(), location.getBlockY(), location.getBlockZ(), location.getYaw(), location.getPitch()) : false;
+	}
+
+	private boolean setSpawnLocation(int x, int y, int z, float yaw, float pitch) {
 		try {
-			Location previousLocation = getSpawnLocation();
-			nms.setSpawnPos(new BlockPos(x, y, z), 0);
+			Location previousLocation = this.getSpawnLocation();
+			this.world.serverLevelData.setSpawn(LevelData.RespawnData.of(this.world.dimension(), new BlockPos(x, y, z), yaw, pitch));
 
-			// Notify anyone who's listening.
-			SpawnChangeEvent event = new SpawnChangeEvent(this, previousLocation);
-			Bukkit.getPluginManager().callEvent(event);
-
+			CraftServer.INSTANCE.getServer().updateEffectiveRespawnData();
+			new SpawnChangeEvent(this, previousLocation).callEvent();
 			return true;
-		} catch(Exception e) {
+		} catch (Exception e) {
 			return false;
 		}
-		*/
+	}
+
+	@Override
+	public boolean setSpawnLocation(int x, int y, int z, float yaw) {
+		return this.setSpawnLocation(x, y, z, yaw, 0);
 	}
 
 	@Override
@@ -2250,45 +2250,6 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	public void setTicksPerWaterAmbientSpawns(int arg0) {
 		// TODO Auto-generated method stub
 	}
-	
-	private boolean setSpawnLocation(int x, int y, int z, float yaw, float pitch) {
-		try {
-			Location previousLocation = this.getSpawnLocation();
-			this.world.setRespawnData(
-				new LevelData.RespawnData(
-						GlobalPos.of(ResourceKey.create(Registries.DIMENSION, this.world.dimension().identifier()), new BlockPos(x, y, z)),
-						Mth.wrapDegrees(yaw),
-						Mth.wrapDegrees(pitch)
-						)
-					);
-			CraftServer.INSTANCE.getServer().updateEffectiveRespawnData();
-			new SpawnChangeEvent(this, previousLocation).callEvent();
-			return true;
-		} catch (Exception var7) {
-			return false;
-		}
-	}
-
-	public boolean setSpawnLocation(int x, int y, int z, float yaw) {
-		return this.setSpawnLocation(x, y, z, yaw, 0.0F);
-	}
-
-	   /*
-	@Override
-	public boolean setSpawnLocation(int x, int y, int z, float angle) {
-		try {
-			Location previousLocation = getSpawnLocation();
-			nms.setSpawnPos(new BlockPos(x, y, z), angle);
-
-			SpawnChangeEvent event = new SpawnChangeEvent(this, previousLocation);
-			CraftServer.INSTANCE.getPluginManager().callEvent(event);
-
-			return true;
-		} catch(Exception e) {
-			return false;
-		}
-	}
-	*/
 
 	@Override
 	public boolean createExplosion(Entity arg0, Location arg1, float arg2, boolean arg3, boolean arg4) {

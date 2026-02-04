@@ -58,7 +58,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionType.InternalPotionData;
 import org.cardboardpowered.impl.CardboardModdedBlock;
 import org.cardboardpowered.impl.CardboardModdedItem;
-import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.cardboardpowered.util.GameVersion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

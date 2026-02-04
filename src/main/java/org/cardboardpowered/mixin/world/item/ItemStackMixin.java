@@ -1,5 +1,6 @@
 package org.cardboardpowered.mixin.world.item;
 
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -72,9 +73,6 @@ public abstract class ItemStackMixin implements ItemStackBridge {
 
     @Shadow
     public abstract int getMaxDamage();
-
-    @Shadow
-    protected abstract void applyDamage(int i, @Nullable ServerPlayer serverPlayer, Consumer<Item> consumer);
 
     @Shadow
     protected abstract int processDurabilityChange(int i, ServerLevel serverLevel, @Nullable ServerPlayer serverPlayer);
@@ -199,7 +197,7 @@ public abstract class ItemStackMixin implements ItemStackBridge {
         }
         // CraftBukkit end
         if (i != 0) { // Paper - Add EntityDamageItemEvent - diff on change for above event ifs.
-            this.applyDamage(this.getDamageValue() + i, (ServerPlayer) player, onBreak);
+            this.applyDamage(this.getDamageValue() + i, player, onBreak);
         }
     }
 
@@ -228,6 +226,25 @@ public abstract class ItemStackMixin implements ItemStackBridge {
             org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerItemBreakEvent(serverPlayer, (ItemStack)(Object)this); // Paper - Add EntityDamageItemEvent
         }
         // CraftBukkit end
+    }
+
+    @Unique
+    private void applyDamage(int damage, @Nullable LivingEntity player, Consumer<Item> onBreak) { // Paper - Add EntityDamageItemEvent
+        if (player instanceof final ServerPlayer serverPlayer) { // Paper - Add EntityDamageItemEvent
+            CriteriaTriggers.ITEM_DURABILITY_CHANGED.trigger(serverPlayer, (ItemStack)(Object)this, damage); // Paper - Add EntityDamageItemEvent
+        }
+
+        this.setDamageValue(damage);
+        if (this.isBroken()) {
+            Item item = this.getItem();
+            // CraftBukkit start - Check for item breaking
+            if (this.count == 1 && player instanceof final ServerPlayer serverPlayer) { // Paper - Add EntityDamageItemEvent
+                org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerItemBreakEvent(serverPlayer, (ItemStack)(Object)this); // Paper - Add EntityDamageItemEvent
+            }
+            // CraftBukkit end
+            this.shrink(1);
+            onBreak.accept(item);
+        }
     }
 
     @Inject(method = "hurtWithoutBreaking", at = @At("HEAD"), cancellable = true)

@@ -20,7 +20,7 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.*;
-import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.spigotmc.SpigotConfig;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -130,10 +130,10 @@ public class ServerGamePacketListenerImplMixin_PlayerMove {
                 if (this.tickCount == 0) {
                     this.resetPosition();
                 }
-                
+
                 // Cardboard: Mojmap: hasClientLoaded
                 boolean this_player_isLoaded = ((ServerGamePacketListenerImpl)(Object)this).hasClientLoaded();
-                
+
                 if (!this.updateAwaitingTeleport() && this_player_isLoaded) {
                     float f1;
                     float f;
@@ -238,7 +238,7 @@ public class ServerGamePacketListenerImplMixin_PlayerMove {
                                     this.player.jumpFromGround();
                                 } else {
                                     from = event5.getFrom();
-                                    ((ServerGamePacketListenerImplBridge)(Object)this).internalTeleport(new PositionMoveRotation(CraftLocation.toVec3D(from), Vec3.ZERO, from.getYaw(), from.getPitch()), Collections.emptySet());
+                                    ((ServerGamePacketListenerImplBridge)(Object)this).cardboard$internalTeleport(new PositionMoveRotation(CraftLocation.toVec3(from), Vec3.ZERO, from.getYaw(), from.getPitch()), Collections.emptySet());
                                     return;
                                 }
                             }
@@ -276,16 +276,16 @@ public class ServerGamePacketListenerImplMixin_PlayerMove {
                                 teleportBack = false;
                             }
                             if (teleportBack) {
-                                
-                            	
+
+
                             	ServerGamePacketListenerImpl thiz = (ServerGamePacketListenerImpl)(Object)this;
-                            	
+
                             	// thiz.teleport
-                            	
+
                             	thiz.teleport(d3, d4, d5, f, f1);
-                                
-                                
-                                
+
+
+
                                 this.player.doCheckFallDamage(this.player.getX() - d3, this.player.getY() - d4, this.player.getZ() - d5, packet.isOnGround());
                             } else {
                                 this.player.absSnapTo(prevX, prevY, prevZ, prevYaw, prevPitch);
@@ -345,10 +345,10 @@ public class ServerGamePacketListenerImplMixin_PlayerMove {
                                 Vec3 vec3d = new Vec3(this.player.getX() - d3, this.player.getY() - d4, this.player.getZ() - d5);
                                 this.player.setOnGroundWithMovement(packet.isOnGround(), packet.horizontalCollision(), vec3d);
                                 this.player.doCheckFallDamage(vec3d.x, vec3d.y, vec3d.z, packet.isOnGround());
-                                
+
                                 // TODO: 1.21.8: Seems this is gone?
                                 // this.player.queueBlockCollisionCheck(new Vec3d(d3, d4, d5), this.player.getPos());
-                                
+
                                 this.handlePlayerKnownMovement(vec3d);
                                 if (flag1) {
                                     this.player.resetFallDistance();

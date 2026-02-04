@@ -8,8 +8,6 @@ import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.datacomponent.item.PaperResolvableProfile;
 import net.kyori.adventure.text.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.players.NameAndId;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.component.ResolvableProfile;
@@ -25,7 +23,7 @@ import org.bukkit.craftbukkit.profile.CraftPlayerProfile;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.profile.PlayerProfile;
 import org.cardboardpowered.bridge.server.players.NameAndIdBridge;
-import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.jetbrains.annotations.Nullable;
 
 public class CraftSkull extends CraftBlockEntityState<SkullBlockEntity> implements Skull {

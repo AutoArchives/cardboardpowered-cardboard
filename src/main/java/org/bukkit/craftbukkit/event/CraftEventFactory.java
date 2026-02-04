@@ -25,8 +25,9 @@ import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import org.bukkit.craftbukkit.*;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.*;
 import org.cardboardpowered.CardboardMod;
-import org.cardboardpowered.extras.PlayerManager_LoginResult;
+import org.cardboardpowered.extras.PlayerList_LoginResult;
 import org.cardboardpowered.BukkitLogger;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.world.ContainerBridge;
@@ -129,26 +130,12 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.VillagerCareerChangeEvent.ChangeReason;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
-import org.bukkit.event.player.PlayerBucketEmptyEvent;
-import org.bukkit.event.player.PlayerBucketFillEvent;
-import org.bukkit.event.player.PlayerEvent;
-import org.bukkit.event.player.PlayerExpChangeEvent;
-import org.bukkit.event.player.PlayerExpCooldownChangeEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemBreakEvent;
-import org.bukkit.event.player.PlayerItemMendEvent;
-import org.bukkit.event.player.PlayerLevelChangeEvent;
-import org.bukkit.event.player.PlayerRecipeDiscoverEvent;
-import org.bukkit.event.player.PlayerShearEntityEvent;
-import org.bukkit.event.player.PlayerSignOpenEvent;
-import org.bukkit.event.player.PlayerStatisticIncrementEvent;
-import org.bukkit.event.player.PlayerUnleashEntityEvent;
 import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.event.world.LootGenerateEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryView;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
-import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.cardboardpowered.impl.entity.UnknownEntity;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.Nullable;
@@ -752,10 +739,19 @@ public class CraftEventFactory {
     	return event;
     }
 
+    @Deprecated(forRemoval = true)
     public static PlayerItemMendEvent callPlayerItemMendEvent(net.minecraft.world.entity.player.Player entity, net.minecraft.world.entity.ExperienceOrb orb, net.minecraft.world.item.ItemStack nmsMendedItem, int repairAmount) {
         Player player = (Player) ((EntityBridge)entity).getBukkitEntity();
         org.bukkit.inventory.ItemStack bukkitStack = CraftItemStack.asCraftMirror(nmsMendedItem);
         PlayerItemMendEvent event = new PlayerItemMendEvent(player, bukkitStack, (ExperienceOrb) ((EntityBridge)orb).getBukkitEntity(), repairAmount);
+        Bukkit.getPluginManager().callEvent(event);
+        return event;
+    }
+
+    public static PlayerItemMendEvent callPlayerItemMendEvent(net.minecraft.world.entity.player.Player entity, net.minecraft.world.entity.ExperienceOrb orb, net.minecraft.world.item.ItemStack nmsMendedItem, net.minecraft.world.entity.EquipmentSlot slot, int repairAmount, int consumedExperience) { // Paper - Expand PlayerItemMendEvent
+        Player player = (Player) ((EntityBridge)entity).getBukkitEntity();
+        org.bukkit.inventory.ItemStack bukkitStack = CraftItemStack.asCraftMirror(nmsMendedItem);
+        PlayerItemMendEvent event = new PlayerItemMendEvent(player, bukkitStack, CraftEquipmentSlot.getSlot(slot), (ExperienceOrb) ((EntityBridge)orb).getBukkitEntity(), repairAmount, consumedExperience); // Paper - Expand PlayerItemMendEvent
         Bukkit.getPluginManager().callEvent(event);
         return event;
     }
@@ -919,42 +915,28 @@ public class CraftEventFactory {
         return !event.isCancelled();
     }
 
-    public static Component handleLoginResult(
-    		PlayerManager_LoginResult result, PlayerConnection paperConnection, Connection connection, GameProfile profile, MinecraftServer server, boolean loginPhase
-    		) {
-    	PlayerConnectionValidateLoginEvent event = new PlayerConnectionValidateLoginEvent(
-    			paperConnection, result.isAllowed() ? null : PaperAdventure.asAdventure(result.message())
-    			);
-    	event.callEvent();
-    	
-    	if (null == event.getKickMessage()) {
-    		return null;
-    	}
-    	
-    	Component disconnectReason = PaperAdventure.asVanilla(event.getKickMessage());
-    	
-    	// TODO: Move new PlayerLoginEvent Here!
-    	
-    	/*
-    	if (loginPhase) {
-    		disconnectReason = HorriblePlayerLoginEventHack.execute(
-    				connection,
-    				server,
-    				profile,
-    				disconnectReason == null
-    				? PlayerManager_LoginResult.ALLOW
-    						: new PlayerManager_LoginResult(disconnectReason, disconnectReason == null ? org.bukkit.event.player.PlayerLoginEvent.Result.KICK_OTHER : result.result())
-    				);
-    	}
-    	*/
-    	
-    	/*
-    	else if (connection.legacySavedLoginEventResultOverride != null) {
-    		disconnectReason = connection.legacySavedLoginEventResultOverride.orElse(null);
-    	}
-    	*/
+    @SuppressWarnings("OptionalAssignedToNull")
+    public static Component handleLoginResult(PlayerList_LoginResult result, PlayerConnection paperConnection, Connection connection, GameProfile profile, MinecraftServer server, boolean loginPhase) {
+        PlayerConnectionValidateLoginEvent event = new PlayerConnectionValidateLoginEvent(
+                paperConnection, result.isAllowed() ? null : PaperAdventure.asAdventure(result.message())
+        );
+        event.callEvent();
 
-    	return disconnectReason;
+        Component disconnectReason = PaperAdventure.asVanilla(event.getKickMessage());
+
+        // For the login event it normally was never fired during configuration phase. In order to make this deprecation less
+        // breaky we will cache result and use it next time.
+        // TODO
+        /*if (loginPhase) {
+            disconnectReason = HorriblePlayerLoginEventHack.execute(connection, server, profile,
+                    disconnectReason == null ? PlayerList_LoginResult.ALLOW : new PlayerList_LoginResult(disconnectReason, disconnectReason == null ? PlayerLoginEvent.Result.KICK_OTHER : result.result())
+            );
+        } else if (connection.legacySavedLoginEventResultOverride != null) {
+            // If the override is set, use it.
+            disconnectReason = connection.legacySavedLoginEventResultOverride.orElse(null);
+        }*/
+
+        return disconnectReason;
     }
 
     public static PlayerExpCooldownChangeEvent callPlayerXpCooldownEvent(

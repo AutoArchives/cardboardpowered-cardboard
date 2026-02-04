@@ -6,6 +6,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import io.papermc.paper.adventure.PaperAdventure;
+import net.kyori.adventure.pointer.Pointers;
+import net.kyori.adventure.pointer.PointersSupplier;
+import net.minecraft.world.level.portal.TeleportTransition;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.cardboardpowered.impl.entity.LivingEntityImpl;
 import org.cardboardpowered.impl.entity.UnknownEntity;
 import org.cardboardpowered.bridge.world.item.ItemStackBridge;
@@ -84,8 +88,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import org.cardboardpowered.impl.entity.CraftPlayer;
-
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.datacomponent.PaperDataComponentType;
 import io.papermc.paper.entity.LookAnchor;
@@ -102,6 +104,11 @@ public class CraftEntity implements Entity, CommandSender, CommandSourceBridge {
 
     public net.minecraft.world.entity.Entity entity;
     private final CraftPersistentDataContainer persistentDataContainer = new CraftPersistentDataContainer(DATA_TYPE_REGISTRY);
+    static final PointersSupplier<Entity> POINTERS_SUPPLIER = PointersSupplier.<org.bukkit.entity.Entity>builder()
+            .resolving(net.kyori.adventure.identity.Identity.DISPLAY_NAME, org.bukkit.entity.Entity::name)
+            .resolving(net.kyori.adventure.identity.Identity.UUID, org.bukkit.entity.Entity::getUniqueId)
+            .resolving(net.kyori.adventure.permission.PermissionChecker.POINTER, entity1 -> entity1::permissionValue)
+            .build();
 
     protected final CraftServer server = CraftServer.INSTANCE;
     
@@ -110,6 +117,11 @@ public class CraftEntity implements Entity, CommandSender, CommandSourceBridge {
     public CraftEntity(net.minecraft.world.entity.Entity entity) {
         this.entity = entity;
         this.entityType = CraftEntityType.minecraftToBukkit(entity.getType());
+    }
+
+    @Override
+    public net.kyori.adventure.pointer.Pointers pointers() {
+        return POINTERS_SUPPLIER.view(this);
     }
 
     public net.minecraft.world.entity.Entity getHandle() {
@@ -941,38 +953,51 @@ public class CraftEntity implements Entity, CommandSender, CommandSourceBridge {
         //throw new AssertionError("Unknown entity " + (entity == null ? null : entity.getClass()));
     }
 
-	// TODO 1.19.4
-	@Override
-    public boolean teleport(Location location, TeleportCause cause, TeleportFlag ... flags) {
-        Preconditions.checkArgument((location != null ? 1 : 0) != 0, (Object)"location cannot be null");
+    @Override
+    public boolean teleport(Location location, TeleportCause cause, TeleportFlag... flags) {
+        Preconditions.checkArgument(location != null, "location cannot be null");
+        Preconditions.checkArgument(location.getWorld() != null, "Target world cannot be null");
+        //Preconditions.checkState(!this.entity.generation, "Cannot teleport entity to an other world during world generation");
         location.checkFinite();
-        Set<TeleportFlag> flagSet = Set.of(flags);
-        boolean dismount = !flagSet.contains(TeleportFlag.EntityState.RETAIN_VEHICLE);
-        boolean ignorePassengers = flagSet.contains(TeleportFlag.EntityState.RETAIN_PASSENGERS);
-        if (flagSet.contains(TeleportFlag.EntityState.RETAIN_PASSENGERS) && this.entity.isVehicle() && location.getWorld() != this.getWorld()) {
-            return false;
-        }
-        if (!dismount && this.entity.isPassenger() && location.getWorld() != this.getWorld()) {
-            return false;
-        }
-        if (!ignorePassengers && this.entity.isVehicle() || this.entity.isRemoved()) {
-            return false;
-        }
-        if (dismount) {
-            this.entity.stopRiding();
-        }
-        if (location.getWorld() != null && !location.getWorld().equals(this.getWorld())) {
-            // Preconditions.checkState((!this.nms.generation ? 1 : 0) != 0, (Object)"Cannot teleport entity to an other world during world generation");
-            // TODO
-        	// this.nms.teleportTo(((CraftWorld)location.getWorld()).getHandle(), CraftLocation.toPosition(location));
-            return true;
-        }
-        this.entity.snapTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
-        this.entity.setYHeadRot(location.getYaw());
-        return true;
+
+        return this.teleport0(location, cause, flags);
     }
 
-	@Override
+    protected boolean teleport0(Location location, TeleportCause cause, TeleportFlag... flags) {
+        net.minecraft.world.entity.Entity entity = this.getHandle();
+        if (!entity.isAlive() || !((EntityBridge)entity).isValidBF()) {
+            return false;
+        }
+
+        final Set<net.minecraft.world.entity.Relative> relativeFlags = EnumSet.noneOf(net.minecraft.world.entity.Relative.class);
+        for (final TeleportFlag flag : flags) {
+            if (flag instanceof TeleportFlag.Relative relativeFlag) {
+                relativeFlags.add(deltaRelativeToNMS(relativeFlag));
+            }
+        }
+
+        return this.entity.teleport(new TeleportTransition(
+                ((CraftWorld) location.getWorld()).getHandle(),
+                CraftLocation.toVec3(location),
+                Vec3.ZERO,
+                location.getYaw(),
+                location.getPitch(),
+                relativeFlags,
+                TeleportTransition.DO_NOTHING//,
+                //cause
+        )) != null;
+    }
+
+    public static net.minecraft.world.entity.Relative deltaRelativeToNMS(TeleportFlag.Relative apiFlag) {
+        return switch (apiFlag) {
+            case VELOCITY_X -> net.minecraft.world.entity.Relative.DELTA_X;
+            case VELOCITY_Y -> net.minecraft.world.entity.Relative.DELTA_Y;
+            case VELOCITY_Z -> net.minecraft.world.entity.Relative.DELTA_Z;
+            case VELOCITY_ROTATION -> net.minecraft.world.entity.Relative.ROTATE_DELTA;
+        };
+    }
+
+    @Override
 	public boolean isVisibleByDefault() {
 		// TODO Auto-generated method stub
 		return true;

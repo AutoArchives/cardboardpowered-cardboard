@@ -39,7 +39,12 @@ public abstract class LevelMixin implements LevelBridge {
 
     @Shadow
     public abstract LevelEntityGetter<Entity> getEntities();
-    
+
+    @Shadow
+    public ResourceKey<Level> dimension() {
+        return null;
+    }
+
     @Override
     public LevelEntityGetter<Entity> cb$get_entity_lookup() {
     	return getEntities();

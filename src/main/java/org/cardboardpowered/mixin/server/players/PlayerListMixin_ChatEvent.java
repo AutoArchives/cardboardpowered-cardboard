@@ -17,7 +17,7 @@ import org.bukkit.craftbukkit.util.Waitable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerChatEvent;
-import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.cardboardpowered.impl.util.LazyPlayerSet;
 import org.cardboardpowered.impl.util.WaitableImpl;
 import org.spongepowered.asm.mixin.Final;
