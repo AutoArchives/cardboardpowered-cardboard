@@ -3,7 +3,7 @@ package org.cardboardpowered.mixin.world.entity.npc.villager;
 import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import org.bukkit.craftbukkit.inventory.CraftMerchant;
 import org.spongepowered.asm.mixin.Mixin;
-import org.cardboardpowered.impl.entity.CraftAbstractVillager;
+import org.bukkit.craftbukkit.entity.CraftAbstractVillager;
 import org.cardboardpowered.bridge.world.entity.npc.villager.AbstractVillagerBridge;
 
 @Mixin(AbstractVillager.class)

@@ -1,7 +1,7 @@
 package org.cardboardpowered.mixin.world.inventory;
 
 import net.minecraft.world.entity.player.Player;
-import org.cardboardpowered.impl.inventory.CardboardGrindstoneInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryGrindstone;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -35,7 +35,7 @@ public class GrindstoneMenuMixin extends AbstractContainerMenuMixin {
         if (bukkitEntity != null)
             return bukkitEntity;
 
-        CardboardGrindstoneInventory inventory = new CardboardGrindstoneInventory(this.repairSlots, this.resultSlots);
+        CraftInventoryGrindstone inventory = new CraftInventoryGrindstone(this.repairSlots, this.resultSlots);
         bukkitEntity = new CraftInventoryView(this.player, inventory, (GrindstoneMenu)(Object)this);
         return bukkitEntity;
     }

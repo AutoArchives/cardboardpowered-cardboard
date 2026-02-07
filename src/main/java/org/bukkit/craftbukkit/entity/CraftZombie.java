@@ -6,7 +6,6 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.Zombie;
-import org.cardboardpowered.impl.entity.CraftMonster;
 
 public class CraftZombie extends CraftMonster implements Zombie {
 

@@ -11,7 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
-import org.cardboardpowered.impl.entity.LivingEntityImpl;
+import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 
 public class PaperPathfinder implements Pathfinder {
 
@@ -53,7 +53,7 @@ public class PaperPathfinder implements Pathfinder {
 	@Nullable
 	public PathResult findPath(LivingEntity target) {
 		Preconditions.checkArgument(target != null, "Target can not be null");
-		Path path = this.entity.getNavigation().createPath(((LivingEntityImpl)target).getHandle(), 0);
+		Path path = this.entity.getNavigation().createPath(((CraftLivingEntity)target).getHandle(), 0);
 		return path != null ? new PaperPathfinder.PaperPathResult(path) : null;
 	}
 

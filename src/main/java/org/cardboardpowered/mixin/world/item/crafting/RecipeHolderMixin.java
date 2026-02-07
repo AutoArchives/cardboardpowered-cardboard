@@ -1,82 +1,50 @@
 package org.cardboardpowered.mixin.world.item.crafting;
 
+import net.minecraft.world.item.crafting.*;
+import org.bukkit.craftbukkit.inventory.*;
 import org.cardboardpowered.bridge.world.item.crafting.RecipeHolderBridge;
 import java.util.Optional;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.BlastingRecipe;
-import net.minecraft.world.item.crafting.CampfireCookingRecipe;
-import net.minecraft.world.item.crafting.CustomRecipe;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.ShapedRecipe;
-import net.minecraft.world.item.crafting.ShapelessRecipe;
-import net.minecraft.world.item.crafting.SmeltingRecipe;
-import net.minecraft.world.item.crafting.SmokingRecipe;
-import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.item.trading.MerchantOffer;
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.inventory.CraftMerchantRecipe;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.RecipeChoice;
-import org.cardboardpowered.impl.inventory.recipe.CardboardBlastingRecipe;
-import org.cardboardpowered.impl.inventory.recipe.CardboardCampfireRecipe;
-import org.cardboardpowered.impl.inventory.recipe.CardboardComplexRecipe;
-import org.cardboardpowered.impl.inventory.recipe.CardboardFurnaceRecipe;
-import org.cardboardpowered.impl.inventory.recipe.CardboardShapedRecipe;
-import org.cardboardpowered.impl.inventory.recipe.CardboardShapelessRecipe;
-import org.cardboardpowered.impl.inventory.recipe.CardboardSmokingRecipe;
-import org.cardboardpowered.impl.inventory.recipe.CardboardStonecuttingRecipe;
-import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(RecipeHolder.class)
 public class RecipeHolderMixin implements RecipeHolderBridge {
-
-	// @Override
-	/*
-	public final org.bukkit.inventory.Recipe toBukkitRecipe_2() {
-		
-		RecipeEntry<?> recipeEntry = (RecipeEntry<?>) (Object) this;
-		Recipe<?> nmsRecipe = recipeEntry.value();
-		
-        return ((IMixinRecipe)(Object)recipeEntry).toBukkitRecipe(CraftNamespacedKey.fromMinecraft(recipeEntry.id().getValue()));
-    }
-    */
-	
 	// Campfire
     public org.bukkit.inventory.Recipe toBukkitRecipe(CampfireCookingRecipe thiz, NamespacedKey id) {
         CraftItemStack result = CraftItemStack.asCraftMirror(thiz.result());
-        CardboardCampfireRecipe recipe = new CardboardCampfireRecipe(id, result, CraftRecipe.toBukkit(thiz.input), thiz.experience, thiz.cookingTime());
+        CraftCampfireRecipe recipe = new CraftCampfireRecipe(id, result, CraftRecipe.toBukkit(thiz.input), thiz.experience, thiz.cookingTime());
         recipe.setGroup(thiz.group());
         recipe.setCategory(CraftRecipe.getCategory(thiz.category()));
         return recipe;
     }
-    
+
     // Blasting
     public org.bukkit.inventory.Recipe toBukkitRecipe(BlastingRecipe thiz, NamespacedKey id) {
         CraftItemStack result = CraftItemStack.asCraftMirror(thiz.result);
-        CardboardBlastingRecipe recipe = new CardboardBlastingRecipe(id, result, CraftRecipe.toBukkit(thiz.input), thiz.experience, thiz.cookingTime());
+        CraftBlastingRecipe recipe = new CraftBlastingRecipe(id, result, CraftRecipe.toBukkit(thiz.input), thiz.experience, thiz.cookingTime());
         recipe.setGroup(thiz.group());
         recipe.setCategory(CraftRecipe.getCategory(thiz.category()));
         return recipe;
     }
-    
+
     // Smoking
     public org.bukkit.inventory.Recipe toBukkitRecipe(SmokingRecipe thiz, NamespacedKey id) {
         CraftItemStack result = CraftItemStack.asCraftMirror(thiz.result);
-        CardboardSmokingRecipe recipe = new CardboardSmokingRecipe(id, result, CraftRecipe.toBukkit(thiz.input), thiz.experience, thiz.cookingTime());
+        CraftSmokingRecipe recipe = new CraftSmokingRecipe(id, result, CraftRecipe.toBukkit(thiz.input), thiz.experience, thiz.cookingTime());
         recipe.setGroup(thiz.group());
         recipe.setCategory(CraftRecipe.getCategory(thiz.category()));
         return recipe;
     }
-    
+
     // Stonecutting
     public org.bukkit.inventory.Recipe toBukkitRecipe(StonecutterRecipe thiz, NamespacedKey id) {
         CraftItemStack result = CraftItemStack.asCraftMirror(thiz.result());
-        CardboardStonecuttingRecipe recipe = new CardboardStonecuttingRecipe(id, result, CraftRecipe.toBukkit(thiz.input()));
+        CraftStonecuttingRecipe recipe = new CraftStonecuttingRecipe(id, result, CraftRecipe.toBukkit(thiz.input()));
         recipe.setGroup(thiz.group());
         return recipe;
     }
@@ -84,12 +52,29 @@ public class RecipeHolderMixin implements RecipeHolderBridge {
 	// SpecialCraftingRecipe
 	public org.bukkit.inventory.Recipe toBukkitRecipe(CustomRecipe thiz, NamespacedKey id) {
         CraftItemStack result = CraftItemStack.asCraftMirror(ItemStack.EMPTY);
-        CardboardComplexRecipe recipe = new CardboardComplexRecipe(id, result, thiz);
+        CraftComplexRecipe recipe = new CraftComplexRecipe(id, result, thiz);
         recipe.setGroup(thiz.group());
         recipe.setCategory(CraftRecipe.getCategory(thiz.category()));
         return recipe;
     }
-	
+
+
+	private org.bukkit.inventory.Recipe toBukkitRecipe(TransmuteRecipe thiz, NamespacedKey id) {
+		return new org.bukkit.craftbukkit.inventory.CraftTransmuteRecipe(id, org.bukkit.craftbukkit.inventory.CraftItemType.minecraftToBukkit(thiz.result.item().value()), org.bukkit.craftbukkit.inventory.CraftRecipe.toBukkit(thiz.input), org.bukkit.craftbukkit.inventory.CraftRecipe.toBukkit(thiz.material));
+	}
+
+	private org.bukkit.inventory.Recipe toBukkitRecipe(SmithingTrimRecipe thiz, NamespacedKey id) {
+		return new org.bukkit.craftbukkit.inventory.CraftSmithingTrimRecipe(id, org.bukkit.craftbukkit.inventory.CraftRecipe.toBukkit(thiz.template), org.bukkit.craftbukkit.inventory.CraftRecipe.toBukkit(thiz.base), org.bukkit.craftbukkit.inventory.CraftRecipe.toBukkit(thiz.addition), org.bukkit.craftbukkit.inventory.trim.CraftTrimPattern.minecraftHolderToBukkit(thiz.pattern));
+	}
+
+	private org.bukkit.inventory.Recipe toBukkitRecipe(SmithingTransformRecipe thiz, NamespacedKey id) {
+		org.bukkit.craftbukkit.inventory.CraftItemStack result = org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(new ItemStack(thiz.result.item(), thiz.result.count(), thiz.result.components()));
+
+		org.bukkit.craftbukkit.inventory.CraftSmithingTransformRecipe recipe = new org.bukkit.craftbukkit.inventory.CraftSmithingTransformRecipe(id, result, org.bukkit.craftbukkit.inventory.CraftRecipe.toBukkit(thiz.template), org.bukkit.craftbukkit.inventory.CraftRecipe.toBukkit(thiz.base), org.bukkit.craftbukkit.inventory.CraftRecipe.toBukkit(thiz.addition));
+
+		return recipe;
+	}
+
 	@Override
 	public org.bukkit.inventory.Recipe toBukkitRecipe() {
 		RecipeHolder<?> recipeEntry = (RecipeHolder<?>) (Object) this;
@@ -110,9 +95,9 @@ public class RecipeHolderMixin implements RecipeHolderBridge {
 			*/
 			return toBukkitRecipe(nms, CraftNamespacedKey.fromMinecraft(id.identifier()));
 		} else if(nmsRecipe instanceof CampfireCookingRecipe nms) {
-			
+
 			return toBukkitRecipe(nms, CraftNamespacedKey.fromMinecraft(id.identifier()));
-			
+
 			/*
 			CraftItemStack result = CraftItemStack.asCraftMirror(nms.getResult(null));
 
@@ -126,7 +111,7 @@ public class RecipeHolderMixin implements RecipeHolderBridge {
 			*/
 		} else if(nmsRecipe instanceof ShapedRecipe nms) {
 			CraftItemStack result = CraftItemStack.asCraftMirror(nms.result);
-			CardboardShapedRecipe recipe = new CardboardShapedRecipe(id.identifier(), result, nms);
+			CraftShapedRecipe recipe = new CraftShapedRecipe(CraftNamespacedKey.fromMinecraft(id.identifier()), result, nms);
 			recipe.setGroup(nms.group);
 
 			switch(nms.getHeight()) {
@@ -173,18 +158,18 @@ public class RecipeHolderMixin implements RecipeHolderBridge {
 			char c = 'a';
 			for(Optional<Ingredient> list : nms.getIngredients()) {
 				RecipeChoice choice = CraftRecipe.toBukkit(list);
-				
+
 				if (choice != RecipeChoice.empty()) {
 					 recipe.setIngredient(c, choice);
 				}
-				
+
 				// if(choice != null) recipe.setIngredient(c, choice);
 				c++;
 			}
 			return recipe;
 		} else if(nmsRecipe instanceof ShapelessRecipe nms) {
 			CraftItemStack result = CraftItemStack.asCraftMirror(nms.result);
-			CardboardShapelessRecipe recipe = new CardboardShapelessRecipe(id.identifier(), result, nms);
+			CraftShapelessRecipe recipe = new CraftShapelessRecipe(CraftNamespacedKey.fromMinecraft(id.identifier()), result, nms);
 			recipe.setGroup(nms.group);
 			for(Ingredient list : nms.ingredients)
 				recipe.addIngredient(CraftRecipe.toBukkit(list));
@@ -192,7 +177,7 @@ public class RecipeHolderMixin implements RecipeHolderBridge {
 		} else if(nmsRecipe instanceof SmeltingRecipe nms) {
 			CraftItemStack result = CraftItemStack.asCraftMirror(nms.result);
 
-			CardboardFurnaceRecipe recipe = new CardboardFurnaceRecipe(CraftNamespacedKey.fromMinecraft(id.identifier()),
+			CraftFurnaceRecipe recipe = new CraftFurnaceRecipe(CraftNamespacedKey.fromMinecraft(id.identifier()),
 					result,
 					CraftRecipe.toBukkit(nms.input()),
 					nms.experience, nms.cookingTime());
@@ -228,13 +213,18 @@ public class RecipeHolderMixin implements RecipeHolderBridge {
 		} else if(nmsRecipe instanceof MerchantOffer nms) {
 			return new CraftMerchantRecipe(nms);
 		} else if(nmsRecipe instanceof CustomRecipe nms) {
-			
+
 			return toBukkitRecipe(nms, CraftNamespacedKey.fromMinecraft(id.identifier()));
 			// return new CardboardComplexRecipe((RecipeEntry<SpecialCraftingRecipe>) recipeEntry);
+		} else if(nmsRecipe instanceof SmithingTransformRecipe nms) {
+			return toBukkitRecipe(nms, CraftNamespacedKey.fromMinecraft(id.identifier()));
+		} else if(nmsRecipe instanceof SmithingTrimRecipe nms) {
+			return toBukkitRecipe(nms, CraftNamespacedKey.fromMinecraft(id.identifier()));
+		} else if(nmsRecipe instanceof TransmuteRecipe nms) {
+			return toBukkitRecipe(nms, CraftNamespacedKey.fromMinecraft(id.identifier()));
 		} else {
 			throw new IllegalArgumentException("Invalid recipe type: " + nmsRecipe.getClass());
 		}
 
 	}
-
 }

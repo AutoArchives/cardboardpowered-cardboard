@@ -14,7 +14,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.util.BoundingBox;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.world.level.block.entity.ConduitBlockEntityBridge;
-import org.cardboardpowered.impl.entity.LivingEntityImpl;
+import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -102,7 +102,7 @@ public class CraftConduit extends CraftBlockEntityState<ConduitBlockEntity> impl
                 return false;
             }
 
-            conduit.destroyTarget = EntityReference.of(((LivingEntityImpl) target).getHandle());
+            conduit.destroyTarget = EntityReference.of(((CraftLivingEntity) target).getHandle());
         }
 
         ConduitBlockEntity.updateAndAttackTarget(

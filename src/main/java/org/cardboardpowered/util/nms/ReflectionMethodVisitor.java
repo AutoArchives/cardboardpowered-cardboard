@@ -27,6 +27,7 @@ import org.bukkit.Material;
 import org.bukkit.craftbukkit.util.Commodore;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.cardboardpowered.CardboardConfig;
+import org.cardboardpowered.impl.util.CardboardMagicNumbers;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -64,7 +65,7 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         }
     	
     	if (owner.equalsIgnoreCase("org/bukkit/Material")) {
-            if (CraftMagicNumbers.MODDED_MATERIALS.containsKey(name)) { 
+            if (CardboardMagicNumbers.MODDED_MATERIALS.containsKey(name)) {
                 super.visitFieldInsn( opcode, owner, "STONE", desc );
                 return;
             }

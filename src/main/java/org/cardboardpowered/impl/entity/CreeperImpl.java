@@ -1,6 +1,7 @@
 package org.cardboardpowered.impl.entity;
 
 import com.google.common.base.Preconditions;
+import org.bukkit.craftbukkit.entity.CraftMonster;
 import org.cardboardpowered.bridge.world.entity.monster.CreeperBridge;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.bukkit.Location;

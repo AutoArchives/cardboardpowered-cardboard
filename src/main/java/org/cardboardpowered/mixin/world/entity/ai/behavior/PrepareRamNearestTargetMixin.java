@@ -6,7 +6,7 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.behavior.PrepareRamNearestTarget;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.event.entity.EntityTargetEvent;
-import org.cardboardpowered.impl.entity.LivingEntityImpl;
+import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -24,7 +24,7 @@ public class PrepareRamNearestTargetMixin {
         if (event.isCancelled() || event.getTarget() == null) {
             ci.cancel();
         }
-        mob = ((LivingEntityImpl) event.getTarget()).getHandle();
+        mob = ((CraftLivingEntity) event.getTarget()).getHandle();
         // CraftBukkit end
     }
 }

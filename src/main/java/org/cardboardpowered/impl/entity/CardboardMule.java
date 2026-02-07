@@ -1,11 +1,12 @@
 package org.cardboardpowered.impl.entity;
 
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftChestedHorse;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Mule;
 
-public class CardboardMule extends CardboardChestedHorse implements Mule {
+public class CardboardMule extends CraftChestedHorse implements Mule {
 
     public CardboardMule(CraftServer server, net.minecraft.world.entity.animal.equine.Mule entity) {
         super(server, entity);

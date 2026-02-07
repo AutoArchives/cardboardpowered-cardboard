@@ -39,4 +39,6 @@ public interface PlayerListBridge {
 	ServerStatsCounter cardboard$getPlayerStats(ServerPlayer player);
 
 	ServerStatsCounter cardboard$getPlayerStats(GameProfile gameProfile);
+
+	void cardboard$reloadRecipes();
 }

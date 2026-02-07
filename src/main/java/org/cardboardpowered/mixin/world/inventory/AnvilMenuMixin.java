@@ -4,7 +4,7 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.DataSlot;
 import org.bukkit.entity.Player;
-import org.cardboardpowered.impl.inventory.CardboardAnvilInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryAnvil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
@@ -28,8 +28,8 @@ public class AnvilMenuMixin extends ItemCombinerMenuMixin implements AnvilMenuBr
         if (bukkitEntity != null)
             return bukkitEntity;
 
-        org.bukkit.craftbukkit.inventory.CraftInventory inventory = new CardboardAnvilInventory(
-                ((ContainerLevelAccessBridge)access).getLocation(), this.inputSlots, this.resultSlots, (AnvilMenu)(Object)this);
+        org.bukkit.craftbukkit.inventory.CraftInventory inventory = new CraftInventoryAnvil(
+                ((ContainerLevelAccessBridge)access).getLocation(), this.inputSlots, this.resultSlots);
         bukkitEntity = new CraftInventoryView((Player)((ServerPlayerBridge)this.player).getBukkitEntity(), inventory, (AnvilMenu)(Object)this);
         return bukkitEntity;
     }

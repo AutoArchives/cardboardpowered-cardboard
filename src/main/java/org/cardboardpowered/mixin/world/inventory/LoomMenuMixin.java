@@ -2,7 +2,7 @@ package org.cardboardpowered.mixin.world.inventory;
 
 import net.minecraft.world.entity.player.Player;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
-import org.cardboardpowered.impl.inventory.CardboardLoomInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryLoom;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerLevelAccess;
@@ -34,7 +34,7 @@ public class LoomMenuMixin extends AbstractContainerMenuMixin {
     public CraftInventoryView getBukkitView() {
         if (bukkitEntity != null) return bukkitEntity;
 
-        CardboardLoomInventory inventory = new CardboardLoomInventory(this.inputContainer, this.outputContainer);
+        CraftInventoryLoom inventory = new CraftInventoryLoom(this.inputContainer, this.outputContainer);
         bukkitEntity = new CraftInventoryView(this.player, inventory, (LoomMenu)(Object)this);
         return bukkitEntity;
     }

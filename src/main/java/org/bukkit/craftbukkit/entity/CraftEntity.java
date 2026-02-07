@@ -6,11 +6,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import io.papermc.paper.adventure.PaperAdventure;
-import net.kyori.adventure.pointer.Pointers;
 import net.kyori.adventure.pointer.PointersSupplier;
 import net.minecraft.world.level.portal.TeleportTransition;
 import org.bukkit.craftbukkit.util.CraftLocation;
-import org.cardboardpowered.impl.entity.LivingEntityImpl;
 import org.cardboardpowered.impl.entity.UnknownEntity;
 import org.cardboardpowered.bridge.world.item.ItemStackBridge;
 import org.cardboardpowered.bridge.commands.CommandSourceBridge;
@@ -949,7 +947,7 @@ public class CraftEntity implements Entity, CommandSender, CommandSourceBridge {
             return (CraftEntity) entityTypeData.convertFunction().apply(server, entity);
         }
 
-        return (entity instanceof net.minecraft.world.entity.LivingEntity) ? new LivingEntityImpl(entity) : new UnknownEntity(entity); // TODO
+        return (entity instanceof net.minecraft.world.entity.LivingEntity) ? new CraftLivingEntity(entity) : new UnknownEntity(entity); // TODO
         //throw new AssertionError("Unknown entity " + (entity == null ? null : entity.getClass()));
     }
 

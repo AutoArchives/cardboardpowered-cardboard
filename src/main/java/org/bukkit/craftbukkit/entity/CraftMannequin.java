@@ -16,12 +16,11 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Mannequin;
 import org.bukkit.entity.Pose;
 import org.bukkit.inventory.MainHand;
-import org.cardboardpowered.impl.entity.LivingEntityImpl;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class CraftMannequin extends LivingEntityImpl implements Mannequin {
+public class CraftMannequin extends CraftLivingEntity implements Mannequin {
 
     public static final Set<Pose> VALID_POSES = net.minecraft.world.entity.decoration.Mannequin.VALID_POSES.stream()
         .map(pose -> Pose.values()[pose.ordinal()]).collect(Collectors.toUnmodifiableSet());

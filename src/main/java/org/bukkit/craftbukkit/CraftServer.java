@@ -31,11 +31,14 @@ import com.google.common.collect.Sets;
 import io.papermc.paper.adventure.PaperAdventure;
 import net.minecraft.world.level.dimension.LevelStem;
 import org.bukkit.block.BlockType;
+import org.bukkit.craftbukkit.inventory.*;
+import org.bukkit.craftbukkit.util.ApiVersion;
 import org.bukkit.generator.BiomeProvider;
 import org.cardboardpowered.BukkitLogger;
 import org.cardboardpowered.bridge.advancements.AdvancementHolderBridge;
 import org.cardboardpowered.bridge.server.MinecraftServerBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
+import org.cardboardpowered.bridge.server.players.PlayerListBridge;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.world.item.crafting.RecipeManagerBridge;
 import org.cardboardpowered.bridge.world.item.crafting.RecipeHolderBridge;
@@ -129,8 +132,6 @@ import org.bukkit.conversations.Conversable;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftEntityFactory;
-import org.bukkit.craftbukkit.inventory.CraftItemFactory;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.packs.CraftDataPackManager;
 import org.bukkit.craftbukkit.packs.CraftResourcePack;
 import org.bukkit.craftbukkit.scoreboard.CraftScoreboardManager;
@@ -185,23 +186,14 @@ import org.cardboardpowered.impl.command.CommandMapImpl;
 import org.cardboardpowered.impl.command.MinecraftCommandWrapper;
 import org.cardboardpowered.impl.command.VersionCommand;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.bukkit.craftbukkit.inventory.CraftInventoryView;
-import org.cardboardpowered.impl.inventory.InventoryCreator;
-import org.cardboardpowered.impl.inventory.recipe.CardboardBlastingRecipe;
-import org.cardboardpowered.impl.inventory.recipe.CardboardCampfireRecipe;
-import org.cardboardpowered.impl.inventory.recipe.CardboardFurnaceRecipe;
-import org.cardboardpowered.impl.inventory.recipe.CardboardShapedRecipe;
-import org.cardboardpowered.impl.inventory.recipe.CardboardShapelessRecipe;
-import org.cardboardpowered.impl.inventory.recipe.CardboardSmithingRecipe;
-import org.cardboardpowered.impl.inventory.recipe.CardboardSmokingRecipe;
-import org.cardboardpowered.impl.inventory.recipe.CardboardStonecuttingRecipe;
-import org.bukkit.craftbukkit.inventory.CraftRecipe;
-import org.cardboardpowered.impl.inventory.recipe.RecipeIterator;
+import org.bukkit.craftbukkit.inventory.util.CraftInventoryCreator;
+import org.bukkit.craftbukkit.inventory.CraftSmokingRecipe;
+import org.bukkit.craftbukkit.inventory.CraftStonecuttingRecipe;
 import org.cardboardpowered.impl.map.MapViewImpl;
 import org.cardboardpowered.impl.tag.CraftBlockTag;
 import org.cardboardpowered.impl.tag.CraftGameEventTag;
 import org.cardboardpowered.impl.tag.CraftEntityTag;
-import org.cardboardpowered.impl.tag.CraftFluidTag;
+import org.bukkit.craftbukkit.tag.CraftFluidTag;
 import org.cardboardpowered.impl.tag.CraftItemTag;
 import org.cardboardpowered.impl.util.CommandPermissions;
 import org.cardboardpowered.impl.util.IconCacheImpl;
@@ -280,6 +272,7 @@ public class CraftServer implements Server {
     protected final DedicatedPlayerList playerList;
     
     public static CraftServer INSTANCE;
+    public ApiVersion minimumAPI;
     public CraftScoreboardManager scoreboardManager;
 
     private final MetadataStoreBase<Entity> entityMetadata = MetadataStoreImpl.newEntityMetadataStore();
@@ -356,7 +349,7 @@ public class CraftServer implements Server {
         this.dataPackManager = new CraftDataPackManager(this.getServer().getPackRepository());
         this.serverTickManager = new CraftServerTickManager(console.tickRateManager());
         this.serverLinks = new CraftServerLinks(console);
-        
+        this.minimumAPI = ApiVersion.getOrCreateVersion(this.configuration.getString("settings.minimum-api"));
         loadIcon();
         
         loadCompatibilities();
@@ -499,6 +492,7 @@ public class CraftServer implements Server {
                     plugin.onLoad();
                 } catch (Throwable ex) {
                     Bukkit.getLogger().log(Level.SEVERE, ex.getMessage() + " initializing " + plugin.getDescription().getFullName() + " (Is it up to date?)", ex);
+                    ex.printStackTrace();
                 }
             }
         } else pluginFolder.mkdir();
@@ -610,32 +604,43 @@ public class CraftServer implements Server {
     }
 
     @Override
-    public boolean addRecipe(Recipe recipe) {
+    public boolean addRecipe(Recipe recipe, boolean resendRecipes) {
         CraftRecipe toAdd;
         if (recipe instanceof CraftRecipe) {
             toAdd = (CraftRecipe) recipe;
         } else {
             if (recipe instanceof ShapedRecipe) {
-                toAdd = CardboardShapedRecipe.fromBukkitRecipe((ShapedRecipe) recipe);
+                toAdd = CraftShapedRecipe.fromBukkitRecipe((ShapedRecipe) recipe);
             } else if (recipe instanceof ShapelessRecipe) {
-                toAdd = CardboardShapelessRecipe.fromBukkitRecipe((ShapelessRecipe) recipe);
+                toAdd = CraftShapelessRecipe.fromBukkitRecipe((ShapelessRecipe) recipe);
             } else if (recipe instanceof FurnaceRecipe) {
-                toAdd = CardboardFurnaceRecipe.fromBukkitRecipe((FurnaceRecipe) recipe);
+                toAdd = CraftFurnaceRecipe.fromBukkitRecipe((FurnaceRecipe) recipe);
             } else if (recipe instanceof BlastingRecipe) {
-                toAdd = CardboardBlastingRecipe.fromBukkitRecipe((BlastingRecipe) recipe);
+                toAdd = CraftBlastingRecipe.fromBukkitRecipe((BlastingRecipe) recipe);
             } else if (recipe instanceof CampfireRecipe) {
-                toAdd = CardboardCampfireRecipe.fromBukkitRecipe((CampfireRecipe) recipe);
+                toAdd = CraftCampfireRecipe.fromBukkitRecipe((CampfireRecipe) recipe);
             } else if (recipe instanceof SmokingRecipe) {
-                toAdd = CardboardSmokingRecipe.fromBukkitRecipe((SmokingRecipe) recipe);
+                toAdd = CraftSmokingRecipe.fromBukkitRecipe((SmokingRecipe) recipe);
             } else if (recipe instanceof StonecuttingRecipe) {
-                toAdd = CardboardStonecuttingRecipe.fromBukkitRecipe((StonecuttingRecipe) recipe);
-            } else if (recipe instanceof SmithingRecipe) {
-                toAdd = CardboardSmithingRecipe.fromBukkitRecipe((SmithingRecipe) recipe);
+                toAdd = CraftStonecuttingRecipe.fromBukkitRecipe((StonecuttingRecipe) recipe);
+            } else if (recipe instanceof SmithingTransformRecipe) {
+                toAdd = CraftSmithingTransformRecipe.fromBukkitRecipe((SmithingTransformRecipe) recipe);
+            } else if (recipe instanceof SmithingTrimRecipe) {
+                toAdd = CraftSmithingTrimRecipe.fromBukkitRecipe((SmithingTrimRecipe) recipe);
+            } else if (recipe instanceof TransmuteRecipe) {
+                toAdd = CraftTransmuteRecipe.fromBukkitRecipe((TransmuteRecipe) recipe);
             } else if (recipe instanceof ComplexRecipe) {
                 throw new UnsupportedOperationException("Cannot add custom complex recipe");
-            } else return false;
+            } else {
+                return false;
+            }
         }
         toAdd.addToCraftingManager();
+        // Paper start - API for updating recipes on clients
+        if (true || resendRecipes) { // Always needs to be resent now... TODO
+            ((PlayerListBridge)this.playerList).cardboard$reloadRecipes();
+        }
+        // Paper end - API for updating recipes on clients
         return true;
     }
 
@@ -682,7 +687,7 @@ public class CraftServer implements Server {
 
     @Override
     public void clearRecipes() {
-        ((RecipeManagerBridge)getServer().getRecipeManager()).clearRecipes();
+        ((RecipeManagerBridge)getServer().getRecipeManager()).cardboard$clearRecipes();
     }
 
     @Override
@@ -810,22 +815,22 @@ public class CraftServer implements Server {
 
     @Override
     public Inventory createInventory(InventoryHolder holder, InventoryType type) {
-        return InventoryCreator.INSTANCE.createInventory(holder, type);
+        return CraftInventoryCreator.INSTANCE.createInventory(holder, type);
     }
 
     @Override
     public Inventory createInventory(InventoryHolder arg0, int arg1) throws IllegalArgumentException {
-        return InventoryCreator.INSTANCE.createInventory(arg0, arg1);
+        return CraftInventoryCreator.INSTANCE.createInventory(arg0, arg1);
     }
 
     @Override
     public Inventory createInventory(InventoryHolder arg0, InventoryType arg1, String arg2) {
-        return InventoryCreator.INSTANCE.createInventory(arg0, arg1, arg2);
+        return CraftInventoryCreator.INSTANCE.createInventory(arg0, arg1, arg2);
     }
 
     @Override
     public Inventory createInventory(InventoryHolder arg0, int arg1, String arg2) throws IllegalArgumentException {
-        return InventoryCreator.INSTANCE.createInventory(arg0, arg1, arg2);
+        return CraftInventoryCreator.INSTANCE.createInventory(arg0, arg1, arg2);
     }
 
     @Override
@@ -1720,6 +1725,7 @@ public class CraftServer implements Server {
 
     @Override
     public void reload() {
+        this.minimumAPI = ApiVersion.getOrCreateVersion(this.configuration.getString("settings.minimum-api"));
         loadIcon();
 
         try {
@@ -1880,14 +1886,18 @@ public class CraftServer implements Server {
         return this.removeRecipe(recipeKey, false);
     }
 
+    @Override
     public boolean removeRecipe(NamespacedKey recipeKey, boolean resendRecipes) {
-        Preconditions.checkArgument((recipeKey != null ? 1 : 0) != 0, (Object)"recipeKey == null");
-        Identifier mcKey = CraftNamespacedKey.toMinecraft(recipeKey);
-        boolean removed = ((RecipeManagerBridge)getServer().getRecipeManager()).removeRecipe(mcKey);
-        if (removed && resendRecipes) {
-            this.playerList_reloadRecipeData();
+        Preconditions.checkArgument(recipeKey != null, "recipeKey == null");
+
+        // Paper start - resend recipes on successful removal
+        final ResourceKey<net.minecraft.world.item.crafting.Recipe<?>> minecraftKey = CraftRecipe.toMinecraft(recipeKey);
+        final boolean removed = ((RecipeManagerBridge)this.getServer().getRecipeManager()).cardboard$removeRecipe(minecraftKey);
+        if (removed/* && resendRecipes*/) { // TODO Always need to resend them rn - deprecate this method?
+            playerList_reloadRecipeData();
         }
         return removed;
+        // Paper end - resend recipes on successful removal
     }
 
     public void playerList_reloadRecipeData() {
@@ -2520,11 +2530,6 @@ public class CraftServer implements Server {
 
     public final boolean isOwnedByCurrentRegion(org.bukkit.entity.Entity entity) {
     	return true;
-    }
-
-    public boolean addRecipe(Recipe recipe, boolean resendRecipes) {
-    	// TODO: resendRecipes
-        return this.addRecipe(recipe);
     }
 
 	@Override

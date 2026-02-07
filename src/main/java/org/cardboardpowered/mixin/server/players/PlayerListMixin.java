@@ -18,14 +18,15 @@
  */
 package org.cardboardpowered.mixin.server.players;
 
-import com.destroystokyo.paper.event.player.PlayerSetSpawnEvent;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.players.*;
 import net.minecraft.stats.ServerStatsCounter;
+import net.minecraft.world.item.crafting.RecipeManager;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.bridge.server.level.ServerLevelBridge;
 import org.cardboardpowered.bridge.server.network.ServerGamePacketListenerImplBridge;
@@ -477,4 +478,17 @@ public abstract class PlayerListMixin implements PlayerListBridge {
         return new ServerStatsCounter(this.server, path);
     }
     // CraftBukkit end
+
+    @Override
+    public void cardboard$reloadRecipes() {
+        RecipeManager recipeManager = this.server.getRecipeManager();
+        ClientboundUpdateRecipesPacket clientboundUpdateRecipesPacket = new ClientboundUpdateRecipesPacket(
+                recipeManager.getSynchronizedItemProperties(), recipeManager.getSynchronizedStonecutterRecipes()
+        );
+
+        for (ServerPlayer serverPlayer : this.players) {
+            serverPlayer.connection.send(clientboundUpdateRecipesPacket);
+            serverPlayer.getRecipeBook().sendInitialRecipeBook(serverPlayer);
+        }
+    }
 }

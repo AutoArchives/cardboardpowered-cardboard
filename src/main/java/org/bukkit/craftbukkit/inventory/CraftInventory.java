@@ -30,7 +30,6 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.cardboardpowered.impl.inventory.*;
 import org.cardboardpowered.bridge.world.level.block.entity.BlockEntityBridge;
 import org.cardboardpowered.bridge.world.ContainerBridge;
 
@@ -490,7 +489,7 @@ public class CraftInventory implements Inventory {
             return InventoryType.SMOKER;
         } else if (this.inventory instanceof AbstractFurnaceBlockEntity) {
             return InventoryType.FURNACE;
-        } else if (this instanceof CardboardEnchantingInventory) {
+        } else if (this instanceof CraftInventoryEnchanting) {
             return InventoryType.ENCHANTING;
         } else if (this.inventory instanceof BrewingStandBlockEntity) {
             return InventoryType.BREWING;
@@ -504,9 +503,9 @@ public class CraftInventory implements Inventory {
             return InventoryType.ENDER_CHEST;
         } else if (this.inventory instanceof MerchantContainer) {
             return InventoryType.MERCHANT;
-        } else if (this instanceof CardboardBeaconInventory) {
+        } else if (this instanceof CraftBeaconInventory) {
             return InventoryType.BEACON;
-        } else if (this instanceof CardboardAnvilInventory) {
+        } else if (this instanceof CraftInventoryAnvil) {
             return InventoryType.ANVIL;
         //} else if (this instanceof CraftInventorySmithing) {
         //    return InventoryType.SMITHING; //TODO
@@ -522,13 +521,13 @@ public class CraftInventory implements Inventory {
             return InventoryType.CHISELED_BOOKSHELF;
         } else if (this.inventory instanceof ShelfBlockEntity) {
             return InventoryType.SHELF;
-        } else if (this instanceof CardboardLoomInventory) {
+        } else if (this instanceof CraftInventoryLoom) {
             return InventoryType.LOOM;
         //} else if (this instanceof CraftInventoryCartography) {
         //    return InventoryType.CARTOGRAPHY; // TODO
-        } else if (this instanceof CardboardGrindstoneInventory) {
+        } else if (this instanceof CraftInventoryGrindstone) {
             return InventoryType.GRINDSTONE;
-        } else if (this instanceof CardboardStonecutterInventory) {
+        } else if (this instanceof CraftInventoryStonecutter) {
             return InventoryType.STONECUTTER;
         } else if (this.inventory instanceof ComposterBlock.EmptyContainer || this.inventory instanceof ComposterBlock.InputContainer || this.inventory instanceof ComposterBlock.OutputContainer) {
             return InventoryType.COMPOSTER;

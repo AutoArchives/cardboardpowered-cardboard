@@ -3,7 +3,6 @@ package org.bukkit.craftbukkit.entity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.AbstractSkeleton;
 import org.bukkit.entity.Skeleton;
-import org.cardboardpowered.impl.entity.CraftMonster;
 
 public abstract class CraftAbstractSkeleton extends CraftMonster implements AbstractSkeleton, com.destroystokyo.paper.entity.CraftRangedEntity<net.minecraft.world.entity.monster.skeleton.AbstractSkeleton> { // Paper
 

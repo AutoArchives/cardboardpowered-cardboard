@@ -14,7 +14,7 @@ import org.bukkit.block.structure.UsageMode;
 import org.bukkit.craftbukkit.util.CraftBlockVector;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.util.BlockVector;
-import org.cardboardpowered.impl.entity.LivingEntityImpl;
+import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 
 public class CraftStructureBlock extends CraftBlockEntityState<StructureBlockEntity> implements Structure {
 
@@ -54,7 +54,7 @@ public class CraftStructureBlock extends CraftBlockEntityState<StructureBlockEnt
     @Override
     public void setAuthor(LivingEntity entity) {
         Preconditions.checkArgument(entity != null, "Structure Block author entity cannot be null");
-        this.getSnapshot().createdBy(((LivingEntityImpl) entity).getHandle());
+        this.getSnapshot().createdBy(((CraftLivingEntity) entity).getHandle());
     }
 
     @Override

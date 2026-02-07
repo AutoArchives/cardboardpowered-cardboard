@@ -2,7 +2,7 @@ package org.cardboardpowered.mixin.world.inventory;
 
 import net.minecraft.world.entity.player.Player;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
-import org.cardboardpowered.impl.inventory.CardboardMerchantInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryMerchant;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MerchantContainer;
 import net.minecraft.world.inventory.MerchantMenu;
@@ -33,7 +33,7 @@ public class MerchantMenuMixin extends AbstractContainerMenuMixin {
     @Override
     public CraftInventoryView getBukkitView() {
         if (bukkitEntity == null)
-            bukkitEntity = new CraftInventoryView((org.bukkit.entity.Player)((EntityBridge)this.player.player).getBukkitEntity(), new CardboardMerchantInventory(trader, tradeContainer), (MerchantMenu)(Object)this);
+            bukkitEntity = new CraftInventoryView((org.bukkit.entity.Player)((EntityBridge)this.player.player).getBukkitEntity(), new CraftInventoryMerchant(trader, tradeContainer), (MerchantMenu)(Object)this);
         return bukkitEntity;
     }
 

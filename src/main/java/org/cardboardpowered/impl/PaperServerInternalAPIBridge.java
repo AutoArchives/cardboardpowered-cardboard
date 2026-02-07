@@ -32,7 +32,7 @@ import org.bukkit.craftbukkit.entity.CraftMannequin;
 import org.bukkit.damage.DamageEffect;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.entity.Pose;
-import org.cardboardpowered.impl.entity.LivingEntityImpl;
+import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -59,7 +59,7 @@ public class PaperServerInternalAPIBridge implements InternalAPIBridge {
     }
 
     public CombatEntry createCombatEntry(org.bukkit.entity.LivingEntity entity, DamageSource damageSource, float damage) {
-        LivingEntity mob = ((LivingEntityImpl)entity).getHandle();
+        LivingEntity mob = ((CraftLivingEntity)entity).getHandle();
         FallLocation fallLocation = FallLocation.getCurrentFallLocation(mob);
         return this.createCombatEntry(((CraftDamageSource)damageSource).getHandle(), damage, fallLocation, (float)mob.fallDistance);
     }

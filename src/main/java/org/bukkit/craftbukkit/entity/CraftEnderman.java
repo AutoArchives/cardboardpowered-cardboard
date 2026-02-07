@@ -11,7 +11,6 @@ import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.material.MaterialData;
-import org.cardboardpowered.impl.entity.CraftMonster;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("deprecation")

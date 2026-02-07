@@ -1,7 +1,7 @@
 package org.cardboardpowered.mixin.world.inventory;
 
 import net.minecraft.world.entity.player.Player;
-import org.cardboardpowered.impl.inventory.CardboardBrewerInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryBrewer;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -34,7 +34,7 @@ public class BrewingStandMenuMixin extends AbstractContainerMenuMixin {
     public CraftInventoryView getBukkitView() {
         if (bukkitEntity != null) return bukkitEntity;
 
-        CardboardBrewerInventory inventory = new CardboardBrewerInventory(this.brewingStand);
+        CraftInventoryBrewer inventory = new CraftInventoryBrewer(this.brewingStand);
         bukkitEntity = new CraftInventoryView((org.bukkit.entity.Player)((ServerPlayerBridge)this.player.player).getBukkitEntity(), inventory, (BrewingStandMenu)(Object)this);
         return bukkitEntity;
     }

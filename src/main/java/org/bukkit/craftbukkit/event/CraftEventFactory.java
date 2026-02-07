@@ -134,7 +134,7 @@ import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.event.world.LootGenerateEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryView;
-import org.cardboardpowered.impl.entity.LivingEntityImpl;
+import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.cardboardpowered.impl.entity.UnknownEntity;
 import org.cardboardpowered.impl.world.CraftWorld;
@@ -590,7 +590,7 @@ public class CraftEventFactory {
             UnknownEntity uk = (UnknownEntity) ((EntityBridge)victim).getBukkitEntity();
             CardboardMod.LOGGER.info("Oh no! " + net.minecraft.world.entity.EntityType.getKey(uk.entity.getType()).toString() + " is an unknown bukkit entity!");
         }
-        LivingEntityImpl entity = (LivingEntityImpl) ((EntityBridge)victim).getBukkitEntity();
+        CraftLivingEntity entity = (CraftLivingEntity) ((EntityBridge)victim).getBukkitEntity();
         
         CraftDamageSource bukkitDamageSource = new CraftDamageSource(damageSource);
         EntityDeathEvent event = new EntityDeathEvent(entity, bukkitDamageSource, drops, ((LivingEntityBridge)victim).getExpReward());

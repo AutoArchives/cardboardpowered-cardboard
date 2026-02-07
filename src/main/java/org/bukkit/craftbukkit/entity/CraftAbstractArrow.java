@@ -24,7 +24,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
-import org.cardboardpowered.impl.entity.AbstractProjectile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -79,21 +78,6 @@ public class CraftAbstractArrow extends AbstractProjectile implements AbstractAr
     @Override
     public void setCritical(boolean critical) {
         getHandle().setCritArrow(critical);
-    }
-
-    @Override
-    public ProjectileSource getShooter() {
-        return ((EntityBridge)getHandle()).getProjectileSourceBukkit();
-    }
-
-    @Override
-    public void setShooter(ProjectileSource shooter) {
-        if (shooter instanceof Entity) {
-            getHandle().setOwner(((CraftEntity) shooter).getHandle());
-        } else {
-            getHandle().setOwner(null);
-        }
-        ((EntityBridge)getHandle()).setProjectileSourceBukkit(shooter);
     }
 
     @Override

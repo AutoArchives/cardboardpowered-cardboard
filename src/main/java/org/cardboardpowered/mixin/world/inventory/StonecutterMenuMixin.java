@@ -2,7 +2,7 @@ package org.cardboardpowered.mixin.world.inventory;
 
 import net.minecraft.world.entity.player.Player;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
-import org.cardboardpowered.impl.inventory.CardboardStonecutterInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryStonecutter;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerLevelAccess;
@@ -36,7 +36,7 @@ public class StonecutterMenuMixin extends AbstractContainerMenuMixin {
         if (bukkitEntity != null)
             return bukkitEntity;
 
-        CardboardStonecutterInventory inventory = new CardboardStonecutterInventory(this.container, this.resultContainer);
+        CraftInventoryStonecutter inventory = new CraftInventoryStonecutter(this.container, this.resultContainer);
         bukkitEntity = new CraftInventoryView(this.player, inventory, (StonecutterMenu)(Object)this);
         return bukkitEntity;
     }

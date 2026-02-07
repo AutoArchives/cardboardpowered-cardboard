@@ -27,6 +27,7 @@ import org.bukkit.plugin.PluginLoadOrder;
 import org.bukkit.plugin.java.JavaPluginLoader;
 import org.cardboardpowered.CardboardConfig;
 import org.cardboardpowered.bridge.server.dedicated.DedicatedServerBridge;
+import org.cardboardpowered.impl.util.CardboardMagicNumbers;
 import org.cardboardpowered.mixin.server.MCServerMixin;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -63,8 +64,8 @@ public abstract class DedicatedServerMixin extends MCServerMixin implements Dedi
 			// org.bukkit.enchantments.Enchantment.registerEnchantment(new CardboardEnchantment(enchantment));
 		//}
 
-		CraftMagicNumbers.test();
-		CraftMagicNumbers.setupUnknownModdedMaterials();
+		CardboardMagicNumbers.test();
+		CardboardMagicNumbers.setupUnknownModdedMaterials();
 
 		DedicatedServer thiss = (DedicatedServer) (Object) this;
 

@@ -16,7 +16,7 @@ import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.npc.villager.VillagerData;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.cardboardpowered.impl.entity.CraftVillager;
+import org.bukkit.craftbukkit.entity.CraftVillager;
 import org.cardboardpowered.util.MixinInfo;
 
 @MixinInfo(events = {"VillagerCareerChangeEvent"})

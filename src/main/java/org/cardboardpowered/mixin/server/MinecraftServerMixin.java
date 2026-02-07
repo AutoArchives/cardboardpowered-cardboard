@@ -68,6 +68,7 @@ import org.cardboardpowered.bridge.server.network.ServerConnectionListenerBridge
 import org.cardboardpowered.bridge.server.level.ServerLevelBridge;
 import org.cardboardpowered.bridge.world.level.storage.LevelData_RespawnDataBridge;
 import org.cardboardpowered.bridge.world.level.storage.PrimaryLevelDataBridge;
+import org.cardboardpowered.impl.util.CardboardMagicNumbers;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -213,7 +214,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
         CraftServer.INSTANCE.getPluginManager().callEvent(new ServerLoadEvent(ServerLoadEvent.LoadType.STARTUP));
         ((ServerConnectionListenerBridge)(Object) getServer().getConnection()).acceptConnections();
 
-        CraftMagicNumbers.setupUnknownModdedMaterials();
+        CardboardMagicNumbers.setupUnknownModdedMaterials();
         fixBukkitWorldEdit();
         CardboardMod.isAfterWorldLoad = true;
         
@@ -307,7 +308,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
                     break;
                 }
             }
-            HashMap<String, Material> moddedMaterials = CraftMagicNumbers.getModdedMaterials();
+            HashMap<String, Material> moddedMaterials = CardboardMagicNumbers.getModdedMaterials();
 
             if (moddedMaterials.size() > 0)
                 CardboardMod.LOGGER.info("Adding Modded blocks/items to WorldEdit registry...");

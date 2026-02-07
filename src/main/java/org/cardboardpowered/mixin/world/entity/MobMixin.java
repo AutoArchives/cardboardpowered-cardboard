@@ -6,7 +6,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.cardboardpowered.bridge.world.entity.MobBridge;
-import org.cardboardpowered.impl.entity.LivingEntityImpl;
+import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.server.level.ServerLevelBridge;
 import org.jspecify.annotations.Nullable;
@@ -50,9 +50,9 @@ public abstract class MobMixin extends LivingEntity implements MobBridge, Entity
             if (reason == EntityTargetEvent.TargetReason.UNKNOWN) {
                 ((ServerLevelBridge)this.level()).getCraftServer().getLogger().log(java.util.logging.Level.WARNING, "Unknown target reason, please report on the issue tracker", new Exception());
             }
-            LivingEntityImpl ctarget = null;
+            CraftLivingEntity ctarget = null;
             if (target != null) {
-                ctarget = (LivingEntityImpl) target.getBukkitEntity();
+                ctarget = (CraftLivingEntity) target.getBukkitEntity();
             }
             org.bukkit.event.entity.EntityTargetLivingEntityEvent event = new org.bukkit.event.entity.EntityTargetLivingEntityEvent(this.getBukkitEntity(), ctarget, reason);
             if (!event.callEvent()) {
@@ -60,7 +60,7 @@ public abstract class MobMixin extends LivingEntity implements MobBridge, Entity
             }
 
             if (event.getTarget() != null) {
-                target = ((LivingEntityImpl) event.getTarget()).getHandle();
+                target = ((CraftLivingEntity) event.getTarget()).getHandle();
             } else {
                 target = null;
             }

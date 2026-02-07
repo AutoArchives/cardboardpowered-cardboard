@@ -11,9 +11,8 @@ import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.loot.LootTable;
-import org.cardboardpowered.impl.entity.LivingEntityImpl;
 
-public abstract class CraftMob extends LivingEntityImpl implements Mob, io.papermc.paper.entity.PaperLeashable { // Paper - Leashable API
+public abstract class CraftMob extends CraftLivingEntity implements Mob, io.papermc.paper.entity.PaperLeashable { // Paper - Leashable API
 
     private final com.destroystokyo.paper.entity.PaperPathfinder paperPathfinder; // Paper - Mob Pathfinding API
 
@@ -63,16 +62,16 @@ public abstract class CraftMob extends LivingEntityImpl implements Mob, io.paper
         net.minecraft.world.entity.Mob entity = this.getHandle();
         if (target == null) {
             entity.setTarget(null);
-        } else if (target instanceof LivingEntityImpl) {
-            entity.setTarget(((LivingEntityImpl) target).getHandle());
+        } else if (target instanceof CraftLivingEntity) {
+            entity.setTarget(((CraftLivingEntity) target).getHandle());
         }
     }
 
     @Override
-    public LivingEntityImpl getTarget() {
+    public CraftLivingEntity getTarget() {
         if (this.getHandle().getTarget() == null) return null;
 
-        return (LivingEntityImpl) this.getHandle().getTarget().getBukkitEntity();
+        return (CraftLivingEntity) this.getHandle().getTarget().getBukkitEntity();
     }
 
     @Override

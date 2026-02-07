@@ -12,7 +12,7 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.CookingRecipe;
 import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.Recipe;
-import org.cardboardpowered.impl.inventory.CardboardFurnaceInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryFurnace;
 
 import java.util.Map;
 
@@ -28,7 +28,7 @@ public abstract class CraftFurnace<T extends AbstractFurnaceBlockEntity> extends
 
     @Override
     public FurnaceInventory getSnapshotInventory() {
-        return new CardboardFurnaceInventory(this.getSnapshot());
+        return new CraftInventoryFurnace(this.getSnapshot());
     }
 
     @Override
@@ -37,7 +37,7 @@ public abstract class CraftFurnace<T extends AbstractFurnaceBlockEntity> extends
             return this.getSnapshotInventory();
         }
 
-        return new CardboardFurnaceInventory(this.getBlockEntity());
+        return new CraftInventoryFurnace(this.getBlockEntity());
     }
 
     @Override

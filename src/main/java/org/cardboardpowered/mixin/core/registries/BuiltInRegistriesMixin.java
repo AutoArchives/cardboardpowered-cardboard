@@ -36,24 +36,6 @@ public class BuiltInRegistriesMixin {
 		Bootstrap.checkBootstrapCalled(() -> "registry " + key.identifier());
 		PaperRegistryAccess.instance().registerRegistry(registry.key(), registry);
 	}
-
-	/**
-	 * @author Cardboard Mod
-	 * @reason PaperRegistryAccess
-	 */
-	@Overwrite
-	public static void bootStrap() {
-		cardboard$bootStrap(() -> {});
-    }
-
-
-    private static void cardboard$bootStrap(Runnable runnable) {
-    	BuiltInRegistries.REGISTRY.freeze();
-        createContents();
-        runnable.run();
-        freeze();
-        validate(BuiltInRegistries.REGISTRY);
-    }
     
     //@Shadow
     //private static void init() {}

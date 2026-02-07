@@ -37,7 +37,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.cardboardpowered.bridge.world.item.ItemStackBridge;
 import org.cardboardpowered.bridge.world.item.component.CustomDataBridge;
 import org.cardboardpowered.bridge.world.item.enchantment.EnchantmentHelperBridge;
-import org.cardboardpowered.impl.entity.LivingEntityImpl;
+import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.jetbrains.annotations.NotNull;
 
 @DelegateDeserialization(ItemStack.class)
@@ -264,7 +264,7 @@ public final class CraftItemStack extends ItemStack {
         if (entity == null && (this.handle.is(net.minecraft.world.item.Items.CROSSBOW) || this.handle.is(net.minecraft.world.item.Items.GOAT_HORN))) {
             throw new UnsupportedOperationException("This item requires an entity to determine the max use duration");
         }
-        return this.handle.getUseDuration(entity != null ? ((LivingEntityImpl) entity).getHandle() : null);
+        return this.handle.getUseDuration(entity != null ? ((CraftLivingEntity) entity).getHandle() : null);
     }
 
     @Override

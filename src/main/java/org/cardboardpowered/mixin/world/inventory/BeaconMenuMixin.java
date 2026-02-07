@@ -1,7 +1,7 @@
 package org.cardboardpowered.mixin.world.inventory;
 
 import net.minecraft.world.entity.player.Player;
-import org.cardboardpowered.impl.inventory.CardboardBeaconInventory;
+import org.bukkit.craftbukkit.inventory.CraftBeaconInventory;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -36,7 +36,7 @@ public class BeaconMenuMixin extends AbstractContainerMenuMixin {
         if (bukkitEntity != null)
             return bukkitEntity;
 
-        CardboardBeaconInventory inventory = new CardboardBeaconInventory(this.beacon);
+        CraftBeaconInventory inventory = new CraftBeaconInventory(this.beacon);
         bukkitEntity = new CraftInventoryView((org.bukkit.entity.Player)((ServerPlayerBridge)this.player.player).getBukkitEntity(), inventory, (BeaconMenu)(Object)this);
         return bukkitEntity;
     }

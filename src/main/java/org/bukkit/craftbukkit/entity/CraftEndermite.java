@@ -3,7 +3,6 @@ package org.bukkit.craftbukkit.entity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Endermite;
 import org.bukkit.entity.EntityType;
-import org.cardboardpowered.impl.entity.CraftMonster;
 
 public class CraftEndermite extends CraftMonster implements Endermite {
 

@@ -7,7 +7,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.MerchantInventory;
 import org.bukkit.inventory.view.MerchantView;
-import org.cardboardpowered.impl.entity.CraftAbstractVillager;
+import org.bukkit.craftbukkit.entity.CraftAbstractVillager;
 import org.jetbrains.annotations.NotNull;
 
 import org.cardboardpowered.bridge.world.entity.EntityBridge;

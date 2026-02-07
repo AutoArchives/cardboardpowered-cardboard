@@ -2,6 +2,8 @@ package org.cardboardpowered.impl.entity;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.AbstractProjectile;
+import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LlamaSpit;
 import org.bukkit.projectiles.ProjectileSource;
@@ -28,16 +30,6 @@ public class CardboardLlamaSpit extends AbstractProjectile implements LlamaSpit 
     @Override
     public EntityType getType() {
         return EntityType.LLAMA_SPIT;
-    }
-
-    @Override
-    public ProjectileSource getShooter() {
-        return (getHandle().getOwner() != null) ? (ProjectileSource) ((EntityBridge)getHandle().getOwner()).getBukkitEntity() : null;
-    }
-
-    @Override
-    public void setShooter(ProjectileSource source) {
-        getHandle().setOwner((source != null) ? ((LivingEntityImpl) source).getHandle() : null);
     }
 
     @Override

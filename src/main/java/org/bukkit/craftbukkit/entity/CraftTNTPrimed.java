@@ -5,7 +5,6 @@ import net.minecraft.world.entity.item.PrimedTnt;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
-import org.cardboardpowered.impl.entity.LivingEntityImpl;
 import org.jetbrains.annotations.NotNull;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -73,7 +72,7 @@ public class CraftTNTPrimed extends CraftEntity implements TNTPrimed {
 
     public void setSource(Entity source) {
         if (source instanceof LivingEntity) {
-            ((PrimedTntBridge)getHandle()).cardboard$setSource(((LivingEntityImpl) source).getHandle());
+            ((PrimedTntBridge)getHandle()).cardboard$setSource(((CraftLivingEntity) source).getHandle());
         } else ((PrimedTntBridge)getHandle()).cardboard$setSource(null);
     }
     

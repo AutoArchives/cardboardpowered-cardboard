@@ -12,7 +12,7 @@ import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
-import org.cardboardpowered.impl.inventory.CardboardFurnaceInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryFurnace;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -75,7 +75,7 @@ public class AbstractFurnaceMenuMixin extends AbstractContainerMenuMixin {
     public CraftInventoryView getBukkitView() {
         if (bukkitEntity != null) return bukkitEntity;
 
-        CardboardFurnaceInventory inventory = new CardboardFurnaceInventory((AbstractFurnaceBlockEntity) this.container);
+        CraftInventoryFurnace inventory = new CraftInventoryFurnace((AbstractFurnaceBlockEntity) this.container);
         bukkitEntity = new CraftInventoryView((org.bukkit.entity.Player)((EntityBridge)this.playerInv.player).getBukkitEntity(), inventory, (AbstractFurnaceMenu)(Object)this);
         return bukkitEntity;
     }

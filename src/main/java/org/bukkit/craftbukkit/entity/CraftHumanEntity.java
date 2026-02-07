@@ -70,10 +70,9 @@ import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 import org.cardboardpowered.bridge.world.ContainerBridge;
-import org.cardboardpowered.impl.entity.*;
 import org.bukkit.craftbukkit.inventory.CraftInventoryDoubleChest;
 import org.bukkit.craftbukkit.inventory.CraftInventoryLectern;
-import org.cardboardpowered.impl.inventory.CardboardPlayerInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryPlayer;
 import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.world.entity.LivingEntityBridge;
@@ -82,9 +81,9 @@ import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
+public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
 
-    private CardboardPlayerInventory inventory;
+    private CraftInventoryPlayer inventory;
     private final CraftInventory enderChest;
     protected final PermissibleBase perm = new PermissibleBase(this);
     private boolean op;
@@ -93,7 +92,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
     public CraftHumanEntity(final CraftServer server, final Player entity) {
         super(server, entity);
         this.mode = server.getDefaultGameMode();
-        this.inventory = new CardboardPlayerInventory(entity.getInventory());
+        this.inventory = new CraftInventoryPlayer(entity.getInventory());
         this.enderChest = new CraftInventory(entity.getEnderChestInventory());
     }
 
@@ -104,7 +103,7 @@ public class CraftHumanEntity extends LivingEntityImpl implements HumanEntity {
 
     public void setHandle(final Player entity) {
         super.setHandle(entity);
-        this.inventory = new CardboardPlayerInventory(entity.getInventory());
+        this.inventory = new CraftInventoryPlayer(entity.getInventory());
     }
 
     @Override

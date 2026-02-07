@@ -6,7 +6,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.EnchantmentMenu;
-import org.cardboardpowered.impl.inventory.CardboardEnchantingInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryEnchanting;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -213,7 +213,7 @@ public class EnchantmentMenuMixin extends AbstractContainerMenuMixin {
     public CraftInventoryView getBukkitView() {
         if (bukkitEntity != null) return bukkitEntity;
 
-        CardboardEnchantingInventory inventory = new CardboardEnchantingInventory(this.enchantSlots);
+        CraftInventoryEnchanting inventory = new CraftInventoryEnchanting(this.enchantSlots);
         bukkitEntity = new CraftInventoryView(this.player, inventory, (EnchantmentMenu)(Object)this);
         return bukkitEntity;
     }

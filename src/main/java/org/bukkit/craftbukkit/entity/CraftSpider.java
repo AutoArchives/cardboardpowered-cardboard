@@ -3,7 +3,6 @@ package org.bukkit.craftbukkit.entity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Spider;
-import org.cardboardpowered.impl.entity.CraftMonster;
 
 public class CraftSpider extends CraftMonster implements Spider {
 

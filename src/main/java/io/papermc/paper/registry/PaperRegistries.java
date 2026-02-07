@@ -93,7 +93,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
 import org.bukkit.craftbukkit.entity.CraftCat;
 import org.cardboardpowered.impl.entity.CardboardPig;
-import org.cardboardpowered.impl.entity.CraftVillager;
+import org.bukkit.craftbukkit.entity.CraftVillager;
 import org.jspecify.annotations.Nullable;
 
 import static io.papermc.paper.registry.entry.RegistryEntryBuilder.start;

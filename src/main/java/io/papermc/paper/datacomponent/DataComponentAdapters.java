@@ -84,7 +84,7 @@ import org.bukkit.entity.TropicalFish;
 import org.bukkit.inventory.ItemRarity;
 import org.bukkit.craftbukkit.entity.CraftCat;
 import org.cardboardpowered.impl.entity.CardboardPig;
-import org.cardboardpowered.impl.entity.CraftVillager;
+import org.bukkit.craftbukkit.entity.CraftVillager;
 
 import static io.papermc.paper.util.MCUtil.transformUnmodifiable;
 

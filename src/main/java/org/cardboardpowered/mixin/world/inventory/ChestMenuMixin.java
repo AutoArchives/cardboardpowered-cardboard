@@ -9,7 +9,7 @@ import net.minecraft.world.inventory.MenuType;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftInventoryDoubleChest;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
-import org.cardboardpowered.impl.inventory.CardboardPlayerInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -40,7 +40,7 @@ public class ChestMenuMixin extends AbstractContainerMenuMixin {
 
         CraftInventory inventory;
         if (this.container instanceof Inventory) {
-            inventory = new CardboardPlayerInventory((Inventory) this.container);
+            inventory = new CraftInventoryPlayer((Inventory) this.container);
         } else if (this.container instanceof CompoundContainer) {
             inventory = new CraftInventoryDoubleChest((CompoundContainer) this.container);
         } else inventory = new CraftInventory(this.container);

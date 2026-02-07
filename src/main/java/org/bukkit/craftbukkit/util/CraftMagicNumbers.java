@@ -1,100 +1,41 @@
 package org.bukkit.craftbukkit.util;
 
-
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Multimap;
+import com.google.common.io.Files;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.DSL;
+import com.mojang.datafixers.DataFixer;
+import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JavaOps;
+import com.mojang.serialization.JsonOps;
+import io.papermc.paper.adventure.AdventureCodecs;
+import io.papermc.paper.adventure.PaperAdventure;
+import io.papermc.paper.registry.RegistryKey;
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BooleanSupplier;
 import java.util.logging.Level;
 import java.util.stream.Stream;
-
-import io.papermc.paper.adventure.PaperAdventure;
-import org.bukkit.Bukkit;
-import org.bukkit.FeatureFlag;
-import org.bukkit.Fluid;
-import org.bukkit.Keyed;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.RegionAccessor;
-import org.bukkit.Statistic;
-import org.bukkit.UnsafeValues;
-import org.bukkit.World;
-import org.bukkit.advancement.Advancement;
-import org.bukkit.attribute.Attributable;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.MemorySection;
-import org.bukkit.craftbukkit.CraftFeatureFlag;
-import org.bukkit.craftbukkit.CraftRegistry;
-import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.CraftStatistic;
-import org.bukkit.craftbukkit.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.legacy.FieldRename;
-import org.bukkit.craftbukkit.potion.CraftPotionType;
-import org.bukkit.damage.DamageEffect;
-import org.bukkit.damage.DamageSource.Builder;
-import org.bukkit.damage.DamageType;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.CreativeCategory;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.MaterialData;
-import org.bukkit.plugin.InvalidPluginException;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionType.InternalPotionData;
-import org.cardboardpowered.impl.CardboardModdedBlock;
-import org.cardboardpowered.impl.CardboardModdedItem;
-import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.cardboardpowered.util.GameVersion;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import org.cardboardpowered.CardboardMod;
-import org.cardboardpowered.bridge.bukkit.BukkitMaterialBridge;
-import org.cardboardpowered.bridge.server.MinecraftServerBridge;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.datafixers.DSL.TypeReference;
-import com.mojang.datafixers.DataFixer;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JavaOps;
-import com.mojang.serialization.JsonOps;
-
-import io.izzel.arclight.api.EnumHelper;
-import io.izzel.arclight.api.Unsafe;
-import io.papermc.paper.adventure.AdventureCodecs;
 import io.papermc.paper.entity.EntitySerializationFlag;
-import io.papermc.paper.inventory.ItemRarity;
-import io.papermc.paper.inventory.tooltip.TooltipContext;
-import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
-import io.papermc.paper.plugin.lifecycle.event.PaperLifecycleEventManager;
-import io.papermc.paper.registry.RegistryKey;
-import me.isaiah.common.cmixin.IMixinItemStack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.event.HoverEvent.ShowItem;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.minecraft.SharedConstants;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.item.ItemParser;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -105,623 +46,82 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.datafix.fixes.References;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
+import org.bukkit.Bukkit;
+import org.bukkit.Keyed;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
+import org.bukkit.UnsafeValues;
+import org.bukkit.World;
+import org.bukkit.advancement.Advancement;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.configuration.MemorySection;
+import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.block.data.IMagicNumbers;
-import org.bukkit.craftbukkit.damage.CraftDamageEffect;
 import org.bukkit.craftbukkit.damage.CraftDamageSourceBuilder;
 import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.legacy.CraftLegacy;
+import org.bukkit.craftbukkit.legacy.FieldRename;
+import org.bukkit.craftbukkit.potion.CraftPotionType;
+import org.bukkit.damage.DamageSource;
+import org.bukkit.damage.DamageType;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EntityType;
+import org.bukkit.inventory.CreativeCategory;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.MaterialData;
+import org.bukkit.plugin.InvalidPluginException;
+import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.potion.PotionType;
 import org.cardboardpowered.BlockImplUtil;
+import org.cardboardpowered.impl.util.CardboardMagicNumbers;
+import org.cardboardpowered.impl.world.CraftWorld;
+import org.slf4j.Logger;
 
 @SuppressWarnings("deprecation")
 public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
-    
-    public Material IgetMaterial(Block b) {return CraftMagicNumbers.getMaterial(b);}
-    public Block IgetBlock(Material m) {return CraftMagicNumbers.getBlock(m);}
 
-    public static final UnsafeValues INSTANCE = new CraftMagicNumbers();
+    private static final Logger LOGGER = LogUtils.getLogger();
+
+    public static final CraftMagicNumbers INSTANCE = new CraftMagicNumbers();
+    public static final boolean DISABLE_OLD_API_SUPPORT = Boolean.getBoolean("paper.disableOldApiSupport"); // Paper
+
+    private final Commodore commodore = new Commodore();
 
     private CraftMagicNumbers() {}
 
-    public static BlockState getBlock(MaterialData material) {
-        return getBlock(material.getItemType(), material.getData());
-    }
-
-    public static BlockState getBlock(Material material, byte data) {
-        return CraftLegacyMaterials.fromLegacyData(CraftLegacyMaterials.toLegacy(material), data);
-    }
-
-    public static MaterialData getMaterial(BlockState data) {
-        return CraftLegacyMaterials.toLegacy(getMaterial(data.getBlock())).getNewData(toLegacyData(data));
-    }
-
-    public static Item getItem(Material material, short data) {
-        if (material.isLegacy())
-            return CraftLegacyMaterials.fromLegacyData(CraftLegacyMaterials.toLegacy(material), data);
-
-        return getItem(material);
-    }
-
-    public static MaterialData getMaterialData(Item item) {
-        return CraftLegacyMaterials.toLegacyData(getMaterial(item));
-    }
-
-    // ========================================================================
-    private static final Map<Block, Material> BLOCK_MATERIAL = new HashMap<>();
-    private static final Map<Item, Material> ITEM_MATERIAL = new HashMap<>();
-    private static final Map<Material, Item> MATERIAL_ITEM = new HashMap<>();
-    private static final Map<Material, Block> MATERIAL_BLOCK = new HashMap<>();
-    private static final Map<net.minecraft.world.level.material.Fluid, org.bukkit.Fluid> FLUID_MATERIAL = new HashMap<>();
-    private static final Map<Material, net.minecraft.world.level.material.Fluid> MATERIAL_FLUID = new HashMap<>();
-    private static final Map<org.bukkit.entity.EntityType, net.minecraft.world.entity.EntityType<?>> ENTITY_TYPE_ENTITY_TYPES = new HashMap();
-    private static final Map<net.minecraft.world.entity.EntityType<?>, org.bukkit.entity.EntityType> ENTITY_TYPES_ENTITY_TYPE = new HashMap();
-    
-    private static final TagParser<Tag> SNBT_REGISTRY_UNAWARE_PARSER;
-
-    static {
-        BlockImplUtil.setMN((IMagicNumbers)INSTANCE);
-        
-        for (org.bukkit.entity.EntityType type : org.bukkit.entity.EntityType.values()) {
-            if (type == org.bukkit.entity.EntityType.UNKNOWN) continue;
-            ENTITY_TYPE_ENTITY_TYPES.put(type, BuiltInRegistries.ENTITY_TYPE.getValue(CraftNamespacedKey.toMinecraft(type.getKey())));
-            ENTITY_TYPES_ENTITY_TYPE.put(BuiltInRegistries.ENTITY_TYPE.getValue(CraftNamespacedKey.toMinecraft(type.getKey())), type);
-        }
-        
-        for (Block block : BuiltInRegistries.BLOCK)
-            BLOCK_MATERIAL.put(block, Material.getMaterial(BuiltInRegistries.BLOCK.getKey(block).getPath().toUpperCase(Locale.ROOT)));
-
-        for (Item item : BuiltInRegistries.ITEM)
-            ITEM_MATERIAL.put(item, Material.getMaterial(BuiltInRegistries.ITEM.getKey(item).getPath().toUpperCase(Locale.ROOT)));
-
-        //for (net.minecraft.fluid.Fluid fluid : Registries.FLUID)
-        //    FLUID_MATERIAL.put(fluid, org.bukkit.Registries.FLUID.get(CraftNamespacedKey.fromMinecraft(Registries.FLUID.getId(fluid))));
-
-        for (net.minecraft.world.level.material.Fluid fluidType : BuiltInRegistries.FLUID) {
-            if (BuiltInRegistries.FLUID.getKey(fluidType).getNamespace().equals(NamespacedKey.MINECRAFT)) {
-                //Fluid fluid = org.bukkit.Registries.FLUID.get(CraftNamespacedKey.fromMinecraft(Registries.FLUID.getId(fluidType)));
-               // if (fluid != null) {
-               // 	FLUID_MATERIAL.put(fluidType, fluid);
-               // }
-            }
-        }
-        
-        for (Material material : Material.values()) {
-            if (material.isLegacy()) continue;
-
-            Identifier key = key(material);
-            BuiltInRegistries.ITEM.getOptional(key).ifPresent((item) -> MATERIAL_ITEM.put(material, item));
-            BuiltInRegistries.BLOCK.getOptional(key).ifPresent((block) -> MATERIAL_BLOCK.put(material, block));
-            BuiltInRegistries.FLUID.getOptional(key).ifPresent((fluid) -> MATERIAL_FLUID.put(material, fluid));
-        }
-        
-        SNBT_REGISTRY_UNAWARE_PARSER = TagParser.create(NbtOps.INSTANCE);
-    }
-
-    public static final Map<String, Material> BY_NAME = Unsafe.getStatic(Material.class, "BY_NAME");
-    private static final List<Class<?>> MAT_CTOR = ImmutableList.of(int.class);
-    public static final HashMap<String, Material> MODDED_MATERIALS = new HashMap<>();
-
-    public static final HashMap<Item, Material> MODDED_ITEM_MATERIAL = new HashMap<>();
-    public static final HashMap<Material, Item> MODDED_MATERIAL_ITEM = new HashMap<>();
-
-    @Deprecated
-    public static void setupUnknownModdedMaterials() {
-        for (Material material : Material.values()) {
-            if (material.isLegacy()) continue;
-            Identifier key = key(material);
-            BuiltInRegistries.ITEM.getOptional(key).ifPresent((item) -> MATERIAL_ITEM.put(material, item));
-            BuiltInRegistries.BLOCK.getOptional(key).ifPresent((block) -> MATERIAL_BLOCK.put(material, block));
-            BuiltInRegistries.FLUID.getOptional(key).ifPresent((fluid) -> MATERIAL_FLUID.put(material, fluid));
-        }
-    }
-    
-    public static boolean has_mixin_interface(Material m) {
-    	// Make sure mixin has applied
-    	if ( (Object) m instanceof BukkitMaterialBridge) {
-    		return true;
-    	}
-    	return false;
-    }
-
-    public static void test() {
-        // TODO: This needs to be kept updated when Spigot updates
-        // It is the value of Material.values().length
-    	CardboardMod.LOGGER.info("DEB: " + Material.values().length);
-        int MATERIAL_LENGTH = 2104; // 1837; //1525;
-        int i = MATERIAL_LENGTH - 1;
-
-        List<String> names = new ArrayList<>();
-        List<Material> list = new ArrayList<>();
-
-        String lastMod = "";
-        for (Block block : BuiltInRegistries.BLOCK) {
-            Identifier id = BuiltInRegistries.BLOCK.getKey(block);
-            String name = standardize(id);
-            String nam = id.getNamespace().toUpperCase(Locale.ROOT) + "_" + id.getPath().toUpperCase(Locale.ROOT);
-            if (id.getNamespace().startsWith("minecraft")) {
-            	boolean has = false;
-            	try {
-            		Material.valueOf(id.getPath().toUpperCase());
-            		has = true;
-            	} catch (IllegalArgumentException e) {
-            		// Snapshot or API not updated.
-            		has = false;
-            		nam = id.getPath().toUpperCase(Locale.ROOT);
-            	}
-            	if (has) {
-            		continue;
-            	}
-            }
-
-            Material material = BY_NAME.get(name);
-            if (null == material && !names.contains(name)) {
-                material = EnumHelper.makeEnum(Material.class, name, i, MAT_CTOR, ImmutableList.of(i));
-                if (!has_mixin_interface(material)) {
-                    CardboardMod.LOGGER.warning("Material not instanceof IMixinMaterial");
-                    return;
-                }
-
-                ((BukkitMaterialBridge)(Object)material).setModdedData(new CardboardModdedBlock(id.toString()));
-                MATERIAL_BLOCK.put(material, block);
-                BY_NAME.put(name, material);
-                list.add(material);
-                MODDED_MATERIALS.put(name, material);
-                
-                if (!(lastMod.equalsIgnoreCase(id.namespace)))
-                    CardboardMod.LOGGER.info("Registering modded blocks from mod '" + (lastMod = id.namespace) + "'..");
-            }
-            Material m = Material.getMaterial(nam);
-            BLOCK_MATERIAL.put(block, m);
-            MATERIAL_BLOCK.put(m, block);
-        }
-
-        for (Item item : BuiltInRegistries.ITEM) {
-            Identifier id = BuiltInRegistries.ITEM.getKey(item);
-            String name = standardize(id);
-            String nam = id.getNamespace().toUpperCase(Locale.ROOT) + "_" + id.getPath().toUpperCase(Locale.ROOT);
-            if (id.getNamespace().startsWith("minecraft")) {
-            	boolean has = false;
-            	try {
-            		Material.valueOf(id.getPath().toUpperCase());
-            		has = true;
-            	} catch (IllegalArgumentException e) {
-            		// Snapshot or API not updated.
-            		nam = id.getPath().toUpperCase(Locale.ROOT);
-            		has = false;
-            	}
-            	if (has) {
-            		continue;
-            	}
-            }
-
-            Material material = BY_NAME.get(name);
-            if (null == material && !names.contains(name)) {
-                material = EnumHelper.makeEnum(Material.class, name, i, MAT_CTOR, ImmutableList.of(i));
-                if (!has_mixin_interface(material)) {
-                    CardboardMod.LOGGER.warning("Material not instanceof IMixinMaterial");
-                    return;
-                }
-
-                ((BukkitMaterialBridge)(Object)material).setModdedData(new CardboardModdedItem(id.toString()));
-                MATERIAL_ITEM.put(material, item);
-                BY_NAME.put(name, material);
-                list.add(material);
-                MODDED_MATERIALS.put(name, material);
-
-                if (!(lastMod.equalsIgnoreCase(id.namespace)))
-                    CardboardMod.LOGGER.info("Registering modded items from mod '" + (lastMod = id.namespace) + "'..");
-            }
-            Material m = Material.getMaterial(nam);
-            ITEM_MATERIAL.put(item, m);
-            MATERIAL_ITEM.put(m, item);
-        }
-
-        //for (net.minecraft.fluid.Fluid fluid : Registries.FLUID)
-        //    FLUID_MATERIAL.put(fluid, org.bukkit.Registries.FLUID.get(CraftNamespacedKey.fromMinecraft(Registries.FLUID.getId(fluid))));
-
-        EnumHelper.addEnums(Material.class, list);
-
-        for (Material material : list) {
-            Identifier key = key(material);
-            BuiltInRegistries.ITEM.getOptional(key).ifPresent((item) -> MATERIAL_ITEM.put(material, item));
-            BuiltInRegistries.BLOCK.getOptional(key).ifPresent((block) -> MATERIAL_BLOCK.put(material, block));
-            BuiltInRegistries.FLUID.getOptional(key).ifPresent((fluid) -> MATERIAL_FLUID.put(material, fluid));
-        }
-    }
-
-    public static HashMap<String, Material> getModdedMaterials() {
-        HashMap<String, Material> map = new HashMap<>();
-        for (Block block : BuiltInRegistries.BLOCK) {
-            Identifier id = BuiltInRegistries.BLOCK.getKey(block);
-            String name = standardize(id);
-            if (id.getNamespace().startsWith("minecraft")) continue;
-
-            map.put(name, Material.getMaterial(id.getNamespace().toUpperCase(Locale.ROOT) + "_" + id.getPath().toUpperCase(Locale.ROOT)));
-        }
-
-        for (Item item : BuiltInRegistries.ITEM) {
-            Identifier id = BuiltInRegistries.ITEM.getKey(item);
-            String name = standardize(id);
-            if (id.getNamespace().startsWith("minecraft")) continue;
-
-            map.put(name, Material.getMaterial(id.getNamespace().toUpperCase(Locale.ROOT) + "_" + id.getPath().toUpperCase(Locale.ROOT)));
-        }
-        return map;
-    }
-
-    public static String standardize(Identifier location) {
-        Preconditions.checkNotNull(location, "location");
-        return (location.getNamespace().equals(NamespacedKey.MINECRAFT) ? location.getPath() : location.toString())
-            .replace(':', '_')
-            .replaceAll("\\s+", "_")
-            .replaceAll("\\W", "")
-            .toUpperCase(Locale.ENGLISH);
-    }
-
-    public static String standardizeLower(Identifier location) {
-        return (location.getNamespace().equals(NamespacedKey.MINECRAFT) ? location.getPath() : location.toString())
-            .replace(':', '_')
-            .replaceAll("\\s+", "_")
-            .replaceAll("\\W", "")
-            .toLowerCase(Locale.ENGLISH);
-    }
-
-    public static Material getMaterial(Block block) {
-        Identifier id = BuiltInRegistries.BLOCK.getKey(block);
-        Material m = BLOCK_MATERIAL.getOrDefault(block, Material.getMaterial(id.getNamespace().toUpperCase(Locale.ROOT) + "_" + id.getPath().toUpperCase(Locale.ROOT)));
-        BLOCK_MATERIAL.put(block, m);
-        MATERIAL_BLOCK.put(m, block);
-        return m;
-    }
-
-    public static Material getMaterial(Item item) {
-        return ITEM_MATERIAL.getOrDefault(item, Material.AIR);
-    }
-
-    public static Item getItem(Material material) {
-        if (material != null && material.isLegacy()) material = CraftLegacyMaterials.fromLegacy(material);
-        return MATERIAL_ITEM.getOrDefault(material, getModdedItem(material));
-    }
-
-    public static Block getBlock(Material material) {
-        if (material != null && material.isLegacy()) material = CraftLegacyMaterials.fromLegacy(material);
-        return MATERIAL_BLOCK.getOrDefault(material, getModdedBlock(material));
-    }
-
-    private static Item getModdedItem(Material mat) {
-        if (!((Object)mat instanceof BukkitMaterialBridge)) {
-            // Dev env
-            return null;
-        }
-        BukkitMaterialBridge mm = (BukkitMaterialBridge)(Object) mat;
-        if (!mm.isModded()) return null;
-
-        Identifier id = Identifier.parse(mm.getModdedData().getId());
-        Item item = BuiltInRegistries.ITEM.getValue(id);
-        MATERIAL_ITEM.put(mat, item);
-        return item;
-    }
-
-    private static Block getModdedBlock(Material mat) {
-        if (null == mat) return Blocks.STONE;
-        if (!((Object)mat instanceof BukkitMaterialBridge)) {
-            // Dev env
-        	return Blocks.STONE;
-        }
-        BukkitMaterialBridge mm = (BukkitMaterialBridge)(Object) mat;
-        if (!mm.isModded()) return null;
-
-        Identifier id = Identifier.parse(mm.getModdedData().getId());
-        Block block = BuiltInRegistries.BLOCK.getValue(id);
-        MATERIAL_BLOCK.put(mat, block);
-        return block;
-    }
-
-    public static Identifier key(Material mat) {
-        return CraftNamespacedKey.toMinecraft(mat.getKey());
-    }
-    // ========================================================================
-
-    public static byte toLegacyData(BlockState data) {
-        return CraftLegacyMaterials.toLegacyData(data);
+    @Override
+    public Material IgetMaterial(Block b) {
+        return CraftMagicNumbers.getMaterial(b);
     }
 
     @Override
-    public Material toLegacy(Material material) {
-        return CraftLegacyMaterials.toLegacy(material);
+    public Block IgetBlock(Material m) {
+        return CraftMagicNumbers.getBlock(m);
     }
 
-    @Override
-    public Material fromLegacy(Material material) {
-        return CraftLegacyMaterials.fromLegacy(material);
-    }
-
-    @Override
-    public Material fromLegacy(MaterialData material) {
-        return CraftLegacyMaterials.fromLegacy(material);
-    }
-
-    @Override
-    public Material fromLegacy(MaterialData material, boolean itemPriority) {
-        return CraftLegacyMaterials.fromLegacy(material, itemPriority);
-    }
-
-    @Override
-    public BlockData fromLegacy(Material material, byte data) {
-        return CraftBlockData.fromData(getBlock(material, data));
-    }
-
-    @Override
-    public Material getMaterial(String material, int version) {
-        setupUnknownModdedMaterials();
-        Preconditions.checkArgument(material != null, "material == null");
-        Preconditions.checkArgument(version <= this.getDataVersion(), "Newer version! Server downgrades are not supported!");
-
-        // Fastpath up to date materials
-        if (version == this.getDataVersion()) return Material.getMaterial(material);
-
-        Dynamic<Tag> name = new Dynamic<>(NbtOps.INSTANCE, StringTag.valueOf("minecraft:" + material.toLowerCase(Locale.ROOT)));
-        Dynamic<Tag> converted = DataFixers.getDataFixer().update(References.ITEM_NAME, name, version, this.getDataVersion());
-
-        if (name.equals(converted)) converted = DataFixers.getDataFixer().update(References.BLOCK_NAME, name, version, this.getDataVersion());
-        return Material.matchMaterial(converted.asString(""));
-    }
-
-    @Deprecated
-    public String getMappingsVersion() {
-        return "60a2bb6bf2684dc61c56b90d7c41bddc";
-    }
-
-    @Override
-    public int getDataVersion() {
-        return GameVersion.create().world_version;
-    }
-
-    @Override
-    public ItemStack modifyItemStack(ItemStack stack, String arguments) {
-        net.minecraft.world.item.ItemStack nmsStack = CraftItemStack.asNMSCopy(stack);
-
-        /*try {
-            nmsStack.setNbt((NbtCompound) StringNbtReader.parse(arguments));
-        } catch (CommandSyntaxException ex) {
-            BukkitLogger.getLogger(CraftMagicNumbers.class.getName()).log(Level.SEVERE, null, ex);
-        }*/
-        ((IMixinItemStack)(Object)nmsStack).IC$modify_arguments(arguments); 
-
-        stack.setItemMeta(CraftItemStack.getItemMeta(nmsStack));
-        return stack;
-    }
-
-    @Override
-    public Advancement loadAdvancement(NamespacedKey key, String advancement) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public boolean removeAdvancement(NamespacedKey key) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    /*
-    private static final List<String> SUPPORTED_API = Arrays.asList("1.13", "1.14", "1.15", "1.16", "1.17", "1.18", "1.19", "1.20", "1.21");
-
-    //@Override
-    public void checkSupported_old(PluginDescriptionFile pdf) throws InvalidPluginException {
-        String minimumVersion = "1.12"; // TODO
-        int minimumIndex = SUPPORTED_API.indexOf(minimumVersion);
-
-        if (pdf.getAPIVersion() != null) {
-            int pluginIndex = SUPPORTED_API.indexOf(pdf.getAPIVersion());
-            if (pluginIndex == -1) {
-            	throw new InvalidPluginException("Unsupported API version " + pdf.getAPIVersion());
-            }
-
-            if (pluginIndex < minimumIndex) {
-                throw new InvalidPluginException("Plugin API version " + pdf.getAPIVersion() + " is lower than the minimum allowed version. Please update or replace it.");
-            }
-        } else {
-            if (minimumIndex == -1) {
-                CraftLegacyMaterials.init();
-                Bukkit.getLogger().log(Level.WARNING, "Legacy plugin " + pdf.getFullName() + " does not specify an api-version.");
-            } else throw new InvalidPluginException("Plugin API version " + pdf.getAPIVersion() + " is lower than the minimum allowed version. Please update or replace it.");
-        }
-    }
-    */
-    
-    @Override
-    public void checkSupported(PluginDescriptionFile pdf) throws InvalidPluginException {
-        ApiVersion toCheck = ApiVersion.getOrCreateVersion(pdf.getAPIVersion());
-        // ApiVersion minimumVersion = ApiVersion.getOrCreateVersion("1.12"); // TODO
-
-        if (toCheck.isNewerThan(ApiVersion.CURRENT)) {
-            // Newer than supported
-            throw new InvalidPluginException("Unsupported API version " + pdf.getAPIVersion());
-        }
-
-        // if (toCheck.isOlderThan(minimumVersion)) {
-        // }
-
-        if (toCheck.isOlderThan(ApiVersion.FLATTENING)) {
-            // TODO
-        	// CraftLegacy.init();
-        }
-
-        if (toCheck == ApiVersion.NONE) {
-            Bukkit.getLogger().log(Level.WARNING, "Legacy plugin " + pdf.getFullName() + " does not specify an api-version.");
-        }
-    }
-
-    public static boolean isLegacy(PluginDescriptionFile pdf) {
-        return pdf.getAPIVersion() == null;
-    }
-    
-    private final Commodore commodore = new Commodore();
-
-    public Commodore getCommodore() {
-        return this.commodore;
-    }
-    
-    @Override
-    public byte[] processClass(PluginDescriptionFile pdf, String path, byte[] clazz) {
-        /*
-    	try {
-            clazz = Commodore.convert(clazz, !isLegacy(pdf), pdf.getName());
-        } catch (Exception ex) {
-            Bukkit.getLogger().log(Level.SEVERE, "Fatal error trying to convert " + pdf.getFullName() + ":" + path, ex);
-        }
-        */
-
-        try {
-            clazz = this.commodore.convert(
-            		clazz,
-            		pdf.getName(),
-            		ApiVersion.getOrCreateVersion(pdf.getAPIVersion()),
-            		//((CraftServer) Bukkit.getServer()).activeCompatibilities
-            		Collections.emptySet()
-            		);
-        } catch (Exception ex) {
-            Bukkit.getLogger().log(Level.SEVERE, "Fatal error trying to convert " + pdf.getFullName() + ":" + path, ex);
-        }
-        
-        return clazz;
-    }
-
-    // Paper start
-    public boolean isSupportedApiVersion(String apiVersion) {
-        return true;//apiVersion != null && SUPPORTED_API.contains(apiVersion);
-    }
-    // Paper end
-
-    /**
-     * This helper class represents the different NBT Tags.
-     * <p>
-     * These should match NBTBase#getTypeId
-     */
-    public static class NBT {
-        public static final int TAG_END = 0;
-        public static final int TAG_BYTE = 1;
-        public static final int TAG_SHORT = 2;
-        public static final int TAG_INT = 3;
-        public static final int TAG_LONG = 4;
-        public static final int TAG_FLOAT = 5;
-        public static final int TAG_DOUBLE = 6;
-        public static final int TAG_BYTE_ARRAY = 7;
-        public static final int TAG_STRING = 8;
-        public static final int TAG_LIST = 9;
-        public static final int TAG_COMPOUND = 10;
-        public static final int TAG_INT_ARRAY = 11;
-        public static final int TAG_ANY_NUMBER = 99;
-    }
-
-    public static Fluid getFluid(net.minecraft.world.level.material.Fluid fluid) {
-        return FLUID_MATERIAL.get(fluid);
-    }
-
-    public static net.minecraft.world.level.material.Fluid getFluid(Fluid fluid) {
-        return MATERIAL_FLUID.get(fluid);
-    }
-
-    @Override
-    public ItemStack deserializeItem(byte[] data) {
-    	Preconditions.checkNotNull(data, "null cannot be deserialized");
-        Preconditions.checkArgument(data.length > 0, "cannot deserialize nothing");
-
-        CompoundTag compound = deserializeNbtFromBytes(data);
-        return deserializeItem(compound);
-    }
-
-    // @Override
-    public String getTimingsServerName() {
-        return "Fabric";
-    }
-
-    //@Override
-    public String getTranslationKey(Material arg0) {
-        return arg0.name();
-    }
-
-    //@Override
-    public String getTranslationKey(org.bukkit.block.Block arg0) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String getTranslationKey(EntityType type) {
-    	Preconditions.checkArgument(type.getName() != null, "Invalid name of EntityType %s for translation key", type);
-        return net.minecraft.world.entity.EntityType.byString(type.getName()).map(net.minecraft.world.entity.EntityType::getDescriptionId).orElseThrow();
-    }
-
-    @Override
-    public int nextEntityId() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    // @Override
-    public void reportTimings() {
-    }
-
-    @Override
-    public byte[] serializeItem(ItemStack item) {
-    	Preconditions.checkNotNull(item, "null cannot be serialized");
-        Preconditions.checkArgument(!item.isEmpty(), "Empty itemstack cannot be serialized");
-        return this.serializeNbtToBytes(
-           (CompoundTag)net.minecraft.world.item.ItemStack.CODEC
-              .encodeStart(CraftServer.server.registryAccess().createSerializationContext(NbtOps.INSTANCE), CraftItemStack.unwrap(item))
-              .getOrThrow()
-        );
-    }
-
-    // @Override
-    public @NotNull Multimap<Attribute, AttributeModifier> getItemAttributes(@NotNull Material arg0,
-            @NotNull EquipmentSlot arg1) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    // @Override
-    public ItemRarity getItemRarity(Material arg0) {
-        // TODO Auto-generated method stub
-        return ItemRarity.COMMON;
-    }
-
-    // @Override
-    public ItemRarity getItemStackRarity(ItemStack arg0) {
-        // TODO Auto-generated method stub
-        return ItemRarity.COMMON;
-    }
-
-    @Override
-    public int getProtocolVersion() {
-        // TODO Auto-generated method stub
-        return SharedConstants.getProtocolVersion();
-    }
-
-    @Override
-    public String getTranslationKey(ItemStack arg0) {
-    	net.minecraft.world.item.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(arg0);
-        return nmsItemStack.getItem().getDescriptionId();
-    }
-
-    @Override
-    public boolean isValidRepairItemStack(@NotNull ItemStack arg0, @NotNull ItemStack arg1) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    // Paper start
     @Override
     public net.kyori.adventure.text.flattener.ComponentFlattener componentFlattener() {
-        return PaperAdventure.FLATTENER;
+        return io.papermc.paper.adventure.PaperAdventure.FLATTENER;
     }
 
     @Override
@@ -736,248 +136,673 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
 
     @Override
     public net.kyori.adventure.text.serializer.plain.PlainComponentSerializer plainComponentSerializer() {
-        return PaperAdventure.PLAIN;
+        return io.papermc.paper.adventure.PaperAdventure.PLAIN;
+    }
+
+    @Override
+    public net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer plainTextSerializer() {
+        return net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText();
     }
 
     @Override
     public net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer legacyComponentSerializer() {
         return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection();
     }
-    // Paper end
 
     @Override
-    public Entity deserializeEntity(byte[] bs, World world, boolean bl) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-    @Override
-    public @NotNull Attributable getDefaultEntityAttributes(@NotNull NamespacedKey arg0) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-    @Override
-    public boolean hasDefaultEntityAttributes(@NotNull NamespacedKey arg0) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-    //@Override
-    public boolean isCollidable(@NotNull Material arg0) {
-        // TODO Auto-generated method stub
-        return true;
-    }
-    @Override
-    public byte[] serializeEntity(Entity entity) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-    
-    
-    // 1.18.2 api:
-    
-	@Override
-	public CreativeCategory getCreativeCategory(Material arg0) {
-		return CreativeCategory.BUILDING_BLOCKS;
-	}
-
-	@Override
-	public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(Material arg0, EquipmentSlot arg1) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@SuppressWarnings("resource")
-	@Override
-	public @NotNull String getMainLevelName() {
-        return ((net.minecraft.server.dedicated.DedicatedServer) MinecraftServerBridge.getServer()).getProperties().levelName;
-	}
-
-	@Override
-	public PlainTextComponentSerializer plainTextSerializer() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	//@Override
-	/*
-	public <T extends Keyed> org.bukkit.@NotNull Registry<T> registryFor(Class<T> arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	*/
-	
-	// 1.19.2
-	
-	@Override
-	public @NotNull NamespacedKey getBiomeKey(RegionAccessor arg0, int arg1, int arg2, int arg3) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	@Override
-	public Component resolveWithContext(Component arg0, CommandSender arg1, Entity arg2, boolean arg3)
-			throws IOException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	@Override
-	public void setBiomeKey(RegionAccessor arg0, int arg1, int arg2, int arg3, NamespacedKey arg4) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	// 1.19.4:
-
-	@Override
-    public String getBlockTranslationKey(Material material) {
-        Block block = CraftMagicNumbers.getBlock(material);
-        return block != null ? block.getDescriptionId() : null;
+    public net.kyori.adventure.text.Component resolveWithContext(final net.kyori.adventure.text.Component component, final org.bukkit.command.CommandSender context, final org.bukkit.entity.Entity scoreboardSubject, final boolean bypassPermissions) throws IOException {
+        //return io.papermc.paper.adventure.PaperAdventure.resolveWithContext(component, context, scoreboardSubject, bypassPermissions);
+        return component; // TODO
     }
 
-	// @Override
-	public FeatureFlag getFeatureFlag(@NotNull NamespacedKey key) {
-        Preconditions.checkArgument(key != null, "key cannot be null");
-        return CraftFeatureFlag.getFromNMS(key);
-	}
-
-	@Override
-    public String getItemTranslationKey(Material material) {
-        Item item = CraftMagicNumbers.getItem(material);
-        return item != null ? item.getDescriptionId() : null;
-    }
-	
-    public static net.minecraft.world.entity.EntityType<?> getEntityTypes(org.bukkit.entity.EntityType type) {
-        return ENTITY_TYPE_ENTITY_TYPES.get(type);
+    public static BlockState getBlock(MaterialData material) {
+        return CraftMagicNumbers.getBlock(material.getItemType(), material.getData());
     }
 
-    public static org.bukkit.entity.EntityType getEntityType(net.minecraft.world.entity.EntityType<?> entityTypes) {
-        return ENTITY_TYPES_ENTITY_TYPE.get(entityTypes);
+    public static BlockState getBlock(Material material, byte data) {
+        return CraftLegacy.fromLegacyData(CraftLegacy.toLegacy(material), data);
     }
 
-	@Override
-	public String getStatisticCriteriaKey(@NotNull Statistic statistic) {
-		if (statistic.getType() != Statistic.Type.UNTYPED) {
-            return "minecraft.custom:minecraft." + statistic.getKey().getKey();
+    public static MaterialData getMaterial(BlockState data) {
+        return CraftLegacy.toLegacy(CraftMagicNumbers.getMaterial(data.getBlock())).getNewData(CraftMagicNumbers.toLegacyData(data));
+    }
+
+    public static Item getItem(Material material, short data) {
+        if (material.isLegacy()) {
+            return CraftLegacy.fromLegacyData(CraftLegacy.toLegacy(material), data);
         }
-        return CraftStatistic.getNMSStatistic(statistic).getName();
-	}
 
-	@Override
-	public InternalPotionData getInternalPotionData(NamespacedKey key) {
-		Potion potReg = CraftRegistry.getMinecraftRegistry(Registries.POTION).getOptional(CraftNamespacedKey.toMinecraft(key)).orElseThrow();
-        return new CraftPotionType(key, potReg);
-	}
-	
-	// 1.20.4 API:
+        return CraftMagicNumbers.getItem(material);
+    }
+
+    public static MaterialData getMaterialData(Item item) {
+        return CraftLegacy.toLegacyData(CraftMagicNumbers.getMaterial(item));
+    }
+
+    // ========================================================================
+    public static final Map<Block, Material> BLOCK_MATERIAL = new HashMap<>();
+    public static final Map<Item, Material> ITEM_MATERIAL = new HashMap<>();
+    public static final Map<Material, Item> MATERIAL_ITEM = new HashMap<>();
+    public static final Map<Material, Block> MATERIAL_BLOCK = new HashMap<>();
+
+    static {
+        BlockImplUtil.setMN((IMagicNumbers)INSTANCE);
+
+        for (Block block : BuiltInRegistries.BLOCK) {
+            BLOCK_MATERIAL.put(block, Material.getMaterial(BuiltInRegistries.BLOCK.getKey(block).getPath().toUpperCase(Locale.ROOT)));
+        }
+
+        for (Item item : BuiltInRegistries.ITEM) {
+            ITEM_MATERIAL.put(item, Material.getMaterial(BuiltInRegistries.ITEM.getKey(item).getPath().toUpperCase(Locale.ROOT)));
+        }
+
+        for (Material material : Material.values()) {
+            if (material.isLegacy()) {
+                continue;
+            }
+
+            Identifier key = CraftNamespacedKey.toMinecraft(material.getKey());
+            BuiltInRegistries.ITEM.getOptional(key).ifPresent((item) -> {
+                CraftMagicNumbers.MATERIAL_ITEM.put(material, item);
+            });
+            BuiltInRegistries.BLOCK.getOptional(key).ifPresent((block) -> {
+                CraftMagicNumbers.MATERIAL_BLOCK.put(material, block);
+            });
+        }
+    }
+
+    public static Material getMaterial(Block block) {
+        Identifier id = BuiltInRegistries.BLOCK.getKey(block);
+        return CraftMagicNumbers.BLOCK_MATERIAL.getOrDefault(block, Material.getMaterial(id.getNamespace().toUpperCase(Locale.ROOT) + "_" + id.getPath().toUpperCase(Locale.ROOT)));
+    }
+
+    public static Material getMaterial(Item item) {
+        return CraftMagicNumbers.ITEM_MATERIAL.getOrDefault(item, Material.AIR);
+    }
+
+    public static Item getItem(Material material) {
+        if (material != null && material.isLegacy()) {
+            material = CraftLegacy.fromLegacy(material);
+        }
+
+        return CraftMagicNumbers.MATERIAL_ITEM.getOrDefault(material, CardboardMagicNumbers.getModdedItem(material));
+    }
+
+    public static Block getBlock(Material material) {
+        if (material != null && material.isLegacy()) {
+            material = CraftLegacy.fromLegacy(material);
+        }
+
+        return CraftMagicNumbers.MATERIAL_BLOCK.getOrDefault(material, CardboardMagicNumbers.getModdedBlock(material));
+    }
+    // ========================================================================
+
+    public static byte toLegacyData(BlockState data) {
+        return CraftLegacy.toLegacyData(data);
+    }
+
+    public Commodore getCommodore() {
+        return this.commodore;
+    }
+
+    @Override
+    public Material toLegacy(Material material) {
+        return CraftLegacy.toLegacy(material);
+    }
+
+    @Override
+    public Material fromLegacy(Material material) {
+        return CraftLegacy.fromLegacy(material);
+    }
+
+    @Override
+    public Material fromLegacy(MaterialData material) {
+        return CraftLegacy.fromLegacy(material);
+    }
+
+    @Override
+    public Material fromLegacy(MaterialData material, boolean itemPriority) {
+        return CraftLegacy.fromLegacy(material, itemPriority);
+    }
+
+    @Override
+    public BlockData fromLegacy(Material material, byte data) {
+        return CraftBlockData.fromData(CraftMagicNumbers.getBlock(material, data));
+    }
+
+    @Override
+    public Material getMaterial(String material, int version) {
+        CardboardMagicNumbers.setupUnknownModdedMaterials();
+        Preconditions.checkArgument(material != null, "material == null");
+        Preconditions.checkArgument(version <= this.getDataVersion(), "Newer version! Server downgrades are not supported!");
+
+        // Fastpath up to date materials
+        if (version == this.getDataVersion()) {
+            return Material.getMaterial(material);
+        }
+
+        Dynamic<Tag> name = new Dynamic<>(NbtOps.INSTANCE, StringTag.valueOf("minecraft:" + material.toLowerCase(Locale.ROOT)));
+        Dynamic<Tag> converted = DataFixers.getDataFixer().update(References.ITEM_NAME, name, version, this.getDataVersion());
+
+        if (name.equals(converted)) {
+            converted = DataFixers.getDataFixer().update(References.BLOCK_NAME, name, version, this.getDataVersion());
+        }
+
+        return Material.matchMaterial(converted.asString(""));
+    }
+
+    /**
+     * @deprecated in favor of {@link io.papermc.paper.ServerBuildInfo#minecraftVersionId()}
+     * Paper has used Mojang mappings since 1.20.5, and this method no longer returns a useful value.
+     */
+    @Deprecated(forRemoval = true, since = "1.21.6")
+    public String getMappingsVersion() {
+        throw new UnsupportedOperationException("Use ServerBuildInfo#minecraftVersionId instead.");
+    }
+
+    @Override
+    public int getDataVersion() {
+        return SharedConstants.getCurrentVersion().dataVersion().version();
+    }
+
+    @Override
+    public ItemStack modifyItemStack(ItemStack stack, String arguments) {
+        net.minecraft.world.item.ItemStack nmsStack = CraftItemStack.asNMSCopy(stack);
+
+        try {
+            nmsStack.applyComponents(new ItemParser(Commands.createValidationContext(CraftRegistry.getMinecraftRegistry())).parse(new StringReader(arguments)).components());
+        } catch (CommandSyntaxException ex) {
+            com.mojang.logging.LogUtils.getLogger().error("Exception modifying ItemStack", new Throwable(ex)); // Paper - show stack trace
+        }
+
+        stack.setItemMeta(CraftItemStack.getItemMeta(nmsStack));
+
+        return stack;
+    }
+
+    private static File getBukkitDataPackFolder() {
+        return new File(CraftServer.INSTANCE.getServer().getWorldPath(LevelResource.DATAPACK_DIR).toFile(), "bukkit");
+    }
+
+    @Override
+    public Advancement loadAdvancement(NamespacedKey key, String advancement) {
+        Preconditions.checkArgument(Bukkit.getAdvancement(key) == null, "Advancement %s already exists", key);
+        Identifier resourceKey = CraftNamespacedKey.toMinecraft(key);
+
+        JsonElement jsonelement = JsonParser.parseString(advancement);
+        final net.minecraft.resources.RegistryOps<JsonElement> ops = CraftRegistry.getMinecraftRegistry().createSerializationContext(JsonOps.INSTANCE); // Paper - use RegistryOps
+        final net.minecraft.advancements.Advancement nms = net.minecraft.advancements.Advancement.CODEC.parse(ops, jsonelement).getOrThrow(JsonParseException::new); // Paper - use RegistryOps
+        if (nms != null) {
+            final com.google.common.collect.ImmutableMap.Builder<Identifier, AdvancementHolder> mapBuilder = com.google.common.collect.ImmutableMap.builder();
+            mapBuilder.putAll(CraftServer.INSTANCE.getServer().getAdvancements().advancements);
+
+            final AdvancementHolder holder = new AdvancementHolder(resourceKey, nms);
+            mapBuilder.put(resourceKey, holder);
+
+            CraftServer.INSTANCE.getServer().getAdvancements().advancements = mapBuilder.build();
+            final net.minecraft.advancements.AdvancementTree tree = CraftServer.INSTANCE.getServer().getAdvancements().tree();
+            tree.addAll(java.util.List.of(holder));
+
+            // recalculate advancement position
+            final net.minecraft.advancements.AdvancementNode node = tree.get(resourceKey);
+            if (node != null) {
+                final net.minecraft.advancements.AdvancementNode root = node.root();
+                if (root.holder().value().display().isPresent()) {
+                    net.minecraft.advancements.TreeNodePosition.run(root);
+                }
+            }
+
+            Advancement bukkit = Bukkit.getAdvancement(key);
+
+            if (bukkit != null) {
+                File file = new File(CraftMagicNumbers.getBukkitDataPackFolder(), "data" + File.separator + key.getNamespace() + File.separator + "advancements" + File.separator + key.getKey() + ".json");
+                file.getParentFile().mkdirs();
+
+                try {
+                    Files.write(advancement, file, StandardCharsets.UTF_8);
+                } catch (IOException ex) {
+                    Bukkit.getLogger().log(Level.SEVERE, "Error saving advancement " + key, ex);
+                }
+
+                CraftServer.INSTANCE.getServer().getPlayerList().getPlayers().forEach(player -> {
+                    player.getAdvancements().reload(CraftServer.INSTANCE.getServer().getAdvancements());
+                    player.getAdvancements().flushDirty(player, false);
+                });
+
+                return bukkit;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public boolean removeAdvancement(NamespacedKey key) {
+        File file = new File(CraftMagicNumbers.getBukkitDataPackFolder(), "data" + File.separator + key.getNamespace() + File.separator + "advancements" + File.separator + key.getKey() + ".json");
+        return file.delete();
+    }
+
+    @Override
+    public void checkSupported(PluginDescriptionFile descriptionFile) throws InvalidPluginException {
+        ApiVersion toCheck = ApiVersion.getOrCreateVersion(descriptionFile.getAPIVersion());
+        ApiVersion minimumVersion = CraftServer.INSTANCE.minimumAPI;
+
+        if (toCheck.isNewerThan(ApiVersion.CURRENT)) {
+            // Newer than supported
+            throw new InvalidPluginException("Unsupported API version " + descriptionFile.getAPIVersion());
+        }
+
+        if (toCheck.isOlderThan(minimumVersion)) {
+            // Older than supported
+            throw new InvalidPluginException("Plugin API version " + descriptionFile.getAPIVersion() + " is lower than the minimum allowed version. Please update or replace it.");
+        }
+
+        if (!DISABLE_OLD_API_SUPPORT && toCheck.isOlderThan(ApiVersion.FLATTENING)) { // Paper
+            CraftLegacy.init();
+        }
+
+        if (toCheck == ApiVersion.NONE) {
+            Bukkit.getLogger().log(Level.WARNING, "Legacy plugin " + descriptionFile.getFullName() + " does not specify an api-version.");
+        }
+    }
+
+    public static boolean isLegacy(PluginDescriptionFile pdf) {
+        return pdf.getAPIVersion() == null;
+    }
+
+    @Override
+    public byte[] processClass(PluginDescriptionFile pdf, String path, byte[] clazz) {
+        // Paper start
+        if (DISABLE_OLD_API_SUPPORT) {
+            // Make sure we still go through our reflection rewriting if needed
+            return io.papermc.paper.pluginremap.reflect.ReflectionRemapper.processClass(clazz);
+        }
+        // Paper end
+        try {
+            clazz = this.commodore.convert(clazz, pdf.getName(), ApiVersion.getOrCreateVersion(pdf.getAPIVersion()), ((CraftServer) Bukkit.getServer()).activeCompatibilities);
+        } catch (Exception ex) {
+            Bukkit.getLogger().log(Level.SEVERE, "Fatal error trying to convert " + pdf.getFullName() + ":" + path, ex);
+        }
+
+        return clazz;
+    }
+
+    @Override
+    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(Material material, EquipmentSlot slot) {
+        // Paper start - delegate to method on ItemType
+        final org.bukkit.inventory.ItemType item = material.asItemType();
+        Preconditions.checkArgument(item != null, material + " is not an item and does not have default attributes");
+        return item.getDefaultAttributeModifiers(slot);
+        // Paper end - delegate to method on ItemType
+    }
+
+    @Override
+    public CreativeCategory getCreativeCategory(Material material) {
+        return material.getCreativeCategory();
+    }
+
+    @Override
+    public String getBlockTranslationKey(Material material) {
+        return material.getBlockTranslationKey();
+    }
+
+    @Override
+    public String getItemTranslationKey(Material material) {
+        return material.getItemTranslationKey();
+    }
+
+    @Override
+    public String getTranslationKey(EntityType entityType) {
+        Preconditions.checkArgument(entityType.getName() != null, "Invalid name of EntityType %s for translation key", entityType);
+        return net.minecraft.world.entity.EntityType.byString(entityType.getName()).map(net.minecraft.world.entity.EntityType::getDescriptionId).orElseThrow();
+    }
+
+    @Override
+    public String getTranslationKey(ItemStack itemStack) {
+        net.minecraft.world.item.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(itemStack);
+        return nmsItemStack.getItem().getDescriptionId();
+    }
+
+    @Override
+    public boolean isSupportedApiVersion(String apiVersion) {
+        if (apiVersion == null) return false;
+        final ApiVersion toCheck = ApiVersion.getOrCreateVersion(apiVersion);
+        final ApiVersion minimumVersion = CraftServer.INSTANCE.minimumAPI;
+
+        return !toCheck.isNewerThan(ApiVersion.CURRENT) && !toCheck.isOlderThan(minimumVersion);
+    }
 
     @Override
     public String getTranslationKey(final Attribute attribute) {
         return attribute.getTranslationKey();
     }
 
-	// @Override
-	public @Nullable DamageEffect getDamageEffect(String key) {
-        return CraftDamageEffect.getById(key);
-	}
+    @Override
+    public PotionType.InternalPotionData getInternalPotionData(NamespacedKey namespacedKey) {
+        Potion potionRegistry = CraftRegistry.getMinecraftRegistry(Registries.POTION)
+                .getOptional(CraftNamespacedKey.toMinecraft(namespacedKey)).orElseThrow();
 
-	@Override
-	public @NotNull Builder createDamageSourceBuilder(DamageType damageType) {
+        return new CraftPotionType(namespacedKey, potionRegistry);
+    }
+
+    @Override
+    public DamageSource.Builder createDamageSourceBuilder(DamageType damageType) {
         return new CraftDamageSourceBuilder(damageType);
-	}
-
-	@Override
-	public org.bukkit.Color getSpawnEggLayerColor(final EntityType entityType, final int layer) {
-		final net.minecraft.world.entity.EntityType<?> nmsType = org.bukkit.craftbukkit.entity.CraftEntityType.bukkitToMinecraft(entityType);
-		final net.minecraft.world.item.SpawnEggItem eggItem = net.minecraft.world.item.SpawnEggItem.byId(nmsType);
-		if (eggItem != null) {
-			throw new UnsupportedOperationException("Not yet implemented");
-		}
-		return eggItem == null ? null : org.bukkit.Color.fromRGB(1); // TODO
     }
 
-	@Override
-	public LifecycleEventManager<Plugin> createPluginLifecycleEventManager(JavaPlugin plugin,
-			BooleanSupplier registrationCheck) {
-		return new PaperLifecycleEventManager<JavaPlugin>(plugin, registrationCheck);
-	}
-
-	@Override
-	public List<Component> computeTooltipLines(ItemStack itemStack, TooltipContext tooltipContext, Player player) {
-        TooltipFlag.Default default_type = tooltipContext.isAdvanced() ? TooltipFlag.ADVANCED : TooltipFlag.NORMAL;
-        
-        if (tooltipContext.isCreative()) {
-        	default_type = default_type.asCreative();
-        }
-        
-        List<net.minecraft.network.chat.Component> lines = CraftItemStack.asNMSCopy(itemStack).getTooltipLines(
-        		Item.TooltipContext.of(
-        			player == null ? CraftServer.server.registryAccess() :
-        						((CraftPlayer)player).getHandle().level().registryAccess()
-        		),
-        		player == null ? null : ((CraftPlayer)player).getHandle(), default_type
-        );
-        return lines.stream().map(PaperAdventure::asAdventure).toList();
-    }
-	
-	@Override
-	public String get(Class<?> aClass, String s) {
-		if (aClass == Enchantment.class) {
+    @Override
+    public String get(Class<?> aClass, String s) {
+        if (aClass == Enchantment.class) {
+            // We currently do not have any version-dependent remapping, so we can use current version
             return FieldRename.convertEnchantmentName(ApiVersion.CURRENT, s);
         }
         return s;
-	}
+    }
 
-	@Override
-	public <B extends Keyed> B get(RegistryKey<B> registry, NamespacedKey key) {
-		return CraftRegistry.get(registry, key, ApiVersion.CURRENT);
-	}
+    @Override
+    public <B extends Keyed> B get(RegistryKey<B> registry, NamespacedKey namespacedKey) {
+        // We currently do not have any version-dependent remapping, so we can use current version
+        return CraftRegistry.get(registry, namespacedKey, ApiVersion.CURRENT);
+    }
 
-	// 1.21:
+    @Override
+    public com.destroystokyo.paper.util.VersionFetcher getVersionFetcher() {
+        //return new com.destroystokyo.paper.PaperVersionFetcher(); // TODO
+        return new com.destroystokyo.paper.util.VersionFetcher() {
+            @Override
+            public long getCacheTime() {
+                return 0;
+            }
 
-	@Override
-	public ItemStack createEmptyStack() {
-		return CraftItemStack.asCraftMirror(null);
-	}
+            @Override
+            public Component getVersionMessage() {
+                return Component.text("TODO");
+            }
+        };
+    }
 
-	@Override
-	public @NotNull JsonObject serializeItemAsJson(@NotNull ItemStack itemStack) {
-		JsonObject item;
-        Preconditions.checkNotNull((Object)itemStack, (Object)"Cannot serialize empty ItemStack");
-        Preconditions.checkArgument((!itemStack.isEmpty() ? 1 : 0) != 0, (Object)"Cannot serialize empty ItemStack");
-        RegistryAccess.Frozen reg = CraftServer.server.registryAccess();
-        RegistryOps ops = reg.createSerializationContext(JsonOps.INSTANCE);
-        // TODO
-        //NbtComponent.SERIALIZE_CUSTOM_AS_SNBT.set(true);
-        try {
-            item = ((JsonElement)net.minecraft.world.item.ItemStack.CODEC.encodeStart(ops, CraftItemStack.unwrap(itemStack)).getOrThrow()).getAsJsonObject();
-        } finally {
-            // TODO
-        	// NbtComponent.SERIALIZE_CUSTOM_AS_SNBT.set(false);
+    @Override
+    public byte[] serializeItem(ItemStack item) {
+        Preconditions.checkNotNull(item, "null cannot be serialized");
+        Preconditions.checkArgument(!item.isEmpty(), "Empty itemstack cannot be serialized");
+
+        return serializeNbtToBytes(
+                (CompoundTag) net.minecraft.world.item.ItemStack.CODEC.encodeStart(
+                        CraftServer.INSTANCE.getServer().registryAccess().createSerializationContext(NbtOps.INSTANCE),
+                        CraftItemStack.unwrap(item)
+                ).getOrThrow()
+        );
+    }
+
+    @Override
+    public ItemStack deserializeItem(byte[] data) {
+        Preconditions.checkNotNull(data, "null cannot be deserialized");
+        Preconditions.checkArgument(data.length > 0, "cannot deserialize nothing");
+
+        CompoundTag compound = deserializeNbtFromBytes(data);
+        return deserializeItem(compound);
+    }
+
+    private ItemStack deserializeItem(CompoundTag compound) {
+        final int dataVersion = compound.getIntOr("DataVersion", 0);
+        //compound = PlatformHooks.get().convertNBT(References.ITEM_STACK, DataFixers.getDataFixer(), compound, dataVersion, this.getDataVersion()); // Paper - possibly use dataconverter
+        compound = platformhooks$convertNBT(References.ITEM_STACK, DataFixers.getDataFixer(), compound, dataVersion, this.getDataVersion());
+        if (compound.getStringOr("id", "minecraft:air").equals("minecraft:air")) {
+            return CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.EMPTY);
         }
-        item.addProperty("DataVersion", (Number)this.getDataVersion());
-        return item;
-	}
+        return CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.CODEC.parse(
+                CraftRegistry.getMinecraftRegistry().createSerializationContext(NbtOps.INSTANCE), compound
+        ).getOrThrow());
+    }
 
-	@Override
-	public ItemStack deserializeItemFromJson(JsonObject data) throws IllegalArgumentException {
-		Preconditions.checkNotNull(data, "null cannot be deserialized");
-		int dataVersion = data.get("DataVersion").getAsInt();
-		int currentVersion = INSTANCE.getDataVersion();
-		data = (JsonObject)CraftServer.server
-				.fixerUpper
-				.update(References.ITEM_STACK, new Dynamic<>(JsonOps.INSTANCE, data), dataVersion, currentVersion)
-				.getValue();
-		DynamicOps<JsonElement> ops = CraftServer.server.registryAccess().createSerializationContext(JsonOps.INSTANCE);
-		return CraftItemStack.asCraftMirror(
-				(net.minecraft.world.item.ItemStack)net.minecraft.world.item.ItemStack.CODEC.parse(ops, data).getOrThrow(IllegalArgumentException::new)
-				);
-	}
-	
-	private byte[] serializeNbtToBytes(CompoundTag compound) {
+    /**
+     * Cardboard
+     *
+     * @see {@link ca.spottedleaf.moonrise.paper.PaperHooks}
+     */
+    public CompoundTag platformhooks$convertNBT(DSL.TypeReference type, DataFixer dataFixer, CompoundTag nbt, int fromVersion, int toVersion) {
+        return (CompoundTag)dataFixer.update(type, new Dynamic<>(NbtOps.INSTANCE, nbt), fromVersion, toVersion).getValue();
+    }
+
+    @Override
+    public @org.jetbrains.annotations.NotNull Map<String, Object> serializeStack(final ItemStack itemStack) {
+        if (itemStack.isEmpty()) {
+            return Map.of("id", "minecraft:air", SharedConstants.DATA_VERSION_TAG, this.getDataVersion(), "schema_version", 1);
+        }
+        final CompoundTag tag = (CompoundTag) net.minecraft.world.item.ItemStack.CODEC.encodeStart(
+                CraftRegistry.getMinecraftRegistry().createSerializationContext(NbtOps.INSTANCE),
+                CraftItemStack.asNMSCopy(itemStack)
+        ).getOrThrow();
+        NbtUtils.addCurrentDataVersion(tag);
+
+        final Map<String, Object> ret = new LinkedHashMap<>();
+        tag.asCompound().get().forEach((key, value) -> {
+            switch (key) {
+                case "id" -> {
+                    ret.put("id", value.asString().get());
+                }
+                case "count" -> {
+                    ret.put("count", value.asInt().get());
+                }
+                case "components" -> {
+                    final Map<String, Object> components = new LinkedHashMap<>();
+                    value.asCompound().ifPresent((compoundTag) -> {
+                        compoundTag.forEach((componentKey, componentTag) -> {
+                            final String serializedComponent = componentTag.toString();
+                            components.put(componentKey, serializedComponent);
+                        });
+                    });
+                    ret.put("components", components);
+                }
+                case SharedConstants.DATA_VERSION_TAG -> {
+                    ret.put(SharedConstants.DATA_VERSION_TAG, value.asInt().get());
+                }
+                default -> throw new IllegalStateException("Unexpected value: " + key);
+            }
+        });
+        ret.put("schema_version", 1);
+        return ret;
+    }
+
+    private static final TagParser<Tag> SNBT_REGISTRY_UNAWARE_PARSER = TagParser.create(NbtOps.INSTANCE);
+    @Override
+    public @org.jetbrains.annotations.NotNull ItemStack deserializeStack(@org.jetbrains.annotations.NotNull final Map<String, Object> args) {
+        final int version = args.getOrDefault("schema_version", 1) instanceof Number val ? val.intValue() : -1;
+
+        final CompoundTag tag = new CompoundTag();
+        args.forEach((key, value) -> {
+            switch (key) {
+                case "id" -> {
+                    tag.putString("id", (String) value);
+                }
+                case "count" -> {
+                    tag.putInt("count", ((Number) value).intValue());
+                }
+                case "components" -> {
+                    if (version == 1) {
+                        Map<String, String> componentMap;
+                        if (value instanceof Map) {
+                            componentMap = (Map<String, String>) value;
+                        } else if (value instanceof MemorySection memory) {
+                            componentMap = new HashMap<>();
+                            for (final String memoryKey : memory.getKeys(false)) {
+                                componentMap.put(memoryKey, memory.getString(memoryKey));
+                            }
+                        } else {
+                            throw new IllegalArgumentException("components must be a Map");
+                        }
+                        final CompoundTag componentsTag = new CompoundTag();
+                        componentMap.forEach((componentKey, componentString) -> {
+                            final Tag componentTag;
+                            try {
+                                componentTag = SNBT_REGISTRY_UNAWARE_PARSER.parseFully(componentString);
+                            } catch (final CommandSyntaxException e) {
+                                throw new RuntimeException("Error parsing item stack data components", e);
+                            }
+                            componentsTag.put(componentKey, componentTag);
+                        });
+                        tag.put("components", componentsTag);
+
+                    } else {
+                        throw new IllegalStateException("Unexpected version: " + version);
+                    }
+                }
+                case SharedConstants.DATA_VERSION_TAG -> {
+                    tag.putInt(SharedConstants.DATA_VERSION_TAG, ((Number) value).intValue());
+                }
+                case "==", "schema_version" -> {
+                    // Ignore
+                }
+                default -> throw new IllegalStateException("Unexpected value: " + key);
+            }
+        });
+
+        return deserializeItem(tag);
+    }
+
+    @Override
+    public com.google.gson.JsonObject serializeItemAsJson(ItemStack itemStack) {
+        Preconditions.checkNotNull(itemStack, "Cannot serialize empty ItemStack");
+        Preconditions.checkArgument(!itemStack.isEmpty(), "Cannot serialize empty ItemStack");
+
+        net.minecraft.core.RegistryAccess.Frozen reg = CraftServer.INSTANCE.getServer().registryAccess();
+        com.mojang.serialization.DynamicOps<com.google.gson.JsonElement> ops = reg.createSerializationContext(com.mojang.serialization.JsonOps.INSTANCE);
+        com.google.gson.JsonObject item;
+        // Serialize as SNBT to preserve exact NBT types; vanilla codecs already can handle such deserialization.
+        //net.minecraft.world.item.component.CustomData.SERIALIZE_CUSTOM_AS_SNBT.set(true); // TODO
+        try {
+            item = net.minecraft.world.item.ItemStack.CODEC.encodeStart(ops, CraftItemStack.unwrap(itemStack)).getOrThrow().getAsJsonObject();
+        } finally {
+           // net.minecraft.world.item.component.CustomData.SERIALIZE_CUSTOM_AS_SNBT.set(false); // TODO
+        }
+        item.addProperty("DataVersion", this.getDataVersion());
+        return item;
+    }
+
+    @Override
+    public ItemStack deserializeItemFromJson(com.google.gson.JsonObject data) throws IllegalArgumentException {
+        Preconditions.checkNotNull(data, "null cannot be deserialized");
+
+        final int dataVersion = data.get("DataVersion").getAsInt();
+        final int currentVersion = org.bukkit.craftbukkit.util.CraftMagicNumbers.INSTANCE.getDataVersion();
+        data = (com.google.gson.JsonObject) CraftServer.INSTANCE.getServer().fixerUpper.update(References.ITEM_STACK, new Dynamic<>(com.mojang.serialization.JsonOps.INSTANCE, data), dataVersion, currentVersion).getValue();
+        com.mojang.serialization.DynamicOps<com.google.gson.JsonElement> ops = CraftServer.INSTANCE.getServer().registryAccess().createSerializationContext(com.mojang.serialization.JsonOps.INSTANCE);
+        return CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.CODEC.parse(ops, data).getOrThrow(IllegalArgumentException::new));
+    }
+
+    @Override
+    public byte[] serializeEntity(org.bukkit.entity.Entity entity, EntitySerializationFlag... serializationFlags) {
+        Preconditions.checkNotNull(entity, "null cannot be serialized");
+        Preconditions.checkArgument(entity instanceof CraftEntity, "Only CraftEntities can be serialized");
+
+        Set<EntitySerializationFlag> flags = Set.of(serializationFlags);
+        final boolean serializePassengers = flags.contains(EntitySerializationFlag.PASSENGERS);
+        final boolean forceSerialization = flags.contains(EntitySerializationFlag.FORCE);
+        final boolean allowPlayerSerialization = flags.contains(EntitySerializationFlag.PLAYER);
+        final boolean allowMiscSerialization = flags.contains(EntitySerializationFlag.MISC);
+        final boolean includeNonSaveable = allowPlayerSerialization || allowMiscSerialization;
+
+        net.minecraft.world.entity.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+        (serializePassengers ? nmsEntity.getSelfAndPassengers() : Stream.of(nmsEntity)).forEach(e -> {
+            // Ensure force flag is not needed
+            Preconditions.checkArgument(
+                    (e.getBukkitEntity().isValid() && e.getBukkitEntity().isPersistent()) || forceSerialization,
+                    "Cannot serialize invalid or non-persistent entity %s(%s) without the FORCE flag",
+                    e.getType().toShortString(),
+                    e.getStringUUID()
+            );
+
+            if (e instanceof Player) {
+                // Ensure player flag is not needed
+                Preconditions.checkArgument(
+                        allowPlayerSerialization,
+                        "Cannot serialize player(%s) without the PLAYER flag",
+                        e.getStringUUID()
+                );
+            } else {
+                // Ensure misc flag is not needed
+                Preconditions.checkArgument(
+                        nmsEntity.getType().canSerialize() || allowMiscSerialization,
+                        "Cannot serialize misc non-saveable entity %s(%s) without the MISC flag",
+                        e.getType().toShortString(),
+                        e.getStringUUID()
+                );
+            }
+        });
+
+        try (final ProblemReporter.ScopedCollector problemReporter = new ProblemReporter.ScopedCollector(
+                () -> "serialiseEntity@" + entity.getUniqueId(), LOGGER
+        )) {
+            final TagValueOutput output = TagValueOutput.createWithContext(problemReporter, nmsEntity.registryAccess());
+            if (serializePassengers) {
+                if (!nmsEntity.saveAsPassenger(output)) {//, true, includeNonSaveable, forceSerialization)) { // TODO
+                    throw new IllegalArgumentException("Couldn't serialize entity");
+                }
+            } else {
+                List<net.minecraft.world.entity.Entity> pass = new ArrayList<>(nmsEntity.getPassengers());
+                nmsEntity.passengers = com.google.common.collect.ImmutableList.of();
+                boolean serialized = nmsEntity.saveAsPassenger(output);//, true, includeNonSaveable, forceSerialization); // TODO
+                nmsEntity.passengers = com.google.common.collect.ImmutableList.copyOf(pass);
+                if (!serialized) {
+                    throw new IllegalArgumentException("Couldn't serialize entity");
+                }
+            }
+            return serializeNbtToBytes(output.buildResult());
+        }
+    }
+
+    @Override
+    public org.bukkit.entity.Entity deserializeEntity(byte[] data, World world, boolean preserveUUID, boolean preservePassengers) {
+        Preconditions.checkNotNull(data, "null cannot be deserialized");
+        Preconditions.checkArgument(data.length > 0, "Cannot deserialize empty data");
+
+        CompoundTag compound = deserializeNbtFromBytes(data);
+        int dataVersion = compound.getIntOr("DataVersion", 0);
+        //compound = PlatformHooks.get().convertNBT(References.ENTITY, CraftServer.INSTANCE.getServer().fixerUpper, compound, dataVersion, this.getDataVersion()); // Paper - possibly use dataconverter
+        compound = platformhooks$convertNBT(References.ENTITY, CraftServer.INSTANCE.getServer().fixerUpper, compound, dataVersion, this.getDataVersion());
+        if (!preservePassengers) {
+            compound.remove("Passengers");
+        }
+        net.minecraft.world.entity.Entity nmsEntity = deserializeEntity(compound, ((CraftWorld) world).getHandle(), preserveUUID);
+        return nmsEntity.getBukkitEntity();
+    }
+
+    private net.minecraft.world.entity.Entity deserializeEntity(CompoundTag compound, ServerLevel world, boolean preserveUUID) {
+        if (!preserveUUID) {
+            // Generate a new UUID, so we don't have to worry about deserializing the same entity twice
+            compound.remove("UUID");
+        }
+
+        final net.minecraft.world.entity.Entity nmsEntity;
+        try (final ProblemReporter.ScopedCollector problemReporter = new ProblemReporter.ScopedCollector(
+                () -> "deserialiseEntity", LOGGER
+        )) {
+            nmsEntity = net.minecraft.world.entity.EntityType.create(
+                    TagValueInput.create(problemReporter, world.registryAccess(), compound),
+                    world,
+                    net.minecraft.world.entity.EntitySpawnReason.LOAD
+            ).orElseThrow(() -> new IllegalArgumentException("An ID was not found for the data. Did you downgrade?"));
+        }
+
+        compound.getList("Passengers").ifPresent(passengers -> {
+            for (final Tag tag : passengers) {
+                if (!(tag instanceof final CompoundTag serializedPassenger)) {
+                    continue;
+                }
+                final net.minecraft.world.entity.Entity passengerEntity = deserializeEntity(serializedPassenger, world, preserveUUID);
+                passengerEntity.startRiding(nmsEntity, true, true);
+            }
+        });
+        return nmsEntity;
+    }
+
+    private byte[] serializeNbtToBytes(CompoundTag compound) {
         compound.putInt("DataVersion", getDataVersion());
         java.io.ByteArrayOutputStream outputStream = new java.io.ByteArrayOutputStream();
         try {
             net.minecraft.nbt.NbtIo.writeCompressed(
-                compound,
-                outputStream
+                    compound,
+                    outputStream
             );
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -989,7 +814,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         CompoundTag compound;
         try {
             compound = net.minecraft.nbt.NbtIo.readCompressed(
-                new java.io.ByteArrayInputStream(data), net.minecraft.nbt.NbtAccounter.unlimitedHeap()
+                    new java.io.ByteArrayInputStream(data), net.minecraft.nbt.NbtAccounter.unlimitedHeap()
             );
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -998,221 +823,101 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         Preconditions.checkArgument(dataVersion <= getDataVersion(), "Newer version! Server downgrades are not supported!");
         return compound;
     }
-	
-    /*
-	 private Biome customBiome;
-	    // @Override
-	    public Biome getCustomBiome() {
-	        if (this.customBiome == null) {
-	            this.customBiome = new org.bukkit.craftbukkit.block.CraftBiome(NamespacedKey.minecraft("custom"), null);
-	        }
-
-	        return this.customBiome;
-	    }
-	    */
-
 
     @Override
-    public byte[] serializeEntity(org.bukkit.entity.Entity entity, EntitySerializationFlag... serializationFlags) {
-    	Preconditions.checkNotNull(entity, "null cannot be serialized");
-    	Preconditions.checkArgument(entity instanceof CraftEntity, "Only CraftEntities can be serialized");
-
-    	Set<EntitySerializationFlag> flags = Set.of(serializationFlags);
-    	final boolean serializePassangers = flags.contains(EntitySerializationFlag.PASSENGERS);
-    	final boolean forceSerialization = flags.contains(EntitySerializationFlag.FORCE);
-    	final boolean allowPlayerSerialization = flags.contains(EntitySerializationFlag.PLAYER);
-    	final boolean allowMiscSerialization = flags.contains(EntitySerializationFlag.MISC);
-    	final boolean includeNonSaveable = allowPlayerSerialization || allowMiscSerialization;
-
-    	net.minecraft.world.entity.Entity nmsEntity = ((CraftEntity) entity).getHandle();
-    	(serializePassangers ? nmsEntity.getSelfAndPassengers() : Stream.of(nmsEntity)).forEach(e -> {
-    		// Ensure force flag is not needed
-    		Preconditions.checkArgument(
-    				(e.getBukkitEntity().isValid() && e.getBukkitEntity().isPersistent()) || forceSerialization,
-    				"Cannot serialize invalid or non-persistent entity %s(%s) without the FORCE flag",
-    				e.getType().toShortString(),
-    				e.getStringUUID()
-    				);
-
-    		if (e instanceof net.minecraft.world.entity.player.Player) {
-    			// Ensure player flag is not needed
-    			Preconditions.checkArgument(
-    					allowPlayerSerialization,
-    					"Cannot serialize player(%s) without the PLAYER flag",
-    					e.getStringUUID()
-    					);
-    		} else {
-    			// Ensure player flag is not needed
-    			Preconditions.checkArgument(
-    					nmsEntity.getType().canSerialize() || allowMiscSerialization,
-    					"Cannot serialize misc non-saveable entity %s(%s) without the MISC flag",
-    					e.getType().toShortString(),
-    					e.getStringUUID()
-    					);
-    		}
-    	});
-
-    	CompoundTag compound = new CompoundTag();
-    	if (serializePassangers) {
-    		// TODO
-    		// if (!nmsEntity.saveAsPassenger(compound, true, includeNonSaveable, forceSerialization)) {
-    		throw new IllegalArgumentException("Couldn't serialize entity");
-    		// }
-    	} else {
-    		/*
-	        	List<net.minecraft.entity.Entity> pass = new ArrayList<>(nmsEntity.getPassengerList());
-	            nmsEntity.passengerList = com.google.common.collect.ImmutableList.of();
-	            boolean serialized = nmsEntity.saveAsPassenger(compound, true, includeNonSaveable, forceSerialization);
-	            nmsEntity.passengerList = com.google.common.collect.ImmutableList.copyOf(pass);
-	            if (!serialized) {
-	                throw new IllegalArgumentException("Couldn't serialize entity");
-	            }
-    		 */
-    	}
-    	return serializeNbtToBytes(compound);
+    public int nextEntityId() {
+        //return net.minecraft.world.entity.Entity.nextEntityId(); // TODO
+        return 0;
     }
 
     @Override
-    public @NotNull Entity deserializeEntity(byte @NotNull [] data, @NotNull World world, boolean preserveUUID,
-    		boolean preservePassengers) {
-    	// TODO Auto-generated method stub
-    	return null;
-    }
-    @Override
-    public @NotNull Map<String, Object> serializeStack(ItemStack itemStack) {
-    	if (itemStack.isEmpty()) {
-    		return Map.of("id", "minecraft:air", "DataVersion", this.getDataVersion(), "schema_version", 1);
-    	}
-    	CompoundTag tag = (CompoundTag)net.minecraft.world.item.ItemStack.CODEC.encodeStart(CraftRegistry.getMinecraftRegistry().createSerializationContext(NbtOps.INSTANCE), CraftItemStack.asNMSCopy(itemStack)).getOrThrow();
-    	NbtUtils.addCurrentDataVersion(tag);
-    	LinkedHashMap<String, Object> ret = new LinkedHashMap<String, Object>();
-    	tag.asCompound().get().forEach((key, value) -> {
-    		switch (key) {
-    		case "id": {
-    			ret.put("id", value.asString().get());
-    			break;
-    		}
-    		case "count": {
-    			ret.put("count", value.asInt().get());
-    			break;
-    		}
-    		case "components": {
-    			LinkedHashMap components = new LinkedHashMap();
-    			value.asCompound().ifPresent(compoundTag -> compoundTag.forEach((componentKey, componentTag) -> {
-    				String serializedComponent = componentTag.toString();
-    				components.put(componentKey, serializedComponent);
-    			}));
-    			ret.put("components", components);
-    			break;
-    		}
-    		case "DataVersion": {
-    			ret.put("DataVersion", value.asInt().get());
-    			break;
-    		}
-    		default: {
-    			throw new IllegalStateException("Unexpected value: " + key);
-    		}
-    		}
-    	});
-    	ret.put("schema_version", 1);
-    	return ret;
-    }
-
-    @NotNull
-    public ItemStack deserializeStack(@NotNull Map<String, Object> args) {
-
-    	int version = args.getOrDefault("schema_version", 1) instanceof Number val ? val.intValue() : -1;
-    	
-    	CompoundTag tag = new CompoundTag();
-    	args.forEach((key, value) -> {
-    		switch (key) {
-    		case "id": {
-    			tag.putString("id", (String)value);
-    			break;
-    		}
-    		case "count": {
-    			tag.putInt("count", ((Number)value).intValue());
-    			break;
-    		}
-    		case "components": {
-    			if (version == 1) {
-    				HashMap<String, String> componentMap;
-    				if (value instanceof Map) {
-    					componentMap = (HashMap<String, String>)value;
-    				} else if (value instanceof MemorySection) {
-    					MemorySection memory = (MemorySection)value;
-    					componentMap = new HashMap<String, String>();
-    					for (String memoryKey : memory.getKeys(false)) {
-    						componentMap.put(memoryKey, memory.getString(memoryKey));
-    					}
-    				} else {
-    					throw new IllegalArgumentException("components must be a Map");
-    				}
-    				CompoundTag componentsTag = new CompoundTag();
-    				componentMap.forEach((componentKey, componentString) -> {
-    					Tag componentTag;
-    					try {
-    						componentTag = SNBT_REGISTRY_UNAWARE_PARSER.parseFully((String)componentString);
-    					}
-    					catch (CommandSyntaxException e2) {
-    						throw new RuntimeException("Error parsing item stack data components", e2);
-    					}
-    					componentsTag.put((String)componentKey, componentTag);
-    				});
-    				tag.put("components", componentsTag);
-    				break;
-    			}
-    			throw new IllegalStateException("Unexpected version: " + version);
-    		}
-    		case "DataVersion": {
-    			tag.putInt("DataVersion", ((Number)value).intValue());
-    			break;
-    		}
-    		case "==": 
-    		case "schema_version": {
-    			break;
-    		}
-    		default: {
-    			throw new IllegalStateException("Unexpected value: " + key);
-    		}
-    		}
-    	});
-    	return this.deserializeItem(tag);
-    }
-
-    private ItemStack deserializeItem(CompoundTag compound) {
-    	
-    	int dataVersion = compound.getIntOr("DataVersion", 0);
-
-    	// compound = PlatformHooks.get().convertNBT(TypeReferences.ITEM_STACK, Schemas.getFixer(), compound, dataVersion, this.getDataVersion());
-    	compound = platformhooks$convertNBT(References.ITEM_STACK, DataFixers.getDataFixer(), compound, dataVersion, this.getDataVersion());
-
-
-    	if (compound.getStringOr("id", "minecraft:air").equals("minecraft:air")) {
-    		return CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.EMPTY);
-    	}
-    	return CraftItemStack.asCraftMirror((net.minecraft.world.item.ItemStack)net.minecraft.world.item.ItemStack.CODEC.parse(CraftRegistry.getMinecraftRegistry().createSerializationContext(NbtOps.INSTANCE), compound).getOrThrow());
-    }
-
-    /**
-     * Cardboard
-     * 
-     * @see {@link ca.spottedleaf.moonrise.paper.PaperHooks}
-     */
-    public CompoundTag platformhooks$convertNBT(TypeReference type, DataFixer dataFixer, CompoundTag nbt, int fromVersion, int toVersion) {
-    	return (CompoundTag)dataFixer.update(type, new Dynamic<>(NbtOps.INSTANCE, nbt), fromVersion, toVersion).getValue();
+    public String getMainLevelName() {
+        return ((net.minecraft.server.dedicated.DedicatedServer) CraftServer.INSTANCE.getServer()).getProperties().levelName;
     }
 
     @Override
-    public ItemStack deserializeItemHover(final ShowItem itemHover) {
+    public int getProtocolVersion() {
+        return net.minecraft.SharedConstants.getCurrentVersion().protocolVersion();
+    }
+
+    @Override
+    public boolean isValidRepairItemStack(org.bukkit.inventory.ItemStack itemToBeRepaired, org.bukkit.inventory.ItemStack repairMaterial) {
+        if (!itemToBeRepaired.getType().isItem() || !repairMaterial.getType().isItem()) {
+            return false;
+        }
+        return CraftItemStack.unwrap(itemToBeRepaired).isValidRepairItem(CraftItemStack.unwrap(repairMaterial));
+    }
+
+    @Override
+    public boolean hasDefaultEntityAttributes(NamespacedKey entityKey) {
+        return net.minecraft.world.entity.ai.attributes.DefaultAttributes.hasSupplier(net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getValue(CraftNamespacedKey.toMinecraft(entityKey)));
+    }
+
+    @Override
+    public org.bukkit.attribute.Attributable getDefaultEntityAttributes(NamespacedKey entityKey) {
+        Preconditions.checkArgument(hasDefaultEntityAttributes(entityKey), entityKey + " doesn't have default attributes");
+        var supplier = net.minecraft.world.entity.ai.attributes.DefaultAttributes.getSupplier((net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.LivingEntity>) net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getValue(CraftNamespacedKey.toMinecraft(entityKey)));
+        return new io.papermc.paper.attribute.UnmodifiableAttributeMap(supplier);
+    }
+
+    @Override
+    public org.bukkit.NamespacedKey getBiomeKey(org.bukkit.RegionAccessor accessor, int x, int y, int z) {
+        return accessor.getBiome(x, y, z).getKey();
+    }
+
+    @Override
+    public void setBiomeKey(org.bukkit.RegionAccessor accessor, int x, int y, int z, org.bukkit.NamespacedKey biomeKey) {
+        accessor.setBiome(x, y, z, org.bukkit.Registry.BIOME.getOrThrow(biomeKey));
+    }
+
+    @Override
+    public String getStatisticCriteriaKey(org.bukkit.Statistic statistic) {
+        if (statistic.getType() != org.bukkit.Statistic.Type.UNTYPED) return "minecraft.custom:minecraft." + statistic.getKey().getKey();
+        return org.bukkit.craftbukkit.CraftStatistic.getNMSStatistic(statistic).getName();
+    }
+
+    @Override
+    public List<net.kyori.adventure.text.Component> computeTooltipLines(final ItemStack itemStack, final io.papermc.paper.inventory.tooltip.TooltipContext tooltipContext, final org.bukkit.entity.Player player) {
+        Preconditions.checkArgument(tooltipContext != null, "tooltipContext cannot be null");
+        net.minecraft.world.item.TooltipFlag.Default flag = tooltipContext.isAdvanced() ? net.minecraft.world.item.TooltipFlag.ADVANCED : net.minecraft.world.item.TooltipFlag.NORMAL;
+        if (tooltipContext.isCreative()) {
+            flag = flag.asCreative();
+        }
+        final List<net.minecraft.network.chat.Component> lines = CraftItemStack.asNMSCopy(itemStack).getTooltipLines(
+                net.minecraft.world.item.Item.TooltipContext.of(player == null ? CraftRegistry.getMinecraftRegistry() : ((org.bukkit.craftbukkit.entity.CraftPlayer) player).getHandle().level().registryAccess()),
+                player == null ? null : ((org.bukkit.craftbukkit.entity.CraftPlayer) player).getHandle(), flag);
+        return lines.stream().map(io.papermc.paper.adventure.PaperAdventure::asAdventure).toList();
+    }
+    // Paper end
+
+    @Override
+    public org.bukkit.Color getSpawnEggLayerColor(final EntityType entityType, final int layer) {
+        final net.minecraft.world.entity.EntityType<?> nmsType = org.bukkit.craftbukkit.entity.CraftEntityType.bukkitToMinecraft(entityType);
+        final net.minecraft.world.item.SpawnEggItem eggItem = net.minecraft.world.item.SpawnEggItem.byId(nmsType);
+        if (eggItem != null) {
+            throw new UnsupportedOperationException();
+        }
+        return null;
+    }
+
+    @Override
+    public io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager<org.bukkit.plugin.Plugin> createPluginLifecycleEventManager(final org.bukkit.plugin.java.JavaPlugin plugin, final java.util.function.BooleanSupplier registrationCheck) {
+        return new io.papermc.paper.plugin.lifecycle.event.PaperLifecycleEventManager<>(plugin, registrationCheck);
+    }
+
+    @Override
+    public org.bukkit.inventory.ItemStack createEmptyStack() {
+        return CraftItemStack.asCraftMirror(null);
+    }
+
+    @Override
+    public ItemStack deserializeItemHover(final HoverEvent.ShowItem itemHover) {
         final RegistryOps<Object> ops = CraftRegistry.getMinecraftRegistry().createSerializationContext(JavaOps.INSTANCE);
         final Object encoded = AdventureCodecs.SHOW_ITEM_CODEC.codec()
-            .encodeStart(ops, HoverEvent.showItem(itemHover)).getOrThrow(IllegalStateException::new);
+                .encodeStart(ops, HoverEvent.showItem(itemHover)).getOrThrow(IllegalStateException::new);
 
         return CraftItemStack.asBukkitCopy(net.minecraft.network.chat.HoverEvent.ShowItem.CODEC.codec()
-            .parse(ops, encoded).getOrThrow(IllegalStateException::new)
-            .item());
+                .parse(ops, encoded).getOrThrow(IllegalStateException::new)
+                .item());
     }
-
-
 }

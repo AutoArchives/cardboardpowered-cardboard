@@ -1,6 +1,7 @@
 package org.cardboardpowered.impl.entity;
 
 import com.google.common.base.Preconditions;
+import org.bukkit.craftbukkit.entity.CraftChestedHorse;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
@@ -11,7 +12,7 @@ import org.bukkit.inventory.LlamaInventory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class CardboardLlama extends CardboardChestedHorse implements Llama {
+public class CardboardLlama extends CraftChestedHorse implements Llama {
 
     public CardboardLlama(CraftServer server, net.minecraft.world.entity.animal.equine.Llama entity) {
         super(server, entity);

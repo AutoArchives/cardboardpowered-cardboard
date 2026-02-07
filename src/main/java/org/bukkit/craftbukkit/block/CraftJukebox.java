@@ -12,7 +12,7 @@ import org.bukkit.block.Jukebox;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.inventory.CraftItemType;
 import org.bukkit.inventory.JukeboxInventory;
-import org.cardboardpowered.impl.inventory.CraftInventoryJukebox;
+import org.bukkit.craftbukkit.inventory.CraftInventoryJukebox;
 
 public class CraftJukebox extends CraftBlockEntityState<JukeboxBlockEntity> implements Jukebox {
 
