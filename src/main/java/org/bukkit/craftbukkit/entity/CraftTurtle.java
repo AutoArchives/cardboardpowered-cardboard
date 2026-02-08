@@ -1,8 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
-import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.EntityType;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.Turtle;
 
 public class CraftTurtle extends CraftAnimals implements Turtle {
@@ -13,59 +12,36 @@ public class CraftTurtle extends CraftAnimals implements Turtle {
 
     @Override
     public net.minecraft.world.entity.animal.turtle.Turtle getHandle() {
-        return (net.minecraft.world.entity.animal.turtle.Turtle) super.getHandle();
-    }
-
-    @Override
-    public String toString() {
-        return "FabricTurtle";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.TURTLE;
-    }
-
-    @Override
-    public Location getHome() {
-        // TODO Auto-generated method stub
-        return null;
+        return (net.minecraft.world.entity.animal.turtle.Turtle) this.entity;
     }
 
     @Override
     public boolean hasEgg() {
-        // TODO Auto-generated method stub
-        return false;
+        return this.getHandle().hasEgg();
     }
 
     @Override
-    public boolean isDigging() {
-        // TODO Auto-generated method stub
-        return false;
+    public boolean isLayingEgg() {
+        return this.getHandle().isLayingEgg();
+    }
+
+    @Override
+    public org.bukkit.Location getHome() {
+        return CraftLocation.toBukkit(this.getHandle().homePos, this.getHandle().level());
+    }
+
+    @Override
+    public void setHome(org.bukkit.Location location) {
+        this.getHandle().homePos = CraftLocation.toBlockPosition(location);
     }
 
     @Override
     public boolean isGoingHome() {
-        // TODO Auto-generated method stub
-        return false;
+        return this.getHandle().goingHome;
     }
 
     @Override
-    public void setHasEgg(boolean arg0) {
-        // TODO Auto-generated method stub
-        
+    public void setHasEgg(boolean hasEgg) {
+        this.getHandle().setHasEgg(hasEgg);
     }
-
-    @Override
-    public void setHome(Location arg0) {
-        // TODO Auto-generated method stub
-        
-    }
-
-	@Override
-	public boolean isLayingEgg() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 }

@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.cardboardpowered.impl.entity.ItemEntityImpl;
+import org.bukkit.craftbukkit.entity.CraftItem;
 import org.cardboardpowered.bridge.world.entity.item.ItemEntityBridge;
 import org.cardboardpowered.bridge.world.entity.player.InventoryBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
@@ -80,7 +80,7 @@ public class ItemEntityMixin extends EntityMixin implements ItemEntityBridge {
     @Inject(at = @At(value = "HEAD"), method = "tick()V")
     public void setBukkitEntity(CallbackInfo callbackInfo) {
         if (null == bukkitEntity)
-            this.bukkitEntity = new ItemEntityImpl(CraftServer.INSTANCE, (ItemEntity) (Object) this, (ItemEntity) (Object) this);
+            this.bukkitEntity = new CraftItem(CraftServer.INSTANCE, (ItemEntity) (Object) this);
     }
 
     @Inject(at = @At("HEAD"), method = "merge(Lnet/minecraft/world/entity/item/ItemEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/item/ItemEntity;Lnet/minecraft/world/item/ItemStack;)V", cancellable = true)

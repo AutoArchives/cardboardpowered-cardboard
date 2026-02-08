@@ -2,7 +2,6 @@ package org.bukkit.craftbukkit.entity;
 
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Endermite;
-import org.bukkit.entity.EntityType;
 
 public class CraftEndermite extends CraftMonster implements Endermite {
 
@@ -12,40 +11,26 @@ public class CraftEndermite extends CraftMonster implements Endermite {
 
     @Override
     public net.minecraft.world.entity.monster.Endermite getHandle() {
-        return (net.minecraft.world.entity.monster.Endermite) super.getHandle();
-    }
-
-    @Override
-    public String toString() {
-        return "CraftEndermite";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.ENDERMITE;
+        return (net.minecraft.world.entity.monster.Endermite) this.entity;
     }
 
     @Override
     public boolean isPlayerSpawned() {
-        return false; // TODO 1.17ify getHandle().isPlayerSpawned();
+        return false;
     }
 
     @Override
     public void setPlayerSpawned(boolean playerSpawned) {
-     // TODO 1.17ify  getHandle().setPlayerSpawned(playerSpawned);
+        // Nop
     }
 
-	@Override
-	public int getLifetimeTicks() {
-		// TODO Auto-generated method stub
-		// return this.getHandle().lifeTime;
-		return 0;
-	}
+    @Override
+    public void setLifetimeTicks(int ticks) {
+        this.getHandle().life = ticks;
+    }
 
-	@Override
-	public void setLifetimeTicks(int arg0) {
-		// TODO Auto-generated method stub
-		// this.getHandle().lifeTime = ticks;
-	}
-
+    @Override
+    public int getLifetimeTicks() {
+        return this.getHandle().life;
+    }
 }

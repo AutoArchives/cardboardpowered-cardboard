@@ -1,6 +1,7 @@
 package org.cardboardpowered.mixin.world.entity.monster;
 
 import org.cardboardpowered.bridge.world.entity.monster.CreeperBridge;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,14 +23,9 @@ public abstract class CreeperMixin extends Entity implements CreeperBridge {
         super(type, world);
     }
 
+    @Final
     @Shadow
-    public static EntityDataAccessor<Boolean> DATA_IS_POWERED;
-
-    @Shadow
-    public int explosionRadius = 3;
-
-    @Shadow
-    public int maxSwell = 30;
+    private static EntityDataAccessor<Boolean> DATA_IS_POWERED;
 
     @Inject(at = @At("HEAD"), method="thunderHit", cancellable = true)
     public void invokeCreeperPowerEvent(ServerLevel worldserver, LightningBolt lightning, CallbackInfo ci) {
@@ -38,49 +34,13 @@ public abstract class CreeperMixin extends Entity implements CreeperBridge {
             ci.cancel();
             return;
         }
-        this.setPowered(true);
+        this.cardboard$setPowered(true);
         ci.cancel();
         return;
     }
 
     @Override
-    public void setPowered(boolean powered) {
+    public void cardboard$setPowered(boolean powered) {
         this.entityData.set(DATA_IS_POWERED, powered);
     }
-
-    @Override
-    public void explodeBF() {
-        explodeCreeper();
-    }
-
-    @Shadow
-    public void explodeCreeper() {
-    }
-
-    @Override
-    public int getExplosionRadiusBF() {
-        return explosionRadius;
-    }
-
-    @Override
-    public void setExplosionRadiusBF(int radius) {
-        this.explosionRadius = radius;
-    }
-
-    @Override
-    public void setFuseTimeBF(int ticks) {
-        this.maxSwell = ticks;
-    }
-
-    @Override
-    public int getFuseTimeBF() {
-        return this.maxSwell;
-    }
-
-    @Override
-    public boolean isPoweredBF() {
-        return (Boolean) this.entityData.get(DATA_IS_POWERED);
-    }
-
-
 }

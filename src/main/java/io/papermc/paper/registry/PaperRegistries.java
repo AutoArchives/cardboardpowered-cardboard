@@ -92,7 +92,7 @@ import org.bukkit.map.MapCursor;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
 import org.bukkit.craftbukkit.entity.CraftCat;
-import org.cardboardpowered.impl.entity.CardboardPig;
+import org.bukkit.craftbukkit.entity.CraftPig;
 import org.bukkit.craftbukkit.entity.CraftVillager;
 import org.jspecify.annotations.Nullable;
 
@@ -139,7 +139,7 @@ public final class PaperRegistries {
                 start(Registries.FROG_VARIANT, RegistryKey.FROG_VARIANT).craft(Frog.Variant.class, CraftFrog.CraftVariant::new).writable(PaperFrogVariantRegistryEntry.PaperBuilder::new).delayed(),
                 start(Registries.CHICKEN_VARIANT, RegistryKey.CHICKEN_VARIANT).craft(Chicken.Variant.class, CraftChicken.CraftVariant::new).writable(PaperChickenVariantRegistryEntry.PaperBuilder::new),
                 start(Registries.COW_VARIANT, RegistryKey.COW_VARIANT).craft(Cow.Variant.class, CraftCow.CraftVariant::new).writable(PaperCowVariantRegistryEntry.PaperBuilder::new),
-                start(Registries.PIG_VARIANT, RegistryKey.PIG_VARIANT).craft(Pig.Variant.class, CardboardPig.CraftVariant::new).writable(PaperPigVariantRegistryEntry.PaperBuilder::new),
+                start(Registries.PIG_VARIANT, RegistryKey.PIG_VARIANT).craft(Pig.Variant.class, CraftPig.CraftVariant::new).writable(PaperPigVariantRegistryEntry.PaperBuilder::new),
                 start(Registries.ZOMBIE_NAUTILUS_VARIANT, RegistryKey.ZOMBIE_NAUTILUS_VARIANT).craft(ZombieNautilus.Variant.class, CraftZombieNautilus.CraftVariant::new).writable(PaperZombieNautilusVariantRegistryEntry.PaperBuilder::new),
                 start(Registries.DIALOG, RegistryKey.DIALOG).craft(Dialog.class, PaperDialog::new, true).writable(PaperDialogRegistryEntry.PaperBuilder::new),
 

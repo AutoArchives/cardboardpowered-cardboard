@@ -83,7 +83,7 @@ import org.bukkit.entity.Salmon;
 import org.bukkit.entity.TropicalFish;
 import org.bukkit.inventory.ItemRarity;
 import org.bukkit.craftbukkit.entity.CraftCat;
-import org.cardboardpowered.impl.entity.CardboardPig;
+import org.bukkit.craftbukkit.entity.CraftPig;
 import org.bukkit.craftbukkit.entity.CraftVillager;
 
 import static io.papermc.paper.util.MCUtil.transformUnmodifiable;
@@ -195,7 +195,7 @@ public final class DataComponentAdapters {
         register(DataComponents.TROPICAL_FISH_PATTERN_COLOR, nms -> DyeColor.getByWoolData((byte) nms.getId()), api -> net.minecraft.world.item.DyeColor.byId(api.getWoolData()));
         register(DataComponents.MOOSHROOM_VARIANT, nms -> MushroomCow.Variant.values()[nms.ordinal()], api -> net.minecraft.world.entity.animal.cow.MushroomCow.Variant.values()[api.ordinal()]);
         register(DataComponents.RABBIT_VARIANT, nms -> Rabbit.Type.values()[nms.ordinal()], api -> net.minecraft.world.entity.animal.rabbit.Rabbit.Variant.byId(api.ordinal()));
-        register(DataComponents.PIG_VARIANT, CardboardPig.CraftVariant::minecraftHolderToBukkit, CardboardPig.CraftVariant::bukkitToMinecraftHolder);
+        register(DataComponents.PIG_VARIANT, CraftPig.CraftVariant::minecraftHolderToBukkit, CraftPig.CraftVariant::bukkitToMinecraftHolder);
         register(DataComponents.COW_VARIANT, CraftCow.CraftVariant::minecraftHolderToBukkit, CraftCow.CraftVariant::bukkitToMinecraftHolder);
         register(DataComponents.CHICKEN_VARIANT, nms -> CraftChicken.CraftVariant.minecraftHolderToBukkit(nms.unwrap(CraftRegistry.getMinecraftRegistry()).orElseThrow()), api -> new EitherHolder<>(CraftChicken.CraftVariant.bukkitToMinecraftHolder(api)));
         register(DataComponents.FROG_VARIANT, CraftFrog.CraftVariant::minecraftHolderToBukkit, CraftFrog.CraftVariant::bukkitToMinecraftHolder);

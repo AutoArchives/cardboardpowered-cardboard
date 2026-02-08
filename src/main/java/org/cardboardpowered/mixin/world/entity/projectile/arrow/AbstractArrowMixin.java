@@ -8,7 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.event.player.PlayerPickupArrowEvent;
-import org.cardboardpowered.impl.entity.ItemEntityImpl;
+import org.bukkit.craftbukkit.entity.CraftItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -58,7 +58,7 @@ public abstract class AbstractArrowMixin implements AbstractArrowBridge {
             ItemStack itemstack = this.getPickupItem();
             if (this.pickup == Pickup.ALLOWED && !itemstack.isEmpty()) {
                 ItemEntity item = new ItemEntity(getBF().level(), getBF().getX(), getBF().getY(), getBF().getZ(), itemstack);
-                PlayerPickupArrowEvent event = new PlayerPickupArrowEvent((org.bukkit.entity.Player) ((EntityBridge)entityhuman).getBukkitEntity(), new ItemEntityImpl(CraftServer.INSTANCE, getBF(), item), (org.bukkit.entity.AbstractArrow) ((EntityBridge)this).getBukkitEntity());
+                PlayerPickupArrowEvent event = new PlayerPickupArrowEvent((org.bukkit.entity.Player) ((EntityBridge)entityhuman).getBukkitEntity(), new CraftItem(CraftServer.INSTANCE, item), (org.bukkit.entity.AbstractArrow) ((EntityBridge)this).getBukkitEntity());
                 Bukkit.getServer().getPluginManager().callEvent(event);
 
                 if (event.isCancelled()) {

@@ -1,165 +1,148 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-
-import io.papermc.paper.adventure.PaperAdventure;
-import io.papermc.paper.potion.SuspiciousEffectEntry;
-import net.kyori.adventure.sound.Sound.Source;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
-
+import net.minecraft.core.Holder;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.item.component.SuspiciousStewEffects;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.EntityType;
+import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
+import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.entity.MushroomCow;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
 
-public class CraftMushroomCow extends CraftAbstractCow implements MushroomCow {
+public class CraftMushroomCow extends CraftAbstractCow implements MushroomCow, io.papermc.paper.entity.PaperShearable { // Paper
 
-    public CraftMushroomCow(CraftServer server, net.minecraft.world.entity.animal.cow.MushroomCow entity) {
-        super(server, entity);
-    }
-
-    @Override
-    public net.minecraft.world.entity.animal.cow.MushroomCow getHandle() {
-        return (net.minecraft.world.entity.animal.cow.MushroomCow) entity;
-    }
-
-    @Override
-    public Variant getVariant() {
-        return Variant.values()[getHandle().getVariant().ordinal()];
-    }
-
-    @Override
-    public void setVariant(Variant variant) {
-        Preconditions.checkArgument(variant != null, "variant");
-        // getHandle().setVariant(MooshroomEntity.Type.values()[variant.ordinal()]);
-        this.getHandle().setVariant(net.minecraft.world.entity.animal.cow.MushroomCow.Variant.values()[variant.ordinal()]);
-
-    }
-
-    @Override
-    public String toString() {
-        return "MushroomCow";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.MOOSHROOM;
-    }
-
-	@Override
-	public int getStewEffectDuration() {
-		// TODO Auto-generated method stub
-		return 0;
+	public CraftMushroomCow(CraftServer server, net.minecraft.world.entity.animal.cow.MushroomCow entity) {
+		super(server, entity);
 	}
 
 	@Override
-    public PotionEffectType getStewEffectType() {
-        // StatusEffect effect = this.getHandle().stewEffect;
-        // if (effect == null) {
-       //      return null;
-        // }
-        return null; // PotionEffectType.getById((int)StatusEffect.getRawId(effect));
-    }
-
-	@Override
-	public void setStewEffect(@Nullable PotionEffectType arg0) {
-		// TODO Auto-generated method stub
-		
+	public net.minecraft.world.entity.animal.cow.MushroomCow getHandle() {
+		return (net.minecraft.world.entity.animal.cow.MushroomCow) this.entity;
 	}
-
-	@Override
-	public void setStewEffectDuration(int arg0) {
-		// TODO Auto-generated method stub
-		//this.getHandle().stewEffectDuration = duration;
-	}
-
-	@Override
-	public boolean readyToBeSheared() {
-		return this.getHandle().readyForShearing();
-	}
-
-	@Override
-	public void shear(@NotNull Source arg0) {
-		// this.getHandle().sheared(net.minecraft.sound.SoundCategory.AMBIENT);
-
-		if (!(this.getHandle().level() instanceof final ServerLevel serverLevel)) return;
-        this.getHandle().shear(serverLevel, PaperAdventure.asVanilla(arg0), new ItemStack(Items.SHEARS));
-	}
-	
-	// 1.20.2 API:
-
-	@Override
-	public @NotNull @Unmodifiable List<SuspiciousEffectEntry> getStewEffects() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setStewEffects(@NotNull List<SuspiciousEffectEntry> effects) {
-		// TODO Auto-generated method stub
-		/*
-		if (effects.isEmpty()) {
-            this.getHandle().stewEffects = null;
-            return;
-        }
-        ArrayList<SuspiciousStewEffectsComponent.StewEffect> nmsPairs = new ArrayList<SuspiciousStewEffectsComponent.StewEffect>(effects.size());
-        for (SuspiciousEffectEntry effect : effects) {
-            nmsPairs.add(new SuspiciousStewEffectsComponent.StewEffect(CraftPotionEffectType.bukkitToMinecraftHolder(effect.effect()), effect.duration()));
-        }
-        this.getHandle().stewEffects = new SuspiciousStewEffectsComponent(nmsPairs);
-        */
-	}
-	
-	// 1.20.4 API:
 
 	@Override
 	public boolean hasEffectsForNextStew() {
-        // SuspiciousStewEffectsComponent stewEffects = this.getHandle().stewEffects;
-        //return stewEffects != null && !stewEffects.effects().isEmpty();
-		return false;
+		SuspiciousStewEffects stewEffects = this.getHandle().stewEffects;
+		return stewEffects != null && !stewEffects.effects().isEmpty();
 	}
 
 	@Override
-	public @NotNull List<PotionEffect> getEffectsForNextStew() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<PotionEffect> getEffectsForNextStew() {
+		SuspiciousStewEffects stewEffects = this.getHandle().stewEffects;
+		if (stewEffects != null) {
+			return stewEffects.effects().stream().map(recordSuspiciousEffect -> CraftPotionUtil.toBukkit(recordSuspiciousEffect.createEffectInstance())).toList();
+		}
+		return ImmutableList.of();
 	}
 
 	@Override
-	public boolean addEffectToNextStew(@NotNull PotionEffect effect, boolean overwrite) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean addEffectToNextStew(PotionEffect potionEffect, boolean overwrite) {
+		Preconditions.checkArgument(potionEffect != null, "PotionEffect cannot be null");
+		// Paper start - add overloads to use suspicious effect entry to mushroom cow and suspicious stew meta
+		return this.addEffectToNextStew(io.papermc.paper.potion.SuspiciousEffectEntry.create(potionEffect.getType(), potionEffect.getDuration()), overwrite);
 	}
 
 	@Override
-	public boolean addEffectToNextStew(@NotNull SuspiciousEffectEntry suspiciousEffectEntry, boolean overwrite) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean addEffectToNextStew(io.papermc.paper.potion.SuspiciousEffectEntry suspiciousEffectEntry, boolean overwrite) {
+		Preconditions.checkArgument(suspiciousEffectEntry != null, "SuspiciousEffectEntry cannot be null");
+		Holder<MobEffect> minecraftPotionEffect = CraftPotionEffectType.bukkitToMinecraftHolder(suspiciousEffectEntry.effect());
+		// Paper end - add overloads to use suspicious effect entry to mushroom cow and suspicious stew meta
+		if (!overwrite && this.hasEffectForNextStew(suspiciousEffectEntry.effect())) {
+			return false;
+		}
+		SuspiciousStewEffects stewEffects = this.getHandle().stewEffects;
+		if (stewEffects == null) {
+			stewEffects = SuspiciousStewEffects.EMPTY;
+		}
+		SuspiciousStewEffects.Entry recordSuspiciousEffect = new SuspiciousStewEffects.Entry(minecraftPotionEffect, suspiciousEffectEntry.duration()); // Paper - sus effect entry API
+		this.removeEffectFromNextStew(suspiciousEffectEntry.effect()); // Avoid duplicates of effects // Paper - sus effect entry API
+		this.getHandle().stewEffects = stewEffects.withEffectAdded(recordSuspiciousEffect);
+		return true;
 	}
 
 	@Override
-	public boolean removeEffectFromNextStew(@NotNull PotionEffectType type) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean removeEffectFromNextStew(PotionEffectType potionEffectType) {
+		Preconditions.checkArgument(potionEffectType != null, "potionEffectType cannot be null");
+		if (!this.hasEffectForNextStew(potionEffectType)) {
+			return false;
+		}
+
+		SuspiciousStewEffects stewEffects = this.getHandle().stewEffects;
+		if (stewEffects == null) {
+			return false;
+		}
+
+		Holder<MobEffect> minecraftPotionEffectType = CraftPotionEffectType.bukkitToMinecraftHolder(potionEffectType);
+		this.getHandle().stewEffects = new SuspiciousStewEffects(stewEffects.effects().stream().filter((effect) -> !effect.effect().equals(minecraftPotionEffectType)).toList());
+		return true;
 	}
 
 	@Override
-	public boolean hasEffectForNextStew(@NotNull PotionEffectType type) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean hasEffectForNextStew(PotionEffectType potionEffectType) {
+		Preconditions.checkArgument(potionEffectType != null, "potionEffectType cannot be null");
+		SuspiciousStewEffects stewEffects = this.getHandle().stewEffects;
+		if (stewEffects == null) {
+			return false;
+		}
+		Holder<MobEffect> minecraftPotionEffectType = CraftPotionEffectType.bukkitToMinecraftHolder(potionEffectType);
+		return stewEffects.effects().stream().anyMatch(recordSuspiciousEffect -> recordSuspiciousEffect.effect().equals(minecraftPotionEffectType));
 	}
 
 	@Override
 	public void clearEffectsForNextStew() {
-		// TODO Auto-generated method stub
-		
+		this.getHandle().stewEffects = null;
 	}
 
+	@Override
+	public Variant getVariant() {
+		return Variant.values()[this.getHandle().getVariant().ordinal()];
+	}
+
+	@Override
+	public void setVariant(Variant variant) {
+		Preconditions.checkArgument(variant != null, "Variant cannot be null");
+
+		this.getHandle().setVariant(net.minecraft.world.entity.animal.cow.MushroomCow.Variant.values()[variant.ordinal()]);
+	}
+
+	// Paper start
+	@Override
+	public List<io.papermc.paper.potion.SuspiciousEffectEntry> getStewEffects() {
+		if (this.getHandle().stewEffects == null) {
+			return List.of();
+		}
+
+		final List<io.papermc.paper.potion.SuspiciousEffectEntry> effectEntries = new java.util.ArrayList<>(this.getHandle().stewEffects.effects().size());
+		for (final SuspiciousStewEffects.Entry effect : this.getHandle().stewEffects.effects()) {
+			effectEntries.add(io.papermc.paper.potion.SuspiciousEffectEntry.create(
+					org.bukkit.craftbukkit.potion.CraftPotionEffectType.minecraftHolderToBukkit(effect.effect()),
+					effect.duration()
+			));
+		}
+
+		return java.util.Collections.unmodifiableList(effectEntries);
+	}
+
+	@Override
+	public void setStewEffects(final List<io.papermc.paper.potion.SuspiciousEffectEntry> effects) {
+		if (effects.isEmpty()) {
+			this.getHandle().stewEffects = null;
+			return;
+		}
+
+		List<SuspiciousStewEffects.Entry> nmsPairs = new java.util.ArrayList<>(effects.size());
+		for (final io.papermc.paper.potion.SuspiciousEffectEntry effect : effects) {
+			nmsPairs.add(new SuspiciousStewEffects.Entry(
+					org.bukkit.craftbukkit.potion.CraftPotionEffectType.bukkitToMinecraftHolder(effect.effect()),
+					effect.duration()
+			));
+		}
+
+		this.getHandle().stewEffects = new SuspiciousStewEffects(nmsPairs);
+	}
+	// Paper end
 }

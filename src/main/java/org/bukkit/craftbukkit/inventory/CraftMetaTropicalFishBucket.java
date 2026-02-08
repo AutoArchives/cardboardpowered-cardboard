@@ -13,7 +13,7 @@ import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.entity.TropicalFish;
 import org.bukkit.inventory.meta.TropicalFishBucketMeta;
 import org.cardboardpowered.bridge.world.item.component.TypedEntityDataBridge;
-import org.cardboardpowered.impl.entity.CardboardFishTropical;
+import org.bukkit.craftbukkit.entity.CraftTropicalFish;
 
 import java.util.Map;
 import java.util.Objects;
@@ -114,7 +114,7 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
     @Override
     public DyeColor getPatternColor() {
         com.google.common.base.Preconditions.checkState(this.hasVariant(), "This bucket doesn't have variant, check hasVariant first!");
-        return CardboardFishTropical.getPatternColor(this.variant);
+        return CraftTropicalFish.getPatternColor(this.variant);
     }
 
     @Override
@@ -122,13 +122,13 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
         if (this.variant == null) {
             this.variant = 0;
         }
-        this.variant = CardboardFishTropical.getData(color, this.getBodyColor(), this.getPattern()); // Paper - properly set tropical fish pattern color without mutating body color
+        this.variant = CraftTropicalFish.getData(color, this.getBodyColor(), this.getPattern()); // Paper - properly set tropical fish pattern color without mutating body color
     }
 
     @Override
     public DyeColor getBodyColor() {
         com.google.common.base.Preconditions.checkState(this.hasVariant(), "This bucket doesn't have variant, check hasVariant first!");
-        return CardboardFishTropical.getBodyColor(this.variant);
+        return CraftTropicalFish.getBodyColor(this.variant);
     }
 
     @Override
@@ -136,13 +136,13 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
         if (this.variant == null) {
             this.variant = 0;
         }
-        this.variant = CardboardFishTropical.getData(this.getPatternColor(), color, this.getPattern());
+        this.variant = CraftTropicalFish.getData(this.getPatternColor(), color, this.getPattern());
     }
 
     @Override
     public TropicalFish.Pattern getPattern() {
         com.google.common.base.Preconditions.checkState(this.hasVariant(), "This bucket doesn't have variant, check hasVariant first!");
-        return CardboardFishTropical.getPattern(this.variant);
+        return CraftTropicalFish.getPattern(this.variant);
     }
 
     @Override
@@ -150,7 +150,7 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
         if (this.variant == null) {
             this.variant = 0;
         }
-        this.variant = CardboardFishTropical.getData(this.getPatternColor(), this.getBodyColor(), pattern);
+        this.variant = CraftTropicalFish.getData(this.getPatternColor(), this.getBodyColor(), pattern);
     }
 
     @Override

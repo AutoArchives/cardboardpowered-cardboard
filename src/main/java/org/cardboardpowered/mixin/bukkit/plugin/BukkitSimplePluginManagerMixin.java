@@ -167,6 +167,7 @@ public class BukkitSimplePluginManagerMixin {
                 }
             } catch (InvalidDescriptionException ex) {
                 server.getLogger().log(Level.SEVERE, "Could not load '" + file.getPath() + "'", ex);
+                ex.printStackTrace();
                 continue;
             }
 
@@ -322,6 +323,7 @@ public class BukkitSimplePluginManagerMixin {
                         continue;
                     } catch (InvalidPluginException ex) {
                         server.getLogger().log(Level.SEVERE, "Could not load '" + file.getPath() + "'", ex);
+                        ex.printStackTrace();
                     }
                 }
             }
@@ -353,6 +355,7 @@ public class BukkitSimplePluginManagerMixin {
                             break;
                         } catch (InvalidPluginException ex) {
                             server.getLogger().log(Level.SEVERE, "Could not load '" + file.getPath() + "'", ex);
+                            ex.printStackTrace();
                         }
                     }
                 }

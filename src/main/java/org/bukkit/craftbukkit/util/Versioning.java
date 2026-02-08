@@ -2,12 +2,14 @@ package org.bukkit.craftbukkit.util;
 
 import org.bukkit.Bukkit;
 
-@Deprecated
 public final class Versioning {
+    private static final String API_VERSION = "1.21.11";
 
-    @Deprecated
     public static String getBukkitVersion() {
-        return Bukkit.getVersion(); // Returns: git-BukkitFabric-GITHASH
+        return Bukkit.getVersion();
     }
 
+    public static String getCurrentApiVersion() {
+        return API_VERSION;
+    }
 }

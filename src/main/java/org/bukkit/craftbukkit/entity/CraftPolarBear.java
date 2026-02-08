@@ -1,7 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.PolarBear;
 
 public class CraftPolarBear extends CraftAnimals implements PolarBear {
@@ -12,29 +11,16 @@ public class CraftPolarBear extends CraftAnimals implements PolarBear {
 
     @Override
     public net.minecraft.world.entity.animal.polarbear.PolarBear getHandle() {
-        return (net.minecraft.world.entity.animal.polarbear.PolarBear) entity;
+        return (net.minecraft.world.entity.animal.polarbear.PolarBear) this.entity;
     }
 
     @Override
-    public String toString() {
-        return "FabricPolarBear";
+    public boolean isStanding() {
+        return this.getHandle().isStanding();
     }
 
     @Override
-    public EntityType getType() {
-        return EntityType.POLAR_BEAR;
+    public void setStanding(boolean standing) {
+        this.getHandle().setStanding(standing);
     }
-
-	@Override
-	public boolean isStanding() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public void setStanding(boolean arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

@@ -935,9 +935,9 @@ public class CraftEntity implements Entity, CommandSender, CommandSourceBridge {
         // Special case complex part, since there is no extra entity type for them
         if (entity instanceof EnderDragonPart complexPart) {
             if (complexPart.parentMob instanceof EnderDragon) {
-                //return new CraftEnderDragonPart(server, complexPart);
-            //} else { // TODO
-                //return new CraftComplexPart(server, complexPart);
+                return new CraftEnderDragonPart(server, complexPart);
+            } else {
+                return new CraftComplexPart(server, complexPart);
             }
         }
 
@@ -1281,4 +1281,7 @@ public class CraftEntity implements Entity, CommandSender, CommandSourceBridge {
 		this.entity = entity;
 	}
 
+    // TODO
+    protected void update() {
+    }
 }

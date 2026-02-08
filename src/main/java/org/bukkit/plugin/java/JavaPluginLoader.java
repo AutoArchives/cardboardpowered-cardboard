@@ -164,9 +164,12 @@ public final class JavaPluginLoader implements PluginLoader {
         try {
             jar = new JarFile(file);
             JarEntry entry = jar.getJarEntry("plugin.yml");
+            if (entry == null) {
+                entry = jar.getJarEntry("paper-plugin.yml");
+            }
 
             if (entry == null) {
-                throw new InvalidDescriptionException(new FileNotFoundException("Jar does not contain plugin.yml"));
+                throw new InvalidDescriptionException(new FileNotFoundException("Jar does not contain plugin.yml or paper-plugin.yml"));
             }
 
             stream = jar.getInputStream(entry);

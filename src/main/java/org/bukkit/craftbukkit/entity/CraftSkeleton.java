@@ -1,89 +1,48 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
+import com.google.common.base.Preconditions;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Skeleton;
 
-@SuppressWarnings("deprecation")
-public class CraftSkeleton extends CraftMonster implements Skeleton {
+public class CraftSkeleton extends CraftAbstractSkeleton implements Skeleton {
 
-    public CraftSkeleton(CraftServer server, AbstractSkeleton entity) {
+    public CraftSkeleton(CraftServer server, net.minecraft.world.entity.monster.skeleton.Skeleton entity) {
         super(server, entity);
     }
 
     @Override
-    public AbstractSkeleton getHandle() {
-        return (AbstractSkeleton) entity;
-    }
-
-    @Override
-    public String toString() {
-        return "SkeletonImpl";
-    }
-
-    @Override
-    public EntityType getType() {
-        return EntityType.SKELETON;
-    }
-
-    @Override
-    public SkeletonType getSkeletonType() {
-       return SkeletonType.NORMAL;
-    }
-
-    @Override
-    public void setSkeletonType(SkeletonType type) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-
-    @Override
-    public void rangedAttack(LivingEntity arg0, float arg1) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void setChargingAttack(boolean arg0) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void setShouldBurnInDay(boolean arg0) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public boolean shouldBurnInDay() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public int getConversionTime() {
-        // TODO Auto-generated method stub
-        return 0;
+    public net.minecraft.world.entity.monster.skeleton.Skeleton getHandle() {
+        return (net.minecraft.world.entity.monster.skeleton.Skeleton) this.entity;
     }
 
     @Override
     public boolean isConverting() {
-        // TODO Auto-generated method stub
-        return false;
+        return this.getHandle().isFreezeConverting();
     }
 
     @Override
-    public void setConversionTime(int arg0) {
-        // TODO Auto-generated method stub
-        
+    public int getConversionTime() {
+        Preconditions.checkState(this.isConverting(), "Entity is not converting");
+        return this.getHandle().conversionTime;
     }
 
-	@Override
-	public int inPowderedSnowTime() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+    public void setConversionTime(int time) {
+        if (time < 0) {
+            this.getHandle().conversionTime = -1;
+            this.getHandle().getEntityData().set(net.minecraft.world.entity.monster.skeleton.Skeleton.DATA_STRAY_CONVERSION_ID, false);
+        } else {
+            this.getHandle().startFreezeConversion(time);
+        }
+    }
 
+    @Override
+    public SkeletonType getSkeletonType() {
+        return SkeletonType.NORMAL;
+    }
+
+    @Override
+    public int inPowderedSnowTime() {
+        return this.getHandle().inPowderSnowTime;
+    }
 }
