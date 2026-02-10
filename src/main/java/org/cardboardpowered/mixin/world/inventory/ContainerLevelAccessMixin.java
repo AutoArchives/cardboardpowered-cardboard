@@ -26,7 +26,7 @@ public interface ContainerLevelAccessMixin extends ContainerLevelAccessBridge {
 
     @Override
     default org.bukkit.Location getLocation() {
-        return new org.bukkit.Location(((LevelBridge)getWorld()).getCraftWorld(), getPosition().getX(), getPosition().getY(), getPosition().getZ());
+        return new org.bukkit.Location(((LevelBridge)getWorld()).cardboard$getWorld(), getPosition().getX(), getPosition().getY(), getPosition().getZ());
     }
 
     /**

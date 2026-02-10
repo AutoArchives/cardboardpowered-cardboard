@@ -59,7 +59,6 @@ import org.bukkit.World.Environment;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.generator.CraftWorldInfo;
 import org.bukkit.craftbukkit.scoreboard.CraftScoreboardManager;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldLoadEvent;
@@ -206,7 +205,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
             	//setInitialSpawn(worldserver, worldserver.serverLevelData, false, false, ((ServerLevelBridge) worldserver).cardboard$levelLoadListener()); // This breaks initial world spawn.
             	
             	// this.loadSpawn(worldserver.getChunkManager().chunkLoadingManager.worldGenerationProgressListener, worldserver);
-                CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldLoadEvent(((LevelBridge)worldserver).getCraftWorld()));
+                CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldLoadEvent(((LevelBridge)worldserver).cardboard$getWorld()));
             }
         }
 
@@ -405,7 +404,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
     	serverLevel.setSpawnSettings(serverLevel.serverLevelData.getDifficulty() != Difficulty.PEACEFUL && serverLevel.getGameRules().get(GameRules.SPAWN_MONSTERS));
     	this.updateEffectiveRespawnData();
     	this.forceTicks = false;
-    	new WorldLoadEvent(serverLevel.getWorld()).callEvent();
+    	new WorldLoadEvent(((LevelBridge)serverLevel).cardboard$getWorld()).callEvent();
     }
 
     @Shadow
@@ -527,7 +526,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
 
         this.paper$initWorldBorder(worldProperties, worldserver);
         
-        Bukkit.getPluginManager().callEvent(new WorldInitEvent(((LevelBridge) worldserver).getCraftWorld()));
+        Bukkit.getPluginManager().callEvent(new WorldInitEvent(((LevelBridge) worldserver).cardboard$getWorld()));
         
         if (!worldProperties.isInitialized()) {
             try {

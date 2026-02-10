@@ -78,7 +78,7 @@ public abstract class ChestBlockEntityMixin implements Container, ContainerBridg
     @Override
     public Location getLocation() {
         BlockPos pos = ((ChestBlockEntity)(Object)this).worldPosition;
-        return new Location(((LevelBridge)(((ChestBlockEntity)(Object)this).level)).getCraftWorld(), pos.x, pos.y, pos.z);
+        return new Location(((LevelBridge)(((ChestBlockEntity)(Object)this).level)).cardboard$getWorld(), pos.x, pos.y, pos.z);
     }
 
     private int oldPower_B;

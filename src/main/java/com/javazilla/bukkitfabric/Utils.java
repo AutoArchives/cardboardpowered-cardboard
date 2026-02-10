@@ -107,7 +107,7 @@ public class Utils {
     	
     	IMixinGlobalPos ipos = (IMixinGlobalPos) (Object) globalPos;
     	
-        return new org.bukkit.Location(((LevelBridge) Objects.requireNonNull(CraftServer.INSTANCE.getServer().getLevel((ResourceKey<Level>) ipos.IC$get_dimension()))).getCraftWorld(), ipos.IC$get_pos().getX(), ipos.IC$get_pos().getY(), ipos.IC$get_pos().getZ());
+        return new org.bukkit.Location(((LevelBridge) Objects.requireNonNull(CraftServer.INSTANCE.getServer().getLevel((ResourceKey<Level>) ipos.IC$get_dimension()))).cardboard$getWorld(), ipos.IC$get_pos().getX(), ipos.IC$get_pos().getY(), ipos.IC$get_pos().getZ());
     }
 
     public static GlobalPos toNmsGlobalPos(Location location) {

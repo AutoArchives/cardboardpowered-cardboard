@@ -9,7 +9,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.component.LodestoneTracker;
 import org.bukkit.Location;
@@ -18,6 +17,7 @@ import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.inventory.meta.CompassMeta;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 import org.cardboardpowered.impl.world.CraftWorld;
 
 import java.util.Map;
@@ -109,7 +109,7 @@ public class CraftMetaCompass extends CraftMetaItem implements CompassMeta {
             return null;
         }
         ServerLevel level = CraftServer.INSTANCE.getServer().getLevel(this.tracker.target().get().dimension());
-        World world = level != null ? level.getWorld() : null;
+        World world = level != null ? ((LevelBridge)level).cardboard$getWorld() : null;
         return CraftLocation.toBukkit(this.tracker.target().get().pos(), world); // world may be null here, if the referenced world is not loaded
     }
 

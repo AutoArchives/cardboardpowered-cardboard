@@ -12,7 +12,7 @@ import org.cardboardpowered.impl.world.CraftWorld;
 
 public interface LevelBridge {
 
-    CraftWorld getCraftWorld();
+    CraftWorld cardboard$getWorld();
 
     Map<BlockPos, CapturedBlockState> getCapturedBlockStates_BF();
 

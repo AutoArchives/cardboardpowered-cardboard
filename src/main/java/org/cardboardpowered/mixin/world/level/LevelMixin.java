@@ -74,7 +74,7 @@ public abstract class LevelMixin implements LevelBridge {
     }
 
     @Override
-    public CraftWorld getCraftWorld() {
+    public CraftWorld cardboard$getWorld() {
         return bukkit;
     }
 

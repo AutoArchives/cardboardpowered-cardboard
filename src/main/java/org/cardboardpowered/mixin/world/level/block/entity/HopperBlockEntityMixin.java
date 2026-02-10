@@ -67,7 +67,7 @@ public abstract class HopperBlockEntityMixin implements Container, ContainerBrid
     public InventoryHolder getOwner() {
         HopperBlockEntity b = (HopperBlockEntity) (Object)this;
         if (b.level == null) return null;
-        org.bukkit.block.Block block = ((LevelBridge)b.level).getCraftWorld().getBlockAt(b.worldPosition.getX(), b.worldPosition.getY(), b.worldPosition.getZ());
+        org.bukkit.block.Block block = ((LevelBridge)b.level).cardboard$getWorld().getBlockAt(b.worldPosition.getX(), b.worldPosition.getY(), b.worldPosition.getZ());
         if (block == null) {
             org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING, "No block for owner at %s %d %d %d", new Object[]{b.level, b.worldPosition.getX(), b.worldPosition.getY(), b.worldPosition.getZ()});
             return null;
@@ -79,7 +79,7 @@ public abstract class HopperBlockEntityMixin implements Container, ContainerBrid
     @Override
     public Location getLocation() {
         HopperBlockEntity b = (HopperBlockEntity) (Object)this;
-        return new Location(((LevelBridge)b.level).getCraftWorld(), b.worldPosition.getX(), b.worldPosition.getY(), b.worldPosition.getZ());
+        return new Location(((LevelBridge)b.level).cardboard$getWorld(), b.worldPosition.getX(), b.worldPosition.getY(), b.worldPosition.getZ());
     }
 
     @Inject(at = @At("HEAD"), method = "addItem(Lnet/minecraft/world/Container;Lnet/minecraft/world/entity/item/ItemEntity;)Z", cancellable = true)

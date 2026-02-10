@@ -21,7 +21,7 @@ public abstract class PlayerEnderChestContainerMixin extends SimpleContainerMixi
 
     @Override
     public Location getLocation() {
-        return new Location(((LevelBridge)this.activeChest.getLevel()).getCraftWorld(), this.activeChest.getBlockPos().getX(), this.activeChest.getBlockPos().getY(), this.activeChest.getBlockPos().getZ());
+        return new Location(((LevelBridge)this.activeChest.getLevel()).cardboard$getWorld(), this.activeChest.getBlockPos().getX(), this.activeChest.getBlockPos().getY(), this.activeChest.getBlockPos().getZ());
     }
 
 }

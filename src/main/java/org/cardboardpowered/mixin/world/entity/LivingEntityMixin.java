@@ -179,6 +179,9 @@ public abstract class LivingEntityMixin extends EntityMixin implements LivingEnt
     @Shadow
     public abstract void stopUsingItem();
 
+    @Shadow
+    public abstract float getYHeadRot();
+
     /**
      * @reason Bukkit RegainHealthEvent
      */
@@ -247,4 +250,11 @@ public abstract class LivingEntityMixin extends EntityMixin implements LivingEnt
             return itemEntity;
         }
     }
+
+    // CraftBukkit start
+    @Override
+    public float cardboard$getBukkitYaw() {
+        return this.getYHeadRot();
+    }
+    // CraftBukkit end
 }

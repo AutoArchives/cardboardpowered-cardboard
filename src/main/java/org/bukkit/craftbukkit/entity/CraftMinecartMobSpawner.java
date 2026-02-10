@@ -39,7 +39,7 @@ public class CraftMinecartMobSpawner extends CraftMinecart implements SpawnerMin
         }
 
         try (final ProblemReporter.ScopedCollector problemReporter = new ProblemReporter.ScopedCollector(
-            () -> "getSpawnedType@" + this.getUniqueId(), CraftEntity.LOGGER
+            () -> "getSpawnedType@" + this.getUniqueId(), LOGGER
         )) {
             Optional<net.minecraft.world.entity.EntityType<?>> type = net.minecraft.world.entity.EntityType.by(
                 TagValueInput.create(problemReporter, getHandle().registryAccess(), spawnData.getEntityToSpawn())

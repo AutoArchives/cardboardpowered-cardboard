@@ -52,4 +52,6 @@ public interface EntityBridge {
     boolean cardboard$isCollidable(boolean ignoreClimbing);
 
     boolean cardboard$canCollideWithBukkit(Entity entity);
+
+    float cardboard$getBukkitYaw();
 }

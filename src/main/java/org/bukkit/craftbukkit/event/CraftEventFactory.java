@@ -187,7 +187,7 @@ public class CraftEventFactory {
     }
 
     public static BlockBurnEvent callBlockBurnEvent(Level world, BlockPos pos, @Nullable Block ignitingBlock){
-        BlockBurnEvent event = new BlockBurnEvent(((LevelBridge)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), ignitingBlock);
+        BlockBurnEvent event = new BlockBurnEvent(((LevelBridge)world).cardboard$getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), ignitingBlock);
         CraftServer.INSTANCE.getPluginManager().callEvent(event);
         return event;
     }
@@ -211,7 +211,7 @@ public class CraftEventFactory {
     }
 
     public static BlockIgniteEvent callBlockIgniteEvent(Level world, int x, int y, int z, Explosion explosion) {
-        org.bukkit.World bukkitWorld = ((LevelBridge) world).getCraftWorld();
+        org.bukkit.World bukkitWorld = ((LevelBridge) world).cardboard$getWorld();
         // org.bukkit.entity.Entity igniter = explosion.entity == null ? null : ((IMixinEntity)explosion.entity).getBukkitEntity();
         org.bukkit.entity.Entity igniter = explosion.getDirectSourceEntity() == null ? null : explosion.getDirectSourceEntity().getBukkitEntity();
 
@@ -288,7 +288,7 @@ public class CraftEventFactory {
     }
 
     public static BlockRedstoneEvent callRedstoneChange(Level world, BlockPos pos, int oldCurrent, int newCurrent) {
-        BlockRedstoneEvent event = new BlockRedstoneEvent(((LevelBridge)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), oldCurrent, newCurrent);
+        BlockRedstoneEvent event = new BlockRedstoneEvent(((LevelBridge)world).cardboard$getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), oldCurrent, newCurrent);
         CraftServer.INSTANCE.getPluginManager().callEvent(event);
         return event;
     }
@@ -318,7 +318,7 @@ public class CraftEventFactory {
 
         CraftEntity e = ((EntityBridge)entity).getBukkitEntity();
         if (!(e instanceof Projectile)) {
-            BukkitLogger.getLogger().warning("Entity \"" + e.entity.getName().getString() + "\" is not an instance of Projectile! Can not fire ProjectileHitEvent!");
+            BukkitLogger.getLogger().warning("Entity \"" + e.getHandle().getName().getString() + "\" is not an instance of Projectile! Can not fire ProjectileHitEvent!");
             return;
         }
 
@@ -565,7 +565,7 @@ public class CraftEventFactory {
     }
 
     public static LootGenerateEvent callLootGenerateEvent(Container inventory, LootTable lootTable, LootContext lootInfo, List<ItemStack> loot, boolean plugin) {
-        CraftWorld world = ((LevelBridge)lootInfo.getLevel()).getCraftWorld();
+        CraftWorld world = ((LevelBridge)lootInfo.getLevel()).cardboard$getWorld();
         Entity entity = lootInfo.getOptionalParameter(LootContextParams.THIS_ENTITY);
 
         NamespacedKey key = null; // CraftNamespacedKey.fromMinecraft(((IMixinLootManager)world.getHandle().getServer().getLootManager()).getLootTableToKeyMapBF().get(lootTable));
@@ -588,7 +588,7 @@ public class CraftEventFactory {
     public static EntityDeathEvent callEntityDeathEvent(net.minecraft.world.entity.LivingEntity victim, DamageSource damageSource, List<org.bukkit.inventory.ItemStack> drops) {
         if (((EntityBridge)victim).getBukkitEntity() instanceof UnknownEntity) {
             UnknownEntity uk = (UnknownEntity) ((EntityBridge)victim).getBukkitEntity();
-            CardboardMod.LOGGER.info("Oh no! " + net.minecraft.world.entity.EntityType.getKey(uk.entity.getType()).toString() + " is an unknown bukkit entity!");
+            CardboardMod.LOGGER.info("Oh no! " + net.minecraft.world.entity.EntityType.getKey(uk.getHandle().getType()).toString() + " is an unknown bukkit entity!");
         }
         CraftLivingEntity entity = (CraftLivingEntity) ((EntityBridge)victim).getBukkitEntity();
         
@@ -700,7 +700,7 @@ public class CraftEventFactory {
     }
 
     public static BlockIgniteEvent callBlockIgniteEvent(Level world, BlockPos pos, IgniteCause cause, Entity igniter) {
-        BlockIgniteEvent event = new BlockIgniteEvent(((LevelBridge)world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), cause, ((EntityBridge)igniter).getBukkitEntity());
+        BlockIgniteEvent event = new BlockIgniteEvent(((LevelBridge)world).cardboard$getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), cause, ((EntityBridge)igniter).getBukkitEntity());
         Bukkit.getPluginManager().callEvent(event);
         return event;
     }
@@ -823,7 +823,7 @@ public class CraftEventFactory {
         CraftBlockState state = CraftBlockStates.getBlockState(world, target);
         state.setData(block);
 
-        BlockSpreadEvent event = new BlockSpreadEvent(((LevelBridge) world).getCraftWorld().getBlockAt(target.getX(), target.getY(), target.getZ()), ((LevelBridge) world).getCraftWorld().getBlockAt(source.getX(), source.getY(), source.getZ()), state);
+        BlockSpreadEvent event = new BlockSpreadEvent(((LevelBridge) world).cardboard$getWorld().getBlockAt(target.getX(), target.getY(), target.getZ()), ((LevelBridge) world).cardboard$getWorld().getBlockAt(source.getX(), source.getY(), source.getZ()), state);
         Bukkit.getPluginManager().callEvent(event);
 
         if (!event.isCancelled()) {
@@ -850,7 +850,7 @@ public class CraftEventFactory {
     }
 
     public static boolean handleBlockGrowEvent(Level world, BlockPos pos, net.minecraft.world.level.block.state.BlockState newData, int flag) {
-        Block block = ((LevelBridge) world).getCraftWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
+        Block block = ((LevelBridge) world).cardboard$getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
         CraftBlockState state = (CraftBlockState) block.getState();
         state.setData(newData);
 
@@ -950,7 +950,7 @@ public class CraftEventFactory {
 
     public static <T> CraftEventFactory.GameRuleSetResult<T> handleGameRuleSet(GameRule<T> rule, T value, ServerLevel level, @Nullable CommandSender sender) {
 		String valueStr = rule.serialize(value);
-		PaperWorldGameRuleChangeEvent event = new PaperWorldGameRuleChangeEvent(level.getWorld(), sender, CraftGameRule.minecraftToBukkit(rule), valueStr);
+		PaperWorldGameRuleChangeEvent event = new PaperWorldGameRuleChangeEvent(((LevelBridge)level).cardboard$getWorld(), sender, CraftGameRule.minecraftToBukkit(rule), valueStr);
 		if (event.callEvent()) {
 			if (!event.getValue().equals(valueStr)) {
 				value = (T)rule.deserialize(event.getValue()).getOrThrow();

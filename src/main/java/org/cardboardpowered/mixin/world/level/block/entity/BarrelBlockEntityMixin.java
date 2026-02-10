@@ -57,7 +57,7 @@ public abstract class BarrelBlockEntityMixin implements Container, ContainerBrid
     @Override
     public Location getLocation() {
         BlockPos pos = ((BlockEntity)(Object)this).getBlockPos();
-        return new Location(((LevelBridge)((BlockEntity)(Object)this).getLevel()).getCraftWorld(), pos.x, pos.y, pos.z);
+        return new Location(((LevelBridge)((BlockEntity)(Object)this).getLevel()).cardboard$getWorld(), pos.x, pos.y, pos.z);
     }
 
     @Override

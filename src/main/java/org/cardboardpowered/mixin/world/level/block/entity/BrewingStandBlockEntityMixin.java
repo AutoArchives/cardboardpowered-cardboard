@@ -77,7 +77,7 @@ public abstract class BrewingStandBlockEntityMixin implements Container, Contain
         ItemStack itemstack = (ItemStack) ((BrewingStandBlockEntityBridge)be).cardboard_getInventory().get(4);
 
         if (be.fuel <= 0 && itemstack.getItem() == Items.BLAZE_POWDER) {
-            BrewingStandFuelEvent event = new BrewingStandFuelEvent(((LevelBridge)be.level).getCraftWorld().getBlockAt(be.worldPosition.getX(), be.worldPosition.getY(), be.worldPosition.getZ()), CraftItemStack.asCraftMirror(itemstack), 20);
+            BrewingStandFuelEvent event = new BrewingStandFuelEvent(((LevelBridge)be.level).cardboard$getWorld().getBlockAt(be.worldPosition.getX(), be.worldPosition.getY(), be.worldPosition.getZ()), CraftItemStack.asCraftMirror(itemstack), 20);
             CraftServer.INSTANCE.getPluginManager().callEvent(event);
 
             if (event.isCancelled()) {

@@ -22,7 +22,6 @@ import net.minecraft.world.level.chunk.*;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.storage.SerializableChunkData;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
@@ -40,6 +39,7 @@ import org.bukkit.generator.structure.GeneratedStructure;
 import org.bukkit.generator.structure.Structure;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.plugin.Plugin;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 import org.cardboardpowered.impl.world.CraftWorld;
 
 public class CraftChunk implements Chunk {
@@ -66,7 +66,7 @@ public class CraftChunk implements Chunk {
 
     @Override
     public World getWorld() {
-        return this.level.getWorld();
+        return ((LevelBridge)this.level).cardboard$getWorld();
     }
 
     public CraftWorld getCraftWorld() {

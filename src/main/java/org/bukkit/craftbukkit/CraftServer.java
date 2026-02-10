@@ -1944,7 +1944,7 @@ public class CraftServer implements Server {
                 message = message.substring(1);
 
             completions = (pos == null) ? getCommandMap().tabComplete(player, message) :
-                    getCommandMap().tabComplete(player, message, new Location(((LevelBridge)(Object)world).getCraftWorld(), pos.x, pos.y, pos.z));
+                    getCommandMap().tabComplete(player, message, new Location(((LevelBridge)(Object)world).cardboard$getWorld(), pos.x, pos.y, pos.z));
         } catch (CommandException ex) {
             player.sendMessage(ChatColor.RED + "An internal error occurred while attempting to tab-complete this command");
             getLogger().log(Level.SEVERE, "Exception when " + player.getName() + " attempted to tab complete " + message, ex);
@@ -2242,7 +2242,7 @@ public class CraftServer implements Server {
         for (ServerLevel world : server.levels.values()) {
             Identifier name = world.dimension().identifier();
             if (name.equals(id))
-                return ((LevelBridge)world).getCraftWorld();
+                return ((LevelBridge)world).cardboard$getWorld();
         }
 
         return null;
@@ -2648,7 +2648,7 @@ public class CraftServer implements Server {
         if (worldServer == null) {
             return null;
         }
-        return worldServer.getWorld();
+        return ((LevelBridge)worldServer).cardboard$getWorld();
     }
 
     // 1.21.4 API:
@@ -2710,7 +2710,7 @@ public class CraftServer implements Server {
 
 	@Override
 	public @NotNull World getRespawnWorld() {
-		return this.console.findRespawnDimension().getWorld();
+		return ((LevelBridge)this.console.findRespawnDimension()).cardboard$getWorld();
 	}
 
     @Override

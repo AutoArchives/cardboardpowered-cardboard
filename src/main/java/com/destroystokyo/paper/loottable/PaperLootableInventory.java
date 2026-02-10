@@ -16,7 +16,7 @@ public interface PaperLootableInventory extends PaperLootable, LootableInventory
     Level getNMSWorld();
 
     default World getBukkitWorld() {
-        return ((LevelBridge)this.getNMSWorld()).getCraftWorld();
+        return ((LevelBridge)this.getNMSWorld()).cardboard$getWorld();
     }
 
     /* LootableInventory */

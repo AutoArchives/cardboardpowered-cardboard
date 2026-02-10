@@ -567,11 +567,6 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     public void setArrowCooldown(int i) {}
     public int getArrowCooldown() { return -1; }
 
-    @Override
-    public EntityType getType() {
-        return EntityType.UNKNOWN;
-    }
-
     // Spigot-743
     public boolean isInvisible() {
         return getHandle().isInvisible();

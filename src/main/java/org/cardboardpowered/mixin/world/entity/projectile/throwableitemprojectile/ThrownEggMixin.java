@@ -64,7 +64,7 @@ public abstract class ThrownEggMixin {
             // Paper end
             if (hatching) {
                 for (int i = 0; i < b0; ++i) {
-                    CraftWorld cw = ((LevelBridge)world).getCraftWorld();
+                    CraftWorld cw = ((LevelBridge)world).cardboard$getWorld();
                     Entity entity = cw.createEntity_Old(new org.bukkit.Location(cw, egg.getX(), egg.getY(), egg.getZ(), egg.getYRot(), 0.0F), hatchingType.getEntityClass());
                     if (((EntityBridge)entity).getBukkitEntity() instanceof Ageable)
                         ((Ageable) ((EntityBridge)entity).getBukkitEntity()).setBaby();

@@ -10,10 +10,6 @@ public interface ServerLevelBridge {
 
     ServerLevelData cardboard_worldProperties();
 
-	default CraftWorld getWorld() {
-		return null;
-	}
-
 	default CraftServer getCraftServer() {
 		return CraftServer.INSTANCE;
 	}

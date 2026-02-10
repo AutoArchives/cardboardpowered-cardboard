@@ -53,6 +53,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerRespawnEvent.RespawnReason;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 import org.cardboardpowered.extras.PlayerList_LoginResult;
 import org.cardboardpowered.extras.ServerPlayer_RespawnResult;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
@@ -373,7 +374,7 @@ public abstract class PlayerListMixin implements PlayerListBridge {
 
         // It's possible for respawn to be in a diff dimension
         if (fromLevel != currentLevel) {
-            new org.bukkit.event.player.PlayerChangedWorldEvent((Player) ((EntityBridge)player).getBukkitEntity(), ((ServerLevelBridge)fromLevel).getWorld()).callEvent();
+            new org.bukkit.event.player.PlayerChangedWorldEvent((Player) ((EntityBridge)player).getBukkitEntity(), ((LevelBridge)fromLevel).cardboard$getWorld()).callEvent();
             player.triggerDimensionChangeTriggers(currentLevel);
         }
 

@@ -78,7 +78,7 @@ public class ServerLevelMixin extends LevelMixin implements ServerLevelBridge {
     @Inject(at = @At("HEAD"), method = "save")
     public void doWorldSaveEvent(ProgressListener aa, boolean bb, boolean cc, CallbackInfo ci) {
         if (!cc) {
-            org.bukkit.Bukkit.getPluginManager().callEvent(new org.bukkit.event.world.WorldSaveEvent(getCraftWorld())); // WorldSaveEvent
+            org.bukkit.Bukkit.getPluginManager().callEvent(new org.bukkit.event.world.WorldSaveEvent(this.cardboard$getWorld())); // WorldSaveEvent
         }
     }
     
@@ -88,11 +88,6 @@ public class ServerLevelMixin extends LevelMixin implements ServerLevelBridge {
     @Override
     public ServerLevelData cardboard_worldProperties() {
         return serverLevelData;
-    }
-    
-    @Override
-    public CraftWorld getWorld() {
-        return ((LevelBridge)(Object)this).getCraftWorld();
     }
 
 	@Override
@@ -165,11 +160,11 @@ public class ServerLevelMixin extends LevelMixin implements ServerLevelBridge {
 	public void setRespawnDataPaper(LevelData.RespawnData respawnData, CallbackInfo ci) {
 		// Paper start
 		if (!((LevelData_RespawnDataBridge)(Object)this.serverLevelData.getRespawnData()).cardboard$positionEquals(respawnData)) {
-			org.bukkit.Location previousLocation = this.getWorld().getSpawnLocation();
+			org.bukkit.Location previousLocation = this.cardboard$getWorld().getSpawnLocation();
 			this.serverLevelData.setSpawn(respawnData);
 			this.server.getPlayerList().broadcastAll(new net.minecraft.network.protocol.game.ClientboundSetDefaultSpawnPositionPacket(respawnData), this.dimension());
 			this.server.updateEffectiveRespawnData();
-			new org.bukkit.event.world.SpawnChangeEvent(this.getWorld(), previousLocation).callEvent();
+			new org.bukkit.event.world.SpawnChangeEvent(this.cardboard$getWorld(), previousLocation).callEvent();
 		}
 		if (((PrimaryLevelDataBridge)this.server.overworld().serverLevelData).cardboard$getRespawnDimension() != this.dimension()) {
 			((PrimaryLevelDataBridge)this.server.overworld().serverLevelData).cardboard$setRespawnDimension(this.dimension());

@@ -290,6 +290,14 @@ public abstract class EntityMixin implements CommandSourceBridge, EntityBridge {
         return null;
     }
 
+    @Shadow
+    public float yRot;
+
+    @Shadow
+    public float getYRot() {
+        return 0;
+    }
+
     /**
      * EntityCombustByBlockEvent
      * 
@@ -342,8 +350,8 @@ public abstract class EntityMixin implements CommandSourceBridge, EntityBridge {
 	 */
 	@Inject(method = "saveWithoutId", at = @At(value = "INVOKE", shift = At.Shift.AFTER, ordinal = 0, target = "Lnet/minecraft/world/level/storage/ValueOutput;store(Ljava/lang/String;Lcom/mojang/serialization/Codec;Ljava/lang/Object;)V"))
     public void cardboard$writeData_saveBukkitWorldUuid(ValueOutput output, CallbackInfo ci) {
-		output.putLong("WorldUUIDLeast", this.level.getCraftWorld().getUID().getLeastSignificantBits());
-		output.putLong("WorldUUIDMost", this.level.getCraftWorld().getUID().getMostSignificantBits());
+		output.putLong("WorldUUIDLeast", this.level.cardboard$getWorld().getUID().getLeastSignificantBits());
+		output.putLong("WorldUUIDMost", this.level.cardboard$getWorld().getUID().getMostSignificantBits());
     }
 
     @Inject(method = "isPushable", at = @At("HEAD"), cancellable = true)
@@ -362,6 +370,13 @@ public abstract class EntityMixin implements CommandSourceBridge, EntityBridge {
     @Override
     public boolean cardboard$canCollideWithBukkit(Entity entity) {
         return this.isPushable();
+    }
+    // CraftBukkit end
+
+    // CraftBukkit start
+    @Override
+    public float cardboard$getBukkitYaw() {
+        return this.yRot;
     }
     // CraftBukkit end
 }

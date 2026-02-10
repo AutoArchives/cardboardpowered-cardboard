@@ -60,7 +60,7 @@ public final class CraftMemoryMapper {
     @SuppressWarnings("unchecked")
 	public static Location fromNms(GlobalPos globalPos) {
     	IMixinGlobalPos ipos = (IMixinGlobalPos) (Object) globalPos;
-        return new Location((World) ((LevelBridge)((CraftServer)Bukkit.getServer()).getServer().getLevel((ResourceKey<net.minecraft.world.level.Level>) ipos.IC$get_dimension())).getCraftWorld(), (double)ipos.IC$get_pos().getX(), (double)ipos.IC$get_pos().getY(), (double)ipos.IC$get_pos().getZ());
+        return new Location((World) ((LevelBridge)((CraftServer)Bukkit.getServer()).getServer().getLevel((ResourceKey<net.minecraft.world.level.Level>) ipos.IC$get_dimension())).cardboard$getWorld(), (double)ipos.IC$get_pos().getX(), (double)ipos.IC$get_pos().getY(), (double)ipos.IC$get_pos().getZ());
     }
 
    // public static GlobalPos toNms(Location location) {

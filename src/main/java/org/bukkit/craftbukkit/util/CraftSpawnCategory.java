@@ -1,12 +1,12 @@
-package org.cardboardpowered.impl.util;
+package org.bukkit.craftbukkit.util;
 
 import net.minecraft.world.entity.MobCategory;
 import org.bukkit.entity.SpawnCategory;
 
-public class CardboardSpawnCategory {
+public class CraftSpawnCategory {
 
     public static boolean isValidForLimits(SpawnCategory spawnCategory) {
-        return spawnCategory != null && spawnCategory.ordinal() < SpawnCategory.MISC.ordinal(); // Banner - use original
+        return spawnCategory != null && spawnCategory != SpawnCategory.MISC;
     }
 
     public static String getConfigNameSpawnLimit(SpawnCategory spawnCategory) {
@@ -53,7 +53,7 @@ public class CardboardSpawnCategory {
             case WATER_AMBIENT -> SpawnCategory.WATER_AMBIENT;
             case UNDERGROUND_WATER_CREATURE -> SpawnCategory.WATER_UNDERGROUND_CREATURE;
             case MISC -> SpawnCategory.MISC;
-            default -> SpawnCategory.valueOf(enumCreatureType.name());
+            default -> throw new UnsupportedOperationException("Unknown EnumCreatureType " + enumCreatureType + " for SpawnCategory");
         };
     }
 
@@ -67,7 +67,7 @@ public class CardboardSpawnCategory {
             case WATER_AMBIENT -> MobCategory.WATER_AMBIENT;
             case WATER_UNDERGROUND_CREATURE -> MobCategory.UNDERGROUND_WATER_CREATURE;
             case MISC -> MobCategory.MISC;
-            default -> MobCategory.valueOf(spawnCategory.name());
+            default -> throw new UnsupportedOperationException("Unknown SpawnCategory " + spawnCategory + " for EnumCreatureType");
         };
     }
 

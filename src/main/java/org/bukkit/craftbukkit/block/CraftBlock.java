@@ -83,7 +83,7 @@ public class CraftBlock implements Block {
 
     @Override
     public World getWorld() {
-        return ((LevelBridge)this.world).getCraftWorld();
+        return ((LevelBridge)this.world).cardboard$getWorld();
     }
 
     public CraftWorld getCraftWorld() {

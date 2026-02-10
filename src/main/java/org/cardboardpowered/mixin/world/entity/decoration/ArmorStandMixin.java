@@ -129,5 +129,10 @@ public class ArmorStandMixin extends EntityMixin implements ArmorStandBridge {
     }
     */
 
-
+    // CraftBukkit start - SPIGOT-3607, SPIGOT-3637
+    @Override
+    public float cardboard$getBukkitYaw() {
+        return this.getYRot();
+    }
+    // CraftBukkit end
 }

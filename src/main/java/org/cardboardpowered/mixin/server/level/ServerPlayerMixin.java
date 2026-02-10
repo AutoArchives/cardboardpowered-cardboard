@@ -23,16 +23,9 @@ import java.util.OptionalInt;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.attribute.EnvironmentAttributes;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.BedBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.RespawnAnchorBlock;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.bukkit.Bukkit;
@@ -50,6 +43,7 @@ import org.bukkit.inventory.MainHand;
 import org.cardboardpowered.CardboardConfig;
 import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.bridge.server.network.ServerGamePacketListenerImplBridge;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 import org.cardboardpowered.extras.ServerPlayer_RespawnPosAngle;
 import org.cardboardpowered.extras.ServerPlayer_RespawnResult;
 import org.cardboardpowered.impl.world.CraftWorld;
@@ -86,17 +80,13 @@ import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerPlayer.RespawnConfig;
-import net.minecraft.server.level.ServerPlayer.RespawnPosAngle;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.CompoundContainer;
 import net.minecraft.world.Container;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.world.damagesource.CombatTracker;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.food.FoodData;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
@@ -191,7 +181,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements CommandSo
     	ServerPlayer thiz = (ServerPlayer) (Object) this;
     	cb$from = thiz.level(); // Cardboard - store from world
 
-    	Location exit = CraftLocation.toBukkit(target.position(), target.newLevel().getWorld());
+    	Location exit = CraftLocation.toBukkit(target.position(), ((LevelBridge)target.newLevel()).cardboard$getWorld());
 
     	PlayerTeleportEvent tpEvent = new PlayerTeleportEvent(
                 (Player) this.getBukkitEntity(),
@@ -259,7 +249,7 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements CommandSo
 			return;
 		}
 
-		PlayerChangedWorldEvent changeEvent = new PlayerChangedWorldEvent((Player)this.getBukkitEntity(), cb$from.getWorld());
+		PlayerChangedWorldEvent changeEvent = new PlayerChangedWorldEvent((Player)this.getBukkitEntity(), ((LevelBridge)cb$from).cardboard$getWorld());
         CraftServer.INSTANCE.getPluginManager().callEvent(changeEvent);
     }
 
