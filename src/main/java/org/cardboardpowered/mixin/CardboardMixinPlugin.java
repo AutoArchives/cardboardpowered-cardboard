@@ -77,7 +77,7 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
             return false;
         }
 
-        if (mixin.equals("item.MixinChorusFruitItem")) {
+        if (mixin.equals("world.item.consume_effects.TeleportRandomlyConsumeEffectMixin")) {
             FabricLoader loader = FabricLoader.getInstance();
             boolean create_mod = loader.isModLoaded("porting_lib");
             if (create_mod) {
@@ -85,7 +85,7 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
             }
         }
 
-        if (mixin.equals("network.MixinServerPlayNetworkHandler_ChatEvent") && 
+        if (mixin.equals("server.network.ServerGamePacketListenerImplMixin_ChatEvent") &&
                 should_force_alternate_chat()) {
             logger.info("Architectury Mod detected! Disabling async chat from NetworkHandler.");
             return false;
@@ -115,7 +115,7 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         if (not_has_event(mixin, "LeavesBlock", "LeavesDecayEvent")) return false;
         if (not_has_event(mixin, "PlayerAdvancementTracker", "PlayerAdvancementDoneEvent")) return false;
 */
-        if (mixinClassName.contains("ServerPlayNetworkHandler")) return true;
+        if (mixinClassName.contains("ServerGamePacketListenerImpl")) return true;
 
         try {
             URLClassLoader ucl = getClassLoader();
@@ -135,7 +135,7 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
                     if (events[0].length() < 4) {
                         return true; // No events
                     }
-                    
+
                     boolean disable = true;
                     for (String ev : events) {
                         if (!doesNotHaveEvent(mixin, mixin, ev))
@@ -145,7 +145,7 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
                     //    return false;
                 }
             }
-        
+
         } catch (Exception e) {
             logger.info(e.getMessage());
         }
