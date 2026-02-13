@@ -1,64 +1,99 @@
 package org.cardboardpowered.util;
 
-import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.cardboardpowered.CardboardMod;
+import org.cardboardpowered.library.LibraryManager;
 
+/**
+ */
 public class JarReader {
 
-    public static List<String> found = new ArrayList<>();
-    // private static final Logger logger = LogManager.getLogger("Cardboard");
-    public static long timeTook;
+    public static Set<String> found = new HashSet<>();
+    private static List<String> EVENTS = new ArrayList<>();
 
-    public static int read_plugins(File folder) throws Exception {
-        // logger.info("Please wait, Scanning plugins for events...");
+    public static int readPlugins(File folder) throws IOException {
+        CardboardMod.LOGGER.info("Please wait, scanning plugins for events...");
         long start = System.currentTimeMillis();
-        for (File f : folder.listFiles()) {
-            if (f.getName().endsWith(".jar")) {
-                read_jar(f.getAbsolutePath());
+
+        File[] files = folder.listFiles();
+        if (files == null) {
+            CardboardMod.LOGGER.warning("Plugin folder is empty or unreadable.");
+            return 0;
+        }
+
+        for (File file : files) {
+            if (!file.getName().endsWith(".jar")) continue;
+
+            try (JarFile jar = new JarFile(file)) {
+                jar.stream()
+                   .filter(e -> !e.isDirectory())
+                   .filter(e -> e.getName().endsWith(".class"))
+                   .forEach(entry -> scanClassEntry(jar, entry));
             }
         }
 
-        timeTook = System.currentTimeMillis() - start;
-        // for (String s : found) System.out.println(s);
-        //logger.info("Found: " + found.size() + " (Took: " + timeTook + "ms)");
+        long took = System.currentTimeMillis() - start;
+        CardboardMod.LOGGER.info("Found: " + found.size() + " (Took: " + took + "ms)");
         return found.size();
     }
 
-    public static void read_jar(String path) throws Exception {
-        ZipFile zipFile = new ZipFile(path);
+    private static void scanClassEntry(JarFile jar, JarEntry entry) {
+        try (InputStream in = jar.getInputStream(entry)) {
+            byte[] bytes = in.readAllBytes();
+            String contents = new String(bytes, StandardCharsets.ISO_8859_1);
 
-        Enumeration<? extends ZipEntry> entries = zipFile.entries();
-
-        while(entries.hasMoreElements()){
-            ZipEntry entry = entries.nextElement();
-            InputStream stream = zipFile.getInputStream(entry);
-            if (!entry.getName().endsWith(".class")) continue;
-
-            // convert stream into a reader
-            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-            String contents = reader.lines().collect(Collectors.joining("\n"));
-
-            for (String event : KnownEvents.EVENTS) {
-                if (contents.contains(event) && !found.contains(event) ) {
+            for (String event : EVENTS) {
+                if (contents.contains(event)) {
                     found.add(event);
                 }
             }
-            
-            
-            stream.close();
+        } catch (IOException ex) {
+            CardboardMod.LOGGER.warning("Failed reading entry " + entry.getName() + " " + ex.getMessage());
         }
-        zipFile.close();
+    }
+
+    public static void readEvents() {
+    	File jar = LibraryManager.INSTANCE.getJarFile("paper-api");
+        if (null != jar) {
+        	try {
+				JarReader.readEventList(jar);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+        }
+    }
+
+    public static void readEventList(File f) throws IOException {
+        CardboardMod.LOGGER.info("Please wait, Scanning Paper-API for events...");
+        long start = System.currentTimeMillis();
+
+    	ZipFile zipFile = new ZipFile(f.getAbsolutePath());
+    	Enumeration<? extends ZipEntry> entries = zipFile.entries();
+
+    	while(entries.hasMoreElements()){
+    		ZipEntry entry = entries.nextElement();
+    		String name = entry.getName();
+    		if (name.endsWith("Event.class")) {
+    			String path = entry.getName();
+    			String result = path.substring(path.lastIndexOf('/') + 1).replace(".class", "");
+    			EVENTS.add(result);
+    		}
+    	}
+    	zipFile.close();
+        CardboardMod.LOGGER.info("Found: " + EVENTS.size() + " (Took: " + (System.currentTimeMillis() - start) + "ms)");
     }
 
 }

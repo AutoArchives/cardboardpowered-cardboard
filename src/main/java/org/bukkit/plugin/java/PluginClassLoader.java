@@ -1,17 +1,17 @@
 package org.bukkit.plugin.java;
 
 import com.google.common.base.Preconditions;
-import com.mohistmc.banner.bukkit.nms.ClassLoaderContext;
-import com.mohistmc.banner.bukkit.nms.model.ClassMapping;
-import com.mohistmc.banner.bukkit.nms.utils.RemapUtils;
-import com.mohistmc.bukkit.pluginfix.PluginFixManager;
 import com.mohistmc.dynamicenum.MohistDynamEnum;
 import net.md_5.specialsource.repo.RuntimeRepo;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.SimplePluginManager;
+import org.cardboardpowered.mohistremap.ClassLoaderContext;
+import org.cardboardpowered.mohistremap.ClassMapping;
+import org.cardboardpowered.mohistremap.RemapUtilProvider;
 import org.cardboardpowered.util.MyPluginFixManager;
+import org.cardboardpowered.util.nms.RemapUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -189,8 +189,11 @@ public class PluginClassLoader extends URLClassLoader {
         ClassLoaderContext.put(this);
         Class<?> result;
         try {
-            if (RemapUtils.needRemap(name.replace('/','.'))) {
-                ClassMapping remappedClassMapping = RemapUtils.jarMapping.byNMSName.get(name);
+            if (RemapUtilProvider.get().needRemap(name.replace('/','.'))) {
+            	
+            	RemapUtils remapUtils = (RemapUtils) RemapUtilProvider.get();
+            	
+                ClassMapping remappedClassMapping = remapUtils.jarMapping.byNMSName.get(name);
                 if(remappedClassMapping == null){
                     throw new ClassNotFoundException(name.replace('/','.'));
                 }
@@ -239,14 +242,14 @@ public class PluginClassLoader extends URLClassLoader {
             if (url != null) {
                 InputStream stream = url.openStream();
                 if (stream != null) {
-                    byte[] bytecode = RemapUtils.jarRemapper.remapClassFile(stream, RuntimeRepo.getInstance());
+                    byte[] bytecode = RemapUtilProvider.get().getJarRemapper().remapClassFile(stream, RuntimeRepo.getInstance());
                     
                     //if (path.contains("/worldedit/bukkit/adapter/impl/")) {
                     //	System.out.println("Debug: Processing class: " + path);
                     //}
                     
                     bytecode = loader.server.getUnsafe().processClass(description, path, bytecode);
-                    bytecode = RemapUtils.remapFindClass(bytecode);
+                    bytecode = RemapUtilProvider.get().remapFindClass(bytecode);
 
                     bytecode = modifyByteCode(name, bytecode); // Mohist: add entry point for asm or mixin
 

@@ -1,38 +1,13 @@
-package com.mohistmc.banner.bukkit.nms.utils;
-
-import com.mohistmc.banner.bukkit.nms.model.ClassMapping;
-import com.mohistmc.banner.bukkit.nms.remappers.BannerInheritanceMap;
-import com.mohistmc.banner.bukkit.nms.remappers.BannerInheritanceProvider;
-import com.mohistmc.banner.bukkit.nms.remappers.BannerJarMapping;
-import com.mohistmc.banner.bukkit.nms.remappers.BannerJarRemapper;
-import com.mohistmc.banner.bukkit.nms.remappers.BannerSuperClassRemapper;
-import com.mohistmc.banner.bukkit.nms.remappers.ClassRemapperSupplier;
-import com.mohistmc.banner.bukkit.nms.remappers.ReflectMethodRemapper;
-import com.mohistmc.banner.bukkit.nms.remappers.ReflectRemapper;
-
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.MappingResolver;
-import net.fabricmc.mappingio.format.MappingFormat;
-import net.md_5.specialsource.provider.JointProvider;
-import org.cardboardpowered.CardboardConfig;
-import org.cardboardpowered.CardboardLogger;
-import org.cardboardpowered.util.nms.MyMappingResolver;
-import org.cardboardpowered.util.nms.MappingsReader;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.ClassRemapper;
-import org.objectweb.asm.commons.Remapper;
-import org.objectweb.asm.tree.ClassNode;
+package org.cardboardpowered.util.nms;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,28 +18,64 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.bukkit.craftbukkit.CraftServer;
+import org.cardboardpowered.CardboardConfig;
+import org.cardboardpowered.CardboardLogger;
+import org.cardboardpowered.mappings.TsrgWriter;
+import org.cardboardpowered.mohistremap.ClassMapping;
+import org.cardboardpowered.mohistremap.IRemapUtils;
+import org.cardboardpowered.mohistremap.utils.ASMUtils;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.ClassRemapper;
+import org.objectweb.asm.commons.Remapper;
+import org.objectweb.asm.tree.ClassNode;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.mohistmc.remap.remappers.BannerInheritanceMap;
+import com.mohistmc.remap.remappers.BannerInheritanceProvider;
+import com.mohistmc.remap.remappers.BannerJarMapping;
+import com.mohistmc.remap.remappers.BannerJarRemapper;
+import com.mohistmc.remap.remappers.BannerSuperClassRemapper;
+import com.mohistmc.remap.remappers.ClassRemapperSupplier;
+import com.mohistmc.remap.remappers.ReflectMethodRemapper;
+import com.mohistmc.remap.remappers.ReflectRemapper;
+
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.MappingResolver;
+import net.fabricmc.mappingio.format.MappingFormat;
+import net.fabricmc.mappingio.format.tiny.Tiny2FileReader;
+import net.fabricmc.mappingio.tree.MemoryMappingTree;
+import net.md_5.specialsource.InheritanceMap;
+import net.md_5.specialsource.provider.ClassLoaderProvider;
+import net.md_5.specialsource.provider.JointProvider;
+import net.minecraft.core.Registry;
+
 /**
  * @author pyz
  * @date 2019/6/30 11:50 PM
  */
-public class RemapUtils {
+public class RemapUtils implements IRemapUtils {
 	
 	private static CardboardLogger LOGGER = CardboardLogger.get("RemapUtils");
 
     public static BannerJarMapping jarMapping;
     public static BannerJarRemapper jarRemapper;
     private static final List<Remapper> remappers = new ArrayList<>();
+    public static InheritanceMap inheritanceMap;
     
     public static boolean DEBUG_VERBOSE_CALLS = true;
 
-    public static String NMS_VERSION = "v1_21_R6"; // "v1_21_R3"; // "v1_20_R4";
+    public static String NMS_VERSION = "v1_21_R7"; // "v1_21_R3"; // "v1_20_R4";
     
     private static MyMappingResolver myMappingResolver;
     
     private static HashMap<String, String> cspigot2fabric = new HashMap<>();
     
     public static File exportResource(String res, File folder) {
-        try (InputStream stream = MappingsReader.class.getClassLoader().getResourceAsStream("mappings/" + res)) {
+        try (InputStream stream = RemapUtils.class.getClassLoader().getResourceAsStream("mappings/" + res)) {
             if (stream == null) throw new IOException("Null " + res);
 
             Path p = Paths.get(folder.getAbsolutePath() + File.separator + res);
@@ -73,7 +84,7 @@ public class RemapUtils {
         } catch (IOException e) { e.printStackTrace(); return null;}
     }
     
-    public static File exportResourceMetaInf(String res, File folder) {
+    public static File exportResourceMeta(String res, File folder) {
         try (InputStream stream = RemapUtils.class.getClassLoader().getResourceAsStream("META-INF/mappings/" + res)) {
             if (stream == null) throw new IOException("Null " + res);
 
@@ -82,24 +93,17 @@ public class RemapUtils {
             return p.toFile();
         } catch (IOException e) { e.printStackTrace(); return null;}
     }
-    
-    public static void LOG1(String msg) {
-		LOGGER.info(msg);
-    	// CardboardMod.LOGGER.info("RemapUtils: " + msg);
-    }
-	
-	public static void debug(String msg) {
-		LOGGER.debug(msg);
-	}
-    
-    public static void init() {
-    	debug("Remap Util init");
+
+	@Override
+    public void init() {
+    	LOGGER.debug("Remap Util init");
+
+    	inheritanceMap = new CbInheritanceMap();
     	
         jarMapping = new BannerJarMapping();
         // v1_20_R1
         jarMapping.packages.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/", "org/bukkit/craftbukkit/");
         jarMapping.packages.put("org/bukkit/craftbukkit/" + NMS_VERSION, "org/bukkit/craftbukkit");
-        //jarMapping.packages.put("org/bukkit/craftbukkit/v1_19_R3/", "org/bukkit/craftbukkit/");
         jarMapping.packages.put("org/bukkit/craftbukkit/libs/it/unimi/dsi/fastutil/", "it/unimi/dsi/fastutil/");
         jarMapping.packages.put("org/bukkit/craftbukkit/libs/jline/", "jline/");
         jarMapping.packages.put("org/bukkit/craftbukkit/libs/org/apache/commons/", "org/apache/commons/");
@@ -119,16 +123,12 @@ public class RemapUtils {
         jarMapping.setFallbackInheritanceProvider(new BannerInheritanceProvider());
 
         MappingResolver mr = FabricLoader.getInstance().getMappingResolver(); 
-        
-        
-        // intermediary
-        
-        // mr.unmapClassName("official", owner.replace('/', '.'));
-        
+
         try {
             jarMapping.loadMappings(
                     new BufferedReader(new InputStreamReader(RemapUtils.class.getClassLoader()
-                            .getResourceAsStream("mappings/spigot2srg-1.20.srg"))),
+                            // .getResourceAsStream("mappings/spigot2srg-1.20.srg"))),
+                    		.getResourceAsStream("mappings/testsrg.srg"))),
                     null,
                     null, false);
         } catch (Exception e) {
@@ -138,20 +138,38 @@ public class RemapUtils {
 
         File dir = new File("mappings");
         dir.mkdirs();
-        
-        // File f = exportResource("bukkit-1.20.4-cl-intermed.csrg", dir);
+
+        BiMap<String, String> inverseClassMap = HashBiMap.create(jarMapping.classes).inverse();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(RemapUtils.class.getClassLoader().getResourceAsStream("mappings/inheritanceMap.txt")))) {
+            inheritanceMap.load(reader, inverseClassMap);
+        } catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
         
         try {
         	LOGGER.info("Exporting Mojang Mappings...");
-        	Path path = exportResourceMetaInf("reobf.tiny", dir).toPath();
+        	Path path = exportResourceMeta("reobf.tiny", dir).toPath();
 			myMappingResolver = new MyMappingResolver(path, MappingFormat.TINY_2_FILE, "named", "intermediary");
 			LOGGER.info("RemapUtils: MyMappingResolver Namespace: " + myMappingResolver.getCurrentRuntimeNamespace());
+			
+			output(path);
+			
+			myMappingResolver.tree.getClasses().forEach(clm -> {
+				String a = clm.getName("named");
+				String b = clm.getName("intermediary").replace('.', '/');
+
+					jarMapping.classes.put(a, b);
+					jarMapping.registerClassMapping(a, b);
+				//}
+			});
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        
-        String bukkit_cl_srg = "bukkit-1.21.10-cl.csrg";
+
+        String bukkit_cl_srg = "bukkit-1.21.11-cl.csrg";
         File bukkit_class_mappings_file = exportResource(bukkit_cl_srg, dir);
         
         jarMapping.classes.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/CraftWorld", "org/cardboardpowered/impl/world/CraftWorld");
@@ -159,42 +177,20 @@ public class RemapUtils {
         // some missing
         jarMapping.classes.put("net/minecraft/nbt/ListTag", "net/minecraft/class_2499");
         jarMapping.classes.put("net/minecraft/class_7225$a", "net/minecraft/class_7225$class_7874");
-
-        // HashMap<String, String> cm = new HashMap<>();
         
+        // Mojang: HolderLookup$Provider
+        jarMapping.classes.put("net/minecraft/class_7225$Provider", "net/minecraft/class_7225$class_7874");
+
+        jarMapping.classes.put("net/minecraft/server/dedicated/DedicatedServer", "net/minecraft/class_3176");
+        
+        jarMapping.registerClassMapping("net/minecraft/class_7225$Provider", "net/minecraft/class_7225$class_7874");
+        
+        // HashMap<String, String> cm = new HashMap<>();
+
         String namespace = mr.getCurrentRuntimeNamespace();
         
         addMethodOverrides();
-        
-        /*
-        try {
-			for (String c : Files.readAllLines(f.toPath())) {
-				// mr.getNamespaces().forEach(ss -> { System.out.println(ss); });
-				if (!(c.startsWith("# "))) {
-					String[] spl = c.split(" ");
-					if (!jarMapping.classes.containsKey(spl[0])) {
-						
-						String intermed = spl[1];
-						
-						// DEV
-						if (namespace.equalsIgnoreCase("named")) {
-							String n1 = mr.mapClassName("intermediary", intermed.replace('/', '.'));
-							intermed = n1.replace('.', '/');
-							// System.out.println(spl[1] + " / " + intermed);
 
-							jarMapping.registerClassMapping(spl[1], intermed);
-						}
-						
-						jarMapping.registerClassMapping(spl[0], intermed);
-						cm.put(spl[0], intermed);
-					}
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		*/
-        
         try {
         	LOGGER.debug("Reading \"" + bukkit_cl_srg + "\".");
 
@@ -204,7 +200,7 @@ public class RemapUtils {
         		if (line.startsWith("# ")) {
         			continue;
         		}
-        		
+
         		String[] spl = line.split(" ");
         		
         		// Get class names
@@ -217,12 +213,6 @@ public class RemapUtils {
         			cspigot2fabric.put(spi_claz.replace('/', '.'), fab_claz.replace('/', '.'));
         		}
 
-        		if (spl.length == 3) {
-        			// System.out.println("LIN! " + line + " / " + fab_claz);
-        		}
-        		
-        		// System.out.println(obf_claz + " / " + spi_claz + " / " + fab_claz);
-        		
         		if (!jarMapping.classes.containsKey(spi_claz)) {
         			jarMapping.registerClassMapping(spi_claz, fab_claz);
         			count += 1;
@@ -238,13 +228,7 @@ public class RemapUtils {
         				cam.setNmsSrcName(spi_claz);
         				cam.setMcpSrcName(fab_claz);
         				count += 1;
-
-        				// jarMapping.classes.put(key, namespace);
         			}
-        			// String key2 = jarMapping.classes.get(spi_claz);
-        			
-        			// System.out.println(obf_claz + " / " + spi_claz + " / " + fab_claz + " / " + key + " / " + key2);
-        			
         		}
         		total += 1;
         	}
@@ -254,6 +238,8 @@ public class RemapUtils {
         }
 
         JointProvider provider = new JointProvider();
+        provider.add(inheritanceMap);
+        provider.add(new ClassLoaderProvider(ClassLoader.getSystemClassLoader()));
         provider.add(new BannerInheritanceProvider());
         //jarMapping.setInheritanceMap(new InheritanceMap());
         jarMapping.setFallbackInheritanceProvider(provider);
@@ -263,29 +249,42 @@ public class RemapUtils {
         jarMapping.initFastMethodMapping(jarRemapper);
         ReflectMethodRemapper.init();
 
-        // SpigotReader.stuff_test();
-        // System.exit(1);
-        
         try {
-            Class.forName("com.mohistmc.banner.bukkit.nms.proxy.ProxyMethodHandlesLookup");
+            Class.forName("org.cardboardpowered.mohistremap.proxy.ProxyMethodHandlesLookup");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        
-        /*
-        try {
-			Reader3.main(null);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		*/
-        
+
         DEBUG_VERBOSE_CALLS = CardboardConfig.DEBUG_VERBOSE_CALLS;
     }
+    
+    private static void output(Path path) throws IOException {
+    	if (!FabricLoader.getInstance().isDevelopmentEnvironment()) {
+    		return;
+    	}
+    	
+    	 MemoryMappingTree tree = new MemoryMappingTree();
+         Tiny2FileReader.read(Files.newBufferedReader(path), tree);
 
+         try (BufferedWriter out = Files.newBufferedWriter(Paths.get("output1.tsrg"))) {
+             TsrgWriter.write(tree, out, "official", "named");
+         }
 
-    public static byte[] remapFindClass(byte[] bs) {
+         try (BufferedWriter out = Files.newBufferedWriter(Paths.get("output2.tsrg"))) {
+             TsrgWriter.write(tree, out, "named", "intermediary");
+         }
+         
+         try (BufferedWriter out = Files.newBufferedWriter(Paths.get("output3.tsrg"))) {
+             TsrgWriter.write(tree, out, "official", "intermediary");
+         }
+         
+         try (BufferedWriter out = Files.newBufferedWriter(Paths.get("output4.tsrg"))) {
+             TsrgWriter.write(tree, out, "intermediary", "named");
+         }
+    }
+
+    @Override
+    public byte[] remapFindClass(byte[] bs) {
         ClassReader reader = new ClassReader(bs); // Turn from bytes into visitor
         ClassNode classNode = new ClassNode();
         reader.accept(classNode, ClassReader.EXPAND_FRAMES);
@@ -310,7 +309,8 @@ public class RemapUtils {
 
     public static MappingResolver mr = FabricLoader.getInstance().getMappingResolver(); 
     
-    public static String map(String typeName) {
+    @Override
+    public String map(String typeName) {
     	
     	// Check if typeName is not in internal class name format
     	boolean isRequestNotInternalName = typeName.indexOf('.') != -1 && typeName.indexOf('/') == -1;
@@ -390,22 +390,25 @@ public class RemapUtils {
         return res; // jarMapping.classes.getOrDefault(typeName, typeName);
     }
 
-    public static String reverseMap(String typeName) {
+    @Override
+    public String reverseMap(String typeName) {
         ClassMapping mapping = jarMapping.byNMSInternalName.get(typeName);
         return mapping == null ? typeName : mapping.getNmsSrcName();
     }
 
-    public static String reverseMap(Class<?> clazz) {
+    @Override
+    public String reverseMap(Class<?> clazz) {
         ClassMapping mapping = jarMapping.byMCPName.get(clazz.getName());
         return mapping == null ? ASMUtils.toInternalName(clazz) : mapping.getNmsSrcName();
     }
     
-    public static String reverseMap_name(String class_name) {
+    public String reverseMap_name(String class_name) {
         ClassMapping mapping = jarMapping.byMCPName.get(class_name);
         return mapping == null ? ASMUtils.toInternalName(class_name) : mapping.getNmsSrcName();
     }
 
-    public static String mapPackage(String typeName) {
+    @Override
+    public String mapPackage(String typeName) {
         for (Map.Entry<String, String> entry : jarMapping.packages.entrySet()) {
             String prefix = entry.getKey();
             if (typeName.startsWith(prefix)) {
@@ -415,7 +418,8 @@ public class RemapUtils {
         return typeName;
     }
 
-    public static String remapMethodDesc(String methodDescriptor) {
+    @Override
+    public String remapMethodDesc(String methodDescriptor) {
         Type rt = Type.getReturnType(methodDescriptor);
         Type[] ts = Type.getArgumentTypes(methodDescriptor);
         rt = Type.getType(ASMUtils.toDescriptorV2(map(ASMUtils.getInternalName(rt))));
@@ -425,7 +429,8 @@ public class RemapUtils {
         return Type.getMethodType(rt, ts).getDescriptor();
     }
 
-    public static String mapMethodName(Class<?> clazz, String name, MethodType methodType) {
+    @Override
+    public String mapMethodName(Class<?> clazz, String name, MethodType methodType) {
         return mapMethodName(clazz, name, methodType.parameterArray());
     }
     
@@ -436,22 +441,8 @@ public class RemapUtils {
     	methodExtra.put("class_2378.wrapAsHolder(java.lang.Object)", "method_47983");
     	methodExtra.put("class_2629.c(net.minecraft.class_1259)", "method_34096");
     }
-    
-    private static String parameterTypes(Class<?>... parameterTypes) {
-    	String mm = "";
-    	for (Class<?> pt : parameterTypes) {
-    		mm += ", " + pt.getName();
-    	}
-    	mm += ")";
-    	
-    	if (mm.length() > 2) {
-    		mm = mm.substring(2);
-    	}
-    	mm = "(" + mm;
-    	return mm;
-    }
-    
-    public static String getMethodDescriptor(Class<?>... parameterTypes) {
+
+    private static String getMethodDescriptor(Class<?>... parameterTypes) {
         StringBuilder sb = new StringBuilder();
         sb.append('(');
         for (Class<?> param : parameterTypes) {
@@ -481,7 +472,8 @@ public class RemapUtils {
         throw new IllegalArgumentException("Unknown type: " + clazz);
     }
 
-    public static String mapMethodName(Class<?> type, String name, Class<?>... parameterTypes) {
+    @Override
+    public String mapMethodName(Class<?> type, String name, Class<?>... parameterTypes) {
     	
     	// ReflectionMethodVisitor.do_map(type.getName(), name, parameterTypes);
     	
@@ -517,6 +509,7 @@ public class RemapUtils {
 
     	if (DEBUG_VERBOSE_CALLS) {
     		System.out.println("Reflection: " + type.getName() + " / " + res);
+    		dewe(type, "Debug: METH: " + type.getName() + " / " + name + " = " + res);
     	}
 
     	if (!res.contains("method_")) {
@@ -541,6 +534,7 @@ public class RemapUtils {
             	// System.out.println("DeBUGM: " + clazz + ": " + key + " = " + mapp + " " + desc);
             	
             	if (mapp.contains("method_") || mapp.contains("comp_")) {
+            		dewe(type, "Debug: METH: " + type.getName() + " / " + name + " = " + mapp);
             		return mapp;
             	} else {
             		// System.out.println("DeBUGM: " + clazz + ": " + key + " = " + mapp + " " + mm);
@@ -549,6 +543,7 @@ public class RemapUtils {
             		if (null != superCl) {
             			String nam2 = mapMethodName_2(superCl, res, mapp, desc);
             			if (nam2.contains("method_") || nam2.contains("comp_")) {
+            				dewe(type, "Debug: METH: " + type.getName() + " / " + name + " = " + nam2);
             				return nam2;
             			}
             		}
@@ -582,7 +577,7 @@ public class RemapUtils {
     /**
      * Find matching declared method of a class.
      */
-    public static String find_meth(String obfClaz, Class<?> type, String name, Class<?>... parameterTypes) {
+    public String find_meth(String obfClaz, Class<?> type, String name, Class<?>... parameterTypes) {
     	System.out.println("FINDING MATCH FOR: " + obfClaz + "." + name);
     	for (Method m : type.getDeclaredMethods()) {
     		int pc = m.getParameterCount();
@@ -608,16 +603,19 @@ public class RemapUtils {
     	return name;
     }
 
-    public static String inverseMapMethodName(Class<?> type, String name, Class<?>... parameterTypes) {
+    @Override
+    public String inverseMapMethodName(Class<?> type, String name, Class<?>... parameterTypes) {
         return jarMapping.fastReverseMapMethodName(type, name, parameterTypes);
     }
 
-    public static String mapFieldName(Class<?> type, String fieldName) {
+    @Override
+    public String mapFieldName(Class<?> type, String fieldName) {
     	if (DEBUG_VERBOSE_CALLS) {
     		System.out.println("Reflection: " + type.getName() + " / " + fieldName);
     	}
     	
-        String key = reverseMap(type) + "/" + fieldName;
+    	String revType = reverseMap(type);
+        String key = revType + "/" + fieldName;
 
         String mapped = jarMapping.fields.get(key);
         if (mapped == null) {
@@ -630,18 +628,25 @@ public class RemapUtils {
         String res = mapped != null ? mapped : fieldName;
 
         if (DEBUG_VERBOSE_CALLS) {
-        	System.out.println("DEBUG: FIELD: " + type.getName() + " / " + fieldName + " = " + (mapped != null ? mapped : fieldName));
+        	System.out.println("DEBUG: FIELD: " + revType + "/" + type.getName() + " / " + fieldName + " = " + (mapped != null ? mapped : fieldName));
         }
+        
+        // dewe(type, "Debug: FIELD: " + type.getName() + " / " + fieldName + " = " + (mapped != null ? mapped : fieldName));
         
         // Check our MappingResolver
         if (fieldName.equalsIgnoreCase(res) && type.getName().contains("class_")) {
         	String clazz = myMappingResolver.unmapClassName("named", type.getName()); // Running -> Mojang
-        	String mapp = myMappingResolver.mapFieldName("named", clazz, fieldName, null);
+        	String mapp = myMappingResolver.mapFieldName_CheckObf("named", clazz, fieldName, null);
+        	
+        	dewe(type, "MAPP: " + mapp);
         	
         	// System.out.println("DeBUGff: " + type.getName() + ": " + key + " = " + res + " -> " + mapp);
         	if (mapp.contains("field_") || mapp.contains("comp_")) {
         		return mapp;
         	} else {
+        		
+        		
+        		
         		// System.out.println("DeBUGf: " + type.getName() + ": " + key + " = " + res);
         	}
         } else {
@@ -653,56 +658,32 @@ public class RemapUtils {
         
         return mapped != null ? mapped : fieldName;
     }
+    
+    private static void dewe(Class<?> cl, String s) {
+    	if (CardboardConfig.DEBUG_VERBOSE_CALLS) {
+    		System.out.println("dewe: " +s);
+    	}
+    }
 
-    public static String inverseMapFieldName(Class<?> type, String fieldName) {
+    @Override
+    public String inverseMapFieldName(Class<?> type, String fieldName) {
         return jarMapping.fastReverseMapFieldName(type, fieldName);
     }
 
-    public static String inverseMapName(Class<?> clazz) {
+    @Override
+    public String inverseMapName(Class<?> clazz) {
         ClassMapping mapping = jarMapping.byMCPName.get(clazz.getName());
         return mapping == null ? clazz.getName() : mapping.getNmsName();
     }
 
-    public static String inverseMapSimpleName(Class<?> clazz) {
+    @Override
+    public String inverseMapSimpleName(Class<?> clazz) {
         ClassMapping mapping = jarMapping.byMCPName.get(clazz.getName());
         return mapping == null ? clazz.getSimpleName() : mapping.getNmsSimpleName();
     }
 
-    public static boolean isNMSClass(String className) {
-        return className.startsWith("net.minecraft.");
-    }
-
-    public static boolean needRemap(String className){
-        return className.startsWith("net.minecraft.");
-    }
-    
-    public static String getMethodDescriptor(Method method, String name) {
-        StringBuilder descriptor = new StringBuilder();
-        descriptor.append("(");
-        for (java.lang.reflect.Type parameterType : method.getGenericParameterTypes()) {
-            descriptor.append(getTypeDescriptor(parameterType, name));
-        }
-        descriptor.append(")");
-        descriptor.append(getTypeDescriptor(method.getGenericReturnType(), name));
-        return descriptor.toString();
-    }
-
-    private static String getTypeDescriptor(java.lang.reflect.Type parameterType, String name) {
-        if (parameterType instanceof Class<?>) {
-            return getClassDescriptor((Class<?>) parameterType, name);
-        } else if (parameterType instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) parameterType;
-            StringBuilder descriptor = new StringBuilder();
-            descriptor.append(getClassDescriptor((Class<?>) parameterizedType.getRawType(), name));
-            for (java.lang.reflect.Type arg : parameterizedType.getActualTypeArguments()) {
-                descriptor.append(getTypeDescriptor(arg, name));
-            }
-            return descriptor.toString();
-        }
-        throw new IllegalArgumentException("Unsupported type: " + parameterType);
-    }
-
-    private static String getClassDescriptor(Class<?> clazz, String name) {
+    @Override
+    public String getClassDescriptor(Class<?> clazz, String name) {
         if (clazz.isArray()) {
             return "[" + getClassDescriptor(clazz.getComponentType(), name);
         } else if (clazz.isPrimitive()) {
@@ -727,4 +708,20 @@ public class RemapUtils {
         }
         throw new IllegalArgumentException("Unsupported class: " + clazz);
     }
+
+	@Override
+	public String getClassDescriptorResolveName(String namespace, String name) {
+		return mr.unmapClassName(namespace, name);
+	}
+
+	@Override
+	public BannerJarRemapper getJarRemapper() {
+		return jarRemapper;
+	}
+
+
+	@Override
+	public boolean shouldExtraDebugLog() {
+		return CardboardConfig.DEBUG_VERBOSE_CALLS;
+	}
 }

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.cardboardpowered.library.KnotHelper;
+import org.cardboardpowered.library.Libraries;
 
 public class CardboardConfig {
 
@@ -158,6 +158,7 @@ public class CardboardConfig {
     public static boolean DEBUG_OTHER = false;
     public static boolean DEBUG_PLAYER = false;
     public static boolean DEBUG_LOG_REMAP = false;
+    public static boolean DEBUG_REMAP_WE = false;
 
 	public static boolean addModsCommand = true;
 	public static boolean addPluginPrefixToLogger = true;
@@ -223,6 +224,7 @@ public class CardboardConfig {
         DEBUG_OTHER = config.getOrDefault("debug_other", false);
         DEBUG_PLAYER = config.getOrDefault("debug_player", false);
         DEBUG_LOG_REMAP = config.getOrDefault("debug_print_remaputil", false);
+        DEBUG_REMAP_WE = config.getOrDefault("debug_print_remap_for_worldedit", false);
 
         String extraJar = config.getOrDefault("debug_extra_lib_file", "debug_extra.jar");
         if (extraJar.length() > 2) {
@@ -230,7 +232,7 @@ public class CardboardConfig {
             // Add to KnotClassLoader
         	if (file.exists()) {
 	            try {
-	                KnotHelper.propose(file);
+	                Libraries.propose(file);
 	            } catch (Exception e) {
 	                e.printStackTrace();
 	            }

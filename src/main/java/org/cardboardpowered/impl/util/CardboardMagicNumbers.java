@@ -52,7 +52,7 @@ public class CardboardMagicNumbers {
         // TODO: This needs to be kept updated when Spigot updates
         // It is the value of Material.values().length
         CardboardMod.LOGGER.info("DEB: " + Material.values().length);
-        int MATERIAL_LENGTH = 2104; // 1837; //1525;
+        int MATERIAL_LENGTH = 2121; // 1837; //1525;
         int i = MATERIAL_LENGTH - 1;
 
         List<String> names = new ArrayList<>();
@@ -92,8 +92,11 @@ public class CardboardMagicNumbers {
                 list.add(material);
                 MODDED_MATERIALS.put(name, material);
 
-                if (!(lastMod.equalsIgnoreCase(id.namespace)))
+                CardboardMod.LOGGER.info("Registering modded block '" + id + "'..");
+
+                if (!(lastMod.equalsIgnoreCase(id.namespace))) {
                     CardboardMod.LOGGER.info("Registering modded blocks from mod '" + (lastMod = id.namespace) + "'..");
+                }
             }
             Material m = Material.getMaterial(nam);
             CraftMagicNumbers.BLOCK_MATERIAL.put(block, m);
@@ -231,6 +234,7 @@ public class CardboardMagicNumbers {
         if (null == mat) return Blocks.STONE;
         if (!((Object)mat instanceof BukkitMaterialBridge)) {
             // Dev env
+            System.out.println("Could not locate BukkitMaterialBridge.");
             return Blocks.STONE;
         }
         BukkitMaterialBridge mm = (BukkitMaterialBridge)(Object) mat;

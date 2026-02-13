@@ -2,6 +2,7 @@ package org.cardboardpowered.mixin;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
@@ -9,9 +10,9 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cardboardpowered.CardboardConfig;
+import org.cardboardpowered.library.Libraries;
 import org.cardboardpowered.library.Library;
 import org.cardboardpowered.library.LibraryManager;
-import org.cardboardpowered.util.GameVersion;
 import org.cardboardpowered.util.JarReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
@@ -35,76 +36,37 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         }
         
         File pl = new File("plugins");
+        if (!pl.exists()) {
+        	pl.mkdirs();
+        }
+
+        logger.info("Loading Libraries...");
+        Libraries.loadLibs();
+        JarReader.readEvents();
         if (pl.exists()) {
-            try {
-                JarReader.read_plugins(pl);
+        	try {
+                JarReader.readPlugins(pl);
                 read_plugins = true;
             } catch (Exception e) {
                 read_plugins = false;
                 e.printStackTrace();
             }
-        } else {
-        	pl.mkdirs();
         }
-
-        logger.info("Loading Libraries...");
-        loadLibs();
     }
     
+    @Deprecated
     public static void loadLibs() {
-    	List<Library> libraries = getLibs();
-
-    	new LibraryManager("lib", true, 2, libraries).run();
+    	Libraries.loadLibs();
     }
     
-    public static List<Library> getLibs() {
-        // TODO: Keep Adventure version in check
-        String adventureVersion = "4.25.0";
-
-        // Paper API
-        Library paperApi = Library.of("io.papermc", "paper-api", "1.21.11-R0.1-20260120.191825-59")
-        		.withSha1("223f4b673a6cefe155849a18d7a82b422bf45335")
-        		.overrideRepo("https://repo.papermc.io/repository/maven-snapshots/");
-
-        List<Library> libraries = List.of(
-        	paperApi,
-        	// Paper API Libraries
-        	Library.of("org.xerial", "sqlite-jdbc", "3.41.0.0", "86168d5ae9bfc54dab9c47cd6e1af751c1d15eb3"),
-        	Library.of("com.mysql", "mysql-connector-j", "8.0.32", "41ec3f8cdaccf6c46a47d7cd628eeb59a926d9d4"),
-        	Library.of("commons-lang", "commons-lang", "2.6", "0ce1edb914c94ebc388f086c6827e8bdeec71ac2"),
-        	Library.of("org.apache.commons", "commons-collections4", "4.4", "62ebe7544cb7164d87e0637a2a6a2bdc981395e8"),
-        	Library.of("commons-collections", "commons-collections", "3.2.1", "761ea405b9b37ced573d2df0d1e3a4e0f9edc668"),
-        	Library.of("net.md-5", "bungeecord-chat", "1.21-R0.2", "64956ff493786f981a15697ce406fe39a2551692"),
-        	// Adventure
-        	Library.of("net.kyori", "adventure-api", adventureVersion, "6bd10494eeb2f8eadce7226db4445e8728985cbb"),
-        	Library.of("net.kyori", "adventure-key", adventureVersion, "eadeff9eeaa46f76de3f31fdff1d8e952273cf04") ,
-        	Library.of("net.kyori", "adventure-text-serializer-gson", adventureVersion, "e312e240fe82f4207ff2232b33ee4433855bdfff") ,
-        	Library.of("net.kyori", "adventure-text-serializer-json", adventureVersion, "ff6b4381dd8be9a40a1127937a4b71b9b010fcd6") ,
-        	Library.of("net.kyori", "adventure-text-serializer-commons", adventureVersion, "58708c96ea4292800f08360ca1ce8a31ef0cdf97") ,
-        	Library.of("net.kyori", "adventure-text-serializer-legacy", adventureVersion, "b12eaaac78d2534b9b1556049a8d95a046b0812d") ,
-        	Library.of("net.kyori", "adventure-text-serializer-plain", adventureVersion, "82f5d4188f3cb6da9654b4ceea8b4093af5f1243") ,
-        	Library.of("net.kyori", "adventure-text-minimessage", adventureVersion, "38f8f778c92f1ea848f79f992c99c4b98f96f23b") ,
-        	Library.of("net.kyori", "option", "1.1.0", "593fecb9c42688eebc7d8da5d6ea127f4d4c92a2")
-        );
-
-        // Set WorldEdit adapter class name here
-        // as this provides more verbose stacktraces.
-        System.setProperty("worldedit.bukkit.adapter", "com.sk89q.worldedit.bukkit.adapter.impl.v1_21_9.PaperweightAdapter");
-
-        return libraries;
+    @Deprecated
+    public static List<Library> getLibs1() {
+        return Libraries.getLibraries();
     }
 
     @Override
     public String getRefMapperConfig() {
         return null;
-    }
-
-    public static boolean is_event_found(String event) {
-        if (!read_plugins) {
-            return true;
-        }
-        return true; // TODO
-        // return JarReader.found.contains(event);
     }
 
     @Override
@@ -140,17 +102,6 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
             if (mixin.equals("network.MixinServerPlayNetworkHandler_ChatEvent")) return false;
             if (mixin.equals("network.MixinPlayerManager_ChatEvent")) return true;
         }*/
-        
-        String mcver = GameVersion.create().getReleaseTarget();
-        if (mcver.contains("1.18") && mixin.endsWith("_1_19")) {
-        	return false;
-        }
-        if (mcver.contains("1.19") && mixin.endsWith("_1_18")) {
-        	return false;
-        }
-        if (mcver.contains("1.20") && mixin.endsWith("_1_18")) {
-        	return false;
-        }
 
         // Disable mixin if event is not found in plugins.
         /*if (not_has_event(mixin, "LeashKnotEntity", "PlayerLeashEntityEvent") && not_has_event(mixin, "LeashKnotEntity", "PlayerUnleashEntityEvent")) return false;
@@ -167,27 +118,27 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         if (mixinClassName.contains("ServerPlayNetworkHandler")) return true;
 
         try {
-            URL[] jar = {
-                    FabricLoader.getInstance().getModContainer("cardboard").get().getRootPath().toUri().toURL(),
-                    FabricLoader.getInstance().getModContainer("minecraft").get().getRootPath().toUri().toURL(),
-                    FabricLoader.getInstance().getModContainer("fabricloader").get().getRootPath().toUri().toURL(),
-                    new File(new File("lib"), "paper-api-1.17-dev.jar").toURI().toURL()
-            };
+            URLClassLoader ucl = getClassLoader();
+            if (null == ucl) {
+            	return true;
+            }
 
-            Class<?> c = Class.forName(mixinClassName, false, new URLClassLoader(jar));
+            Class<?> c = Class.forName(mixinClassName, false, ucl);
 
             for (Annotation a : c.getAnnotations()) {
                 String e = a.toString().split("events=")[1].substring(1);
                 e = e.substring(0, e.lastIndexOf("}")).replace("\"", "");
                 String[] events = e.split(", ");
                 if (events.length > 0) {
+                	// System.out.println("EVENTS: " + e);
+
                     if (events[0].length() < 4) {
                         return true; // No events
                     }
                     
                     boolean disable = true;
                     for (String ev : events) {
-                        if (!not_has_event(mixin, mixin, ev))
+                        if (!doesNotHaveEvent(mixin, mixin, ev))
                             disable = false;
                     }
                     //if (disable)
@@ -201,17 +152,31 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
 
         return true;
     }
+    
+    public static URLClassLoader getClassLoader() throws MalformedURLException {
+    	File papi = LibraryManager.INSTANCE.getJarFile("paper-api");
+    	if (null == papi) {
+    		return null;
+    	}
+        URL[] jar = {
+                FabricLoader.getInstance().getModContainer("cardboard").get().getRootPath().toUri().toURL(),
+                FabricLoader.getInstance().getModContainer("minecraft").get().getRootPath().toUri().toURL(),
+                FabricLoader.getInstance().getModContainer("fabricloader").get().getRootPath().toUri().toURL(),
+                papi.toURI().toURL()
+        };
+        return new URLClassLoader(jar);
+    }
+    
+    public static boolean isEventFound(String event) {
+        return read_plugins ? JarReader.found.contains(event) : true;
+    }
 
-    public boolean not_has_event(String mix, String mixin, String event) {
+    public boolean doesNotHaveEvent(String mix, String mixin, String event) {
         if (mix.contains(mixin)) {
             boolean dev = FabricLoader.getInstance().isDevelopmentEnvironment();
-            if (is_event_found(event)) {
-                if (dev) {logger.info("DEBUG: Status of " + mixin + ": true. (" + event + ")");}
-                return false;
-            } else {
-                if (dev) {logger.info("DEBUG: Status of " + mixin + ": false. (" + event + ")");}
-                return true;
-            }
+            boolean found = isEventFound(event);
+            if (dev && !found) {logger.info("DEBUG: Status of " + mixin + ": " + found + ". (" + event + ")");}
+            return !found;
         }
         return false;
     }

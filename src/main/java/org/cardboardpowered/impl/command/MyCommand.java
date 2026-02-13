@@ -11,13 +11,13 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.CardboardConfig;
-import org.cardboardpowered.library.KnotHelper;
+import org.cardboardpowered.CardboardMod;
 
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * Provides a /fabricmods command
+ * Provides a /cardboard command
  */
 public class MyCommand extends Command {
 
@@ -66,12 +66,13 @@ public class MyCommand extends Command {
     		String ver = FabricLoader.getInstance().getModContainer("cardboard").get().getMetadata().getVersion().getFriendlyString();
             if (ver.contains("version")) ver = CraftServer.INSTANCE.getShortVersion(); // Dev ENV
 
-            String message = ChatColor.GOLD + "Cardboard" + ChatColor.RESET + " version " + ver + ChatColor.ITALIC + " (Implementing Paper API version " + KnotHelper.paper_version + ")";
+            String message = ChatColor.GOLD + "Cardboard" + ChatColor.RESET + " version " + ver + ChatColor.ITALIC + " (Reimplementing Paper API version " + CardboardMod.paperVersion + ")";
             sender.sendMessage(message);
     	}
     	
     	// Reload Config
     	if (args[0].equalsIgnoreCase("reload")) {
+    		sender.sendMessage("Reloading Cardboard config.yml.");
     		try {
 				CardboardConfig.setup();
 			} catch (Exception e) {
@@ -87,7 +88,7 @@ public class MyCommand extends Command {
     public List<String> tabComplete(CommandSender sender, String alias, String[] args) {
     	
     	if (args.length == 0) {
-    		return ImmutableList.of("debugverbose", "worlds");
+    		return ImmutableList.of("debugverbose", "worlds", "version", "reload");
     	}
     	
         return ImmutableList.of();

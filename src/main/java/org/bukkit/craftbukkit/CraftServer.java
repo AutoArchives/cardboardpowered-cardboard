@@ -47,7 +47,8 @@ import org.cardboardpowered.bridge.world.level.saveddata.maps.MapItemSavedDataBr
 import org.cardboardpowered.bridge.world.level.storage.PrimaryLevelDataBridge;
 import org.cardboardpowered.impl.MetadataStoreImpl;
 import org.bukkit.craftbukkit.scheduler.CraftScheduler;
-import com.mohistmc.banner.bukkit.nms.utils.RemapUtils;
+import org.cardboardpowered.mohistremap.RemapUtilProvider;
+import org.cardboardpowered.util.nms.RemapUtils;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
@@ -248,7 +249,7 @@ public class CraftServer implements Server {
     // public final PaperPluginManagerImpl paperPluginManager;
 
     public Set<String> activeCompatibilities = Collections.emptySet();
-    
+
     private final CraftMagicNumbers unsafe = (CraftMagicNumbers) CraftMagicNumbers.INSTANCE;
     private final ServicesManager servicesManager = new SimpleServicesManager();
     private final CraftScheduler scheduler = new CraftScheduler();
@@ -270,7 +271,7 @@ public class CraftServer implements Server {
     public static DedicatedServer server;
     public static DedicatedServer console;
     protected final DedicatedPlayerList playerList;
-    
+
     public static CraftServer INSTANCE;
     public ApiVersion minimumAPI;
     public CraftScoreboardManager scoreboardManager;
@@ -278,23 +279,23 @@ public class CraftServer implements Server {
     private final MetadataStoreBase<Entity> entityMetadata = MetadataStoreImpl.newEntityMetadataStore();
     private final MetadataStoreBase<OfflinePlayer> playerMetadata = MetadataStoreImpl.newPlayerMetadataStore();
     private final MetadataStoreBase<World> worldMetadata = MetadataStoreImpl.newWorldMetadataStore();
-    
+
     private final Map<Class<?>, org.bukkit.Registry<?>> registries = new HashMap<>();
 
     public CraftDataPackManager dataPackManager;
-    
+
     private CraftServerTickManager serverTickManager;
     private CraftServerLinks serverLinks;
-    
+
     private final ServerConfiguration serverConfig = new PaperServerConfiguration();
-    
+
     private final PaperFilledProfileCache paperProfileCache;
-    
+
     // TODO: Move to ApiServices
     public PaperFilledProfileCache getPaperFilledProfileCache() {
     	return paperProfileCache;
     }
-    
+
     // @MonotonicNonNull
     // public final PluginRemapper pluginRemapper;
 
@@ -318,7 +319,7 @@ public class CraftServer implements Server {
         return null; // TODO
     }
     // Paper end - Folia reagion threading API
-    
+
     public CraftServer(DedicatedServer nms) {
         INSTANCE = this;
         String hash = VersionCommand.getGitHash().substring(0,7); // use short hash
@@ -329,9 +330,9 @@ public class CraftServer implements Server {
         commandMap = new CommandMapImpl(this);
         pluginManager = new SimplePluginManager(this, commandMap);
         // paperPluginManager = new PaperPluginManagerImpl(this, commandMap, this.pluginManager);
-        
+
         this.paperProfileCache = new PaperFilledProfileCache();
-        
+
         scoreboardManager = new CraftScoreboardManager(nms, server.getScoreboard());
 
         configuration = YamlConfiguration.loadConfiguration(new File("bukkit.yml"));
@@ -345,36 +346,36 @@ public class CraftServer implements Server {
                 return (CraftPlayer) ((EntityBridge)player).getBukkitEntity();
             }
         }));
-        
+
         this.dataPackManager = new CraftDataPackManager(this.getServer().getPackRepository());
         this.serverTickManager = new CraftServerTickManager(console.tickRateManager());
         this.serverLinks = new CraftServerLinks(console);
         this.minimumAPI = ApiVersion.getOrCreateVersion(this.configuration.getString("settings.minimum-api"));
         loadIcon();
-        
+
         loadCompatibilities();
         ((CraftMagicNumbers) CraftMagicNumbers.INSTANCE).getCommodore().updateReroute(activeCompatibilities::contains);
-        
+
         this.playerList = server.getPlayerList();
-        
+
         // this.pluginRemapper = Boolean.getBoolean("paper.disablePluginRemapping") ? null : PluginRemapper.create(new File("plugins").toPath());
-        
+
         // Register PotionEffectType
         // CardboardMod.registerPotionEffectType();
-        
+
         // Register Registeries
         RegistryUtil.inject_into_bukkit_registry(nms);
     }
-    
+
     private void loadCompatibilities() {
     	// Paper - Big nope
     }
-    
+
     @Override
     public ServerLinks getServerLinks() {
         return this.serverLinks;
     }
- 
+
     /*
     public static IUserCache getUC() {
         return (IUserCache) server.getUserCache();
@@ -437,18 +438,23 @@ public class CraftServer implements Server {
     }
 
     public void loadPlugins() {
-    	
-        RemapUtils.init();
+
+        // RemapUtils.init();
+
+        RemapUtils remapUtil = new RemapUtils();
+        RemapUtilProvider.setInstance(remapUtil);
+        remapUtil.init();
+
         pluginManager.registerInterface(JavaPluginLoader.class);
-    	
+
         File pluginFolder = new File("plugins");
         if (pluginFolder.exists()) {
-        	
-        	
+
+
         	//if (pluginRemapper != null) {
             //    pluginRemapper.loadingPlugins();
              //}
-        	
+
             /*for (File f : pluginFolder.listFiles()) {
                 if (f.getName().endsWith(".jar")) {
                     try {
@@ -458,11 +464,11 @@ public class CraftServer implements Server {
                     }
                 }
             }*/
-        	
+
         	/*
         	if (null != CraftServer.INSTANCE.pluginRemapper) {
             	try {
-            		
+
             		List<java.nio.file.Path> jarA = Files.list(pluginFolder.toPath()).toList();
             		List<Path> jarB = new ArrayList<>();
             		for (Path p : jarA) {
@@ -470,7 +476,7 @@ public class CraftServer implements Server {
             				jarB.add(p);
             			}
             		}
-            		
+
 					List<java.nio.file.Path> jars = CraftServer.INSTANCE.pluginRemapper.rewritePluginDirectory(
 							jarB
 							);
@@ -482,7 +488,7 @@ public class CraftServer implements Server {
 				}
             }
             */
-        	
+
             Plugin[] plugins = pluginManager.loadPlugins(pluginFolder);
 
             for (Plugin plugin : plugins) {
@@ -773,7 +779,7 @@ public class CraftServer implements Server {
     public ChunkData createChunkData(World arg0) {
         return new ChunkDataImpl(arg0);
     }
-    
+
     /*
     @Override
     public ChunkGenerator.ChunkData createChunkData(World world) {
@@ -979,7 +985,7 @@ public class CraftServer implements Server {
     /*public static DataPackSettings method_29735_(ResourcePackManager resourcePackManager) {
         // 1.20.4:  getNames
     	// 1.20.5+: getIds
-    	
+
     	Collection<String> collection = resourcePackManager.getEnabledNames();
         ImmutableList<String> list = ImmutableList.copyOf(collection);
         List<String> list2 = resourcePackManager.getNames().stream().filter(string -> !collection.contains(string)).collect(ImmutableList.toImmutableList());
@@ -1132,14 +1138,14 @@ public class CraftServer implements Server {
 
     @Override
     public boolean getAllowNether() {
-    	
+
     	return true; // TODO
-    	
+
     	// return this.server.getProperties().allowNether;
-    	
+
         // return getServer().isNetherAllowed();
     }
-    
+
     private DedicatedServerProperties getProperties() {
         return this.console.getProperties();
     }
@@ -1260,7 +1266,7 @@ public class CraftServer implements Server {
     public MapViewImpl getMap(int arg0) {
     	ServerLevel overworld = server.getLevel(net.minecraft.world.level.Level.OVERWORLD);
     	me.isaiah.common.cmixin.IMixinWorld ic = (me.isaiah.common.cmixin.IMixinWorld) (Object) overworld;
-    	
+
     	MapItemSavedData worldmap = ic.IC$get_map_state(arg0);
         // MapState worldmap = server.getWorld(net.minecraft.world.World.OVERWORLD).getMapState("map_" + arg0);
         if (worldmap == null)
@@ -1317,7 +1323,7 @@ public class CraftServer implements Server {
 
         return result;
      }
-    
+
 	public OfflinePlayer getOfflinePlayer(NameAndId nameAndId) {
 		OfflinePlayer player = new CraftOfflinePlayer(this, nameAndId);
 		this.offlinePlayers.put(nameAndId.id(), player);
@@ -1481,7 +1487,7 @@ public class CraftServer implements Server {
     /*@SuppressWarnings("unchecked")
     public <T extends Keyed> org.bukkit.Tag<T> getTag_(String registry, NamespacedKey tag, Class<T> clazz) {
         Identifier key = CraftNamespacedKey.toMinecraft(tag);
-        
+
 
         switch (registry) {
         case "blocks": {
@@ -1562,7 +1568,7 @@ public class CraftServer implements Server {
             case "blocks": {
               //  Preconditions.checkArgument((clazz == Material.class ? 1 : 0) != 0, (Object)"Block namespace must have material type");
                 DefaultedRegistry<Block> blockTags = BuiltInRegistries.BLOCK;
-                
+
                 return (Iterable)(blockTags).getTags().map(pair -> new CraftBlockTag((Registry<Block>)blockTags, (TagKey)pair.key())).collect(ImmutableList.toImmutableList());
             }
             case "items": {
@@ -1696,7 +1702,7 @@ public class CraftServer implements Server {
             return Thread.currentThread().getName().startsWith("dimthread");
         }
         return mainThread;
-    } 
+    }
 
     @Override
     public List<Player> matchPlayer(String partialName) {
@@ -1880,7 +1886,7 @@ public class CraftServer implements Server {
     public int getTicksPerWaterSpawns() {
         return this.configuration.getInt("ticks-per.water-spawns");
     }
-    
+
     @Override
     public boolean removeRecipe(NamespacedKey recipeKey) {
         return this.removeRecipe(recipeKey, false);
@@ -1984,9 +1990,9 @@ public class CraftServer implements Server {
     // Because PlayerManager is broken
     public List<String> getOperatorList() throws IOException {
         File f = new File("ops.json");
-        
+
         List<String> toreturn = new ArrayList<>();
-        
+
         if (!f.exists()) {
         	return toreturn;
         }
@@ -2441,7 +2447,7 @@ public class CraftServer implements Server {
 	@Override
 	public <T extends Keyed> org.bukkit.@Nullable Registry<T> getRegistry(@NotNull Class<T> aClass) {
 		return RegistryAccess.registryAccess().getRegistry(aClass);
-		
+
 		// Old: return (org.bukkit.Registry<T>) registries.computeIfAbsent(aClass, key -> CraftRegistry.createRegistry(aClass, console.getRegistryManager()));
 	}
 
@@ -2494,7 +2500,7 @@ public class CraftServer implements Server {
     public void setMotd(String motd) {
         this.console.setMotd(motd);
     }
-    
+
     public void updateResources() {
         this.console.playerList.reloadResources();
     }
@@ -2502,7 +2508,7 @@ public class CraftServer implements Server {
     public void updateRecipes() {
     	// TODO this.console.playerManager.reloadRecipeData();
     }
-     
+
     // TODO: Tick Threads
     public final boolean isOwnedByCurrentRegion(World world, Position position) {
         return true;
@@ -2553,9 +2559,9 @@ public class CraftServer implements Server {
 	@Override
 	public void motd(@NotNull Component motd) {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 	// 1.20.2 API:
 
 	@Override
@@ -2601,7 +2607,7 @@ public class CraftServer implements Server {
         */
         return null;
     }
-	
+
 	// 1.20.4 API:
 
 	@Override
@@ -2629,7 +2635,7 @@ public class CraftServer implements Server {
         }
         throw new IllegalArgumentException("Unknown BanListType: " + String.valueOf(type));
 	}
-	
+
 	// 1.20.6 API:
 
 	@Override
@@ -2662,12 +2668,12 @@ public class CraftServer implements Server {
     public void allowPausing(final Plugin plugin, final boolean value) {
         // this.console.addPluginAllowingSleep(plugin.getName(), value);
     }
-    
+
     @Override
     public int getPauseWhenEmptyTime() {
         return this.getProperties().pauseWhenEmptySeconds.get();
     }
-    
+
     @Override
     public void setPauseWhenEmptyTime(int seconds) {
         // TODO

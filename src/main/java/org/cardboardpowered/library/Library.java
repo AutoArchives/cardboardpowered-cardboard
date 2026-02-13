@@ -139,4 +139,23 @@ public class Library implements Comparable<Library> {
 		}
 	}
 
+	public boolean needsChecksumValidation() {
+		return checksumType != null && checksumValue != null;
+	}
+	
+	public boolean handleChecksumMismatch(String repo, File file, int a, int b) throws IOException {
+    	String remoteHash = this.readChecksumFromRepo(repo);
+    	LibraryManager.logger.info("Remote checksum: " + remoteHash);
+
+    	if (remoteHash != null && remoteHash.equals(this.fileHash)) {
+    		LibraryManager.logger.info("Checksum matched for '" + file.getName() + "' (" + remoteHash + ")");
+    		return true;
+    	}
+
+    	LibraryManager.logger.error("Checksum warn for '" + file.getName() + "'. Found: " + this.fileHash + ", Expect: " + this.checksumValue);
+
+    	file.delete();
+    	return a == b; // true = stop, false = retry
+    }
+
 }

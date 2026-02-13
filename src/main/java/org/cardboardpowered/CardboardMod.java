@@ -1,17 +1,17 @@
 /**
  * CardboardPowered - Bukkit/Spigot for Fabric
- * Copyright (C) 2020-2025 CardboardPowered.org and contributors
- * 
+ * Copyright (C) 2020-2026 CardboardPowered.org and contributors
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public
- * License as published by the Free Software Foundation; either 
+ * License as published by the Free Software Foundation; either
  * version 3 of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
@@ -37,11 +37,11 @@ import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.cardboardpowered.api.event.CardboardEventManager;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.cardboardpowered.impl.world.CraftWorld;
-
 import org.cardboardpowered.bridge.world.level.block.entity.BlockEntityBridge;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.bridge.world.level.LevelBridge;
+import org.cardboardpowered.library.LibraryManager;
 
 import me.isaiah.common.event.EventHandler;
 import me.isaiah.common.event.EventRegistery;
@@ -72,17 +72,20 @@ import net.minecraft.world.level.storage.ServerLevelData;
 
 /**
  * Cardbord Mod - Spigot/Paper API for Fabric
- * 
+ *
  * @author isaiah
  */
 @SuppressWarnings({ "removal", "deprecation" })
 public class CardboardMod implements ModInitializer {
 
-    public static Logger LOGGER = BukkitLogger.getLogger(); 
+    public static Logger LOGGER = BukkitLogger.getLogger();
     public static boolean isAfterWorldLoad = false;
     public static final Random random = new Random();
 
     public static Method GET_SERVER;
+
+    // Set by LibraryManager
+    public static String paperVersion = "";
 
     @Override
     public void onInitialize() {
@@ -91,27 +94,27 @@ public class CardboardMod implements ModInitializer {
         String mc = "";
 
         if (omcc.isPresent()) {
-        	ModContainer mcc = omcc.get();
-        	String mcver = mcc.getMetadata().getVersion().getFriendlyString();
+            ModContainer mcc = omcc.get();
+            String mcver = mcc.getMetadata().getVersion().getFriendlyString();
             mc = "- Minecraft " + mcver;
         }
 
-		new File("plugins").mkdirs();
+        new File("plugins").mkdirs();
 
-		var ver_paper = org.cardboardpowered.library.KnotHelper.paper_version;
-		int r = EventRegistery.registerAll(this);
+        int r = EventRegistery.registerAll(this);
 
-		String details = " - Paper-API " + ver_paper + ". " + "Registered '" + r + "' iCommon events.";
-		
-		// Check for FabricBetterConsole
-		if (CardboardConfig.isBetterConsole()) {
-			Component message = Component.literal("Cardboard " + mc)
-		            .withStyle(ChatFormatting.GOLD).append(details);
-			LOGGER.info(message.getString());
-		} else {
-		
-			LOGGER.info("Cardboard " + mc + details);
-		}
+        paperVersion = LibraryManager.INSTANCE.getPaperVersion();
+        String details = " - Paper-API " + paperVersion + ". " + "Registered '" + r + "' iCommon events.";
+
+        // Check for FabricBetterConsole
+        if (CardboardConfig.isBetterConsole()) {
+            Component message = Component.literal("Cardboard " + mc)
+                    .withStyle(ChatFormatting.GOLD).append(details);
+            LOGGER.info(message.getString());
+        } else {
+
+            LOGGER.info("Cardboard " + mc + details);
+        }
 
         CardboardEventManager.INSTANCE.callCardboardEvents();
     }
@@ -122,9 +125,9 @@ public class CardboardMod implements ModInitializer {
 
     @EventHandler
     public void on_leaves_decay(LeavesDecayEvent ev) {
-    	CraftWorld w = ((LevelBridge)ev.world).cardboard$getWorld();
-    	org.bukkit.event.block.LeavesDecayEvent event = 
-				new org.bukkit.event.block.LeavesDecayEvent(w.getBlockAt(ev.pos.getX(), ev.pos.getY(), ev.pos.getZ()));
+        CraftWorld w = ((LevelBridge)ev.world).cardboard$getWorld();
+        org.bukkit.event.block.LeavesDecayEvent event =
+                new org.bukkit.event.block.LeavesDecayEvent(w.getBlockAt(ev.pos.getX(), ev.pos.getY(), ev.pos.getZ()));
         Bukkit.getPluginManager().callEvent(event);
 
         if (event.isCancelled() || !(ev.world.getBlockState(ev.pos).getBlock() instanceof LeavesBlock)) {
@@ -148,21 +151,21 @@ public class CardboardMod implements ModInitializer {
     }
 
     public static void on_world_init_mc(ServerLevel nms) {
-    	// Check if Server is null
-    	if (null == CraftServer.INSTANCE) {
-    		MinecraftServer mc = nms.getServer();
-    		if (!mc.isDedicatedServer()) {
-    			LOGGER.info("----------------------------------------");
-    			LOGGER.info("Cardboard currently only supports the Dedicated Server.");
-    			LOGGER.info("(Although Pull Requests to add support are Welcome :) )");
-    			LOGGER.info("Server will now shutdown");
-    			LOGGER.info("----------------------------------------");
-    			mc.halt(true);
-    		}
-    		return;
-    	}
-    	
-    	
+        // Check if Server is null
+        if (null == CraftServer.INSTANCE) {
+            MinecraftServer mc = nms.getServer();
+            if (!mc.isDedicatedServer()) {
+                LOGGER.info("----------------------------------------");
+                LOGGER.info("Cardboard currently only supports the Dedicated Server.");
+                LOGGER.info("(Although Pull Requests to add support are Welcome :) )");
+                LOGGER.info("Server will now shutdown");
+                LOGGER.info("----------------------------------------");
+                mc.halt(true);
+            }
+            return;
+        }
+
+
         String name = ((ServerLevelData) nms.getLevelData()).getLevelName();
 
         File fi = new File(name + "_the_end");
@@ -181,7 +184,7 @@ public class CardboardMod implements ModInitializer {
                 fi.delete();
             }
         }
-        
+
         File fi2 = new File(name + "_nether");
         File van2 = new File(new File(name), "DIM-1");
 
@@ -214,35 +217,35 @@ public class CardboardMod implements ModInitializer {
                 name = nms.dimension().identifier().toDebugFileName();
                 new File(name).mkdirs();
             }
-            
+
 
             ((LevelBridge)nms).set_bukkit_world( new CraftWorld(name, nms) );
             CraftServer.INSTANCE.getPluginManager().callEvent(new org.bukkit.event.world.WorldInitEvent(((LevelBridge)nms).cardboard$getWorld()));
         } else {
             ((LevelBridge)nms).set_bukkit_world( new CraftWorld(name, nms) );
         }
-        
+
         // Object o = nms.convertable;
 
         // this.uuid = WorldUUID.getUUID(levelStorageAccess.getDimensionPath(nms.getDimension()).toFile());
         // nms.cardboard$set_uuid(Utils.getWorldUUID(((IMixinWorld)nms).getCraftWorld().getWorldFolder())); 
-        
+
         ((CraftServer)Bukkit.getServer()).addWorldToMap( ((LevelBridge)nms).cardboard$getWorld() );
     }
-    
+
     // TODO
-	//public File getWorldFolder() {
-		// FIXME BROKEN (check for DMM1 & DMM-1)
-	//	return CraftServer.server.getRunDirectory().toFile();
-	//}
+    //public File getWorldFolder() {
+    // FIXME BROKEN (check for DMM1 & DMM-1)
+    //	return CraftServer.server.getRunDirectory().toFile();
+    //}
 
     @EventHandler
     public void onPlayerInit(ServerPlayerInitEvent ev) {
-    	// Replaced as of 1/24
+        // Replaced as of 1/24
     }
 
     @SuppressWarnings("removal")
-	@EventHandler
+    @EventHandler
     public void onGamemodeChange(PlayerGamemodeChangeEvent ev) {
         PlayerGameModeChangeEvent event = new PlayerGameModeChangeEvent((Player) ((EntityBridge)ev.getPlayer().getMC()).getBukkitEntity(), GameMode.getByValue(ev.getNewGamemode().getId()));
         CraftServer.INSTANCE.getPluginManager().callEvent(event);
@@ -261,7 +264,7 @@ public class CardboardMod implements ModInitializer {
         CraftPersistentDataContainer pdc = mc.getPersistentDataContainer();
         tag.getCompound("PublicBukkitValues").ifPresent(pdc::putAll);;
     }
-    
+
     @EventHandler
     public void onBlockEntitySaveEnd(BlockEntityWriteNbtEvent ev) {
         BlockEntityBridge mc = (BlockEntityBridge) ((BlockEntity) ev.getMC());
@@ -275,14 +278,14 @@ public class CardboardMod implements ModInitializer {
     /**
      * iCommonLib CampfireBlockEntityCookEvent -> Bukkit BlockCookEvent
      */
-	@EventHandler
+    @EventHandler
     public void onCampfireCook(CampfireBlockEntityCookEvent ev) {
         Object[] ob = ev.getMcObjects();
         Level w = (Level) ob[0];
         BlockPos pos = (BlockPos) ob[1];
         ItemStack itemstack = (ItemStack) ob[2];
         ItemStack itemstack1 = (ItemStack) ob[3];
-        
+
         CraftItemStack source = CraftItemStack.asCraftMirror(itemstack);
         org.bukkit.inventory.ItemStack result = CraftItemStack.asBukkitCopy(itemstack1);
 
@@ -303,11 +306,11 @@ public class CardboardMod implements ModInitializer {
      */
     @EventHandler
     public void onNetherPortalEnter(EntityPortalCollideEvent ev) {
-    	Entity entity = ev.getEntity();
-    	BlockPos pos = ev.getBlockPos();
-    	Level world = ev.getEntity().level(); // TODO: should we add EntityPortalCollideEvent.getWorld() ?
+        Entity entity = ev.getEntity();
+        BlockPos pos = ev.getBlockPos();
+        Level world = ev.getEntity().level(); // TODO: should we add EntityPortalCollideEvent.getWorld() ?
 
-    	if (!entity.isPassenger() && !entity.isVehicle() && entity.canUsePortal(true)) {
+        if (!entity.isPassenger() && !entity.isVehicle() && entity.canUsePortal(true)) {
             EntityPortalEnterEvent event = new EntityPortalEnterEvent(((EntityBridge)entity).getBukkitEntity(), new org.bukkit.Location(((LevelBridge)world).cardboard$getWorld(), pos.getX(), pos.getY(), pos.getZ()));
             Bukkit.getPluginManager().callEvent(event);
         }

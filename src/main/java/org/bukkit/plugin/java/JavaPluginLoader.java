@@ -38,6 +38,7 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.plugin.TimedRegisteredListener;
 import org.bukkit.plugin.UnknownDependencyException;
+import org.cardboardpowered.CardboardLogger;
 import org.yaml.snakeyaml.error.YAMLException;
 
 import com.google.common.base.Preconditions;
@@ -337,8 +338,13 @@ public final class JavaPluginLoader implements PluginLoader {
             try {
                 jPlugin.setEnabled(true);
             } catch (Throwable ex) {
-                server.getLogger().log(Level.SEVERE, "Error occurred while enabling " + plugin.getDescription().getFullName() + " (Is it up to date?)", ex);
-                ex.printStackTrace();
+                // server.getLogger().log(Level.SEVERE, "Error occurred while enabling " + plugin.getDescription().getFullName() + " (Is it up to date?)", ex);
+
+                // TODO: 2/26: Check server.getLogger() not Logging Throwables
+
+                String name = plugin.getDescription().getFullName();
+                String msg = "Error occurred while enabling " + name + " (Error)";
+                CardboardLogger.getSLF4J().error(msg, ex);
             }
 
             // Perhaps abort here, rather than continue going, but as it stands,
