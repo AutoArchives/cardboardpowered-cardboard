@@ -14,23 +14,24 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.cardboardpowered.CardboardMod;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cardboardpowered.library.LibraryManager;
 
 /**
  */
 public class JarReader {
-
+    private static final Logger LOGGER = LogManager.getLogger("Cardboard");
     public static Set<String> found = new HashSet<>();
     private static List<String> EVENTS = new ArrayList<>();
 
     public static int readPlugins(File folder) throws IOException {
-        CardboardMod.LOGGER.info("Please wait, scanning plugins for events...");
+        LOGGER.info("Please wait, scanning plugins for events...");
         long start = System.currentTimeMillis();
 
         File[] files = folder.listFiles();
         if (files == null) {
-            CardboardMod.LOGGER.warning("Plugin folder is empty or unreadable.");
+            LOGGER.warn("Plugin folder is empty or unreadable.");
             return 0;
         }
 
@@ -46,7 +47,7 @@ public class JarReader {
         }
 
         long took = System.currentTimeMillis() - start;
-        CardboardMod.LOGGER.info("Found: " + found.size() + " (Took: " + took + "ms)");
+        LOGGER.info("Found: " + found.size() + " (Took: " + took + "ms)");
         return found.size();
     }
 
@@ -61,7 +62,7 @@ public class JarReader {
                 }
             }
         } catch (IOException ex) {
-            CardboardMod.LOGGER.warning("Failed reading entry " + entry.getName() + " " + ex.getMessage());
+            LOGGER.warn("Failed reading entry " + entry.getName() + " " + ex.getMessage());
         }
     }
 
@@ -77,7 +78,7 @@ public class JarReader {
     }
 
     public static void readEventList(File f) throws IOException {
-        CardboardMod.LOGGER.info("Please wait, Scanning Paper-API for events...");
+        LOGGER.info("Please wait, Scanning Paper-API for events...");
         long start = System.currentTimeMillis();
 
     	ZipFile zipFile = new ZipFile(f.getAbsolutePath());
@@ -93,7 +94,7 @@ public class JarReader {
     		}
     	}
     	zipFile.close();
-        CardboardMod.LOGGER.info("Found: " + EVENTS.size() + " (Took: " + (System.currentTimeMillis() - start) + "ms)");
+        LOGGER.info("Found: " + EVENTS.size() + " (Took: " + (System.currentTimeMillis() - start) + "ms)");
     }
 
 }
