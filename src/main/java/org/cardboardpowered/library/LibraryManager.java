@@ -10,7 +10,11 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
+import java.util.jar.JarFile;
 import java.util.stream.Stream;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -72,6 +76,22 @@ public final class LibraryManager {
     public Stream<Library> getLibs(String id) {
     	return libraries.stream().filter(lib -> lib.artifactId.contains(id));
     }
+    
+    public Library getLib(String id) {
+    	for (Library lib : libraries)
+    		if (lib.artifactId.contains(id))
+    			return lib;
+    	return null;
+    }
+   
+    public File getJarFile(String id) {
+    	Library lib = getLib(id);
+    	if (null == lib) return null;
+    	String fn = lib.getJarName();
+    	File f = new File(directory, fn);
+    	return f;
+    }
+    
 
     public String getVersion(String id) {
     	return getLibVersion(id).orElse(null);
@@ -96,9 +116,8 @@ public final class LibraryManager {
         for (Library lib : libraries) {
         	String fn = lib.getJarName();
         	File f = new File(directory, fn);
-        	System.out.println(lib);
         	if (f.isFile()) {
-        		KnotHelper.propose(f);
+        		Libraries.propose(f);
         	} else {
         		download(lib);
         	}
@@ -111,7 +130,7 @@ public final class LibraryManager {
     }
 
     public static void main(String[] args) throws Exception {
-    	for (Library l : org.cardboardpowered.mixin.CardboardMixinPlugin.getLibs()) {
+    	for (Library l : Libraries.getLibraries()) {
 			try {
 				String s = l.readChecksumFromRepo(l.repository.orElse(getCentral()));
 				logger.info("Library: " + l + ": Have: " + l.checksumValue + "; Need: " + s);
@@ -119,7 +138,7 @@ public final class LibraryManager {
 				e.printStackTrace();
 			}
     	}
-    	org.cardboardpowered.mixin.CardboardMixinPlugin.loadLibs();
+    	Libraries.loadLibs();
     }
 
     public void download(Library library) {
@@ -139,7 +158,7 @@ public final class LibraryManager {
 
     	// Add to KnotClassLoader
     	try {
-    		KnotHelper.propose(file);
+    		Libraries.propose(file);
     	} catch (Exception e) {
     		logger.warn("Failed to add to classpath: " + library, e);
     	}
@@ -151,10 +170,16 @@ public final class LibraryManager {
     			logger.info("Downloading " + library + "...");
     			downloadPrimary(library, repository, file);
 
-    			if (this.validateChecksums && library.needsChecksumValidation() && !library.getChecksum(file)) {
+    			boolean getCheck = library.getChecksum(file);
+    			if (this.validateChecksums && library.needsChecksumValidation() && !getCheck) {
+    				System.out.println(getCheck);
     				if (!library.handleChecksumMismatch(repository, file, attempt, maxDownloadAttempts)) {
     					continue; // retry
     				}
+    				getCheck = library.getChecksum(file);
+    			}
+    			if (getCheck) {
+    				break;
     			}
     		} catch (IOException ex) {
     			logger.warn("Failed to download: " + library, ex);
@@ -202,6 +227,21 @@ public final class LibraryManager {
     			) {
     		output.getChannel().transferFrom(input, 0, Long.MAX_VALUE);
     	}
+    }
+    
+    public static String[] readPackagesFromJar(File jarFile) throws IOException {
+        Set<String> packages = new HashSet<>();
+
+        try (JarFile jar = new JarFile(jarFile)) {
+            jar.stream().filter(e -> !e.isDirectory()).filter(e -> e.getName().endsWith(".class"))
+               .forEach(e -> {
+                   String name = e.getName();
+                   int slash = name.lastIndexOf('/');
+                   if (slash > 0) { packages.add(name.substring(0, slash).replace('/', '.')); }
+               });
+        }
+        Collections.addAll(packages, "org.bukkit.", "me.isaiah.", "org.cardboardpowered.", "com.", "net.", "org.", "me.");
+        return packages.toArray(String[]::new);
     }
 
 }

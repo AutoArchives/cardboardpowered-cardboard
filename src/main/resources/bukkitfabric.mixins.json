@@ -173,6 +173,7 @@
     "registry.MixinCachedRegistryInfoGetter",
     "registry.MixinWrapperImpl",
     "registry.MixinWrapperImplDelegating",
+    "registry.MixinFrozenRegistry",
     "screen.MixinAbstractFurnaceScreenHandler",
     "screen.MixinAnvilScreenHandler",
     "screen.MixinBeaconScreenHandler",

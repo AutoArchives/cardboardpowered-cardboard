@@ -39,7 +39,9 @@ import org.cardboardpowered.interfaces.IMixinRecipe;
 import org.cardboardpowered.interfaces.IMixinRecipeManager;
 import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 import org.cardboardpowered.interfaces.IMixinWorld;
-import com.mohistmc.banner.bukkit.nms.utils.RemapUtils;
+import org.cardboardpowered.mohistremap.RemapUtilProvider;
+import org.cardboardpowered.util.nms.RemapUtils;
+
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
@@ -429,7 +431,12 @@ public class CraftServer implements Server {
 
     public void loadPlugins() {
     	
-        RemapUtils.init();
+        // RemapUtils.init();
+        
+        RemapUtils remapUtil = new RemapUtils();
+        RemapUtilProvider.setInstance(remapUtil);
+        remapUtil.init();
+        
         pluginManager.registerInterface(JavaPluginLoader.class);
     	
         File pluginFolder = new File("plugins");

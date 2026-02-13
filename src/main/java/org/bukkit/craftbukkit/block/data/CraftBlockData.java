@@ -33,12 +33,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.VoxelShape;
 import org.cardboardpowered.BlockImplUtil;
 import org.cardboardpowered.impl.world.CraftWorld;
+import org.cardboardpowered.interfaces.IMixinMaterial;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
@@ -55,6 +57,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockBehaviour.BlockStateBase;
 import net.minecraft.world.level.block.state.BlockState;
@@ -564,8 +567,28 @@ public class CraftBlockData implements BlockData {
         if (data != null) {
             try {
                 // Material provided, force that material in
+            	boolean isModdedNull = null == material && block != null && block == Blocks.STONE;
+            	
                 if (block != null) {
-                    data = BuiltInRegistries.BLOCK.getKey(block) + data;
+                	if (isModdedNull) {
+                		// todo here
+                		
+                		if (data.startsWith("minecraft:")) {
+                			data = data.replaceFirst(Pattern.quote("minecraft:"), "");
+                			
+                			Material mm = CraftMagicNumbers.MODDED_MATERIALS.getOrDefault(data, null);
+                			if (null != mm) {
+                				IMixinMaterial m2 = (IMixinMaterial)(Object) mm;
+                				String id = m2.getModdedData().getId();
+                				// block = CraftBlockType.bukkitToMinecraft(material);
+                				//data = BuiltInRegistries.BLOCK.getKey(block) + "";
+                				data = id;
+                			}
+                		}
+                		
+                	} else {
+                		data = BuiltInRegistries.BLOCK.getKey(block) + data;
+                	}
                 }
 
                 StringReader reader = new StringReader(data);

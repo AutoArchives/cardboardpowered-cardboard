@@ -12,13 +12,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.CardboardConfig;
 import org.cardboardpowered.CardboardMod;
-import org.cardboardpowered.library.KnotHelper;
 
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * Provides a /fabricmods command
+ * Provides a /cardboard command
  */
 public class MyCommand extends Command {
 
@@ -73,6 +72,7 @@ public class MyCommand extends Command {
     	
     	// Reload Config
     	if (args[0].equalsIgnoreCase("reload")) {
+    		sender.sendMessage("Reloading Cardboard config.yml.");
     		try {
 				CardboardConfig.setup();
 			} catch (Exception e) {
@@ -88,7 +88,7 @@ public class MyCommand extends Command {
     public List<String> tabComplete(CommandSender sender, String alias, String[] args) {
     	
     	if (args.length == 0) {
-    		return ImmutableList.of("debugverbose", "worlds");
+    		return ImmutableList.of("debugverbose", "worlds", "version", "reload");
     	}
     	
         return ImmutableList.of();

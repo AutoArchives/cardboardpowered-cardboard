@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 public final class PaperReflection extends AbstractDefaultRulesReflectionProxy implements DefineClassReflectionProxy {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final String CB_PACKAGE_PREFIX = "org.bukkit.".concat("craftbukkit.");
-   private static final String LEGACY_CB_PACKAGE_PREFIX = "org.bukkit.".concat("craftbukkit.") + "v1_21_R6.";
+   private static final String LEGACY_CB_PACKAGE_PREFIX = "org.bukkit.".concat("craftbukkit.") + "v1_21_R7.";
    private final DefineClassReflectionProxy defineClassProxy = DefineClassReflectionProxy.create(PaperReflection::processClass);
    private final Map<String, ObfHelper.ClassMapping> mappingsByMojangName;
    private final Map<String, ObfHelper.ClassMapping> mappingsByObfName;

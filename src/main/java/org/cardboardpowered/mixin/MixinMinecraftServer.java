@@ -321,7 +321,7 @@ public abstract class MixinMinecraftServer extends ReentrantBlockableEventLoop<T
                 }
             }
             if (moddedMaterials.size() > 0) {
-                CardboardMod.LOGGER.info("Added " + moddedMaterials.size() + "Modded blocks/items to WorldEdit registry.");
+                CardboardMod.LOGGER.info("Added " + moddedMaterials.size() + " Modded blocks/items to WorldEdit registry.");
             }
         } catch (Exception e) {
             e.printStackTrace();

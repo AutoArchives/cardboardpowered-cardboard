@@ -235,7 +235,7 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
         // TODO: This needs to be kept updated when Spigot updates
         // It is the value of Material.values().length
     	CardboardMod.LOGGER.info("DEB: " + Material.values().length);
-        int MATERIAL_LENGTH = 2104; // 1837; //1525;
+        int MATERIAL_LENGTH = 2121; // 1837; //1525;
         int i = MATERIAL_LENGTH - 1;
 
         List<String> names = new ArrayList<>();
@@ -275,8 +275,11 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
                 list.add(material);
                 MODDED_MATERIALS.put(name, material);
                 
-                if (!(lastMod.equalsIgnoreCase(id.namespace)))
+                CardboardMod.LOGGER.info("Registering modded block '" + id + "'..");
+                
+                if (!(lastMod.equalsIgnoreCase(id.namespace))) {
                     CardboardMod.LOGGER.info("Registering modded blocks from mod '" + (lastMod = id.namespace) + "'..");
+                }
             }
             Material m = Material.getMaterial(nam);
             BLOCK_MATERIAL.put(block, m);
@@ -411,9 +414,10 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     }
 
     private static Block getModdedBlock(Material mat) {
-        if (null == mat) return Blocks.STONE;
+    	if (null == mat) return Blocks.STONE;
         if (!((Object)mat instanceof IMixinMaterial)) {
             // Dev env
+        	System.out.println("Could not locate IMixinMaterial.");
         	return Blocks.STONE;
         }
         IMixinMaterial mm = (IMixinMaterial)(Object) mat;
