@@ -1,5 +1,7 @@
 package io.izzel.arclight.api;
 
+import jdk.dynalink.linker.support.Lookup;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
@@ -82,7 +84,12 @@ public class Unsafe {
     }
 
     public static void ensureClassInitialized(Class<?> aClass) {
-        unsafe.ensureClassInitialized(aClass);
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
+        try {
+            lookup.ensureInitialized(aClass);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static Class<?> getCallerClass() {

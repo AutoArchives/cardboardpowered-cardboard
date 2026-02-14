@@ -130,12 +130,15 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
             return false;
         }
 
-        if (mixin.equals("item.MixinChorusFruitItem")) {
+        if (mixin.contains("item.MixinChorusFruitItem")) {
             FabricLoader loader = FabricLoader.getInstance();
-            boolean create_mod = loader.isModLoaded("porting_lib");
-            if (create_mod) {
-                return false;
-            }
+            String[] conflicts = {"porting_lib", "porting_lib_entity", "bclib", "porting_lib_base", "porting_lib_common"};
+            for (String confli : conflicts) {
+                boolean create_mod = loader.isModLoaded("porting_lib") || loader.isModLoaded(confli);
+                if (create_mod) {
+                    return false;
+                }
+	    }
         }
 
         if (mixin.equals("network.MixinServerPlayNetworkHandler_ChatEvent") && 

@@ -92,7 +92,7 @@ dependencies {
     
 	// Paper-API
 	// compileOnly("io.papermc.paper:paper-api:1.19.4-R0.1-20230608.201059-104")
-	compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-20230921.165944-178")
+	modImplementation("io.papermc.paper:paper-api:1.20.1-R0.1-20230921.165944-178")
 	
 	// Paper-API libs
 	compileOnly("net.md-5:bungeecord-chat:1.16-R0.4")
@@ -114,7 +114,8 @@ dependencies {
     // NMS Remapping
     // srglib-0.1.2.jar
     extraLibs fileTree(dir: 'libs', include: "srglib-0.1.2.jar")
-    include(modImplementation("com.github.IsaiahPatton:SpecialSource:master-SNAPSHOT"))
+    // include(modImplementation("com.github.IsaiahPatton:SpecialSource:master-SNAPSHOT"))
+    include(modImplementation("net.md-5:SpecialSource:1.11.2"))
 
     compileOnly fileTree(dir: 'libs', include: "srglib-0.1.2.jar")
 
