@@ -180,6 +180,7 @@ import org.cardboardpowered.impl.util.IconCacheImpl;
 import org.cardboardpowered.impl.util.SimpleHelpMap;
 import org.cardboardpowered.impl.world.ChunkDataImpl;
 import org.cardboardpowered.impl.world.WorldImpl;
+import org.cardboardpowered.mohistremap.RemapUtilProvider;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -430,7 +431,12 @@ public class CraftServer implements Server {
 
     public void loadPlugins() {
     	
-        RemapUtils.init();
+        // RemapUtils.init();
+        
+        RemapUtils remapUtil = new RemapUtils();
+        RemapUtilProvider.setInstance(remapUtil);
+        remapUtil.init();
+        
         pluginManager.registerInterface(JavaPluginLoader.class);
     	
         File pluginFolder = new File("plugins");
@@ -453,6 +459,7 @@ public class CraftServer implements Server {
                     plugin.onLoad();
                 } catch (Throwable ex) {
                     Bukkit.getLogger().log(Level.SEVERE, ex.getMessage() + " initializing " + plugin.getDescription().getFullName() + " (Is it up to date?)", ex);
+                    ex.printStackTrace();
                 }
             }
         } else pluginFolder.mkdir();

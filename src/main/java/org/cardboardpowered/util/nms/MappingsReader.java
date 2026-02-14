@@ -29,6 +29,7 @@ import java.util.HashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.cardboardpowered.mohistremap.RemapUtilProvider;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.techcable.srglib.FieldData;
@@ -95,7 +96,7 @@ public class MappingsReader {
     }
 
     public static String getIntermedClass(String spigot) {
-        return com.mohistmc.banner.bukkit.nms.utils.RemapUtils.map(spigot);
+        return RemapUtilProvider.get().map(spigot);
     }
 
     @Deprecated

@@ -7444,7 +7444,6 @@ CL: wc$b net/minecraft/class_6603$class_6605
 CL: net/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket$a net/minecraft/class_2703$class_5893
 CL: net/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket$a$a net/minecraft/class_2703$class_5893$class_7829
 CL: net/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket$a$b net/minecraft/class_2703$class_5893$class_7830
-CL: net/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket$a net/minecraft/class_2703$class_5893
 CL: net/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket$b net/minecraft/class_2703$class_2705
 CL: net/minecraft/network/protocol/game/ClientboundPlayerInfoUpdatePacket$c net/minecraft/class_2703$class_7831
 CL: ye$a net/minecraft/class_5900$class_5901
