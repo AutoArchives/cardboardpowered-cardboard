@@ -13,7 +13,7 @@ import org.bukkit.craftbukkit.potion.CraftPotionType;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
-import org.cardboardpowered.impl.CardboardPotionUtil;
+import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -28,7 +28,7 @@ public record PaperPotionContents(
 
     @Override
     public @Unmodifiable List<PotionEffect> customEffects() {
-        return MCUtil.transformUnmodifiable(this.impl.customEffects(), CardboardPotionUtil::toBukkit);
+        return MCUtil.transformUnmodifiable(this.impl.customEffects(), CraftPotionUtil::toBukkit);
     }
 
     @Override
@@ -78,7 +78,7 @@ public record PaperPotionContents(
 
         @Override
         public PotionContents.Builder addCustomEffect(final PotionEffect effect) {
-            this.customEffects.add(CardboardPotionUtil.fromBukkit(effect));
+            this.customEffects.add(CraftPotionUtil.fromBukkit(effect));
             return this;
         }
 
@@ -105,7 +105,7 @@ public record PaperPotionContents(
 
 	@Override
 	public @Unmodifiable List<PotionEffect> allEffects() {
-		return StreamSupport.stream(this.impl.getAllEffects().spliterator(), false).map(CardboardPotionUtil::toBukkit).collect(Collectors.toUnmodifiableList());
+		return StreamSupport.stream(this.impl.getAllEffects().spliterator(), false).map(CraftPotionUtil::toBukkit).collect(Collectors.toUnmodifiableList());
 	}
 
 	@Override

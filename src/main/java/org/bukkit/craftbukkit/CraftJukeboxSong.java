@@ -1,94 +1,53 @@
 package org.bukkit.craftbukkit;
 
-import com.google.common.base.Preconditions;
-
+import io.papermc.paper.adventure.PaperAdventure;
+import io.papermc.paper.registry.HolderableBase;
 import net.kyori.adventure.text.Component;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import org.bukkit.JukeboxSong;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.Sound;
-import org.bukkit.craftbukkit.CraftRegistry;
-import org.bukkit.craftbukkit.util.Handleable;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
-public class CraftJukeboxSong implements JukeboxSong, Handleable<net.minecraft.world.item.JukeboxSong> {
-
-    private final NamespacedKey key;
-    private final net.minecraft.world.item.JukeboxSong handle;
-
-    public static JukeboxSong minecraftToBukkit(net.minecraft.world.item.JukeboxSong minecraft) {
-        return (JukeboxSong)CraftRegistry.minecraftToBukkit(minecraft, Registries.JUKEBOX_SONG);
-    }
+@NullMarked
+public class CraftJukeboxSong extends HolderableBase<net.minecraft.world.item.JukeboxSong> implements JukeboxSong {
 
     public static JukeboxSong minecraftHolderToBukkit(Holder<net.minecraft.world.item.JukeboxSong> minecraft) {
-        return CraftJukeboxSong.minecraftToBukkit(minecraft.value());
-    }
-
-    public static net.minecraft.world.item.JukeboxSong bukkitToMinecraft(JukeboxSong bukkit) {
-        return (net.minecraft.world.item.JukeboxSong)CraftRegistry.bukkitToMinecraft(bukkit);
+        return CraftRegistry.minecraftHolderToBukkit(minecraft, Registries.JUKEBOX_SONG);
     }
 
     public static Holder<net.minecraft.world.item.JukeboxSong> bukkitToMinecraftHolder(JukeboxSong bukkit) {
-        Preconditions.checkArgument((bukkit != null ? 1 : 0) != 0);
-        net.minecraft.core.Registry registry = CraftRegistry.getMinecraftRegistry(Registries.JUKEBOX_SONG);
-        Holder<net.minecraft.world.item.JukeboxSong> registryEntry = registry.wrapAsHolder(CraftJukeboxSong.bukkitToMinecraft(bukkit));
-        if (registryEntry instanceof Holder.Reference) {
-            Holder.Reference holder = (Holder.Reference)registryEntry;
-            return holder;
-        }
-        throw new IllegalArgumentException("No Reference holder found for " + String.valueOf(bukkit) + ", this can happen if a plugin creates its own trim pattern without properly registering it.");
+        return CraftRegistry.bukkitToMinecraftHolder(bukkit);
     }
 
-    public CraftJukeboxSong(NamespacedKey key, net.minecraft.world.item.JukeboxSong handle) {
-        this.key = key;
-        this.handle = handle;
+    public CraftJukeboxSong(final Holder<net.minecraft.world.item.JukeboxSong> holder) {
+        super(holder);
     }
 
     @Override
-    public net.minecraft.world.item.JukeboxSong getHandle() {
-        return this.handle;
-    }
-
-    @NotNull
-    public NamespacedKey getKey() {
-        return this.key;
-    }
-
-    @NotNull
     public String getTranslationKey() {
-        if (!(this.handle.description().getContents() instanceof TranslatableContents)) {
-            throw new UnsupportedOperationException("Description isn't translatable!");
-        }
-        return ((TranslatableContents)this.handle.description().getContents()).getKey();
+        if (!(this.getHandle().description().getContents() instanceof TranslatableContents)) throw new UnsupportedOperationException("Description isn't translatable!"); // Paper
+        return ((TranslatableContents) this.getHandle().description().getContents()).getKey();
     }
-    
-    // TODO: Update this:
 
-	@Override
-	public int getComparatorOutput() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+    public Sound getSound() {
+        return CraftSound.minecraftHolderToBukkit(this.getHandle().soundEvent());
+    }
 
-	@Override
-	public Component getDescription() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public Component getDescription() {
+        return PaperAdventure.asAdventure(this.getHandle().description());
+    }
 
-	@Override
-	public float getLengthInSeconds() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+    public float getLengthInSeconds() {
+        return this.getHandle().lengthInSeconds();
+    }
 
-	@Override
-	public Sound getSound() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+    @Override
+    public int getComparatorOutput() {
+        return this.getHandle().comparatorOutput();
+    }
 }

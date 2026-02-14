@@ -1,29 +1,53 @@
-/**
- * Automatically generated file, changes will be lost.
- */
 package org.bukkit.craftbukkit.block.impl;
 
-public final class CraftChain extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.Waterlogged {
+import com.google.common.base.Preconditions;
+import io.papermc.paper.annotation.GeneratedClass;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.ChainBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import org.bukkit.Axis;
+import org.bukkit.block.data.type.Chain;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.jspecify.annotations.NullMarked;
 
-    public CraftChain() {
-        super();
-    }
+import java.util.Set;
 
-    public CraftChain(net.minecraft.world.level.block.state.BlockState state) {
+@NullMarked
+@GeneratedClass
+public class CraftChain extends CraftBlockData implements Chain {
+    private static final EnumProperty<Direction.Axis> AXIS = ChainBlock.AXIS;
+
+    private static final BooleanProperty WATERLOGGED = ChainBlock.WATERLOGGED;
+
+    public CraftChain(BlockState state) {
         super(state);
     }
 
-    // org.bukkit.craftbukkit.block.data.CraftWaterlogged
-
-    private static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.world.level.block.ChainBlock.class, "waterlogged");
-
     @Override
-    public boolean isWaterlogged() {
-        return get(WATERLOGGED);
+    public Axis getAxis() {
+        return this.get(AXIS, Axis.class);
     }
 
     @Override
-    public void setWaterlogged(boolean waterlogged) {
-        set(WATERLOGGED, waterlogged);
+    public void setAxis(final Axis axis) {
+        Preconditions.checkArgument(axis != null, "axis cannot be null!");
+        this.set(AXIS, axis);
+    }
+
+    @Override
+    public Set<Axis> getAxes() {
+        return this.getValues(AXIS, Axis.class);
+    }
+
+    @Override
+    public boolean isWaterlogged() {
+        return this.get(WATERLOGGED);
+    }
+
+    @Override
+    public void setWaterlogged(final boolean waterlogged) {
+        this.set(WATERLOGGED, waterlogged);
     }
 }

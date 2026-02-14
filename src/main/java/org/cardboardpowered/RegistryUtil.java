@@ -18,13 +18,12 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.potion.PotionType;
 
-import org.cardboardpowered.CardboardMod;
-import org.cardboardpowered.interfaces.IEntityType;
+import org.cardboardpowered.bridge.bukkit.entity.BukkitEntityTypeBridge;
 
 import io.izzel.arclight.api.EnumHelper;
 
 /**
- * Registry API Util
+ register_entities * Registry API Util
  *
  * @since 1.21.4
  */
@@ -57,7 +56,7 @@ public class RegistryUtil {
             Identifier id = registry.getKey(entity);
             NamespacedKey key = CraftNamespacedKey.fromMinecraft(id);
             String entityType = normalizeName(id.toString());
-            if (isModded(id)) {
+			if (org.bukkit.Registry.ENTITY_TYPE.get(key) == null) {
                 int typeId = entityType.hashCode();
                 
                 EntityType bukkitType = EnumHelper.addEnum(
@@ -67,7 +66,7 @@ public class RegistryUtil {
                 		List.of(entityType.toLowerCase(), Entity.class, typeId, false)
                 );
                 
-                IEntityType cb = (IEntityType) (Object) bukkitType;
+                BukkitEntityTypeBridge cb = (BukkitEntityTypeBridge) (Object) bukkitType;
                 
                 cb.cardboard$setKey(key);
                 cb.cardboard$addToMaps(entityType.toLowerCase(), (short) typeId);
@@ -110,22 +109,4 @@ public class RegistryUtil {
 			}
 		}
 	}
-
-	/**
-	 * Does the Identifier's Namespace match vanilla's
-	 * (Ex: "minecraft:dirt" -> true; "modid:dirt_slab" -> false)
-	 */
-	public static boolean isVanilla(Identifier id) {
-		return id.getNamespace().equalsIgnoreCase( NamespacedKey.MINECRAFT );
-	}
-	
-	/**
-	 * Inverse of {@link #isVanilla(Identifier)}
-	 * 
-	 * @see {@link #isVanilla(Identifier)}
-	 */
-	public static boolean isModded(Identifier id) {
-		return !isVanilla(id);
-	}
-	
 }

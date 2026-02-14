@@ -6,7 +6,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.entity.Player;
 
-import org.cardboardpowered.interfaces.IMixinEntity;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 
 public class LazyPlayerSet extends LazyHashSet<Player> {
 
@@ -22,7 +22,7 @@ public class LazyPlayerSet extends LazyHashSet<Player> {
         List<ServerPlayer> players = server.getPlayerList().getPlayers();
         HashSet<Player> reference = new HashSet<Player>(players.size());
         for (ServerPlayer player : players)
-            reference.add((Player) ((IMixinEntity)player).getBukkitEntity());
+            reference.add((Player) ((EntityBridge)player).getBukkitEntity());
         return reference;
     }
 

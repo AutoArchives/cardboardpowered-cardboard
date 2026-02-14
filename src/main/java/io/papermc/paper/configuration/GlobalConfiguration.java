@@ -28,5 +28,10 @@ public class GlobalConfiguration {
             return Bukkit.getOnlineMode(); /*|| SpigotConfig.bungee && this.bungeeCord.onlineMode || this.velocity.enabled && this.velocity.onlineMode;*/
         }
     }
+    public Scoreboards scoreboards = new Scoreboards();
 
+    public class Scoreboards { //extends ConfigurationPart {
+        public boolean trackPluginScoreboards = false;
+        public boolean saveEmptyScoreboardTeams = true;
+    }
 }

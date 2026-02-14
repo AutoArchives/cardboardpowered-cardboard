@@ -1,134 +1,106 @@
 package org.bukkit.craftbukkit.inventory;
 
-import com.destroystokyo.paper.inventory.meta.ArmorStandMeta;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Codec;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import com.google.common.collect.ImmutableMap.Builder;
 import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.component.TypedEntityData;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.cardboardpowered.TypedEntityDataExtra;
+import org.cardboardpowered.bridge.world.item.component.TypedEntityDataBridge;
 
-@DelegateDeserialization(value=SerializableMeta.class)
-public class CraftMetaArmorStand
-extends CraftMetaItem
-implements ArmorStandMeta {
-	
-	
-	static final CraftMetaItem.ItemMetaKeyType<TypedEntityData<EntityType<?>>> ENTITY_TAG = new CraftMetaItem.ItemMetaKeyType<>(
-		      DataComponents.ENTITY_DATA, "entity-tag"
-		   );
-	
-    // static final CraftMetaItem.ItemMetaKeyType<NbtComponent> ENTITY_TAG = new CraftMetaItem.ItemMetaKeyType<NbtComponent>(DataComponentTypes.ENTITY_DATA, "entity-tag");
-    static final CraftMetaItem.ItemMetaKey INVISIBLE = new CraftMetaItem.ItemMetaKey("Invisible", "invisible");
-    static final CraftMetaItem.ItemMetaKey NO_BASE_PLATE = new CraftMetaItem.ItemMetaKey("NoBasePlate", "no-base-plate");
-    static final CraftMetaItem.ItemMetaKey SHOW_ARMS = new CraftMetaItem.ItemMetaKey("ShowArms", "show-arms");
-    static final CraftMetaItem.ItemMetaKey SMALL = new CraftMetaItem.ItemMetaKey("Small", "small");
-    static final CraftMetaItem.ItemMetaKey MARKER = new CraftMetaItem.ItemMetaKey("Marker", "marker");
-    private Boolean invisible = null;
-    private Boolean noBasePlate = null;
-    private Boolean showArms = null;
-    private Boolean small = null;
-    private Boolean marker = null;
+import java.util.Map;
+import java.util.Objects;
+
+@DelegateDeserialization(SerializableMeta.class)
+public class CraftMetaArmorStand extends CraftMetaItem implements com.destroystokyo.paper.inventory.meta.ArmorStandMeta {
+
+    static final ItemMetaKeyType<TypedEntityData<EntityType<?>>> ENTITY_TAG = new ItemMetaKeyType<>(DataComponents.ENTITY_DATA, "entity-tag");
+
+    static final ItemMetaKey ENTITY_ID = new ItemMetaKey("id", "entity-id");
+    static final ItemMetaKey INVISIBLE = new ItemMetaKey("Invisible", "invisible");
+    static final ItemMetaKey NO_BASE_PLATE = new ItemMetaKey("NoBasePlate", "no-base-plate");
+    static final ItemMetaKey SHOW_ARMS = new ItemMetaKey("ShowArms", "show-arms");
+    static final ItemMetaKey SMALL = new ItemMetaKey("Small", "small");
+    static final ItemMetaKey MARKER = new ItemMetaKey("Marker", "marker");
+
     CompoundTag entityTag;
 
     CraftMetaArmorStand(CraftMetaItem meta) {
         super(meta);
+
         if (!(meta instanceof CraftMetaArmorStand)) {
             return;
         }
-        CraftMetaArmorStand armorStand = (CraftMetaArmorStand)meta;
-        this.invisible = armorStand.invisible;
-        this.noBasePlate = armorStand.noBasePlate;
-        this.showArms = armorStand.showArms;
-        this.small = armorStand.small;
-        this.marker = armorStand.marker;
+
+        CraftMetaArmorStand armorStand = (CraftMetaArmorStand) meta;
         this.entityTag = armorStand.entityTag;
     }
 
-    CraftMetaArmorStand(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaArmorStand(DataComponentPatch tag, final java.util.Set<net.minecraft.core.component.DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
-        CraftMetaArmorStand.getOrEmpty(tag, ENTITY_TAG).ifPresent(nbt -> {
-            this.entityTag = TypedEntityDataExtra.copyTagWithEntityId(nbt);
-            if (this.entityTag.contains(CraftMetaArmorStand.INVISIBLE.NBT)) {
-                this.invisible = this.entityTag.getBoolean(CraftMetaArmorStand.INVISIBLE.NBT).orElse(this.invisible);
-            }
-            if (this.entityTag.contains(CraftMetaArmorStand.NO_BASE_PLATE.NBT)) {
-                this.noBasePlate = this.entityTag.getBoolean(CraftMetaArmorStand.NO_BASE_PLATE.NBT).orElse(this.noBasePlate);
-            }
-            if (this.entityTag.contains(CraftMetaArmorStand.SHOW_ARMS.NBT)) {
-                this.showArms = this.entityTag.getBoolean(CraftMetaArmorStand.SHOW_ARMS.NBT).orElse(this.showArms);
-            }
-            if (this.entityTag.contains(CraftMetaArmorStand.SMALL.NBT)) {
-                this.small = this.entityTag.getBoolean(CraftMetaArmorStand.SMALL.NBT).orElse(this.small);
-            }
-            if (this.entityTag.contains(CraftMetaArmorStand.MARKER.NBT)) {
-                this.marker = this.entityTag.getBoolean(CraftMetaArmorStand.MARKER.NBT).orElse(this.marker);
-            }
+
+        getOrEmpty(tag, CraftMetaArmorStand.ENTITY_TAG).ifPresent((nbt) -> {
+            this.entityTag = ((TypedEntityDataBridge)(Object)nbt).copyTagWithEntityId();
         });
     }
 
     CraftMetaArmorStand(Map<String, Object> map) {
         super(map);
-        this.invisible = SerializableMeta.getBoolean(map, CraftMetaArmorStand.INVISIBLE.BUKKIT);
-        this.noBasePlate = SerializableMeta.getBoolean(map, CraftMetaArmorStand.NO_BASE_PLATE.BUKKIT);
-        this.showArms = SerializableMeta.getBoolean(map, CraftMetaArmorStand.SHOW_ARMS.BUKKIT);
-        this.small = SerializableMeta.getBoolean(map, CraftMetaArmorStand.SMALL.BUKKIT);
-        this.marker = SerializableMeta.getBoolean(map, CraftMetaArmorStand.MARKER.BUKKIT);
+
+        String entityTag = SerializableMeta.getString(map, ENTITY_TAG.BUKKIT, true);
+        if (entityTag != null) {
+            java.io.ByteArrayInputStream buf = new java.io.ByteArrayInputStream(java.util.Base64.getDecoder().decode(entityTag));
+            try {
+                this.entityTag = net.minecraft.nbt.NbtIo.readCompressed(buf, net.minecraft.nbt.NbtAccounter.unlimitedHeap());
+            } catch (java.io.IOException ex) {
+                java.util.logging.Logger.getLogger(CraftMetaItem.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            }
+            return;
+        }
+        SerializableMeta.getObjectOptionally(Boolean.class, map, INVISIBLE.BUKKIT, true).ifPresent((value) -> {
+            populateTagIfNull();
+            this.entityTag.putBoolean(INVISIBLE.NBT, value);
+        });
+        SerializableMeta.getObjectOptionally(Boolean.class, map, NO_BASE_PLATE.BUKKIT, true).ifPresent((value) -> {
+            populateTagIfNull();
+            this.entityTag.putBoolean(NO_BASE_PLATE.NBT, value);
+        });
+        SerializableMeta.getObjectOptionally(Boolean.class, map, SHOW_ARMS.BUKKIT, true).ifPresent((value) -> {
+            populateTagIfNull();
+            this.entityTag.putBoolean(SHOW_ARMS.NBT, value);
+        });
+        SerializableMeta.getObjectOptionally(Boolean.class, map, SMALL.BUKKIT, true).ifPresent((value) -> {
+            populateTagIfNull();
+            this.entityTag.putBoolean(SMALL.NBT, value);
+        });
+        SerializableMeta.getObjectOptionally(Boolean.class, map, MARKER.BUKKIT, true).ifPresent((value) -> {
+            populateTagIfNull();
+            this.entityTag.putBoolean(MARKER.NBT, value);
+        });
+        SerializableMeta.getObjectOptionally(String.class, map, ENTITY_ID, true).ifPresent((value) -> {
+            populateTagIfNull();
+            this.entityTag.putString(ENTITY_ID.NBT, value);
+        });
     }
 
     @Override
     void deserializeInternal(CompoundTag tag, Object context) {
         super.deserializeInternal(tag, context);
-        if (tag.contains(CraftMetaArmorStand.ENTITY_TAG.NBT)) {
-        	Optional<CompoundTag> opt = tag.getCompound(CraftMetaArmorStand.ENTITY_TAG.NBT);
-        	if (opt.isPresent()) {
-        		this.entityTag = opt.get();
-        	}
-        }
+
+        tag.getCompound(CraftMetaArmorStand.ENTITY_TAG.NBT).ifPresent(entityTag -> {
+            if (!entityTag.contains(ENTITY_ID.NBT)) entityTag.putString(ENTITY_ID.NBT, EntityType.getKey(EntityType.ARMOR_STAND).toString()); // fixup legacy armorstand metas that did not include this.
+            this.entityTag = entityTag;
+        });
     }
 
     @Override
-    void serializeInternal(Map<String, Tag> internalTags) {
-        if (this.entityTag != null && !this.entityTag.isEmpty()) {
-            internalTags.put(CraftMetaArmorStand.ENTITY_TAG.NBT, this.entityTag);
-        }
-    }
-
-    @Override
-    void applyToItem(CraftMetaItem.Applicator tag) {
+    void applyToItem(Applicator tag) {
         super.applyToItem(tag);
-        if (!this.isArmorStandEmpty() && this.entityTag == null) {
-            this.entityTag = new CompoundTag();
-        }
-        if (this.invisible != null) {
-            this.entityTag.putBoolean(CraftMetaArmorStand.INVISIBLE.NBT, this.invisible);
-        }
-        if (this.noBasePlate != null) {
-            this.entityTag.putBoolean(CraftMetaArmorStand.NO_BASE_PLATE.NBT, this.noBasePlate);
-        }
-        if (this.showArms != null) {
-            this.entityTag.putBoolean(CraftMetaArmorStand.SHOW_ARMS.NBT, this.showArms);
-        }
-        if (this.small != null) {
-            this.entityTag.putBoolean(CraftMetaArmorStand.SMALL.NBT, this.small);
-        }
-        if (this.marker != null) {
-            this.entityTag.putBoolean(CraftMetaArmorStand.MARKER.NBT, this.marker);
-        }
+
         if (this.entityTag != null) {
-            tag.put(ENTITY_TAG, TypedEntityDataExtra.decodeEntity(this.entityTag));
+            tag.put(CraftMetaArmorStand.ENTITY_TAG, TypedEntityDataBridge.decodeEntity(this.entityTag));
         }
     }
 
@@ -143,7 +115,7 @@ implements ArmorStandMeta {
     }
 
     boolean isArmorStandEmpty() {
-        return this.invisible == null && this.noBasePlate == null && this.showArms == null && this.small == null && this.marker == null && this.entityTag == null;
+        return this.entityTag == null || this.entityTag.size() == 1 && this.entityTag.contains("id"); // consider armor stand empty if tag is empty.
     }
 
     @Override
@@ -151,9 +123,8 @@ implements ArmorStandMeta {
         if (!super.equalsCommon(meta)) {
             return false;
         }
-        if (meta instanceof CraftMetaArmorStand) {
-            CraftMetaArmorStand that = (CraftMetaArmorStand)meta;
-            return this.invisible == that.invisible && this.noBasePlate == that.noBasePlate && this.showArms == that.showArms && this.small == that.small && this.marker == that.marker;
+        if (meta instanceof final CraftMetaArmorStand other) {
+            return Objects.equals(this.entityTag, other.entityTag);
         }
         return true;
     }
@@ -165,79 +136,103 @@ implements ArmorStandMeta {
 
     @Override
     int applyHash() {
-        int original;
+        final int original;
         int hash = original = super.applyHash();
-        return original != (hash += this.isMarker() ? 61 * (hash += this.isSmall() ? 61 * (hash += this.shouldShowArms() ? 61 * (hash += this.hasNoBasePlate() ? 61 * (hash += this.isInvisible() ? 61 * (hash += this.entityTag != null ? 73 * hash + this.entityTag.hashCode() : 0) + 1231 : 0) + 1231 : 0) + 1231 : 0) + 1231 : 0) + 1231 : 0) ? CraftMetaArmorStand.class.hashCode() ^ hash : hash;
+
+        if (this.entityTag != null) {
+            hash = 73 * hash + this.entityTag.hashCode();
+        }
+
+        return original != hash ? CraftMetaArmorStand.class.hashCode() ^ hash : hash;
     }
 
     @Override
-    ImmutableMap.Builder<String, Object> serialize(ImmutableMap.Builder<String, Object> builder) {
+    Builder<String, Object> serialize(Builder<String, Object> builder) {
         super.serialize(builder);
-        if (this.invisible != null) {
-            builder.put(CraftMetaArmorStand.INVISIBLE.BUKKIT, this.invisible);
+
+        if (this.entityTag != null) {
+            java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();
+            try {
+                net.minecraft.nbt.NbtIo.writeCompressed(this.entityTag, buf);
+            } catch (java.io.IOException ex) {
+                java.util.logging.Logger.getLogger(CraftMetaItem.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            }
+            builder.put(ENTITY_TAG.BUKKIT, java.util.Base64.getEncoder().encodeToString(buf.toByteArray()));
         }
-        if (this.noBasePlate != null) {
-            builder.put(CraftMetaArmorStand.NO_BASE_PLATE.BUKKIT, this.noBasePlate);
-        }
-        if (this.showArms != null) {
-            builder.put(CraftMetaArmorStand.SHOW_ARMS.BUKKIT, this.showArms);
-        }
-        if (this.small != null) {
-            builder.put(CraftMetaArmorStand.SMALL.BUKKIT, this.small);
-        }
-        if (this.marker != null) {
-            builder.put(CraftMetaArmorStand.MARKER.BUKKIT, this.marker);
-        }
+
         return builder;
     }
 
     @Override
     public CraftMetaArmorStand clone() {
-        CraftMetaArmorStand clone = (CraftMetaArmorStand)super.clone();
+        CraftMetaArmorStand clone = (CraftMetaArmorStand) super.clone();
+
         if (this.entityTag != null) {
             clone.entityTag = this.entityTag.copy();
         }
+
         return clone;
     }
 
+    private void populateTagIfNull() {
+        if (this.entityTag == null) {
+            this.entityTag = new CompoundTag();
+            this.entityTag.putString(ENTITY_ID.NBT, EntityType.getKey(EntityType.ARMOR_STAND).toString());
+        }
+    }
+
+    @Override
     public boolean isInvisible() {
-        return this.invisible != null && this.invisible != false;
+        return this.entityTag != null && this.entityTag.getBooleanOr(INVISIBLE.NBT, false);
     }
 
+    @Override
     public boolean hasNoBasePlate() {
-        return this.noBasePlate != null && this.noBasePlate != false;
+        return this.entityTag != null && this.entityTag.getBooleanOr(NO_BASE_PLATE.NBT, false);
     }
 
+    @Override
     public boolean shouldShowArms() {
-        return this.showArms != null && this.showArms != false;
+        return this.entityTag != null && this.entityTag.getBooleanOr(SHOW_ARMS.NBT, false);
     }
 
+    @Override
     public boolean isSmall() {
-        return this.small != null && this.small != false;
+        return this.entityTag != null && this.entityTag.getBooleanOr(SMALL.NBT, false);
     }
 
+    @Override
     public boolean isMarker() {
-        return this.marker != null && this.marker != false;
+        return this.entityTag != null && this.entityTag.getBooleanOr(MARKER.NBT, false);
     }
 
+    @Override
     public void setInvisible(boolean invisible) {
-        this.invisible = invisible;
+        populateTagIfNull();
+        this.entityTag.putBoolean(INVISIBLE.NBT, invisible);
     }
 
+    @Override
     public void setNoBasePlate(boolean noBasePlate) {
-        this.noBasePlate = noBasePlate;
+        populateTagIfNull();
+        this.entityTag.putBoolean(NO_BASE_PLATE.NBT, noBasePlate);
     }
 
+    @Override
     public void setShowArms(boolean showArms) {
-        this.showArms = showArms;
+        populateTagIfNull();
+        this.entityTag.putBoolean(SHOW_ARMS.NBT, showArms);
     }
 
+    @Override
     public void setSmall(boolean small) {
-        this.small = small;
+        populateTagIfNull();
+        this.entityTag.putBoolean(SMALL.NBT, small);
     }
 
+    @Override
     public void setMarker(boolean marker) {
-        this.marker = marker;
+        populateTagIfNull();
+        this.entityTag.putBoolean(MARKER.NBT, marker);
     }
 }
-

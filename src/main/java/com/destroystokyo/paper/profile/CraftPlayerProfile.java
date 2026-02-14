@@ -2,10 +2,8 @@ package com.destroystokyo.paper.profile;
 
 // import com.destroystokyo.paper.PaperConfig;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import org.cardboardpowered.interfaces.IUserCache;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
@@ -24,7 +22,7 @@ import org.apache.commons.lang3.Validate;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.profile.CraftPlayerTextures;
 import org.bukkit.profile.PlayerTextures;
-import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spigotmc.SpigotConfig;

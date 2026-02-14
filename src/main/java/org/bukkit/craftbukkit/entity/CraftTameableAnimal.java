@@ -1,17 +1,13 @@
 package org.bukkit.craftbukkit.entity;
 
 import java.util.UUID;
+import net.minecraft.Optionull;
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.TamableAnimal;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Tameable;
-import org.cardboardpowered.impl.entity.CraftAnimals;
-
-import me.isaiah.common.cmixin.IMixinTameableEntity;
-import net.minecraft.Optionull;
-import net.minecraft.world.entity.EntityReference;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.TamableAnimal;
 
 public class CraftTameableAnimal extends CraftAnimals implements Tameable, Creature {
 
@@ -21,67 +17,67 @@ public class CraftTameableAnimal extends CraftAnimals implements Tameable, Creat
 
     @Override
     public TamableAnimal getHandle() {
-        return (TamableAnimal) super.getHandle();
+        return (TamableAnimal) this.entity;
+    }
+
+    @Override
+    public UUID getOwnerUniqueId() {
+        return this.getOwnerUUID();
     }
 
     public UUID getOwnerUUID() {
-    	return Optionull.map(this.getHandle().getOwnerReference(), EntityReference::getUUID);
+        return Optionull.map(this.getHandle().getOwnerReference(), EntityReference::getUUID);
     }
 
     public void setOwnerUUID(UUID uuid) {
-
-        this.getHandle().setOwnerReference( (EntityReference)  (uuid == null ? null : new EntityReference<LivingEntity>(uuid)) );
+        this.getHandle().setOwnerReference(uuid == null ? null : EntityReference.of(uuid));
     }
-
-    public UUID getOwnerUniqueId() {return getOwnerUUID();} // Paper
 
     @Override
     public AnimalTamer getOwner() {
-        if (getOwnerUUID() == null)
+        if (this.getOwnerUUID() == null) {
             return null;
+        }
 
-        AnimalTamer owner = getServer().getPlayer(getOwnerUUID());
-        if (owner == null)
-            owner = getServer().getOfflinePlayer(getOwnerUUID());
+        AnimalTamer owner = this.getServer().getPlayer(this.getOwnerUUID());
+        if (owner == null) {
+            owner = this.getServer().getOfflinePlayer(this.getOwnerUUID());
+        }
+
         return owner;
     }
 
     @Override
     public boolean isTamed() {
-        return getHandle().isTame();
+        return this.getHandle().isTame();
     }
 
     @Override
     public void setOwner(AnimalTamer tamer) {
         if (tamer != null) {
-            setTamed(true);
-            // TODO getHandle().setGoalTarget(null, null, false);
-            setOwnerUUID(tamer.getUniqueId());
+            this.setTamed(true);
+            this.getHandle().setTarget(null);//, null); // TODO
+            this.setOwnerUUID(tamer.getUniqueId());
         } else {
-            setTamed(false);
-            setOwnerUUID(null);
+            this.setTamed(false);
+            this.setOwnerUUID(null);
         }
     }
 
     @Override
     public void setTamed(boolean tame) {
-    	((IMixinTameableEntity)getHandle()).IC$set_tamed(tame, true);    	
-        // getHandle().setTamed(tame);
-        if (!tame) setOwnerUUID(null);
+        this.getHandle().setTame(tame, true);
+        if (!tame) {
+            this.setOwnerUUID(null);
+        }
     }
 
     public boolean isSitting() {
-        return getHandle().isInSittingPose();
+        return this.getHandle().isInSittingPose();
     }
 
     public void setSitting(boolean sitting) {
-        getHandle().setInSittingPose(sitting);
-        getHandle().setOrderedToSit(sitting);
+        this.getHandle().setInSittingPose(sitting);
+        this.getHandle().setOrderedToSit(sitting);
     }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "{owner=" + getOwner() + ",tamed=" + isTamed() + "}";
-    }
-
 }

@@ -119,34 +119,34 @@ public final class AdventureCodecs {
      * Click
      */
     static final MapCodec<ClickEvent> OPEN_URL_CODEC = mapCodec((instance) -> instance.group(
-        ExtraCodecs.UNTRUSTED_URI.fieldOf("url").forGetter(a -> {
-                final String url = ((ClickEvent.Payload.Text) a.payload()).value();
-                return URI.create(!url.contains("://") ? "https://" + url : url);
-            }
-        )
+            ExtraCodecs.UNTRUSTED_URI.fieldOf("url").forGetter(a -> {
+                        final String url = ((ClickEvent.Payload.Text) a.payload()).value();
+                        return URI.create(!url.contains("://") ? "https://" + url : url);
+                    }
+            )
     ).apply(instance, (url) -> ClickEvent.openUrl(url.toString())));
     static final MapCodec<ClickEvent> OPEN_FILE_CODEC = mapCodec((instance) -> instance.group(
-        Codec.STRING.fieldOf("path").forGetter(TEXT_PAYLOAD_EXTRACTOR)
+            Codec.STRING.fieldOf("path").forGetter(TEXT_PAYLOAD_EXTRACTOR)
     ).apply(instance, ClickEvent::openFile));
     static final MapCodec<ClickEvent> RUN_COMMAND_CODEC = mapCodec((instance) -> instance.group(
-        ExtraCodecs.CHAT_STRING.fieldOf("command").forGetter(TEXT_PAYLOAD_EXTRACTOR)
+            ExtraCodecs.CHAT_STRING.fieldOf("command").forGetter(TEXT_PAYLOAD_EXTRACTOR)
     ).apply(instance, ClickEvent::runCommand));
     static final MapCodec<ClickEvent> SUGGEST_COMMAND_CODEC = mapCodec((instance) -> instance.group(
-        ExtraCodecs.CHAT_STRING.fieldOf("command").forGetter(TEXT_PAYLOAD_EXTRACTOR)
+            ExtraCodecs.CHAT_STRING.fieldOf("command").forGetter(TEXT_PAYLOAD_EXTRACTOR)
     ).apply(instance, ClickEvent::suggestCommand));
     static final MapCodec<ClickEvent> CHANGE_PAGE_CODEC = mapCodec((instance) -> instance.group(
-        ExtraCodecs.POSITIVE_INT.fieldOf("page").forGetter(a -> ((ClickEvent.Payload.Int) a.payload()).integer())
+            ExtraCodecs.POSITIVE_INT.fieldOf("page").forGetter(a -> ((ClickEvent.Payload.Int) a.payload()).integer())
     ).apply(instance, ClickEvent::changePage));
     static final MapCodec<ClickEvent> COPY_TO_CLIPBOARD_CODEC = mapCodec((instance) -> instance.group(
-        Codec.STRING.fieldOf("value").forGetter(TEXT_PAYLOAD_EXTRACTOR)
+            Codec.STRING.fieldOf("value").forGetter(TEXT_PAYLOAD_EXTRACTOR)
     ).apply(instance, ClickEvent::copyToClipboard));
     // needs to be lazy loaded due to depending on PaperDialogCodecs static init
     static final MapCodec<ClickEvent> SHOW_DIALOG_CODEC = MapCodec.recursive("show_dialog", ignored -> mapCodec((instance) -> instance.group(
-        PaperDialogCodecs.DIALOG_CODEC.fieldOf("dialog").forGetter(a -> (Dialog) ((ClickEvent.Payload.Dialog) a.payload()).dialog())
+            PaperDialogCodecs.DIALOG_CODEC.fieldOf("dialog").forGetter(a -> (Dialog) ((ClickEvent.Payload.Dialog) a.payload()).dialog())
     ).apply(instance, ClickEvent::showDialog)));
     static final MapCodec<ClickEvent> CUSTOM_CODEC = mapCodec((instance) -> instance.group(
-        KEY_CODEC.fieldOf("id").forGetter(a -> ((ClickEvent.Payload.Custom) a.payload()).key()),
-        BINARY_TAG_HOLDER_CODEC.fieldOf("payload").forGetter(a -> ((ClickEvent.Payload.Custom) a.payload()).nbt())
+            KEY_CODEC.fieldOf("id").forGetter(a -> ((ClickEvent.Payload.Custom) a.payload()).key()),
+            BINARY_TAG_HOLDER_CODEC.fieldOf("payload").forGetter(a -> ((ClickEvent.Payload.Custom) a.payload()).nbt())
     ).apply(instance, ClickEvent::custom));
 
     static final ClickEventType OPEN_URL_CLICK_EVENT_TYPE = new ClickEventType(OPEN_URL_CODEC, "open_url");
@@ -168,16 +168,16 @@ public final class AdventureCodecs {
     }
 
     public static final Function<ClickEvent, ClickEventType> GET_CLICK_EVENT_TYPE =
-        he -> switch (he.action()) {
-            case OPEN_URL -> OPEN_URL_CLICK_EVENT_TYPE;
-            case OPEN_FILE -> OPEN_FILE_CLICK_EVENT_TYPE;
-            case RUN_COMMAND -> RUN_COMMAND_CLICK_EVENT_TYPE;
-            case SUGGEST_COMMAND -> SUGGEST_COMMAND_CLICK_EVENT_TYPE;
-            case CHANGE_PAGE -> CHANGE_PAGE_CLICK_EVENT_TYPE;
-            case COPY_TO_CLIPBOARD -> COPY_TO_CLIPBOARD_CLICK_EVENT_TYPE;
-            case SHOW_DIALOG -> SHOW_DIALOG_CLICK_EVENT_TYPE;
-            case CUSTOM -> CUSTOM_CLICK_EVENT_TYPE;
-        };
+            he -> switch (he.action()) {
+                case OPEN_URL -> OPEN_URL_CLICK_EVENT_TYPE;
+                case OPEN_FILE -> OPEN_FILE_CLICK_EVENT_TYPE;
+                case RUN_COMMAND -> RUN_COMMAND_CLICK_EVENT_TYPE;
+                case SUGGEST_COMMAND -> SUGGEST_COMMAND_CLICK_EVENT_TYPE;
+                case CHANGE_PAGE -> CHANGE_PAGE_CLICK_EVENT_TYPE;
+                case COPY_TO_CLIPBOARD -> COPY_TO_CLIPBOARD_CLICK_EVENT_TYPE;
+                case SHOW_DIALOG -> SHOW_DIALOG_CLICK_EVENT_TYPE;
+                case CUSTOM -> CUSTOM_CLICK_EVENT_TYPE;
+            };
 
     static final Codec<ClickEvent> CLICK_EVENT_CODEC = CLICK_EVENT_TYPE_CODEC.dispatch("action", GET_CLICK_EVENT_TYPE, ClickEventType::codec);
 
@@ -185,13 +185,13 @@ public final class AdventureCodecs {
      * HOVER
      */
     static final MapCodec<HoverEvent<Component>> SHOW_TEXT_CODEC = mapCodec((instance) -> instance.group(
-        COMPONENT_CODEC.fieldOf("value").forGetter(HoverEvent::value)
+            COMPONENT_CODEC.fieldOf("value").forGetter(HoverEvent::value)
     ).apply(instance, HoverEvent::showText));
 
     static final MapCodec<HoverEvent<HoverEvent.ShowEntity>> SHOW_ENTITY_CODEC = mapCodec((instance) -> instance.group(
-        KEY_CODEC.fieldOf("id").forGetter(a -> a.value().type()),
-        UUIDUtil.LENIENT_CODEC.fieldOf("uuid").forGetter(a -> a.value().id()),
-        COMPONENT_CODEC.lenientOptionalFieldOf("name").forGetter(a -> Optional.ofNullable(a.value().name()))
+            KEY_CODEC.fieldOf("id").forGetter(a -> a.value().type()),
+            UUIDUtil.LENIENT_CODEC.fieldOf("uuid").forGetter(a -> a.value().id()),
+            COMPONENT_CODEC.lenientOptionalFieldOf("name").forGetter(a -> Optional.ofNullable(a.value().name()))
     ).apply(instance, (key, uuid, component) -> HoverEvent.showEntity(key, uuid, component.orElse(null))));
 
     public static final MapCodec<HoverEvent<HoverEvent.ShowItem>> SHOW_ITEM_CODEC = net.minecraft.network.chat.HoverEvent.ShowItem.CODEC.xmap(internal -> {
@@ -235,17 +235,17 @@ public final class AdventureCodecs {
      */
     public static final MapCodec<Style> STYLE_MAP_CODEC = mapCodec((instance) -> {
         return instance.group(
-            TEXT_COLOR_CODEC.optionalFieldOf("color").forGetter(nullableGetter(Style::color)),
-            SHADOW_COLOR_CODEC.optionalFieldOf("shadow_color").forGetter(nullableGetter(Style::shadowColor)),
-            Codec.BOOL.optionalFieldOf("bold").forGetter(decorationGetter(TextDecoration.BOLD)),
-            Codec.BOOL.optionalFieldOf("italic").forGetter(decorationGetter(TextDecoration.ITALIC)),
-            Codec.BOOL.optionalFieldOf("underlined").forGetter(decorationGetter(TextDecoration.UNDERLINED)),
-            Codec.BOOL.optionalFieldOf("strikethrough").forGetter(decorationGetter(TextDecoration.STRIKETHROUGH)),
-            Codec.BOOL.optionalFieldOf("obfuscated").forGetter(decorationGetter(TextDecoration.OBFUSCATED)),
-            CLICK_EVENT_CODEC.optionalFieldOf("click_event").forGetter(nullableGetter(Style::clickEvent)),
-            HOVER_EVENT_CODEC.optionalFieldOf("hover_event").forGetter(nullableGetter(Style::hoverEvent)),
-            Codec.STRING.optionalFieldOf("insertion").forGetter(nullableGetter(Style::insertion)),
-            KEY_CODEC.optionalFieldOf("font").forGetter(nullableGetter(Style::font))
+                TEXT_COLOR_CODEC.optionalFieldOf("color").forGetter(nullableGetter(Style::color)),
+                SHADOW_COLOR_CODEC.optionalFieldOf("shadow_color").forGetter(nullableGetter(Style::shadowColor)),
+                Codec.BOOL.optionalFieldOf("bold").forGetter(decorationGetter(TextDecoration.BOLD)),
+                Codec.BOOL.optionalFieldOf("italic").forGetter(decorationGetter(TextDecoration.ITALIC)),
+                Codec.BOOL.optionalFieldOf("underlined").forGetter(decorationGetter(TextDecoration.UNDERLINED)),
+                Codec.BOOL.optionalFieldOf("strikethrough").forGetter(decorationGetter(TextDecoration.STRIKETHROUGH)),
+                Codec.BOOL.optionalFieldOf("obfuscated").forGetter(decorationGetter(TextDecoration.OBFUSCATED)),
+                CLICK_EVENT_CODEC.optionalFieldOf("click_event").forGetter(nullableGetter(Style::clickEvent)),
+                HOVER_EVENT_CODEC.optionalFieldOf("hover_event").forGetter(nullableGetter(Style::hoverEvent)),
+                Codec.STRING.optionalFieldOf("insertion").forGetter(nullableGetter(Style::insertion)),
+                KEY_CODEC.optionalFieldOf("font").forGetter(nullableGetter(Style::font))
         ).apply(instance, (textColor, shadowColor, bold, italic, underlined, strikethrough, obfuscated, clickEvent, hoverEvent, insertion, font) -> {
             return Style.style(builder -> {
                 textColor.ifPresent(builder::color);
@@ -281,7 +281,6 @@ public final class AdventureCodecs {
     static final MapCodec<TextComponent> TEXT_COMPONENT_MAP_CODEC = mapCodec((instance) -> {
         return instance.group(Codec.STRING.fieldOf("text").forGetter(TextComponent::content)).apply(instance, Component::text);
     });
-    
     static final Codec<Object> PRIMITIVE_ARG_CODEC = ExtraCodecs.JAVA.validate(TranslatableContents::filterAllowedArguments);
     static final Codec<TranslationArgument> ARG_CODEC = Codec.either(PRIMITIVE_ARG_CODEC, COMPONENT_CODEC).flatXmap((primitiveOrComponent) -> {
         return primitiveOrComponent.map(o -> {
@@ -308,12 +307,11 @@ public final class AdventureCodecs {
         }
         return DataResult.success(Either.right(component));
     });
-
     static final MapCodec<TranslatableComponent> TRANSLATABLE_COMPONENT_MAP_CODEC = mapCodec((instance) -> {
         return instance.group(
-            Codec.STRING.fieldOf("translate").forGetter(TranslatableComponent::key),
-            Codec.STRING.lenientOptionalFieldOf("fallback").forGetter(nullableGetter(TranslatableComponent::fallback)),
-            ARG_CODEC.listOf().optionalFieldOf("with").forGetter(c -> c.arguments().isEmpty() ? Optional.empty() : Optional.of(c.arguments()))
+                Codec.STRING.fieldOf("translate").forGetter(TranslatableComponent::key),
+                Codec.STRING.lenientOptionalFieldOf("fallback").forGetter(nullableGetter(TranslatableComponent::fallback)),
+                ARG_CODEC.listOf().optionalFieldOf("with").forGetter(c -> c.arguments().isEmpty() ? Optional.empty() : Optional.of(c.arguments()))
         ).apply(instance, (key, fallback, components) -> {
             return Component.translatable(key, components.orElse(Collections.emptyList())).fallback(fallback.orElse(null));
         });
@@ -323,65 +321,65 @@ public final class AdventureCodecs {
 
     static final ExtraCodecs.LateBoundIdMapper<String, MapCodec<? extends ObjectComponent>> OBJECT_CONTENTS_MAPPER = new ExtraCodecs.LateBoundIdMapper<>();
     static final MapCodec<ObjectComponent> SPRITE_OBJECT_CODEC = mapCodec(instance -> instance.group(
-            KEY_CODEC.optionalFieldOf("atlas", SpriteObjectContents.DEFAULT_ATLAS).forGetter(obj -> ((SpriteObjectContents) obj.contents()).atlas()),
-            KEY_CODEC.fieldOf("sprite").forGetter(obj -> ((SpriteObjectContents) obj.contents()).sprite())
-        )
-        .apply(instance, (atlas, sprite) -> {
-            return Component.object(ObjectContents.sprite(atlas, sprite));
-        }));
+                    KEY_CODEC.optionalFieldOf("atlas", SpriteObjectContents.DEFAULT_ATLAS).forGetter(obj -> ((SpriteObjectContents) obj.contents()).atlas()),
+                    KEY_CODEC.fieldOf("sprite").forGetter(obj -> ((SpriteObjectContents) obj.contents()).sprite())
+            )
+            .apply(instance, (atlas, sprite) -> {
+                return Component.object(ObjectContents.sprite(atlas, sprite));
+            }));
     static final Codec<ObjectComponent> PLAYER_OBJECT_PLAYER_CODEC = create(instance -> instance.group(
-        Codec.mapEither(ExtraCodecs.STORED_GAME_PROFILE, ResolvableProfile.Partial.MAP_CODEC).xmap(
-            either -> {
-                return either.map(gameProfile -> {
-                    return Component.object(
-                        ObjectContents.playerHead()
-                            .name(gameProfile.name())
-                            .id(gameProfile.id())
-                            .profileProperties(
-                                gameProfile.properties().entries().stream()
-                                    .map(entry -> PlayerHeadObjectContents.property(entry.getValue().name(), entry.getValue().value(), entry.getValue().signature()))
-                                    .toList()
-                            )
-                            .build()
-                    );
-                }, partial -> {
-                    return Component.object(
-                        ObjectContents.playerHead()
-                            .name(partial.name().orElse(null))
-                            .id(partial.id().orElse(null))
-                            .profileProperties(
-                                partial.properties().entries().stream()
-                                    .map(entry -> PlayerHeadObjectContents.property(entry.getValue().name(), entry.getValue().value(), entry.getValue().signature()))
-                                    .toList()
-                            )
-                            .build()
-                    );
-                });
-            },
-            objectComponent -> {
-                final PlayerHeadObjectContents contents = (PlayerHeadObjectContents) objectComponent.contents();
-                return Either.right(new ResolvableProfile.Partial(
-                    Optional.ofNullable(contents.name()),
-                    Optional.ofNullable(contents.id()),
-                    new PropertyMap(contents.profileProperties().stream()
-                        .map(prop -> new Property(prop.name(), prop.value(), prop.signature()))
-                        .collect(ImmutableListMultimap.toImmutableListMultimap(Property::name, Function.identity())))
-                ));
-            }
-        ).forGetter(obj -> obj),
-        KEY_CODEC.optionalFieldOf("texture").forGetter(obj -> Optional.ofNullable(((PlayerHeadObjectContents) obj.contents()).texture()))
+            Codec.mapEither(ExtraCodecs.STORED_GAME_PROFILE, ResolvableProfile.Partial.MAP_CODEC).xmap(
+                    either -> {
+                        return either.map(gameProfile -> {
+                            return Component.object(
+                                    ObjectContents.playerHead()
+                                            .name(gameProfile.name())
+                                            .id(gameProfile.id())
+                                            .profileProperties(
+                                                    gameProfile.properties().entries().stream()
+                                                            .map(entry -> PlayerHeadObjectContents.property(entry.getValue().name(), entry.getValue().value(), entry.getValue().signature()))
+                                                            .toList()
+                                            )
+                                            .build()
+                            );
+                        }, partial -> {
+                            return Component.object(
+                                    ObjectContents.playerHead()
+                                            .name(partial.name().orElse(null))
+                                            .id(partial.id().orElse(null))
+                                            .profileProperties(
+                                                    partial.properties().entries().stream()
+                                                            .map(entry -> PlayerHeadObjectContents.property(entry.getValue().name(), entry.getValue().value(), entry.getValue().signature()))
+                                                            .toList()
+                                            )
+                                            .build()
+                            );
+                        });
+                    },
+                    objectComponent -> {
+                        final PlayerHeadObjectContents contents = (PlayerHeadObjectContents) objectComponent.contents();
+                        return Either.right(new ResolvableProfile.Partial(
+                                Optional.ofNullable(contents.name()),
+                                Optional.ofNullable(contents.id()),
+                                new PropertyMap(contents.profileProperties().stream()
+                                        .map(prop -> new Property(prop.name(), prop.value(), prop.signature()))
+                                        .collect(ImmutableListMultimap.toImmutableListMultimap(Property::name, Function.identity())))
+                        ));
+                    }
+            ).forGetter(obj -> obj),
+            KEY_CODEC.optionalFieldOf("texture").forGetter(obj -> Optional.ofNullable(((PlayerHeadObjectContents) obj.contents()).texture()))
     ).apply(instance, (player, texture) -> player.contents(
-        ((PlayerHeadObjectContents) player.contents()).toBuilder()
-            .texture(texture.orElse(null))
-            .build()
+            ((PlayerHeadObjectContents) player.contents()).toBuilder()
+                    .texture(texture.orElse(null))
+                    .build()
     )));
     static final MapCodec<ObjectComponent> PLAYER_OBJECT_CODEC = mapCodec(instance -> instance.group(
-        PLAYER_OBJECT_PLAYER_CODEC.fieldOf("player").forGetter(obj -> obj),
-        Codec.BOOL.optionalFieldOf("hat", true).forGetter(obj -> ((PlayerHeadObjectContents) obj.contents()).hat())
+            PLAYER_OBJECT_PLAYER_CODEC.fieldOf("player").forGetter(obj -> obj),
+            Codec.BOOL.optionalFieldOf("hat", true).forGetter(obj -> ((PlayerHeadObjectContents) obj.contents()).hat())
     ).apply(instance, (player, hat) -> player.contents(
-        ((PlayerHeadObjectContents) player.contents()).toBuilder()
-            .hat(hat)
-            .build()
+            ((PlayerHeadObjectContents) player.contents()).toBuilder()
+                    .hat(hat)
+                    .build()
     )));
     static {
         OBJECT_CONTENTS_MAPPER.put("atlas", SPRITE_OBJECT_CODEC);
@@ -398,14 +396,14 @@ public final class AdventureCodecs {
     }, "object");
 
     static final MapCodec<ScoreComponent> SCORE_COMPONENT_INNER_MAP_CODEC = ScoreContents.INNER_CODEC.xmap(
-        s -> Component.score(s.name().map(SelectorPattern::pattern, identity()), s.objective()),
-        s -> new ScoreContents(SelectorPattern.parse(s.name()).<Either<SelectorPattern, String>>map(Either::left).result().orElse(Either.right(s.name())), s.objective())
+            s -> Component.score(s.name().map(SelectorPattern::pattern, identity()), s.objective()),
+            s -> new ScoreContents(SelectorPattern.parse(s.name()).<Either<SelectorPattern, String>>map(Either::left).result().orElse(Either.right(s.name())), s.objective())
     ); // TODO we might want to ask adventure for a nice way we can avoid parsing and flattening the SelectorPattern on every conversion.
     static final MapCodec<ScoreComponent> SCORE_COMPONENT_MAP_CODEC = SCORE_COMPONENT_INNER_MAP_CODEC.fieldOf("score");
     static final MapCodec<SelectorComponent> SELECTOR_COMPONENT_MAP_CODEC = mapCodec((instance) -> {
         return instance.group(
-            Codec.STRING.fieldOf("selector").forGetter(SelectorComponent::pattern),
-            COMPONENT_CODEC.optionalFieldOf("separator").forGetter(nullableGetter(SelectorComponent::separator))
+                Codec.STRING.fieldOf("selector").forGetter(SelectorComponent::pattern),
+                COMPONENT_CODEC.optionalFieldOf("separator").forGetter(nullableGetter(SelectorComponent::separator))
         ).apply(instance, (selector, component) -> Component.selector(selector, component.orElse(null)));
     });
 
@@ -472,20 +470,20 @@ public final class AdventureCodecs {
 
     static final MapCodec<NBTComponent<?, ?>> NBT_COMPONENT_MAP_CODEC = mapCodec((instance) -> {
         return instance.group(
-            Codec.STRING.fieldOf("nbt").forGetter(NBTComponent::nbtPath),
-            Codec.BOOL.lenientOptionalFieldOf("interpret", false).forGetter(NBTComponent::interpret),
-            COMPONENT_CODEC.lenientOptionalFieldOf("separator").forGetter(nullableGetter(NBTComponent::separator)),
-            NBT_COMPONENT_DATA_SOURCE_CODEC.forGetter(nbtComponent -> {
-                if (nbtComponent instanceof final EntityNBTComponent entityNBTComponent) {
-                    return new EntityDataSource(entityNBTComponent.selector());
-                } else if (nbtComponent instanceof final BlockNBTComponent blockNBTComponent) {
-                    return new BlockDataSource(blockNBTComponent.pos().asString());
-                } else if (nbtComponent instanceof final StorageNBTComponent storageNBTComponent) {
-                    return new StorageDataSource(storageNBTComponent.storage());
-                } else {
-                    throw new IllegalArgumentException(nbtComponent + " isn't a valid nbt component");
-                }
-            })
+                Codec.STRING.fieldOf("nbt").forGetter(NBTComponent::nbtPath),
+                Codec.BOOL.lenientOptionalFieldOf("interpret", false).forGetter(NBTComponent::interpret),
+                COMPONENT_CODEC.lenientOptionalFieldOf("separator").forGetter(nullableGetter(NBTComponent::separator)),
+                NBT_COMPONENT_DATA_SOURCE_CODEC.forGetter(nbtComponent -> {
+                    if (nbtComponent instanceof final EntityNBTComponent entityNBTComponent) {
+                        return new EntityDataSource(entityNBTComponent.selector());
+                    } else if (nbtComponent instanceof final BlockNBTComponent blockNBTComponent) {
+                        return new BlockDataSource(blockNBTComponent.pos().asString());
+                    } else if (nbtComponent instanceof final StorageNBTComponent storageNBTComponent) {
+                        return new StorageDataSource(storageNBTComponent.storage());
+                    } else {
+                        throw new IllegalArgumentException(nbtComponent + " isn't a valid nbt component");
+                    }
+                })
         ).apply(instance, (nbtPath, interpret, separator, dataSource) -> {
             return dataSource.builder().nbtPath(nbtPath).interpret(interpret).separator(separator.orElse(null)).build();
         });
@@ -524,9 +522,9 @@ public final class AdventureCodecs {
 
         final Codec<Component> directCodec = RecordCodecBuilder.create((instance) -> {
             return instance.group(
-                legacyCodec.forGetter(identity()),
-                ExtraCodecs.nonEmptyList(selfCodec.listOf()).optionalFieldOf("extra", List.of()).forGetter(Component::children),
-                STYLE_MAP_CODEC.forGetter(Component::style)
+                    legacyCodec.forGetter(identity()),
+                    ExtraCodecs.nonEmptyList(selfCodec.listOf()).optionalFieldOf("extra", List.of()).forGetter(Component::children),
+                    STYLE_MAP_CODEC.forGetter(Component::style)
             ).apply(instance, (component, children, style) -> {
                 return component.style(style).children(children);
             });

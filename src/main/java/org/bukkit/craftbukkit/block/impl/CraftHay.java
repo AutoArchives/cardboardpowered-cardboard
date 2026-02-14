@@ -1,34 +1,40 @@
-/**
- * Automatically generated file, changes will be lost.
- */
 package org.bukkit.craftbukkit.block.impl;
 
-public final class CraftHay extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.Orientable {
+import com.google.common.base.Preconditions;
+import io.papermc.paper.annotation.GeneratedClass;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.HayBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import org.bukkit.Axis;
+import org.bukkit.block.data.Orientable;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.jspecify.annotations.NullMarked;
 
-    public CraftHay() {
-        super();
-    }
+import java.util.Set;
 
-    public CraftHay(net.minecraft.world.level.block.state.BlockState state) {
+@NullMarked
+@GeneratedClass
+public class CraftHay extends CraftBlockData implements Orientable {
+    private static final EnumProperty<Direction.Axis> AXIS = HayBlock.AXIS;
+
+    public CraftHay(BlockState state) {
         super(state);
     }
 
-    // org.bukkit.craftbukkit.block.data.CraftOrientable
-
-    private static final net.minecraft.world.level.block.state.properties.EnumProperty<?> AXIS = getEnum(net.minecraft.world.level.block.HayBlock.class, "axis");
-
     @Override
-    public org.bukkit.Axis getAxis() {
-        return get(AXIS, org.bukkit.Axis.class);
+    public Axis getAxis() {
+        return this.get(AXIS, Axis.class);
     }
 
     @Override
-    public void setAxis(org.bukkit.Axis axis) {
-        set(AXIS, axis);
+    public void setAxis(final Axis axis) {
+        Preconditions.checkArgument(axis != null, "axis cannot be null!");
+        this.set(AXIS, axis);
     }
 
     @Override
-    public java.util.Set<org.bukkit.Axis> getAxes() {
-        return getValues(AXIS, org.bukkit.Axis.class);
+    public Set<Axis> getAxes() {
+        return this.getValues(AXIS, Axis.class);
     }
 }

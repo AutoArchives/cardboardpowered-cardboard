@@ -1,9 +1,7 @@
 package io.papermc.paper.registry;
 
-import io.papermc.paper.registry.RegistryBuilder;
-import io.papermc.paper.registry.TypedKey;
 import io.papermc.paper.registry.data.util.Conversions;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface PaperRegistryBuilder<M, T> extends RegistryBuilder<T> {
 
@@ -17,11 +15,5 @@ public interface PaperRegistryBuilder<M, T> extends RegistryBuilder<T> {
         default B create(final Conversions conversions) {
             return this.fill(conversions, null);
         }
-    }
-
-    @FunctionalInterface
-    interface Factory<M, T, B extends PaperRegistryBuilder<M, T>> {
-
-        B create(Conversions conversions);
     }
 }

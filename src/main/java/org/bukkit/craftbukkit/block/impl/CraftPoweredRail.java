@@ -1,67 +1,65 @@
-/**
- * Automatically generated file, changes will be lost.
- */
 package org.bukkit.craftbukkit.block.impl;
 
+import com.google.common.base.Preconditions;
+import io.papermc.paper.annotation.GeneratedClass;
 import net.minecraft.world.level.block.PoweredRailBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.RailShape;
+import org.bukkit.block.data.type.RedstoneRail;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.jspecify.annotations.NullMarked;
 
-public final class CraftPoweredRail extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.type.RedstoneRail, org.bukkit.block.data.Powerable, org.bukkit.block.data.Rail {
+import java.util.Set;
 
-    public CraftPoweredRail() {
-        super();
-    }
+@NullMarked
+@GeneratedClass
+public class CraftPoweredRail extends CraftBlockData implements RedstoneRail {
+    private static final BooleanProperty POWERED = PoweredRailBlock.POWERED;
 
-    public CraftPoweredRail(net.minecraft.world.level.block.state.BlockState state) {
+    private static final EnumProperty<RailShape> SHAPE = PoweredRailBlock.SHAPE;
+
+    private static final BooleanProperty WATERLOGGED = PoweredRailBlock.WATERLOGGED;
+
+    public CraftPoweredRail(BlockState state) {
         super(state);
     }
 
-    // org.bukkit.craftbukkit.block.data.CraftPowerable
-
-    private static final net.minecraft.world.level.block.state.properties.BooleanProperty POWERED = getBoolean(net.minecraft.world.level.block.PoweredRailBlock.class, "powered");
-
     @Override
     public boolean isPowered() {
-        return get(POWERED);
+        return this.get(POWERED);
     }
 
     @Override
-    public void setPowered(boolean powered) {
-        set(POWERED, powered);
+    public void setPowered(final boolean powered) {
+        this.set(POWERED, powered);
     }
-
-    // org.bukkit.craftbukkit.block.data.CraftRail
-
-    private static final net.minecraft.world.level.block.state.properties.EnumProperty<?> SHAPE = getEnum(net.minecraft.world.level.block.PoweredRailBlock.class, "shape");
 
     @Override
     public Shape getShape() {
-        return get(SHAPE, Shape.class);
+        return this.get(SHAPE, Shape.class);
     }
 
     @Override
-    public void setShape(Shape shape) {
-        set(SHAPE, shape);
+    public void setShape(final Shape shape) {
+        Preconditions.checkArgument(shape != null, "shape cannot be null!");
+        Preconditions.checkArgument(shape != Shape.NORTH_EAST && shape != Shape.NORTH_WEST && shape != Shape.SOUTH_EAST && shape != Shape.SOUTH_WEST, "Invalid rail shape, only straight rail are allowed for this property!");
+        this.set(SHAPE, shape);
     }
 
     @Override
-    public java.util.Set<Shape> getShapes() {
-        return getValues(SHAPE, Shape.class);
+    public Set<Shape> getShapes() {
+        return this.getValues(SHAPE, Shape.class);
     }
-
-
-    // org.bukkit.craftbukkit.block.data.CraftWaterlogged
-
-    private static final BooleanProperty WATERLOGGED = getBoolean(PoweredRailBlock.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {
-        return get(CraftPoweredRail.WATERLOGGED);
+        return this.get(WATERLOGGED);
     }
 
     @Override
-    public void setWaterlogged(boolean waterlogged) {
-        set(CraftPoweredRail.WATERLOGGED, waterlogged);
+    public void setWaterlogged(final boolean waterlogged) {
+        this.set(WATERLOGGED, waterlogged);
     }
-
 }

@@ -1,35 +1,13 @@
 package org.bukkit.craftbukkit.inventory;
 
-import static org.bukkit.craftbukkit.inventory.CraftMetaItem.ENCHANTMENTS;
-// import static org.bukkit.craftbukkit.inventory.CraftMetaItem.ENCHANTMENTS_ID;
-// import static org.bukkit.craftbukkit.inventory.CraftMetaItem.ENCHANTMENTS_LVL;
-
-import java.util.ArrayList;
+import com.google.common.base.Preconditions;
+import io.papermc.paper.adventure.PaperAdventure;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-
-import org.apache.commons.lang.Validate;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.util.CraftLegacy;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
-import org.bukkit.craftbukkit.util.CraftNamespacedKey;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.MaterialData;
-import org.cardboardpowered.impl.CardboardEnchantment;
-import org.cardboardpowered.interfaces.IItemStack;
-import org.jetbrains.annotations.NotNull;
-
-import com.google.common.collect.ImmutableMap;
-import com.mojang.authlib.GameProfile;
-import com.mojang.serialization.Dynamic;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import net.kyori.adventure.text.Component;
 import net.minecraft.advancements.criterion.DataComponentMatchers;
 import net.minecraft.advancements.criterion.ItemPredicate;
 import net.minecraft.advancements.criterion.MinMaxBounds;
@@ -41,24 +19,37 @@ import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.PatchedDataComponentMap;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.Identifier;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
+import org.bukkit.Material;
+import org.bukkit.configuration.serialization.DelegateDeserialization;
+import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
+import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
+import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.material.MaterialData;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.cardboardpowered.bridge.world.item.ItemStackBridge;
+import org.cardboardpowered.bridge.world.item.component.CustomDataBridge;
+import org.cardboardpowered.bridge.world.item.enchantment.EnchantmentHelperBridge;
+import org.bukkit.craftbukkit.entity.CraftLivingEntity;
+import org.jetbrains.annotations.NotNull;
 
 @DelegateDeserialization(ItemStack.class)
 public final class CraftItemStack extends ItemStack {
 
-	// Paper start - delegate api-ItemStack to CraftItemStack
+    // Paper start - delegate api-ItemStack to CraftItemStack
     private static final java.lang.invoke.VarHandle API_ITEM_STACK_CRAFT_DELEGATE_FIELD;
     static {
         try {
             API_ITEM_STACK_CRAFT_DELEGATE_FIELD = java.lang.invoke.MethodHandles.privateLookupIn(
-                ItemStack.class,
-                java.lang.invoke.MethodHandles.lookup()
+                    ItemStack.class,
+                    java.lang.invoke.MethodHandles.lookup()
             ).findVarHandle(ItemStack.class, "craftDelegate", ItemStack.class);
         } catch (final IllegalAccessException | NoSuchFieldException exception) {
             throw new RuntimeException(exception);
@@ -69,7 +60,7 @@ public final class CraftItemStack extends ItemStack {
         if (bukkit instanceof final CraftItemStack craftItemStack) {
             return craftItemStack;
         } else {
-            return  (CraftItemStack) API_ITEM_STACK_CRAFT_DELEGATE_FIELD.get(bukkit);
+            return (CraftItemStack) API_ITEM_STACK_CRAFT_DELEGATE_FIELD.get(bukkit);
         }
     }
 
@@ -86,29 +77,35 @@ public final class CraftItemStack extends ItemStack {
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof final org.bukkit.inventory.ItemStack bukkit)) return false;
+        if (!(obj instanceof final ItemStack bukkit)) return false;
         final CraftItemStack craftStack = getCraftStack(bukkit);
         if (this.handle == craftStack.handle) return true;
-        else if (this.handle == null || craftStack.handle == null) return false;
-        else if (this.handle.isEmpty() && craftStack.handle.isEmpty()) return true;
-        else return net.minecraft.world.item.ItemStack.matches(this.handle, craftStack.handle);
+        if (this.handle == null || craftStack.handle == null) return false;
+        if (this.handle.isEmpty() && craftStack.handle.isEmpty()) return true;
+        return net.minecraft.world.item.ItemStack.matches(this.handle, craftStack.handle);
     }
     // Paper end
-    
- // Paper start - MC Utils
+
+    // Paper start - MC Utils
+    public static net.minecraft.world.item.ItemStack unwrap(ItemStack bukkit) {
+        // Paper start - re-implement after delegating all api ItemStack calls to CraftItemStack
+        final CraftItemStack craftItemStack = getCraftStack(bukkit);
+        return craftItemStack.handle == null ? net.minecraft.world.item.ItemStack.EMPTY : craftItemStack.handle;
+        // Paper end - re-implement after delegating all api ItemStack calls to CraftItemStack
+    }
 
     public static net.minecraft.world.item.ItemStack getOrCloneOnMutation(ItemStack old, ItemStack newInstance) {
         return old == newInstance ? unwrap(old) : asNMSCopy(newInstance);
     }
     // Paper end - MC Utils
-    
- // Paper start - override isEmpty to use vanilla's impl
+
+    // Paper start - override isEmpty to use vanilla's impl
     @Override
     public boolean isEmpty() {
         return handle == null || handle.isEmpty();
     }
     // Paper end - override isEmpty to use vanilla's impl
-    
+
     public static net.minecraft.world.item.ItemStack asNMSCopy(ItemStack original) {
         // Paper start - re-implement after delegating all api ItemStack calls to CraftItemStack
         if (original == null || original.isEmpty()) {
@@ -118,34 +115,11 @@ public final class CraftItemStack extends ItemStack {
         return stack.handle == null ? net.minecraft.world.item.ItemStack.EMPTY : stack.handle.copy();
         // Paper end - re-implement after delegating all api ItemStack calls to CraftItemStack
     }
-	
-    /*
-    public static net.minecraft.item.ItemStack asNMSCopy(ItemStack original) {
 
-        if (original instanceof CraftItemStack) {
-            CraftItemStack stack = (CraftItemStack) original;
-            return stack.handle == null ? net.minecraft.item.ItemStack.EMPTY : stack.handle.copy();
-        }
-        if (original == null || original.getType() == Material.AIR)
-            return net.minecraft.item.ItemStack.EMPTY;
-
-        Item item = CraftMagicNumbers.getItem(original.getType(), original.getDurability());
-
-        if (item == null)
-            return net.minecraft.item.ItemStack.EMPTY;
-
-        net.minecraft.item.ItemStack stack = new net.minecraft.item.ItemStack(item, original.getAmount());
-        if (original.hasItemMeta())
-            setItemMeta(stack, original.getItemMeta());
-
-        return stack;
-    }
-    */
-    
-    public static List<net.minecraft.world.item.ItemStack> asNMSCopy(List<? extends ItemStack> originals) {
-        ArrayList<net.minecraft.world.item.ItemStack> items = new ArrayList<net.minecraft.world.item.ItemStack>(originals.size());
-        for (ItemStack itemStack : originals) {
-            items.add(CraftItemStack.asNMSCopy(itemStack));
+    public static java.util.List<net.minecraft.world.item.ItemStack> asNMSCopy(java.util.List<? extends ItemStack> originals) {
+        final java.util.List<net.minecraft.world.item.ItemStack> items = new java.util.ArrayList<>(originals.size());
+        for (final ItemStack original : originals) {
+            items.add(asNMSCopy(original));
         }
         return items;
     }
@@ -160,17 +134,10 @@ public final class CraftItemStack extends ItemStack {
      * Copies the NMS stack to return as a strictly-Bukkit stack
      */
     public static ItemStack asBukkitCopy(net.minecraft.world.item.ItemStack original) {
-    	CraftItemStack stack = asCraftMirror(original.copy());
-    	
-        /*Material mat = CraftMagicNumbers.getMaterial(original.getItem());
-        if (null == mat) {
-            System.out.println("Unknown Bukkit Material (possible 1.17 material?): " + Registries.ITEM.getId(original.getItem()).getPath().toUpperCase());
-        }
-
-        ItemStack stack = new ItemStack(mat);
-        if (hasItemMeta(original))
-            stack.setItemMeta(getItemMeta(original));*/
-        return stack;
+        // Paper start - no such thing as a "strictly-Bukkit stack" anymore
+        // we copy the stack since it should be a complete copy not a mirror
+        return asCraftMirror(original.copy());
+        // Paper end
     }
 
     public static CraftItemStack asCraftMirror(net.minecraft.world.item.ItemStack original) {
@@ -186,11 +153,18 @@ public final class CraftItemStack extends ItemStack {
     }
 
     public static CraftItemStack asNewCraftStack(Item item) {
-        return asNewCraftStack(item, 1);
+        return CraftItemStack.asNewCraftStack(item, 1);
     }
 
     public static CraftItemStack asNewCraftStack(Item item, int amount) {
-        return new CraftItemStack(CraftMagicNumbers.getMaterial(item), amount, (short) 0, null);
+        return new CraftItemStack(CraftItemType.minecraftToBukkit(item), amount, (short) 0, null);
+    }
+
+    public static ItemPredicate asCriterionConditionItem(ItemStack original) {
+        net.minecraft.world.item.ItemStack nms = CraftItemStack.asNMSCopy(original);
+        DataComponentExactPredicate predicate = DataComponentExactPredicate.allOf(PatchedDataComponentMap.fromPatch(DataComponentMap.EMPTY, nms.getComponentsPatch()));
+
+        return new ItemPredicate(Optional.of(HolderSet.direct(nms.getItemHolder())), MinMaxBounds.Ints.ANY, new DataComponentMatchers(predicate, Collections.emptyMap()));
     }
 
     public net.minecraft.world.item.ItemStack handle;
@@ -207,737 +181,263 @@ public final class CraftItemStack extends ItemStack {
     }
 
     private CraftItemStack(Material type, int amount, short durability, ItemMeta itemMeta) {
-        setType(type);
-        setAmount(amount);
-        setDurability(durability);
-        setItemMeta(itemMeta);
+        this.setType(type);
+        this.setAmount(amount);
+        this.setDurability(durability);
+        this.setItemMeta(itemMeta);
     }
 
     @Override
     public MaterialData getData() {
-        return handle != null ? CraftMagicNumbers.getMaterialData(handle.getItem()) : super.getData();
+        return this.handle != null ? CraftMagicNumbers.getMaterialData(this.handle.getItem()) : super.getData();
     }
 
     @Override
     public Material getType() {
-        return handle != null ? CraftMagicNumbers.getMaterial(handle.getItem()) : Material.AIR;
+        return this.handle != null ? CraftItemType.minecraftToBukkit(this.handle.getItem()) : Material.AIR;
     }
 
     @Override
     public void setType(Material type) {
-        if (getType() == type) {
+        if (this.getType() == type) {
             return;
         } else if (type == Material.AIR) {
-            handle = null;
-        } else if (CraftMagicNumbers.getItem(type) == null) { // :(
-            handle = null;
-        } else if (handle == null) {
-            handle = new net.minecraft.world.item.ItemStack(CraftMagicNumbers.getItem(type), 1);
+            this.handle = null;
+        } else if (CraftItemType.bukkitToMinecraft(type) == null) { // :(
+            this.handle = null;
+        } else if (this.handle == null) {
+            this.handle = new net.minecraft.world.item.ItemStack(CraftItemType.bukkitToMinecraft(type), 1);
         } else {
-            handle.item = CraftMagicNumbers.getItem(type);
-            if (hasItemMeta())
-                setItemMeta(handle, getItemMeta(handle)); // This will create the appropriate item meta, which will contain all the data we intend to keep
+            final Material oldType = CraftMagicNumbers.getMaterial(this.handle.getItem()); // Paper
+            ((ItemStackBridge)this.handle).cardboard$setItem(CraftItemType.bukkitToMinecraft(type));
+            if (this.hasItemMeta()) {
+                // This will create the appropriate item meta, which will contain all the data we intend to keep
+                this.adjustTagForItemMeta(oldType); // Paper
+            }
         }
-        setData((MaterialData) null);
+        this.setData((MaterialData) null); // Paper
     }
 
     @Override
     public int getAmount() {
-        return handle != null ? handle.getCount() : 0;
+        return this.handle != null ? this.handle.getCount() : 0;
     }
 
     @Override
     public void setAmount(int amount) {
-        if (handle == null) return;
+        if (this.handle == null) {
+            return;
+        }
 
-        handle.setCount(amount);
-        if (amount == 0) handle = null;
+        this.handle.setCount(amount);
     }
 
     @Override
     public void setDurability(final short durability) {
         // Ignore damage if item is null
-        if (handle != null) handle.setDamageValue(durability);
+        if (this.handle != null) {
+            this.handle.setDamageValue(durability);
+        }
     }
 
     @Override
     public short getDurability() {
-        return handle != null ? (short) handle.getDamageValue() : -1;
+        if (this.handle != null) {
+            return (short) this.handle.getDamageValue();
+        } else {
+            return -1;
+        }
     }
 
     @Override
     public int getMaxStackSize() {
-        return (handle == null) ? Material.AIR.getMaxStackSize() : handle.getItem().getDefaultMaxStackSize();
+        return (this.handle == null) ? Item.DEFAULT_MAX_STACK_SIZE : this.handle.getMaxStackSize(); // Paper - air stacks to 64
     }
 
     @Override
-    public void addUnsafeEnchantment(Enchantment ench, int level) {
-    	
-    	Validate.notNull(ench, "Cannot add null enchantment");
-        ItemMeta itemMeta = this.getItemMeta();
-        itemMeta.addEnchant(ench, level, true);
-        this.setItemMeta(itemMeta);
-    	
-        /*Validate.notNull(ench, "Cannot add null enchantment");
-
-        if (!makeTag(handle)) return;
-
-        NbtList list = getEnchantmentList(handle);
-        if (list == null) {
-            list = new NbtList();
-            handle.getNbt().put(ENCHANTMENTS.NBT, list);
+    public int getMaxItemUseDuration(final org.bukkit.entity.LivingEntity entity) {
+        if (this.handle == null) {
+            return 0;
         }
-        int size = list.size();
 
-        for (int i = 0; i < size; i++) {
-            NbtCompound tag = (NbtCompound) list.get(i);
-            String id = tag.getString(ENCHANTMENTS_ID.NBT);
-            if (id.equals(ench.getKey().toString())) {
-                tag.putShort(ENCHANTMENTS_LVL.NBT, (short) level);
-                return;
-            }
+        // Make sure plugins calling the old method don't blow up
+        if (entity == null && (this.handle.is(net.minecraft.world.item.Items.CROSSBOW) || this.handle.is(net.minecraft.world.item.Items.GOAT_HORN))) {
+            throw new UnsupportedOperationException("This item requires an entity to determine the max use duration");
         }
-        NbtCompound tag = new NbtCompound();
-        tag.putString(ENCHANTMENTS_ID.NBT, ench.getKey().toString());
-        tag.putShort(ENCHANTMENTS_LVL.NBT, (short) level);
-        list.add(tag);*/
-    }
-
-    static boolean makeTag(net.minecraft.world.item.ItemStack item) {
-        // if (item == null) return false;
-        // if (item.getNbt() == null) item.setNbt(new NbtCompound());
-
-        //return true;
-    	
-    	return item != null;
+        return this.handle.getUseDuration(entity != null ? ((CraftLivingEntity) entity).getHandle() : null);
     }
 
     @Override
-    public boolean containsEnchantment(Enchantment ench) {
-        return getEnchantmentLevel(ench) > 0;
+    public void addUnsafeEnchantment(Enchantment enchant, int level) {
+        Preconditions.checkArgument(enchant != null, "Enchantment cannot be null");
+
+        if (this.handle == null) {
+            return;
+        }
+
+        EnchantmentHelperBridge.updateEnchantments(this.handle, mutable -> { // data component api doesn't really support mutable things once already set yet
+            mutable.set(CraftEnchantment.bukkitToMinecraftHolder(enchant), level);
+        }, true);
     }
 
     @Override
-    public int getEnchantmentLevel(Enchantment ench) {
-        
-        return (handle == null) ? 0 : EnchantmentHelper.getItemEnchantmentLevel(CardboardEnchantment.bukkitToMinecraftHolder(ench), handle);
-
-    	
-    	//return (handle == null) ? 0 : EnchantmentHelper.getLevel(CardboardEnchantment.getRaw(ench), handle);
+    public boolean containsEnchantment(Enchantment enchant) {
+        return this.getEnchantmentLevel(enchant) > 0;
     }
-    
+
     @Override
-    public int removeEnchantment(Enchantment ench) {
-    	Validate.notNull(ench, "Cannot remove null enchantment");
-        int level = this.getEnchantmentLevel(ench);
-        if (level > 0) {
-            ItemMeta itemMeta = this.getItemMeta();
-            if (itemMeta == null) {
-                return 0;
-            }
-            itemMeta.removeEnchant(ench);
-            this.setItemMeta(itemMeta);
+    public int getEnchantmentLevel(Enchantment enchant) {
+        Preconditions.checkArgument(enchant != null, "Enchantment cannot be null");
+        if (this.handle == null) {
+            return 0;
         }
-        return level;
+        return EnchantmentHelper.getItemEnchantmentLevel(CraftEnchantment.bukkitToMinecraftHolder(enchant), this.handle);
     }
 
-    //@Override
-    public int removeEnchantment_old(Enchantment ench) {
-    	return removeEnchantment(ench);
-        /*Validate.notNull(ench, "Cannot remove null enchantment");
+    @Override
+    public int removeEnchantment(Enchantment enchant) {
+        Preconditions.checkArgument(enchant != null, "Enchantment cannot be null");
 
-        NbtList list = getEnchantmentList(handle), listCopy;
-        if (list == null) return 0;
-
-        int index = Integer.MIN_VALUE;
-        int level = Integer.MIN_VALUE;
-        int size = list.size();
-
-        for (int i = 0; i < size; i++) {
-            NbtCompound enchantment = (NbtCompound) list.get(i);
-            String id = enchantment.getString(ENCHANTMENTS_ID.NBT);
-            if (id.equals(ench.getKey().toString())) {
-                index = i;
-                level = 0xffff & enchantment.getShort(ENCHANTMENTS_LVL.NBT);
-                break;
-            }
+        if (this.handle == null) {
+            return 0;
         }
 
-        if (index == Integer.MIN_VALUE) return 0;
-
-        if (size == 1) {
-            handle.getNbt().remove(ENCHANTMENTS.NBT);
-            if (handle.getNbt().isEmpty())
-                handle.setNbt(null);
-            return level;
+        ItemEnchantments itemEnchantments = this.handle.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+        if (itemEnchantments.isEmpty()) {
+            return 0;
         }
 
-        // This is workaround for not having an index removal
-        listCopy = new NbtList();
-        for (int i = 0; i < size; i++)
-            if (i != index) listCopy.add(list.get(i));
-        handle.getNbt().put(ENCHANTMENTS.NBT, listCopy);
-        return level;*/
+        Holder<net.minecraft.world.item.enchantment.Enchantment> removedEnchantment = CraftEnchantment.bukkitToMinecraftHolder(enchant);
+        if (itemEnchantments.keySet().contains(removedEnchantment)) {
+            int previousLevel = itemEnchantments.getLevel(removedEnchantment);
+
+            ItemEnchantments.Mutable mutable = new ItemEnchantments.Mutable(itemEnchantments); // data component api doesn't really support mutable things once already set yet
+            mutable.removeIf(enchantment -> enchantment.equals(removedEnchantment));
+            this.handle.set(DataComponents.ENCHANTMENTS, mutable.toImmutable());
+            return previousLevel;
+        }
+
+        return 0;
+    }
+
+    @Override
+    public void removeEnchantments() {
+        if (this.handle != null) {
+            this.handle.set(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY); // Paper - set to default instead of removing the component
+        }
     }
 
     @Override
     public Map<Enchantment, Integer> getEnchantments() {
-        return getEnchantments(handle);
-    }
-    
-    static Map<Enchantment, Integer> getEnchantments(net.minecraft.world.item.ItemStack item) {
-        ItemEnchantments list;
-        ItemEnchantments itemEnchantmentsComponent = list = item != null && item.isEnchanted() ? item.get(DataComponents.ENCHANTMENTS) : null;
-        if (list == null || list.size() == 0) {
-            return ImmutableMap.of();
+        io.papermc.paper.datacomponent.item.ItemEnchantments itemEnchantments = this.getData(io.papermc.paper.datacomponent.DataComponentTypes.ENCHANTMENTS); // empty constant might be useful here
+        if (itemEnchantments == null) {
+            return java.util.Collections.emptyMap();
         }
-        ImmutableMap.Builder result = ImmutableMap.builder();
-        list.entrySet().forEach(entry -> {
-            Holder id = (Holder)entry.getKey();
-            int level = entry.getIntValue();
-            // TODO
-            // Enchantment enchant = CraftEnchantment.minecraftHolderToBukkit(id);
-            Enchantment enchant = Enchantment.getByKey(CraftNamespacedKey.fromStringOrNull(id.getRegisteredName()));
-            
-            if (enchant != null) {
-                result.put((Object)enchant, (Object)level);
-            }
-        });
-        return result.build();
+        return itemEnchantments.enchantments();
     }
-
-    /*
-    static Map<Enchantment, Integer> getEnchantments_old(net.minecraft.item.ItemStack item) {
-        NbtList list = (item != null && item.hasEnchantments()) ? item.getEnchantments() : null;
-
-        if (list == null || list.size() == 0)
-            return ImmutableMap.of();
-
-        ImmutableMap.Builder<Enchantment, Integer> result = ImmutableMap.builder();
-
-        for (int i = 0; i < list.size(); i++) {
-            String id = ((NbtCompound) list.get(i)).getString(ENCHANTMENTS_ID.NBT);
-            int level = 0xffff & ((NbtCompound) list.get(i)).getShort(ENCHANTMENTS_LVL.NBT);
-
-            Enchantment enchant = Enchantment.getByKey(CraftNamespacedKey.fromStringOrNull(id));
-            if (enchant != null) result.put(enchant, level);
-        }
-
-        return result.build();
-    }*/
-
-    static ItemEnchantments getEnchantmentList(net.minecraft.world.item.ItemStack item) {
-        return item != null && item.isEnchanted() ? item.get(DataComponents.ENCHANTMENTS) : null;
-    }
-
-    
-    //static NbtList getEnchantmentList_old(net.minecraft.item.ItemStack item) {
-    //    return (item != null && item.hasEnchantments()) ? item.getEnchantments() : null;
-    //}
 
     @Override
     public CraftItemStack clone() {
         return new org.bukkit.craftbukkit.inventory.CraftItemStack(this.handle != null ? this.handle.copy() : null); // Paper
-    	/*
-    	CraftItemStack itemStack = (CraftItemStack) super.clone();
-        if (this.handle != null)
-            itemStack.handle = this.handle.copy();
-        return itemStack;
-        */
     }
 
     @Override
     public ItemMeta getItemMeta() {
-        return getItemMeta(handle);
+        return CraftItemStack.getItemMeta(this.handle);
+    }
+    // Paper start - improve handled tags on type change
+    public void adjustTagForItemMeta(final Material oldType) {
+        final CraftMetaItem oldMeta = (CraftMetaItem) CraftItemFactory.instance().getItemMeta(oldType);
+        final ItemMeta newMeta;
+        if (oldMeta == null) {
+            newMeta = getItemMeta(this.handle);
+        } else {
+            final java.util.Set<net.minecraft.core.component.DataComponentType<?>> extraHandledDcts = new java.util.HashSet<>(CraftMetaItem.getTopLevelHandledDcts(oldMeta.getClass()));
+            newMeta = getItemMeta(this.handle, CraftItemType.minecraftToBukkitNew(this.handle.getItem()), extraHandledDcts);
+        }
+        this.setItemMeta(newMeta);
+    }
+    // Paper end - improve handled tags on type change
+
+    public static void applyMetaToItem(net.minecraft.world.item.ItemStack itemStack, ItemMeta itemMeta) {
+        // Paper start - support updating profile after resolving it
+        final CraftMetaItem.Applicator tag = new CraftMetaItem.Applicator() {
+            @Override
+            void skullCallback(final net.minecraft.world.item.component.ResolvableProfile profile) {
+                itemStack.set(DataComponents.PROFILE, profile);
+            }
+        };
+        // Paper end - support updating profile after resolving it
+        ((CraftMetaItem) itemMeta).applyToItem(tag);
+        itemStack.applyComponents(tag.build());
     }
 
     public static ItemMeta getItemMeta(net.minecraft.world.item.ItemStack item) {
-        //if (!hasItemMeta(item))
-       //     return CraftItemFactory.instance().getItemMeta(getType(item));
-
-        return CraftItemStack.getItemMeta(item, CraftItemStack.getType(item));
-    }
-    
-
-    public static ItemMeta getItemMeta(net.minecraft.world.item.ItemStack item, Material material) {
-        return CraftItemStack.getItemMeta(item, material, null);
+        return getItemMeta(item, null);
     }
 
-    public static ItemMeta getItemMeta(net.minecraft.world.item.ItemStack item, Material material, Set<DataComponentType<?>> extraHandledDcts) {
+    public static ItemMeta getItemMeta(net.minecraft.world.item.ItemStack item, org.bukkit.inventory.ItemType metaForType) {
+        // Paper start - handled tags on type change
+        return getItemMeta(item, metaForType, null);
+    }
+    public static ItemMeta getItemMeta(net.minecraft.world.item.ItemStack item, org.bukkit.inventory.ItemType metaForType, final java.util.Set<net.minecraft.core.component.DataComponentType<?>> extraHandledDcts) {
+        // Paper end - handled tags on type change
         if (!CraftItemStack.hasItemMeta(item)) {
-            return CraftItemFactory.instance().getItemMeta(material);
+            return CraftItemFactory.instance().getItemMeta(CraftItemStack.getType(item));
         }
-        switch (material) {
-            case WRITTEN_BOOK: {
-                return new CraftMetaBookSigned(item.getComponentsPatch(), extraHandledDcts);
-            }
-            case WRITABLE_BOOK: {
-                return new CraftMetaBook(item.getComponentsPatch(), extraHandledDcts);
-            }
-            case CREEPER_HEAD: 
-            case CREEPER_WALL_HEAD: 
-            case DRAGON_HEAD: 
-            case DRAGON_WALL_HEAD: 
-            case PIGLIN_HEAD: 
-            case PIGLIN_WALL_HEAD: 
-            case PLAYER_HEAD: 
-            case PLAYER_WALL_HEAD: 
-            case SKELETON_SKULL: 
-            case SKELETON_WALL_SKULL: 
-            case WITHER_SKELETON_SKULL: 
-            case WITHER_SKELETON_WALL_SKULL: 
-            case ZOMBIE_HEAD: 
-            case ZOMBIE_WALL_HEAD: {
-                return new CraftMetaSkull(item.getComponentsPatch(), extraHandledDcts);
-            }
-            case CHAINMAIL_HELMET: 
-            case CHAINMAIL_CHESTPLATE: 
-            case CHAINMAIL_LEGGINGS: 
-            case CHAINMAIL_BOOTS: 
-            case DIAMOND_HELMET: 
-            case DIAMOND_CHESTPLATE: 
-            case DIAMOND_LEGGINGS: 
-            case DIAMOND_BOOTS: 
-            case GOLDEN_HELMET: 
-            case GOLDEN_CHESTPLATE: 
-            case GOLDEN_LEGGINGS: 
-            case GOLDEN_BOOTS: 
-            case IRON_HELMET: 
-            case IRON_CHESTPLATE: 
-            case IRON_LEGGINGS: 
-            case IRON_BOOTS: 
-            case NETHERITE_HELMET: 
-            case NETHERITE_CHESTPLATE: 
-            case NETHERITE_LEGGINGS: 
-            case NETHERITE_BOOTS: 
-            case TURTLE_HELMET: {
-                //return new CraftMetaArmor(item.getComponentChanges(), extraHandledDcts);
-                return new CraftMetaItem(item.getComponentsPatch(), extraHandledDcts);
-            }
-            case LEATHER_HELMET: 
-            case LEATHER_CHESTPLATE: 
-            case LEATHER_LEGGINGS: 
-            case LEATHER_BOOTS: 
-            // case WOLF_ARMOR:
-            {
-                return new CraftMetaLeatherArmor(item.getComponentsPatch(), extraHandledDcts);
-            }
-            case LEATHER_HORSE_ARMOR: {
-                return new CraftMetaLeatherArmor(item.getComponentsPatch(), extraHandledDcts);
-            }
-            case POTION: 
-            case SPLASH_POTION: 
-            case LINGERING_POTION: 
-            case TIPPED_ARROW: {
-                return new CraftMetaPotion(item.getComponentsPatch(), extraHandledDcts);
-            }
-            case FILLED_MAP: {
-                return new CraftMetaMap(item.getComponentsPatch(), extraHandledDcts);
-            }
-            case FIREWORK_ROCKET: {
-                return new CraftMetaFirework(item.getComponentsPatch(), extraHandledDcts);
-            }
-            case FIREWORK_STAR: {
-                return new CraftMetaCharge(item.getComponentsPatch(), extraHandledDcts);
-            }
-            case ENCHANTED_BOOK: {
-                return new CraftMetaEnchantedBook(item.getComponentsPatch(), extraHandledDcts);
-            }
-            case BLACK_BANNER: 
-            case BLACK_WALL_BANNER: 
-            case BLUE_BANNER: 
-            case BLUE_WALL_BANNER: 
-            case BROWN_BANNER: 
-            case BROWN_WALL_BANNER: 
-            case CYAN_BANNER: 
-            case CYAN_WALL_BANNER: 
-            case GRAY_BANNER: 
-            case GRAY_WALL_BANNER: 
-            case GREEN_BANNER: 
-            case GREEN_WALL_BANNER: 
-            case LIGHT_BLUE_BANNER: 
-            case LIGHT_BLUE_WALL_BANNER: 
-            case LIGHT_GRAY_BANNER: 
-            case LIGHT_GRAY_WALL_BANNER: 
-            case LIME_BANNER: 
-            case LIME_WALL_BANNER: 
-            case MAGENTA_BANNER: 
-            case MAGENTA_WALL_BANNER: 
-            case ORANGE_BANNER: 
-            case ORANGE_WALL_BANNER: 
-            case PINK_BANNER: 
-            case PINK_WALL_BANNER: 
-            case PURPLE_BANNER: 
-            case PURPLE_WALL_BANNER: 
-            case RED_BANNER: 
-            case RED_WALL_BANNER: 
-            case WHITE_BANNER: 
-            case WHITE_WALL_BANNER: 
-            case YELLOW_BANNER: 
-            case YELLOW_WALL_BANNER: {
-                return new CraftMetaBanner(item.getComponentsPatch(), extraHandledDcts);
-            }
-            // case ARMADILLO_SPAWN_EGG: 
-            case ALLAY_SPAWN_EGG: 
-            case AXOLOTL_SPAWN_EGG: 
-            case BAT_SPAWN_EGG: 
-            case BEE_SPAWN_EGG: 
-            case BLAZE_SPAWN_EGG: 
-            //case BOGGED_SPAWN_EGG: 
-            //case BREEZE_SPAWN_EGG: 
-            case CAT_SPAWN_EGG: 
-            case CAMEL_SPAWN_EGG: 
-            case CAVE_SPIDER_SPAWN_EGG: 
-            case CHICKEN_SPAWN_EGG: 
-            case COD_SPAWN_EGG: 
-            case COW_SPAWN_EGG: 
-            case CREEPER_SPAWN_EGG: 
-            case DOLPHIN_SPAWN_EGG: 
-            case DONKEY_SPAWN_EGG: 
-            case DROWNED_SPAWN_EGG: 
-            case ELDER_GUARDIAN_SPAWN_EGG: 
-            case ENDER_DRAGON_SPAWN_EGG: 
-            case ENDERMAN_SPAWN_EGG: 
-            case ENDERMITE_SPAWN_EGG: 
-            case EVOKER_SPAWN_EGG: 
-            case FOX_SPAWN_EGG: 
-            case FROG_SPAWN_EGG: 
-            case GHAST_SPAWN_EGG: 
-            case GLOW_SQUID_SPAWN_EGG: 
-            case GOAT_SPAWN_EGG: 
-            case GUARDIAN_SPAWN_EGG: 
-            case HOGLIN_SPAWN_EGG: 
-            case HORSE_SPAWN_EGG: 
-            case HUSK_SPAWN_EGG: 
-            case IRON_GOLEM_SPAWN_EGG: 
-            case LLAMA_SPAWN_EGG: 
-            case MAGMA_CUBE_SPAWN_EGG: 
-            case MOOSHROOM_SPAWN_EGG: 
-            case MULE_SPAWN_EGG: 
-            case OCELOT_SPAWN_EGG: 
-            case PANDA_SPAWN_EGG: 
-            case PARROT_SPAWN_EGG: 
-            case PHANTOM_SPAWN_EGG: 
-            case PIGLIN_BRUTE_SPAWN_EGG: 
-            case PIGLIN_SPAWN_EGG: 
-            case PIG_SPAWN_EGG: 
-            case PILLAGER_SPAWN_EGG: 
-            case POLAR_BEAR_SPAWN_EGG: 
-            case PUFFERFISH_SPAWN_EGG: 
-            case RABBIT_SPAWN_EGG: 
-            case RAVAGER_SPAWN_EGG: 
-            case SALMON_SPAWN_EGG: 
-            case SHEEP_SPAWN_EGG: 
-            case SHULKER_SPAWN_EGG: 
-            case SILVERFISH_SPAWN_EGG: 
-            case SKELETON_HORSE_SPAWN_EGG: 
-            case SKELETON_SPAWN_EGG: 
-            case SLIME_SPAWN_EGG: 
-            case SNIFFER_SPAWN_EGG: 
-            case SNOW_GOLEM_SPAWN_EGG: 
-            case SPIDER_SPAWN_EGG: 
-            case SQUID_SPAWN_EGG: 
-            case STRAY_SPAWN_EGG: 
-            case STRIDER_SPAWN_EGG: 
-            case TADPOLE_SPAWN_EGG: 
-            case TRADER_LLAMA_SPAWN_EGG: 
-            case TROPICAL_FISH_SPAWN_EGG: 
-            case TURTLE_SPAWN_EGG: 
-            case VEX_SPAWN_EGG: 
-            case VILLAGER_SPAWN_EGG: 
-            case VINDICATOR_SPAWN_EGG: 
-            case WANDERING_TRADER_SPAWN_EGG: 
-            case WARDEN_SPAWN_EGG: 
-            case WITCH_SPAWN_EGG: 
-            case WITHER_SKELETON_SPAWN_EGG: 
-            case WITHER_SPAWN_EGG: 
-            case WOLF_SPAWN_EGG: 
-            case ZOGLIN_SPAWN_EGG: 
-            case ZOMBIE_HORSE_SPAWN_EGG: 
-            case ZOMBIE_SPAWN_EGG: 
-            case ZOMBIE_VILLAGER_SPAWN_EGG: 
-            case ZOMBIFIED_PIGLIN_SPAWN_EGG: {
-                return new CraftMetaSpawnEgg(item.getComponentsPatch(), extraHandledDcts);
-            }
-            case ARMOR_STAND: {
-                return new CraftMetaArmorStand(item.getComponentsPatch(), extraHandledDcts);
-            }
-            case KNOWLEDGE_BOOK: {
-                return new CraftMetaKnowledgeBook(item.getComponentsPatch(), extraHandledDcts);
-            }
-            case FURNACE: 
-            case CHEST: 
-            case TRAPPED_CHEST: 
-            case JUKEBOX: 
-            case DISPENSER: 
-            case DROPPER: 
-            case ACACIA_HANGING_SIGN: 
-            case ACACIA_SIGN: 
-            case ACACIA_WALL_HANGING_SIGN: 
-            case ACACIA_WALL_SIGN: 
-            case BAMBOO_HANGING_SIGN: 
-            case BAMBOO_SIGN: 
-            case BAMBOO_WALL_HANGING_SIGN: 
-            case BAMBOO_WALL_SIGN: 
-            case BIRCH_HANGING_SIGN: 
-            case BIRCH_SIGN: 
-            case BIRCH_WALL_HANGING_SIGN: 
-            case BIRCH_WALL_SIGN: 
-            case CHERRY_HANGING_SIGN: 
-            case CHERRY_SIGN: 
-            case CHERRY_WALL_HANGING_SIGN: 
-            case CHERRY_WALL_SIGN: 
-            case CRIMSON_HANGING_SIGN: 
-            case CRIMSON_SIGN: 
-            case CRIMSON_WALL_HANGING_SIGN: 
-            case CRIMSON_WALL_SIGN: 
-            case DARK_OAK_HANGING_SIGN: 
-            case DARK_OAK_SIGN: 
-            case DARK_OAK_WALL_HANGING_SIGN: 
-            case DARK_OAK_WALL_SIGN: 
-            case JUNGLE_HANGING_SIGN: 
-            case JUNGLE_SIGN: 
-            case JUNGLE_WALL_HANGING_SIGN: 
-            case JUNGLE_WALL_SIGN: 
-            case MANGROVE_HANGING_SIGN: 
-            case MANGROVE_SIGN: 
-            case MANGROVE_WALL_HANGING_SIGN: 
-            case MANGROVE_WALL_SIGN: 
-            case OAK_HANGING_SIGN: 
-            case OAK_SIGN: 
-            case OAK_WALL_HANGING_SIGN: 
-            case OAK_WALL_SIGN: 
-            case SPRUCE_HANGING_SIGN: 
-            case SPRUCE_SIGN: 
-            case SPRUCE_WALL_HANGING_SIGN: 
-            case SPRUCE_WALL_SIGN: 
-            case WARPED_HANGING_SIGN: 
-            case WARPED_SIGN: 
-            case WARPED_WALL_HANGING_SIGN: 
-            case WARPED_WALL_SIGN: 
-            case SPAWNER: 
-            case BREWING_STAND: 
-            case ENCHANTING_TABLE: 
-            case COMMAND_BLOCK: 
-            case REPEATING_COMMAND_BLOCK: 
-            case CHAIN_COMMAND_BLOCK: 
-            case BEACON: 
-            case DAYLIGHT_DETECTOR: 
-            case HOPPER: 
-            case COMPARATOR: 
-            case STRUCTURE_BLOCK: 
-            case SHULKER_BOX: 
-            case WHITE_SHULKER_BOX: 
-            case ORANGE_SHULKER_BOX: 
-            case MAGENTA_SHULKER_BOX: 
-            case LIGHT_BLUE_SHULKER_BOX: 
-            case YELLOW_SHULKER_BOX: 
-            case LIME_SHULKER_BOX: 
-            case PINK_SHULKER_BOX: 
-            case GRAY_SHULKER_BOX: 
-            case LIGHT_GRAY_SHULKER_BOX: 
-            case CYAN_SHULKER_BOX: 
-            case PURPLE_SHULKER_BOX: 
-            case BLUE_SHULKER_BOX: 
-            case BROWN_SHULKER_BOX: 
-            case GREEN_SHULKER_BOX: 
-            case RED_SHULKER_BOX: 
-            case BLACK_SHULKER_BOX: 
-            case ENDER_CHEST: 
-            case BARREL: 
-            case BELL: 
-            case BLAST_FURNACE: 
-            case CAMPFIRE: 
-            case SOUL_CAMPFIRE: 
-            case JIGSAW: 
-            case LECTERN: 
-            case SMOKER: 
-            case BEEHIVE: 
-            case BEE_NEST: 
-            case SCULK_CATALYST: 
-            case SCULK_SHRIEKER: 
-            case SCULK_SENSOR: 
-            // case CALIBRATED_SCULK_SENSOR: 
-            case CHISELED_BOOKSHELF: 
-            case DECORATED_POT: 
-            case SUSPICIOUS_SAND: 
-            // case SUSPICIOUS_GRAVEL: 
-            // case CRAFTER: 
-            // case TRIAL_SPAWNER: 
-            // case VAULT:
-            {
-                return new CraftMetaBlockState(item.getComponentsPatch(), CraftItemType.minecraftToBukkit(item.getItem()), extraHandledDcts);
-            }
-            case SHIELD: {
-                return new CraftMetaShield(item.getComponentsPatch(), extraHandledDcts);
-            }
-            case TROPICAL_FISH_BUCKET: {
-            	return new CraftMetaItem(item.getComponentsPatch(), extraHandledDcts);
-            	//return new CraftMetaTropicalFishBucket(item.getComponentChanges(), extraHandledDcts);
-            }
-            case AXOLOTL_BUCKET: {
-            	return new CraftMetaItem(item.getComponentsPatch(), extraHandledDcts);
-            	// return new CraftMetaAxolotlBucket(item.getComponentChanges(), extraHandledDcts);
-            }
-            case CROSSBOW: {
-                return new CraftMetaCrossbow(item.getComponentsPatch(), extraHandledDcts);
-            }
-            case SUSPICIOUS_STEW: {
-                return new CraftMetaSuspiciousStew(item.getComponentsPatch(), extraHandledDcts);
-            }
-            case COD_BUCKET: 
-            case PUFFERFISH_BUCKET: 
-            case SALMON_BUCKET: 
-            case TADPOLE_BUCKET: 
-            case ITEM_FRAME: 
-            case GLOW_ITEM_FRAME: 
-            case PAINTING: {
-                return new CraftMetaEntityTag(item.getComponentsPatch(), extraHandledDcts);
-            }
-			/*
-            case COMPASS: {
-                return new CraftMetaCompass(item.getComponentChanges(), extraHandledDcts);
-            }
-            case BUNDLE: {
-                return new CraftMetaBundle(item.getComponentChanges(), extraHandledDcts);
-            }
-            case GOAT_HORN: {
-                return new CraftMetaMusicInstrument(item.getComponentChanges(), extraHandledDcts);
-            }
-            case OMINOUS_BOTTLE: {
-                return new CraftMetaOminousBottle(item.getComponentChanges(), extraHandledDcts);
-            }*/
-        }
-        return new CraftMetaItem(item.getComponentsPatch(), extraHandledDcts);
+
+        if (metaForType != null) { return ((CraftItemType<?>) metaForType).getItemMeta(item, extraHandledDcts); } // Paper
+        return ((CraftItemType<?>) CraftItemType.minecraftToBukkitNew(item.getItem())).getItemMeta(item, extraHandledDcts); // Paper
     }
 
     static Material getType(net.minecraft.world.item.ItemStack item) {
-        if (null != item) {
-            boolean isModded = (null == CraftMagicNumbers.getMaterial(item.getItem()));
-            if (isModded) {
-                Identifier id = BuiltInRegistries.ITEM.getKey(item.item);
-                String name = CraftMagicNumbers.standardize(id);
-                Material material = Material.getMaterial(name);                    
-                return material;
-            }
-        }
-        return item == null ? Material.AIR : CraftMagicNumbers.getMaterial(item.getItem());
+        return item == null ? Material.AIR : CraftItemType.minecraftToBukkit(item.getItem());
     }
 
     @Override
     public boolean setItemMeta(ItemMeta itemMeta) {
-        return setItemMeta(handle, itemMeta);
+        return CraftItemStack.setItemMeta(this.handle, itemMeta);
     }
-    
-    public static boolean setItemMeta(final net.minecraft.world.item.ItemStack item, ItemMeta itemMeta) {
-        Item newItem;
+
+    public static boolean setItemMeta(net.minecraft.world.item.ItemStack item, ItemMeta itemMeta) {
         if (item == null) {
             return false;
         }
         if (CraftItemFactory.instance().equals(itemMeta, null)) {
-        	((IItemStack)item).cardboard$restore_patch(DataComponentPatch.EMPTY);
+            ((ItemStackBridge)item).cardboard$restore_patch(DataComponentPatch.EMPTY);
             return true;
         }
         if (!CraftItemFactory.instance().isApplicable(itemMeta, CraftItemStack.getType(item))) {
             return false;
         }
+
         itemMeta = CraftItemFactory.instance().asMetaFor(itemMeta, CraftItemStack.getType(item));
-        if (itemMeta == null) {
-            return true;
-        }
-        Item oldItem = item.getItem();
-        if (oldItem != (newItem = CraftItemType.bukkitToMinecraft(CraftItemFactory.instance().updateMaterial(itemMeta, CraftItemType.minecraftToBukkit(oldItem))))) {
-        	((IItemStack)item).cb$setItem(newItem);
-        }
-        if (!((CraftMetaItem)itemMeta).isEmpty()) {
-            CraftMetaItem.Applicator tag = new CraftMetaItem.Applicator(){
-
-                @Override
-                void skullCallback(ResolvableProfile gameProfile) {
-                    item.set(DataComponents.PROFILE, gameProfile);
-                }
-            };
-            ((CraftMetaItem)itemMeta).applyToItem(tag);
-            // item.restorePatch(tag.build());
-            ((IItemStack)item).cardboard$restore_patch(tag.build());
-        }
-        if (item.getItem() != null && item.getMaxDamage() > 0) {
-            item.setDamageValue(item.getDamageValue());
-        }
-        return true;
-    }
-    
-    public static void applyMetaToItem(net.minecraft.world.item.ItemStack itemStack, ItemMeta itemMeta) {
-        CraftMetaItem.Applicator tag = new CraftMetaItem.Applicator() {
-           @Override
-           void skullCallback(ResolvableProfile profile) {
-              itemStack.set(DataComponents.PROFILE, profile);
-           }
-        };
-        ((CraftMetaItem)itemMeta).applyToItem(tag);
-        itemStack.applyComponents(tag.build());
-     }
-
-    /*public static boolean setItemMeta_old(net.minecraft.item.ItemStack item, ItemMeta itemMeta) {
-        if (item == null) return false;
-
-        if (CraftItemFactory.instance().equals(itemMeta, null)) {
-            item.setNbt(null);
-            return true;
-        }
-        if (!CraftItemFactory.instance().isApplicable(itemMeta, getType(item)))
-            return false;
-
-        itemMeta = CraftItemFactory.instance().asMetaFor(itemMeta, getType(item));
         if (itemMeta == null) return true;
 
-        Item oldItem = item.getItem();
-        Item newItem = CraftMagicNumbers.getItem(CraftItemFactory.instance().updateMaterial(itemMeta, CraftMagicNumbers.getMaterial(oldItem)));
-        if (oldItem != newItem)
-            item.item = newItem;
+        if (!((CraftMetaItem) itemMeta).isEmpty()) {
+            // Paper start - support updating profile after resolving it
+            CraftMetaItem.Applicator tag = new CraftMetaItem.Applicator() {
+                @Override
+                void skullCallback(final net.minecraft.world.item.component.ResolvableProfile resolvableProfile) {
+                    item.set(DataComponents.PROFILE, resolvableProfile);
+                }
+            };
+            // Paper end - support updating profile after resolving it
 
-        NbtCompound tag = new NbtCompound();
-        item.setNbt(tag);
-
-        ((CraftMetaItem) itemMeta).applyToItem(tag);
-        convertStack_BF(item, ((CraftMetaItem) itemMeta).getVersion());
-
-        if (item.getItem() != null && item.getItem().isDamageable()) // SpigotCraft#463 
-            item.setDamage(item.getDamage());
+            ((CraftMetaItem) itemMeta).applyToItem(tag);
+            ((ItemStackBridge)item).cardboard$restore_patch(DataComponentPatch.EMPTY); // Paper - properly apply the new patch from itemmeta
+            item.applyComponents(tag.build()); // Paper - properly apply the new patch from itemmeta
+        }
+        // Paper - this is no longer needed
 
         return true;
-    }*/
+    }
 
-    /*@SuppressWarnings({ "unchecked", "deprecation", "rawtypes" })
-    public static void convertStack_BF(net.minecraft.item.ItemStack item, int version) {
-        if (0 < version && version < CraftMagicNumbers.INSTANCE.getDataVersion()) {
-            NbtCompound savedStack = new NbtCompound();
+    @Override
+    public @NotNull Component effectiveName() {
+        return this.handle == null ? Component.empty() : PaperAdventure.asAdventure(this.handle.getStyledHoverName());
+    }
 
-            item.writeNbt(savedStack);
-            savedStack = (NbtCompound) CraftServer.server.getDataFixer().update(TypeReferences.ITEM_STACK, new Dynamic(NbtOps.INSTANCE, savedStack), version, CraftMagicNumbers.INSTANCE.getDataVersion()).getValue();
-            item.setNbt(savedStack);
-        }
-    }*/
-
-    /*@Override
-    public boolean isSimilar(ItemStack stack) {
-        if (stack == null) return false;
-        if (stack == this) return true;
-
-        if (!(stack instanceof CraftItemStack))
-            return stack.getClass() == ItemStack.class && stack.isSimilar(this);
-
-        CraftItemStack that = (CraftItemStack) stack;
-        if (handle == that.handle) return true;
-        if (handle == null || that.handle == null) return false;
-
-        Material comparisonType = CraftLegacy.fromLegacy(that.getType()); // This may be called from legacy item stacks, try to get the right material
-        if (!(comparisonType == getType() && getDurability() == that.getDurability()))
-            return false;
-
-        return hasItemMeta() ? that.hasItemMeta() && handle.getNbt().equals(that.handle.getNbt()) : !that.hasItemMeta();
-    }*/
-    
     @Override
     public boolean isSimilar(ItemStack stack) {
         if (stack == null) {
@@ -946,60 +446,103 @@ public final class CraftItemStack extends ItemStack {
         if (stack == this) {
             return true;
         }
-        if (!(stack instanceof CraftItemStack)) {
-            return stack.getClass() == ItemStack.class && stack.isSimilar((ItemStack)this);
-        }
-        CraftItemStack that = getCraftStack(stack);// (CraftItemStack)stack;
+        final CraftItemStack that = getCraftStack(stack); // Paper - re-implement after delegating all api ItemStack calls to CraftItemStack
         if (this.handle == that.handle) {
             return true;
         }
         if (this.handle == null || that.handle == null) {
             return false;
         }
-        Material comparisonType = CraftLegacy.fromLegacy(that.getType());
-        if (comparisonType != this.getType() || this.getDurability() != that.getDurability()) {
-            return false;
-        }
-        return this.hasItemMeta() ? that.hasItemMeta() && this.handle.getComponents().equals(that.handle.getComponents()) : !that.hasItemMeta();
+        return net.minecraft.world.item.ItemStack.isSameItemSameComponents(this.handle, that.handle); // Paper - re-implement after delegating all api ItemStack calls to CraftItemStack
     }
 
     @Override
     public boolean hasItemMeta() {
-        return hasItemMeta(handle) && !CraftItemFactory.instance().equals(getItemMeta(), null);
+        return CraftItemStack.hasItemMeta(this.handle) && !CraftItemFactory.instance().equals(this.getItemMeta(), null);
     }
-    
+
     static boolean hasItemMeta(net.minecraft.world.item.ItemStack item) {
-        return item != null && !item.getComponentsPatch().isEmpty();
+        return !(item == null || item.getComponentsPatch().isEmpty());
     }
-
-    /*
-    public static net.minecraft.item.ItemStack unwrap(ItemStack bukkit) {
-        if (bukkit instanceof CraftItemStack) {
-            CraftItemStack craftItemStack = (CraftItemStack)bukkit;
-            return craftItemStack.handle != null ? craftItemStack.handle : net.minecraft.item.ItemStack.EMPTY;
+    // Paper start - with type
+    @Override
+    public ItemStack withType(final Material type) {
+        if (type == Material.AIR) {
+            return CraftItemStack.asCraftMirror(null);
         }
-        return CraftItemStack.asNMSCopy(bukkit);
+
+        final net.minecraft.world.item.ItemStack copy = new net.minecraft.world.item.ItemStack(
+                CraftItemType.bukkitToMinecraft(type), this.getAmount()
+        );
+
+        if (this.handle != null) {
+            copy.applyComponents(this.handle.getComponentsPatch());
+        }
+
+        final CraftItemStack mirrored = CraftItemStack.asCraftMirror(copy);
+        mirrored.setItemMeta(mirrored.getItemMeta());
+        return mirrored;
     }
-    */
-    
-    public static net.minecraft.world.item.ItemStack unwrap(ItemStack bukkit) {
-        // Paper start - re-implement after delegating all api ItemStack calls to CraftItemStack
-        final CraftItemStack craftItemStack = getCraftStack(bukkit);
-        return craftItemStack.handle == null ? net.minecraft.world.item.ItemStack.EMPTY : craftItemStack.handle;
-        // Paper end - re-implement after delegating all api ItemStack calls to CraftItemStack
+    // Paper end
+
+    public static final String PDC_CUSTOM_DATA_KEY = "PublicBukkitValues";
+    private net.minecraft.nbt.CompoundTag getPdcTag() {
+        if (this.handle == null) {
+            return new net.minecraft.nbt.CompoundTag();
+        }
+        final net.minecraft.world.item.component.CustomData customData = this.handle.getOrDefault(DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY);
+        // getUnsafe is OK here because we are only ever *reading* the data so immutability is preserved
+        //noinspection deprecation
+        return ((CustomDataBridge)(Object)customData).cardboard$getUnsafe().getCompoundOrEmpty(PDC_CUSTOM_DATA_KEY);
     }
 
-    public static ItemPredicate asCriterionConditionItem(ItemStack original) {
-        net.minecraft.world.item.ItemStack nms = CraftItemStack.asNMSCopy(original);
-        DataComponentExactPredicate predicate = DataComponentExactPredicate.allOf(PatchedDataComponentMap.fromPatch(DataComponentMap.EMPTY, nms.getComponentsPatch()));
-        return new ItemPredicate(Optional.of(HolderSet.direct(nms.getItemHolder())), MinMaxBounds.Ints.ANY, new DataComponentMatchers(predicate, Collections.emptyMap()));
+    private static final org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry REGISTRY = new org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry();
+    private final io.papermc.paper.persistence.PaperPersistentDataContainerView pdcView = new io.papermc.paper.persistence.PaperPersistentDataContainerView(REGISTRY) {
+
+        @Override
+        public int getSize() {
+            return CraftItemStack.this.getPdcTag().size();
+        }
+
+        @Override
+        public net.minecraft.nbt.CompoundTag toTagCompound() {
+            return CraftItemStack.this.getPdcTag();
+        }
+
+        @Override
+        public net.minecraft.nbt.Tag getTag(final String key) {
+            return CraftItemStack.this.getPdcTag().get(key);
+        }
+    };
+    @Override
+    public io.papermc.paper.persistence.PersistentDataContainerView getPersistentDataContainer() {
+        return this.pdcView;
     }
 
-    /*static boolean hasItemMeta(net.minecraft.item.ItemStack item) {
-        return !(item == null || item.getNbt() == null || item.getNbt().isEmpty());
-    }*/
-    
- // Paper start - data component API
+    @Override
+    public boolean editPersistentDataContainer(final Consumer<PersistentDataContainer> consumer) {
+        if (this.handle == null || this.handle.isEmpty()) return false;
+
+        final CraftPersistentDataContainer container = new CraftPersistentDataContainer(REGISTRY);
+        CustomData customData = this.handle.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        //noinspection deprecation // we copy only the pdc tag
+        final CompoundTag pdcTag = ((CustomDataBridge)(Object)customData).cardboard$getUnsafe().getCompoundOrEmpty(PDC_CUSTOM_DATA_KEY).copy();
+        container.putAll(pdcTag);
+        consumer.accept(container);
+
+        final CompoundTag newPdcTag = container.toTagCompound();
+        if (!newPdcTag.isEmpty()) {
+            customData = customData.update(tag -> tag.put(PDC_CUSTOM_DATA_KEY, newPdcTag));
+        } else if (((CustomDataBridge)(Object)customData).cardboard$contains(PDC_CUSTOM_DATA_KEY)) {
+            customData = customData.update(tag -> tag.remove(PDC_CUSTOM_DATA_KEY));
+        }
+
+        // mirror CraftMetaItem behavior of clearing component if it's empty.
+        this.handle.set(DataComponents.CUSTOM_DATA, customData.isEmpty() ? null : customData);
+        return true;
+    }
+
+    // Paper start - data component API
     @Override
     public <T> T getData(final io.papermc.paper.datacomponent.DataComponentType.Valued<T> type) {
         if (this.isEmpty()) {
@@ -1026,7 +569,7 @@ public final class CraftItemStack extends ItemStack {
 
     @Override
     public <T> void setData(final io.papermc.paper.datacomponent.DataComponentType.Valued<T> type, final T value) {
-        // Preconditions.checkArgument(value != null, "value cannot be null");
+        Preconditions.checkArgument(value != null, "value cannot be null");
         if (this.isEmpty()) {
             return;
         }
@@ -1042,7 +585,7 @@ public final class CraftItemStack extends ItemStack {
     }
 
     private <A, V> void setDataInternal(final io.papermc.paper.datacomponent.PaperDataComponentType<A, V> type, final A value) {
-        this.handle.set(type.getHandle(), type.getAdapter().toVanilla(value));
+        this.handle.set(type.getHandle(), type.getAdapter().toVanilla(value, type.getHolder()));
     }
 
     @Override
@@ -1070,13 +613,31 @@ public final class CraftItemStack extends ItemStack {
     }
 
     @Override
+    public void copyDataFrom(final ItemStack source, final Predicate<io.papermc.paper.datacomponent.DataComponentType> filter) {
+        Preconditions.checkArgument(source != null, "source cannot be null");
+        Preconditions.checkArgument(filter != null, "filter cannot be null");
+        if (this.isEmpty() || source.isEmpty()) {
+            return;
+        }
+
+        final Predicate<DataComponentType<?>> nmsFilter = nms -> filter.test(io.papermc.paper.datacomponent.PaperDataComponentType.minecraftToBukkit(nms));
+        net.minecraft.world.item.ItemStack sourceNmsStack = getCraftStack(source).handle;
+        this.handle.applyComponents(sourceNmsStack.getPrototype().filter(nmsType -> {
+            return !sourceNmsStack.hasNonDefault(nmsType) && nmsFilter.test(nmsType);
+        }));
+
+        final DataComponentPatch.SplitResult split = sourceNmsStack.getComponentsPatch().split();
+        this.handle.applyComponents(split.added().filter(nmsFilter));
+        split.removed().stream().filter(nmsFilter).forEach(this.handle::remove);
+    }
+
+    @Override
     public boolean isDataOverridden(final io.papermc.paper.datacomponent.DataComponentType type) {
         if (this.isEmpty()) {
             return false;
         }
         final net.minecraft.core.component.DataComponentType<?> nms = io.papermc.paper.datacomponent.PaperDataComponentType.bukkitToMinecraft(type);
-        // maybe a more efficient way is to expose the "patch" map in PatchedDataComponentMap and just check if the type exists as a key
-        return !java.util.Objects.equals(this.handle.get(nms), this.handle.getPrototype().get(nms));
+        return this.handle.hasNonDefault(nms);
     }
 
     @Override
@@ -1114,5 +675,4 @@ public final class CraftItemStack extends ItemStack {
     }
 
     // Paper end - data component API
-
 }

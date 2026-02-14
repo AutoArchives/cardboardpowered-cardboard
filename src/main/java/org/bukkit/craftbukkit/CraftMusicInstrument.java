@@ -1,115 +1,97 @@
 package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
-
 import io.papermc.paper.adventure.PaperAdventure;
+import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.util.Holderable;
 import net.kyori.adventure.text.Component;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Instrument;
 import org.bukkit.MusicInstrument;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.Sound;
-import org.bukkit.craftbukkit.util.Handleable;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftMusicInstrument extends MusicInstrument implements Handleable<Instrument> {
-
-    public static MusicInstrument minecraftToBukkit(Instrument minecraft) {
-        return CraftRegistry.minecraftToBukkit(minecraft, Registries.INSTRUMENT);
-    }
+public class CraftMusicInstrument extends MusicInstrument implements io.papermc.paper.util.Holderable<Instrument> {
 
     public static MusicInstrument minecraftHolderToBukkit(Holder<Instrument> minecraft) {
-        return CraftMusicInstrument.minecraftToBukkit(minecraft.value());
-    }
-
-    public static Instrument bukkitToMinecraft(MusicInstrument bukkit) {
-        return CraftRegistry.bukkitToMinecraft(bukkit);
+        return CraftRegistry.minecraftHolderToBukkit(minecraft, Registries.INSTRUMENT); // Paper - switch to Holder
     }
 
     public static Holder<Instrument> bukkitToMinecraftHolder(MusicInstrument bukkit) {
-        Preconditions.checkArgument(bukkit != null);
-
-        net.minecraft.core.Registry<Instrument> registry = CraftRegistry.getMinecraftRegistry(Registries.INSTRUMENT);
-
-        if (registry.wrapAsHolder(CraftMusicInstrument.bukkitToMinecraft(bukkit)) instanceof Holder.Reference<Instrument> holder) {
-            return holder;
-        }
-
-        throw new IllegalArgumentException("No Reference holder found for " + bukkit
-                + ", this can happen if a plugin creates its own instrument without properly registering it.");
+        return CraftRegistry.bukkitToMinecraftHolder(bukkit);
     }
 
-    private final NamespacedKey key;
-    private final Instrument handle;
+    public static Object bukkitToString(MusicInstrument bukkit) {
+        Preconditions.checkArgument(bukkit != null);
 
-    public CraftMusicInstrument(NamespacedKey key, Instrument handle) {
-        this.key = key;
-        this.handle = handle;
+        return ((CraftMusicInstrument) bukkit).toBukkitSerializationObject(Instrument.DIRECT_CODEC);
+    }
+
+    public static MusicInstrument stringToBukkit(Object string) {
+        Preconditions.checkArgument(string != null);
+
+        return io.papermc.paper.util.Holderable.fromBukkitSerializationObject(string, Instrument.CODEC, RegistryKey.INSTRUMENT);
     }
 
     @Override
-    public Instrument getHandle() {
-        return this.handle;
+    public boolean equals(final Object o) {
+        return this.implEquals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.implHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return this.implToString();
+    }
+
+    private final Holder<Instrument> holder;
+
+    public CraftMusicInstrument(Holder<Instrument> holder) {
+        this.holder = holder;
+    }
+
+    @Override
+    public Holder<Instrument> getHolder() {
+        return this.holder;
+    }
+
+    @Override
+    public float getDuration() {
+        return this.getHandle().useDuration();
+    }
+
+    @Override
+    public float getRange() {
+        return this.getHandle().range();
+    }
+
+    @Override
+    public Component description() {
+        return PaperAdventure.asAdventure(this.getHandle().description());
+    }
+
+    @Override
+    public Sound getSound() {
+        return CraftSound.minecraftHolderToBukkit(this.getHandle().soundEvent());
     }
 
     @NotNull
     @Override
     public NamespacedKey getKey() {
-        return this.key;
-    }
-
-    @Override
-    public boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-
-        if (!(other instanceof CraftMusicInstrument)) {
-            return false;
-        }
-
-        return this.getKey().equals(((MusicInstrument) other).getKey());
-    }
-
-    @Override
-    public int hashCode() {
-        return this.getKey().hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return "CraftMusicInstrument{key=" + this.key + "}";
+        return Holderable.super.getKey();
     }
 
     @Override
     public @NotNull String translationKey() {
         if (!(this.getHandle().description().getContents() instanceof final net.minecraft.network.chat.contents.TranslatableContents translatableContents)) {
-            throw new UnsupportedOperationException("Description isn't translatable!"); // Paper
+            throw new UnsupportedOperationException("Description isn't translatable!");
         }
         return translatableContents.getKey();
     }
-
-	@Override
-	public float getDuration() {
-		return ((Instrument)this.getHandle()).useDuration();
-	}
-
-	@Override
-	public float getRange() {
-		return ((Instrument)this.getHandle()).range();
-	}
-
-	@Override
-	public Component description() {
-		return PaperAdventure.asAdventure(((Instrument)this.getHandle()).description());
-	}
-
-	@Override
-	public Sound getSound() {
-		return CraftSound.MUSIC_DISC_11;
-		// return CraftSound.minecraftHolderToBukkit(((Instrument)this.getHandle()).soundEvent());
-	}
-
 }

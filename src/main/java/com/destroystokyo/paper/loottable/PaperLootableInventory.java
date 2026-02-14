@@ -1,70 +1,82 @@
 package com.destroystokyo.paper.loottable;
 
-import org.cardboardpowered.interfaces.IMixinWorld;
-
 import java.util.UUID;
 import net.minecraft.world.level.Level;
-import org.bukkit.loot.Lootable;
+import org.bukkit.World;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.framework.qual.DefaultQualifier;
 
-public interface PaperLootableInventory
-extends LootableInventory,
-Lootable {
-    public PaperLootableInventoryData getLootableData();
+@DefaultQualifier(NonNull.class)
+public interface PaperLootableInventory extends PaperLootable, LootableInventory {
 
-    public LootableInventory getAPILootableInventory();
+    /* impl */
+    PaperLootableInventoryData lootableDataForAPI();
 
-    public Level getNMSWorld();
+    Level getNMSWorld();
 
-    default public org.bukkit.World getBukkitWorld() {
-        return ((IMixinWorld)this.getNMSWorld()).getCraftWorld();
+    default World getBukkitWorld() {
+        return ((LevelBridge)this.getNMSWorld()).cardboard$getWorld();
     }
 
-    default public boolean isRefillEnabled() {
-        return true; // this.getNMSWorld().paperConfig().lootables.autoReplenish;
+    /* LootableInventory */
+    @Override
+    default boolean isRefillEnabled() {
+        //return this.getNMSWorld().paperConfig().lootables.autoReplenish; // TODO
+        return false;
     }
 
-    default public boolean hasBeenFilled() {
-        return this.getLastFilled() != -1L;
+    @Override
+    default boolean hasBeenFilled() {
+        return this.getLastFilled() != -1;
     }
 
-    default public boolean hasPlayerLooted(UUID player) {
-        return this.getLootableData().hasPlayerLooted(player);
+    @Override
+    default boolean hasPlayerLooted(final UUID player) {
+        return this.lootableDataForAPI().hasPlayerLooted(player);
     }
 
-    default public boolean canPlayerLoot(UUID player) {
-        return this.getLootableData().canPlayerLoot(player, null);
+    @Override
+    default boolean canPlayerLoot(final UUID player) {
+        //return this.lootableDataForAPI().canPlayerLoot(player, this.getNMSWorld().paperConfig()); // TODO
+        return false;
     }
 
-    default public Long getLastLooted(UUID player) {
-        return this.getLootableData().getLastLooted(player);
+    @Override
+    default Long getLastLooted(final UUID player) {
+        return this.lootableDataForAPI().getLastLooted(player);
     }
 
-    default public boolean setHasPlayerLooted(UUID player, boolean looted) {
-        boolean hasLooted = this.hasPlayerLooted(player);
+    @Override
+    default boolean setHasPlayerLooted(final UUID player, final boolean looted) {
+        final boolean hasLooted = this.hasPlayerLooted(player);
         if (hasLooted != looted) {
-            this.getLootableData().setPlayerLootedState(player, looted);
+            this.lootableDataForAPI().setPlayerLootedState(player, looted);
         }
         return hasLooted;
     }
 
-    default public boolean hasPendingRefill() {
-        long nextRefill = this.getLootableData().getNextRefill();
-        return nextRefill != -1L && nextRefill > this.getLootableData().getLastFill();
+    @Override
+    default boolean hasPendingRefill() {
+        final long nextRefill = this.lootableDataForAPI().getNextRefill();
+        return nextRefill != -1 && nextRefill > this.lootableDataForAPI().getLastFill();
     }
 
-    default public long getLastFilled() {
-        return this.getLootableData().getLastFill();
+    @Override
+    default long getLastFilled() {
+        return this.lootableDataForAPI().getLastFill();
     }
 
-    default public long getNextRefill() {
-        return this.getLootableData().getNextRefill();
+    @Override
+    default long getNextRefill() {
+        return this.lootableDataForAPI().getNextRefill();
     }
 
-    default public long setNextRefill(long refillAt) {
-        if (refillAt < -1L) {
-            refillAt = -1L;
+    @Override
+    default long setNextRefill(long refillAt) {
+        if (refillAt < -1) {
+            refillAt = -1;
         }
-        return this.getLootableData().setNextRefill(refillAt);
+        return this.lootableDataForAPI().setNextRefill(refillAt);
     }
 }
-

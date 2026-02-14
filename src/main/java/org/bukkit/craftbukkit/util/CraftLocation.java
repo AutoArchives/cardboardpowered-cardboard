@@ -1,102 +1,78 @@
 package org.bukkit.craftbukkit.util;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.GlobalPos;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.Vec3i;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.craftbukkit.CraftServer;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 import org.cardboardpowered.impl.world.CraftWorld;
-
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
-import org.cardboardpowered.interfaces.IMixinWorld;
 
 public final class CraftLocation {
 
     private CraftLocation() {
     }
 
-    public static Location toBukkit(Vec3 vec3D) {
-        return toBukkit(vec3D, null);
+    public static Location toBukkit(Vec3 pos) {
+        return toBukkit(pos, (World) null);
     }
 
-    public static Location toBukkit(Vec3 vec3D, World world) {
-        return toBukkit(vec3D, world, 0.0F, 0.0F);
+    public static Location toBukkit(Vec3 pos, World world) {
+        return toBukkit(pos, world, 0.0F, 0.0F);
     }
 
-    public static Location toBukkit(Vec3 vec3D, World world, float yaw, float pitch) {
-        return new Location(world, vec3D.x(), vec3D.y(), vec3D.z(), yaw, pitch);
-    }
-    
-    public static Location toBukkit(Vec3 vec3D, net.minecraft.world.level.Level world, float yaw, float pitch) {
-        return new Location( ((IMixinWorld) world).getCraftWorld(), vec3D.x(), vec3D.y(), vec3D.z(), yaw, pitch);
+    public static Location toBukkit(Vec3 pos, World world, float yaw, float pitch) {
+        return new Location(world, pos.x(), pos.y(), pos.z(), yaw, pitch);
     }
 
-    public static Location toBukkit(BlockPos BlockPos) {
-        return toBukkit(BlockPos,  (World) null);
+    public static Location toBukkit(Vec3 pos, Level level) {
+        return toBukkit(pos, ((LevelBridge)level).cardboard$getWorld());
     }
 
-    public static Location toBukkit(BlockPos blockPosition, net.minecraft.world.level.Level world) {
-        return toBukkit(blockPosition, ((IMixinWorld) world).getCraftWorld(), 0.0F, 0.0F);
+    public static Location toBukkit(Vec3 pos, Level level, float yaw, float pitch) {
+        return toBukkit(pos, ((LevelBridge)level).cardboard$getWorld(), yaw, pitch);
     }
 
-    public static Location toBukkit(BlockPos BlockPos, World world) {
-        return toBukkit(BlockPos, world, 0.0F, 0.0F);
+    public static Location toBukkit(Vec3i pos) {
+        return toBukkit(pos, (World) null);
     }
 
-    public static Location toBukkit(BlockPos BlockPos, World world, float yaw, float pitch) {
-        return new Location(world, BlockPos.getX(), BlockPos.getY(), BlockPos.getZ(), yaw, pitch);
-    }
-    
-    public static Location toBukkit(BlockPos BlockPos, ServerLevel world, float yaw, float pitch) {
-        return new Location(((IMixinWorld) world).getCraftWorld(), BlockPos.getX(), BlockPos.getY(), BlockPos.getZ(), yaw, pitch);
+    public static Location toBukkit(Vec3i pos, World world) {
+        return toBukkit(pos, world, 0.0F, 0.0F);
     }
 
-    /*public static Location toBukkit(PositionImpl position) {
-        return toBukkit(position, null, 0.0F, 0.0F);
+    public static Location toBukkit(Vec3i pos, World world, float yaw, float pitch) {
+        return new Location(world, pos.getX(), pos.getY(), pos.getZ(), yaw, pitch);
     }
 
-    public static Location toBukkit(PositionImpl position, World world) {
-        return toBukkit(position, world, 0.0F, 0.0F);
+    public static Location toBukkit(Vec3i pos, Level level) {
+        return toBukkit(pos, ((LevelBridge)level).cardboard$getWorld());
     }
 
-    public static Location toBukkit(PositionImpl position, World world, float yaw, float pitch) {
-        return new Location(world, position.getX(), position.getY(), position.getZ(), yaw, pitch);
-    }*/
-
-    public static BlockPos toBlockPosition(Location location) {
-        return new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+    public static Location toBukkit(Vec3i pos, Level level, float yaw, float pitch) {
+        return toBukkit(pos, ((LevelBridge)level).cardboard$getWorld(), yaw, pitch);
     }
 
-   // public static PositionImpl toPosition(Location location) {
-    //    return new PositionImpl(location.getX(), location.getY(), location.getZ());
-    //}
-    
-    // public static PositionImpl toPosition(Location location) {
-    //    return new PositionImpl(location.getX(), location.getY(), location.getZ());
-    //}
-    
-    public static GlobalPos toGlobalPos(Location location) {
-        return GlobalPos.of(((CraftWorld)location.getWorld()).getHandle().dimension(), CraftLocation.toBlockPosition(location));
+    public static Location toBukkit(Node point, Level level) {
+        return new Location(((LevelBridge)level).cardboard$getWorld(), point.x, point.y, point.z);
     }
 
-    public static Location fromGlobalPos(GlobalPos globalPos) {
-        BlockPos pos = globalPos.pos();
-        return new Location((World)IMixinMinecraftServer.getServer().getLevel(globalPos.dimension()).getWorld(), (double)pos.getX(), (double)pos.getY(), (double)pos.getZ());
+    public static BlockPos toBlockPosition(Location loc) {
+        return new BlockPos(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
     }
 
-
-    public static Vec3 toVec3D(Location location) {
-        return new Vec3(location.getX(), location.getY(), location.getZ());
+    public static net.minecraft.core.GlobalPos toGlobalPos(Location loc) {
+        return net.minecraft.core.GlobalPos.of(((CraftWorld) loc.getWorld()).getHandle().dimension(), toBlockPosition(loc));
     }
 
-	public static Vec3 toVec3(Location loc) {
-		return toVec3D(loc);
-	}
+    public static Location fromGlobalPos(net.minecraft.core.GlobalPos globalPos) {
+        return CraftLocation.toBukkit(globalPos.pos(), CraftServer.INSTANCE.getServer().getLevel(globalPos.dimension()));
+    }
 
-	public static Location toBukkit(Node node, net.minecraft.world.level.Level world) {
-		return new Location(((IMixinWorld) world).getCraftWorld(), node.x, node.y, node.z);
-	}
-
+    public static Vec3 toVec3(Location loc) {
+        return new Vec3(loc.getX(), loc.getY(), loc.getZ());
+    }
 }

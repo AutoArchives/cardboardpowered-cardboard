@@ -1,94 +1,29 @@
 package org.bukkit.craftbukkit.block.banner;
 
-import com.google.common.base.Preconditions;
-import java.util.Locale;
+import io.papermc.paper.util.OldEnumHolderable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BannerPattern;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.craftbukkit.CraftRegistry;
-import org.bukkit.craftbukkit.util.CraftNamespacedKey;
-import org.bukkit.craftbukkit.util.Handleable;
-import org.jetbrains.annotations.Nullable;
 
-public class CraftPatternType implements PatternType, Handleable<BannerPattern> {
+public class CraftPatternType extends OldEnumHolderable<PatternType, BannerPattern> implements PatternType {
+
     private static int count = 0;
-    private final NamespacedKey key;
-    private final BannerPattern bannerPatternType;
-    private final String name;
-    private final int ordinal;
-
-    public static PatternType minecraftToBukkit(BannerPattern minecraft) {
-        return (PatternType)CraftRegistry.minecraftToBukkit(minecraft, Registries.BANNER_PATTERN);
-    }
 
     public static PatternType minecraftHolderToBukkit(Holder<BannerPattern> minecraft) {
-        return CraftPatternType.minecraftToBukkit(minecraft.value());
-    }
-
-    public static BannerPattern bukkitToMinecraft(PatternType bukkit) {
-        return (BannerPattern)CraftRegistry.bukkitToMinecraft(bukkit);
+        return CraftRegistry.minecraftHolderToBukkit(minecraft, Registries.BANNER_PATTERN);
     }
 
     public static Holder<BannerPattern> bukkitToMinecraftHolder(PatternType bukkit) {
-        Preconditions.checkArgument((bukkit != null ? 1 : 0) != 0);
-        net.minecraft.core.Registry registry = CraftRegistry.getMinecraftRegistry(Registries.BANNER_PATTERN);
-        Holder<BannerPattern> registryEntry = registry.wrapAsHolder(CraftPatternType.bukkitToMinecraft(bukkit));
-        if (registryEntry instanceof Holder.Reference) {
-            Holder.Reference holder = (Holder.Reference)registryEntry;
-            return holder;
-        }
-        throw new IllegalArgumentException("No Reference holder found for " + String.valueOf(bukkit) + ", this can happen if a plugin creates its own banner pattern without properly registering it.");
+        return CraftRegistry.bukkitToMinecraftHolder(bukkit);
     }
 
-    public CraftPatternType(NamespacedKey key, BannerPattern bannerPatternType) {
-        this.key = key;
-        this.bannerPatternType = bannerPatternType;
-        this.name = "minecraft".equals(key.getNamespace()) ? key.getKey().toUpperCase(Locale.ROOT) : key.toString();
-        this.ordinal = count++;
+    public CraftPatternType(Holder<BannerPattern> bannerPatternType) {
+        super(bannerPatternType, count++);
     }
 
     @Override
-    public BannerPattern getHandle() {
-        return this.bannerPatternType;
-    }
-
-    public NamespacedKey getKey() {
-        return this.key;
-    }
-
-    public int compareTo(PatternType patternType) {
-        return this.ordinal - patternType.ordinal();
-    }
-
-    public String name() {
-        return this.name;
-    }
-
-    public int ordinal() {
-        return this.ordinal;
-    }
-
-    public String toString() {
-        return this.name();
-    }
-
-    public boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-        if (!(other instanceof CraftPatternType)) {
-            return false;
-        }
-        return this.getKey().equals((Object)((PatternType)other).getKey());
-    }
-
-    public int hashCode() {
-        return this.getKey().hashCode();
-    }
-
     public String getIdentifier() {
         return switch (this.name()) {
             case "BASE" -> "b";
@@ -137,5 +72,4 @@ public class CraftPatternType implements PatternType, Handleable<BannerPattern> 
             default -> this.getKey().toString();
         };
     }
-
 }

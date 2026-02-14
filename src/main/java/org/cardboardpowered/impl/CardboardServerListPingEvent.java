@@ -1,16 +1,14 @@
 package org.cardboardpowered.impl;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Iterator;
 
-import org.bukkit.Server;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.server.ServerListPingEvent;
 import org.cardboardpowered.impl.util.IconCacheImpl;
 
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import net.minecraft.network.Connection;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -64,7 +62,7 @@ public class CardboardServerListPingEvent extends ServerListPingEvent {
                 final ServerPlayer player = this.player;
                 this.player = null;
                 this.ret = this.i - 1;
-                return (Player) ((IMixinServerEntityPlayer)player).getBukkitEntity();
+                return (Player) ((ServerPlayerBridge)player).getBukkitEntity();
             }
 
             @Override

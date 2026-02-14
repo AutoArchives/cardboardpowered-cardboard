@@ -8,12 +8,11 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftServer;
-import org.cardboardpowered.impl.entity.CraftPlayer;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 
-import org.cardboardpowered.impl.world.CraftWorld;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 public final class MapViewImpl implements MapView {
 
@@ -60,7 +59,7 @@ public final class MapViewImpl implements MapView {
     public World getWorld() {
         ResourceKey<net.minecraft.world.level.Level> dimension = worldMap.dimension;
         ServerLevel world = CraftServer.server.getLevel(dimension);
-        return (world == null) ? null : ((IMixinWorld)world).getCraftWorld();
+        return (world == null) ? null : ((LevelBridge)world).cardboard$getWorld();
     }
 
     @Override

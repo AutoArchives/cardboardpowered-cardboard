@@ -5,45 +5,40 @@ import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.papermc.paper.adventure.AdventureCodecs;
-import io.papermc.paper.adventure.AdventureCodecs.ClickEventType;
 import io.papermc.paper.dialog.PaperDialog;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.data.dialog.action.DialogAction;
-import io.papermc.paper.registry.data.dialog.action.DialogAction.StaticAction;
 import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.body.ItemDialogBody;
 import io.papermc.paper.registry.data.dialog.body.PlainMessageDialogBody;
-import io.papermc.paper.registry.data.dialog.input.BooleanDialogInput;
-import io.papermc.paper.registry.data.dialog.input.DialogInput;
-import io.papermc.paper.registry.data.dialog.input.NumberRangeDialogInput;
-import io.papermc.paper.registry.data.dialog.input.SingleOptionDialogInput;
-import io.papermc.paper.registry.data.dialog.input.TextDialogInput;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import net.minecraft.util.Util;
+import io.papermc.paper.registry.data.dialog.input.*;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.dialog.CommonButtonData;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.dialog.action.ParsedTemplate;
 import net.minecraft.server.dialog.body.PlainMessage;
 import net.minecraft.server.dialog.input.TextInput;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.ItemStack;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static io.papermc.paper.util.PaperCodecs.registryFileDecoderFor;
 
 public final class PaperDialogCodecs {
 
 	public static final String Identifier_PAPER_NAMESPACE = "paper"; // Paper
-	
+
     private PaperDialogCodecs() {
     }
 
@@ -56,7 +51,7 @@ public final class PaperDialogCodecs {
         instance.group(AdventureCodecs.KEY_CODEC.fieldOf("id").forGetter(DialogAction.CustomClickAction::id), AdventureCodecs.BINARY_TAG_HOLDER_COMPOUND_CODEC.optionalFieldOf("additions").forGetter(action -> Optional.ofNullable(action.additions())))
             .apply(instance, (key, binaryTagHolder) -> DialogAction.customClick(key, binaryTagHolder.orElse(null)))
     );
-    private static final Map<ClickEventType, MapCodec<StaticAction>> STATIC_ACTION_CODECS = Arrays.stream(AdventureCodecs.CLICK_EVENT_TYPES.get()).collect(Collectors.toMap(Function.identity(), type -> type.codec().xmap(DialogAction::staticAction, DialogAction.StaticAction::value)));
+    private static final Map<AdventureCodecs.ClickEventType, MapCodec<DialogAction.StaticAction>> STATIC_ACTION_CODECS = Arrays.stream(AdventureCodecs.CLICK_EVENT_TYPES.get()).collect(Collectors.toMap(Function.identity(), type -> type.codec().xmap(DialogAction::staticAction, DialogAction.StaticAction::value)));
     private static final Registry<MapCodec<? extends DialogAction>> DIALOG_ACTION_TYPES = Util.make(() -> {
         final MappedRegistry<MapCodec<? extends DialogAction>> registry = new MappedRegistry<>(ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(Identifier_PAPER_NAMESPACE, "dialog_action_type")), Lifecycle.experimental());
         STATIC_ACTION_CODECS.forEach((clickType, actionCodec) -> {

@@ -1,42 +1,41 @@
 package com.destroystokyo.paper.loottable;
 
-import com.destroystokyo.paper.loottable.LootableInventoryReplenishEvent;
-import com.destroystokyo.paper.loottable.PaperLootableInventory;
-import com.mojang.datafixers.kinds.App;
-import com.mojang.datafixers.kinds.Applicative;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-
-import org.cardboardpowered.CardboardMod;
-import org.cardboardpowered.interfaces.IMixinEntity;
-
-//import io.papermc.paper.configuration.WorldConfiguration;
+import io.papermc.paper.configuration.WorldConfiguration;
 //import io.papermc.paper.configuration.type.DurationOrDisabled;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.world.RandomizableContainer;
+import net.minecraft.world.entity.vehicle.ContainerEntity;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.bukkit.entity.Player;
-import org.bukkit.loot.LootTable;
+import org.cardboardpowered.CardboardMod;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.DefaultQualifier;
 
+@DefaultQualifier(NonNull.class)
 public class PaperLootableInventoryData {
+
     private static final Random RANDOM = new Random();
-    private long lastFill = -1L;
-    private long nextRefill = -1L;
+
+    private long lastFill = -1;
+    private long nextRefill = -1;
     private int numRefills = 0;
-    private Map<UUID, Long> lootedPlayers;
-    private final PaperLootableInventory lootable;
+    private @Nullable Map<UUID, Long> lootedPlayers;
 
-    public PaperLootableInventoryData(PaperLootableInventory lootable) {
-        this.lootable = lootable;
-    }
-
-    long getLastFill() {
+    public long getLastFill() {
         return this.lastFill;
     }
 
@@ -44,173 +43,177 @@ public class PaperLootableInventoryData {
         return this.nextRefill;
     }
 
-    long setNextRefill(long nextRefill) {
-        long prev = this.nextRefill;
+    long setNextRefill(final long nextRefill) {
+        final long prev = this.nextRefill;
         this.nextRefill = nextRefill;
         return prev;
     }
 
-    public boolean shouldReplenish(@Nullable net.minecraft.world.entity.player.Player player) {
-        LootTable table = this.lootable.getLootTable();
-        if (table == null) {
+    public <T> boolean shouldReplenish(final T lootTableHolder, final LootTableInterface<T> holderInterface, final net.minecraft.world.entity.player.@Nullable Player player) {
+
+        // No Loot Table associated
+        if (!holderInterface.hasLootTable(lootTableHolder)) {
             return false;
         }
-        if (this.lastFill == -1L) {
-        	//|| !this.lootable.getNMSWorld().paperConfig().lootables.autoReplenish) {
+
+        // ALWAYS process the first fill or if the feature is disabled
+        if (this.lastFill == -1 || !holderInterface.paperConfig(lootTableHolder).lootables.autoReplenish) {
             return true;
         }
+
+        // Only process refills when a player is set
         if (player == null) {
             return false;
         }
-        if (this.nextRefill == -1L) {
+
+        // Chest is not scheduled for refill
+        if (this.nextRefill == -1) {
             return false;
         }
-        // WorldConfiguration paperConfig = this.lootable.getNMSWorld().paperConfig();
-        //if (paperConfig.lootables.maxRefills != -1 && this.numRefills >= paperConfig.lootables.maxRefills) {
-        //    return false;
-        //}
+
+        final WorldConfiguration paperConfig = holderInterface.paperConfig(lootTableHolder);
+
+        // Check if max refills has been hit
+        if (paperConfig.lootables.maxRefills != -1 && this.numRefills >= paperConfig.lootables.maxRefills) {
+            return false;
+        }
+
+        // Refill has not been reached
         if (this.nextRefill > System.currentTimeMillis()) {
             return false;
         }
 
-        Player bukkitPlayer = (Player)((IMixinEntity) player).getBukkitEntity();
-        LootableInventoryReplenishEvent event = new LootableInventoryReplenishEvent(bukkitPlayer, this.lootable.getAPILootableInventory());
-        event.setCancelled(!this.canPlayerLoot(player.getUUID(), null));
+
+        final Player bukkitPlayer = (Player) ((EntityBridge)player).getBukkitEntity();
+        final LootableInventoryReplenishEvent event = new LootableInventoryReplenishEvent(bukkitPlayer, holderInterface.getInventoryForEvent(lootTableHolder));
+        event.setCancelled(!this.canPlayerLoot(player.getUUID(), paperConfig));
         return event.callEvent();
     }
 
-    public void processRefill(@Nullable net.minecraft.world.entity.player.Player player) {
+    public interface LootTableInterface<T> {
+
+        WorldConfiguration paperConfig(T holder);
+
+        void setSeed(T holder, long seed);
+
+        boolean hasLootTable(T holder);
+
+        LootableInventory getInventoryForEvent(T holder);
+    }
+
+    public static final LootTableInterface<RandomizableContainer> CONTAINER = new LootTableInterface<>() {
+        @Override
+        public WorldConfiguration paperConfig(final RandomizableContainer holder) {
+            //return Objects.requireNonNull(holder.getLevel(), "Can only manager loot replenishment on block entities in a world").paperConfig();
+            return null;
+        }
+
+        @Override
+        public void setSeed(final RandomizableContainer holder, final long seed) {
+            holder.setLootTableSeed(seed);
+        }
+
+        @Override
+        public boolean hasLootTable(final RandomizableContainer holder) {
+            return holder.getLootTable() != null;
+        }
+
+        @Override
+        public LootableInventory getInventoryForEvent(final RandomizableContainer holder) {
+            //return holder.getLootableInventory(); // TODO
+            return null;
+        }
+    };
+
+    public static final LootTableInterface<ContainerEntity> ENTITY = new LootTableInterface<>() {
+        @Override
+        public WorldConfiguration paperConfig(final ContainerEntity holder) {
+            //return holder.level().paperConfig();
+            return null;
+        }
+
+        @Override
+        public void setSeed(final ContainerEntity holder, final long seed) {
+            holder.setContainerLootTableSeed(seed);
+        }
+
+        @Override
+        public boolean hasLootTable(final ContainerEntity holder) {
+            return holder.getContainerLootTable() != null;
+        }
+
+        @Override
+        public LootableInventory getInventoryForEvent(final ContainerEntity holder) {
+            //return holder.getLootableInventory(); // TODO
+            return null;
+        }
+    };
+
+    public <T> boolean shouldClearLootTable(final T lootTableHolder, final LootTableInterface<T> holderInterface, final net.minecraft.world.entity.player.@Nullable Player player) {
         this.lastFill = System.currentTimeMillis();
         CardboardMod.LOGGER.info("processRefil: TODO stub");
-        
-        //WorldConfiguration paperConfig = this.lootable.getNMSWorld().paperConfig();
-        /*if (paperConfig.lootables.autoReplenish) {
-            long min = paperConfig.lootables.refreshMin.seconds();
-            long max = paperConfig.lootables.refreshMax.seconds();
-            this.nextRefill = this.lastFill + (min + RANDOM.nextLong(max - min + 1L)) * 1000L;
-            ++this.numRefills;
+        /*final WorldConfiguration paperConfig = holderInterface.paperConfig(lootTableHolder);
+        if (paperConfig.lootables.autoReplenish) {
+            final long min = paperConfig.lootables.refreshMin.seconds();
+            final long max = paperConfig.lootables.refreshMax.seconds();
+            this.nextRefill = this.lastFill + (min + RANDOM.nextLong(max - min + 1)) * 1000L;
+            this.numRefills++;
             if (paperConfig.lootables.resetSeedOnFill) {
-                this.lootable.setSeed(0L);
+                holderInterface.setSeed(lootTableHolder, 0);
             }
-            if (player != null) {
-                this.setPlayerLootedState(player.getUuid(), true);
+            if (player != null) { // This means that numRefills can be incremented without a player being in the lootedPlayers list - Seems to be EntityMinecartChest specific
+                this.setPlayerLootedState(player.getUUID(), true);
             }
-        } else {
-            this.lootable.clearLootTable();
+            return false;
         }
-        */
+        return true;*/
+        return false;
     }
-    
+
     private static final String ROOT = "Paper.LootableData";
     private static final String LAST_FILL = "lastFill";
     private static final String NEXT_REFILL = "nextRefill";
     private static final String NUM_REFILLS = "numRefills";
     private static final String LOOTED_PLAYERS = "lootedPlayers";
-    
-    public void loadNbt(ValueInput input) {
-        ValueInput data = input.childOrEmpty(ROOT);
-        this.lastFill = data.getLongOr(LAST_FILL, -1L);
-        this.nextRefill = data.getLongOr(NEXT_REFILL, -1L);
+
+    public void loadNbt(final ValueInput input) {
+        final ValueInput data = input.childOrEmpty(ROOT);
+        this.lastFill = data.getLongOr(LAST_FILL, -1);
+        this.nextRefill = data.getLongOr(NEXT_REFILL, -1);
         this.numRefills = data.getIntOr(NUM_REFILLS, 0);
-        ValueInput.TypedInputList<SerializedLootedPlayerEntry> list = data.listOrEmpty(LOOTED_PLAYERS, SerializedLootedPlayerEntry.CODEC);
+        final ValueInput.TypedInputList<SerializedLootedPlayerEntry> list = data.listOrEmpty(LOOTED_PLAYERS, SerializedLootedPlayerEntry.CODEC);
         if (!list.isEmpty()) {
-            this.lootedPlayers = new HashMap<UUID, Long>();
-            list.forEach(serializedLootedPlayerEntry -> this.lootedPlayers.put(serializedLootedPlayerEntry.uuid, serializedLootedPlayerEntry.time));
+            this.lootedPlayers = new HashMap<>();
+            list.forEach(serializedLootedPlayerEntry -> lootedPlayers.put(serializedLootedPlayerEntry.uuid, serializedLootedPlayerEntry.time));
         }
-    }
-    
-    record SerializedLootedPlayerEntry(UUID uuid, long time) {
-        public static final Codec<SerializedLootedPlayerEntry> CODEC =
-        		RecordCodecBuilder.create(instance -> 
-        			instance.group(
-        					UUIDUtil.CODEC.fieldOf("UUID").forGetter(SerializedLootedPlayerEntry::uuid),
-        					Codec.LONG.optionalFieldOf("Time", 0L).forGetter(SerializedLootedPlayerEntry::time)
-        			)
-        			.apply(instance, SerializedLootedPlayerEntry::new));
     }
 
-    /*
-    public void loadNbt(NbtCompound base) {
-        if (!base.contains("Paper.LootableData", 10)) {
-            return;
-        }
-        NbtCompound comp = base.getCompound("Paper.LootableData");
-        if (comp.contains("lastFill")) {
-            this.lastFill = comp.getLong("lastFill");
-        }
-        if (comp.contains("nextRefill")) {
-            this.nextRefill = comp.getLong("nextRefill");
-        }
-        if (comp.contains("numRefills")) {
-            this.numRefills = comp.getInt("numRefills");
-        }
-        if (comp.contains("lootedPlayers", 9)) {
-            NbtList list = comp.getList("lootedPlayers", 10);
-            int size = list.size();
-            if (size > 0) {
-                this.lootedPlayers = new HashMap<UUID, Long>(list.size());
-            }
-            for (int i2 = 0; i2 < size; ++i2) {
-                NbtCompound cmp = list.getCompound(i2);
-                this.lootedPlayers.put(cmp.getUuid("UUID"), cmp.getLong("Time"));
-            }
-        }
-    }
-    */
-    
-    public void saveNbt(ValueOutput output) {
-        ValueOutput data = output.child(ROOT);
-        if (this.nextRefill != -1L) {
+    public void saveNbt(final ValueOutput output) {
+        final ValueOutput data = output.child(ROOT);
+        if (this.nextRefill != -1) {
             data.putLong(NEXT_REFILL, this.nextRefill);
         }
-        if (this.lastFill != -1L) {
+        if (this.lastFill != -1) {
             data.putLong(LAST_FILL, this.lastFill);
         }
         if (this.numRefills != 0) {
             data.putInt(NUM_REFILLS, this.numRefills);
         }
         if (this.lootedPlayers != null && !this.lootedPlayers.isEmpty()) {
-            ValueOutput.TypedOutputList<SerializedLootedPlayerEntry> list = data.list(LOOTED_PLAYERS, SerializedLootedPlayerEntry.CODEC);
-            for (Map.Entry<UUID, Long> entry : this.lootedPlayers.entrySet()) {
+            final ValueOutput.TypedOutputList<SerializedLootedPlayerEntry> list = data.list(LOOTED_PLAYERS, SerializedLootedPlayerEntry.CODEC);
+            for (final Map.Entry<UUID, Long> entry : this.lootedPlayers.entrySet()) {
                 list.add(new SerializedLootedPlayerEntry(entry.getKey(), entry.getValue()));
             }
         }
+
         if (data.isEmpty()) {
             output.discard(ROOT);
         }
     }
 
-    /*
-    public void saveNbt(NbtCompound base) {
-        NbtCompound comp = new NbtCompound();
-        if (this.nextRefill != -1L) {
-            comp.putLong("nextRefill", this.nextRefill);
-        }
-        if (this.lastFill != -1L) {
-            comp.putLong("lastFill", this.lastFill);
-        }
-        if (this.numRefills != 0) {
-            comp.putInt("numRefills", this.numRefills);
-        }
-        if (this.lootedPlayers != null && !this.lootedPlayers.isEmpty()) {
-            NbtList list = new NbtList();
-            for (Map.Entry<UUID, Long> entry : this.lootedPlayers.entrySet()) {
-                NbtCompound cmp = new NbtCompound();
-                cmp.putUuid("UUID", entry.getKey());
-                cmp.putLong("Time", entry.getValue());
-                list.add(cmp);
-            }
-            comp.put("lootedPlayers", list);
-        }
-        if (!comp.isEmpty()) {
-            base.put("Paper.LootableData", comp);
-        }
-    }
-    */
-
-    void setPlayerLootedState(UUID player, boolean looted) {
+    void setPlayerLootedState(final UUID player, final boolean looted) {
         if (looted && this.lootedPlayers == null) {
-            this.lootedPlayers = new HashMap<UUID, Long>();
+            this.lootedPlayers = new HashMap<>();
         }
         if (looted) {
             this.lootedPlayers.put(player, System.currentTimeMillis());
@@ -219,29 +222,34 @@ public class PaperLootableInventoryData {
         }
     }
 
-    boolean canPlayerLoot(UUID player, Object worldConfiguration) {
-        Long lastLooted = this.getLastLooted(player);
-        if ( lastLooted == null) {
-        	return true;
-        }
-        
-        //if (!worldConfiguration.lootables.restrictPlayerReloot || lastLooted == null) {
-        //    return true;
-       // }
-       // DurationOrDisabled restrictPlayerRelootTime = worldConfiguration.lootables.restrictPlayerRelootTime;
-       // if (restrictPlayerRelootTime.value().isEmpty()) {
-       //     return false;
-       // }
+    boolean canPlayerLoot(final UUID player, final WorldConfiguration worldConfiguration) {
+        /*final @Nullable Long lastLooted = this.getLastLooted(player);
+        if (!worldConfiguration.lootables.restrictPlayerReloot || lastLooted == null) return true;
+
+        final DurationOrDisabled restrictPlayerRelootTime = worldConfiguration.lootables.restrictPlayerRelootTime;
+        if (restrictPlayerRelootTime.value().isEmpty()) return false;
+
+        return TimeUnit.SECONDS.toMillis(restrictPlayerRelootTime.value().get().seconds()) + lastLooted < System.currentTimeMillis();
+        */
+
         return true;
-       // return TimeUnit.SECONDS.toMillis(restrictPlayerRelootTime.value().get().seconds()) + lastLooted < System.currentTimeMillis();
     }
 
-    boolean hasPlayerLooted(UUID player) {
+    boolean hasPlayerLooted(final UUID player) {
         return this.lootedPlayers != null && this.lootedPlayers.containsKey(player);
     }
 
-    Long getLastLooted(UUID player) {
+    @Nullable Long getLastLooted(final UUID player) {
         return this.lootedPlayers != null ? this.lootedPlayers.get(player) : null;
     }
-}
 
+    record SerializedLootedPlayerEntry(UUID uuid, long time) {
+        public static final Codec<SerializedLootedPlayerEntry> CODEC = RecordCodecBuilder.create(
+                instance -> instance.group(
+                                UUIDUtil.CODEC.fieldOf("UUID").forGetter(SerializedLootedPlayerEntry::uuid),
+                                Codec.LONG.optionalFieldOf("Time", 0L).forGetter(SerializedLootedPlayerEntry::time)
+                        )
+                        .apply(instance, SerializedLootedPlayerEntry::new)
+        );
+    }
+}

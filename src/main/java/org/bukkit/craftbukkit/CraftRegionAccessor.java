@@ -3,8 +3,7 @@ package org.bukkit.craftbukkit;
 import com.google.common.base.Preconditions;
 
 import org.cardboardpowered.TeleportTargetExtra;
-import org.cardboardpowered.interfaces.IMixinEntity;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.world.entity.EntityBridge;
 
 // import io.papermc.paper.block.fluid.FluidData;
 // import io.papermc.paper.block.fluid.PaperFluidData;
@@ -13,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
@@ -43,11 +41,9 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.RegionAccessor;
 import org.bukkit.TreeType;
-import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.CraftHeightMap;
 import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.block.CraftBlock; 
 import org.bukkit.craftbukkit.block.CraftBlockType;
@@ -55,7 +51,6 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftEntityTypes;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.util.BlockStateListPopulator;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.craftbukkit.util.RandomSourceWrapper;
@@ -150,11 +145,13 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
         this.setBlockData(location.getBlockX(), location.getBlockY(), location.getBlockZ(), blockData);
     }
 
+    @Override
     public void setBlockData(int x, int y, int z, BlockData blockData) {
         WorldGenLevel world = this.getHandle();
         BlockPos pos = new BlockPos(x, y, z);
         net.minecraft.world.level.block.state.BlockState old = this.getHandle().getBlockState(pos);
-        CraftBlock.setTypeAndData((ServerLevel) world, pos, old, ((CraftBlockData)blockData).getState(), true);
+
+        CraftBlock.setBlockState(world, pos, old, ((CraftBlockData) blockData).getState(), true);
     }
 
     public void setType(Location location, Material material) {
@@ -324,7 +321,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
     public List<org.bukkit.entity.Entity> getEntities() {
         ArrayList<org.bukkit.entity.Entity> list = new ArrayList<org.bukkit.entity.Entity>();
         this.getNMSEntities().forEach(entity -> {
-            CraftEntity bukkitEntity = ((IMixinEntity)entity).getBukkitEntity();
+            CraftEntity bukkitEntity = ((EntityBridge)entity).getBukkitEntity();
             if (bukkitEntity != null && (!this.isNormalWorld() || bukkitEntity.isValid())) {
                 list.add(bukkitEntity);
             }
@@ -335,7 +332,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
     public List<LivingEntity> getLivingEntities() {
         ArrayList<LivingEntity> list = new ArrayList<LivingEntity>();
         this.getNMSEntities().forEach(entity -> {
-            CraftEntity bukkitEntity = ((IMixinEntity)entity).getBukkitEntity();
+            CraftEntity bukkitEntity = ((EntityBridge)entity).getBukkitEntity();
             if (bukkitEntity != null && bukkitEntity instanceof LivingEntity && (!this.isNormalWorld() || bukkitEntity.isValid())) {
                 list.add((LivingEntity)bukkitEntity);
             }
@@ -346,7 +343,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
     public <T extends org.bukkit.entity.Entity> Collection<T> getEntitiesByClass(Class<T> clazz) {
         ArrayList list = new ArrayList();
         this.getNMSEntities().forEach(entity -> {
-            CraftEntity bukkitEntity = ((IMixinEntity)entity).getBukkitEntity();
+            CraftEntity bukkitEntity = ((EntityBridge)entity).getBukkitEntity();
             if (bukkitEntity == null) {
                 return;
             }
@@ -361,7 +358,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
     public Collection<org.bukkit.entity.Entity> getEntitiesByClasses(Class<?> ... classes) {
         ArrayList<org.bukkit.entity.Entity> list = new ArrayList<org.bukkit.entity.Entity>();
         this.getNMSEntities().forEach(entity -> {
-            CraftEntity bukkitEntity = ((IMixinEntity)entity).getBukkitEntity();
+            CraftEntity bukkitEntity = ((EntityBridge)entity).getBukkitEntity();
             if (bukkitEntity == null) {
                 return;
             }
@@ -384,7 +381,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
             // TODO
         	// entity.generation = true;
         }
-        return (T)((IMixinEntity)entity).getBukkitEntity();
+        return (T)((EntityBridge)entity).getBukkitEntity();
     }
 
     public <T extends org.bukkit.entity.Entity> T spawn(Location location, Class<T> clazz) throws IllegalArgumentException {
@@ -416,7 +413,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
         	// nmsEntity = nmsEntity.teleportTo(this.getHandle().toServerWorld());
         }
         this.addEntityWithPassengers(nmsEntity, CreatureSpawnEvent.SpawnReason.CUSTOM);
-        return (T)((IMixinEntity)nmsEntity).getBukkitEntity();
+        return (T)((EntityBridge)nmsEntity).getBukkitEntity();
     }
 
     public <T extends org.bukkit.entity.Entity> T addEntity(Entity entity, CreatureSpawnEvent.SpawnReason reason) throws IllegalArgumentException {
@@ -432,10 +429,10 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
             // TODO entity.generation = true;
         }
         if (function != null) {
-            function.accept((T) ((IMixinEntity)entity).getBukkitEntity());
+            function.accept((T) ((EntityBridge)entity).getBukkitEntity());
         }
         this.addEntityToWorld(entity, reason);
-        return (T)((IMixinEntity)entity).getBukkitEntity();
+        return (T)((EntityBridge)entity).getBukkitEntity();
     }
 
     public abstract void addEntityToWorld(Entity var1, CreatureSpawnEvent.SpawnReason var2);
@@ -474,7 +471,7 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
             clazz = ThrownPotion.class;
         } else if (clazz == TippedArrow.class) {
             clazz = Arrow.class;
-            runOld = other -> ((Arrow)((IMixinEntity)other).getBukkitEntity()).setBasePotionType(PotionType.WATER);
+            runOld = other -> ((Arrow)((EntityBridge)other).getBukkitEntity()).setBasePotionType(PotionType.WATER);
         }
         CraftEntityTypes.EntityTypeData entityTypeData = CraftEntityTypes.getEntityTypeData(clazz);
         if (entityTypeData == null || entityTypeData.spawnFunction() == null) {

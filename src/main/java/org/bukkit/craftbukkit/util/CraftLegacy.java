@@ -4,6 +4,9 @@ import java.util.Arrays;
 import org.bukkit.Material;
 import org.bukkit.material.MaterialData;
 
+/**
+ * @deprecated legacy use only
+ */
 @Deprecated
 public final class CraftLegacy {
 
@@ -11,12 +14,15 @@ public final class CraftLegacy {
     }
 
     public static Material fromLegacy(Material material) {
-        if (material == null || !material.isLegacy()) return material;
-        return CraftLegacyMaterials.fromLegacy(material);
+        if (material == null || !material.isLegacy()) {
+            return material;
+        }
+
+        return org.bukkit.craftbukkit.legacy.CraftLegacy.fromLegacy(material);
     }
 
     public static Material fromLegacy(MaterialData materialData) {
-        return CraftLegacyMaterials.fromLegacy(materialData);
+        return org.bukkit.craftbukkit.legacy.CraftLegacy.fromLegacy(materialData);
     }
 
     public static Material[] modern_values() {
@@ -25,8 +31,11 @@ public final class CraftLegacy {
     }
 
     public static int modern_ordinal(Material material) {
-        if (material.isLegacy()) throw new NoSuchFieldError("Legacy field ordinal: " + material); // SPIGOT-4002
+        if (material.isLegacy()) {
+            // SPIGOT-4002: Fix for eclipse compiler manually compiling in default statements to lookupswitch
+            throw new NoSuchFieldError("Legacy field ordinal: " + material);
+        }
+
         return material.ordinal();
     }
-
 }

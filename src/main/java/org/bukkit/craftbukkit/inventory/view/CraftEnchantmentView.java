@@ -13,7 +13,7 @@ import org.bukkit.enchantments.EnchantmentOffer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.EnchantingInventory;
 import org.bukkit.inventory.view.EnchantmentView;
-import org.cardboardpowered.impl.CardboardEnchantment;
+import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
 import org.jetbrains.annotations.NotNull;
 
 public class CraftEnchantmentView extends CraftInventoryView<EnchantmentMenu, EnchantingInventory> implements EnchantmentView {
@@ -47,7 +47,7 @@ public class CraftEnchantmentView extends CraftInventoryView<EnchantmentMenu, En
         for (int i = 0; i < 3; i++) {
             org.bukkit.enchantments.Enchantment enchantment =
             		(this.container().enchantClue[i] >= 0) ?
-            				CardboardEnchantment.minecraftHolderToBukkit(
+            				CraftEnchantment.minecraftHolderToBukkit(
             						registry.byId(this.container().enchantClue[i])
             				) : null;
             offers[i] = (enchantment != null) ?
@@ -74,7 +74,7 @@ public class CraftEnchantmentView extends CraftInventoryView<EnchantmentMenu, En
                 continue;
             }
 
-            this.container().enchantClue[i] = registry.getIdOrThrow(CardboardEnchantment.bukkitToMinecraftHolder(offer.getEnchantment()));
+            this.container().enchantClue[i] = registry.getIdOrThrow(CraftEnchantment.bukkitToMinecraftHolder(offer.getEnchantment()));
             this.container().levelClue[i] = offer.getEnchantmentLevel();
             this.container().costs[i] = offer.getCost();
         }

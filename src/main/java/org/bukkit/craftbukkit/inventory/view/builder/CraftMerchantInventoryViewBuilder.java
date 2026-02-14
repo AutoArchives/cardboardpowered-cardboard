@@ -1,22 +1,22 @@
 package org.bukkit.craftbukkit.inventory.view.builder;
 
 import com.google.common.base.Preconditions;
-import org.cardboardpowered.interfaces.IMixinScreenHandler;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
-
 import io.papermc.paper.adventure.PaperAdventure;
 import net.kyori.adventure.text.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.MerchantMenu;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.inventory.CraftMerchant;
-// import org.bukkit.craftbukkit.inventory.CraftMerchantCustom;
+import org.bukkit.craftbukkit.inventory.CraftMerchantCustom;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.view.builder.MerchantInventoryViewBuilder;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
+import org.cardboardpowered.bridge.world.inventory.AbstractContainerMenuBridge;
 import org.jspecify.annotations.Nullable;
 
 public class CraftMerchantInventoryViewBuilder<V extends InventoryView> extends CraftAbstractInventoryViewBuilder<V> implements MerchantInventoryViewBuilder<V> {
@@ -28,7 +28,7 @@ public class CraftMerchantInventoryViewBuilder<V extends InventoryView> extends 
     }
 
     @Override
-    public MerchantInventoryViewBuilder<V> title(final Component title) {
+    public MerchantInventoryViewBuilder<V> title(final @Nullable Component title) {
         return (MerchantInventoryViewBuilder<V>) super.title(title);
     }
 
@@ -47,30 +47,32 @@ public class CraftMerchantInventoryViewBuilder<V extends InventoryView> extends 
     @Override
     public V build(final HumanEntity player) {
         Preconditions.checkArgument(player != null, "The given player must not be null");
-        Preconditions.checkArgument(this.title != null, "The given title must not be null");
         Preconditions.checkArgument(player instanceof CraftHumanEntity, "The given player must be a CraftHumanEntity");
         final CraftHumanEntity craftHuman = (CraftHumanEntity) player;
-        Preconditions.checkArgument(craftHuman.getHandle() instanceof ServerPlayer, "The given player must be an EntityPlayer");
+        Preconditions.checkArgument(craftHuman.getHandle() instanceof ServerPlayer, "The given player must be an ServerPlayer");
         final ServerPlayer serverPlayer = (ServerPlayer) craftHuman.getHandle();
 
         final MerchantMenu container;
         if (this.merchant == null) {
-            // TODO
-        	return null;
-        	// container = new MerchantScreenHandler(serverPlayer.nextContainerCounter(), serverPlayer.getInventory(), new CraftMerchantCustom(title).getMerchant());
-        } else {
-            container = new MerchantMenu(((IMixinServerEntityPlayer)serverPlayer).nextContainerCounter(), serverPlayer.getInventory(), this.merchant);
+            this.merchant = this.title == null ? new CraftMerchantCustom().getMerchant() : new CraftMerchantCustom(title).getMerchant();
         }
-        
-        IMixinScreenHandler sh = (IMixinScreenHandler) container;
 
-        sh.setCheckReachable( super.checkReachable );
-        sh.setTitle( PaperAdventure.asVanilla(this.title) );
-        
-        
-        // container.checkReachable = super.checkReachable;
-        // container.setTitle(PaperAdventure.asVanilla(this.title));
-        return (V) ((IMixinScreenHandler)container).getBukkitView();
+        container = new MerchantMenu(((ServerPlayerBridge)player).cardboard$nextContainerCounter(), serverPlayer.getInventory(), this.merchant);
+
+        ((AbstractContainerMenuBridge)container).cardboard$setCheckReachable(super.checkReachable);
+        setDefaultTitle(this.merchant);
+        ((AbstractContainerMenuBridge)container).setTitle(super.title != null ? PaperAdventure.asVanilla(this.title) : super.defaultTitle);
+        return (V) ((AbstractContainerMenuBridge)container).getBukkitView();
+    }
+
+    private void setDefaultTitle(final net.minecraft.world.item.trading.Merchant merchant) {
+        if (merchant instanceof final AbstractVillager villager) {
+            super.defaultTitle = villager.getDisplayName();
+        } else if (merchant instanceof final CraftMerchantCustom.MinecraftMerchant custom) {
+            super.defaultTitle = custom.getScoreboardDisplayName();
+        } else {
+            throw new IllegalStateException("Provided merchant during MenuType creation can not find a default title! This is a bug!");
+        }
     }
 
     @Override

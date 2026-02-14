@@ -1,6 +1,7 @@
 package org.bukkit.craftbukkit.persistence;
 
-import java.io.IOException;
+import com.google.common.base.Preconditions;
+import com.mojang.serialization.Codec;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -9,7 +10,6 @@ import java.util.Objects;
 import java.util.Set;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import org.apache.commons.lang.Validate;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.util.CraftNBTTagConfigSerializer;
 import org.bukkit.persistence.PersistentDataAdapterContext;
@@ -17,11 +17,9 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
-public final class CraftPersistentDataContainer implements PersistentDataContainer {
+public class CraftPersistentDataContainer extends io.papermc.paper.persistence.PaperPersistentDataContainerView implements PersistentDataContainer { // Paper - split up view and mutable
 
     private final Map<String, Tag> customDataTags = new HashMap<>();
-    private final CraftPersistentDataTypeRegistry registry;
-    private final CraftPersistentDataAdapterContext adapterContext;
 
     public CraftPersistentDataContainer(Map<String, Tag> customTags, CraftPersistentDataTypeRegistry registry) {
         this(registry);
@@ -29,52 +27,61 @@ public final class CraftPersistentDataContainer implements PersistentDataContain
     }
 
     public CraftPersistentDataContainer(CraftPersistentDataTypeRegistry registry) {
-        this.registry = registry;
-        this.adapterContext = new CraftPersistentDataAdapterContext(this.registry);
+        super(registry);
     }
-    
-    public Tag getTag(String key) {
+
+    @Override
+    public Tag getTag(final String key) {
         return this.customDataTags.get(key);
     }
 
     @Override
-    public <T, Z> void set(NamespacedKey key, PersistentDataType<T, Z> type, Z value) {
-        this.customDataTags.put(key.toString(), this.registry.wrap(type, type.toPrimitive(value, (PersistentDataAdapterContext)this.adapterContext)));
+    public <T, Z> void set(@NotNull NamespacedKey key, @NotNull PersistentDataType<T, Z> type, @NotNull Z value) {
+        Preconditions.checkArgument(key != null, "The NamespacedKey key cannot be null");
+        Preconditions.checkArgument(type != null, "The provided type cannot be null");
+        Preconditions.checkArgument(value != null, "The provided value cannot be null");
+
+        this.customDataTags.put(key.toString(), this.registry.wrap(type, type.toPrimitive(value, this.adapterContext)));
+    }
+
+    @NotNull
+    @Override
+    public Set<NamespacedKey> getKeys() {
+        Set<NamespacedKey> keys = new HashSet<>();
+
+        this.customDataTags.keySet().forEach(key -> {
+            String[] keyData = key.split(":", 2);
+            if (keyData.length == 2) {
+                keys.add(new NamespacedKey(keyData[0], keyData[1]));
+            }
+        });
+
+        return keys;
     }
 
     @Override
-    public <P, C> boolean has(NamespacedKey key, PersistentDataType<P, C> type) {
-        Tag value = this.getTag(key.toString());
-        if (value == null) {
-            return false;
-        }
-        return this.registry.isInstanceOf(type, value);
-    }
+    public void remove(@NotNull NamespacedKey key) {
+        Preconditions.checkArgument(key != null, "The NamespacedKey key cannot be null");
 
-    @Override
-    public <P, C> C get(NamespacedKey key, PersistentDataType<P, C> type) {
-        Tag value = this.getTag(key.toString());
-        if (value == null) {
-            return null;
-        }
-        return (C)type.fromPrimitive(this.registry.extract(type, value), (PersistentDataAdapterContext)this.adapterContext);
-    }
-
-    @Override
-    public <T, Z> Z getOrDefault(NamespacedKey key, PersistentDataType<T, Z> type, Z defaultValue) {
-        Z z = get(key, type);
-        return z != null ? z : defaultValue;
-    }
-
-    @Override
-    public void remove(NamespacedKey key) {
-        Validate.notNull(key, "The provided key for the custom value was null");
         this.customDataTags.remove(key.toString());
     }
 
     @Override
     public boolean isEmpty() {
         return this.customDataTags.isEmpty();
+    }
+
+    @NotNull
+    @Override
+    public void copyTo(PersistentDataContainer other, boolean replace) {
+        Preconditions.checkArgument(other != null, "The target container cannot be null");
+
+        CraftPersistentDataContainer target = (CraftPersistentDataContainer) other;
+        if (replace) {
+            target.customDataTags.putAll(this.customDataTags);
+        } else {
+            this.customDataTags.forEach(target.customDataTags::putIfAbsent);
+        }
     }
 
     @Override
@@ -84,14 +91,21 @@ public final class CraftPersistentDataContainer implements PersistentDataContain
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof CraftPersistentDataContainer)) return false;
-        return Objects.equals(getRaw(), ((CraftPersistentDataContainer) obj).getRaw());
+        if (!(obj instanceof CraftPersistentDataContainer)) {
+            return false;
+        }
+
+        Map<String, Tag> myRawMap = this.getRaw();
+        Map<String, Tag> theirRawMap = ((CraftPersistentDataContainer) obj).getRaw();
+
+        return Objects.equals(myRawMap, theirRawMap);
     }
 
     public CompoundTag toTagCompound() {
         CompoundTag tag = new CompoundTag();
-        for (Entry<String, Tag> entry : this.customDataTags.entrySet())
+        for (Entry<String, Tag> entry : this.customDataTags.entrySet()) {
             tag.put(entry.getKey(), entry.getValue());
+        }
         return tag;
     }
 
@@ -104,7 +118,9 @@ public final class CraftPersistentDataContainer implements PersistentDataContain
     }
 
     public void putAll(CompoundTag compound) {
-        for (String key : compound.keySet()) this.customDataTags.put(key, compound.get(key));
+        for (String key : compound.keySet()) {
+            this.customDataTags.put(key, compound.get(key));
+        }
     }
 
     public Map<String, Tag> getRaw() {
@@ -112,69 +128,51 @@ public final class CraftPersistentDataContainer implements PersistentDataContain
     }
 
     public CraftPersistentDataTypeRegistry getDataTagTypeRegistry() {
-        return registry;
+        return this.registry;
     }
 
     @Override
     public int hashCode() {
-        return 3 + this.customDataTags.hashCode();
+        int hashCode = 3;
+        hashCode += this.customDataTags.hashCode(); // We will simply add the maps hashcode
+        return hashCode;
     }
 
-    @SuppressWarnings("unchecked")
     public String serialize() {
-        return CraftNBTTagConfigSerializer.serialize(toTagCompound());
+        return CraftNBTTagConfigSerializer.serialize(this.toTagCompound());
     }
 
-    @SuppressWarnings("deprecation")
+    public void clear() {
+        this.customDataTags.clear();
+    }
+
     @Override
-    public Set<NamespacedKey> getKeys() {
-        Set<NamespacedKey> keys = new HashSet<>();
-        this.customDataTags.keySet().forEach(key -> {
-            String[] keyData = key.split(":", 2);
-            if (keyData.length == 2) keys.add(new NamespacedKey(keyData[0], keyData[1]));
-        });
-        return keys;
+    public void readFromBytes(final byte[] bytes, final boolean clear) throws java.io.IOException {
+        if (clear) {
+            this.clear();
+        }
+        try (final java.io.DataInputStream dataInput = new java.io.DataInputStream(new java.io.ByteArrayInputStream(bytes))) {
+            final net.minecraft.nbt.CompoundTag compound = net.minecraft.nbt.NbtIo.read(dataInput);
+            this.putAll(compound);
+        }
     }
 
-    // 1.18.2 api:
-    
-	@Override
-	public boolean has(@NotNull NamespacedKey arg0) {
-		// TODO Auto-generated method stub
+    public Map<String, Tag> getTagsCloned() {
+        final Map<String, Tag> tags = new HashMap<>();
+        this.customDataTags.forEach((key, tag) -> tags.put(key, tag.copy()));
+        return tags;
+    }
 
-        Tag value = this.customDataTags.get(arg0.toString());
-        if (value == null) {
-            return false;
-        }
+    public static Codec<CraftPersistentDataContainer> createCodec(final CraftPersistentDataTypeRegistry registry) {
+        return CompoundTag.CODEC.xmap(tag -> {
+            final CraftPersistentDataContainer container = new CraftPersistentDataContainer(registry);
+            container.putAll(tag);
+            return container;
+        }, CraftPersistentDataContainer::toTagCompound);
+    }
 
-		return true;
-	}
-
-	@Override
-	public void readFromBytes(byte @NotNull [] arg0, boolean arg1) throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public byte @NotNull [] serializeToBytes() throws IOException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void copyTo(@NotNull PersistentDataContainer other, boolean replace) {
-        CraftPersistentDataContainer target = (CraftPersistentDataContainer) other;
-        if (replace) {
-            target.customDataTags.putAll(this.customDataTags);
-        } else {
-            this.customDataTags.forEach(target.customDataTags::putIfAbsent);
-        }
-	}
-
-	@Override
+    @Override
     public int getSize() {
         return this.customDataTags.size();
     }
-
 }

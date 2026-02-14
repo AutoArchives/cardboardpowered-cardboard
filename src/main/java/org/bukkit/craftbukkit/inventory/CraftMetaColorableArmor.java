@@ -1,53 +1,47 @@
 package org.bukkit.craftbukkit.inventory;
 
-import com.google.common.collect.ImmutableMap;
-import java.util.Map;
-import java.util.Set;
+import com.google.common.collect.ImmutableMap.Builder;
 import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.world.item.component.DyedItemColor;
 import org.bukkit.Color;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.meta.ColorableArmorMeta;
-import org.bukkit.inventory.meta.LeatherArmorMeta;
 
-@DelegateDeserialization(value=SerializableMeta.class)
+import java.util.Map;
+import java.util.Objects;
+
+import static org.bukkit.craftbukkit.inventory.CraftItemFactory.DEFAULT_LEATHER_COLOR;
+
+@DelegateDeserialization(SerializableMeta.class)
 public class CraftMetaColorableArmor extends CraftMetaArmor implements ColorableArmorMeta {
 
-    private Integer color;
+    private Integer color; // Paper - keep color component consistent with vanilla (top byte is ignored)
 
     CraftMetaColorableArmor(CraftMetaItem meta) {
         super(meta);
-        if (!(meta instanceof CraftMetaColorableArmor)) {
+        if (!(meta instanceof CraftMetaColorableArmor armorMeta)) {
             return;
         }
-        CraftMetaColorableArmor armorMeta = (CraftMetaColorableArmor)meta;
+
         this.color = armorMeta.color;
     }
 
-    CraftMetaColorableArmor(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaColorableArmor(DataComponentPatch tag, java.util.Set<net.minecraft.core.component.DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
-        CraftMetaColorableArmor.getOrEmpty(tag, CraftMetaLeatherArmor.COLOR).ifPresent(dyedItemColor -> {
-            /*
-        	if (!dyedItemColor.showInTooltip()) {
-                this.addItemFlags(new ItemFlag[]{ItemFlag.HIDE_DYE});
-            }
-            */
+        getOrEmpty(tag, CraftMetaLeatherArmor.COLOR).ifPresent((dyedItemColor) -> {
             this.color = dyedItemColor.rgb();
         });
     }
 
     CraftMetaColorableArmor(Map<String, Object> map) {
         super(map);
-        CraftMetaLeatherArmor.readColor((LeatherArmorMeta)this, map);
+        CraftMetaLeatherArmor.readColor(this, map);
     }
 
     @Override
-    void applyToItem(CraftMetaItem.Applicator itemTag) {
-        super.applyToItem(itemTag);
+    void applyToItem(Applicator tag) {
+        super.applyToItem(tag);
         if (this.hasColor()) {
-            itemTag.put(CraftMetaLeatherArmor.COLOR, new DyedItemColor(this.color/*, !this.hasItemFlag(ItemFlag.HIDE_DYE)*/));
+            tag.put(CraftMetaLeatherArmor.COLOR, new net.minecraft.world.item.component.DyedItemColor(this.color));
         }
     }
 
@@ -57,22 +51,24 @@ public class CraftMetaColorableArmor extends CraftMetaArmor implements Colorable
     }
 
     boolean isLeatherArmorEmpty() {
-        return !this.hasColor();
+        return !(this.hasColor());
     }
 
     @Override
     public CraftMetaColorableArmor clone() {
-        CraftMetaColorableArmor clone = (CraftMetaColorableArmor)super.clone();
+        CraftMetaColorableArmor clone = (CraftMetaColorableArmor) super.clone();
         clone.color = this.color;
         return clone;
     }
 
+    @Override
     public Color getColor() {
-        return this.color == null ? CraftItemFactory.DEFAULT_LEATHER_COLOR : Color.fromRGB((int)(this.color & 0xFFFFFF));
+        return this.color == null ? DEFAULT_LEATHER_COLOR : Color.fromRGB(this.color & 0x00FFFFFF); // Paper - this should really be nullable
     }
 
+    @Override
     public void setColor(Color color) {
-        this.color = color == null ? null : Integer.valueOf(color.asRGB());
+        this.color = color == null ? null : color.asRGB();
     }
 
     boolean hasColor() {
@@ -80,9 +76,11 @@ public class CraftMetaColorableArmor extends CraftMetaArmor implements Colorable
     }
 
     @Override
-    ImmutableMap.Builder<String, Object> serialize(ImmutableMap.Builder<String, Object> builder) {
+    Builder<String, Object> serialize(Builder<String, Object> builder) {
         super.serialize(builder);
-        CraftMetaLeatherArmor.serialize((LeatherArmorMeta)this, builder);
+
+        CraftMetaLeatherArmor.serialize(this, builder);
+
         return builder;
     }
 
@@ -91,9 +89,8 @@ public class CraftMetaColorableArmor extends CraftMetaArmor implements Colorable
         if (!super.equalsCommon(meta)) {
             return false;
         }
-        if (meta instanceof CraftMetaColorableArmor) {
-            CraftMetaColorableArmor that = (CraftMetaColorableArmor)meta;
-            return this.hasColor() ? that.hasColor() && this.color.equals(that.color) : !that.hasColor();
+        if (meta instanceof final CraftMetaColorableArmor other) {
+            return Objects.equals(this.color, other.color);
         }
         return true;
     }
@@ -105,7 +102,7 @@ public class CraftMetaColorableArmor extends CraftMetaArmor implements Colorable
 
     @Override
     int applyHash() {
-        int original;
+        final int original;
         int hash = original = super.applyHash();
         if (this.hasColor()) {
             hash ^= this.color.hashCode();
@@ -113,8 +110,8 @@ public class CraftMetaColorableArmor extends CraftMetaArmor implements Colorable
         return original != hash ? CraftMetaColorableArmor.class.hashCode() ^ hash : hash;
     }
 
+    @Override
     public boolean isDyed() {
         return this.hasColor();
     }
 }
-

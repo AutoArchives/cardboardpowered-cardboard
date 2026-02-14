@@ -21,8 +21,6 @@ import java.util.regex.Pattern;
 import org.bukkit.craftbukkit.CraftServer;
 import org.cardboardpowered.CardboardConfig;
 import org.cardboardpowered.CardboardLogger;
-import org.cardboardpowered.impl.block.CardboardBlockEntityState;
-import org.cardboardpowered.impl.block.CardboardSign;
 import org.cardboardpowered.mappings.TsrgWriter;
 import org.cardboardpowered.mohistremap.ClassMapping;
 import org.cardboardpowered.mohistremap.IRemapUtils;
@@ -175,10 +173,6 @@ public class RemapUtils implements IRemapUtils {
         File bukkit_class_mappings_file = exportResource(bukkit_cl_srg, dir);
         
         jarMapping.classes.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/CraftWorld", "org/cardboardpowered/impl/world/CraftWorld");
-
-        // Remap Cardboard Implementation (Craft-board? ha) into CraftBukkit names
-        jarMapping.classes.put("org/bukkit/craftbukkit/block/CraftBlockEntityState", CardboardBlockEntityState.class.getName().replace('.', '/'));
-        jarMapping.classes.put("org/bukkit/craftbukkit/block/CraftSign", CardboardSign.class.getName().replace('.', '/'));
         
         // some missing
         jarMapping.classes.put("net/minecraft/nbt/ListTag", "net/minecraft/class_2499");

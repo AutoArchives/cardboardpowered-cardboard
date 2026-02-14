@@ -10,7 +10,7 @@ import net.minecraft.core.RegistrationInfo;
 import net.minecraft.resources.ResourceKey;
 import org.bukkit.Keyed;
 import org.bukkit.craftbukkit.CraftRegistry;
-import org.cardboardpowered.interfaces.ISimpleRegistry;
+import org.cardboardpowered.bridge.core.MappedRegistryBridge;
 
 public class WritableCraftRegistry<M, T extends Keyed, B extends PaperRegistryBuilder<M, T>> extends CraftRegistry<T, M> {
 
@@ -32,7 +32,7 @@ public class WritableCraftRegistry<M, T extends Keyed, B extends PaperRegistryBu
         final ResourceKey<M> resourceKey = PaperRegistries.toNms(key);
         this.registry.validateWrite(resourceKey);
         
-        ISimpleRegistry<M> cbr = (ISimpleRegistry<M>) this.registry;
+        MappedRegistryBridge<M> cbr = (MappedRegistryBridge<M>) this.registry;
         
         final PaperRegistryBuilderFactory<M, T, B> builderFactory = new PaperRegistryBuilderFactory<M, T, B>(this.registry.key(), conversions, this.meta.builderFiller(), cbr::getValueForCopying); // new PaperRegistryBuilderFactory<M, T, B>(conversions, this.meta.builderFiller(), cbr.cb$temporaryUnfrozenMap()::get);
         value.accept(builderFactory);

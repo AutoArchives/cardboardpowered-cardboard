@@ -4,7 +4,6 @@
 package io.papermc.paper.world;
 
 import com.google.common.io.Files;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import java.io.File;
 import java.io.IOException;
@@ -26,9 +25,9 @@ import net.minecraft.world.level.validation.ContentValidationException;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.World.Environment;
 import org.bukkit.craftbukkit.CraftServer;
-import org.cardboardpowered.interfaces.ILevelProperties;
-import org.cardboardpowered.interfaces.ILevelStorage;
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.bridge.world.level.storage.PrimaryLevelDataBridge;
+import org.cardboardpowered.bridge.world.level.storage.LevelStorageSourceBridge;
+import org.cardboardpowered.bridge.server.MinecraftServerBridge;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -117,16 +116,16 @@ public record PaperWorldLoader(MinecraftServer server, String levelId) {
 	}
 
 	public void loadInitialWorlds() {
-		IMixinMinecraftServer mc = (IMixinMinecraftServer) this.server; // Cardboard
+		MinecraftServerBridge mc = (MinecraftServerBridge) this.server; // Cardboard
 		
 		for (LevelStem stem : this.server.registryAccess().lookupOrThrow(Registries.LEVEL_STEM)) {
 			PaperWorldLoader.WorldLoadingInfo info = this.getWorldInfo(this.levelId, stem);
 			this.migrateWorldFolder(info);
 			if (info.enabled()) {
-				LevelStorageSource.LevelStorageAccess levelStorageAccess = ((IMixinMinecraftServer) this.server).getSessionBF();
+				LevelStorageSource.LevelStorageAccess levelStorageAccess = ((MinecraftServerBridge) this.server).getSessionBF();
 				if (info.dimension() != 0) {
 					try {
-						levelStorageAccess = ((ILevelStorage) LevelStorageSource.createDefault(CraftServer.INSTANCE.getWorldContainer().toPath()))
+						levelStorageAccess = ((LevelStorageSourceBridge) LevelStorageSource.createDefault(CraftServer.INSTANCE.getWorldContainer().toPath()))
 								.validateAndCreateAccess(info.name(), info.stemKey());
 					} catch (ContentValidationException | IOException var7) {
 						throw new RuntimeException(var7);
@@ -158,7 +157,7 @@ public record PaperWorldLoader(MinecraftServer server, String levelId) {
 							.worldData();
 				}
 
-				((ILevelProperties) primaryLevelData).checkName(info.name());
+				((PrimaryLevelDataBridge) primaryLevelData).checkName(info.name());
 				primaryLevelData.setModdedInfo(this.server.getServerModName(), this.server.getModdedStatus().shouldReportAsModified());
 
 				/*
@@ -175,7 +174,7 @@ public record PaperWorldLoader(MinecraftServer server, String levelId) {
 			}
 				 */
 
-				((IMixinMinecraftServer) this.server).createLevel(stem, info, levelStorageAccess, primaryLevelData);
+				((MinecraftServerBridge) this.server).createLevel(stem, info, levelStorageAccess, primaryLevelData);
 			}
 		}
 

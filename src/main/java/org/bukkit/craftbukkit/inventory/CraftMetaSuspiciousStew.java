@@ -3,46 +3,35 @@ package org.bukkit.craftbukkit.inventory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap.Builder;
-
-import io.papermc.paper.potion.SuspiciousEffectEntry;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.potion.CraftPotionEffectType;
 import org.bukkit.inventory.meta.SuspiciousStewMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.jetbrains.annotations.NotNull;
+
+import java.util.*;
 
 @DelegateDeserialization(SerializableMeta.class)
 public class CraftMetaSuspiciousStew extends CraftMetaItem implements SuspiciousStewMeta {
 
     static final ItemMetaKeyType<SuspiciousStewEffects> EFFECTS = new ItemMetaKeyType<>(DataComponents.SUSPICIOUS_STEW_EFFECTS, "effects");
 
-    // private List<PotionEffect> customEffects;
+    private List<io.papermc.paper.potion.SuspiciousEffectEntry> customEffects;
 
-    private List<SuspiciousEffectEntry> customEffects;
-    
     CraftMetaSuspiciousStew(CraftMetaItem meta) {
         super(meta);
-        if (!(meta instanceof CraftMetaSuspiciousStew stewMeta)) {
+        if (!(meta instanceof CraftMetaSuspiciousStew suspiciousStewMeta)) {
             return;
         }
-        if (stewMeta.hasCustomEffects()) {
-            this.customEffects = new ArrayList<>(stewMeta.customEffects);
+        if (suspiciousStewMeta.hasCustomEffects()) {
+            this.customEffects = new ArrayList<>(suspiciousStewMeta.customEffects);
         }
     }
 
-    CraftMetaSuspiciousStew(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaSuspiciousStew(DataComponentPatch tag, java.util.Set<net.minecraft.core.component.DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
         getOrEmpty(tag, CraftMetaSuspiciousStew.EFFECTS).ifPresent((suspiciousStewEffects) -> {
             List<SuspiciousStewEffects.Entry> list = suspiciousStewEffects.effects();
@@ -56,7 +45,7 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
                     continue;
                 }
                 int duration = effect.duration();
-                this.customEffects.add(SuspiciousEffectEntry.create((PotionEffectType)type, (int)duration));
+                this.customEffects.add(io.papermc.paper.potion.SuspiciousEffectEntry.create(type, duration));
             }
         });
     }
@@ -76,14 +65,16 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
     }
 
     @Override
-    void applyToItem(CraftMetaItem.Applicator tag) {
+    void applyToItem(Applicator tag) {
         super.applyToItem(tag);
+
         if (this.customEffects != null) {
-            ArrayList<SuspiciousStewEffects.Entry> effectList = new ArrayList<SuspiciousStewEffects.Entry>();
-            for (SuspiciousEffectEntry effect : this.customEffects) {
+            List<SuspiciousStewEffects.Entry> effectList = new ArrayList<>();
+
+            for (io.papermc.paper.potion.SuspiciousEffectEntry effect : this.customEffects) {
                 effectList.add(new SuspiciousStewEffects.Entry(CraftPotionEffectType.bukkitToMinecraftHolder(effect.effect()), effect.duration()));
             }
-            tag.put(EFFECTS, new SuspiciousStewEffects(effectList));
+            tag.put(CraftMetaSuspiciousStew.EFFECTS, new SuspiciousStewEffects(effectList));
         }
     }
 
@@ -94,11 +85,6 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
 
     boolean isStewEmpty() {
         return !this.hasCustomEffects();
-    }
-
-    @Override
-    boolean applicableTo(Material type) {
-        return type == Material.SUSPICIOUS_STEW;
     }
 
     @Override
@@ -125,8 +111,45 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
 
     @Override
     public boolean addCustomEffect(PotionEffect effect, boolean overwrite) {
-        return this.addCustomEffect(SuspiciousEffectEntry.create((PotionEffectType)effect.getType(), (int)effect.getDuration()), overwrite);
+        Preconditions.checkArgument(effect != null, "Potion effect cannot be null");
+        return addCustomEffect(io.papermc.paper.potion.SuspiciousEffectEntry.create(effect.getType(), effect.getDuration()), overwrite);
+    }
 
+    @Override
+    public boolean addCustomEffect(final io.papermc.paper.potion.SuspiciousEffectEntry suspiciousEffectEntry, final boolean overwrite) {
+        Preconditions.checkArgument(suspiciousEffectEntry != null, "Suspicious effect entry cannot be null");
+        if (this.hasCustomEffects()) {
+            final List<io.papermc.paper.potion.SuspiciousEffectEntry> matchingEffects = this.customEffects.stream().filter(
+                entry -> entry.effect() == suspiciousEffectEntry.effect()
+            ).toList();
+            if (!matchingEffects.isEmpty()) {
+                if (overwrite) {
+                    boolean foundMatchingDuration = false;
+                    boolean mutated = false;
+                    for (final io.papermc.paper.potion.SuspiciousEffectEntry matchingEffect : matchingEffects) {
+                        if (matchingEffect.duration() != suspiciousEffectEntry.duration()) {
+                            this.customEffects.remove(suspiciousEffectEntry);
+                            mutated = true;
+                        } else {
+                            foundMatchingDuration = true;
+                        }
+                    }
+                    if (foundMatchingDuration && !mutated) {
+                        return false;
+                    } else if (!foundMatchingDuration) {
+                        this.customEffects.add(suspiciousEffectEntry);
+                    }
+                    return true;
+                } else  {
+                    return false;
+                }
+            }
+        }
+        if (this.customEffects == null) {
+            this.customEffects = new ArrayList<>();
+        }
+        this.customEffects.add(suspiciousEffectEntry);
+        return true;
     }
 
     @Override
@@ -136,13 +159,15 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
         if (!this.hasCustomEffects()) {
             return false;
         }
+
         boolean changed = false;
-        Iterator<SuspiciousEffectEntry> iterator = this.customEffects.iterator();
+        Iterator<io.papermc.paper.potion.SuspiciousEffectEntry> iterator = this.customEffects.iterator();
         while (iterator.hasNext()) {
-            SuspiciousEffectEntry effect = iterator.next();
-            if (!type.equals(effect.effect())) continue;
-            iterator.remove();
-            changed = true;
+            io.papermc.paper.potion.SuspiciousEffectEntry effect = iterator.next();
+            if (type.equals(effect.effect())) {
+                iterator.remove();
+                changed = true;
+            }
         }
         if (this.customEffects.isEmpty()) {
             this.customEffects = null;
@@ -160,9 +185,11 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
         if (!this.hasCustomEffects()) {
             return -1;
         }
-        for (int i2 = 0; i2 < this.customEffects.size(); ++i2) {
-            if (!this.customEffects.get(i2).effect().equals(type)) continue;
-            return i2;
+
+        for (int i = 0; i < this.customEffects.size(); i++) {
+            if (this.customEffects.get(i).effect().equals(type)) {
+                return i;
+            }
         }
         return -1;
     }
@@ -189,8 +216,8 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
         if (!super.equalsCommon(meta)) {
             return false;
         }
-        if (meta instanceof CraftMetaSuspiciousStew that) {
-            return (this.hasCustomEffects() ? that.hasCustomEffects() && this.customEffects.equals(that.customEffects) : !that.hasCustomEffects());
+        if (meta instanceof CraftMetaSuspiciousStew other) {
+            return Objects.equals(this.customEffects, other.customEffects);
         }
         return true;
     }
@@ -205,43 +232,9 @@ public class CraftMetaSuspiciousStew extends CraftMetaItem implements Suspicious
         super.serialize(builder);
 
         if (this.hasCustomEffects()) {
-            builder.put(CraftMetaSuspiciousStew.EFFECTS.BUKKIT, ImmutableList.copyOf(this.customEffects));
+            builder.put(CraftMetaSuspiciousStew.EFFECTS.BUKKIT, ImmutableList.copyOf(com.google.common.collect.Lists.transform(this.customEffects, s -> new PotionEffect(s.effect(), s.duration(), 0)))); // convert back to potion effect for bukkit legacy item serialisation to maintain backwards compatibility for the written format.
         }
 
         return builder;
     }
-
-	@Override
-	public boolean addCustomEffect(SuspiciousEffectEntry suspiciousEffectEntry, boolean overwrite) {
-        List<SuspiciousEffectEntry> matchingEffects;
-        Preconditions.checkArgument((suspiciousEffectEntry != null ? 1 : 0) != 0, (Object)"Suspicious effect entry cannot be null");
-        if (this.hasCustomEffects() && !(matchingEffects = this.customEffects.stream().filter(entry -> entry.effect() == suspiciousEffectEntry.effect()).toList()).isEmpty()) {
-            if (overwrite) {
-                boolean foundMatchingDuration = false;
-                boolean mutated = false;
-                for (SuspiciousEffectEntry matchingEffect : matchingEffects) {
-                    if (matchingEffect.duration() != suspiciousEffectEntry.duration()) {
-                        this.customEffects.remove(suspiciousEffectEntry);
-                        mutated = true;
-                        continue;
-                    }
-                    foundMatchingDuration = true;
-                }
-                if (foundMatchingDuration && !mutated) {
-                    return false;
-                }
-                if (!foundMatchingDuration) {
-                    this.customEffects.add(suspiciousEffectEntry);
-                }
-                return true;
-            }
-            return false;
-        }
-        if (this.customEffects == null) {
-            this.customEffects = new ArrayList<SuspiciousEffectEntry>();
-        }
-        this.customEffects.add(suspiciousEffectEntry);
-        return true;
-    }
-	
 }

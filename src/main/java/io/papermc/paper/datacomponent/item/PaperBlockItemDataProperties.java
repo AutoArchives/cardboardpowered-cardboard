@@ -10,7 +10,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.util.Handleable;
-import org.cardboardpowered.interfaces.IBlockState;
+import org.cardboardpowered.bridge.world.level.block.state.BlockStateBaseBridge;
 
 public record PaperBlockItemDataProperties(
     BlockItemStateProperties impl
@@ -20,13 +20,13 @@ public record PaperBlockItemDataProperties(
     public BlockData createBlockData(final BlockType blockType) {
         final Block block = CraftBlockType.bukkitToMinecraftNew(blockType);
         final BlockState defaultState = block.defaultBlockState();
-        return ( (IBlockState) this.impl.apply(defaultState) ).createCraftBlockData();
+        return ( (BlockStateBaseBridge) this.impl.apply(defaultState) ).cardboard$createCraftBlockData();
     }
 
     @Override
     public BlockData applyTo(final BlockData blockData) {
         final BlockState state = ((CraftBlockData) blockData).getState();
-        return ( (IBlockState) this.impl.apply(state) ).createCraftBlockData();
+        return ( (BlockStateBaseBridge) this.impl.apply(state) ).cardboard$createCraftBlockData();
     }
 
     @Override

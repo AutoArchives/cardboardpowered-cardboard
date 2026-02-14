@@ -3,23 +3,17 @@ package org.cardboardpowered.impl.command;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
-import java.util.logging.Level;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandException;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.Player;
-import org.cardboardpowered.interfaces.IServerCommandSource;
+import org.cardboardpowered.bridge.commands.CommandSourceStackBridge;
 
-import com.google.common.collect.ImmutableList;
-import org.cardboardpowered.interfaces.IMixinCommandOutput;
-import org.cardboardpowered.interfaces.IMixinWorld;
+import org.cardboardpowered.bridge.commands.CommandSourceBridge;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -65,17 +59,17 @@ public class BukkitCommandWrapper implements com.mojang.brigadier.Command<Comman
         try {
             ServerPlayer plr = source.getPlayer();
             if (null != plr)
-                return ((IMixinCommandOutput)plr).getBukkitSender(source);
+                return ((CommandSourceBridge)plr).getBukkitSender(source);
         } catch (Exception ignored) {
             //ex.printStackTrace();
         }
         Entity e = source.getEntity();
-        return (null != e) ? ((IMixinCommandOutput)e).getBukkitSender(source) : null;
+        return (null != e) ? ((CommandSourceBridge)e).getBukkitSender(source) : null;
     }
 
     @Override
     public CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
-        List<String> results = ((CraftServer)Bukkit.getServer()).tabComplete(((IServerCommandSource) context.getSource()).getBukkitSender(), builder.getInput(), context.getSource().getLevel(), context.getSource().getPosition(), true);
+        List<String> results = ((CraftServer)Bukkit.getServer()).tabComplete(((CommandSourceStackBridge) context.getSource()).getBukkitSender(), builder.getInput(), context.getSource().getLevel(), context.getSource().getPosition(), true);
 
         // Defaults to sub nodes, but we have just one giant args node, so offset accordingly
         builder = builder.createOffset(builder.getInput().lastIndexOf(' ') + 1);

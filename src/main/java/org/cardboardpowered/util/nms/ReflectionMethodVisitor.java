@@ -27,6 +27,7 @@ import org.bukkit.Material;
 import org.bukkit.craftbukkit.util.Commodore;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.cardboardpowered.CardboardConfig;
+import org.cardboardpowered.impl.util.CardboardMagicNumbers;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -61,10 +62,10 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         		CardboardMod.LOGGER.info(owner + " / " + name);
         	}
         }
-
+    	
     	if (owner.equalsIgnoreCase("org/bukkit/Material")) {
-            if (CraftMagicNumbers.MODDED_MATERIALS.containsKey(name)) { 
-            	System.out.println("Modded Material Debug: " + name);
+            if (CardboardMagicNumbers.MODDED_MATERIALS.containsKey(name)) {
+				System.out.println("Modded Material Debug: " + name);
                 super.visitFieldInsn( opcode, owner, "STONE", desc );
                 return;
             }
@@ -177,7 +178,7 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         try {
             return Material.class.getField(name);
         } catch (NoSuchFieldException | SecurityException e) {
-        	System.out.println("STONE:? " + e.getMessage());
+			System.out.println("STONE:? " + e.getMessage());
             return Material.class.getField("STONE");
         }
     }
@@ -340,7 +341,7 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         	}
         }
 
-        // Redirect WorldGuard Custom Logger (JUL->SLF4J)
+		// Redirect WorldGuard Custom Logger (JUL->SLF4J)
         if (owner.contains("com/sk89q/worldguard/util/logging/RecordMessagePrefixer") ) {
         	owner = owner.replace("com/sk89q/worldguard/util/logging/RecordMessagePrefixer", "org/cardboardpowered/util/RecordMessagePrefixer");
         }
@@ -376,7 +377,7 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         		name = "method_12829";
         	}
         }
-
+        
         // Try Registry.
         if (owner.contains("class_2359") || desc.contains("class_2359")) {
         	// System.out.println("IDMAP FOUD: " + owner + " / " + name + " / " + desc);
@@ -399,7 +400,7 @@ public class ReflectionMethodVisitor extends MethodVisitor {
 
             super.visitMethodInsn(
                     Opcodes.INVOKEINTERFACE,
-                    owner, 
+                    owner,
                     "cardboard$lookupOrThrow",
                     "(Lnet/minecraft/class_5321;)Lnet/minecraft/class_2378;",
                     true

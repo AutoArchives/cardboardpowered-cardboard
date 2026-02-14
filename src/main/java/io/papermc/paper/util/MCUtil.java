@@ -3,7 +3,7 @@ package io.papermc.paper.util;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.cardboardpowered.interfaces.IMixinMinecraftServer;
+import org.cardboardpowered.bridge.server.MinecraftServerBridge;
 
 import io.papermc.paper.math.BlockPosition;
 import io.papermc.paper.math.FinePosition;
@@ -107,7 +107,7 @@ public final class MCUtil {
             if (reason != null) {
                // MinecraftServer.LOGGER.warn("Asynchronous " + reason + "!", new IllegalStateException());
             }
-            ((IMixinMinecraftServer)MinecraftServer_getServer()).getProcessQueue().add(run);
+            ((MinecraftServerBridge)MinecraftServer_getServer()).getProcessQueue().add(run);
             return;
         }
         run.run();
@@ -131,7 +131,7 @@ public final class MCUtil {
                     return run.get();
                 }
             };
-            ((IMixinMinecraftServer)MinecraftServer_getServer()).getProcessQueue().add(wait);
+            ((MinecraftServerBridge)MinecraftServer_getServer()).getProcessQueue().add(wait);
             try {
                 return wait.get();
             } catch (InterruptedException | ExecutionException e) {
@@ -151,11 +151,11 @@ public final class MCUtil {
     }
 
     public static Location toLocation(Level world, double x, double y, double z) {
-        return new Location(world.getCraftWorld(), x, y, z);
+        return new Location(world.cardboard$getWorld(), x, y, z);
     }
 
     public static Location toLocation(Level world, BlockPos pos) {
-        return new Location(world.getCraftWorld(), pos.getX(), pos.getY(), pos.getZ());
+        return new Location(world.cardboard$getWorld(), pos.getX(), pos.getY(), pos.getZ());
     }
 
     public static BlockPos toBlockPosition(Location loc) {

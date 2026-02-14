@@ -5,7 +5,7 @@ import org.bukkit.block.DecoratedPot;
 import org.bukkit.inventory.DecoratedPotInventory;
 import org.bukkit.inventory.ItemStack;
 
-import org.cardboardpowered.interfaces.IMixinInventory;
+import org.cardboardpowered.bridge.world.ContainerBridge;
 
 public class CraftInventoryDecoratedPot extends CraftInventory implements DecoratedPotInventory {
 
@@ -25,6 +25,6 @@ public class CraftInventoryDecoratedPot extends CraftInventory implements Decora
 
     @Override
     public DecoratedPot getHolder() {
-        return (DecoratedPot) ((IMixinInventory)this.inventory).getOwner();
+        return (DecoratedPot) ((ContainerBridge)this.inventory).getOwner();
     }
 }

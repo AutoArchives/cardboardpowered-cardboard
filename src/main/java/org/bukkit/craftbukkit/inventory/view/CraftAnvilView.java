@@ -4,12 +4,9 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.view.AnvilView;
-import org.cardboardpowered.impl.inventory.CardboardAnvilInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryAnvil;
 import org.jetbrains.annotations.Nullable;
 
-import org.cardboardpowered.interfaces.IMixinScreenHandler;
-
-import io.papermc.paper.adventure.PaperAdventure;
 import net.minecraft.world.inventory.AnvilMenu;
 
 public class CraftAnvilView extends CraftInventoryView<AnvilMenu, AnvilInventory> implements AnvilView {
@@ -68,7 +65,7 @@ public class CraftAnvilView extends CraftInventoryView<AnvilMenu, AnvilInventory
     }
     // Paper end
 
-    public void updateFromLegacy(CardboardAnvilInventory legacy) {
+    public void updateFromLegacy(CraftInventoryAnvil legacy) {
     	
     	// CraftInventoryAnvil
     	// CardboardAnvilInventory

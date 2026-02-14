@@ -7,8 +7,8 @@ import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
-import org.cardboardpowered.interfaces.IMixinInventory;
-import org.cardboardpowered.interfaces.IMixinRecipe;
+import org.cardboardpowered.bridge.world.ContainerBridge;
+import org.cardboardpowered.bridge.world.item.crafting.RecipeHolderBridge;
 
 public class CraftInventoryCrafting extends CraftInventory implements CraftingInventory {
     private final Container resultInventory;
@@ -41,13 +41,13 @@ public class CraftInventoryCrafting extends CraftInventory implements CraftingIn
     @Override
     public ItemStack[] getContents() {
         ItemStack[] items = new ItemStack[getSize()];
-        List<net.minecraft.world.item.ItemStack> mcResultItems = ((IMixinInventory)getResultInventory()).getContents();
+        List<net.minecraft.world.item.ItemStack> mcResultItems = ((ContainerBridge)getResultInventory()).getContents();
 
         int i = 0;
         for (i = 0; i < mcResultItems.size(); i++)
             items[i] = CraftItemStack.asCraftMirror(mcResultItems.get(i));
 
-        List<net.minecraft.world.item.ItemStack> mcItems = ((IMixinInventory)getMatrixInventory()).getContents();
+        List<net.minecraft.world.item.ItemStack> mcItems = ((ContainerBridge)getMatrixInventory()).getContents();
         for (int j = 0; j < mcItems.size(); j++)
             items[i + j] = CraftItemStack.asCraftMirror(mcItems.get(j));
 
@@ -79,7 +79,7 @@ public class CraftInventoryCrafting extends CraftInventory implements CraftingIn
 
     @Override
     public ItemStack[] getMatrix() {
-        return asCraftMirror(((IMixinInventory)getMatrixInventory()).getContents());
+        return asCraftMirror(((ContainerBridge)getMatrixInventory()).getContents());
     }
 
     @Override
@@ -100,14 +100,14 @@ public class CraftInventoryCrafting extends CraftInventory implements CraftingIn
 
     @Override
     public void setResult(ItemStack item) {
-        List<net.minecraft.world.item.ItemStack> contents = ((IMixinInventory)getResultInventory()).getContents();
+        List<net.minecraft.world.item.ItemStack> contents = ((ContainerBridge)getResultInventory()).getContents();
         contents.set(0, CraftItemStack.asNMSCopy(item));
     }
 
     @SuppressWarnings("rawtypes")
     @Override
     public Recipe getRecipe() {
-        net.minecraft.world.item.crafting.Recipe recipe = ((IMixinInventory)getInventory()).getCurrentRecipe();
-        return recipe == null ? null : ((IMixinRecipe)recipe).toBukkitRecipe();
+        net.minecraft.world.item.crafting.Recipe recipe = ((ContainerBridge)getInventory()).getCurrentRecipe();
+        return recipe == null ? null : ((RecipeHolderBridge)recipe).toBukkitRecipe();
     }
 }

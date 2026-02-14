@@ -9,7 +9,7 @@ import java.util.Map;
 import net.minecraft.core.Holder;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.enchantments.Enchantment;
-import org.cardboardpowered.impl.CardboardEnchantment;
+import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
 
 public record PaperItemEnchantments(
     net.minecraft.world.item.enchantment.ItemEnchantments impl,
@@ -26,7 +26,7 @@ public record PaperItemEnchantments(
         }
         final Map<Enchantment, Integer> map = new HashMap<>(itemEnchantments.size());
         for (final Object2IntMap.Entry<Holder<net.minecraft.world.item.enchantment.Enchantment>> entry : itemEnchantments.entrySet()) {
-            map.put(CardboardEnchantment.minecraftHolderToBukkit(entry.getKey()), entry.getIntValue());
+            map.put(CraftEnchantment.minecraftHolderToBukkit(entry.getKey()), entry.getIntValue());
         }
         return Collections.unmodifiableMap(map); // TODO look into making a "transforming" map maybe?
     }
@@ -67,7 +67,7 @@ public record PaperItemEnchantments(
 
             final net.minecraft.world.item.enchantment.ItemEnchantments.Mutable mutable = new net.minecraft.world.item.enchantment.ItemEnchantments.Mutable(initialEnchantments);
             this.enchantments.forEach((enchantment, level) ->
-                mutable.set(CardboardEnchantment.bukkitToMinecraftHolder(enchantment), level)
+                mutable.set(CraftEnchantment.bukkitToMinecraftHolder(enchantment), level)
             );
             return new PaperItemEnchantments(mutable.toImmutable());
         }

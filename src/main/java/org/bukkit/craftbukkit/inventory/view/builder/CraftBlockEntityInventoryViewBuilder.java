@@ -11,17 +11,31 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.view.builder.LocationInventoryViewBuilder;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.jspecify.annotations.Nullable;
-
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
 
 public class CraftBlockEntityInventoryViewBuilder<V extends InventoryView> extends CraftAbstractLocationInventoryViewBuilder<V> {
 
     private final Block block;
-    private final @Nullable CraftTileInventoryBuilder builder;
+    private final boolean useFakeBlockEntity;
+    private final @Nullable CraftBlockInventoryBuilder builder;
 
-    public CraftBlockEntityInventoryViewBuilder(final MenuType<?> handle, final Block block, final @Nullable CraftTileInventoryBuilder builder) {
+    public CraftBlockEntityInventoryViewBuilder(
+            final MenuType<?> handle,
+            final Block block,
+            final @Nullable CraftBlockInventoryBuilder builder
+    ) {
+        this(handle, block, builder, true);
+    }
+
+    public CraftBlockEntityInventoryViewBuilder(
+            final MenuType<?> handle,
+            final Block block,
+            final @Nullable CraftBlockInventoryBuilder builder,
+            final boolean useFakeBlockEntity
+    ) {
         super(handle);
+        this.useFakeBlockEntity = useFakeBlockEntity;
         this.block = block;
         this.builder = builder;
     }
@@ -34,35 +48,44 @@ public class CraftBlockEntityInventoryViewBuilder<V extends InventoryView> exten
 
         if (this.position == null) {
             this.position = player.blockPosition();
+            return buildFakeBlockEntity(player);
         }
 
         final BlockEntity entity = this.world.getBlockEntity(position);
         if (!(entity instanceof final MenuConstructor container)) {
-            return buildFakeTile(player);
+            return buildFakeBlockEntity(player);
         }
 
-        final AbstractContainerMenu atBlock = container.createMenu(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory(), player);
+        final AbstractContainerMenu atBlock = container.createMenu(((ServerPlayerBridge)player).cardboard$nextContainerCounter(), player.getInventory(), player);
         if (atBlock.getType() != super.handle) {
-            return buildFakeTile(player);
+            return buildFakeBlockEntity(player);
         }
 
+        if (!(entity instanceof final MenuProvider provider)) {
+            throw new IllegalStateException("Provided blockEntity during MenuType creation can not find a default title! This is a bug!");
+        }
+
+        super.defaultTitle = provider.getDisplayName();
         return atBlock;
     }
 
-    private AbstractContainerMenu buildFakeTile(final ServerPlayer player) {
-        if (this.builder == null) {
-            return handle.create(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory());
-        }
+    private AbstractContainerMenu buildFakeBlockEntity(final ServerPlayer player) {
         final MenuProvider inventory = this.builder.build(this.position, this.block.defaultBlockState());
-        if (inventory instanceof final BlockEntity tile) {
-            tile.setLevel(this.world);
+        if (inventory instanceof final BlockEntity blockEntity) {
+            blockEntity.setLevel(this.world);
+            super.defaultTitle = inventory.getDisplayName();
         }
-        return inventory.createMenu(((IMixinServerEntityPlayer)player).nextContainerCounter(), player.getInventory(), player);
+
+        if (!this.useFakeBlockEntity) { // gets around open noise for chest
+            return handle.create(((ServerPlayerBridge)player).cardboard$nextContainerCounter(), player.getInventory());
+        }
+
+        return inventory.createMenu(((ServerPlayerBridge)player).cardboard$nextContainerCounter(), player.getInventory(), player);
     }
 
     @Override
     public LocationInventoryViewBuilder<V> copy() {
-        final CraftBlockEntityInventoryViewBuilder<V> copy = new CraftBlockEntityInventoryViewBuilder<>(super.handle, this.block, this.builder);
+        final CraftBlockEntityInventoryViewBuilder<V> copy = new CraftBlockEntityInventoryViewBuilder<>(super.handle, this.block, this.builder, this.useFakeBlockEntity);
         copy.world = this.world;
         copy.position = this.position;
         copy.checkReachable = super.checkReachable;
@@ -70,7 +93,7 @@ public class CraftBlockEntityInventoryViewBuilder<V extends InventoryView> exten
         return copy;
     }
 
-    public interface CraftTileInventoryBuilder {
-        MenuProvider build(BlockPos blockPosition, BlockState blockData);
+    public interface CraftBlockInventoryBuilder {
+        MenuProvider build(BlockPos pos, BlockState state);
     }
 }

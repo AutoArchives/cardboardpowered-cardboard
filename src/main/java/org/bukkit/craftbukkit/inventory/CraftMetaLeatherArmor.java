@@ -1,59 +1,54 @@
 package org.bukkit.craftbukkit.inventory;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
-import java.util.Map;
-import java.util.Set;
+import com.google.common.collect.ImmutableMap.Builder;
 import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.component.DyedItemColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.craftbukkit.inventory.CraftItemFactory;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem;
-import org.bukkit.craftbukkit.inventory.SerializableMeta;
-import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.meta.ColorableArmorMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
-@DelegateDeserialization(value=SerializableMeta.class)
-class CraftMetaLeatherArmor
-extends CraftMetaItem
-implements LeatherArmorMeta {
-    private static final Set<Material> LEATHER_ARMOR_MATERIALS = Sets.newHashSet(
-    		new Material[]{
-    				Material.LEATHER_HELMET,
-    				Material.LEATHER_HORSE_ARMOR,
-    				Material.LEATHER_CHESTPLATE,
-    				Material.LEATHER_LEGGINGS,
-    				Material.LEATHER_BOOTS,
-    				// TODO: 1.20.6
-    				// Material.WOLF_ARMOR
-    			}
-    	);
-    static final CraftMetaItem.ItemMetaKeyType<DyedItemColor> COLOR = new CraftMetaItem.ItemMetaKeyType<DyedItemColor>(DataComponents.DYED_COLOR, "color");
-    private Color color = CraftItemFactory.DEFAULT_LEATHER_COLOR;
+import java.util.Map;
+import java.util.Objects;
+
+import static org.bukkit.craftbukkit.inventory.CraftItemFactory.DEFAULT_LEATHER_COLOR;
+
+@DelegateDeserialization(SerializableMeta.class)
+class CraftMetaLeatherArmor extends CraftMetaItem implements LeatherArmorMeta {
+
+    static final ItemMetaKeyType<DyedItemColor> COLOR = new ItemMetaKeyType<>(DataComponents.DYED_COLOR, "color");
+
+    private Integer color; // Paper - keep color component consistent with vanilla (top byte is ignored)
 
     CraftMetaLeatherArmor(CraftMetaItem meta) {
         super(meta);
-        CraftMetaLeatherArmor.readColor((LeatherArmorMeta)this, meta);
+        if (!(meta instanceof CraftMetaLeatherArmor leatherMeta)) {
+            return;
+        }
+
+        this.color = leatherMeta.color;
     }
 
-    CraftMetaLeatherArmor(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledDcts) {
+    CraftMetaLeatherArmor(DataComponentPatch tag, java.util.Set<net.minecraft.core.component.DataComponentType<?>> extraHandledDcts) {
         super(tag, extraHandledDcts);
-        CraftMetaLeatherArmor.readColor((LeatherArmorMeta)this, tag);
+        getOrEmpty(tag, CraftMetaLeatherArmor.COLOR).ifPresent((dyedItemColor) -> {
+            this.color = dyedItemColor.rgb();
+        });
     }
 
     CraftMetaLeatherArmor(Map<String, Object> map) {
         super(map);
-        CraftMetaLeatherArmor.readColor((LeatherArmorMeta)this, map);
+        CraftMetaLeatherArmor.readColor(this, map);
     }
 
     @Override
-    void applyToItem(CraftMetaItem.Applicator itemTag) {
-        super.applyToItem(itemTag);
-        CraftMetaLeatherArmor.applyColor(this, itemTag);
+    void applyToItem(Applicator tag) {
+        super.applyToItem(tag);
+        if (this.hasColor()) {
+            tag.put(CraftMetaLeatherArmor.COLOR, new DyedItemColor(this.color));
+        }
     }
 
     @Override
@@ -62,35 +57,43 @@ implements LeatherArmorMeta {
     }
 
     boolean isLeatherArmorEmpty() {
-        return !this.hasColor();
+        return !(this.hasColor());
     }
 
     @Override
     boolean applicableTo(Material type) {
-        return LEATHER_ARMOR_MATERIALS.contains(type);
+        if (!type.isItem()) {
+            return false;
+        }
+
+        return type.asItemType().getItemMetaClass() == LeatherArmorMeta.class || type.asItemType().getItemMetaClass() == ColorableArmorMeta.class;
     }
 
     @Override
     public CraftMetaLeatherArmor clone() {
-        return (CraftMetaLeatherArmor)super.clone();
-    }
-
-    public Color getColor() {
-        return this.color;
-    }
-
-    public void setColor(Color color) {
-        this.color = color == null ? CraftItemFactory.DEFAULT_LEATHER_COLOR : color;
-    }
-
-    boolean hasColor() {
-        return CraftMetaLeatherArmor.hasColor(this);
+        return (CraftMetaLeatherArmor) super.clone();
     }
 
     @Override
-    ImmutableMap.Builder<String, Object> serialize(ImmutableMap.Builder<String, Object> builder) {
+    public Color getColor() {
+        return this.color == null ? DEFAULT_LEATHER_COLOR : Color.fromRGB(this.color & 0x00FFFFFF);
+    }
+
+    @Override
+    public void setColor(Color color) {
+        this.color = color == null ? null : color.asRGB();
+    }
+
+    boolean hasColor() {
+        return this.color != null;
+    }
+
+    @Override
+    Builder<String, Object> serialize(Builder<String, Object> builder) {
         super.serialize(builder);
+
         CraftMetaLeatherArmor.serialize(this, builder);
+
         return builder;
     }
 
@@ -99,9 +102,8 @@ implements LeatherArmorMeta {
         if (!super.equalsCommon(meta)) {
             return false;
         }
-        if (meta instanceof CraftMetaLeatherArmor) {
-            CraftMetaLeatherArmor that = (CraftMetaLeatherArmor)meta;
-            return this.color.equals(that.color);
+        if (meta instanceof final CraftMetaLeatherArmor other) {
+            return Objects.equals(this.color, other.color);
         }
         return true;
     }
@@ -113,7 +115,7 @@ implements LeatherArmorMeta {
 
     @Override
     int applyHash() {
-        int original;
+        final int original;
         int hash = original = super.applyHash();
         if (this.hasColor()) {
             hash ^= this.color.hashCode();
@@ -121,52 +123,22 @@ implements LeatherArmorMeta {
         return original != hash ? CraftMetaLeatherArmor.class.hashCode() ^ hash : hash;
     }
 
-    static void readColor(LeatherArmorMeta meta, CraftMetaItem other) {
-        if (!(other instanceof CraftMetaLeatherArmor)) {
-            return;
-        }
-        CraftMetaLeatherArmor armorMeta = (CraftMetaLeatherArmor)other;
-        meta.setColor(armorMeta.color);
-    }
-
-    static void readColor(LeatherArmorMeta meta, DataComponentPatch tag) {
-        CraftMetaLeatherArmor.getOrEmpty(tag, COLOR).ifPresent(dyedItemColor -> {
-        	/*
-        	if (!dyedItemColor.showInTooltip()) {
-                meta.addItemFlags(new ItemFlag[]{ItemFlag.HIDE_DYE});
-            }
-            */
-            try {
-                meta.setColor(Color.fromRGB((int)dyedItemColor.rgb()));
-            }
-            catch (IllegalArgumentException illegalArgumentException) {
-                // empty catch block
-            }
-        });
-    }
-
     static void readColor(LeatherArmorMeta meta, Map<String, Object> map) {
-        meta.setColor(org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta.getObject(Color.class, map, CraftMetaLeatherArmor.COLOR.BUKKIT, true));
+        meta.setColor(SerializableMeta.getObject(Color.class, map, CraftMetaLeatherArmor.COLOR.BUKKIT, true));
     }
 
     static boolean hasColor(LeatherArmorMeta meta) {
-        return !CraftItemFactory.DEFAULT_LEATHER_COLOR.equals(meta.getColor());
+        return !DEFAULT_LEATHER_COLOR.equals(meta.getColor());
     }
 
-    static void applyColor(LeatherArmorMeta meta, CraftMetaItem.Applicator tag) {
-        if (CraftMetaLeatherArmor.hasColor(meta)) {
-            tag.put(COLOR, new DyedItemColor(meta.getColor().asRGB()/*, !meta.hasItemFlag(ItemFlag.HIDE_DYE)*/));
-        }
-    }
-
-    static void serialize(LeatherArmorMeta meta, ImmutableMap.Builder<String, Object> builder) {
+    static void serialize(LeatherArmorMeta meta, Builder<String, Object> builder) {
         if (CraftMetaLeatherArmor.hasColor(meta)) {
             builder.put(CraftMetaLeatherArmor.COLOR.BUKKIT, meta.getColor());
         }
     }
 
+    @Override
     public boolean isDyed() {
         return this.hasColor();
     }
 }
-

@@ -1,14 +1,12 @@
 package io.papermc.paper.connection;
 
 // import io.papermc.paper.connection.HorriblePlayerLoginEventHack;
-import io.papermc.paper.connection.PaperCommonConnection;
-import io.papermc.paper.connection.PlayerGameConnection;
 import java.util.Set;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.cardboardpowered.interfaces.IMixinServerEntityPlayer;
+import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 public class PaperPlayerGameConnection extends PaperCommonConnection<ServerGamePacketListenerImpl> implements PlayerGameConnection {
 
@@ -37,7 +35,7 @@ public class PaperPlayerGameConnection extends PaperCommonConnection<ServerGameP
     */
 
     public Player getPlayer() {
-        return (Player) ((IMixinServerEntityPlayer) ((ServerGamePacketListenerImpl)this.handle).getPlayer() ).getBukkitEntity();
+        return (Player) ((ServerPlayerBridge) ((ServerGamePacketListenerImpl)this.handle).getPlayer() ).getBukkitEntity();
     }
 
     public void sendPluginMessage(Plugin source, String channel, byte[] message) {

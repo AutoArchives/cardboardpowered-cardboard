@@ -16,8 +16,7 @@ import net.minecraft.world.item.trading.Merchant;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
-import org.bukkit.entity.ExperienceOrb.SpawnReason;
-import org.cardboardpowered.interfaces.IMixinTrader;
+import org.cardboardpowered.bridge.world.entity.npc.villager.AbstractVillagerBridge;
 
 public class CraftMerchantCustom implements CraftMerchant {
    private CraftMerchantCustom.MinecraftMerchant merchant;
@@ -42,7 +41,7 @@ public class CraftMerchantCustom implements CraftMerchant {
       return this.merchant;
    }
 
-   public static class MinecraftMerchant implements Merchant, IMixinTrader {
+   public static class MinecraftMerchant implements Merchant, AbstractVillagerBridge {
       private final net.minecraft.network.chat.Component title;
       private final MerchantOffers trades = new MerchantOffers();
       private Player tradingPlayer;

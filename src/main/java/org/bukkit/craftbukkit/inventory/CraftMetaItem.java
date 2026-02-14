@@ -1,59 +1,18 @@
 package org.bukkit.craftbukkit.inventory;
 
-import com.destroystokyo.paper.Namespaced;
-import com.destroystokyo.paper.NamespacedTag;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
-import com.javazilla.bukkitfabric.Utils;
 import com.mojang.logging.LogUtils;
-
-import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
-
-import me.isaiah.common.ICommonMod;
-import net.kyori.adventure.text.Component;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.ChatFormatting;
-import net.minecraft.advancements.criterion.BlockPredicate;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtAccounter;
-import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.resources.Identifier;
-import net.minecraft.resources.RegistryOps;
-import net.minecraft.tags.TagKey;
-import net.minecraft.util.Unit;
-import net.minecraft.world.item.AdventureModePredicate;
-import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.component.BlockItemStateProperties;
-import net.minecraft.world.item.component.CustomData;
-import net.minecraft.world.item.component.DamageResistant;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.item.component.ItemLore;
-import net.minecraft.world.item.component.ResolvableProfile;
-import net.minecraft.world.item.component.TooltipDisplay;
-import net.minecraft.world.item.component.UseRemainder;
-import net.minecraft.world.item.enchantment.Enchantable;
-import net.minecraft.world.item.enchantment.ItemEnchantments;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
+import com.mojang.serialization.DynamicOps;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -61,32 +20,65 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SequencedSet;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.apache.commons.lang.Validate;
-import org.apache.commons.lang3.EnumUtils;
+import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.SnbtPrinterTagVisitor;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.util.Unit;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.AdventureModePredicate;
+import net.minecraft.world.item.EitherHolder;
+import net.minecraft.world.item.JukeboxPlayable;
+import net.minecraft.world.item.JukeboxSongs;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.item.component.DamageResistant;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.item.component.UseCooldown;
+import net.minecraft.world.item.component.UseRemainder;
+import net.minecraft.world.item.enchantment.Enchantable;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.item.equipment.Equippable;
+import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -94,33 +86,34 @@ import org.bukkit.Tag;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
-import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftRegistry;
-import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.Overridden;
 import org.bukkit.craftbukkit.attribute.CraftAttribute;
 import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
 import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey.Specific;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKeyType;
 import org.bukkit.craftbukkit.inventory.components.CraftCustomModelDataComponent;
 import org.bukkit.craftbukkit.inventory.components.CraftEquippableComponent;
+import org.bukkit.craftbukkit.inventory.components.CraftFoodComponent;
+import org.bukkit.craftbukkit.inventory.components.CraftJukeboxComponent;
 import org.bukkit.craftbukkit.inventory.components.CraftToolComponent;
 import org.bukkit.craftbukkit.inventory.components.CraftUseCooldownComponent;
 import org.bukkit.craftbukkit.inventory.tags.DeprecatedCustomTagContainer;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry;
+import org.bukkit.craftbukkit.tag.CraftDamageTag;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNBTTagConfigSerializer;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.damage.DamageType;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.EquipmentSlotGroup;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemRarity;
 import org.bukkit.inventory.ItemStack;
@@ -128,6 +121,7 @@ import org.bukkit.inventory.meta.BlockDataMeta;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.Repairable;
+import org.bukkit.inventory.meta.components.CustomModelDataComponent;
 import org.bukkit.inventory.meta.components.EquippableComponent;
 import org.bukkit.inventory.meta.components.FoodComponent;
 import org.bukkit.inventory.meta.components.JukeboxPlayableComponent;
@@ -136,157 +130,100 @@ import org.bukkit.inventory.meta.components.UseCooldownComponent;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.tag.DamageTypeTags;
-import org.cardboardpowered.adventure.CardboardAdventure;
-import org.cardboardpowered.impl.CardboardEnchantment;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.cardboardpowered.bridge.core.component.DataComponentPatch_BuilderBridge;
+import org.slf4j.Logger;
 
-import org.cardboardpowered.interfaces.IComponentChanges;
-
-@SuppressWarnings({"deprecation", "rawtypes"})
-@DelegateDeserialization(CraftMetaItem.SerializableMeta.class)
+/**
+ * Children must include the following:
+ *
+ * <li> Constructor(CraftMetaItem meta)
+ * <li> Constructor(DataComponentPatch tag, Set&lt;DataComponentType&lt;?&gt;&gt; extraHandledDcts)
+ * <li> Constructor(Map&lt;String, Object&gt; map)
+ * <br><br>
+ * <li> void applyToItem(CraftMetaItem.Applicator tag)
+ * <li> boolean applicableTo(Material type)
+ * <br><br>
+ * <li> boolean equalsCommon(CraftMetaItem meta)
+ * <li> boolean notUncommon(CraftMetaItem meta)
+ * <br><br>
+ * <li> boolean isEmpty()
+ * <li> boolean is{Type}Empty()
+ * <br><br>
+ * <li> int applyHash()
+ * <li> public Class clone()
+ * <br><br>
+ * <li> Builder&lt;String, Object&gt; serialize(Builder&lt;String, Object&gt; builder)
+ * <li> SerializableMeta.Deserializers deserializer()
+ */
+@DelegateDeserialization(SerializableMeta.class)
+// Important: ItemMeta needs to be the first interface see #applicableTo(Material)
 class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
-	static final org.slf4j.Logger LOGGER = LogUtils.getLogger();
-	
-	 // private Set<Namespaced> destroyableKeys = Sets.newHashSet();
-	
-	    static class ItemMetaKey {
-	        final String BUKKIT;
-	        final String NBT;
+    static final Logger LOGGER = LogUtils.getLogger();
 
-	        ItemMetaKey(String both) {
-	            this(both, both);
-	        }
+    static class ItemMetaKey {
 
-	        ItemMetaKey(String nbt, String bukkit) {
-	            this.NBT = nbt;
-	            this.BUKKIT = bukkit;
-	        }
-
-	        @Retention(value=RetentionPolicy.SOURCE)
-	        @Target(value={ElementType.FIELD})
-	        static @interface Specific {
-	            public To value();
-
-	            public static enum To {
-	                BUKKIT,
-	                NBT;
-
-	            }
-	        }
-	    }
-    
-    
-
-    @SerializableAs("ItemMeta")
-    public static final class SerializableMeta implements ConfigurationSerializable {
-        static final String TYPE_FIELD = "meta-type";
-
-        static final ImmutableMap<Class<? extends CraftMetaItem>, String> classMap;
-        static final ImmutableMap<String, Constructor<? extends CraftMetaItem>> constructorMap;
-
-        static {
-            classMap = ImmutableMap.<Class<? extends CraftMetaItem>, String>builder()
-                    .put(CraftMetaArmorStand.class, "ARMOR_STAND")
-                    .put(CraftMetaBanner.class, "BANNER")
-                    .put(CraftMetaBlockState.class, "TILE_ENTITY")
-                    .put(CraftMetaBook.class, "BOOK")
-                    .put(CraftMetaBookSigned.class, "BOOK_SIGNED")
-                    .put(CraftMetaSkull.class, "SKULL")
-                    .put(CraftMetaLeatherArmor.class, "LEATHER_ARMOR")
-                    .put(CraftMetaMap.class, "MAP")
-                    .put(CraftMetaPotion.class, "POTION")
-                    .put(CraftMetaSpawnEgg.class, "SPAWN_EGG")
-                    .put(CraftMetaEnchantedBook.class, "ENCHANTED")
-                    .put(CraftMetaFirework.class, "FIREWORK")
-                    .put(CraftMetaCharge.class, "FIREWORK_EFFECT")
-                    .put(CraftMetaKnowledgeBook.class, "KNOWLEDGE_BOOK")
-                    // TODO .put(CraftMetaTropicalFishBucket.class, "TROPICAL_FISH_BUCKET")
-                    .put(CraftMetaCrossbow.class, "CROSSBOW")
-                    .put(CraftMetaSuspiciousStew.class, "SUSPICIOUS_STEW")
-                    .put(CraftMetaShield.class, "SHIELD")
-                    .put(CraftMetaItem.class, "UNSPECIFIC")
-                    .build();
-
-            final ImmutableMap.Builder<String, Constructor<? extends CraftMetaItem>> classConstructorBuilder = ImmutableMap.builder();
-            for (Map.Entry<Class<? extends CraftMetaItem>, String> mapping : classMap.entrySet()) {
-                try {
-                    classConstructorBuilder.put(mapping.getValue(), mapping.getKey().getDeclaredConstructor(Map.class));
-                } catch (NoSuchMethodException e) {throw new AssertionError(e);}
+        @Retention(RetentionPolicy.SOURCE)
+        @Target(ElementType.FIELD)
+        @interface Specific {
+            enum To {
+                BUKKIT,
+                NBT,
+                ;
             }
-            constructorMap = classConstructorBuilder.build();
+            To value();
         }
 
-        private SerializableMeta() {
+        final String BUKKIT;
+        final String NBT;
+
+        ItemMetaKey(final String both) {
+            this(both, both);
         }
 
-        public static ItemMeta deserialize(Map<String, Object> map) throws Throwable {
-            Validate.notNull(map, "Cannot deserialize null map");
-
-            String type = getString(map, TYPE_FIELD, false);
-            Constructor<? extends CraftMetaItem> constructor = constructorMap.get(type);
-
-            if (constructor == null)
-                throw new IllegalArgumentException(type + " is not a valid " + TYPE_FIELD);
-
-            try {
-                return constructor.newInstance(map);
-            } catch (final InstantiationException | IllegalAccessException e) {
-                throw new AssertionError(e);
-            } catch (final InvocationTargetException e) {
-                throw e.getCause();
-            }
+        ItemMetaKey(final String nbt, final String bukkit) {
+            this.NBT = nbt;
+            this.BUKKIT = bukkit;
         }
-
-        @Override
-        public Map<String, Object> serialize() {
-            throw new AssertionError();
-        }
-
-        static String getString(Map<?, ?> map, Object field, boolean nullable) {
-            return getObject(String.class, map, field, nullable);
-        }
-
-        static boolean getBoolean(Map<?, ?> map, Object field) {
-            Boolean value = getObject(Boolean.class, map, field, true);
-            return value != null && value;
-        }
-
-        static <T> T getObject(Class<T> clazz, Map<?, ?> map, Object field, boolean nullable) {
-            final Object object = map.get(field);
-
-            if (clazz.isInstance(object))
-                return clazz.cast(object);
-
-            if (object == null) {
-                if (!nullable)
-                    throw new NoSuchElementException(map + " does not contain " + field);
-                return null;
-            }
-            throw new IllegalArgumentException(field + "(" + object + ") is not a valid " + clazz);
-        }
-
-        public static <T> Optional<T> getObjectOptionally(Class<T> clazz, Map<?, ?> map, Object field, boolean nullable) {
-            Object object = map.get(field);
-            if (clazz.isInstance(object)) {
-                return Optional.of(clazz.cast(object));
-            }
-            if (object == null) {
-                if (!nullable) {
-                    throw new NoSuchElementException(String.valueOf(map) + " does not contain " + String.valueOf(field));
-                }
-                return Optional.empty();
-            }
-            throw new IllegalArgumentException(String.valueOf(field) + "(" + String.valueOf(object) + ") is not a valid " + String.valueOf(clazz));
-        }
-
     }
 
-    static final ItemMetaKeyType<net.minecraft.network.chat.Component> NAME = new ItemMetaKeyType(DataComponents.CUSTOM_NAME, "display-name");
-    static final ItemMetaKeyType<net.minecraft.network.chat.Component> ITEM_NAME = new ItemMetaKeyType(DataComponents.ITEM_NAME, "item-name");
+    static final class ItemMetaKeyType<T> extends ItemMetaKey {
+
+        final DataComponentType<T> TYPE;
+
+        ItemMetaKeyType(final DataComponentType<T> type) {
+            this(type, null, null);
+        }
+
+        ItemMetaKeyType(final DataComponentType<T> type, final String both) {
+            this(type, both, both);
+        }
+
+        ItemMetaKeyType(final DataComponentType<T> type, final String nbt, final String bukkit) {
+            super(nbt, bukkit);
+            this.TYPE = type;
+        }
+    }
+
+    static abstract class Applicator { // Paper - support updating profile after resolving it
+
+        final DataComponentPatch.Builder builder = DataComponentPatch.builder();
+        void skullCallback(net.minecraft.world.item.component.ResolvableProfile resolvableProfile) {} // Paper - support updating profile after resolving it
+
+        <T> Applicator put(ItemMetaKeyType<T> key, T value) {
+            this.builder.set(key.TYPE, value);
+            return this;
+        }
+
+        DataComponentPatch build() {
+            return this.builder.build();
+        }
+    }
+
+    static final ItemMetaKeyType<Component> NAME = new ItemMetaKeyType(DataComponents.CUSTOM_NAME, "display-name");
+    static final ItemMetaKeyType<Component> ITEM_NAME = new ItemMetaKeyType(DataComponents.ITEM_NAME, "item-name");
     static final ItemMetaKeyType<ItemLore> LORE = new ItemMetaKeyType<>(DataComponents.LORE, "lore");
-    static final ItemMetaKeyType<net.minecraft.world.item.component.CustomModelData> CUSTOM_MODEL_DATA = new ItemMetaKeyType<>(DataComponents.CUSTOM_MODEL_DATA, "custom-model-data");
+    static final ItemMetaKeyType<CustomModelData> CUSTOM_MODEL_DATA = new ItemMetaKeyType<>(DataComponents.CUSTOM_MODEL_DATA, "custom-model-data");
     static final ItemMetaKeyType<Enchantable> ENCHANTABLE = new ItemMetaKeyType<>(DataComponents.ENCHANTABLE, "enchantable");
     static final ItemMetaKeyType<ItemEnchantments> ENCHANTMENTS = new ItemMetaKeyType<>(DataComponents.ENCHANTMENTS, "enchants");
     static final ItemMetaKeyType<Integer> REPAIR = new ItemMetaKeyType<>(DataComponents.REPAIR_COST, "repair-cost");
@@ -298,17 +235,13 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     @Specific(Specific.To.NBT)
     static final ItemMetaKey HIDEFLAGS = new ItemMetaKey("ItemFlags");
     @Specific(Specific.To.NBT)
-    //static final ItemMetaKeyType<Unit> HIDE_TOOLTIP = new ItemMetaKeyType<>(DataComponentTypes.HIDE_TOOLTIP, "hide-tool-tip");
-    static final ItemMetaKeyType<TooltipDisplay> TOOLTIP_DISPLAY = new ItemMetaKeyType<TooltipDisplay>(DataComponents.TOOLTIP_DISPLAY, "tool-tip-display");
-
+    static final ItemMetaKeyType<TooltipDisplay> TOOLTIP_DISPLAY = new ItemMetaKeyType<>(DataComponents.TOOLTIP_DISPLAY, "tool-tip-display");
     @Specific(Specific.To.NBT)
     static final ItemMetaKeyType<Identifier> TOOLTIP_STYLE = new ItemMetaKeyType<>(DataComponents.TOOLTIP_STYLE, "tool-tip-style");
     @Specific(Specific.To.NBT)
     static final ItemMetaKeyType<Identifier> ITEM_MODEL = new ItemMetaKeyType<>(DataComponents.ITEM_MODEL, "item-model");
     @Specific(Specific.To.NBT)
-    //static final ItemMetaKeyType<UnbreakableComponent> UNBREAKABLE = new ItemMetaKeyType<>(DataComponentTypes.UNBREAKABLE, "Unbreakable");
-    static final ItemMetaKeyType<Unit> UNBREAKABLE = new ItemMetaKeyType<Unit>(DataComponents.UNBREAKABLE, "Unbreakable");
-
+    static final ItemMetaKeyType<Unit> UNBREAKABLE = new ItemMetaKeyType<>(DataComponents.UNBREAKABLE, "Unbreakable");
     @Specific(Specific.To.NBT)
     static final ItemMetaKeyType<Boolean> ENCHANTMENT_GLINT_OVERRIDE = new ItemMetaKeyType<>(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, "enchantment-glint-override");
     @Specific(Specific.To.NBT)
@@ -322,150 +255,100 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     @Specific(Specific.To.NBT)
     static final ItemMetaKeyType<UseRemainder> USE_REMAINDER = new ItemMetaKeyType<>(DataComponents.USE_REMAINDER, "use-remainder");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<net.minecraft.world.item.component.UseCooldown> USE_COOLDOWN = new ItemMetaKeyType<>(DataComponents.USE_COOLDOWN, "use-cooldown");
+    static final ItemMetaKeyType<UseCooldown> USE_COOLDOWN = new ItemMetaKeyType<>(DataComponents.USE_COOLDOWN, "use-cooldown");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<net.minecraft.world.food.FoodProperties> FOOD = new ItemMetaKeyType<>(DataComponents.FOOD, "food");
+    static final ItemMetaKeyType<FoodProperties> FOOD = new ItemMetaKeyType<>(DataComponents.FOOD, "food");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<net.minecraft.world.item.component.Tool> TOOL = new ItemMetaKeyType<>(DataComponents.TOOL, "tool");
+    static final ItemMetaKeyType<Tool> TOOL = new ItemMetaKeyType<>(DataComponents.TOOL, "tool");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<net.minecraft.world.item.equipment.Equippable> EQUIPPABLE = new ItemMetaKeyType<>(DataComponents.EQUIPPABLE, "equippable");
+    static final ItemMetaKeyType<Equippable> EQUIPPABLE = new ItemMetaKeyType<>(DataComponents.EQUIPPABLE, "equippable");
     @Specific(Specific.To.NBT)
-    static final ItemMetaKeyType<net.minecraft.world.item.JukeboxPlayable> JUKEBOX_PLAYABLE = new ItemMetaKeyType<>(DataComponents.JUKEBOX_PLAYABLE, "jukebox-playable");
+    static final ItemMetaKeyType<JukeboxPlayable> JUKEBOX_PLAYABLE = new ItemMetaKeyType<>(DataComponents.JUKEBOX_PLAYABLE, "jukebox-playable");
     @Specific(Specific.To.NBT)
     static final ItemMetaKeyType<Integer> DAMAGE = new ItemMetaKeyType<>(DataComponents.DAMAGE, "Damage");
     @Specific(Specific.To.NBT)
     static final ItemMetaKeyType<Integer> MAX_DAMAGE = new ItemMetaKeyType<>(DataComponents.MAX_DAMAGE, "max-damage");
     @Specific(Specific.To.NBT)
     static final ItemMetaKeyType<BlockItemStateProperties> BLOCK_DATA = new ItemMetaKeyType<>(DataComponents.BLOCK_STATE, "BlockStateTag");
-    static final ItemMetaKey BUKKIT_CUSTOM_TAG = new ItemMetaKey("PublicBukkitValues");
-    // @Specific(Specific.To.NBT)
-    // static final ItemMetaKeyType<Unit> HIDE_ADDITIONAL_TOOLTIP = new ItemMetaKeyType(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP);
+    static final ItemMetaKeyType<AdventureModePredicate> CAN_PLACE_ON = new ItemMetaKeyType<>(DataComponents.CAN_PLACE_ON);
+    static final ItemMetaKeyType<AdventureModePredicate> CAN_BREAK = new ItemMetaKeyType<>(DataComponents.CAN_BREAK);
+    static final ItemMetaKey BUKKIT_CUSTOM_TAG = new ItemMetaKey(CraftItemStack.PDC_CUSTOM_DATA_KEY);
     @Specific(Specific.To.NBT)
     static final ItemMetaKeyType<CustomData> CUSTOM_DATA = new ItemMetaKeyType<>(DataComponents.CUSTOM_DATA);
 
-    // paper
-    static final ItemMetaKeyType<AdventureModePredicate> CAN_PLACE_ON = new ItemMetaKeyType<AdventureModePredicate>(DataComponents.CAN_PLACE_ON);
-    static final ItemMetaKeyType<AdventureModePredicate> CAN_BREAK = new ItemMetaKeyType<AdventureModePredicate>(DataComponents.CAN_BREAK);
-    
-    private List<BlockPredicate> canPlaceOnPredicates;
-    private List<BlockPredicate> canBreakPredicates;
-    
-    private static final Set<DataComponentType<?>> HIDDEN_COMPONENTS_PREVIOUSLY = Set.of(DataComponents.BANNER_PATTERNS, DataComponents.BEES, DataComponents.BLOCK_ENTITY_DATA, DataComponents.BLOCK_STATE, DataComponents.BUNDLE_CONTENTS, DataComponents.CHARGED_PROJECTILES, DataComponents.CONTAINER, DataComponents.CONTAINER_LOOT, DataComponents.FIREWORK_EXPLOSION, DataComponents.FIREWORKS, DataComponents.INSTRUMENT, DataComponents.JUKEBOX_PLAYABLE, DataComponents.MAP_ID, DataComponents.PAINTING_VARIANT, DataComponents.POT_DECORATIONS, DataComponents.POTION_CONTENTS, DataComponents.TROPICAL_FISH_PATTERN, DataComponents.WRITTEN_BOOK_CONTENT);
-
-    
-    private static final Map<ItemFlag, Set<DataComponentType<?>>> ITEM_FLAG_EQUIVALENTS = ImmutableMap.<ItemFlag, Set<DataComponentType<?>>>builder()
-    		.put(ItemFlag.HIDE_ATTRIBUTES, Set.of(DataComponents.ATTRIBUTE_MODIFIERS))
-    		.put(ItemFlag.HIDE_ENCHANTS, Set.of(DataComponents.ENCHANTMENTS))
-    		.put(ItemFlag.HIDE_STORED_ENCHANTS, Set.of(DataComponents.STORED_ENCHANTMENTS))
-    		.put(ItemFlag.HIDE_UNBREAKABLE, Set.of(DataComponents.UNBREAKABLE))
-    		.put(ItemFlag.HIDE_DYE, Set.of(DataComponents.DYED_COLOR))
-    		.put(ItemFlag.HIDE_ARMOR_TRIM, Set.of(DataComponents.TRIM))
-    		.put(ItemFlag.HIDE_PLACED_ON, Set.of(DataComponents.CAN_PLACE_ON))
-    		.put(ItemFlag.HIDE_DESTROYS, Set.of(DataComponents.CAN_BREAK))
-    		.put(ItemFlag.HIDE_ADDITIONAL_TOOLTIP, HIDDEN_COMPONENTS_PREVIOUSLY)
-    		.buildOrThrow();
-
-    
-    protected static final Set<DataComponentType<?>> DEFAULT_HANDLED_DCTS = Set.of(CraftMetaItem.NAME.TYPE, CraftMetaItem.ITEM_NAME.TYPE, CraftMetaItem.LORE.TYPE, CraftMetaItem.CUSTOM_MODEL_DATA.TYPE, CraftMetaItem.ENCHANTABLE.TYPE, CraftMetaItem.BLOCK_DATA.TYPE, CraftMetaItem.REPAIR.TYPE, CraftMetaItem.ENCHANTMENTS.TYPE, CraftMetaItem.TOOLTIP_DISPLAY.TYPE, CraftMetaItem.TOOLTIP_STYLE.TYPE, CraftMetaItem.ITEM_MODEL.TYPE, CraftMetaItem.UNBREAKABLE.TYPE, CraftMetaItem.ENCHANTMENT_GLINT_OVERRIDE.TYPE, CraftMetaItem.GLIDER.TYPE, CraftMetaItem.DAMAGE_RESISTANT.TYPE, CraftMetaItem.MAX_STACK_SIZE.TYPE, CraftMetaItem.RARITY.TYPE, CraftMetaItem.USE_REMAINDER.TYPE, CraftMetaItem.USE_COOLDOWN.TYPE, CraftMetaItem.FOOD.TYPE, CraftMetaItem.TOOL.TYPE, CraftMetaItem.EQUIPPABLE.TYPE, CraftMetaItem.JUKEBOX_PLAYABLE.TYPE, CraftMetaItem.DAMAGE.TYPE, CraftMetaItem.MAX_DAMAGE.TYPE, CraftMetaItem.CUSTOM_DATA.TYPE, CraftMetaItem.ATTRIBUTES.TYPE, CraftMetaItem.CAN_PLACE_ON.TYPE, CraftMetaItem.CAN_BREAK.TYPE);
-
-    
-    /*private Text displayName;
-    private Text locName;
-    private List<Text> lore;
-    private Integer customModelData;
-    private NbtCompound blockData;
-    private Map<Enchantment, Integer> enchantments;
-    private Multimap<Attribute, AttributeModifier> attributeModifiers;
-    private int repairCost;
-    private int hideFlag;
-    private boolean unbreakable;
-    private int damage;*/
-
     // We store the raw original JSON representation of all text data. See SPIGOT-5063, SPIGOT-5656, SPIGOT-5304
-    private net.minecraft.network.chat.Component displayName;
-    private net.minecraft.network.chat.Component itemName;
-    private List<net.minecraft.network.chat.Component> lore; // null and empty are two different states internally
+    private Component displayName;
+    private Component itemName;
+    private List<Component> lore; // null and empty are two different states internally
     private CraftCustomModelDataComponent customModelData;
+    private Integer enchantableValue;
     private Map<String, String> blockData;
-    private Map<Enchantment, Integer> enchantments;
+    private EnchantmentMap enchantments;
     private Multimap<Attribute, AttributeModifier> attributeModifiers;
     private int repairCost;
-    // removed: private int hideFlag;
-    private boolean hideTooltip;
-    private boolean unbreakable;
-    private Boolean enchantmentGlintOverride;
-    private boolean fireResistant;
-    private Integer maxStackSize;
-    private ItemRarity rarity;
-    // private CraftFoodComponent food;
-    private CraftToolComponent tool;
-    private Integer damage;
-    private Integer maxDamage;
-    
-    private CraftEquippableComponent equippable;
-    private CraftUseCooldownComponent useCooldown;
-    private Integer enchantableValue;
-    
-    @Nullable
-    private TooltipDisplay tooltipDisplay;
-    
+    private @Nullable TooltipDisplay tooltipDisplay;
     private NamespacedKey tooltipStyle;
     private NamespacedKey itemModel;
-    private TagKey<net.minecraft.world.damagesource.DamageType> damageResistant;
-    private ItemStack useRemainder;
+    private boolean unbreakable;
+    private Boolean enchantmentGlintOverride;
     private boolean glider;
+    private TagKey<net.minecraft.world.damagesource.DamageType> damageResistant;
+    private Integer maxStackSize;
+    private ItemRarity rarity;
+    private ItemStack useRemainder;
+    private CraftUseCooldownComponent useCooldown;
+    private CraftFoodComponent food;
+    private CraftToolComponent tool;
+    private CraftEquippableComponent equippable;
+    private CraftJukeboxComponent jukebox;
+    private Integer damage;
+    private Integer maxDamage;
+    private List<net.minecraft.advancements.criterion.BlockPredicate> canPlaceOnPredicates;
+    private List<net.minecraft.advancements.criterion.BlockPredicate> canBreakPredicates;
 
-    /*private static final Set<String> HANDLED_TAGS = Sets.newHashSet();
-    private static final CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new CraftPersistentDataTypeRegistry();
+    // hide_additional_tooltip backward compatibility based on TooltipDisplayComponentFix#CONVERTED_ADDITIONAL_TOOLTIP_TYPES
+    private static final Set<DataComponentType<?>> HIDDEN_COMPONENTS_PREVIOUSLY = Set.of(
+            DataComponents.BANNER_PATTERNS,
+            DataComponents.BEES,
+            DataComponents.BLOCK_ENTITY_DATA,
+            DataComponents.BLOCK_STATE,
+            DataComponents.BUNDLE_CONTENTS,
+            DataComponents.CHARGED_PROJECTILES,
+            DataComponents.CONTAINER,
+            DataComponents.CONTAINER_LOOT,
+            DataComponents.FIREWORK_EXPLOSION,
+            DataComponents.FIREWORKS,
+            DataComponents.INSTRUMENT,
+            DataComponents.JUKEBOX_PLAYABLE,
+            DataComponents.MAP_ID,
+            DataComponents.PAINTING_VARIANT,
+            DataComponents.POT_DECORATIONS,
+            DataComponents.POTION_CONTENTS,
+            DataComponents.TROPICAL_FISH_PATTERN,
+            DataComponents.WRITTEN_BOOK_CONTENT
+    );
 
-    private NbtCompound internalTag;
-    private final Map<String, NbtElement> unhandledTags = new HashMap<String, NbtElement>();
-    private CraftPersistentDataContainer persistentDataContainer = new CraftPersistentDataContainer(DATA_TYPE_REGISTRY);
+    private static final Map<ItemFlag, Set<DataComponentType<?>>> ITEM_FLAG_EQUIVALENTS = ImmutableMap.<ItemFlag, Set<DataComponentType<?>>>builder()
+            .put(ItemFlag.HIDE_ATTRIBUTES, Set.of(DataComponents.ATTRIBUTE_MODIFIERS))
+            .put(ItemFlag.HIDE_ENCHANTS, Set.of(DataComponents.ENCHANTMENTS))
+            .put(ItemFlag.HIDE_STORED_ENCHANTS, Set.of(DataComponents.STORED_ENCHANTMENTS))
+            .put(ItemFlag.HIDE_UNBREAKABLE, Set.of(DataComponents.UNBREAKABLE))
+            .put(ItemFlag.HIDE_DYE, Set.of(DataComponents.DYED_COLOR))
+            .put(ItemFlag.HIDE_ARMOR_TRIM, Set.of(DataComponents.TRIM))
+            .put(ItemFlag.HIDE_PLACED_ON, Set.of(DataComponents.CAN_PLACE_ON))
+            .put(ItemFlag.HIDE_DESTROYS, Set.of(DataComponents.CAN_BREAK))
+            .put(ItemFlag.HIDE_ADDITIONAL_TOOLTIP, HIDDEN_COMPONENTS_PREVIOUSLY)
+            .buildOrThrow();
 
-    private int version = CraftMagicNumbers.INSTANCE.getDataVersion(); // Internal use only*/
-    
-    private static final Set<DataComponentType> HANDLED_TAGS = Sets.newHashSet();
     private static final CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new CraftPersistentDataTypeRegistry();
 
     private CompoundTag customTag;
     protected DataComponentPatch.Builder unhandledTags = DataComponentPatch.builder();
+    private Set<DataComponentType<?>> removedTags = Sets.newHashSet();
     private CraftPersistentDataContainer persistentDataContainer = new CraftPersistentDataContainer(CraftMetaItem.DATA_TYPE_REGISTRY);
 
     private int version = CraftMagicNumbers.INSTANCE.getDataVersion(); // Internal use only
 
-    /*CraftMetaItem(CraftMetaItem meta) {
-        if (meta == null)
-            return;
-
-        this.displayName = meta.displayName;
-        this.locName = meta.locName;
-
-        if (meta.hasLore())
-            this.lore = new ArrayList<Text>(meta.lore);
-
-        this.customModelData = meta.customModelData;
-        this.blockData = meta.blockData;
-
-        if (meta.enchantments != null)
-            this.enchantments = new LinkedHashMap<Enchantment, Integer>(meta.enchantments); // Spigot
-
-        if (meta.hasAttributeModifiers())
-            this.attributeModifiers = LinkedHashMultimap.create(meta.attributeModifiers);
-
-        this.repairCost = meta.repairCost;
-        this.hideFlag = meta.hideFlag;
-        this.unbreakable = meta.unbreakable;
-        this.damage = meta.damage;
-        this.unhandledTags.putAll(meta.unhandledTags);
-        this.persistentDataContainer.putAll(meta.persistentDataContainer.getRaw());
-
-        this.internalTag = meta.internalTag;
-        if (this.internalTag != null)
-            deserializeInternal(internalTag, meta);
-
-        this.version = meta.version;
-    }*/
-    
     CraftMetaItem(CraftMetaItem meta) {
         if (meta == null) {
             return;
@@ -475,26 +358,27 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         this.itemName = meta.itemName;
 
         if (meta.lore != null) {
-            this.lore = new ArrayList<net.minecraft.network.chat.Component>(meta.lore);
+            this.lore = new ArrayList<Component>(meta.lore);
         }
 
-        if (meta.hasCustomModelData()) {
+        if (meta.hasCustomModelDataComponent()) {
             this.customModelData = new CraftCustomModelDataComponent(meta.customModelData);
         }
         this.enchantableValue = meta.enchantableValue;
         this.blockData = meta.blockData;
 
         if (meta.enchantments != null) {
-            // this.enchantments = new EnchantmentMap(meta.enchantments); // Paper
-        	this.enchantments = new LinkedHashMap<Enchantment, Integer>(meta.enchantments);
+            this.enchantments = new EnchantmentMap(meta.enchantments);
         }
 
-        if (meta.attributeModifiers != null) { // Paper
+        if (meta.attributeModifiers != null) {
             this.attributeModifiers = LinkedHashMultimap.create(meta.attributeModifiers);
         }
 
         this.repairCost = meta.repairCost;
-        this.hideTooltip = meta.hideTooltip;
+        if (meta.tooltipDisplay != null) {
+            this.tooltipDisplay = new TooltipDisplay(meta.tooltipDisplay.hideTooltip(), new ReferenceLinkedOpenHashSet<>(meta.tooltipDisplay.hiddenComponents()));
+        }
         this.tooltipStyle = meta.tooltipStyle;
         this.itemModel = meta.itemModel;
         this.unbreakable = meta.unbreakable;
@@ -503,15 +387,6 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         this.damageResistant = meta.damageResistant;
         this.maxStackSize = meta.maxStackSize;
         this.rarity = meta.rarity;
-        
-        
-        
-        if (meta.tooltipDisplay != null) {
-            this.tooltipDisplay = new TooltipDisplay(
-            		meta.tooltipDisplay.hideTooltip(),
-            		(SequencedSet<DataComponentType<?>>)new ReferenceLinkedOpenHashSet(meta.tooltipDisplay.hiddenComponents()));
-        }
-        
         if (meta.hasUseRemainder()) {
             this.useRemainder = meta.useRemainder.clone();
         }
@@ -519,7 +394,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             this.useCooldown = new CraftUseCooldownComponent(meta.useCooldown);
         }
         if (meta.hasFood()) {
-           // this.food = new CraftFoodComponent(meta.food);
+            this.food = new CraftFoodComponent(meta.food);
         }
         if (meta.hasTool()) {
             this.tool = new CraftToolComponent(meta.tool);
@@ -528,127 +403,86 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             this.equippable = new CraftEquippableComponent(meta.equippable);
         }
         if (meta.hasJukeboxPlayable()) {
-            // this.jukebox = new CraftJukeboxComponent(meta.jukebox);
+            this.jukebox = new CraftJukeboxComponent(meta.jukebox);
         }
         this.damage = meta.damage;
         this.maxDamage = meta.maxDamage;
-        
-        this.unhandledTags = meta.unhandledTags;
-        // this.unhandledTags.copy(meta.unhandledTags.build());
-        // this.removedTags.addAll(meta.removedTags);
-        this.persistentDataContainer.putAll(meta.persistentDataContainer.getRaw()); // Paper - deep clone NBT tags
+        ((DataComponentPatch_BuilderBridge)this.unhandledTags).copy(meta.unhandledTags.build());
+        this.removedTags.addAll(meta.removedTags);
+        this.persistentDataContainer.putAll(meta.persistentDataContainer.getTagsCloned()); // Paper - deep clone NBT tags
+        this.canPlaceOnPredicates = meta.canPlaceOnPredicates;
+        this.canBreakPredicates = meta.canBreakPredicates;
 
         this.customTag = meta.customTag;
 
         this.version = meta.version;
-        // Paper start
-        this.canPlaceOnPredicates = meta.canPlaceOnPredicates;
-        this.canBreakPredicates = meta.canBreakPredicates;
-        // Paper end
     }
 
-    protected static <T> Optional<? extends T> getOrEmpty(DataComponentPatch tag, ItemMetaKeyType<T> type) {
-        Optional result = tag.get(type.TYPE);
-        return result != null ? result : Optional.empty();
+    CraftMetaItem(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledTags) { // Paper - improve handled tags on type changes
+        // Paper start - properly support data components in BlockEntity
+        this.updateFromPatch(tag, extraHandledTags);
     }
-    
-    protected static <T> Optional<? extends T> getOrEmpty(DataComponentPatch tag, DataComponentType<T> type) {
-        Optional<? extends T> result = tag.get(type);
-        return result != null ? result : Optional.empty();
-    }
-    
-    CraftMetaItem(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledTags) {
-    	this.updateFromPatch(tag, extraHandledTags);
-    }
-
     protected final void updateFromPatch(DataComponentPatch tag, Set<DataComponentType<?>> extraHandledTags) {
-        CraftMetaItem.getOrEmpty(tag, NAME).ifPresent(component -> {
+        // Paper end - properly support data components in BlockEntity
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.NAME).ifPresent((component) -> {
             this.displayName = component;
         });
-        CraftMetaItem.getOrEmpty(tag, ITEM_NAME).ifPresent(component -> {
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.ITEM_NAME).ifPresent((component) -> {
             this.itemName = component;
         });
-        CraftMetaItem.getOrEmpty(tag, LORE).ifPresent(l -> {
-            List<net.minecraft.network.chat.Component> list = l.lines();
-            this.lore = new ArrayList<net.minecraft.network.chat.Component>(list.size());
-            for (int index = 0; index < list.size(); ++index) {
-                net.minecraft.network.chat.Component line = list.get(index);
-                this.lore.add(line);
-            }
+
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.LORE).ifPresent((l) -> {
+            this.lore = new ArrayList<>(l.lines());
         });
-        CraftMetaItem.getOrEmpty(tag, CUSTOM_MODEL_DATA).ifPresent(i2 -> {
-            // this.customModelData = i2.value();
-            this.customModelData = new CraftCustomModelDataComponent(i2);
-            
+
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.CUSTOM_MODEL_DATA).ifPresent((i) -> {
+            this.customModelData = new CraftCustomModelDataComponent(i);
         });
-        CraftMetaItem.getOrEmpty(tag, BLOCK_DATA).ifPresent(t -> {
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.ENCHANTABLE).ifPresent((i) -> {
+            this.enchantableValue = i.value();
+        });
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.BLOCK_DATA).ifPresent((t) -> {
             this.blockData = t.properties();
         });
-        CraftMetaItem.getOrEmpty(tag, ENCHANTMENTS).ifPresent(en -> {
+
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.ENCHANTMENTS).ifPresent((en) -> {
             this.enchantments = CraftMetaItem.buildEnchantments(en);
-            // TODO: 1.20.6
-            // if (!en.showInTooltip) {
-            //    this.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-            //}
         });
-        CraftMetaItem.getOrEmpty(tag, ATTRIBUTES).ifPresent(en -> {
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.ATTRIBUTES).ifPresent((en) -> {
             this.attributeModifiers = CraftMetaItem.buildModifiers(en);
-            // removed 1.21.8
-            // if (!en.showInTooltip()) {
-            //     this.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-            // }
         });
-        CraftMetaItem.getOrEmpty(tag, REPAIR).ifPresent(i2 -> {
-            this.repairCost = i2;
+
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.REPAIR).ifPresent((i) -> {
+            this.repairCost = i;
         });
-        // TODO: 1.20.6
-        // CraftMetaItem.getOrEmpty(tag, HIDE_ADDITIONAL_TOOLTIP).ifPresent(h2 -> this.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP));
-        /*
-        CraftMetaItem.getOrEmpty(tag, HIDE_TOOLTIP).ifPresent(u -> {
-            this.hideTooltip = true;
-        });
-        */
-        
-        CraftMetaItem.getOrEmpty(tag, TOOLTIP_DISPLAY).ifPresent(en -> {
+
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.TOOLTIP_DISPLAY).ifPresent((en) -> {
             this.tooltipDisplay = new TooltipDisplay(en.hideTooltip(), new ReferenceLinkedOpenHashSet<>(en.hiddenComponents()));
         });
-        
+
         CraftMetaItem.getOrEmpty(tag, CraftMetaItem.TOOLTIP_STYLE).ifPresent((key) -> {
             this.tooltipStyle = CraftNamespacedKey.fromMinecraft(key);
         });
         CraftMetaItem.getOrEmpty(tag, CraftMetaItem.ITEM_MODEL).ifPresent((key) -> {
             this.itemModel = CraftNamespacedKey.fromMinecraft(key);
         });
-        
-        CraftMetaItem.getOrEmpty(tag, UNBREAKABLE).ifPresent(u -> {
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.UNBREAKABLE).ifPresent((u) -> {
             this.unbreakable = true;
-            /*
-             * Removed 1.21.8
-            if (!u.showInTooltip()) {
-                this.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
-            }*/
         });
-        CraftMetaItem.getOrEmpty(tag, ENCHANTMENT_GLINT_OVERRIDE).ifPresent(override -> {
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.ENCHANTMENT_GLINT_OVERRIDE).ifPresent((override) -> {
             this.enchantmentGlintOverride = override;
         });
-        /*
-        CraftMetaItem.getOrEmpty(tag, FIRE_RESISTANT).ifPresent(u -> {
-            this.fireResistant = true;
-        });
-        */
-        
         CraftMetaItem.getOrEmpty(tag, CraftMetaItem.GLIDER).ifPresent((u) -> {
             this.glider = true;
         });
         CraftMetaItem.getOrEmpty(tag, CraftMetaItem.DAMAGE_RESISTANT).ifPresent((tags) -> {
             this.damageResistant = tags.types();
         });
-        
-        CraftMetaItem.getOrEmpty(tag, MAX_STACK_SIZE).ifPresent(i2 -> {
-            this.maxStackSize = i2;
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.MAX_STACK_SIZE).ifPresent((i) -> {
+            this.maxStackSize = i;
         });
-        CraftMetaItem.getOrEmpty(tag, RARITY).ifPresent(enumItemRarity -> {
-            this.rarity = ItemRarity.valueOf((String)enumItemRarity.name());
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.RARITY).ifPresent((enumItemRarity) -> {
+            this.rarity = ItemRarity.valueOf(enumItemRarity.name());
         });
         CraftMetaItem.getOrEmpty(tag, CraftMetaItem.USE_REMAINDER).ifPresent((remainder) -> {
             this.useRemainder = CraftItemStack.asCraftMirror(remainder.convertInto());
@@ -656,171 +490,76 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         CraftMetaItem.getOrEmpty(tag, CraftMetaItem.USE_COOLDOWN).ifPresent((cooldown) -> {
             this.useCooldown = new CraftUseCooldownComponent(cooldown);
         });
-        CraftMetaItem.getOrEmpty(tag, FOOD).ifPresent(foodInfo -> {
-            
-        	// TODO: 1.20.6
-        	// this.food = new CraftFoodComponent((FoodComponent)foodInfo);
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.FOOD).ifPresent((foodInfo) -> {
+            this.food = new CraftFoodComponent(foodInfo);
         });
-        
         CraftMetaItem.getOrEmpty(tag, CraftMetaItem.TOOL).ifPresent((toolInfo) -> {
             this.tool = new CraftToolComponent(toolInfo);
         });
         CraftMetaItem.getOrEmpty(tag, CraftMetaItem.EQUIPPABLE).ifPresent((equippableInfo) -> {
             this.equippable = new CraftEquippableComponent(equippableInfo);
         });
-        
-        CraftMetaItem.getOrEmpty(tag, DAMAGE).ifPresent(i2 -> {
-            this.damage = i2;
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.JUKEBOX_PLAYABLE).ifPresent((jukeboxPlayable) -> {
+            this.jukebox = new CraftJukeboxComponent(jukeboxPlayable);
         });
-        CraftMetaItem.getOrEmpty(tag, MAX_DAMAGE).ifPresent(i2 -> {
-            this.maxDamage = i2;
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.DAMAGE).ifPresent((i) -> {
+            this.damage = i;
         });
-        CraftMetaItem.getOrEmpty(tag, CUSTOM_DATA).ifPresent(customData -> {
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.MAX_DAMAGE).ifPresent((i) -> {
+            this.maxDamage = i;
+        });
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.CUSTOM_DATA).ifPresent((customData) -> {
             this.customTag = customData.copyTag();
-            if (this.customTag.contains(CraftMetaItem.BUKKIT_CUSTOM_TAG.NBT)) {
-                CompoundTag compound = this.customTag.getCompoundOrEmpty(CraftMetaItem.BUKKIT_CUSTOM_TAG.NBT);
-                Set<String> keys = compound.keySet();
-                for (String key : keys) {
-                    this.persistentDataContainer.put(key, compound.get(key).copy());
+            CompoundTag customDataTag = this.customTag.getCompoundOrEmpty(CraftMetaItem.BUKKIT_CUSTOM_TAG.NBT);
+            if (!customDataTag.isEmpty()) {
+                for (Entry<String, net.minecraft.nbt.Tag> entry : customDataTag.entrySet()) {
+                    this.persistentDataContainer.put(entry.getKey(), entry.getValue().copy());
                 }
+
                 this.customTag.remove(CraftMetaItem.BUKKIT_CUSTOM_TAG.NBT);
             }
+
             if (this.customTag.isEmpty()) {
                 this.customTag = null;
             }
         });
-        
-        // TODO: 1.20.6
-        // The field BlockPredicatesChecker.predicates is not visible
-        
-        /*CraftMetaItem.getOrEmpty(tag, CAN_PLACE_ON).ifPresent(data -> {
-            this.canPlaceOnPredicates = List.copyOf(data.predicates);
-            if (!data.showInTooltip()) {
-                this.addItemFlags(ItemFlag.HIDE_PLACED_ON);
-            }
-        });
-        CraftMetaItem.getOrEmpty(tag, CAN_BREAK).ifPresent(data -> {
-            this.canBreakPredicates = List.copyOf(data.predicates);
-            if (!data.showInTooltip()) {
-                this.addItemFlags(ItemFlag.HIDE_DESTROYS);
-            }
-        });*/
 
-        /*Set<DataComponentType<?>> handledTags = CraftMetaItem.getTopLevelHandledDcts(this.getClass());
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.CAN_PLACE_ON.TYPE).ifPresent(data -> {
+            this.canPlaceOnPredicates = List.copyOf(data.predicates);
+        });
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.CAN_BREAK).ifPresent(data -> {
+            this.canBreakPredicates = List.copyOf(data.predicates);
+        });
+
+        // Paper start - improve checking handled data component types
+        Set<DataComponentType<?>> handledTags = getTopLevelHandledDcts(this.getClass());
         if (extraHandledTags != null) {
             extraHandledTags.addAll(handledTags);
             handledTags = extraHandledTags;
-        }*/
-        
-
+        }
+        // Paper end - improve checking handled data component types
         Set<Map.Entry<DataComponentType<?>, Optional<?>>> keys = tag.entrySet();
         for (Map.Entry<DataComponentType<?>, Optional<?>> key : keys) {
-            if (!CraftMetaItem.getHandledTags().contains(key.getKey())) {
-                key.getValue().ifPresentOrElse((value) -> {
+            if (!handledTags.contains(key.getKey())) { // Paper - improve checking handled data component types
+                key.getValue().ifPresent((value) -> {
                     this.unhandledTags.set((DataComponentType) key.getKey(), value);
-                }, () -> {
-                    this.unhandledTags.remove(key.getKey());
                 });
             }
-        }
-        
-        /*Set<Map.Entry<DataComponentType<?>, Optional<?>>> keys = tag.entrySet();
-        for (Map.Entry<DataComponentType<?>, Optional<?>> key : keys) {
+
             if (key.getValue().isEmpty()) {
-                this.unhandledTags.remove(key.getKey());
-                continue;
+                this.removedTags.add(key.getKey());
             }
-            if (handledTags.contains(key.getKey())) continue;
-            key.getValue().ifPresentOrElse(value -> this.unhandledTags.add((DataComponentType)key.getKey(), value), () -> this.unhandledTags.remove((DataComponentType)key.getKey()));
-        }*/
+        }
     }
-    
-    
 
-    /**
-     * @deprecated Not 1.20.6
-     */
-    /*@Deprecated(forRemoval = true)
-    CraftMetaItem(NbtCompound tag) {
-    	throw new Error("Invalid Meta constructor");
-    }*/
-    
-    /**
-     * @deprecated Not 1.20.6
-     */
-    /*@Deprecated(forRemoval = true)
-    CraftMetaItem(NbtCompound tag) {
-        if (tag.contains(DISPLAY.NBT)) {
-            NbtCompound display = tag.getCompound(DISPLAY.NBT);
-            
-            IMixinMinecraftServer mc = (IMixinMinecraftServer) ICommonMod.getIServer().getMinecraft();
-            
-            if (display.contains(NAME.NBT)) {
-                try {
-                    displayName = mc.IC$from_json( limit( display.getString(NAME.NBT), 1024 ) ); // Spigot
-                } catch (JsonParseException ignore) {}
-            }
+    static EnchantmentMap buildEnchantments(ItemEnchantments tag) {
+        EnchantmentMap enchantments = new EnchantmentMap();
 
-            if (display.contains(LOCNAME.NBT)) {
-                try {
-                    locName = mc.IC$from_json( limit( display.getString(LOCNAME.NBT), 1024 ) ); // Spigot
-                } catch (JsonParseException ignore) {}
-            }
-
-            if (display.contains(LORE.NBT)) {
-                NbtList list = display.getList(LORE.NBT, CraftMagicNumbers.NBT.TAG_STRING);
-                lore = new ArrayList<Text>(list.size());
-
-                for (int index = 0; index < list.size(); index++) {
-                    String line = limit( list.getString(index), 8192 ); // Spigot
-                    try {
-                        lore.add(mc.IC$from_json(line));
-                    } catch (JsonParseException ignore) {}
-                }
-            }
-        }
-
-        if (tag.contains(CUSTOM_MODEL_DATA.NBT, CraftMagicNumbers.NBT.TAG_INT))
-            customModelData = tag.getInt(CUSTOM_MODEL_DATA.NBT);
-
-        if (tag.contains(BLOCK_DATA.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND))
-            blockData = tag.getCompound(BLOCK_DATA.NBT);
-
-        this.enchantments = buildEnchantments(tag, ENCHANTMENTS);
-        this.attributeModifiers = buildModifiers(tag, ATTRIBUTES);
-
-        if (tag.contains(REPAIR.NBT))
-            repairCost = tag.getInt(REPAIR.NBT);
-
-        if (tag.contains(HIDEFLAGS.NBT))
-            hideFlag = tag.getInt(HIDEFLAGS.NBT);
-
-        if (tag.contains(UNBREAKABLE.NBT))
-            unbreakable = tag.getBoolean(UNBREAKABLE.NBT);
-
-        if (tag.contains(DAMAGE.NBT))
-            damage = tag.getInt(DAMAGE.NBT);
-
-        if (tag.contains(BUKKIT_CUSTOM_TAG.NBT)) {
-            NbtCompound compound = tag.getCompound(BUKKIT_CUSTOM_TAG.NBT);
-            Set<String> keys = compound.getKeys();
-            for (String key : keys)
-                persistentDataContainer.put(key, compound.get(key));
-        }
-
-        Set<String> keys = tag.getKeys();
-        for (String key : keys)
-            if (!getHandledTags().contains(key)) unhandledTags.put(key, tag.get(key));
-    }*/
-    
-    static Map<Enchantment, Integer> buildEnchantments(ItemEnchantments tag) {
-        Map<Enchantment, Integer> enchantments = new LinkedHashMap<Enchantment, Integer>(tag.size());
-  
         tag.entrySet().forEach((entry) -> {
             Holder<net.minecraft.world.item.enchantment.Enchantment> id = entry.getKey();
             int level = entry.getIntValue();
 
-            Enchantment enchant = CardboardEnchantment.minecraftHolderToBukkit(id);
+            Enchantment enchant = CraftEnchantment.minecraftHolderToBukkit(id);
             if (enchant != null) {
                 enchantments.put(enchant, level);
             }
@@ -828,132 +567,58 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         return enchantments;
     }
-    
-    static Map<Enchantment, Integer> buildEnchantments(Map<String, Object> map, ItemMetaKey key) {
-        Map<?, ?> ench = SerializableMeta.getObject(Map.class, map, key.BUKKIT, true);
-        if (ench == null) {
-            return null;
-        }
 
-        Map<Enchantment, Integer> enchantments = new LinkedHashMap<Enchantment, Integer>(ench.size());
-        for (Map.Entry<?, ?> entry : ench.entrySet()) {
-            // Doctor older enchants
-            String enchantKey = entry.getKey().toString();
-            if (enchantKey.equals("SWEEPING")) {
-                enchantKey = "SWEEPING_EDGE";
-            }
-
-            Enchantment enchantment = Enchantment.getByName(enchantKey);
-            if ((enchantment != null) && (entry.getValue() instanceof Integer)) {
-                enchantments.put(enchantment, (Integer) entry.getValue());
-            }
-        }
-
-        return enchantments;
-    }
-
-    /*@Deprecated
-    static Map<Enchantment, Integer> buildEnchantments(NbtCompound tag, ItemMetaKey key) {
-        if (!tag.contains(key.NBT)) return null;
-
-        NbtList ench = tag.getList(key.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND);
-        Map<Enchantment, Integer> enchantments = new LinkedHashMap<Enchantment, Integer>(ench.size());
-
-        for (int i = 0; i < ench.size(); i++) {
-            String id = ((NbtCompound) ench.get(i)).getString(ENCHANTMENTS_ID.NBT);
-            int level = 0xffff & ((NbtCompound) ench.get(i)).getShort(ENCHANTMENTS_LVL.NBT);
-
-            Enchantment enchant = Enchantment.getByKey(CraftNamespacedKey.fromStringOrNull(id));
-            if (enchant != null) enchantments.put(enchant, level);
-        }
-        return enchantments;
-    }*/
-
-    /*static Multimap<Attribute, AttributeModifier> buildModifiers(NbtCompound tag, ItemMetaKey key) {
+    static Multimap<Attribute, AttributeModifier> buildModifiers(ItemAttributeModifiers tag) {
         Multimap<Attribute, AttributeModifier> modifiers = LinkedHashMultimap.create();
-        if (!tag.contains(key.NBT, CraftMagicNumbers.NBT.TAG_LIST))
-            return modifiers;
-
-        NbtList mods = tag.getList(key.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND);
+        List<ItemAttributeModifiers.Entry> mods = tag.modifiers();
         int size = mods.size();
 
         for (int i = 0; i < size; i++) {
-            NbtCompound entry = mods.getCompound(i);
-            if (entry.isEmpty()) continue; // entry is not an actual CompoundTag. getCompound returns empty CompoundTag in that case
+            ItemAttributeModifiers.Entry entry = mods.get(i);
+            net.minecraft.world.entity.ai.attributes.AttributeModifier nmsModifier = entry.modifier();
 
-            EntityAttributeModifier nmsModifier = EntityAttributeModifier.fromNbt(entry);
-            if (nmsModifier == null) continue;
+            AttributeModifier attribMod = CraftAttributeInstance.convert(nmsModifier);
 
-            AttributeModifier attribMod = CardboardAttributeInstance.convert(nmsModifier);
-
-            String attributeName = entry.getString(ATTRIBUTES_IDENTIFIER.NBT);
-            if (attributeName == null || attributeName.isEmpty()) continue;
-
-            Attribute attribute = CardboardAttributable.fromMinecraft(attributeName);
-            if (attribute == null) continue;
-
-            if (entry.contains(ATTRIBUTES_SLOT.NBT, CraftMagicNumbers.NBT.TAG_STRING)) {
-                String slotName = entry.getString(ATTRIBUTES_SLOT.NBT);
-                if (slotName == null || slotName.isEmpty()) {
-                    modifiers.put(attribute, attribMod);
-                    continue;
-                }
-
-                org.bukkit.inventory.EquipmentSlot slot = null;
-                try {
-                    slot = Utils.getSlot(EquipmentSlot.byName(slotName.toLowerCase(Locale.ROOT)));
-                } catch (IllegalArgumentException ex) {
-                    // SPIGOT-4551 - Slot is invalid, should really match nothing but this is undefined behavior anyway
-                }
-
-                if (slot == null) {
-                    modifiers.put(attribute, attribMod);
-                    continue;
-                }
-
-                attribMod = new AttributeModifier(attribMod.getUniqueId(), attribMod.getName(), attribMod.getAmount(), attribMod.getOperation(), slot);
+            Attribute attribute = CraftAttribute.minecraftHolderToBukkit(entry.attribute());
+            if (attribute == null) {
+                continue;
             }
+
+            EquipmentSlotGroup slotName = entry.slot();
+
+            org.bukkit.inventory.EquipmentSlotGroup slot = null;
+            try {
+                slot = CraftEquipmentSlot.getSlotGroup(slotName);
+            } catch (IllegalArgumentException ex) {
+                // SPIGOT-4551 - Slot is invalid, should really match nothing but this is undefined behaviour anyway
+            }
+
+            if (slot == null) {
+                modifiers.put(attribute, attribMod);
+                continue;
+            }
+
+            attribMod = new AttributeModifier(attribMod.getKey(), attribMod.getAmount(), attribMod.getOperation(), slot);
             modifiers.put(attribute, attribMod);
         }
         return modifiers;
-    }*/
-    
-    public void setHideTooltip(boolean hideTooltip) {
-        this.tooltipDisplay = this.tooltipDisplay == null ? new TooltipDisplay(hideTooltip, new ReferenceLinkedOpenHashSet<>()) : new TooltipDisplay(hideTooltip, this.tooltipDisplay.hiddenComponents());
-    }
-    
-    public void setEnchantmentGlintOverride(Boolean override) {
-        this.enchantmentGlintOverride = override;
-    }
-    
-    public void setMaxStackSize(Integer max) {
-        Preconditions.checkArgument(max == null || max > 0, "max_stack_size must be > 0");
-        Preconditions.checkArgument(max == null || max <= net.minecraft.world.item.Item.ABSOLUTE_MAX_STACK_SIZE, "max_stack_size must be <= 99");
-        this.maxStackSize = max;
     }
 
-    public void setRarity(ItemRarity rarity) {
-        this.rarity = rarity;
-    }
-    
-    public void setMaxDamage(Integer maxDamage) {
-        this.maxDamage = maxDamage;
-    }
-    
     CraftMetaItem(Map<String, Object> map) {
         this.displayName = CraftChatMessage.fromJSONOrString(SerializableMeta.getString(map, CraftMetaItem.NAME.BUKKIT, true), true, false);
         this.itemName = CraftChatMessage.fromJSONOrNull(SerializableMeta.getString(map, CraftMetaItem.ITEM_NAME.BUKKIT, true));
 
         Iterable<?> lore = SerializableMeta.getObject(Iterable.class, map, CraftMetaItem.LORE.BUKKIT, true);
         if (lore != null) {
-            CraftMetaItem.safelyAdd(lore, this.lore = new ArrayList<net.minecraft.network.chat.Component>(), true);
+            CraftMetaItem.safelyAdd(lore, this.lore = new ArrayList<>(), true);
         }
 
-        Integer customModelData = SerializableMeta.getObject(Integer.class, map, CraftMetaItem.CUSTOM_MODEL_DATA.BUKKIT, true);
-        if (customModelData != null) {
-            this.setCustomModelData(customModelData);
+        Object customModelData = SerializableMeta.getObject(Object.class, map, CraftMetaItem.CUSTOM_MODEL_DATA.BUKKIT, true);
+        if (customModelData instanceof CustomModelDataComponent component) {
+            this.setCustomModelDataComponent(component);
+        } else {
+            this.setCustomModelData((Integer) customModelData);
         }
-        
         Integer enchantmentValue = SerializableMeta.getObject(Integer.class, map, CraftMetaItem.ENCHANTABLE.BUKKIT, true);
         if (enchantmentValue != null) {
             this.setEnchantable(enchantmentValue);
@@ -963,9 +628,16 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         if (blockData != null) {
             Map<String, String> mapBlockData = new HashMap<>();
 
-            CompoundTag nbtBlockData = (CompoundTag) CraftNBTTagConfigSerializer.deserialize(blockData);
-            for (String key : nbtBlockData.keySet()) {
-                mapBlockData.put(key, nbtBlockData.getString(key).orElseThrow());
+            if (blockData instanceof Map) {
+                for (Entry<?, ?> entry : ((Map<?, ?>) blockData).entrySet()) {
+                    mapBlockData.put(entry.getKey().toString(), entry.getValue().toString());
+                }
+            } else {
+                // Legacy pre 1.20.5:
+                CompoundTag blockDataTag = (CompoundTag) CraftNBTTagConfigSerializer.deserialize(blockData);
+                for (String key : blockDataTag.keySet()) {
+                    mapBlockData.put(key, blockDataTag.getString(key).orElseThrow());
+                }
             }
 
             this.blockData = mapBlockData;
@@ -984,7 +656,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             for (Object hideFlagObject : hideFlags) {
                 String hideFlagString = (String) hideFlagObject;
                 try {
-                    ItemFlag hideFlatEnum = ItemFlag.valueOf(hideFlagString);
+                    ItemFlag hideFlatEnum = CraftItemFlag.stringToBukkit(hideFlagString);
                     this.addItemFlags(hideFlatEnum);
                 } catch (IllegalArgumentException ex) {
                     // Ignore when we got a old String which does not map to a Enum value anymore
@@ -992,24 +664,6 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             }
         }
 
-        /*
-        Boolean hideTooltip = SerializableMeta.getObject(Boolean.class, map, CraftMetaItem.HIDE_TOOLTIP.BUKKIT, true);
-        if (hideTooltip != null) {
-            this.setHideTooltip(hideTooltip);
-        }
-        */
-        
-        if ((hideFlags = SerializableMeta.getObject(Iterable.class, map, CraftMetaItem.HIDEFLAGS.BUKKIT, true)) != null) {
-            for (Object hideFlagObject : hideFlags) {
-                String hideFlagString = (String)hideFlagObject;
-                try {
-                    ItemFlag hideFlatEnum = CraftItemFlag.stringToBukkit(hideFlagString);
-                    this.addItemFlags(hideFlatEnum);
-                }
-                catch (IllegalArgumentException hideFlatEnum) {}
-            }
-        }
-        
         String tooltipStyle = SerializableMeta.getString(map, CraftMetaItem.TOOLTIP_STYLE.BUKKIT, true);
         if (tooltipStyle != null) {
             this.setTooltipStyle(NamespacedKey.fromString(tooltipStyle));
@@ -1029,7 +683,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         if (enchantmentGlintOverride != null) {
             this.setEnchantmentGlintOverride(enchantmentGlintOverride);
         }
-        
+
         Boolean glider = SerializableMeta.getObject(Boolean.class, map, CraftMetaItem.GLIDER.BUKKIT, true);
         if (glider != null) {
             this.setGlider(glider);
@@ -1043,13 +697,6 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             }
         }
 
-        /*
-        Boolean fireResistant = SerializableMeta.getObject(Boolean.class, map, CraftMetaItem.FIRE_RESISTANT.BUKKIT, true);
-        if (fireResistant != null) {
-            this.setFireResistant(fireResistant);
-        }
-        */
-
         Integer maxStackSize = SerializableMeta.getObject(Integer.class, map, CraftMetaItem.MAX_STACK_SIZE.BUKKIT, true);
         if (maxStackSize != null) {
             this.setMaxStackSize(maxStackSize);
@@ -1060,12 +707,6 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             this.setRarity(ItemRarity.valueOf(rarity));
         }
 
-        // TODO: 1.20.6
-        //CraftFoodComponent food = SerializableMeta.getObject(CraftFoodComponent.class, map, CraftMetaItem.FOOD.BUKKIT, true);
-        //if (food != null) {
-        //    this.setFood(food);
-        //}
-        
         ItemStack remainder = SerializableMeta.getObject(ItemStack.class, map, CraftMetaItem.USE_REMAINDER.BUKKIT, true);
         if (remainder != null) {
             this.setUseRemainder(remainder);
@@ -1076,6 +717,11 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             this.setUseCooldown(cooldown);
         }
 
+        CraftFoodComponent food = SerializableMeta.getObject(CraftFoodComponent.class, map, CraftMetaItem.FOOD.BUKKIT, true);
+        if (food != null) {
+            this.setFood(food);
+        }
+
         CraftToolComponent tool = SerializableMeta.getObject(CraftToolComponent.class, map, CraftMetaItem.TOOL.BUKKIT, true);
         if (tool != null) {
             this.setTool(tool);
@@ -1084,6 +730,11 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         CraftEquippableComponent equippable = SerializableMeta.getObject(CraftEquippableComponent.class, map, CraftMetaItem.EQUIPPABLE.BUKKIT, true);
         if (equippable != null) {
             this.setEquippable(equippable);
+        }
+
+        CraftJukeboxComponent jukeboxPlayable = SerializableMeta.getObject(CraftJukeboxComponent.class, map, CraftMetaItem.JUKEBOX_PLAYABLE.BUKKIT, true);
+        if (jukeboxPlayable != null) {
+            this.setJukeboxPlayable(jukeboxPlayable);
         }
 
         Integer damage = SerializableMeta.getObject(Integer.class, map, CraftMetaItem.DAMAGE.BUKKIT, true);
@@ -1103,32 +754,51 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                 CompoundTag internalTag = NbtIo.readCompressed(buf, NbtAccounter.unlimitedHeap());
                 this.deserializeInternal(internalTag, map);
             } catch (IOException ex) {
-                Logger.getLogger(CraftMetaItem.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.error("Failed to read internal tag from object", ex);
             }
         }
 
         String unhandled = SerializableMeta.getString(map, "unhandled", true);
         if (unhandled != null) {
-            ByteArrayInputStream buf = new ByteArrayInputStream(Base64.getDecoder().decode(internal));
+            ByteArrayInputStream buf = new ByteArrayInputStream(Base64.getDecoder().decode(unhandled));
             try {
                 CompoundTag unhandledTag = NbtIo.readCompressed(buf, NbtAccounter.unlimitedHeap());
-                RegistryOps<net.minecraft.nbt.Tag> ops = ICommonMod.getIServer().getMinecraft().registryAccess().createSerializationContext(NbtOps.INSTANCE);
+                DataComponentPatch unhandledPatch = DataComponentPatch.CODEC.parse(CraftRegistry.getMinecraftRegistry().createSerializationContext(NbtOps.INSTANCE), unhandledTag).result().get();
 
-                
-                ((IComponentChanges)(Object)this.unhandledTags.build()).copy(DataComponentPatch.CODEC.parse(ops, unhandledTag).result().get());
-                
-                /*NbtCompound unhandledTag = NbtIo.readCompressed(buf, NbtSizeTracker.ofUnlimitedBytes());
-                ComponentChanges patch = (ComponentChanges)ComponentChanges.CODEC.parse(ops, unhandledTag).result().get();
-                CraftMetaItem.getOrEmpty(patch, CAN_PLACE_ON).ifPresent(data -> {
+                CraftMetaItem.getOrEmpty(unhandledPatch, CraftMetaItem.CAN_PLACE_ON).ifPresent(data -> {
                     this.canPlaceOnPredicates = List.copyOf(data.predicates);
                 });
-                CraftMetaItem.getOrEmpty(patch, CAN_BREAK).ifPresent(data -> {
+                CraftMetaItem.getOrEmpty(unhandledPatch, CraftMetaItem.CAN_BREAK).ifPresent(data -> {
                     this.canBreakPredicates = List.copyOf(data.predicates);
                 });
-                this.unhandledTags.copy(patch.withRemovedIf(type -> type == CraftMetaItem.CAN_PLACE_ON.TYPE || type == CraftMetaItem.CAN_BREAK.TYPE));
-                */
+                ((DataComponentPatch_BuilderBridge)this.unhandledTags).copy(unhandledPatch.forget(type -> type == CraftMetaItem.CAN_PLACE_ON.TYPE || type == CraftMetaItem.CAN_BREAK.TYPE));
+
+                for (Entry<DataComponentType<?>, Optional<?>> entry : unhandledPatch.entrySet()) {
+                    // Move removed unhandled tags to dedicated removedTags
+                    if (entry.getValue().isEmpty()) {
+                        DataComponentType<?> key = entry.getKey();
+
+                        ((DataComponentPatch_BuilderBridge)this.unhandledTags).clear(key);
+                        this.removedTags.add(key);
+                    }
+                }
             } catch (IOException ex) {
-                Logger.getLogger(CraftMetaItem.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.error("Failed to read unhandled tag for item", ex);
+            }
+        }
+
+        Iterable<?> removed = SerializableMeta.getObject(Iterable.class, map, "removed", true);
+        if (removed != null) {
+            RegistryAccess registryAccess = CraftRegistry.getMinecraftRegistry();
+            Registry<DataComponentType<?>> componentTypeRegistry = registryAccess.lookupOrThrow(Registries.DATA_COMPONENT_TYPE);
+
+            for (Object removedObject : removed) {
+                String removedString = (String) removedObject;
+
+                DataComponentType<?> component = componentTypeRegistry.getValue(Identifier.parse(removedString));
+                if (component != null) {
+                    this.removedTags.add(component);
+                }
             }
         }
 
@@ -1143,150 +813,35 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             try {
                 this.customTag = NbtIo.readCompressed(buf, NbtAccounter.unlimitedHeap());
             } catch (IOException ex) {
-                Logger.getLogger(CraftMetaItem.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.error("Failed to read custom tag for item", ex);
             }
         }
     }
 
-    /*CraftMetaItem(Map<String, Object> map) {
-        setDisplayName(SerializableMeta.getString(map, NAME.BUKKIT, true));
-        setLocalizedName(SerializableMeta.getString(map, LOCNAME.BUKKIT, true));
-
-        Iterable<?> lore = SerializableMeta.getObject(Iterable.class, map, LORE.BUKKIT, true);
-        if (lore != null)
-            safelyAdd(lore, this.lore = new ArrayList<Text>(), Integer.MAX_VALUE);
-
-        Integer customModelData = SerializableMeta.getObject(Integer.class, map, CUSTOM_MODEL_DATA.BUKKIT, true);
-        if (customModelData != null)
-            setCustomModelData(customModelData);
-
-        Map blockData = SerializableMeta.getObject(Map.class, map, BLOCK_DATA.BUKKIT, true);
-        if (blockData != null)
-            this.blockData = (NbtCompound) CraftNBTTagConfigSerializer.deserialize(blockData);
-
-        enchantments = buildEnchantments(map, ENCHANTMENTS);
-        attributeModifiers = buildModifiers(map, ATTRIBUTES);
-
-        Integer repairCost = SerializableMeta.getObject(Integer.class, map, REPAIR.BUKKIT, true);
-        if (repairCost != null)
-            setRepairCost(repairCost);
-
-        Iterable<?> hideFlags = SerializableMeta.getObject(Iterable.class, map, HIDEFLAGS.BUKKIT, true);
-        if (hideFlags != null) {
-            for (Object hideFlagObject : hideFlags) {
-                String hideFlagString = (String) hideFlagObject;
-                try {
-                    ItemFlag hideFlatEnum = ItemFlag.valueOf(hideFlagString);
-                    addItemFlags(hideFlatEnum);
-                } catch (IllegalArgumentException ex) {
-                    // Ignore when we got a old String which does not map to a Enum value anymore
-                }
-            }
-        }
-
-        Boolean unbreakable = SerializableMeta.getObject(Boolean.class, map, UNBREAKABLE.BUKKIT, true);
-        if (unbreakable != null)
-            setUnbreakable(unbreakable);
-
-        Integer damage = SerializableMeta.getObject(Integer.class, map, DAMAGE.BUKKIT, true);
-        if (damage != null)
-            setDamage(damage);
-
-        String internal = SerializableMeta.getString(map, "internal", true);
-        if (internal != null) {
-            ByteArrayInputStream buf = new ByteArrayInputStream(Base64.getDecoder().decode(internal));
-        	try {
-                internalTag = NbtIo.readCompressed(buf, NbtSizeTracker.ofUnlimitedBytes());
-                deserializeInternal(internalTag, map);
-                Set<String> keys = internalTag.getKeys();
-                for (String key : keys)
-                    if (!getHandledTags().contains(key))
-                        unhandledTags.put(key, internalTag.get(key));
-            } catch (IOException ex) {
-                Logger.getLogger(CraftMetaItem.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-
-        Map nbtMap = SerializableMeta.getObject(Map.class, map, BUKKIT_CUSTOM_TAG.BUKKIT, true);
-        if (nbtMap != null)
-            this.persistentDataContainer.putAll((NbtCompound) CraftNBTTagConfigSerializer.deserialize(nbtMap));
-    }*/
-    /*
-    void deserializeInternal(NbtCompound tag, Object context) {
+    void deserializeInternal(CompoundTag tag, Object context) {
         // SPIGOT-4576: Need to migrate from internal to proper data
-        if (tag.contains(CraftMetaItem.ATTRIBUTES.NBT, CraftMagicNumbers.NBT.TAG_LIST)) {
+        if (tag.getList(CraftMetaItem.ATTRIBUTES.NBT).isPresent()) {
             this.attributeModifiers = CraftMetaItem.buildModifiersLegacy(tag, CraftMetaItem.ATTRIBUTES);
         }
     }
-    */
-    
-    void deserializeInternal(CompoundTag tag, Object context) {
-        if (tag.getList(CraftMetaItem.ATTRIBUTES.NBT).isPresent()) {
-            this.attributeModifiers = CraftMetaItem.buildModifiersLegacy(tag, ATTRIBUTES);
-        }
-    }
-    
+
     private static Multimap<Attribute, AttributeModifier> buildModifiersLegacy(CompoundTag tag, ItemMetaKey key) {
-    	Multimap<Attribute, AttributeModifier> modifiers = LinkedHashMultimap.create();
-        ListTag mods = tag.getListOrEmpty(key.NBT);
-        int size = mods.size();
-        for (int i2 = 0; i2 < size; ++i2) {
-            Attribute attribute;
-            net.minecraft.world.entity.ai.attributes.AttributeModifier nmsModifier;
-            CompoundTag entry = mods.getCompoundOrEmpty(i2);
-            if (entry.isEmpty() || (nmsModifier = (net.minecraft.world.entity.ai.attributes.AttributeModifier)net.minecraft.world.entity.ai.attributes.AttributeModifier.CODEC.parse(NbtOps.INSTANCE, entry).resultOrPartial().orElse(null)) == null) continue;
-            AttributeModifier attribMod = CraftAttributeInstance.convert(nmsModifier);
-            String attributeName = entry.getString(CraftMetaItem.ATTRIBUTES_IDENTIFIER.NBT).map(CraftAttributeMap::convertIfNeeded).orElse(null);
-            if (attributeName == null || attributeName.isEmpty() || (attribute = CraftAttribute.stringToBukkit(attributeName)) == null) continue;
-            Optional<String> attributeSlot = entry.getString(CraftMetaItem.ATTRIBUTES_SLOT.NBT);
-            if (attributeSlot.isPresent()) {
-                String slotName = attributeSlot.get();
-                if (slotName.isEmpty()) {
-                    modifiers.put(attribute, attribMod);
-                    continue;
-                }
-                org.bukkit.inventory.EquipmentSlot slot = null;
-                try {
-                    // slot = CraftEquipmentSlot.getSlot(net.minecraft.entity.EquipmentSlot.byName(slotName.toLowerCase(Locale.ROOT)));
-                    slot = CraftEquipmentSlot.getSlot(net.minecraft.world.entity.EquipmentSlot.byName(slotName.toLowerCase(Locale.ROOT)));
-
-                } catch (IllegalArgumentException illegalArgumentException) {
-                    // empty catch block
-                }
-                if (slot == null) {
-                    modifiers.put(attribute, attribMod);
-                    continue;
-                }
-                attribMod = new AttributeModifier(attribMod.getKey(), attribMod.getAmount(), attribMod.getOperation(), slot.getGroup());
-            }
-            modifiers.put(attribute, attribMod);
-        }
-        return modifiers;
-    }
-    
-    /*
-    private static Multimap<Attribute, AttributeModifier> buildModifiersLegacy(NbtCompound tag, ItemMetaKey key) {
         Multimap<Attribute, AttributeModifier> modifiers = LinkedHashMultimap.create();
-        if (!tag.contains(key.NBT, CraftMagicNumbers.NBT.TAG_LIST)) {
-            return modifiers;
-        }
-        NbtList mods = tag.getList(key.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND);
-        int size = mods.size();
-
-        for (int i = 0; i < size; i++) {
-            NbtCompound entry = mods.getCompound(i);
+        ListTag mods = tag.getListOrEmpty(key.NBT);
+        for (int i = 0, size = mods.size(); i < size; i++) {
+            CompoundTag entry = mods.getCompoundOrEmpty(i);
             if (entry.isEmpty()) {
-                // entry is not an actual NBTTagCompound. getCompound returns empty NBTTagCompound in that case
+                // entry is not an actual CompoundTag. getCompoundOrEmpty returns empty CompoundTag in that case
                 continue;
             }
-            net.minecraft.entity.attribute.EntityAttributeModifier nmsModifier = net.minecraft.entity.attribute.EntityAttributeModifier.fromNbt(entry);
+            net.minecraft.world.entity.ai.attributes.AttributeModifier nmsModifier = net.minecraft.world.entity.ai.attributes.AttributeModifier.CODEC.parse(NbtOps.INSTANCE, entry).resultOrPartial().orElse(null);
             if (nmsModifier == null) {
                 continue;
             }
 
-            AttributeModifier attribMod = CardboardAttributeInstance.convert(nmsModifier);
+            AttributeModifier attribMod = CraftAttributeInstance.convert(nmsModifier);
 
-            String attributeName = entry.getString(CraftMetaItem.ATTRIBUTES_IDENTIFIER.NBT);
+            String attributeName = entry.getString(CraftMetaItem.ATTRIBUTES_IDENTIFIER.NBT).map(CraftAttributeMap::convertIfNeeded).orElse(null);
             if (attributeName == null || attributeName.isEmpty()) {
                 continue;
             }
@@ -1296,16 +851,17 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                 continue;
             }
 
-            if (entry.contains(CraftMetaItem.ATTRIBUTES_SLOT.NBT, CraftMagicNumbers.NBT.TAG_STRING)) {
-                String slotName = entry.getString(CraftMetaItem.ATTRIBUTES_SLOT.NBT);
-                if (slotName == null || slotName.isEmpty()) {
+            Optional<String> attributeSlot = entry.getString(CraftMetaItem.ATTRIBUTES_SLOT.NBT);
+            if (attributeSlot.isPresent()) {
+                String slotName = attributeSlot.get();
+                if (slotName.isEmpty()) {
                     modifiers.put(attribute, attribMod);
                     continue;
                 }
 
-                org.bukkit.inventory.EquipmentSlot slot = null;
+                EquipmentSlot slot = null;
                 try {
-                    slot = Utils.getSlot(net.minecraft.entity.EquipmentSlot.byName(slotName.toLowerCase(Locale.ROOT)));
+                    slot = CraftEquipmentSlot.getSlot(net.minecraft.world.entity.EquipmentSlot.byName(slotName.toLowerCase(Locale.ROOT)));
                 } catch (IllegalArgumentException ex) {
                     // SPIGOT-4551 - Slot is invalid, should really match nothing but this is undefined behaviour anyway
                 }
@@ -1315,84 +871,28 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                     continue;
                 }
 
-                // TODO: bukkit adds slot as last arg
-                attribMod = new AttributeModifier(attribMod.getUniqueId(), attribMod.getName(), attribMod.getAmount(), attribMod.getOperation());
+                attribMod = new AttributeModifier(attribMod.getKey(), attribMod.getAmount(), attribMod.getOperation(), slot.getGroup());
             }
             modifiers.put(attribute, attribMod);
         }
         return modifiers;
     }
-    */
 
-    /*void deserializeInternal(NbtCompound tag, Object context) {
-        // SPIGOT-4576: Need to migrate from internal to proper data
-        if (tag.contains(ATTRIBUTES.NBT, CraftMagicNumbers.NBT.TAG_LIST))
-            this.attributeModifiers = buildModifiers(tag, ATTRIBUTES);
-    }*/
-
-    /*static Map<Enchantment, Integer> buildEnchantments(Map<String, Object> map, ItemMetaKey key) {
+    static EnchantmentMap buildEnchantments(Map<String, Object> map, ItemMetaKey key) {
         Map<?, ?> ench = SerializableMeta.getObject(Map.class, map, key.BUKKIT, true);
-        if (ench == null)
+        if (ench == null) {
             return null;
+        }
 
-        Map<Enchantment, Integer> enchantments = new LinkedHashMap<Enchantment, Integer>(ench.size());
+        EnchantmentMap enchantments = new EnchantmentMap();
         for (Map.Entry<?, ?> entry : ench.entrySet()) {
-            // Doctor older enchants
-            String enchantKey = entry.getKey().toString();
-            if (enchantKey.equals("SWEEPING")) enchantKey = "SWEEPING_EDGE";
-
-            Enchantment enchantment = Enchantment.getByName(enchantKey);
-            if ((enchantment != null) && (entry.getValue() instanceof Integer))
+            Enchantment enchantment = CraftEnchantment.stringToBukkit(entry.getKey().toString());
+            if ((enchantment != null) && (entry.getValue() instanceof Integer)) {
                 enchantments.put(enchantment, (Integer) entry.getValue());
+            }
         }
 
         return enchantments;
-    }*/
-    
-    static Multimap<Attribute, AttributeModifier> buildModifiers(ItemAttributeModifiers tag) {
-        Multimap<Attribute, AttributeModifier> modifiers = LinkedHashMultimap.create();
-        List<ItemAttributeModifiers.Entry> mods = tag.modifiers();
-        int size = mods.size();
-
-        for (int i = 0; i < size; i++) {
-            ItemAttributeModifiers.Entry entry = mods.get(i);
-            net.minecraft.world.entity.ai.attributes.AttributeModifier nmsModifier = entry.modifier();
-            if (nmsModifier == null) {
-                continue;
-            }
-
-            AttributeModifier attribMod = CraftAttributeInstance.convert(nmsModifier);
-
-            Attribute attribute = CraftAttribute.minecraftHolderToBukkit(entry.attribute());
-            if (attribute == null) {
-                continue;
-            }
-
-            if (entry.slot() != null) {
-                net.minecraft.world.entity.EquipmentSlotGroup slotName = entry.slot();
-                if (slotName == null) {
-                    modifiers.put(attribute, attribMod);
-                    continue;
-                }
-
-                EquipmentSlotGroup slot = null;
-                
-                try {
-                    slot = CraftEquipmentSlot.getSlotGroup(slotName);
-                } catch (IllegalArgumentException ex) {
-                    // SPIGOT-4551 - Slot is invalid, should really match nothing but this is undefined behaviour anyway
-                }
-
-                if (slot == null) {
-                    modifiers.put(attribute, attribMod);
-                    continue;
-                }
-
-                attribMod = new AttributeModifier(attribMod.getKey(), attribMod.getAmount(), attribMod.getOperation(), slot);
-            }
-            modifiers.put(attribute, attribMod);
-        }
-        return modifiers;
     }
 
     static Multimap<Attribute, AttributeModifier> buildModifiers(Map<String, Object> map, ItemMetaKey key) {
@@ -1403,10 +903,9 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
 
         for (Object obj : mods.keySet()) {
-            if (!(obj instanceof String)) {
+            if (!(obj instanceof final String attributeName)) {
                 continue;
             }
-            String attributeName = (String) obj;
             if (Strings.isNullOrEmpty(attributeName)) {
                 continue;
             }
@@ -1416,10 +915,9 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             }
 
             for (Object o : list) {
-                if (!(o instanceof AttributeModifier)) { // this catches null
+                if (!(o instanceof final AttributeModifier modifier)) { // this catches null
                     continue;
                 }
-                AttributeModifier modifier = (AttributeModifier) o;
                 Attribute attribute = CraftAttribute.stringToBukkit(attributeName);
                 if (attribute == null) {
                     continue;
@@ -1430,372 +928,273 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
         return result;
     }
-    
-    void applyToItem(CraftMetaItem.Applicator itemTag) {
+
+    @Overridden
+    void applyToItem(CraftMetaItem.Applicator tag) {
         if (this.hasDisplayName()) {
-            itemTag.put(CraftMetaItem.NAME, this.displayName);
+            tag.put(CraftMetaItem.NAME, this.displayName);
         }
- 
+
         if (this.hasItemName()) {
-            itemTag.put(CraftMetaItem.ITEM_NAME, this.itemName);
+            tag.put(CraftMetaItem.ITEM_NAME, this.itemName);
         }
 
         if (this.lore != null) {
-            itemTag.put(CraftMetaItem.LORE, new ItemLore(this.lore));
+            tag.put(CraftMetaItem.LORE, new ItemLore(this.lore));
         }
 
-        if (this.hasCustomModelData()) {
-            itemTag.put(CraftMetaItem.CUSTOM_MODEL_DATA, this.customModelData.getHandle());
+        if (this.hasCustomModelDataComponent()) {
+            tag.put(CraftMetaItem.CUSTOM_MODEL_DATA, this.customModelData.getHandle());
         }
-        
+
         if (this.hasEnchantable()) {
-            itemTag.put(CraftMetaItem.ENCHANTABLE, new Enchantable(this.enchantableValue));
+            tag.put(CraftMetaItem.ENCHANTABLE, new Enchantable(this.enchantableValue));
         }
 
         if (this.hasBlockData()) {
-            itemTag.put(CraftMetaItem.BLOCK_DATA, new BlockItemStateProperties(this.blockData));
+            tag.put(CraftMetaItem.BLOCK_DATA, new BlockItemStateProperties(this.blockData));
         }
 
-        this.applyEnchantments(this.enchantments, itemTag, CraftMetaItem.ENCHANTMENTS, ItemFlag.HIDE_ENCHANTS);
-        this.applyModifiers(this.attributeModifiers, itemTag);
+        this.applyEnchantments(this.enchantments, tag, CraftMetaItem.ENCHANTMENTS);
+        this.applyModifiers(this.attributeModifiers, tag);
 
         if (this.hasRepairCost()) {
-            itemTag.put(CraftMetaItem.REPAIR, this.repairCost);
+            tag.put(CraftMetaItem.REPAIR, this.repairCost);
         }
 
         if (this.tooltipDisplay != null) {
-        	itemTag.put(TOOLTIP_DISPLAY, new TooltipDisplay(this.tooltipDisplay.hideTooltip(), new ReferenceLinkedOpenHashSet<>(this.tooltipDisplay.hiddenComponents())));
+            tag.put(CraftMetaItem.TOOLTIP_DISPLAY, new TooltipDisplay(this.tooltipDisplay.hideTooltip(), new ReferenceLinkedOpenHashSet<>(this.tooltipDisplay.hiddenComponents())));
         }
-        
-        /*
-        if (this.isHideTooltip()) {
-            itemTag.put(CraftMetaItem.HIDE_TOOLTIP, Unit.INSTANCE);
-        }
-        */
-        
+
         if (this.hasTooltipStyle()) {
-            itemTag.put(CraftMetaItem.TOOLTIP_STYLE, CraftNamespacedKey.toMinecraft(this.getTooltipStyle()));
+            tag.put(CraftMetaItem.TOOLTIP_STYLE, CraftNamespacedKey.toMinecraft(this.getTooltipStyle()));
         }
 
         if (this.hasItemModel()) {
-            itemTag.put(CraftMetaItem.ITEM_MODEL, CraftNamespacedKey.toMinecraft(this.getItemModel()));
+            tag.put(CraftMetaItem.ITEM_MODEL, CraftNamespacedKey.toMinecraft(this.getItemModel()));
         }
 
         if (this.isUnbreakable()) {
-        	
-        	itemTag.put(UNBREAKABLE, Unit.INSTANCE);
-        	
-            // itemTag.put(CraftMetaItem.UNBREAKABLE, new UnbreakableComponent(!this.hasItemFlag(ItemFlag.HIDE_UNBREAKABLE)));
+            tag.put(CraftMetaItem.UNBREAKABLE, Unit.INSTANCE);
         }
 
         if (this.hasEnchantmentGlintOverride()) {
-            itemTag.put(CraftMetaItem.ENCHANTMENT_GLINT_OVERRIDE, this.getEnchantmentGlintOverride());
-        }
-        
-        if (this.isGlider()) {
-            itemTag.put(CraftMetaItem.GLIDER, Unit.INSTANCE);
+            tag.put(CraftMetaItem.ENCHANTMENT_GLINT_OVERRIDE, this.getEnchantmentGlintOverride());
         }
 
-        /*
-        if (this.isFireResistant()) {
-            itemTag.put(CraftMetaItem.FIRE_RESISTANT, Unit.INSTANCE);
+        if (this.isGlider()) {
+            tag.put(CraftMetaItem.GLIDER, Unit.INSTANCE);
         }
-        */
-        
+
         if (this.hasDamageResistant()) {
-            itemTag.put(CraftMetaItem.DAMAGE_RESISTANT, new DamageResistant(this.damageResistant));
+            tag.put(CraftMetaItem.DAMAGE_RESISTANT, new DamageResistant(this.damageResistant));
         }
 
         if (this.hasMaxStackSize()) {
-            itemTag.put(CraftMetaItem.MAX_STACK_SIZE, this.maxStackSize);
+            tag.put(CraftMetaItem.MAX_STACK_SIZE, this.maxStackSize);
         }
 
         if (this.hasRarity()) {
-            itemTag.put(CraftMetaItem.RARITY, Rarity.valueOf(this.rarity.name()));
+            tag.put(CraftMetaItem.RARITY, Rarity.valueOf(this.rarity.name()));
         }
-        
+
         if (this.hasUseRemainder()) {
-            itemTag.put(CraftMetaItem.USE_REMAINDER, new UseRemainder(CraftItemStack.asNMSCopy(this.useRemainder)));
+            tag.put(CraftMetaItem.USE_REMAINDER, new UseRemainder(CraftItemStack.asNMSCopy(this.useRemainder)));
         }
-        
+
         if (this.hasUseCooldown()) {
-            itemTag.put(CraftMetaItem.USE_COOLDOWN, this.useCooldown.getHandle());
+            tag.put(CraftMetaItem.USE_COOLDOWN, this.useCooldown.getHandle());
         }
 
         if (this.hasFood()) {
-            // TODO: 1.20.6
-        	// itemTag.put(CraftMetaItem.FOOD, this.food.getHandle());
+            tag.put(CraftMetaItem.FOOD, this.food.getHandle());
         }
-        
+
         if (this.hasTool()) {
-            itemTag.put(CraftMetaItem.TOOL, this.tool.getHandle());
+            tag.put(CraftMetaItem.TOOL, this.tool.getHandle());
         }
 
         if (this.hasEquippable()) {
-            itemTag.put(CraftMetaItem.EQUIPPABLE, this.equippable.getHandle());
+            tag.put(CraftMetaItem.EQUIPPABLE, this.equippable.getHandle());
         }
 
-        if (this.hasDamage()) {
-            itemTag.put(CraftMetaItem.DAMAGE, this.damage);
+        if (this.hasJukeboxPlayable()) {
+            tag.put(CraftMetaItem.JUKEBOX_PLAYABLE, this.jukebox.getHandle());
         }
-        
+
         if (this.hasDamageValue()) { // Paper - preserve empty/0 damage
-            itemTag.put(CraftMetaItem.DAMAGE, this.damage);
+            tag.put(CraftMetaItem.DAMAGE, this.damage);
         }
 
         if (this.hasMaxDamage()) {
-            itemTag.put(CraftMetaItem.MAX_DAMAGE, this.maxDamage);
+            tag.put(CraftMetaItem.MAX_DAMAGE, this.maxDamage);
         }
 
-        
-     // Paper start
         if (this.canPlaceOnPredicates != null && !this.canPlaceOnPredicates.isEmpty()) {
-        	itemTag.put(CAN_PLACE_ON, new AdventureModePredicate(this.canPlaceOnPredicates));
-        	// itemTag.put(CraftMetaItem.CAN_PLACE_ON, new net.minecraft.item.BlockPredicatesChecker(this.canPlaceOnPredicates, !this.hasItemFlag(ItemFlag.HIDE_PLACED_ON)));
+            tag.put(CraftMetaItem.CAN_PLACE_ON, new net.minecraft.world.item.AdventureModePredicate(this.canPlaceOnPredicates));
         }
         if (this.canBreakPredicates != null && !this.canBreakPredicates.isEmpty()) {
-        	itemTag.put(CAN_BREAK, new AdventureModePredicate(this.canBreakPredicates));
-        	// itemTag.put(CraftMetaItem.CAN_BREAK, new net.minecraft.item.BlockPredicatesChecker(this.canBreakPredicates, !this.hasItemFlag(ItemFlag.HIDE_DESTROYS)));
+            tag.put(CraftMetaItem.CAN_BREAK, new net.minecraft.world.item.AdventureModePredicate(this.canBreakPredicates));
         }
-        // Paper end
-        
+
         for (Map.Entry<DataComponentType<?>, Optional<?>> e : this.unhandledTags.build().entrySet()) {
             e.getValue().ifPresent((value) -> {
-                itemTag.builder.set((DataComponentType) e.getKey(), value);
+                tag.builder.set((DataComponentType) e.getKey(), value);
             });
         }
 
+        for (DataComponentType<?> removed : this.removedTags) {
+            if (!((DataComponentPatch_BuilderBridge)tag.builder).isSet(removed)) {
+                tag.builder.remove(removed);
+            }
+        }
+
+        CompoundTag customTag = (this.customTag != null) ? this.customTag.copy() : null;
         if (!this.persistentDataContainer.isEmpty()) {
-            CompoundTag bukkitCustomCompound = new CompoundTag();
+            CompoundTag pdcTag = new CompoundTag();
             Map<String, net.minecraft.nbt.Tag> rawPublicMap = this.persistentDataContainer.getRaw();
 
-            for (Map.Entry<String, net.minecraft.nbt.Tag> nbtBaseEntry : rawPublicMap.entrySet()) {
-                bukkitCustomCompound.put(nbtBaseEntry.getKey(), nbtBaseEntry.getValue());
+            for (Map.Entry<String, net.minecraft.nbt.Tag> entry : rawPublicMap.entrySet()) {
+                pdcTag.put(entry.getKey(), entry.getValue());
             }
 
-            if (this.customTag == null) {
-                this.customTag = new CompoundTag();
+            if (customTag == null) {
+                customTag = new CompoundTag();
             }
-            this.customTag.put(CraftMetaItem.BUKKIT_CUSTOM_TAG.BUKKIT, bukkitCustomCompound);
+            customTag.put(CraftMetaItem.BUKKIT_CUSTOM_TAG.BUKKIT, pdcTag);
         }
 
-        if (this.customTag != null) {
-            itemTag.put(CraftMetaItem.CUSTOM_DATA, CustomData.of(this.customTag));
+        if (customTag != null) {
+            tag.put(CraftMetaItem.CUSTOM_DATA, CustomData.of(customTag));
         }
     }
-    
 
-    /*void applyToItem(NbtCompound itemTag) {
-        if (hasDisplayName())
-            setDisplayTag(itemTag, NAME.NBT, NbtString.of(CraftChatMessage.toJSON(displayName)));
-
-        if (hasLocalizedName())
-            setDisplayTag(itemTag, LOCNAME.NBT, NbtString.of(CraftChatMessage.toJSON(locName)));
-
-        if (hasLore())
-            setDisplayTag(itemTag, LORE.NBT, createStringList(lore));
-
-        if (hasCustomModelData())
-            itemTag.putInt(CUSTOM_MODEL_DATA.NBT, customModelData);
-
-        if (hasBlockData())
-            itemTag.put(BLOCK_DATA.NBT, blockData);
-
-        if (hideFlag != 0)
-            itemTag.putInt(HIDEFLAGS.NBT, hideFlag);
-
-        applyEnchantments(enchantments, itemTag, ENCHANTMENTS);
-        applyModifiers(attributeModifiers, itemTag, ATTRIBUTES);
-
-        if (hasRepairCost())
-            itemTag.putInt(REPAIR.NBT, repairCost);
-
-        if (isUnbreakable())
-            itemTag.putBoolean(UNBREAKABLE.NBT, unbreakable);
-
-        if (hasDamage())
-            itemTag.putInt(DAMAGE.NBT, damage);
-
-        for (Map.Entry<String, NbtElement> e : unhandledTags.entrySet())
-            itemTag.put(e.getKey(), e.getValue());
-
-        if (!persistentDataContainer.isEmpty()) {
-            NbtCompound bukkitCustomCompound = new NbtCompound();
-            Map<String, NbtElement> rawPublicMap = persistentDataContainer.getRaw();
-
-            for (Map.Entry<String, NbtElement> TagEntry : rawPublicMap.entrySet())
-                bukkitCustomCompound.put(TagEntry.getKey(), TagEntry.getValue());
-
-            itemTag.put(BUKKIT_CUSTOM_TAG.NBT, bukkitCustomCompound);
-        }
-    }*/
-
-    ListTag createStringList(List<net.minecraft.network.chat.Component> list) {
-        if (list == null || list.isEmpty()) return null;
-
-        ListTag tagList = new ListTag();
-        for (net.minecraft.network.chat.Component value : list)
-            tagList.add(StringTag.valueOf(version <= 0 || version >= 1803 ? CraftChatMessage.toJSON(value) : CraftChatMessage.fromComponent(value, ChatFormatting.DARK_PURPLE))); // SPIGOT-4935
-
-        return tagList;
-    }
-    
-    void applyEnchantments(Map<Enchantment, Integer> enchantments, CraftMetaItem.Applicator tag, ItemMetaKeyType<ItemEnchantments> key, ItemFlag itemFlag) {
-        if (enchantments == null) {
+    void applyEnchantments(Map<Enchantment, Integer> enchantments, CraftMetaItem.Applicator tag, ItemMetaKeyType<ItemEnchantments> key) {
+        if (enchantments == null) { // only emit enchantment component if enchantments are defined
             return;
         }
 
         ItemEnchantments.Mutable list = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
-
-        for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
-            list.set(CardboardEnchantment.bukkitToMinecraftHolder(entry.getKey()), entry.getValue());
+        for (Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
+            list.set(CraftEnchantment.bukkitToMinecraftHolder(entry.getKey()), entry.getValue());
         }
-
-        // TODO: 1.20.6
-        // list.showInTooltip = !this.hasItemFlag(itemFlag);
         tag.put(key, list.toImmutable());
     }
 
-    /*static void applyEnchantments(Map<Enchantment, Integer> enchantments, NbtCompound tag, ItemMetaKey key) {
-        if (enchantments == null) return;
-
-        NbtList list = new NbtList();
-
-        for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
-            NbtCompound subtag = new NbtCompound();
-
-            subtag.putString(ENCHANTMENTS_ID.NBT, entry.getKey().getKey().toString());
-            subtag.putShort(ENCHANTMENTS_LVL.NBT, entry.getValue().shortValue());
-
-            list.add(subtag);
-        }
-        tag.put(key.NBT, list);
-    }*/
-    
-    void applyModifiers(Multimap<Attribute, AttributeModifier> modifiers, Applicator tag) {
-        if (modifiers == null) {
-            return;
-        }
-        ItemAttributeModifiers.Builder list = ItemAttributeModifiers.builder();
-        for (Map.Entry entry : modifiers.entries()) {
-            if (entry.getKey() == null || entry.getValue() == null) continue;
-            net.minecraft.world.entity.ai.attributes.AttributeModifier nmsModifier = CraftAttributeInstance.convert((AttributeModifier)entry.getValue());
-            Holder<net.minecraft.world.entity.ai.attributes.Attribute> name = CraftAttribute.bukkitToMinecraftHolder((Attribute)entry.getKey());
-            if (name == null) continue;
-            //AttributeModifierSlot group = CraftEquipmentSlot.getNMSGroup(((AttributeModifier)entry.getValue()).getSlotGroup());
-            // TODO: 1.20.6
-            // AttributeModifierSlot group = CraftEquipmentSlot.getNMSGroup(entry.getValue().getSlotGroup());
-            net.minecraft.world.entity.EquipmentSlotGroup group  = net.minecraft.world.entity.EquipmentSlotGroup.ANY;
-            
-            list.add(name, nmsModifier, group);
-        }
-        tag.put(ATTRIBUTES, list.build());
-    }
-    /*
     void applyModifiers(Multimap<Attribute, AttributeModifier> modifiers, CraftMetaItem.Applicator tag) {
-        if (modifiers == null || modifiers.isEmpty()) {
+        if (modifiers == null) { // empty modifiers has a specific meaning, they should still be saved
+            // don't save ItemFlag if the underlying data isn't present
             return;
         }
 
-        AttributeModifiersComponent.Builder list = AttributeModifiersComponent.builder();
+        ItemAttributeModifiers.Builder list = ItemAttributeModifiers.builder();
         for (Map.Entry<Attribute, AttributeModifier> entry : modifiers.entries()) {
             if (entry.getKey() == null || entry.getValue() == null) {
                 continue;
             }
-            net.minecraft.entity.attribute.EntityAttributeModifier nmsModifier = CardboardAttributeInstance.convert(entry.getValue());
+            net.minecraft.world.entity.ai.attributes.AttributeModifier nmsModifier = CraftAttributeInstance.convert(entry.getValue());
 
-            RegistryEntry<net.minecraft.entity.attribute.EntityAttribute> name = CraftAttribute.bukkitToMinecraftHolder(entry.getKey());
+            Holder<net.minecraft.world.entity.ai.attributes.Attribute> name = CraftAttribute.bukkitToMinecraftHolder(entry.getKey());
             if (name == null) {
                 continue;
             }
 
-            // TODO: 1.20.6
-            // AttributeModifierSlot group = CraftEquipmentSlot.getNMSGroup(entry.getValue().getSlotGroup());
-            AttributeModifierSlot group  = AttributeModifierSlot.ANY;
-            
+            EquipmentSlotGroup group = CraftEquipmentSlot.getNMSGroup(entry.getValue().getSlotGroup());
             list.add(name, nmsModifier, group);
         }
-        tag.put(CraftMetaItem.ATTRIBUTES, list.build().withShowInTooltip(!this.hasItemFlag(ItemFlag.HIDE_ATTRIBUTES)));
+        tag.put(CraftMetaItem.ATTRIBUTES, list.build());
     }
-    */
-
-    /*
-    static void applyModifiers(Multimap<Attribute, AttributeModifier> modifiers, NbtCompound tag, ItemMetaKey key) {
-        if (modifiers == null || modifiers.isEmpty())
-            return;
-
-        NbtList list = new NbtList();
-        for (Map.Entry<Attribute, AttributeModifier> entry : modifiers.entries()) {
-            if (entry.getKey() == null || entry.getValue() == null)
-                continue;
-            net.minecraft.entity.attribute.EntityAttributeModifier nmsModifier = CardboardAttributeInstance.convert(entry.getValue());
-            NbtCompound sub = nmsModifier.toNbt();
-            if (sub.isEmpty()) continue;
-
-            String name = entry.getKey().getKey().toString();
-            if (name == null || name.isEmpty()) continue;
-
-            sub.putString(ATTRIBUTES_IDENTIFIER.NBT, name); // Attribute Name
-            if (entry.getValue().getSlot() != null) {
-                net.minecraft.entity.EquipmentSlot slot = Utils.getNMS(entry.getValue().getSlot());
-                if (slot != null) sub.putString(ATTRIBUTES_SLOT.NBT, slot.getName());
-            }
-            list.add(sub);
-        }
-        tag.put(key.NBT, list);
-    }
-    */
-
-    /*@Deprecated
-    void setDisplayTag(NbtCompound tag, String key, NbtElement value) {
-        final NbtCompound display = tag.getCompound(DISPLAY.NBT);
-        if (!tag.contains(DISPLAY.NBT)) tag.put(DISPLAY.NBT, display);
-        display.put(key, value);
-    }*/
 
     boolean applicableTo(Material type) {
-        return type != Material.AIR;
+        if (type == Material.AIR || !type.isItem()) {
+            return false;
+        }
+
+        if (this.getClass() == CraftMetaItem.class) {
+            return true;
+        }
+
+        // We assume that the corresponding bukkit interface is always the first one
+        return type.asItemType().getItemMetaClass() == this.getClass().getInterfaces()[0];
     }
 
-    /*boolean isEmpty() {
-        return !(hasDisplayName() || hasLocalizedName() || hasEnchants() || hasLore() || hasCustomModelData() || hasBlockData() || hasRepairCost() || !unhandledTags.isEmpty() || !persistentDataContainer.isEmpty() || hideFlag != 0 || isUnbreakable() || hasDamage() || hasAttributeModifiers());
-    }*/
-    
+    @Overridden
     boolean isEmpty() {
-        return !(this.hasDisplayName() || this.hasItemName() || this.hasLocalizedName() || this.hasEnchants() || (this.lore != null) || this.hasCustomModelData() || this.hasBlockData() || this.hasRepairCost() || !this.unhandledTags.build().isEmpty() || !this.persistentDataContainer.isEmpty() /*|| this.hideFlag != 0*/ || this.isHideTooltip() || this.isUnbreakable() || this.hasEnchantmentGlintOverride() || this.isFireResistant() || this.hasMaxStackSize() || this.hasRarity() || this.hasFood() || this.hasDamage() || this.hasMaxDamage() || this.hasAttributeModifiers() || this.customTag != null);
+        return !(this.hasDisplayName() || this.hasItemName() || this.hasLocalizedName() || this.hasEnchants() || (this.lore != null) || this.hasCustomModelDataComponent() || this.hasEnchantable() || this.hasBlockData() || this.hasRepairCost() || !this.unhandledTags.build().isEmpty() || !this.removedTags.isEmpty() || !this.persistentDataContainer.isEmpty() || this.hasAnyItemFlag() || this.isHideTooltip() || this.hasTooltipStyle() || this.hasItemModel() || this.isUnbreakable() || this.hasEnchantmentGlintOverride() || this.isGlider() || this.hasDamageResistant() || this.hasMaxStackSize() || this.hasRarity() || this.hasUseRemainder() || this.hasUseCooldown() || this.hasFood() || this.hasTool() || this.hasJukeboxPlayable() || this.hasEquippable() || this.hasDamageValue() || this.hasMaxDamage() || this.hasAttributeModifiers() || this.customTag != null || this.canPlaceOnPredicates != null || this.canBreakPredicates != null);
+    }
+
+    @Override
+    public net.kyori.adventure.text.Component customName() {
+        return displayName == null ? null : io.papermc.paper.adventure.PaperAdventure.asAdventure(displayName);
+    }
+
+    @Override
+    public void customName(final net.kyori.adventure.text.Component customName) {
+        this.displayName = customName == null ? null : io.papermc.paper.adventure.PaperAdventure.asVanilla(customName);
     }
 
     @Override
     public String getDisplayName() {
-        return CraftChatMessage.fromComponent(displayName, ChatFormatting.WHITE);
+        return CraftChatMessage.fromComponent(this.displayName);
+    }
+
+    @Override
+    public net.md_5.bungee.api.chat.BaseComponent[] getDisplayNameComponent() {
+        return displayName == null ? new net.md_5.bungee.api.chat.BaseComponent[0] : CraftChatMessage.vanillaToBungee(displayName);
     }
 
     @Override
     public final void setDisplayName(String name) {
-        this.displayName = CraftChatMessage.wrapOrNull(name);
+        this.displayName = CraftChatMessage.fromStringOrNull(name);
     }
 
     @Override
-    public boolean hasDisplayName() {
-        return displayName != null;
+    public void setDisplayNameComponent(net.md_5.bungee.api.chat.BaseComponent[] component) {
+        this.displayName = CraftChatMessage.bungeeToVanilla(component);
+    }
+
+    @Override
+    public boolean hasCustomName() {
+        return this.displayName != null;
+    }
+
+    @Override
+    public String getItemName() {
+        return CraftChatMessage.fromComponent(this.itemName);
+    }
+
+    @Override
+    public final void setItemName(String name) {
+        this.itemName = CraftChatMessage.fromStringOrNull(name);
+    }
+
+    @Override
+    public boolean hasItemName() {
+        return this.itemName != null;
+    }
+
+    @Override
+    public net.kyori.adventure.text.Component itemName() {
+        return io.papermc.paper.adventure.PaperAdventure.asAdventure(this.itemName);
+    }
+
+    @Override
+    public void itemName(final net.kyori.adventure.text.Component name) {
+        this.itemName = io.papermc.paper.adventure.PaperAdventure.asVanilla(name);
     }
 
     @Override
     public String getLocalizedName() {
         return this.getDisplayName();
-    	// return CraftChatMessage.fromComponent(locName, Formatting.WHITE);
     }
 
     @Override
     public void setLocalizedName(String name) {
-    	// Removed in 1.20.6
-        // this.locName = CraftChatMessage.wrapOrNull(name);
     }
 
     @Override
     public boolean hasLocalizedName() {
-        // return locName != null;
-    	return false;
+        return false;
     }
 
     @Override
@@ -1804,57 +1203,96 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     }
 
     @Override
+    public List<net.kyori.adventure.text.Component> lore() {
+        return this.lore != null ? io.papermc.paper.adventure.PaperAdventure.asAdventure(this.lore) : null;
+    }
+
+    @Override
+    public void lore(final List<? extends net.kyori.adventure.text.Component> lore) {
+        if (lore == null) {
+            this.lore = null;
+            return;
+        }
+
+        Preconditions.checkArgument(lore.size() <= ItemLore.MAX_LINES, "lore cannot have more than %s lines", ItemLore.MAX_LINES); // Paper - limit lore lines
+
+        for (int i = 0; i < lore.size(); i++) {
+            Preconditions.checkArgument(lore.get(i) != null, "lore contains null entry at index: %s", i);
+        }
+
+        this.lore = io.papermc.paper.adventure.PaperAdventure.asVanilla(lore);
+    }
+
+    @Override
     public boolean hasRepairCost() {
-        return repairCost > 0;
+        return this.repairCost > 0;
     }
 
     @Override
-    public boolean hasEnchant(Enchantment ench) {
-        return hasEnchants() && enchantments.containsKey(ench);
+    public boolean hasEnchant(Enchantment enchant) {
+        Preconditions.checkArgument(enchant != null, "Enchantment cannot be null");
+        return this.hasEnchants() && this.enchantments.containsKey(enchant);
     }
 
     @Override
-    public int getEnchantLevel(Enchantment ench) {
-        Validate.notNull(ench, "Enchantment cannot be null");
-        Integer level = hasEnchants() ? enchantments.get(ench) : null;
-        return (level == null) ? 0 : level;
+    public int getEnchantLevel(Enchantment enchant) {
+        Preconditions.checkArgument(enchant != null, "Enchantment cannot be null");
+        Integer level = this.hasEnchants() ? this.enchantments.get(enchant) : null;
+        if (level == null) {
+            return 0;
+        }
+        return level;
     }
 
     @Override
     public Map<Enchantment, Integer> getEnchants() {
-        return hasEnchants() ? ImmutableMap.copyOf(enchantments) : ImmutableMap.<Enchantment, Integer>of();
+        return this.hasEnchants() ? ImmutableSortedMap.copyOfSorted(this.enchantments) : ImmutableMap.<Enchantment, Integer>of(); // Paper
     }
 
     @Override
-    public boolean addEnchant(Enchantment ench, int level, boolean ignoreRestrictions) {
-        if (enchantments == null) enchantments = new LinkedHashMap<Enchantment, Integer>(4);
+    public boolean addEnchant(Enchantment enchant, int level, boolean ignoreRestrictions) {
+        Preconditions.checkArgument(enchant != null, "Enchantment cannot be null");
+        if (this.enchantments == null) {
+            this.enchantments = new EnchantmentMap();
+        }
 
-        if (ignoreRestrictions || level >= ench.getStartLevel() && level <= ench.getMaxLevel()) {
-            Integer old = enchantments.put(ench, level);
+        if (ignoreRestrictions || level >= enchant.getStartLevel() && level <= enchant.getMaxLevel()) {
+            Integer old = this.enchantments.put(enchant, level);
             return old == null || old != level;
         }
         return false;
     }
 
     @Override
-    public boolean removeEnchant(Enchantment ench) {
-        boolean b = hasEnchants() && enchantments.remove(ench) != null;
-        if (enchantments != null && enchantments.isEmpty()) this.enchantments = null;
-        return b;
+    public boolean removeEnchant(Enchantment enchant) {
+        Preconditions.checkArgument(enchant != null, "Enchantment cannot be null");
+        boolean enchantmentRemoved = this.hasEnchants() && this.enchantments.remove(enchant) != null;
+        // If we no longer have any enchantments, then clear enchantment tag
+        if (enchantmentRemoved && this.enchantments.isEmpty()) {
+            this.enchantments = null;
+        }
+        return enchantmentRemoved;
+    }
+
+    @Override
+    public void removeEnchantments() {
+        if (this.hasEnchants()) {
+            this.enchantments = null; // Paper - Correctly clear enchantments
+        }
     }
 
     @Override
     public boolean hasEnchants() {
-        return !(enchantments == null || enchantments.isEmpty());
+        return !(this.enchantments == null || this.enchantments.isEmpty());
     }
 
     @Override
-    public boolean hasConflictingEnchant(Enchantment ench) {
-        return checkConflictingEnchants(enchantments, ench);
+    public boolean hasConflictingEnchant(Enchantment enchant) {
+        return CraftMetaItem.checkConflictingEnchants(this.enchantments, enchant);
     }
 
     @Override
-    public void addItemFlags(ItemFlag ... hideFlags) {
+    public void addItemFlags(ItemFlag... hideFlags) {
         if (this.tooltipDisplay == null) {
             this.tooltipDisplay = new TooltipDisplay(false, new ReferenceLinkedOpenHashSet<>());
         }
@@ -1865,132 +1303,212 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public void removeItemFlags(ItemFlag... hideFlags) {
-    	if (this.tooltipDisplay == null) {
+        if (this.tooltipDisplay == null) {
             return;
         }
         for (ItemFlag f : hideFlags) {
-            Set<DataComponentType<?>> dataComponentTypes = ITEM_FLAG_EQUIVALENTS.get(f);
-            if (!this.tooltipDisplay.hiddenComponents().containsAll(dataComponentTypes)) continue;
-            this.tooltipDisplay.hiddenComponents().removeAll(dataComponentTypes);
+            final Set<DataComponentType<?>> dataComponentTypes = ITEM_FLAG_EQUIVALENTS.get(f);
+            // Specifically ensure *all* expected data components are available. Otherwise we might remove components
+            // not tracked by the ItemFlag system (e.g. HIDE_ADDITIONAL removal should not remove a single POTION_CONTENTS
+            // if that was set as the item does not have the HIDE_ADDITIONAL ItemFlag.
+            if (this.tooltipDisplay.hiddenComponents().containsAll(dataComponentTypes)) {
+                this.tooltipDisplay.hiddenComponents().removeAll(dataComponentTypes);
+            }
         }
     }
 
     @Override
     public Set<ItemFlag> getItemFlags() {
-    	EnumSet<ItemFlag> currentFlags = EnumSet.noneOf(ItemFlag.class);
+        Set<ItemFlag> currentFlags = EnumSet.noneOf(ItemFlag.class);
+
         for (ItemFlag f : ItemFlag.values()) {
-            if (!this.hasItemFlag(f)) continue;
-            currentFlags.add(f);
+            if (this.hasItemFlag(f)) {
+                currentFlags.add(f);
+            }
         }
+
         return currentFlags;
     }
 
     @Override
     public boolean hasItemFlag(ItemFlag flag) {
-    	if (this.tooltipDisplay == null) {
+        if (this.tooltipDisplay == null) {
             return false;
         }
         return this.tooltipDisplay.hiddenComponents().containsAll(ITEM_FLAG_EQUIVALENTS.get(flag));
     }
 
-    private byte getBitModifier1(ItemFlag hideFlag) {
-        return (byte) (1 << hideFlag.ordinal());
+    private boolean hasAnyItemFlag() {
+        return this.tooltipDisplay != null && !this.tooltipDisplay.hiddenComponents().isEmpty();
     }
 
     @Override
     public List<String> getLore() {
-        return this.lore == null ? null : new ArrayList<String>(Lists.transform(this.lore, (line) -> CraftChatMessage.fromComponent(line, ChatFormatting.DARK_PURPLE)));
+        return this.lore == null ? null : new ArrayList<>(Lists.transform(this.lore, CraftChatMessage::fromComponent));
     }
 
     @Override
-    public void setLore(List<String> lore) { // too tired to think if .clone is better
+    public List<net.md_5.bungee.api.chat.BaseComponent[]> getLoreComponents() {
+        return this.lore == null ? null : new ArrayList<>(Lists.transform(this.lore, CraftChatMessage::vanillaToBungee));
+    }
+
+    @Override
+    public void setLore(List<String> lore) {
+        Preconditions.checkArgument(lore == null || lore.size() <= ItemLore.MAX_LINES, "lore cannot have more than %s lines", ItemLore.MAX_LINES); // Paper - limit lore lines
+        if (lore == null || lore.isEmpty()) {
+            this.lore = null;
+        } else {
+            if (this.lore == null) {
+                this.lore = new ArrayList<Component>(lore.size());
+            } else {
+                this.lore.clear();
+            }
+            CraftMetaItem.safelyAdd(lore, this.lore, false);
+        }
+    }
+
+    @Override
+    public void setLoreComponents(List<net.md_5.bungee.api.chat.BaseComponent[]> lore) {
+        Preconditions.checkArgument(lore == null || lore.size() <= ItemLore.MAX_LINES, "lore cannot have more than %s lines", ItemLore.MAX_LINES); // Paper - limit lore lines
         if (lore == null) {
             this.lore = null;
         } else {
             if (this.lore == null) {
-                safelyAdd(lore, this.lore = new ArrayList<net.minecraft.network.chat.Component>(lore.size()), Integer.MAX_VALUE);
+                safelyAdd(lore, this.lore = new ArrayList<>(lore.size()), false);
             } else {
                 this.lore.clear();
-                safelyAdd(lore, this.lore, Integer.MAX_VALUE);
+                safelyAdd(lore, this.lore, false);
             }
         }
     }
 
     @Override
     public boolean hasCustomModelData() {
-        return customModelData != null;
+        if (customModelData != null) {
+            List<Float> floats = customModelData.getFloats();
+            return !floats.isEmpty();
+        }
+
+        return false;
     }
 
     @Override
     public int getCustomModelData() {
-    	Preconditions.checkState(this.hasCustomModelData(), "We don't have CustomModelData! Check hasCustomModelData first!");
+        Preconditions.checkState(this.hasCustomModelData(), "We don't have CustomModelData! Check hasCustomModelData first!");
 
-        List<Float> floats = this.customModelData.getFloats();
-        Preconditions.checkState(!floats.isEmpty(), "No numeric custom model data");
-        return floats.get(0).intValue();
+        return customModelData.getFloats().get(0).intValue();
+    }
+
+    @Override
+    public boolean hasCustomModelDataComponent() {
+        return customModelData != null;
+    }
+
+    @Override
+    public CustomModelDataComponent getCustomModelDataComponent() {
+        return (this.hasCustomModelDataComponent()) ? new CraftCustomModelDataComponent(this.customModelData) : new CraftCustomModelDataComponent(new CustomModelData(List.of(), List.of(), List.of(), List.of()));
     }
 
     @Override
     public void setCustomModelData(Integer data) {
-        this.customModelData = (data == null) ? null : new CraftCustomModelDataComponent(new net.minecraft.world.item.component.CustomModelData(List.of(data.floatValue()), List.of(), List.of(), List.of()));
+        this.customModelData = (data == null) ? null : new CraftCustomModelDataComponent(new CustomModelData(List.of(data.floatValue()), List.of(), List.of(), List.of()));
+    }
+
+    @Override
+    public void setCustomModelDataComponent(CustomModelDataComponent customModelData) {
+        this.customModelData = (customModelData == null) ? null : new CraftCustomModelDataComponent((CraftCustomModelDataComponent) customModelData);
+    }
+
+    @Override
+    public boolean hasEnchantable() {
+        return this.enchantableValue != null;
+    }
+
+    @Override
+    public int getEnchantable() {
+        Preconditions.checkState(this.hasEnchantable(), "We don't have Enchantable! Check hasEnchantable first!");
+        return this.enchantableValue;
+    }
+
+    @Override
+    public void setEnchantable(Integer data) {
+        Preconditions.checkArgument(data == null || data > 0, "Enchantability must be positive");
+        this.enchantableValue = data;
     }
 
     @Override
     public boolean hasBlockData() {
-       return this.blockData != null;
+        return this.blockData != null;
     }
 
-    /*@Override
-    public BlockData getBlockData_old(Material material) {
-        return  CraftBlockData.fromData(getBlockState(CraftMagicNumbers.getBlock(material).getDefaultState(), blockData));
-    }*/
-    
     @Override
     public BlockData getBlockData(Material material) {
         BlockState defaultData = CraftBlockType.bukkitToMinecraft(material).defaultBlockState();
         return CraftBlockData.fromData((this.hasBlockData()) ? new BlockItemStateProperties(this.blockData).apply(defaultData) : defaultData);
     }
 
-    /**
-     * Ported functionality from ItemBlock.patch
-     */
-    /*public static BlockState getBlockState(BlockState iblockdata, NbtCompound nbttagcompound1) {
-        BlockState iblockdata1 = iblockdata;
-        {
-            StateManager<Block, BlockState> blockstatelist = iblockdata.getBlock().getStateManager();
-            Iterator<String> iterator = nbttagcompound1.getKeys().iterator();
-
-            while (iterator.hasNext()) {
-                String s = (String) iterator.next();
-                Property<?> iblockstate = blockstatelist.getProperty(s);
-
-                if (iblockstate != null) {
-                    String s1 = nbttagcompound1.get(s).asString();
-                    iblockdata1 = BlockItem.with(iblockdata1, iblockstate, s1);
-                }
-            }
-        }
-        return iblockdata1;
-    }*/
-
     @Override
     public void setBlockData(BlockData blockData) {
-        this.blockData = (blockData == null) ? null : ((CraftBlockData) blockData).toStates();
+        this.blockData = (blockData == null) ? null : ((CraftBlockData) blockData).toStates(true);
     }
 
     @Override
     public int getRepairCost() {
-        return repairCost;
+        return this.repairCost;
     }
 
     @Override
-    public void setRepairCost(int cost) {
-        repairCost = cost;
+    public void setRepairCost(int cost) { // TODO: Does this have limits?
+        this.repairCost = cost;
+    }
+
+    @Override
+    public boolean isHideTooltip() {
+        return this.tooltipDisplay != null && this.tooltipDisplay.hideTooltip();
+    }
+
+    @Override
+    public void setHideTooltip(boolean hideTooltip) {
+        if (this.tooltipDisplay == null) {
+            this.tooltipDisplay = new TooltipDisplay(hideTooltip, new ReferenceLinkedOpenHashSet<>());
+        } else {
+            this.tooltipDisplay = new TooltipDisplay(hideTooltip, this.tooltipDisplay.hiddenComponents());
+        }
+    }
+
+    @Override
+    public boolean hasTooltipStyle() {
+        return this.tooltipStyle != null;
+    }
+
+    @Override
+    public NamespacedKey getTooltipStyle() {
+        return this.tooltipStyle;
+    }
+
+    @Override
+    public void setTooltipStyle(NamespacedKey tooltipStyle) {
+        this.tooltipStyle = tooltipStyle;
+    }
+
+    @Override
+    public boolean hasItemModel() {
+        return this.itemModel != null;
+    }
+
+    @Override
+    public NamespacedKey getItemModel() {
+        return this.itemModel;
+    }
+
+    @Override
+    public void setItemModel(NamespacedKey itemModel) {
+        this.itemModel = itemModel;
     }
 
     @Override
     public boolean isUnbreakable() {
-        return unbreakable;
+        return this.unbreakable;
     }
 
     @Override
@@ -1999,85 +1517,277 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     }
 
     @Override
+    public boolean hasEnchantmentGlintOverride() {
+        return this.enchantmentGlintOverride != null;
+    }
+
+    @Override
+    public Boolean getEnchantmentGlintOverride() {
+        Preconditions.checkState(this.hasEnchantmentGlintOverride(), "We don't have enchantment_glint_override! Check hasEnchantmentGlintOverride first!");
+        return this.enchantmentGlintOverride;
+    }
+
+    @Override
+    public void setEnchantmentGlintOverride(Boolean override) {
+        this.enchantmentGlintOverride = override;
+    }
+
+    @Override
+    public boolean isGlider() {
+        return this.glider;
+    }
+
+    @Override
+    public void setGlider(boolean glider) {
+        this.glider = glider;
+    }
+
+    @Override
+    public boolean isFireResistant() {
+        return this.hasDamageResistant() && this.damageResistant == net.minecraft.tags.DamageTypeTags.IS_FIRE;
+    }
+
+    @Override
+    public void setFireResistant(boolean fireResistant) {
+        this.damageResistant = net.minecraft.tags.DamageTypeTags.IS_FIRE;
+    }
+
+    @Override
+    public boolean hasDamageResistant() {
+        return this.damageResistant != null;
+    }
+
+    @Override
+    public Tag<DamageType> getDamageResistant() {
+        return (this.hasDamageResistant()) ? Bukkit.getTag(DamageTypeTags.REGISTRY_DAMAGE_TYPES, CraftNamespacedKey.fromMinecraft(this.damageResistant.location()), DamageType.class) : null;
+    }
+
+    @Override
+    public void setDamageResistant(Tag<DamageType> tag) {
+        this.damageResistant = (tag != null) ? ((CraftDamageTag) tag).getHandle().key() : null;
+    }
+
+    @Override
+    public boolean hasMaxStackSize() {
+        return this.maxStackSize != null;
+    }
+
+    @Override
+    public int getMaxStackSize() {
+        Preconditions.checkState(this.hasMaxStackSize(), "We don't have max_stack_size! Check hasMaxStackSize first!");
+        return this.maxStackSize;
+    }
+
+    @Override
+    public void setMaxStackSize(Integer max) {
+        Preconditions.checkArgument(max == null || max > 0, "max_stack_size must be > 0");
+        Preconditions.checkArgument(max == null || max <= net.minecraft.world.item.Item.ABSOLUTE_MAX_STACK_SIZE, "max_stack_size must be <= 99");
+        this.maxStackSize = max;
+    }
+
+    @Override
+    public boolean hasRarity() {
+        return this.rarity != null;
+    }
+
+    @Override
+    public ItemRarity getRarity() {
+        Preconditions.checkState(this.hasRarity(), "We don't have rarity! Check hasRarity first!");
+        return this.rarity;
+    }
+
+    @Override
+    public void setRarity(ItemRarity rarity) {
+        this.rarity = rarity;
+    }
+
+    @Override
+    public boolean hasUseRemainder() {
+        return this.useRemainder != null;
+    }
+
+    @Override
+    public ItemStack getUseRemainder() {
+        return this.useRemainder;
+    }
+
+    @Override
+    public void setUseRemainder(ItemStack useRemainder) {
+        Preconditions.checkArgument(useRemainder == null || !useRemainder.isEmpty(), "Item cannot be empty");
+        this.useRemainder = useRemainder;
+    }
+
+    @Override
+    public boolean hasUseCooldown() {
+        return this.useCooldown != null;
+    }
+
+    @Override
+    public UseCooldownComponent getUseCooldown() {
+        return (this.hasUseCooldown()) ? new CraftUseCooldownComponent(this.useCooldown) : new CraftUseCooldownComponent(new UseCooldown(1));
+    }
+
+    @Override
+    public void setUseCooldown(UseCooldownComponent cooldown) {
+        this.useCooldown = (cooldown == null) ? null : new CraftUseCooldownComponent((CraftUseCooldownComponent) cooldown);
+    }
+
+    @Override
+    public boolean hasFood() {
+        return this.food != null;
+    }
+
+    @Override
+    public FoodComponent getFood() {
+        return (this.hasFood()) ? new CraftFoodComponent(this.food) : new CraftFoodComponent(new FoodProperties(0, 0, false));
+    }
+
+    @Override
+    public void setFood(FoodComponent food) {
+        this.food = (food == null) ? null : new CraftFoodComponent((CraftFoodComponent) food);
+    }
+
+    @Override
+    public boolean hasTool() {
+        return this.tool != null;
+    }
+
+    @Override
+    public ToolComponent getTool() {
+        return (this.hasTool()) ? new CraftToolComponent(this.tool) : new CraftToolComponent(new Tool(Collections.emptyList(), 1.0F, 0, true));
+    }
+
+    @Override
+    public void setTool(ToolComponent tool) {
+        this.tool = (tool == null) ? null : new CraftToolComponent((CraftToolComponent) tool);
+    }
+
+    @Override
+    public boolean hasEquippable() {
+        return this.equippable != null;
+    }
+
+    @Override
+    public EquippableComponent getEquippable() {
+        return (this.hasEquippable()) ? new CraftEquippableComponent(this.equippable) : new CraftEquippableComponent(Equippable.builder(net.minecraft.world.entity.EquipmentSlot.HEAD).build());
+    }
+
+    @Override
+    public void setEquippable(EquippableComponent equippable) {
+        this.equippable = (equippable == null) ? null : new CraftEquippableComponent((CraftEquippableComponent) equippable);
+    }
+
+    @Override
+    public boolean hasJukeboxPlayable() {
+        return this.jukebox != null;
+    }
+
+    @Override
+    public JukeboxPlayableComponent getJukeboxPlayable() {
+        return (this.hasJukeboxPlayable()) ? new CraftJukeboxComponent(this.jukebox) : new CraftJukeboxComponent(new JukeboxPlayable(new EitherHolder<>(JukeboxSongs.THIRTEEN)));
+    }
+
+    @Override
+    public void setJukeboxPlayable(JukeboxPlayableComponent jukeboxPlayable) {
+        this.jukebox = (jukeboxPlayable == null) ? null : new CraftJukeboxComponent((CraftJukeboxComponent) jukeboxPlayable);
+    }
+
+    @Override
     public boolean hasAttributeModifiers() {
-        return attributeModifiers != null && !attributeModifiers.isEmpty();
+        return this.attributeModifiers != null && !this.attributeModifiers.isEmpty();
     }
 
     @Override
     public Multimap<Attribute, AttributeModifier> getAttributeModifiers() {
-        return hasAttributeModifiers() ? ImmutableMultimap.copyOf(attributeModifiers) : null;
+        return this.hasAttributeModifiers() ? ImmutableMultimap.copyOf(this.attributeModifiers) : null;
     }
 
     private void checkAttributeList() {
-        if (attributeModifiers == null)
-            attributeModifiers = LinkedHashMultimap.create();
+        if (this.attributeModifiers == null) {
+            this.attributeModifiers = LinkedHashMultimap.create();
+        }
     }
 
     @Override
-    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(org.bukkit.inventory.EquipmentSlot slot) {
-        checkAttributeList();
+    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(@Nullable EquipmentSlot slot) {
+        if (this.attributeModifiers == null) return LinkedHashMultimap.create(); // Paper - don't change the components
         SetMultimap<Attribute, AttributeModifier> result = LinkedHashMultimap.create();
-        for (Map.Entry<Attribute, AttributeModifier> entry : attributeModifiers.entries())
-            if (entry.getValue().getSlot() == null || entry.getValue().getSlot() == slot)
+        for (Map.Entry<Attribute, AttributeModifier> entry : this.attributeModifiers.entries()) {
+            if (entry.getValue().getSlotGroup().test(slot)) { // Paper - correctly test slot against group
                 result.put(entry.getKey(), entry.getValue());
+            }
+        }
         return result;
     }
 
     @Override
-    public Collection<AttributeModifier> getAttributeModifiers(org.bukkit.attribute.Attribute attribute) {
-        Preconditions.checkNotNull(attribute, "Attribute cannot be null");
-        return attributeModifiers.containsKey(attribute) ? ImmutableList.copyOf(attributeModifiers.get(attribute)) : null;
+    public Collection<AttributeModifier> getAttributeModifiers(@Nonnull Attribute attribute) {
+        Preconditions.checkArgument(attribute != null, "Attribute cannot be null");
+        if (this.attributeModifiers == null) return null;
+        return this.attributeModifiers.containsKey(attribute) ? ImmutableList.copyOf(this.attributeModifiers.get(attribute)) : null;
     }
 
     @Override
-    public boolean addAttributeModifier(org.bukkit.attribute.Attribute attribute, AttributeModifier modifier) {
-        Preconditions.checkNotNull(attribute, "Attribute cannot be null");
-        Preconditions.checkNotNull(modifier, "AttributeModifier cannot be null");
-        checkAttributeList();
-        for (Map.Entry<Attribute, AttributeModifier> entry : attributeModifiers.entries())
-            Preconditions.checkArgument(!entry.getValue().getUniqueId().equals(modifier.getUniqueId()), "Cannot register AttributeModifier. Modifier is already applied! %s", modifier);
-        return attributeModifiers.put(attribute, modifier);
+    public boolean addAttributeModifier(@Nonnull Attribute attribute, @Nonnull AttributeModifier modifier) {
+        Preconditions.checkArgument(attribute != null, "Attribute cannot be null");
+        Preconditions.checkArgument(modifier != null, "AttributeModifier cannot be null");
+        if (this.attributeModifiers != null) {
+            for (Map.Entry<Attribute, AttributeModifier> entry : this.attributeModifiers.entries()) {
+                Preconditions.checkArgument(!(entry.getValue().getKey().equals(modifier.getKey()) && entry.getKey() == attribute), "Cannot register AttributeModifier. Modifier is already applied! %s", modifier); // Paper - attribute modifiers with same namespaced key but on different attributes are fine
+            }
+        }
+        this.checkAttributeList(); // Paper - moved down
+        return this.attributeModifiers.put(attribute, modifier);
     }
 
     @Override
-    public void setAttributeModifiers(Multimap<org.bukkit.attribute.Attribute, AttributeModifier> attributeModifiers) {
-        if (attributeModifiers == null || attributeModifiers.isEmpty()) {
+    public void setAttributeModifiers(@Nullable Multimap<Attribute, AttributeModifier> attributeModifiers) {
+        // Paper start - distinguish between null and empty
+        if (attributeModifiers == null) {
+            this.attributeModifiers = null;
+            return;
+        }
+        if (attributeModifiers.isEmpty()) {
+            // Paper end - distinguish between null and empty
             this.attributeModifiers = LinkedHashMultimap.create();
             return;
         }
 
-        checkAttributeList();
-        this.attributeModifiers.clear();
+        // Paper start - fix modifiers meta
+        if (this.attributeModifiers != null) {
+            this.attributeModifiers.clear();
+        }
+        // Paper end
 
         Iterator<Map.Entry<Attribute, AttributeModifier>> iterator = attributeModifiers.entries().iterator();
         while (iterator.hasNext()) {
             Map.Entry<Attribute, AttributeModifier> next = iterator.next();
+
             if (next.getKey() == null || next.getValue() == null) {
                 iterator.remove();
                 continue;
             }
+            this.checkAttributeList(); // Paper - moved down
             this.attributeModifiers.put(next.getKey(), next.getValue());
         }
     }
 
     @Override
-    public boolean removeAttributeModifier(org.bukkit.attribute.Attribute attribute) {
-        Preconditions.checkNotNull(attribute, "Attribute cannot be null");
-        checkAttributeList();
-        return !attributeModifiers.removeAll(attribute).isEmpty();
+    public boolean removeAttributeModifier(@Nonnull Attribute attribute) {
+        Preconditions.checkArgument(attribute != null, "Attribute cannot be null");
+        if (this.attributeModifiers == null) return false;
+        return !this.attributeModifiers.removeAll(attribute).isEmpty();
     }
 
     @Override
-    public boolean removeAttributeModifier(org.bukkit.inventory.EquipmentSlot slot) {
-        checkAttributeList();
+    public boolean removeAttributeModifier(@Nonnull EquipmentSlot slot) {
+        if (this.attributeModifiers == null) return false;
         int removed = 0;
-        Iterator<Map.Entry<Attribute, AttributeModifier>> iter = attributeModifiers.entries().iterator();
+        Iterator<Map.Entry<Attribute, AttributeModifier>> iter = this.attributeModifiers.entries().iterator();
 
         while (iter.hasNext()) {
             Map.Entry<Attribute, AttributeModifier> entry = iter.next();
-            // Explicitly match against null because (as of MC 1.13) AttributeModifiers without a -
-            // set slot are active in any slot.
-            if (entry.getValue().getSlot() == null || entry.getValue().getSlot() == slot) {
+            if (entry.getValue().getSlotGroup().test(slot)) { // Paper - correctly test slot against group
                 iter.remove();
                 ++removed;
             }
@@ -2086,12 +1796,12 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     }
 
     @Override
-    public boolean removeAttributeModifier(org.bukkit.attribute.Attribute attribute, AttributeModifier modifier) {
-        Preconditions.checkNotNull(attribute, "Attribute cannot be null");
-        Preconditions.checkNotNull(modifier, "AttributeModifier cannot be null");
-        checkAttributeList();
+    public boolean removeAttributeModifier(@Nonnull Attribute attribute, @Nonnull AttributeModifier modifier) {
+        Preconditions.checkArgument(attribute != null, "Attribute cannot be null");
+        Preconditions.checkArgument(modifier != null, "AttributeModifier cannot be null");
+        if (this.attributeModifiers == null) return false;
         int removed = 0;
-        Iterator<Map.Entry<Attribute, AttributeModifier>> iter = attributeModifiers.entries().iterator();
+        Iterator<Map.Entry<Attribute, AttributeModifier>> iter = this.attributeModifiers.entries().iterator();
 
         while (iter.hasNext()) {
             Map.Entry<Attribute, AttributeModifier> entry = iter.next();
@@ -2101,12 +1811,49 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                 continue; // remove all null values while we are here
             }
 
-            if (entry.getKey() == attribute && entry.getValue().getUniqueId().equals(modifier.getUniqueId())) {
+            if (entry.getKey() == attribute && entry.getValue().getKey().equals(modifier.getKey())) {
                 iter.remove();
                 ++removed;
             }
         }
         return removed > 0;
+    }
+
+    @Override
+    public String getAsString() {
+        CraftMetaItem.Applicator tag = new CraftMetaItem.Applicator() {}; // Paper - support updating profile after resolving it
+        this.applyToItem(tag);
+        DataComponentPatch patch = tag.build();
+        net.minecraft.nbt.Tag nbt = DataComponentPatch.CODEC.encodeStart(CraftRegistry.getMinecraftRegistry().createSerializationContext(NbtOps.INSTANCE), patch).getOrThrow();
+        return nbt.toString();
+    }
+
+    @Override
+    public String getAsComponentString() {
+        CraftMetaItem.Applicator tag = new CraftMetaItem.Applicator() {};
+        this.applyToItem(tag);
+        DataComponentPatch patch = tag.build();
+
+        RegistryAccess registryAccess = CraftRegistry.getMinecraftRegistry();
+        DynamicOps<net.minecraft.nbt.Tag> ops = registryAccess.createSerializationContext(NbtOps.INSTANCE);
+        Registry<DataComponentType<?>> componentTypeRegistry = registryAccess.lookupOrThrow(Registries.DATA_COMPONENT_TYPE);
+
+        StringJoiner componentString = new StringJoiner(",", "[", "]");
+        for (Entry<DataComponentType<?>, Optional<?>> entry : patch.entrySet()) {
+            DataComponentType<?> componentType = entry.getKey();
+            Optional<?> componentValue = entry.getValue();
+            String componentKey = componentTypeRegistry.getResourceKey(componentType).orElseThrow().identifier().toString();
+
+            if (componentValue.isPresent()) {
+                net.minecraft.nbt.Tag componentValueAsNBT = (net.minecraft.nbt.Tag) ((DataComponentType) componentType).codecOrThrow().encodeStart(ops, componentValue.get()).getOrThrow();
+                String componentValueAsNBTString = new SnbtPrinterTagVisitor("", 0, new ArrayList<>()).visit(componentValueAsNBT);
+                componentString.add(componentKey + "=" + componentValueAsNBTString);
+            } else {
+                componentString.add("!" + componentKey);
+            }
+        }
+
+        return componentString.toString();
     }
 
     @Override
@@ -2120,247 +1867,157 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     }
 
     private static boolean compareModifiers(Multimap<Attribute, AttributeModifier> first, Multimap<Attribute, AttributeModifier> second) {
-        if (first == null || second == null) return false;
-
-        for (Map.Entry<Attribute, AttributeModifier> entry : first.entries())
-            if (!second.containsEntry(entry.getKey(), entry.getValue()))
+        if (first == null || second == null) {
+            return false;
+        }
+        if (first.isEmpty() && second.isEmpty()) return true; // Paper - empty modifiers are equivalent
+        for (Map.Entry<Attribute, AttributeModifier> entry : first.entries()) {
+            if (!second.containsEntry(entry.getKey(), entry.getValue())) {
                 return false;
-
-        for (Map.Entry<Attribute, AttributeModifier> entry : second.entries())
-            if (!first.containsEntry(entry.getKey(), entry.getValue()))
+            }
+        }
+        for (Map.Entry<Attribute, AttributeModifier> entry : second.entries()) {
+            if (!first.containsEntry(entry.getKey(), entry.getValue())) {
                 return false;
+            }
+        }
         return true;
     }
 
     @Override
     public boolean hasDamage() {
-    	return this.damage != null && this.damage > 0;
+        return this.damage != null && this.damage > 0;
     }
 
     @Override
     public int getDamage() {
-    	return this.damage == null ? 0 : this.damage;
+        return this.damage == null ? 0 : this.damage;
     }
 
     @Override
     public void setDamage(int damage) {
+        Preconditions.checkArgument(damage >= 0, "Damage cannot be negative");
+        Preconditions.checkArgument(!this.hasMaxDamage() || damage <= this.maxDamage, "Damage cannot exceed max damage");
         this.damage = damage;
+    }
+
+    // Paper start - preserve empty/0 damage
+    @Override
+    public boolean hasDamageValue() {
+        return this.damage != null;
+    }
+
+    @Override
+    public void resetDamage() {
+        this.damage = null;
+    }
+    // Paper end - preserve empty/0 damage
+
+    @Override
+    public boolean hasMaxDamage() {
+        return this.maxDamage != null;
+    }
+
+    @Override
+    public int getMaxDamage() {
+        Preconditions.checkState(this.hasMaxDamage(), "We don't have max_damage! Check hasMaxDamage first!");
+        return this.maxDamage;
+    }
+
+    @Override
+    public void setMaxDamage(Integer maxDamage) {
+        Preconditions.checkArgument(maxDamage == null || maxDamage > 0, "Max damage should be positive");
+        this.maxDamage = maxDamage;
     }
 
     @Override
     public final boolean equals(Object object) {
-        if (object == null) return false;
-        if (object == this) return true;
-
-        if (!(object instanceof CraftMetaItem)) return false;
+        if (object == null) {
+            return false;
+        }
+        if (object == this) {
+            return true;
+        }
+        if (!(object instanceof CraftMetaItem)) {
+            return false;
+        }
         return CraftItemFactory.instance().equals(this, (ItemMeta) object);
     }
 
-    boolean equalsCommon(CraftMetaItem meta) {
-        return (this.hasDisplayName() ? meta.hasDisplayName() && this.displayName.equals(meta.displayName) : !meta.hasDisplayName()) 
-        		&& (this.hasItemName() ? meta.hasItemName() && this.itemName.equals(meta.itemName) : !meta.hasItemName()) 
-        		&& (this.hasEnchants() ? meta.hasEnchants() && this.enchantments.equals(meta.enchantments) : !meta.hasEnchants()) 
-        		&& Objects.equals(this.lore, meta.lore) && (this.hasCustomModelData() ? meta.hasCustomModelData() 
-        		&& this.customModelData.equals(meta.customModelData) : !meta.hasCustomModelData())
-        		&& (this.hasEnchantable() ? meta.hasEnchantable() 
-        		&& this.enchantableValue.equals(meta.enchantableValue) : !meta.hasEnchantable())
-        		&& (this.hasBlockData() ? meta.hasBlockData() && this.blockData.equals(meta.blockData) : !meta.hasBlockData())
-        		&& (this.hasRepairCost() ? meta.hasRepairCost()
-        		&& this.repairCost == meta.repairCost : !meta.hasRepairCost())
-        		&& (this.attributeModifiers != null ? meta.attributeModifiers != null
-        		&& CraftMetaItem.compareModifiers(this.attributeModifiers, meta.attributeModifiers) : meta.attributeModifiers == null)
-        		&& this.unhandledTags.equals(meta.unhandledTags)
-        		// && this.removedTags.equals(meta.removedTags)
-        		&& Objects.equals(this.customTag, meta.customTag)
-        		&& this.persistentDataContainer.equals(meta.persistentDataContainer)
-        		&& Objects.equals(this.tooltipDisplay, meta.tooltipDisplay)
-        		&& this.isHideTooltip() == meta.isHideTooltip()
-        		&& (this.hasTooltipStyle() ? meta.hasTooltipStyle()
-        		&& this.tooltipStyle.equals((Object)meta.tooltipStyle) : !meta.hasTooltipStyle())
-        		&& (this.hasItemModel() ? meta.hasItemModel()
-        		&& this.itemModel.equals((Object)meta.itemModel) : !meta.hasItemModel())
-        		&& this.isUnbreakable() == meta.isUnbreakable() && (this.hasEnchantmentGlintOverride() ? meta.hasEnchantmentGlintOverride()
-        		&& this.enchantmentGlintOverride.equals(meta.enchantmentGlintOverride) : !meta.hasEnchantmentGlintOverride())
-        		&& this.glider == meta.glider && (this.hasDamageResistant() ? meta.hasDamageResistant()
-        		&& this.damageResistant.equals(meta.damageResistant) : !meta.hasDamageResistant())
-        		&& (this.hasMaxStackSize() ? meta.hasMaxStackSize() && this.maxStackSize.equals(meta.maxStackSize) : !meta.hasMaxStackSize())
-        		&& this.rarity == meta.rarity && (this.hasUseRemainder() ? meta.hasUseRemainder()
-        		&& this.useRemainder.equals((Object)meta.useRemainder) : !meta.hasUseRemainder())
-        		&& (this.hasUseCooldown() ? meta.hasUseCooldown() && this.useCooldown.equals(meta.useCooldown) : !meta.hasUseCooldown())
-        		// && (this.hasFood() ? meta.hasFood() && this.food.equals(meta.food) : !meta.hasFood())
-        		&& (this.hasTool() ? meta.hasTool() && this.tool.equals(meta.tool) : !meta.hasTool())
-        		&& (this.hasEquippable() ? meta.hasEquippable() && this.equippable.equals(meta.equippable) : !meta.hasEquippable())
-        		&& (this.hasJukeboxPlayable() ? meta.hasJukeboxPlayable() /*&& this.jukebox.equals(meta.jukebox)*/ : !meta.hasJukeboxPlayable())
-        		&& Objects.equals(this.damage, meta.damage) && (this.hasMaxDamage() ? meta.hasMaxDamage()
-        		&& this.maxDamage.equals(meta.maxDamage) : !meta.hasMaxDamage())
-        		&& (this.canPlaceOnPredicates != null ? meta.canPlaceOnPredicates != null
-        		&& this.canPlaceOnPredicates.equals(meta.canPlaceOnPredicates) : meta.canPlaceOnPredicates == null)
-        		&& (this.canBreakPredicates != null ? meta.canBreakPredicates != null
-        		&& this.canBreakPredicates.equals(meta.canBreakPredicates) : meta.canBreakPredicates == null)
-        		&& (this.version == meta.version);
-    }
-    
     /**
      * This method is almost as weird as notUncommon.
      * Only return false if your common internals are unequal.
      * Checking your own internals is redundant if you are not common, as notUncommon is meant for checking those 'not common' variables.
      */
-    /*
-    boolean equalsCommon(CraftMetaItem that) {
-        return ((this.hasDisplayName() ? that.hasDisplayName() && this.displayName.equals(that.displayName) : !that.hasDisplayName()))
-                && (this.hasItemName() ? that.hasItemName() && this.itemName.equals(that.itemName) : !that.hasItemName())
-                && (this.hasEnchants() ? that.hasEnchants() && this.enchantments.equals(that.enchantments) : !that.hasEnchants())
-                && (Objects.equals(this.lore, that.lore))
-                && (this.hasCustomModelData() ? that.hasCustomModelData() && this.customModelData.equals(that.customModelData) : !that.hasCustomModelData())
-                && (this.hasEnchantable() ? that.hasEnchantable() && this.enchantableValue.equals(that.enchantableValue) : !that.hasEnchantable())
-                && (this.hasBlockData() ? that.hasBlockData() && this.blockData.equals(that.blockData) : !that.hasBlockData())
-                && (this.hasRepairCost() ? that.hasRepairCost() && this.repairCost == that.repairCost : !that.hasRepairCost())
-                && (this.attributeModifiers != null ? that.attributeModifiers != null && CraftMetaItem.compareModifiers(this.attributeModifiers, that.attributeModifiers) : that.attributeModifiers == null) // Paper - track only null modifiers
-                && (this.unhandledTags.equals(that.unhandledTags))
-                // && (this.removedTags.equals(that.removedTags))
-                && (Objects.equals(this.customTag, that.customTag))
-                && (this.persistentDataContainer.equals(that.persistentDataContainer))
-                //&& (this.hideFlag == that.hideFlag)
-                && (this.isHideTooltip() == that.isHideTooltip())
-                && (this.hasTooltipStyle() ? that.hasTooltipStyle() && this.tooltipStyle.equals(that.tooltipStyle) : !that.hasTooltipStyle())
-                && (this.hasItemModel() ? that.hasItemModel() && this.itemModel.equals(that.itemModel) : !that.hasItemModel())
-                && (this.isUnbreakable() == that.isUnbreakable())
-                && (this.hasEnchantmentGlintOverride() ? that.hasEnchantmentGlintOverride() && this.enchantmentGlintOverride.equals(that.enchantmentGlintOverride) : !that.hasEnchantmentGlintOverride())
-                && (this.glider == that.glider)
-                && (this.hasDamageResistant() ? that.hasDamageResistant() && this.damageResistant.equals(that.damageResistant) : !that.hasDamageResistant())
-                && (this.hasMaxStackSize() ? that.hasMaxStackSize() && this.maxStackSize.equals(that.maxStackSize) : !that.hasMaxStackSize())
-                && (this.rarity == that.rarity)
-                && (this.hasUseRemainder() ? that.hasUseRemainder() && this.useRemainder.equals(that.useRemainder) : !that.hasUseRemainder())
-                && (this.hasUseCooldown() ? that.hasUseCooldown() && this.useCooldown.equals(that.useCooldown) : !that.hasUseCooldown())
-                // && (this.hasFood() ? that.hasFood() && this.food.equals(that.food) : !that.hasFood())
-                && (this.hasTool() ? that.hasTool() && this.tool.equals(that.tool) : !that.hasTool())
-                && (this.hasEquippable() ? that.hasEquippable() && this.equippable.equals(that.equippable) : !that.hasEquippable())
-                // && (this.hasJukeboxPlayable() ? that.hasJukeboxPlayable() && this.jukebox.equals(that.jukebox) : !that.hasJukeboxPlayable())
-                && (Objects.equals(this.damage, that.damage)) // Paper - preserve empty/0 damage
-                && (this.hasMaxDamage() ? that.hasMaxDamage() && this.maxDamage.equals(that.maxDamage) : !that.hasMaxDamage())
-                && (this.canPlaceOnPredicates != null ? that.canPlaceOnPredicates != null && this.canPlaceOnPredicates.equals(that.canPlaceOnPredicates) : that.canPlaceOnPredicates == null) // Paper
-                && (this.canBreakPredicates != null ? that.canBreakPredicates != null && this.canBreakPredicates.equals(that.canBreakPredicates) : that.canBreakPredicates == null) // Paper
-                && (this.version == that.version);
+    @Overridden
+    boolean equalsCommon(CraftMetaItem meta) {
+        return ((this.hasDisplayName() ? meta.hasDisplayName() && this.displayName.equals(meta.displayName) : !meta.hasDisplayName()))
+                && (this.hasItemName() ? meta.hasItemName() && this.itemName.equals(meta.itemName) : !meta.hasItemName())
+                && (this.hasEnchants() ? meta.hasEnchants() && this.enchantments.equals(meta.enchantments) : !meta.hasEnchants())
+                && (Objects.equals(this.lore, meta.lore))
+                && (this.hasCustomModelDataComponent() ? meta.hasCustomModelDataComponent() && this.customModelData.equals(meta.customModelData) : !meta.hasCustomModelDataComponent())
+                && (this.hasEnchantable() ? meta.hasEnchantable() && this.enchantableValue.equals(meta.enchantableValue) : !meta.hasEnchantable())
+                && (this.hasBlockData() ? meta.hasBlockData() && this.blockData.equals(meta.blockData) : !meta.hasBlockData())
+                && (this.hasRepairCost() ? meta.hasRepairCost() && this.repairCost == meta.repairCost : !meta.hasRepairCost())
+                && (this.attributeModifiers != null ? meta.attributeModifiers != null && CraftMetaItem.compareModifiers(this.attributeModifiers, meta.attributeModifiers) : meta.attributeModifiers == null) // Paper - track only null modifiers
+                && (this.unhandledTags.equals(meta.unhandledTags))
+                && (this.removedTags.equals(meta.removedTags))
+                && (Objects.equals(this.customTag, meta.customTag))
+                && (this.persistentDataContainer.equals(meta.persistentDataContainer))
+                && (Objects.equals(this.tooltipDisplay, meta.tooltipDisplay))
+                && (this.isHideTooltip() == meta.isHideTooltip())
+                && (this.hasTooltipStyle() ? meta.hasTooltipStyle() && this.tooltipStyle.equals(meta.tooltipStyle) : !meta.hasTooltipStyle())
+                && (this.hasItemModel() ? meta.hasItemModel() && this.itemModel.equals(meta.itemModel) : !meta.hasItemModel())
+                && (this.isUnbreakable() == meta.isUnbreakable())
+                && (this.hasEnchantmentGlintOverride() ? meta.hasEnchantmentGlintOverride() && this.enchantmentGlintOverride.equals(meta.enchantmentGlintOverride) : !meta.hasEnchantmentGlintOverride())
+                && (this.glider == meta.glider)
+                && (this.hasDamageResistant() ? meta.hasDamageResistant() && this.damageResistant.equals(meta.damageResistant) : !meta.hasDamageResistant())
+                && (this.hasMaxStackSize() ? meta.hasMaxStackSize() && this.maxStackSize.equals(meta.maxStackSize) : !meta.hasMaxStackSize())
+                && (this.rarity == meta.rarity)
+                && (this.hasUseRemainder() ? meta.hasUseRemainder() && this.useRemainder.equals(meta.useRemainder) : !meta.hasUseRemainder())
+                && (this.hasUseCooldown() ? meta.hasUseCooldown() && this.useCooldown.equals(meta.useCooldown) : !meta.hasUseCooldown())
+                && (this.hasFood() ? meta.hasFood() && this.food.equals(meta.food) : !meta.hasFood())
+                && (this.hasTool() ? meta.hasTool() && this.tool.equals(meta.tool) : !meta.hasTool())
+                && (this.hasEquippable() ? meta.hasEquippable() && this.equippable.equals(meta.equippable) : !meta.hasEquippable())
+                && (this.hasJukeboxPlayable() ? meta.hasJukeboxPlayable() && this.jukebox.equals(meta.jukebox) : !meta.hasJukeboxPlayable())
+                && (Objects.equals(this.damage, meta.damage)) // Paper - preserve empty/0 damage
+                && (this.hasMaxDamage() ? meta.hasMaxDamage() && this.maxDamage.equals(meta.maxDamage) : !meta.hasMaxDamage())
+                && (this.canPlaceOnPredicates != null ? meta.canPlaceOnPredicates != null && this.canPlaceOnPredicates.equals(meta.canPlaceOnPredicates) : meta.canPlaceOnPredicates == null) // Paper
+                && (this.canBreakPredicates != null ? meta.canBreakPredicates != null && this.canBreakPredicates.equals(meta.canBreakPredicates) : meta.canBreakPredicates == null) // Paper
+                && (this.version == meta.version);
     }
-    */
-
-    
-    
-    /*boolean equalsCommon(CraftMetaItem that) {
-        return ((this.hasDisplayName() ? that.hasDisplayName() && this.displayName.equals(that.displayName) : !that.hasDisplayName()))
-                && (this.hasLocalizedName() ? that.hasLocalizedName() && this.locName.equals(that.locName) : !that.hasLocalizedName())
-                && (this.hasEnchants() ? that.hasEnchants() && this.enchantments.equals(that.enchantments) : !that.hasEnchants())
-                && (this.hasLore() ? that.hasLore() && this.lore.equals(that.lore) : !that.hasLore())
-                && (this.hasCustomModelData() ? that.hasCustomModelData() && this.customModelData.equals(that.customModelData) : !that.hasCustomModelData())
-                && (this.hasBlockData() ? that.hasBlockData() && this.blockData.equals(that.blockData) : !that.hasBlockData())
-                && (this.hasRepairCost() ? that.hasRepairCost() && this.repairCost == that.repairCost : !that.hasRepairCost())
-                && (this.hasAttributeModifiers() ? that.hasAttributeModifiers() && compareModifiers(this.attributeModifiers, that.attributeModifiers) : !that.hasAttributeModifiers())
-                && (this.unhandledTags.equals(that.unhandledTags))
-                && (this.persistentDataContainer.equals(that.persistentDataContainer))
-                && (this.hideFlag == that.hideFlag)
-                && (this.isUnbreakable() == that.isUnbreakable())
-                && (this.hasDamage() ? that.hasDamage() && this.damage == that.damage : !that.hasDamage())
-                && (this.version == that.version);
-    }*/
 
     /**
      * This method is a bit weird...
      * Return true if you are a common class OR your uncommon parts are empty.
      * Empty uncommon parts implies the NBT data would be equivalent if both were applied to an item
      */
+    @Overridden
     boolean notUncommon(CraftMetaItem meta) {
         return true;
     }
 
     @Override
     public final int hashCode() {
-        return applyHash();
-    }
-    
-    // TODO API UPDATE
-    
-    // @Override
-    public boolean hasMaxStackSize() {
-        return this.maxStackSize != null;
-    }
-    
-    // @Override
-    public boolean hasItemName() {
-        return this.itemName != null;
-    }
-    
-    // @Override
-    public boolean isHideTooltip() {
-    	return this.tooltipDisplay != null && this.tooltipDisplay.hideTooltip();
-    }
-    
-    // @Override
-    public boolean hasEnchantmentGlintOverride() {
-        return this.enchantmentGlintOverride != null;
+        return this.applyHash();
     }
 
-    // @Override
-    public Boolean getEnchantmentGlintOverride() {
-        Preconditions.checkState(this.hasEnchantmentGlintOverride(), "Check hasEnchantmentGlintOverride first!");
-        return this.enchantmentGlintOverride;
-    }
-    
-    // @Override
-    public boolean isFireResistant() {
-        return this.fireResistant;
-    }
-
-    // @Override
-    public void setFireResistant(boolean fireResistant) {
-        this.fireResistant = fireResistant;
-    }
-    
-    // @Override
-    public boolean hasRarity() {
-        return this.rarity != null;
-    }
-
-    // @Override
-    public ItemRarity getRarity() {
-        Preconditions.checkState(this.hasRarity(), "We don't have rarity! Check hasRarity first!");
-        return this.rarity;
-    }
-    
-    // @Override
-    public boolean hasFood() {
-        return false; // TODO!
-    	// return this.food != null;
-    }
-    
-    // @Override
-    public boolean hasMaxDamage() {
-        return this.maxDamage != null;
-    }
-
-    // @Override
-    public int getMaxDamage() {
-        Preconditions.checkState(this.hasMaxDamage(), "We don't have max_damage! Check hasMaxDamage first!");
-        return this.maxDamage;
-    }
-    
-    // TODO API UPDATE
-    
-    // @Overridden
+    @Overridden
     int applyHash() {
         int hash = 3;
         hash = 61 * hash + (this.hasDisplayName() ? this.displayName.hashCode() : 0);
         hash = 61 * hash + (this.hasItemName() ? this.itemName.hashCode() : 0);
-        hash = 61 * hash + (this.lore != null ? this.lore.hashCode() : 0);
-        hash = 61 * hash + (this.hasCustomModelData() ? this.customModelData.hashCode() : 0);
+        hash = 61 * hash + ((this.lore != null) ? this.lore.hashCode() : 0);
+        hash = 61 * hash + (this.hasCustomModelDataComponent() ? this.customModelData.hashCode() : 0);
         hash = 61 * hash + (this.hasEnchantable() ? this.enchantableValue.hashCode() : 0);
         hash = 61 * hash + (this.hasBlockData() ? this.blockData.hashCode() : 0);
         hash = 61 * hash + (this.hasEnchants() ? this.enchantments.hashCode() : 0);
         hash = 61 * hash + (this.hasRepairCost() ? this.repairCost : 0);
         hash = 61 * hash + this.unhandledTags.hashCode();
-        hash = 61 * hash + 0; // this.removedTags.hashCode();
-        hash = 61 * hash + (this.customTag != null ? this.customTag.hashCode() : 0);
+        hash = 61 * hash + this.removedTags.hashCode();
+        hash = 61 * hash + ((this.customTag != null) ? this.customTag.hashCode() : 0);
         hash = 61 * hash + (!this.persistentDataContainer.isEmpty() ? this.persistentDataContainer.hashCode() : 0);
-        hash = 61 * hash + (this.tooltipDisplay != null ? this.tooltipDisplay.hashCode() : 0);
+        hash = 61 * hash + ((this.tooltipDisplay != null) ? this.tooltipDisplay.hashCode() : 0);
         hash = 61 * hash + (this.isHideTooltip() ? 1231 : 1237);
         hash = 61 * hash + (this.hasTooltipStyle() ? this.tooltipStyle.hashCode() : 0);
         hash = 61 * hash + (this.hasItemModel() ? this.itemModel.hashCode() : 0);
@@ -2372,68 +2029,46 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         hash = 61 * hash + (this.hasRarity() ? this.rarity.hashCode() : 0);
         hash = 61 * hash + (this.hasUseRemainder() ? this.useRemainder.hashCode() : 0);
         hash = 61 * hash + (this.hasUseCooldown() ? this.useCooldown.hashCode() : 0);
-        hash = 61 * hash + 0; // (this.hasFood() ? this.food.hashCode() : 0);
+        hash = 61 * hash + (this.hasFood() ? this.food.hashCode() : 0);
         hash = 61 * hash + (this.hasTool() ? this.tool.hashCode() : 0);
-        hash = 61 * hash + 0; // (this.hasJukeboxPlayable() ? this.jukebox.hashCode() : 0);
+        hash = 61 * hash + (this.hasJukeboxPlayable() ? this.jukebox.hashCode() : 0);
         hash = 61 * hash + (this.hasEquippable() ? this.equippable.hashCode() : 0);
-        hash = 61 * hash + (this.hasDamageValue() ? this.damage : -1);
+        hash = 61 * hash + (this.hasDamageValue() ? this.damage : -1); // Paper - preserve empty/0 damage
         hash = 61 * hash + (this.hasMaxDamage() ? this.maxDamage.hashCode() : 0);
-        hash = 61 * hash + (this.attributeModifiers != null ? this.attributeModifiers.hashCode() : 0);
+        hash = 61 * hash + (this.attributeModifiers != null ? this.attributeModifiers.hashCode() : 0); // Paper - track only null attributes
         hash = 61 * hash + (this.canPlaceOnPredicates != null ? this.canPlaceOnPredicates.hashCode() : 0);
         hash = 61 * hash + (this.canBreakPredicates != null ? this.canBreakPredicates.hashCode() : 0);
         hash = 61 * hash + this.version;
         return hash;
     }
 
-    /*int applyHash_old() {
-        int hash = 3;
-        hash = 61 * hash + (hasDisplayName() ? this.displayName.hashCode() : 0);
-        hash = 61 * hash + (hasLocalizedName() ? this.locName.hashCode() : 0);
-        hash = 61 * hash + (hasLore() ? this.lore.hashCode() : 0);
-        hash = 61 * hash + (hasCustomModelData() ? this.customModelData.hashCode() : 0);
-        hash = 61 * hash + (hasBlockData() ? this.blockData.hashCode() : 0);
-        hash = 61 * hash + (hasEnchants() ? this.enchantments.hashCode() : 0);
-        hash = 61 * hash + (hasRepairCost() ? this.repairCost : 0);
-        hash = 61 * hash + unhandledTags.hashCode();
-        hash = 61 * hash + (!persistentDataContainer.isEmpty() ? persistentDataContainer.hashCode() : 0);
-        hash = 61 * hash + hideFlag;
-        hash = 61 * hash + (isUnbreakable() ? 1231 : 1237);
-        hash = 61 * hash + (hasDamage() ? this.damage : 0);
-        hash = 61 * hash + (hasAttributeModifiers() ? this.attributeModifiers.hashCode() : 0);
-        hash = 61 * hash + version;
-        return hash;
-    }*/
-
+    @Overridden
     @Override
     public CraftMetaItem clone() {
         try {
             CraftMetaItem clone = (CraftMetaItem) super.clone();
             if (this.lore != null) {
-                clone.lore = new ArrayList<net.minecraft.network.chat.Component>(this.lore);
+                clone.lore = new ArrayList<>(this.lore);
             }
-            if (this.hasCustomModelData()) {
+            if (this.hasCustomModelDataComponent()) {
                 clone.customModelData = new CraftCustomModelDataComponent(this.customModelData);
             }
             clone.enchantableValue = this.enchantableValue;
             clone.blockData = this.blockData;
             if (this.enchantments != null) {
-            	clone.enchantments = new LinkedHashMap<Enchantment, Integer>(this.enchantments);
-                // TODO clone.enchantments = new EnchantmentMap(this.enchantments); // Paper
+                clone.enchantments = new EnchantmentMap(this.enchantments);
             }
-            if (this.attributeModifiers != null) { // Paper
+            if (this.attributeModifiers != null) {
                 clone.attributeModifiers = LinkedHashMultimap.create(this.attributeModifiers);
             }
             if (this.customTag != null) {
                 clone.customTag = this.customTag.copy();
             }
-            // clone.removedTags = Sets.newHashSet(this.removedTags);
-            clone.persistentDataContainer = new CraftPersistentDataContainer(this.persistentDataContainer.getRaw(), CraftMetaItem.DATA_TYPE_REGISTRY); // Paper - deep clone NBT tags
-            
+            clone.removedTags = Sets.newHashSet(this.removedTags);
+            clone.persistentDataContainer = new CraftPersistentDataContainer(this.persistentDataContainer.getTagsCloned(), CraftMetaItem.DATA_TYPE_REGISTRY); // Paper - deep clone NBT tags
             if (this.tooltipDisplay != null) {
                 clone.tooltipDisplay = new TooltipDisplay(this.tooltipDisplay.hideTooltip(), new ReferenceLinkedOpenHashSet<>(this.tooltipDisplay.hiddenComponents()));
             }
-
-            clone.hideTooltip = this.hideTooltip;
             clone.tooltipStyle = this.tooltipStyle;
             clone.itemModel = this.itemModel;
             clone.unbreakable = this.unbreakable;
@@ -2449,7 +2084,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                 clone.useCooldown = new CraftUseCooldownComponent(this.useCooldown);
             }
             if (this.hasFood()) {
-                // clone.food = new CraftFoodComponent(this.food);
+                clone.food = new CraftFoodComponent(this.food);
             }
             if (this.hasTool()) {
                 clone.tool = new CraftToolComponent(this.tool);
@@ -2458,59 +2093,34 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                 clone.equippable = new CraftEquippableComponent(this.equippable);
             }
             if (this.hasJukeboxPlayable()) {
-                // clone.jukebox = new CraftJukeboxComponent(this.jukebox);
+                clone.jukebox = new CraftJukeboxComponent(this.jukebox);
             }
             clone.damage = this.damage;
             clone.maxDamage = this.maxDamage;
             clone.version = this.version;
-            // Paper start
+
             if (this.canPlaceOnPredicates != null) {
                 clone.canPlaceOnPredicates = List.copyOf(this.canPlaceOnPredicates);
             }
             if (this.canBreakPredicates != null) {
                 clone.canBreakPredicates = List.copyOf(this.canBreakPredicates);
             }
-            // Paper end
+
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new Error(e);
         }
     }
-
-    /*@Override
-    public CraftMetaItem clone() {
-        try {
-            CraftMetaItem clone = (CraftMetaItem) super.clone();
-            if (this.lore != null) clone.lore = new ArrayList<Text>(this.lore);
-
-            clone.customModelData = this.customModelData;
-            clone.blockData = this.blockData;
-            if (this.enchantments != null)
-                clone.enchantments = new LinkedHashMap<Enchantment, Integer>(this.enchantments);
-
-            if (this.hasAttributeModifiers())
-                clone.attributeModifiers = LinkedHashMultimap.create(this.attributeModifiers);
-
-            clone.persistentDataContainer = new CraftPersistentDataContainer(this.persistentDataContainer.getRaw(), DATA_TYPE_REGISTRY);
-            clone.hideFlag = this.hideFlag;
-            clone.unbreakable = this.unbreakable;
-            clone.damage = this.damage;
-            clone.version = this.version;
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            throw new Error(e);
-        }
-    }*/
 
     @Override
     public final Map<String, Object> serialize() {
         ImmutableMap.Builder<String, Object> map = ImmutableMap.builder();
-        map.put(SerializableMeta.TYPE_FIELD, SerializableMeta.classMap.get(getClass()));
-        serialize(map);
+        map.put(SerializableMeta.TYPE_FIELD, SerializableMeta.classMap.get(this.getClass()));
+        this.serialize(map);
         return map.build();
     }
-    
-    // @Overridden
+
+    @Overridden
     ImmutableMap.Builder<String, Object> serialize(ImmutableMap.Builder<String, Object> builder) {
         if (this.hasDisplayName()) {
             builder.put(CraftMetaItem.NAME.BUKKIT, CraftChatMessage.toJSON(this.displayName));
@@ -2524,14 +2134,14 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             // SPIGOT-7625: Convert lore to json before serializing it
             List<String> jsonLore = new ArrayList<>();
 
-            for (net.minecraft.network.chat.Component component : this.lore) {
+            for (Component component : this.lore) {
                 jsonLore.add(CraftChatMessage.toJSON(component));
             }
 
             builder.put(CraftMetaItem.LORE.BUKKIT, jsonLore);
         }
 
-        if (this.hasCustomModelData()) {
+        if (this.hasCustomModelDataComponent()) {
             builder.put(CraftMetaItem.CUSTOM_MODEL_DATA.BUKKIT, this.customModelData);
         }
         if (this.hasEnchantable()) {
@@ -2548,19 +2158,13 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             builder.put(CraftMetaItem.REPAIR.BUKKIT, this.repairCost);
         }
 
-        List<String> hideFlags = new ArrayList<String>();
+        List<String> hideFlags = new ArrayList<>();
         for (ItemFlag hideFlagEnum : this.getItemFlags()) {
-            hideFlags.add(hideFlagEnum.name());
+            hideFlags.add(CraftItemFlag.bukkitToString(hideFlagEnum));
         }
         if (!hideFlags.isEmpty()) {
             builder.put(CraftMetaItem.HIDEFLAGS.BUKKIT, hideFlags);
         }
-
-        /*
-        if (this.isHideTooltip()) {
-            builder.put(CraftMetaItem.HIDE_TOOLTIP.BUKKIT, this.hideTooltip);
-        }
-        */
 
         if (this.hasTooltipStyle()) {
             builder.put(CraftMetaItem.TOOLTIP_STYLE.BUKKIT, this.tooltipStyle.toString());
@@ -2603,7 +2207,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
 
         if (this.hasFood()) {
-            // builder.put(CraftMetaItem.FOOD.BUKKIT, this.food);
+            builder.put(CraftMetaItem.FOOD.BUKKIT, this.food);
         }
 
         if (this.hasTool()) {
@@ -2615,7 +2219,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
 
         if (this.hasJukeboxPlayable()) {
-            // builder.put(CraftMetaItem.JUKEBOX_PLAYABLE.BUKKIT, this.jukebox);
+            builder.put(CraftMetaItem.JUKEBOX_PLAYABLE.BUKKIT, this.jukebox);
         }
 
         if (this.hasDamageValue()) { // Paper - preserve empty/0 damage
@@ -2626,7 +2230,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             builder.put(CraftMetaItem.MAX_DAMAGE.BUKKIT, this.maxDamage);
         }
 
-        final Map<String, net.minecraft.nbt.Tag> internalTags = new HashMap<String, net.minecraft.nbt.Tag>();
+        final Map<String, net.minecraft.nbt.Tag> internalTags = new HashMap<>();
         this.serializeInternal(internalTags);
         if (!internalTags.isEmpty()) {
             CompoundTag internal = new CompoundTag();
@@ -2638,791 +2242,373 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                 NbtIo.writeCompressed(internal, buf);
                 builder.put("internal", Base64.getEncoder().encodeToString(buf.toByteArray()));
             } catch (IOException ex) {
-                Logger.getLogger(CraftMetaItem.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.error("Failed to write internal tag for item", ex);
             }
         }
 
-        if (!this.unhandledTags.build().isEmpty()) {
-        	
-        	RegistryOps<net.minecraft.nbt.Tag> ops = ICommonMod.getIServer().getMinecraft().registryAccess().createSerializationContext(NbtOps.INSTANCE);
-        	
-            net.minecraft.nbt.Tag unhandled = DataComponentPatch.CODEC.encodeStart(ops, this.unhandledTags.build()).getOrThrow(IllegalStateException::new);
+        final boolean canBreakAddToUnhandled = this.canBreakPredicates != null && !this.canBreakPredicates.isEmpty();
+        if (canBreakAddToUnhandled) {
+            this.unhandledTags.set(DataComponents.CAN_BREAK, new net.minecraft.world.item.AdventureModePredicate(this.canBreakPredicates));
+        }
+        final boolean canPlaceOnAddToUnhandled = this.canPlaceOnPredicates != null && !this.canPlaceOnPredicates.isEmpty();
+        if (canPlaceOnAddToUnhandled) {
+            this.unhandledTags.set(DataComponents.CAN_PLACE_ON, new net.minecraft.world.item.AdventureModePredicate(this.canPlaceOnPredicates));
+        }
+
+        if (!((DataComponentPatch_BuilderBridge)this.unhandledTags).isEmpty()) {
+            net.minecraft.nbt.Tag unhandled = DataComponentPatch.CODEC.encodeStart(CraftRegistry.getMinecraftRegistry().createSerializationContext(NbtOps.INSTANCE), this.unhandledTags.build()).getOrThrow(IllegalStateException::new);
             try {
                 ByteArrayOutputStream buf = new ByteArrayOutputStream();
                 NbtIo.writeCompressed((CompoundTag) unhandled, buf);
                 builder.put("unhandled", Base64.getEncoder().encodeToString(buf.toByteArray()));
             } catch (IOException ex) {
-                Logger.getLogger(CraftMetaItem.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.error("Failed to write unhandled tag for item", ex);
             }
+        }
+
+        if (canBreakAddToUnhandled) {
+            ((DataComponentPatch_BuilderBridge)this.unhandledTags).clear(DataComponents.CAN_BREAK);
+        }
+        if (canPlaceOnAddToUnhandled) {
+            ((DataComponentPatch_BuilderBridge)this.unhandledTags).clear(DataComponents.CAN_PLACE_ON);
+        }
+
+        if (!this.removedTags.isEmpty()) {
+            RegistryAccess registryAccess = CraftRegistry.getMinecraftRegistry();
+            Registry<DataComponentType<?>> componentTypeRegistry = registryAccess.lookupOrThrow(Registries.DATA_COMPONENT_TYPE);
+
+            List<String> removedTags = new ArrayList<>();
+            for (DataComponentType<?> removed : this.removedTags) {
+                String componentKey = componentTypeRegistry.getResourceKey(removed).orElseThrow().identifier().toString();
+
+                removedTags.add(componentKey);
+            }
+
+            builder.put("removed", removedTags);
         }
 
         if (!this.persistentDataContainer.isEmpty()) { // Store custom tags, wrapped in their compound
             builder.put(CraftMetaItem.BUKKIT_CUSTOM_TAG.BUKKIT, this.persistentDataContainer.serialize());
         }
 
-        if (this.customTag != null && !this.customTag.isEmpty()) {
+        if (this.customTag != null) {
             try {
                 ByteArrayOutputStream buf = new ByteArrayOutputStream();
                 NbtIo.writeCompressed(this.customTag, buf);
                 builder.put("custom", Base64.getEncoder().encodeToString(buf.toByteArray()));
             } catch (IOException ex) {
-                Logger.getLogger(CraftMetaItem.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.error("Failed to write custom tag for item", ex);
             }
         }
 
         return builder;
     }
-
-    /*
-    ImmutableMap.Builder<String, Object> serialize(ImmutableMap.Builder<String, Object> builder) {
-        if (hasDisplayName())
-            builder.put(NAME.BUKKIT, CraftChatMessage.fromComponent(displayName));
-
-        if (hasLocalizedName())
-            builder.put(LOCNAME.BUKKIT, CraftChatMessage.fromComponent(locName));
-
-        if (hasLore())
-            builder.put(LORE.BUKKIT, ImmutableList.copyOf(Lists.transform(lore, CraftChatMessage::fromComponent)));
-
-        if (hasCustomModelData())
-            builder.put(CUSTOM_MODEL_DATA.BUKKIT, customModelData);
-
-        if (hasBlockData())
-            builder.put(BLOCK_DATA.BUKKIT, CraftNBTTagConfigSerializer.serialize(blockData));
-
-        serializeEnchantments(enchantments, builder, ENCHANTMENTS);
-        serializeModifiers(attributeModifiers, builder, ATTRIBUTES);
-
-        if (hasRepairCost())
-            builder.put(REPAIR.BUKKIT, repairCost);
-
-        List<String> hideFlags = new ArrayList<String>();
-        for (ItemFlag hideFlagEnum : getItemFlags())
-            hideFlags.add(hideFlagEnum.name());
-
-        if (!hideFlags.isEmpty())
-            builder.put(HIDEFLAGS.BUKKIT, hideFlags);
-
-        if (isUnbreakable())
-            builder.put(UNBREAKABLE.BUKKIT, unbreakable);
-
-        if (hasDamage())
-            builder.put(DAMAGE.BUKKIT, damage);
-
-        final Map<String, NbtElement> internalTags = new HashMap<String, NbtElement>(unhandledTags);
-        serializeInternal(internalTags);
-        if (!internalTags.isEmpty()) {
-            NbtCompound internal = new NbtCompound();
-            for (Map.Entry<String, NbtElement> e : internalTags.entrySet())
-                internal.put(e.getKey(), e.getValue());
-
-            try {
-                ByteArrayOutputStream buf = new ByteArrayOutputStream();
-                NbtIo.writeCompressed(internal, buf);
-                
-                builder.put("internal", Base64.getEncoder().encodeToString(buf.toByteArray()));
-            } catch (IOException ex) {
-                Logger.getLogger(CraftMetaItem.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-
-        if (!persistentDataContainer.isEmpty())
-            builder.put(BUKKIT_CUSTOM_TAG.BUKKIT, persistentDataContainer.serialize()); // Store custom tags, wrapped in their compound
-
-        return builder;
-    }*/
 
     void serializeInternal(final Map<String, net.minecraft.nbt.Tag> unhandledTags) {
     }
 
-    public Material updateMaterial(Material material) {
-        return material;
-    }
-
-    public static void serializeEnchantments(Map<Enchantment, Integer> enchantments, ImmutableMap.Builder<String, Object> builder, ItemMetaKey key) {
-        if (enchantments == null || enchantments.isEmpty()) return;
+    static void serializeEnchantments(Map<Enchantment, Integer> enchantments, ImmutableMap.Builder<String, Object> builder, ItemMetaKey key) {
+        if (enchantments == null || enchantments.isEmpty()) {
+            return;
+        }
 
         ImmutableMap.Builder<String, Integer> enchants = ImmutableMap.builder();
-        for (Map.Entry<? extends Enchantment, Integer> enchant : enchantments.entrySet())
-            enchants.put(enchant.getKey().getName(), enchant.getValue());
+        for (Map.Entry<? extends Enchantment, Integer> enchant : enchantments.entrySet()) {
+            enchants.put(CraftEnchantment.bukkitToString(enchant.getKey()), enchant.getValue());
+        }
 
         builder.put(key.BUKKIT, enchants.build());
     }
 
-    public static void serializeModifiers(Multimap<Attribute, AttributeModifier> modifiers, ImmutableMap.Builder<String, Object> builder, ItemMetaKey key) {
-        if (modifiers == null || modifiers.isEmpty()) return;
+    static void serializeModifiers(Multimap<Attribute, AttributeModifier> modifiers, ImmutableMap.Builder<String, Object> builder, ItemMetaKey key) {
+        if (modifiers == null) { // null and an empty map have different behaviors
+            return;
+        }
 
         Map<String, List<Object>> mods = new LinkedHashMap<>();
         for (Map.Entry<Attribute, AttributeModifier> entry : modifiers.entries()) {
-            if (entry.getKey() == null) continue;
-
+            if (entry.getKey() == null) {
+                continue;
+            }
             Collection<AttributeModifier> modCollection = modifiers.get(entry.getKey());
-            if (modCollection == null || modCollection.isEmpty()) continue;
-            mods.put(entry.getKey().name(), new ArrayList<>(modCollection));
+            if (modCollection == null || modCollection.isEmpty()) {
+                continue;
+            }
+            mods.put(CraftAttribute.bukkitToString(entry.getKey()), new ArrayList<>(modCollection));
         }
         builder.put(key.BUKKIT, mods);
     }
 
-    static void safelyAdd(Iterable<?> addFrom, Collection<net.minecraft.network.chat.Component> addTo, boolean possiblyJsonInput) {
+    static void safelyAdd(Iterable<?> addFrom, Collection<Component> addTo, boolean possiblyJsonInput) {
         if (addFrom == null) {
             return;
         }
 
         for (Object object : addFrom) {
-            if (!(object instanceof String)) {
+            if (object instanceof net.md_5.bungee.api.chat.BaseComponent[] baseComponentArr) {
+                addTo.add(CraftChatMessage.bungeeToVanilla(baseComponentArr));
+            } else if (!(object instanceof String)) {
                 if (object != null) {
+                    // SPIGOT-7399: Null check via if is important,
+                    // otherwise object.getClass().getName() could throw an error for a valid argument -> when it is null which is valid,
+                    // when using Preconditions
                     throw new IllegalArgumentException(addFrom + " cannot contain non-string " + object.getClass().getName());
                 }
 
-                addTo.add(net.minecraft.network.chat.Component.empty());
+                addTo.add(Component.empty());
             } else {
                 String entry = object.toString();
-                net.minecraft.network.chat.Component component = (possiblyJsonInput) ? CraftChatMessage.fromJSONOrString(entry) : CraftChatMessage.fromStringOrNull(entry);
+                Component component = (possiblyJsonInput) ? CraftChatMessage.fromJSONOrString(entry) : CraftChatMessage.fromStringOrNull(entry);
 
                 if (component != null) {
                     addTo.add(component);
                 } else {
-                    addTo.add(net.minecraft.network.chat.Component.empty());
+                    addTo.add(Component.empty());
                 }
             }
         }
     }
-    
-    public static void safelyAdd(Iterable<?> addFrom, Collection<net.minecraft.network.chat.Component> addTo, int maxItemLength) {
-        if (addFrom == null) return;
 
-        for (Object object : addFrom) {
-            if (!(object instanceof String)) {
-                if (object != null)
-                    throw new IllegalArgumentException(addFrom + " cannot contain non-string " + object.getClass().getName());
-                addTo.add(net.minecraft.network.chat.Component.nullToEmpty(""));
-            } else {
-                String page = object.toString();
-                if (page.length() > maxItemLength) page = page.substring(0, maxItemLength);
-                addTo.add(CraftChatMessage.wrapOrEmpty(page));
+    static boolean checkConflictingEnchants(Map<Enchantment, Integer> enchantments, Enchantment ench) {
+        if (enchantments == null || enchantments.isEmpty()) {
+            return false;
+        }
+
+        for (Enchantment enchant : enchantments.keySet()) {
+            if (enchant.conflictsWith(ench)) {
+                return true;
             }
         }
-    }
 
-    public static boolean checkConflictingEnchants(Map<Enchantment, Integer> enchantments, Enchantment ench) {
-        if (enchantments == null || enchantments.isEmpty()) return false;
-
-        for (Enchantment enchant : enchantments.keySet()) if (enchant.conflictsWith(ench)) return true;
         return false;
     }
 
     @Override
     public final String toString() {
-        return SerializableMeta.classMap.get(getClass()) + "_META:" + serialize();
+        return SerializableMeta.classMap.get(this.getClass()) + "_META:" + this.serialize(); // TODO: cry
     }
 
     public int getVersion() {
-        return version;
+        return this.version;
     }
 
     @Override
     public void setVersion(int version) {
         this.version = version;
     }
-    
-    public static Set<DataComponentType> getHandledTags() {
-        synchronized (CraftMetaItem.HANDLED_TAGS) {
-            if (CraftMetaItem.HANDLED_TAGS.isEmpty()) {
-                CraftMetaItem.HANDLED_TAGS.addAll(Arrays.asList(
-                        CraftMetaItem.NAME.TYPE,
-                        CraftMetaItem.ITEM_NAME.TYPE,
-                        CraftMetaItem.LORE.TYPE,
-                        CraftMetaItem.CUSTOM_MODEL_DATA.TYPE,
-                        CraftMetaItem.BLOCK_DATA.TYPE,
-                        CraftMetaItem.REPAIR.TYPE,
-                        CraftMetaItem.ENCHANTMENTS.TYPE,
-                        // CraftMetaItem.HIDE_ADDITIONAL_TOOLTIP.TYPE,
-                        // CraftMetaItem.HIDE_TOOLTIP.TYPE,
-                        CraftMetaItem.UNBREAKABLE.TYPE,
-                        CraftMetaItem.ENCHANTMENT_GLINT_OVERRIDE.TYPE,
-                        // CraftMetaItem.FIRE_RESISTANT.TYPE,
-                        CraftMetaItem.MAX_STACK_SIZE.TYPE,
-                        CraftMetaItem.RARITY.TYPE,
-                        CraftMetaItem.FOOD.TYPE,
-                        CraftMetaItem.DAMAGE.TYPE,
-                        CraftMetaItem.MAX_DAMAGE.TYPE,
-                        CraftMetaItem.CUSTOM_DATA.TYPE,
-                        CraftMetaItem.ATTRIBUTES.TYPE,
-                        // CraftMetaArmor.TRIM.TYPE,
-                        CraftMetaArmorStand.ENTITY_TAG.TYPE,
-                        CraftMetaBanner.PATTERNS.TYPE,
-                        CraftMetaEntityTag.ENTITY_TAG.TYPE,
-                        CraftMetaLeatherArmor.COLOR.TYPE,
-                        CraftMetaMap.MAP_POST_PROCESSING.TYPE,
-                        CraftMetaMap.MAP_COLOR.TYPE,
-                        CraftMetaMap.MAP_ID.TYPE,
-                        CraftMetaPotion.POTION_CONTENTS.TYPE,
-                        CraftMetaSkull.SKULL_PROFILE.TYPE,
-                        CraftMetaSpawnEgg.ENTITY_TAG.TYPE,
-                        CraftMetaBlockState.BLOCK_ENTITY_TAG.TYPE,
-                        CraftMetaBook.BOOK_CONTENT.TYPE,
-                        CraftMetaBookSigned.BOOK_CONTENT.TYPE,
-                        CraftMetaFirework.FIREWORKS.TYPE,
-                        CraftMetaEnchantedBook.STORED_ENCHANTMENTS.TYPE,
-                        CraftMetaCharge.EXPLOSION.TYPE,
-                        CraftMetaBlockState.BLOCK_ENTITY_TAG.TYPE,
-                        CraftMetaKnowledgeBook.BOOK_RECIPES.TYPE,
-                        // CraftMetaTropicalFishBucket.ENTITY_TAG.TYPE,
-                        // CraftMetaAxolotlBucket.ENTITY_TAG.TYPE,
-                        CraftMetaCrossbow.CHARGED_PROJECTILES.TYPE,
-                        CraftMetaSuspiciousStew.EFFECTS.TYPE // ,
-                        // CraftMetaCompass.LODESTONE_TARGET.TYPE,
-                        // CraftMetaBundle.ITEMS.TYPE,
-                        // CraftMetaMusicInstrument.GOAT_HORN_INSTRUMENT.TYPE,
-                        // CraftMetaOminousBottle.OMINOUS_BOTTLE_AMPLIFIER.TYPE
-                ));
+
+    // Paper start - improve checking handled tags
+    @org.jetbrains.annotations.VisibleForTesting
+    public static final Map<Class<? extends CraftMetaItem>, Set<DataComponentType<?>>> HANDLED_DCTS_PER_TYPE = new HashMap<>();
+    protected static final Set<DataComponentType<?>> DEFAULT_HANDLED_DCTS = Set.of(
+            CraftMetaItem.NAME.TYPE,
+            CraftMetaItem.ITEM_NAME.TYPE,
+            CraftMetaItem.LORE.TYPE,
+            CraftMetaItem.CUSTOM_MODEL_DATA.TYPE,
+            CraftMetaItem.ENCHANTABLE.TYPE,
+            CraftMetaItem.BLOCK_DATA.TYPE,
+            CraftMetaItem.REPAIR.TYPE,
+            CraftMetaItem.ENCHANTMENTS.TYPE,
+            CraftMetaItem.TOOLTIP_DISPLAY.TYPE,
+            CraftMetaItem.TOOLTIP_STYLE.TYPE,
+            CraftMetaItem.ITEM_MODEL.TYPE,
+            CraftMetaItem.UNBREAKABLE.TYPE,
+            CraftMetaItem.ENCHANTMENT_GLINT_OVERRIDE.TYPE,
+            CraftMetaItem.GLIDER.TYPE,
+            CraftMetaItem.DAMAGE_RESISTANT.TYPE,
+            CraftMetaItem.MAX_STACK_SIZE.TYPE,
+            CraftMetaItem.RARITY.TYPE,
+            CraftMetaItem.USE_REMAINDER.TYPE,
+            CraftMetaItem.USE_COOLDOWN.TYPE,
+            CraftMetaItem.FOOD.TYPE,
+            CraftMetaItem.TOOL.TYPE,
+            CraftMetaItem.EQUIPPABLE.TYPE,
+            CraftMetaItem.JUKEBOX_PLAYABLE.TYPE,
+            CraftMetaItem.DAMAGE.TYPE,
+            CraftMetaItem.MAX_DAMAGE.TYPE,
+            CraftMetaItem.CUSTOM_DATA.TYPE,
+            CraftMetaItem.ATTRIBUTES.TYPE,
+            CraftMetaItem.CAN_PLACE_ON.TYPE,
+            CraftMetaItem.CAN_BREAK.TYPE
+    );
+    public static Set<DataComponentType<?>> getTopLevelHandledDcts(final Class<? extends CraftMetaItem> clazz) {
+        synchronized (HANDLED_DCTS_PER_TYPE) {
+            if (HANDLED_DCTS_PER_TYPE.isEmpty()) {
+                final Map<Class<? extends CraftMetaItem>, Set<DataComponentType<?>>> map = new HashMap<>();
+                map.put(CraftMetaArmor.class, Set.of(CraftMetaArmor.TRIM.TYPE));
+                map.put(CraftMetaArmorStand.class, Set.of(CraftMetaArmorStand.ENTITY_TAG.TYPE));
+                map.put(CraftMetaAxolotlBucket.class, Set.of(CraftMetaAxolotlBucket.ENTITY_TAG.TYPE, CraftMetaAxolotlBucket.BUCKET_ENTITY_TAG.TYPE));
+                map.put(CraftMetaBanner.class, Set.of(CraftMetaBanner.PATTERNS.TYPE)); // banner uses same tag as block state
+                map.put(CraftMetaShield.class, Set.of(CraftMetaShield.BASE_COLOR.TYPE, CraftMetaBanner.PATTERNS.TYPE));
+                map.put(CraftMetaBlockState.class, Set.of(CraftMetaBlockState.BLOCK_ENTITY_TAG.TYPE));
+                map.put(CraftMetaBook.class, Set.of(CraftMetaBook.BOOK_CONTENT.TYPE));
+                map.put(CraftMetaBookSigned.class, Set.of(CraftMetaBookSigned.BOOK_CONTENT.TYPE));
+                map.put(CraftMetaBundle.class, Set.of(CraftMetaBundle.ITEMS.TYPE));
+                map.put(CraftMetaCharge.class, Set.of(CraftMetaCharge.EXPLOSION.TYPE));
+                map.put(CraftMetaColorableArmor.class, Set.of(CraftMetaArmor.TRIM.TYPE, CraftMetaLeatherArmor.COLOR.TYPE));
+                map.put(CraftMetaCompass.class, Set.of(CraftMetaCompass.LODESTONE_TARGET.TYPE));
+                map.put(CraftMetaCrossbow.class, Set.of(CraftMetaCrossbow.CHARGED_PROJECTILES.TYPE));
+                map.put(CraftMetaEnchantedBook.class, Set.of(CraftMetaEnchantedBook.STORED_ENCHANTMENTS.TYPE));
+                map.put(CraftMetaEntityTag.class, Set.of(CraftMetaEntityTag.ENTITY_TAG.TYPE));
+                map.put(CraftMetaFirework.class, Set.of(CraftMetaFirework.FIREWORKS.TYPE));
+                map.put(CraftMetaKnowledgeBook.class, Set.of(CraftMetaKnowledgeBook.BOOK_RECIPES.TYPE));
+                map.put(CraftMetaLeatherArmor.class, Set.of(CraftMetaLeatherArmor.COLOR.TYPE));
+                map.put(CraftMetaMap.class, Set.of(CraftMetaMap.MAP_COLOR.TYPE, CraftMetaMap.MAP_POST_PROCESSING.TYPE, CraftMetaMap.MAP_ID.TYPE));
+                map.put(CraftMetaMusicInstrument.class, Set.of(CraftMetaMusicInstrument.GOAT_HORN_INSTRUMENT.TYPE));
+                map.put(CraftMetaOminousBottle.class, Set.of(CraftMetaOminousBottle.OMINOUS_BOTTLE_AMPLIFIER.TYPE));
+                map.put(CraftMetaPotion.class, Set.of(CraftMetaPotion.POTION_CONTENTS.TYPE));
+                map.put(CraftMetaSkull.class, Set.of(CraftMetaSkull.SKULL_PROFILE.TYPE, CraftMetaSkull.NOTE_BLOCK_SOUND.TYPE));
+                map.put(CraftMetaSpawnEgg.class, Set.of(CraftMetaSpawnEgg.ENTITY_TAG.TYPE));
+                map.put(CraftMetaSuspiciousStew.class, Set.of(CraftMetaSuspiciousStew.EFFECTS.TYPE));
+                map.put(CraftMetaTropicalFishBucket.class, Set.of(CraftMetaTropicalFishBucket.ENTITY_TAG.TYPE, CraftMetaTropicalFishBucket.BUCKET_ENTITY_TAG.TYPE));
+
+                for (final Map.Entry<Class<? extends CraftMetaItem>, Set<DataComponentType<?>>> entry : map.entrySet()) {
+                    final ArrayList<DataComponentType<?>> topLevelTags = new ArrayList<>(entry.getValue());
+                    // add tags common to CraftMetaItem to all
+                    topLevelTags.addAll(DEFAULT_HANDLED_DCTS);
+                    HANDLED_DCTS_PER_TYPE.put(entry.getKey(), Set.copyOf(topLevelTags));
+                }
             }
-            return CraftMetaItem.HANDLED_TAGS;
+            return HANDLED_DCTS_PER_TYPE.getOrDefault(clazz, DEFAULT_HANDLED_DCTS);
+        }
+    }
+    // Paper end - improve checking handled data component types
+
+    protected static <T> Optional<? extends T> getOrEmpty(DataComponentPatch tag, ItemMetaKeyType<T> type) {
+        return getOrEmpty(tag, type.TYPE);
+    }
+
+    protected static <T> Optional<? extends T> getOrEmpty(final DataComponentPatch tag, final DataComponentType<T> type) {
+        Optional<? extends T> result = tag.get(type);
+        return (result != null) ? result : Optional.empty();
+    }
+
+    private static class EnchantmentMap extends java.util.TreeMap<org.bukkit.enchantments.Enchantment, Integer> {
+        private EnchantmentMap(Map<Enchantment, Integer> enchantments) {
+            this();
+            putAll(enchantments);
+        }
+
+        private EnchantmentMap() {
+            super(Comparator.comparing(o -> o.getKey().toString()));
+        }
+
+        public EnchantmentMap clone() {
+            return (EnchantmentMap) super.clone();
         }
     }
 
-    /*public static Set<String> getHandledTags() {
-        synchronized (HANDLED_TAGS) {
-            if (HANDLED_TAGS.isEmpty()) {
-                HANDLED_TAGS.addAll(Arrays.asList(
-                        DISPLAY.NBT,
-                        CUSTOM_MODEL_DATA.NBT,
-                        BLOCK_DATA.NBT,
-                        REPAIR.NBT,
-                        ENCHANTMENTS.NBT,
-                        HIDEFLAGS.NBT,
-                        UNBREAKABLE.NBT,
-                        DAMAGE.NBT,
-                        BUKKIT_CUSTOM_TAG.NBT,
-                        ATTRIBUTES.NBT,
-                        ATTRIBUTES_IDENTIFIER.NBT,
-                        ATTRIBUTES_NAME.NBT,
-                        ATTRIBUTES_VALUE.NBT,
-                        ATTRIBUTES_UUID_HIGH.NBT,
-                        ATTRIBUTES_UUID_LOW.NBT,
-                        ATTRIBUTES_SLOT.NBT,
-                        CraftMetaMap.MAP_SCALING.NBT,
-                        CraftMetaMap.MAP_ID.NBT,
-                        CraftMetaPotion.POTION_EFFECTS.NBT,
-                        CraftMetaPotion.DEFAULT_POTION.NBT,
-                        CraftMetaPotion.POTION_COLOR.NBT,
-                        CraftMetaSkull.SKULL_OWNER.NBT,
-                        CraftMetaSkull.SKULL_PROFILE.NBT,
-                        CraftMetaSpawnEgg.ENTITY_TAG.NBT,
-                        CraftMetaBlockState.BLOCK_ENTITY_TAG.NBT,
-                        CraftMetaBook.BOOK_TITLE.NBT,
-                        CraftMetaBook.BOOK_AUTHOR.NBT,
-                        CraftMetaBook.BOOK_PAGES.NBT,
-                        CraftMetaBook.RESOLVED.NBT,
-                        CraftMetaBook.GENERATION.NBT,
-                        CraftMetaFirework.FIREWORKS.NBT,
-                        CraftMetaEnchantedBook.STORED_ENCHANTMENTS.NBT,
-                        CraftMetaCharge.EXPLOSION.NBT,
-                        CraftMetaBlockState.BLOCK_ENTITY_TAG.NBT,
-                        CraftMetaKnowledgeBook.BOOK_RECIPES.NBT,
-                        // TODO CraftMetaTropicalFishBucket.VARIANT.NBT,
-                        CraftMetaCrossbow.CHARGED.NBT,
-                        CraftMetaCrossbow.CHARGED_PROJECTILES.NBT,
-                        CraftMetaSuspiciousStew.EFFECTS.NBT
-                ));
-            }
-            return HANDLED_TAGS;
-        }
-    }*/
-
-    @Deprecated(forRemoval = true)
+    @Override
     public Set<Material> getCanDestroy() {
-        return Collections.emptySet();//!this.hasDestroyableKeys() ? Collections.emptySet() : this.legacyGetMatsFromKeys(this.destroyableKeys);
-
+        return !this.hasDestroyableKeys() ? Collections.emptySet() : convertToLegacyMaterial(this.canBreakPredicates);
     }
 
-    @Deprecated(forRemoval = true)
+    @Override
+    public void setCanDestroy(final Set<Material> canDestroy) {
+        Preconditions.checkArgument(canDestroy != null, "Cannot replace with null set!");
+        this.canBreakPredicates = convertFromLegacyMaterial(canDestroy);
+    }
+
+    @Override
     public Set<Material> getCanPlaceOn() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /*
-    @Deprecated(forRemoval = true)
-    public Set<Namespaced> getDestroyableKeys() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-    */
-
-    @Override
-    public BaseComponent[] getDisplayNameComponent() {
-        // TODO Auto-generated method stub
-        return null;
+        return !this.hasPlaceableKeys() ? Collections.emptySet() : convertToLegacyMaterial(this.canPlaceOnPredicates);
     }
 
     @Override
-    public List<BaseComponent[]> getLoreComponents() {
-        // TODO Auto-generated method stub
-        return null;
+    public void setCanPlaceOn(final Set<Material> canPlaceOn) {
+        Preconditions.checkArgument(canPlaceOn != null, "Cannot replace with null set!");
+        this.canPlaceOnPredicates = convertFromLegacyMaterial(canPlaceOn);
     }
 
-    /*
-    @Deprecated(forRemoval = true)
-    public Set<Namespaced> getPlaceableKeys() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-    */
-
-    // @Override
-    @Deprecated(forRemoval = true)
-    public boolean hasDestroyableKeys() {
-        // TODO Auto-generated method stub
-        return false;
+    private static List<net.minecraft.advancements.criterion.BlockPredicate> convertFromLegacyMaterial(final Collection<Material> materials) {
+        final net.minecraft.core.Registry<net.minecraft.world.level.block.Block> blockRegistry = CraftRegistry.getMinecraftRegistry().lookupOrThrow(net.minecraft.core.registries.Registries.BLOCK);
+        return materials.stream().map(m -> {
+            return net.minecraft.advancements.criterion.BlockPredicate.Builder.block().of(blockRegistry, CraftBlockType.bukkitToMinecraft(m)).build();
+        }).toList();
     }
 
-    @Deprecated(forRemoval = true)
-    public boolean hasPlaceableKeys() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Deprecated(forRemoval = true)
-    public void setCanDestroy(Set<Material> arg0) {
-        // TODO Auto-generated method stub
-    }
-
-    @Deprecated(forRemoval = true)
-    public void setCanPlaceOn(Set<Material> arg0) {
-        // TODO Auto-generated method stub
-    }
-
-    /*
-    @Deprecated(forRemoval = true)
-    public void setDestroyableKeys(Collection<Namespaced> arg0) {
-        // TODO Auto-generated method stub
-    }
-    */
-
-    @Override
-    public void setDisplayNameComponent(BaseComponent[] arg0) {
-        // TODO Auto-generated method stub
+    private static Set<Material> convertToLegacyMaterial(final List<net.minecraft.advancements.criterion.BlockPredicate> predicates) {
+        return predicates.stream()
+                .flatMap(p -> p.blocks().map(net.minecraft.core.HolderSet::stream).orElse(java.util.stream.Stream.empty()))
+                .map(holder -> CraftBlockType.minecraftToBukkit(holder.value()))
+                .collect(java.util.stream.Collectors.toSet());
     }
 
     @Override
-    public void setLoreComponents(List<BaseComponent[]> arg0) {
-        // TODO Auto-generated method stub
-    }
-
-    /*
-    @Deprecated(forRemoval = true)
-    public void setPlaceableKeys(Collection<Namespaced> arg0) {
-        // TODO Auto-generated method stub
-    }
-    */
-
-    @Override
-    public @Nullable Component displayName() {
-        // TODO Auto-generated method stub
-        return null;
+    public Set<com.destroystokyo.paper.Namespaced> getDestroyableKeys() {
+        return !this.hasDestroyableKeys() ? Collections.emptySet() : convertToLegacyNamespaced(this.canBreakPredicates);
     }
 
     @Override
-    public void displayName(@Nullable Component arg0) {
-        // TODO Auto-generated method stub
-        
+    public void setDestroyableKeys(final Collection<com.destroystokyo.paper.Namespaced> canDestroy) {
+        Preconditions.checkArgument(canDestroy != null, "Cannot replace with null collection!");
+        Preconditions.checkArgument(ofAcceptableType(canDestroy), "Can only use NamespacedKey or NamespacedTag objects!");
+        this.canBreakPredicates = convertFromLegacyNamespaced(canDestroy);
     }
 
     @Override
-    public @Nullable List<Component> lore() {
-        // TODO Auto-generated method stub
-        return null;
+    public Set<com.destroystokyo.paper.Namespaced> getPlaceableKeys() {
+        return !this.hasPlaceableKeys() ? Collections.emptySet() : convertToLegacyNamespaced(this.canPlaceOnPredicates);
     }
 
     @Override
-    public void lore(@Nullable List<? extends Component> arg0) {
-    // 1.19.2: public void lore(@Nullable List<Component> arg0) {
-        // TODO Auto-generated method stub
-        
-    }
-    
-    // 1.18.2 api:
-
-    @Override
-    public String getAsString() {
-        Applicator tag =  new Applicator();
-        this.applyToItem(tag);
-        DataComponentPatch patch = tag.build();
-        
-        RegistryOps<net.minecraft.nbt.Tag> reg = ICommonMod.getIServer().getMinecraft().registryAccess().createSerializationContext(NbtOps.INSTANCE);
-        net.minecraft.nbt.Tag nbt = (net.minecraft.nbt.Tag)DataComponentPatch.CODEC.encodeStart(reg, patch).getOrThrow();
-        return nbt.toString();
-    }
-    
-	/*@Override
-	public @NotNull String getAsString() {
-		// TODO Auto-generated method stub
-		return null;
-	}*/
-	
-    static final class ItemMetaKeyType<T>
-    extends ItemMetaKey {
-        final DataComponentType<T> TYPE;
-
-        ItemMetaKeyType(DataComponentType<T> type) {
-            this(type, null, null);
-        }
-
-        ItemMetaKeyType(DataComponentType<T> type, String both) {
-            this(type, both, both);
-        }
-
-        ItemMetaKeyType(DataComponentType<T> type, String nbt, String bukkit) {
-            super(nbt, bukkit);
-            this.TYPE = type;
-        }
-    }
-	
-	static class Applicator {
-        final DataComponentPatch.Builder builder = DataComponentPatch.builder();
-
-        Applicator() {
-        }
-
-        void skullCallback(ResolvableProfile gameProfile) {
-        }
-
-        <T> Applicator put(ItemMetaKeyType<T> key, T value) {
-            this.builder.set(key.TYPE, value);
-            return this;
-        }
-
-        <T> Applicator remove(DataComponentType<T> type) {
-            this.builder.remove(type);
-            return this;
-        }
-
-        DataComponentPatch build() {
-            return this.builder.build();
-        }
+    public void setPlaceableKeys(final Collection<com.destroystokyo.paper.Namespaced> canPlaceOn) {
+        Preconditions.checkArgument(canPlaceOn != null, "Cannot replace with null collection!");
+        Preconditions.checkArgument(ofAcceptableType(canPlaceOn), "Can only use NamespacedKey or NamespacedTag objects!");
+        this.canPlaceOnPredicates = convertFromLegacyNamespaced(canPlaceOn);
     }
 
-	// 1.20.4 API:
-	
-	@Override
-	public void removeEnchantments() {
-        if (this.hasEnchants()) {
-            this.enchantments.clear();
-        }
-	}
-	
-	// 1.20.6 API
-
-	@Override
-	public @NotNull Component itemName() {
-		return CardboardAdventure.asAdventure(this.itemName);
-	}
-
-	@Override
-	public void itemName(Component name) {
-		this.itemName = CardboardAdventure.asVanilla(name);
-	}
-
-	@Override
-	public @NotNull String getItemName() {
-		return CraftChatMessage.fromComponent(this.itemName);
-	}
-
-	@Override
-	public void setItemName(@Nullable String name) {
-		this.itemName = CraftChatMessage.fromStringOrNull(name);
-	}
-
-	@Override
-	public int getMaxStackSize() {
-		return this.maxStackSize;
-	}
-
-	@Override
-	public @NotNull FoodComponent getFood() {
-        return null;
-		// return this.hasFood() ? new CraftFoodComponent(this.food) : new CraftFoodComponent(new FoodComponent(0, 0.0f, false, 1.6f, Collections.emptyList()));
-	}
-
-	@Override
-	public void setFood(@Nullable FoodComponent food) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public boolean hasTool() {
-		return this.tool != null;
-	}
-
-	@Override
-	public @NotNull ToolComponent getTool() {
-        // return this.hasTool() ? new CraftToolComponent(this.tool) : new CraftToolComponent(new net.minecraft.component.type.ToolComponent(Collections.emptyList(), 1.0f, 0));
-		return null;
-	}
-
-	@Override
-	public void setTool(@Nullable ToolComponent tool) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-    public String getAsComponentString() {
-        Applicator tag = new Applicator(){};
-        this.applyToItem(tag);
-        DataComponentPatch patch = tag.build();
-        RegistryAccess registryAccess = CraftRegistry.getMinecraftRegistry();
-        RegistryOps<net.minecraft.nbt.Tag> ops = registryAccess.createSerializationContext(NbtOps.INSTANCE);
-        Registry<DataComponentType<?>> componentTypeRegistry = registryAccess.lookupOrThrow(Registries.DATA_COMPONENT_TYPE);
-        StringJoiner componentString = new StringJoiner(",", "[", "]");
-        for (Map.Entry<DataComponentType<?>, Optional<?>> entry : patch.entrySet()) {
-            DataComponentType<?> componentType = entry.getKey();
-            Optional<?> componentValue = entry.getValue();
-            String componentKey = componentTypeRegistry.getResourceKey(componentType).orElseThrow().identifier().toString();
-            if (!componentValue.isPresent()) continue;
-            
-            // TODO
-            // NbtElement componentValueAsNBT = (NbtElement)componentType.getCodecOrThrow().encodeStart(ops, componentValue.get()).getOrThrow();
-            //String componentValueAsNBTString = new NbtOrderedStringFormatter("", 0, new ArrayList<String>()).apply(componentValueAsNBT);
-            // componentString.add(componentKey + "=" + componentValueAsNBTString);
-        }
-        return componentString.toString();
-    }
-
-	// 1.21:
-	
-	@Override
-	public boolean hasDamageValue() {
-		return this.damage != null;
-	}
-
-	@Override
-	public void resetDamage() {
-		this.damage = null;
-	}
-
-	@Override
-	public boolean hasJukeboxPlayable() {
-		return false;
-		// return this.jukebox != null;
-	}
-
-	@Override
-	public @NotNull JukeboxPlayableComponent getJukeboxPlayable() {
-        return null;
-		// return this.hasJukeboxPlayable() ? new CraftJukeboxComponent(this.jukebox) : new CraftJukeboxComponent(new JukeboxPlayableComponent(new RegistryPair<JukeboxSong>(JukeboxSongs.THIRTEEN), true));
-	}
-
-	@Override
-	public void setJukeboxPlayable(@Nullable JukeboxPlayableComponent jukeboxPlayable) {
-		// TODO Auto-generated method stub
-		// this.jukebox = jukeboxPlayable == null ? null : new CraftJukeboxComponent((CraftJukeboxComponent)jukeboxPlayable);
-	}
-
-	private static Set<Namespaced> convertToLegacyNamespaced(Collection<BlockPredicate> predicates) {
-        HashSet namespaceds = Sets.newHashSet();
-        for (BlockPredicate predicate : predicates) {
-            if (predicate.blocks().isEmpty()) continue;
-            HolderSet<Block> holders = predicate.blocks().get();
-            if (holders instanceof HolderSet.Named) {
-                HolderSet.Named named = (HolderSet.Named)holders;
-                namespaceds.add(new NamespacedTag(named.key().location().getNamespace(), named.key().location().getPath()));
-                continue;
+    private static List<net.minecraft.advancements.criterion.BlockPredicate> convertFromLegacyNamespaced(final Collection<com.destroystokyo.paper.Namespaced> namespaceds) {
+        final List<net.minecraft.advancements.criterion.BlockPredicate> predicates = new ArrayList<>();
+        final net.minecraft.core.Registry<net.minecraft.world.level.block.Block> blockRegistry = CraftRegistry.getMinecraftRegistry().lookupOrThrow(net.minecraft.core.registries.Registries.BLOCK);
+        for (final com.destroystokyo.paper.Namespaced namespaced : namespaceds) {
+            if (namespaced instanceof final org.bukkit.NamespacedKey key) {
+                predicates.add(net.minecraft.advancements.criterion.BlockPredicate.Builder.block().of(blockRegistry, CraftBlockType.bukkitToMinecraft(Objects.requireNonNull(org.bukkit.Registry.MATERIAL.get(key)))).build());
+            } else if (namespaced instanceof final com.destroystokyo.paper.NamespacedTag tag) {
+                predicates.add(net.minecraft.advancements.criterion.BlockPredicate.Builder.block().of(blockRegistry, net.minecraft.tags.TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(tag.getNamespace(), tag.getKey()))).build());
             }
-            holders.forEach(h2 -> h2.unwrapKey().ifPresent(key -> namespaceds.add(new NamespacedKey(key.identifier().getNamespace(), key.identifier().getPath()))));
-        }
-        return namespaceds;
-    }
-	
-	@Override
-	public @NotNull Set<Namespaced> getDestroyableKeys() {
-        return !this.hasDestroyableKeys() ? Collections.emptySet() : CraftMetaItem.convertToLegacyNamespaced(this.canBreakPredicates);
-
-	}
-	
-	private static List<BlockPredicate> convertFromLegacyNamespaced(Collection<Namespaced> namespaceds) {
-        ArrayList<BlockPredicate> predicates = new ArrayList<BlockPredicate>();
-        final net.minecraft.core.Registry<net.minecraft.world.level.block.Block> blockRegistry = CraftServer.server.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.BLOCK);
-
-        for (Namespaced namespaced : namespaceds) {
-            if (namespaced instanceof NamespacedKey) {
-                NamespacedKey key = (NamespacedKey)namespaced;
-                predicates.add(BlockPredicate.Builder.block().of(blockRegistry, CraftBlockType.bukkitToMinecraft(Objects.requireNonNull((Material)org.bukkit.Registry.MATERIAL.get(key)))).build());
-                continue;
-            }
-            if (!(namespaced instanceof NamespacedTag)) continue;
-            NamespacedTag tag = (NamespacedTag)namespaced;
-            predicates.add(BlockPredicate.Builder.block().of(blockRegistry, TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(tag.getNamespace(), tag.getKey()))).build());
         }
         return predicates;
     }
 
-	@Override
-	public void setDestroyableKeys(@NotNull Collection<Namespaced> canDestroy) {
-		this.canBreakPredicates = CraftMetaItem.convertFromLegacyNamespaced(canDestroy);
-	}
-
-	@Override
-	public @NotNull Set<Namespaced> getPlaceableKeys() {
-        return !this.hasPlaceableKeys() ? Collections.emptySet() : CraftMetaItem.convertToLegacyNamespaced(this.canPlaceOnPredicates);
-	}
-
-	@Override
-	public void setPlaceableKeys(@NotNull Collection<Namespaced> canPlaceOn) {
-		this.canPlaceOnPredicates = CraftMetaItem.convertFromLegacyNamespaced(canPlaceOn);
-	}
-	
-	// 1.21.4 API:
-
-	@Override
-	public boolean hasCustomName() {
-		return this.displayName != null;
-	}
-
-	@Override
-	public @Nullable Component customName() {
-		 return displayName == null ? null : CardboardAdventure.asAdventure(displayName);
-	}
-
-	@Override
-	public void customName(@Nullable Component customName) {
-		this.displayName = customName == null ? null : CardboardAdventure.asVanilla(customName);
-	}
-
-	@Override
-	public org.bukkit.inventory.meta.components.@NotNull CustomModelDataComponent getCustomModelDataComponent() {
-        return (this.hasCustomModelData()) ? new CraftCustomModelDataComponent(this.customModelData) : new CraftCustomModelDataComponent(new net.minecraft.world.item.component.CustomModelData(List.of(), List.of(), List.of(), List.of()));
-	}
-
-	@Override
-	public void setCustomModelDataComponent(
-			org.bukkit.inventory.meta.components.@Nullable CustomModelDataComponent customModelData) {
-        this.customModelData = (customModelData == null) ? null : new CraftCustomModelDataComponent((CraftCustomModelDataComponent) customModelData);
-	}
-
-	@Override
-	public boolean hasEnchantable() {
-		return this.enchantableValue != null;
-	}
-
-	@Override
-	public int getEnchantable() {
-		return this.enchantableValue;
-	}
-
-	@Override
-	public void setEnchantable(@Nullable Integer data) {
-		Preconditions.checkArgument(data == null || data > 0, "Enchantability must be positive"); // Paper
-        this.enchantableValue = data;
-	}
-
-	@Override
-	public boolean hasTooltipStyle() {
-		return this.tooltipStyle != null;
-	}
-
-	@Override
-	public @Nullable NamespacedKey getTooltipStyle() {
-		return this.tooltipStyle;
-	}
-
-	@Override
-	public void setTooltipStyle(NamespacedKey tooltipStyle) {
-        this.tooltipStyle = tooltipStyle;
-    }
-
-	@Override
-	public boolean hasItemModel() {
-        return this.itemModel != null;
-    }
-
-	@Override
-	public @Nullable NamespacedKey getItemModel() {
-		return this.itemModel;
-	}
-
-	@Override
-	public void setItemModel(@Nullable NamespacedKey itemModel) {
-		this.itemModel = itemModel;
-	}
-
-	@Override
-	public boolean isGlider() {
-		return this.glider;
-	}
-
-	@Override
-	public void setGlider(boolean glider) {
-		this.glider = glider;
-	}
-
-	@Override
-	public boolean hasDamageResistant() {
-		return this.damageResistant != null;
-	}
-
-	@Override
-	public @Nullable Tag<DamageType> getDamageResistant() {
-        return (this.hasDamageResistant()) ? Bukkit.getTag(DamageTypeTags.REGISTRY_DAMAGE_TYPES, CraftNamespacedKey.fromMinecraft(this.damageResistant.location()), DamageType.class) : null;
-
-	}
-
-	@Override
-	public void setDamageResistant(@Nullable Tag<DamageType> tag) {
-		this.setDamageResistant(DamageTypeTags.IS_FIRE);
-	}
-
-	@Override
-	public boolean hasUseRemainder() {
-		return this.useRemainder != null;
-	}
-
-	@Override
-	public @Nullable ItemStack getUseRemainder() {
-		return this.useRemainder;
-	}
-
-	@Override
-	public void setUseRemainder(@Nullable ItemStack remainder) {
-		Preconditions.checkArgument(useRemainder == null || !useRemainder.isEmpty(), "Item cannot be empty"); // Paper
-        this.useRemainder = useRemainder;
-	}
-
-	@Override
-	public boolean hasUseCooldown() {
-		return this.useCooldown != null;
-	}
-
-	@Override
-    public UseCooldownComponent getUseCooldown() {
-        return (this.hasUseCooldown()) ? new CraftUseCooldownComponent(this.useCooldown) : new CraftUseCooldownComponent(new net.minecraft.world.item.component.UseCooldown(1));
-    }
-
-	@Override
-	public void setUseCooldown(UseCooldownComponent cooldown) {
-		this.useCooldown = (cooldown == null) ? null : new CraftUseCooldownComponent((CraftUseCooldownComponent) cooldown);
-	}
-
-	@Override
-	public boolean hasEquippable() {
-        return this.equippable != null;
-	}
-
-	@Override
-    public EquippableComponent getEquippable() {
-        return (this.hasEquippable()) ? new CraftEquippableComponent(this.equippable) : new CraftEquippableComponent(net.minecraft.world.item.equipment.Equippable.builder(net.minecraft.world.entity.EquipmentSlot.HEAD).build());
+    private static Set<com.destroystokyo.paper.Namespaced> convertToLegacyNamespaced(final Collection<net.minecraft.advancements.criterion.BlockPredicate> predicates) {
+        final Set<com.destroystokyo.paper.Namespaced> namespaceds = Sets.newHashSet();
+        for (final net.minecraft.advancements.criterion.BlockPredicate predicate : predicates) {
+            if (predicate.blocks().isEmpty()) {
+                continue;
+            }
+            final net.minecraft.core.HolderSet<net.minecraft.world.level.block.Block> holders = predicate.blocks().get();
+            if (holders instanceof final net.minecraft.core.HolderSet.Named<net.minecraft.world.level.block.Block> named) {
+                namespaceds.add(new com.destroystokyo.paper.NamespacedTag(named.key().location().getNamespace(), named.key().location().getPath()));
+            } else {
+                holders.forEach(h -> {
+                    h.unwrapKey().ifPresent(key -> {
+                        namespaceds.add(new org.bukkit.NamespacedKey(key.identifier().getNamespace(), key.identifier().getPath()));
+                    });
+                });
+            }
+        }
+        return namespaceds;
     }
 
     @Override
-    public void setEquippable(EquippableComponent equippable) {
-        this.equippable = (equippable == null) ? null : new CraftEquippableComponent((CraftEquippableComponent) equippable);
+    public boolean hasPlaceableKeys() {
+        return this.canPlaceOnPredicates != null;
     }
 
-	@Override
-	public boolean hasCustomModelDataComponent() {
-		return this.customModelData != null;
-	}
+    @Override
+    public boolean hasDestroyableKeys() {
+        return this.canBreakPredicates != null;
+    }
 
+    // not a fan of this
+    private static boolean ofAcceptableType(final Collection<com.destroystokyo.paper.Namespaced> namespacedResources) {
+        for (com.destroystokyo.paper.Namespaced resource : namespacedResources) {
+            if (!(resource instanceof org.bukkit.NamespacedKey || resource instanceof com.destroystokyo.paper.NamespacedTag)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
