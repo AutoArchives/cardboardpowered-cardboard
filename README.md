@@ -3,21 +3,25 @@
 
 # Cardboard [![Join Discord](https://img.shields.io/badge/Discord-Join-7289DA?logo=discord&style=flat-square)](https://discord.gg/tddTWXZtaP) <img alt="Fabric" src="https://img.shields.io/badge/Fabric%20-0.16%2B-%23dacfa4">
 
+## Cardboard 2.0
+After years of continuous updates since Fabric 1.16, Cardboard 2.0 arrives as a vital spring-cleaning initiative built for the modern 26.1 era. This release focuses entirely on purging legacy technical debt, streamlining the codebase, and eliminating deep-seated bugs. Instead of our usual routine of just patching a few errors until the build compiles, this modernization completely overhaul our Paper implementation—finally cleaning out the old code, deleting forgotten //TODO 1.17 comments, and prioritizing a genuinely healthy, stable foundation.
+
+## Original Readme
+
 Cardboard is an implementation of the popular Bukkit/Spigot/Paper Modding API for FabricMC. This mod lets you use plugins that are made for Bukkit and it's derivatives (Spigot & Paper) on a Fabric modded server.
 
 Fabric version chart:
-| Support | Minecraft       | Git Branch | Dev Status |
-|----------|----------------|------------|------------|
-| &#x2705; | Fabric 1.21.8  | ver/1.21.8 | Active     |
-| &#x2705; | Fabric 1.21.4  | ver/1.21.4 | Low        |
-| &#x2705; | Fabric 1.21.1  | ver/1.21   | Low        |
-| &#x274C; | <= 1.20        |            |            |
+| Support  | Minecraft      | Git Branch   | Dev Status |
+|----------|----------------|--------------|------------|
+| &#x2705; | Fabric 26.1    | *TBD*        | Active     |
+| &#x2705; | Fabric 1.21.11 | ver/1.21.11  | Active     |
+| &#x2705; | Fabric 1.21.1  | ver/1.21     | Very Low   |
+| &#x274C; | <= 1.20        |              |            |
 
 See [Supported Versions](https://github.com/CardboardPowered/cardboard/wiki/Supported-Versions) for more details. & [View Downloads](https://cardboardpowered.org/download/)
 
 ## License
 We inherit the license from Paper. See [Paper's License](https://github.com/PaperMC/Paper/blob/master/LICENSE.md) for full details.
-SrgLib is also licensed under MIT.
 
 ## NMS Support
 We do support using Spigot's ``net.minecraft.server`` classes. 
@@ -31,7 +35,6 @@ Progress can be determined by the completeness of the to-do lists on the two pin
 ## Credits
 * [BukkitTeam](https://bukkit.org/), [Spigot](https://spigotmc.org/), and [Paper](https://papermc.io/) for their work on the API.
 * [Glowstone](https://glowstone.net) for the library loader.
-* [md_5's SpecialSource](https://github.com/md-5/SpecialSource), [SrgLib by Techcable & Orion](https://github.com/OrionMinecraft/SrgLib), [MinecraftMapping by Phase](https://github.com/phase/MinecraftMapping/)
 * Contributors to Cardboard
 
 # Apex Hosting 

@@ -3,7 +3,7 @@
   "id": "cardboard",
   "version": "${version}",
 
-  "name": "Cardboard",
+  "name": "Cardboard 2.0",
   "description": "An implementation of the popular Spigot/Paper API for Fabric",
   "authors": [
     "Isaiah"
@@ -12,36 +12,29 @@
     "homepage": "https://cardboardpowered.org/",
     "sources": "https://github.com/CardboardPowered/"
   },
-
   "license": "GPLv3",
   "icon": "assets/fabricbukkit/icon.png",
-  "accessWidener" : "bukkitfabric.accesswidener",
+  "accessWidener" : "cardboard.accesswidener",
 
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.javazilla.bukkitfabric.BukkitFabricMod"
+      "org.cardboardpowered.CardboardMod"
     ]
   },
   "mixins": [
-    "bukkitfabric.mixins.json"
+    "cardboard.mixins.json"
   ],
 
   "depends": {
-    "fabricloader": ">=0.17.0",
+    "fabricloader": ">=0.18.0",
     "fabric-api": "*",
     "java": ">=21",
-    "icommon": "*",
     "minecraft": ">=1.21.11"
   },
   "custom": {
     "loom:injected_interfaces": {
-      "net/minecraft/server/MinecraftServer": ["org/cardboardpowered/bridge/server/MinecraftServerBridge"],
-      "net/minecraft/class_1297": ["org/cardboardpowered/bridge/world/entity/EntityBridge"],
-      "net/minecraft/class_3222": ["org/cardboardpowered/bridge/server/level/ServerPlayerBridge"],
-      "net/minecraft/class_1937": ["org/cardboardpowered/bridge/world/level/LevelBridge"],
-      "net/minecraft/class_3218": ["org/cardboardpowered/bridge/server/level/ServerLevelBridge"],
-      "net/minecraft/class_3248": ["org/cardboardpowered/bridge/server/network/ServerLoginPacketListenerImplBridge"]
+      "net/minecraft/server/MinecraftServer": ["org/cardboardpowered/bridge/IMinecraftServer"]
     }
   }
 

@@ -1,7 +1,7 @@
 import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
 
 plugins {
-    id 'fabric-loom' version '1.14-SNAPSHOT'
+    id 'net.fabricmc.fabric-loom' version '1.15-SNAPSHOT'
     id 'maven-publish'
     id 'com.gradleup.shadow' version '8.3.6'
     id 'java-library'
@@ -34,7 +34,7 @@ configurations {
 
 
 loom {
-    accessWidenerPath = file("src/main/resources/bukkitfabric.accesswidener")
+    accessWidenerPath = file("src/main/resources/cardboard.accesswidener")
 }
 
 repositories {
@@ -61,34 +61,28 @@ dependencies {
     minecraft("com.mojang:minecraft:${project.minecraft_version}") {
     	exclude module: 'commons-logging'
     }
-    mappings loom.officialMojangMappings()
-    modImplementation("net.fabricmc:fabric-loader:${project.loader_version}")
-    // modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
-    
-    // Make a collection of all api modules we wish to use
-    Set<String> apiModules = [
-    	"fabric-api-base",
-    	"fabric-networking-api-v1",
-    	"fabric-screen-handler-api-v1"
-    ]
+    //mappings loom.officialMojangMappings()
 
-    DefaultExternalModuleDependency ic = new DefaultExternalModuleDependency("com.javazilla.mods", "icommon-fabric-1.21.9", "1.21.9", null)
-    ic.setChanging(true) // Make sure we get the latest version of iCommon
+    implementation("net.fabricmc:fabric-loader:${project.loader_version}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
+    
+    // DefaultExternalModuleDependency ic = new DefaultExternalModuleDependency("com.javazilla.mods", "icommon-fabric-1.21.9", "1.21.9", null)
+    // ic.setChanging(true) // Make sure we get the latest version of iCommon
 
     // include(modImplementation(ic))
-    modImplementation(ic)
+    // modImplementation(ic)
 	
 	// TODO: Maven repo this
 	compileOnly fileTree(dir: 'libs', include: 'icommon-configuration-1.0.jar')
 
-	modImplementation fileTree(dir: 'libs', include: 'icommon-configuration-1.0.jar')
+	implementation fileTree(dir: 'libs', include: 'icommon-configuration-1.0.jar')
 
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modImplementation fileTree(dir: 'libs', include: 'CardboardMohistRemapper-0.4.jar')
+    implementation fileTree(dir: 'libs', include: 'CardboardMohistRemapper-0.4.jar')
     extraLibs fileTree(dir: 'libs', include: 'CardboardMohistRemapper-0.4.jar')
 	
-	modImplementation "io.izzel:tools:1.3.0"
+	implementation "io.izzel:tools:1.3.0"
     extraLibs "io.izzel:tools:1.3.0"
 
     extraLibs fileTree(dir: 'libs', include: 'commons-lang-2.6.jar')
@@ -98,45 +92,45 @@ dependencies {
     extraLibs("org.yaml:snakeyaml:1.33")
 
 	// Paper-API libs
-	modImplementation(PAPER_API_VER)
+	implementation(PAPER_API_VER)
 	
-	modImplementation("net.md-5:bungeecord-chat:1.21-R0.2")
-	modImplementation("net.kyori:adventure-api:4.25.0")
-	modImplementation("net.kyori:adventure-text-serializer-gson:4.25.0")
-	modImplementation("net.kyori:adventure-text-serializer-legacy:4.25.0")
-	modImplementation("net.kyori:adventure-text-serializer-plain:4.25.0")
-	modImplementation("net.kyori:adventure-text-minimessage:4.25.0")
+	implementation("net.md-5:bungeecord-chat:1.21-R0.2")
+	implementation("net.kyori:adventure-api:4.25.0")
+	implementation("net.kyori:adventure-text-serializer-gson:4.25.0")
+	implementation("net.kyori:adventure-text-serializer-legacy:4.25.0")
+	implementation("net.kyori:adventure-text-serializer-plain:4.25.0")
+	implementation("net.kyori:adventure-text-minimessage:4.25.0")
 
     compileOnly fileTree(dir: 'libs', include: 'commons-lang-2.6.jar')
     compileOnly group: "org.jetbrains", name: "annotations", version: "18.0.0"
     compileOnly group: "com.googlecode.json-simple", name: "json-simple", version: "1.1.1"
 
 	compileOnly "io.leangen.geantyref:geantyref:1.3.16"
-	include(modImplementation("io.leangen.geantyref:geantyref:1.3.16"))
+	include(implementation("io.leangen.geantyref:geantyref:1.3.16"))
 
     // NMS Remapping
     extraLibs fileTree(dir: 'libs', include: "srglib-0.1.2.jar")
-    include(modImplementation("net.md-5:SpecialSource:1.11.2"))
+    include(implementation("net.md-5:SpecialSource:1.11.2"))
 
     compileOnly fileTree(dir: 'libs', include: "srglib-0.1.2.jar")
     
-    include(modImplementation("net.neoforged:srgutils:1.0.9")) // Mappings handling
-    include(modImplementation("net.neoforged:AutoRenamingTool:2.0.3")) // Remap plugins
-    include(modImplementation('net.neoforged.installertools:cli-utils:2.1.4'))
+    include(implementation("net.neoforged:srgutils:1.0.9")) // Mappings handling
+    include(implementation("net.neoforged:AutoRenamingTool:2.0.3")) // Remap plugins
+    include(implementation('net.neoforged.installertools:cli-utils:2.1.4'))
     
-    include(modImplementation('net.fabricmc:mapping-io:0.8.0'))
+    include(implementation('net.fabricmc:mapping-io:0.8.0'))
 
     // Remap reflection
-    include(modImplementation("io.papermc:reflection-rewriter:0.0.3"))
-    include(modImplementation("io.papermc:reflection-rewriter-runtime:0.0.3"))
-    include(modImplementation("io.papermc:reflection-rewriter-proxy-generator:0.0.3"))
+    include(implementation("io.papermc:reflection-rewriter:0.0.3"))
+    include(implementation("io.papermc:reflection-rewriter-runtime:0.0.3"))
+    include(implementation("io.papermc:reflection-rewriter-proxy-generator:0.0.3"))
 
     // Fabric Permissions API.
-    include(modImplementation('me.lucko:fabric-permissions-api:0.5.0'))
+    include(implementation('me.lucko:fabric-permissions-api:0.5.0'))
     
     // Configurate
-    include(modImplementation('org.spongepowered:configurate-core:4.2.0'))
-    include(modImplementation('org.spongepowered:configurate-hocon:4.2.0'))
+    include(implementation('org.spongepowered:configurate-core:4.2.0'))
+    include(implementation('org.spongepowered:configurate-hocon:4.2.0'))
     
     // Remove parts that are included with Minecraft or Downloaded
     removeLibs group: "com.google.guava", name: "guava", version: "21.0"
@@ -156,11 +150,11 @@ configurations.implementation {
 }
 
 configure([tasks.compileJava]) {
-    sourceCompatibility = 21
-    options.release = 21
+    sourceCompatibility = 25
+    options.release = 25
 
     javaCompiler = javaToolchains.compilerFor {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -212,15 +206,16 @@ shadowJar {
 modrinth {
     token = System.getenv("MODRINTH") // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
     projectId = "MLYQ9VGP"
-    versionNumber = "1.21.11-" + System.env.BUILD_NUMBER
-    versionType = "beta"
-    uploadFile = remapJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
-    gameVersions = ["1.21.11"]
+    versionNumber = "2.0-" + System.env.BUILD_NUMBER
+    versionType = "alpha"
+    uploadFile = jar // With Loom, this MUST be set to `remapJar` instead of `jar`!
+    gameVersions = ["26.1.2"]
     loaders = ["fabric"]
 }
 
 
 ext.getURLofDependencyArtifact = {
+	/*
 	project.configurations.modImplementation.dependencies.each { dep ->
 		if (dep.name.contains('paper')) {
 			println(dep.name)
@@ -245,6 +240,7 @@ ext.getURLofDependencyArtifact = {
 			}
 		}
 	}
+	*/
 }
 
 ext.downloadPaperFile = {

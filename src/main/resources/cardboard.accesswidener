@@ -1,0 +1,3 @@
+accessWidener	v1	official
+# Bukkit for Fabric Access Widener
+accessible	field	net/minecraft/network/protocol/handshake/ClientIntentionPacket	hostName	Ljava/lang/String;

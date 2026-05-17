@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.logging.Logger;
 
+/*
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.craftbukkit.CraftServer;
@@ -69,6 +70,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.ServerLevelData;
+*/
+
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 
 /**
  * Cardbord Mod - Spigot/Paper API for Fabric
@@ -78,18 +84,18 @@ import net.minecraft.world.level.storage.ServerLevelData;
 @SuppressWarnings({ "removal", "deprecation" })
 public class CardboardMod implements ModInitializer {
 
-    public static Logger LOGGER = BukkitLogger.getLogger();
-    public static boolean isAfterWorldLoad = false;
-    public static final Random random = new Random();
+    // public static Logger LOGGER = BukkitLogger.getLogger();
+    // public static boolean isAfterWorldLoad = false;
+    // public static final Random random = new Random();
 
-    public static Method GET_SERVER;
+    // public static Method GET_SERVER;
 
     // Set by LibraryManager
     public static String paperVersion = "";
 
     @Override
     public void onInitialize() {
-        FabricLoader loader = FabricLoader.getInstance();
+		FabricLoader loader = FabricLoader.getInstance();
         Optional<ModContainer> omcc = loader.getModContainer("minecraft");
         String mc = "";
 
@@ -101,6 +107,7 @@ public class CardboardMod implements ModInitializer {
 
         new File("plugins").mkdirs();
 
+	/*
         int r = EventRegistery.registerAll(this);
 
         paperVersion = LibraryManager.INSTANCE.getPaperVersion();
@@ -117,12 +124,19 @@ public class CardboardMod implements ModInitializer {
         }
 
         CardboardEventManager.INSTANCE.callCardboardEvents();
+		*/
+    	
+    	System.out.println("Cardboard " + mc + " Initialized!");
     }
 
+
+/*
     public CraftPlayer getPlayer_0(ServerPlayer e) {
         return (CraftPlayer) ((ServerPlayerBridge)(Object)e).getBukkitEntity();
     }
+	*/
 
+/*
     @EventHandler
     public void on_leaves_decay(LeavesDecayEvent ev) {
         CraftWorld w = ((LevelBridge)ev.world).cardboard$getWorld();
@@ -133,10 +147,10 @@ public class CardboardMod implements ModInitializer {
         if (event.isCancelled() || !(ev.world.getBlockState(ev.pos).getBlock() instanceof LeavesBlock)) {
             ev.setCanceled(true);
         }
-    }
+    }*/
 
-    @EventHandler
-    public void on_world_init__(ServerWorldInitEvent ev) {
+    //@EventHandler
+    //public void on_world_init__(ServerWorldInitEvent ev) {
     	/*
     	FabricWorld fw = (FabricWorld) ev.getWorld();
 
@@ -148,8 +162,9 @@ public class CardboardMod implements ModInitializer {
         ServerWorld nms = ((ServerWorld) fw.mc);
         on_world_init_mc(nms);
         */
-    }
+   // }
 
+	/*
     public static void on_world_init_mc(ServerLevel nms) {
         // Check if Server is null
         if (null == CraftServer.INSTANCE) {
@@ -232,6 +247,7 @@ public class CardboardMod implements ModInitializer {
 
         ((CraftServer)Bukkit.getServer()).addWorldToMap( ((LevelBridge)nms).cardboard$getWorld() );
     }
+	*/
 
     // TODO
     //public File getWorldFolder() {
@@ -239,6 +255,7 @@ public class CardboardMod implements ModInitializer {
     //	return CraftServer.server.getRunDirectory().toFile();
     //}
 
+	/*
     @EventHandler
     public void onPlayerInit(ServerPlayerInitEvent ev) {
         // Replaced as of 1/24
@@ -252,8 +269,9 @@ public class CardboardMod implements ModInitializer {
         if (event.isCancelled()) {
             ev.setCanceled(true);
         }
-    }
+    }*/
 
+	/*
     @EventHandler
     public void onBlockEntityLoadEnd(BlockEntityLoadEvent ev) {
         BlockEntityBridge mc = (BlockEntityBridge) ((BlockEntity) ev.getMC());
@@ -274,10 +292,13 @@ public class CardboardMod implements ModInitializer {
         if (persistentDataContainer != null && !persistentDataContainer.isEmpty())
             tag.put("PublicBukkitValues", persistentDataContainer.toTagCompound());
     }
+	*/
 
     /**
      * iCommonLib CampfireBlockEntityCookEvent -> Bukkit BlockCookEvent
      */
+	 
+	/*
     @EventHandler
     public void onCampfireCook(CampfireBlockEntityCookEvent ev) {
         Object[] ob = ev.getMcObjects();
@@ -300,10 +321,13 @@ public class CardboardMod implements ModInitializer {
         result = blockCookEvent.getResult();
         ev.setResult( CraftItemStack.asNMSCopy(result) );
     }
+	*/
 
     /**
      * iCommonLib EntityPortalCollideEvent -> Bukkit EntityPortalEnterEvent
      */
+	 
+	 /*
     @EventHandler
     public void onNetherPortalEnter(EntityPortalCollideEvent ev) {
         Entity entity = ev.getEntity();
@@ -315,5 +339,6 @@ public class CardboardMod implements ModInitializer {
             Bukkit.getPluginManager().callEvent(event);
         }
     }
+	*/
 
 }
