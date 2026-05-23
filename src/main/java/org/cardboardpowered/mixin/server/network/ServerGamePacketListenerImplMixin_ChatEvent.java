@@ -12,7 +12,7 @@ import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(value = ServerGamePacketListenerImpl.class, priority = 999)
+@Mixin(value = ServerGamePacketListenerImpl.class, priority = 5000)
 public abstract class ServerGamePacketListenerImplMixin_ChatEvent extends ServerCommonPacketListenerImpl {
 
     @Shadow 

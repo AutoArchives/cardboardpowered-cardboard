@@ -20,7 +20,7 @@ import org.bukkit.craftbukkit.entity.CraftVillager;
 import org.cardboardpowered.util.MixinInfo;
 
 @MixinInfo(events = {"VillagerCareerChangeEvent"})
-@Mixin(value = ResetProfession.class, priority = 900)
+@Mixin(value = ResetProfession.class, priority = 5000)
 public class ResetProfessionMixin {
 
     /**

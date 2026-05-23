@@ -29,7 +29,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @MixinInfo(events = {"InventoryClickEvent", "CraftItemEvent"})
-@Mixin(value = ServerGamePacketListenerImpl.class, priority = 800)
+@Mixin(value = ServerGamePacketListenerImpl.class, priority = 5000)
 public class ServerGamePacketListenerImplMixin_InventoryClickEvent {
 
     @Shadow 

@@ -12,16 +12,20 @@ import net.minecraft.world.level.Level;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.cardboardpowered.util.MixinInfo;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @MixinInfo(events = {"EntityShootBowEvent"})
 // @Mixin(BowItem.class)
-@Mixin(value = ProjectileWeaponItem.class, priority = 900)
+@Mixin(value = ProjectileWeaponItem.class, priority = 5000)
 /**
  * TODO: Rename class, 1.20.6 moved
  * functionality to RangedWeaponItem
@@ -51,30 +55,33 @@ public class ProjectileWeaponItemMixin {
      * 
      * TODO: use inject
      */
-    @Overwrite
-    public void shoot(ServerLevel world, LivingEntity shooter, InteractionHand hand, ItemStack stack, List<ItemStack> projectiles, float speed, float divergence, boolean critical, LivingEntity target) {
-        float f = 10.0f;
-        float g = projectiles.size() == 1 ? 0.0f : 20.0f / (float)(projectiles.size() - 1);
-        float h = (float)((projectiles.size() - 1) % 2) * g / 2.0f;
-        float i = 1.0f;
-        for (int j = 0; j < projectiles.size(); ++j) {
-            ItemStack itemStack = projectiles.get(j);
-            if (itemStack.isEmpty()) continue;
-            float k = h + i * (float)((j + 1) / 2) * g;
-            i = -i;
-            Projectile projectileEntity = this.createProjectile(world, shooter, stack, itemStack, critical);
-            this.shootProjectile(shooter, projectileEntity, j, speed, divergence, k, target);
-            EntityShootBowEvent event = CraftEventFactory.callEntityShootBowEvent(shooter, stack, itemStack, projectileEntity, hand, speed, true);
-            if (event.isCancelled()) {
-                event.getProjectile().remove();
-                return;
-            }
-            stack.hurtAndBreak(this.getDurabilityUse(itemStack), shooter, hand.asEquipmentSlot());
-            if (event.getProjectile() != ((EntityBridge)projectileEntity).getBukkitEntity() || world.addFreshEntity(projectileEntity)) continue;
-            if (shooter instanceof ServerPlayer) {
-            	((Player) ((ServerPlayerBridge)  ((ServerPlayer)shooter) ).getBukkitEntity()).updateInventory();
-            }
-            return;
+    @Inject(method = "shoot", at = @At("HEAD"))
+    private void cardboard$shoot(
+            ServerLevel serverLevel,
+            LivingEntity livingEntity,
+            InteractionHand interactionHand,
+            ItemStack itemStack,
+            List<ItemStack> list,
+            float f,
+            float g,
+            boolean bl,
+            @Nullable LivingEntity livingEntity2,
+            CallbackInfo ci
+    ) {
+        // Fire Bukkit event only once per method call
+        EntityShootBowEvent event =
+                CraftEventFactory.callEntityShootBowEvent(
+                        livingEntity,
+                        itemStack,
+                        list.isEmpty() ? ItemStack.EMPTY : list.get(0),
+                        null,
+                        interactionHand,
+                        f,
+                        true
+                );
+
+        if (event.isCancelled()) {
+            ci.cancel();
         }
     }
     

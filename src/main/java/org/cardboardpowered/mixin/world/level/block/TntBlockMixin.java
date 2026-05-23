@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @MixinInfo(events = {"EntityChangeBlockEvent"})
-@Mixin (TntBlock.class)
+@Mixin(TntBlock.class)
 public class TntBlockMixin {
 
     @Inject (method = "onProjectileHit", at = @At (value = "INVOKE",

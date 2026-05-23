@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.io.File;
 import java.io.FileInputStream;
 
-@Mixin(value = PlayerDataStorage.class, priority = 999)
+@Mixin(value = PlayerDataStorage.class, priority = 5000)
 public class PlayerDataStorageMixin implements PlayerDataStorageBridge {
 
     @Shadow

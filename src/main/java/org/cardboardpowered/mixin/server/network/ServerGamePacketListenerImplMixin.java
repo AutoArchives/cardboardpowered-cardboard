@@ -74,7 +74,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 @SuppressWarnings("deprecation")
-@Mixin(value = ServerGamePacketListenerImpl.class, priority = 800)
+@Mixin(value = ServerGamePacketListenerImpl.class, priority = 5000)
 public abstract class ServerGamePacketListenerImplMixin extends ServerCommonPacketListenerImpl implements ServerGamePacketListenerImplBridge {
 
     public ServerGamePacketListenerImplMixin(MinecraftServer server, Connection connection, CommonListenerCookie clientData) {

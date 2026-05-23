@@ -37,7 +37,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value = ItemStack.class, priority = 999)
+@Mixin(value = ItemStack.class, priority = 5000)
 public abstract class ItemStackMixin implements ItemStackBridge {
     @Shadow
     public Item item;
@@ -123,46 +123,62 @@ public abstract class ItemStackMixin implements ItemStackBridge {
      * @author cardboard
      * @reason BlockPlaceEvent
      */
-    @Overwrite
-    public InteractionResult useOn(UseOnContext context) {
+    @Inject(method = "useOn", at = @At("HEAD"), cancellable = true)
+    private void cardboard$useOn(UseOnContext context, CallbackInfoReturnable<InteractionResult> cir) {
         net.minecraft.world.entity.player.Player playerEntity = context.getPlayer();
         BlockPos blockPos = context.getClickedPos();
         BlockInWorld cachedBlockPosition = new BlockInWorld(context.getLevel(), blockPos, false);
+
         if (playerEntity != null && !playerEntity.abilities.mayBuild
-                // FIXME: 1.18.2: Adventure mode place test.
-                /*&& !((ItemStack)(Object)this).canPlaceOn(context.getWorld().getTagManager(), cachedBlockPosition)*/) {
-            return InteractionResult.PASS;
+            // FIXME: 1.18.2: Adventure mode place test.
+            /*&& !((ItemStack)(Object)this).canPlaceOn(context.getWorld().getTagManager(), cachedBlockPosition)*/) {
+            cir.setReturnValue(InteractionResult.PASS);
+            return;
         }
-        ((LevelBridge)context.getLevel()).setCaptureBlockStates_BF(true);
 
-        Item item = ((ItemStack)(Object)this).getItem();
-        InteractionResult actionResult = item.useOn(context);
+        ((LevelBridge) context.getLevel()).setCaptureBlockStates_BF(true);
 
-        if (actionResult != InteractionResult.FAIL) {
-            if (((LevelBridge)context.getLevel()).getCapturedBlockStates_BF().size() > 0) {
-                List<BlockState> blocks = new java.util.ArrayList<>(((LevelBridge)context.getLevel()).getCapturedBlockStates_BF().values());
-                ((LevelBridge)context.getLevel()).getCapturedBlockStates_BF().clear();
-                BlockPlaceEvent placeEvent = CraftEventFactory.callBlockPlaceEvent((ServerLevel)context.getLevel(), playerEntity, InteractionHand.MAIN_HAND, blocks.get(0), blockPos);
-                if ((placeEvent.isCancelled() || !placeEvent.canBuild())) {
-                    ((LevelBridge)context.getLevel()).setCaptureBlockStates_BF(false);
+        try {
+            Item item = ((ItemStack)(Object) this).getItem();
+            InteractionResult actionResult = item.useOn(context);
 
-                    CraftBlockState b = (CraftBlockState) blocks.get(0);
-                    BlockPos pos = b.getPosition();
-                    while (context.getLevel().getBlockState(pos) != Blocks.AIR.defaultBlockState())
-                        context.getLevel().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+            if (actionResult != InteractionResult.FAIL) {
+                if (((LevelBridge) context.getLevel()).getCapturedBlockStates_BF().size() > 0) {
+                    List<BlockState> blocks = new java.util.ArrayList<>(((LevelBridge) context.getLevel()).getCapturedBlockStates_BF().values());
+                    ((LevelBridge) context.getLevel()).getCapturedBlockStates_BF().clear();
 
-                    context.getItemInHand().grow(1);
-                    ((Player)((ServerPlayerBridge)context.getPlayer()).getBukkitEntity()).updateInventory();
-                    return InteractionResult.FAIL;
+                    BlockPlaceEvent placeEvent = CraftEventFactory.callBlockPlaceEvent(
+                            (ServerLevel) context.getLevel(),
+                            playerEntity,
+                            InteractionHand.MAIN_HAND,
+                            blocks.get(0),
+                            blockPos
+                    );
+
+                    if (placeEvent.isCancelled() || !placeEvent.canBuild()) {
+                        CraftBlockState b = (CraftBlockState) blocks.get(0);
+                        BlockPos pos = b.getPosition();
+
+                        while (context.getLevel().getBlockState(pos) != Blocks.AIR.defaultBlockState()) {
+                            context.getLevel().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+                        }
+
+                        context.getItemInHand().grow(1);
+                        ((Player) ((ServerPlayerBridge) context.getPlayer()).getBukkitEntity()).updateInventory();
+                        cir.setReturnValue(InteractionResult.FAIL);
+                        return;
+                    }
                 }
             }
-        }
 
-        if (playerEntity != null && actionResult.consumesAction()) {
-            playerEntity.awardStat(Stats.ITEM_USED.get(item));
+            if (playerEntity != null && actionResult.consumesAction()) {
+                playerEntity.awardStat(Stats.ITEM_USED.get(item));
+            }
+
+            cir.setReturnValue(actionResult);
+        } finally {
+            ((LevelBridge) context.getLevel()).setCaptureBlockStates_BF(false);
         }
-        ((LevelBridge)context.getLevel()).setCaptureBlockStates_BF(false);
-        return actionResult;
     }
 
     @Inject(method = "hurtAndBreak(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Consumer;)V", at = @At("HEAD"), cancellable = true)

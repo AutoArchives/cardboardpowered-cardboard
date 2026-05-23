@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
 
 @MixinInfo(events = {"SheepDyeWoolEvent"})
-@Mixin(value = DyeItem.class, priority = 900)
+@Mixin(value = DyeItem.class, priority = 5000)
 public class DyeItemMixin {
 
     @Shadow

@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @MixinInfo(events = {"EntityPlaceEvent"})
-@Mixin(value = ArmorStandItem.class, priority = 900)
+@Mixin(value = ArmorStandItem.class, priority = 5000)
 public class ArmorStandItemMixin {
 
     private transient ArmorStand bukkitEntity;

@@ -5,7 +5,7 @@ import org.cardboardpowered.util.MixinInfo;
 import org.spongepowered.asm.mixin.Mixin;
 
 @MixinInfo(events = {"EntityShootBowEvent"})
-@Mixin(value = CrossbowItem.class, priority = 900)
+@Mixin(value = CrossbowItem.class, priority = 5000)
 public class CrossbowItemMixin {
 
     // private static transient boolean bukkitCapturedBoolean;

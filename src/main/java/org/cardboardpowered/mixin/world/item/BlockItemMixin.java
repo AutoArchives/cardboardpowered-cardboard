@@ -46,7 +46,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
-@Mixin(value = BlockItem.class, priority = 999) // Priority 999 to allow Carpet Mod
+@Mixin(value = BlockItem.class, priority = 5000) // Priority 999 to allow Carpet Mod
 public class BlockItemMixin implements BlockItemBridge {
 
     @Shadow public BlockState getPlacementState(BlockPlaceContext blockactioncontext) {return null;}
