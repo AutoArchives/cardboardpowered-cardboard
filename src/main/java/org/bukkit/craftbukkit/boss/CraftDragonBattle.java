@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.pattern.BlockPattern;
-import net.minecraft.world.level.dimension.end.DragonRespawnAnimation;
-import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.dimension.end.DragonRespawnStage;
+import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.boss.BossBar;
@@ -19,16 +19,19 @@ import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.EnderDragon;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
+import org.cardboardpowered.impl.CardboardDragonBattle;
 import org.cardboardpowered.impl.world.CraftWorld;
 
-public class CraftDragonBattle implements DragonBattle {
+public class CraftDragonBattle extends CardboardDragonBattle implements DragonBattle {
 
-    private final EndDragonFight handle;
+    private final EnderDragonFight handle;
 
-    public CraftDragonBattle(EndDragonFight handle) {
+    public CraftDragonBattle(EnderDragonFight handle) {
+    	super(handle);
         this.handle = handle;
     }
 
+    /*
     @Override
     public EnderDragon getEnderDragon() {
         Entity entity = this.handle.level.getEntity(this.handle.dragonUUID);
@@ -180,7 +183,7 @@ public class CraftDragonBattle implements DragonBattle {
             if (!endCrystal.isRemoved() && endCrystal.isAlive() && ((EntityBridge)endCrystal).isValidBF()) {
                 enderCrystals.add(((EnderCrystal) endCrystal.getBukkitEntity()));
             }
-        }*/ // TODO
+        }* // TODO
         return Collections.unmodifiableList(enderCrystals);
-    }
+    }*/
 }
