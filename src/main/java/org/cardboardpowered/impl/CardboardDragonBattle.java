@@ -2,8 +2,8 @@ package org.cardboardpowered.impl;
 
 import java.util.Collection;
 import java.util.List;
-import net.minecraft.world.level.dimension.end.DragonRespawnAnimation;
-import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.dimension.end.DragonRespawnStage;
+import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import org.bukkit.Location;
 import org.bukkit.boss.BossBar;
 import org.bukkit.boss.DragonBattle;
@@ -17,9 +17,9 @@ import io.papermc.paper.math.Position;
 
 public class CardboardDragonBattle implements DragonBattle {
 
-    private final EndDragonFight handle;
+    private final EnderDragonFight handle;
 
-    public CardboardDragonBattle(EndDragonFight handle) {
+    public CardboardDragonBattle(EnderDragonFight handle) {
         this.handle = handle;
     }
 
@@ -80,14 +80,14 @@ public class CardboardDragonBattle implements DragonBattle {
         return obj instanceof CardboardDragonBattle && ((CardboardDragonBattle) obj).handle == this.handle;
     }
 
-    private RespawnPhase toBukkitRespawnPhase(DragonRespawnAnimation phase) {
+    private RespawnPhase toBukkitRespawnPhase(DragonRespawnStage phase) {
         return (phase != null) ? RespawnPhase.values()[phase.ordinal()] : RespawnPhase.NONE;
     }
 
-    private DragonRespawnAnimation toNMSRespawnPhase(RespawnPhase phase) {
-        return (phase != RespawnPhase.NONE) ? DragonRespawnAnimation.values()[phase.ordinal()] : null;
+    private DragonRespawnStage toNMSRespawnPhase(RespawnPhase phase) {
+        return (phase != RespawnPhase.NONE) ? DragonRespawnStage.values()[phase.ordinal()] : null;
     }
-
+    
 	@Override
 	public boolean initiateRespawn(@Nullable Collection<EnderCrystal> enderCrystals) {
 		// TODO Auto-generated method stub
