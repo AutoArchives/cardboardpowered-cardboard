@@ -26,7 +26,7 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
 
-@Mixin(value = net.minecraft.world.entity.ExperienceOrb.class, priority = 900)
+@Mixin(value = net.minecraft.world.entity.ExperienceOrb.class, priority = 5000)
 public class ExperienceOrbMixin extends EntityMixin {
 
 	private static final ThreadLocal<net.minecraft.world.entity.player.Player> currentPlayer = new ThreadLocal<>();

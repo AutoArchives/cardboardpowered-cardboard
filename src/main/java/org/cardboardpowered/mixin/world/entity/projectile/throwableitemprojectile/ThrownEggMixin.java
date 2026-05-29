@@ -25,7 +25,7 @@ import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.world.level.LevelBridge;
 
 @MixinInfo(events = {"ThrownEggHatchEvent", "PlayerEggThrowEvent"})
-@Mixin(value = ThrownEgg.class, priority = 999)
+@Mixin(value = ThrownEgg.class, priority = 5000)
 public abstract class ThrownEggMixin {
 
     private final Random random = new Random();

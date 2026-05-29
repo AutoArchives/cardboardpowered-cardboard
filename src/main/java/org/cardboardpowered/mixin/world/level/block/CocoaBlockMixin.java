@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @MixinInfo(events = {"BlockGrowEvent"})
-@Mixin (CocoaBlock.class)
+@Mixin(CocoaBlock.class)
 public class CocoaBlockMixin {
 
     @Redirect (method = "randomTick", at = @At (value = "INVOKE",

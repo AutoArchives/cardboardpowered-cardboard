@@ -30,6 +30,9 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @MixinInfo(events = {"PlayerInteractEvent"})
 @Mixin(BoatItem.class)
@@ -76,51 +79,112 @@ public abstract class BoatItemMixin extends Item {
      * @author cardboard
      * @reason PlayerInteractEvent
      */
-    @Overwrite
-    public InteractionResult use(Level world, Player user, InteractionHand hand) {
+    @Inject(
+            method = "use",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void cardboard$use(
+            Level world,
+            Player user,
+            InteractionHand hand,
+            CallbackInfoReturnable<InteractionResult> cir
+    ) {
         ItemStack itemstack = user.getItemInHand(hand);
-        BlockHitResult movingobjectpositionblock = BoatItem.getPlayerPOVHitResult(world, user, ClipContext.Fluid.ANY);
-        if (movingobjectpositionblock.getType() == HitResult.Type.MISS) {
-            return InteractionResult.PASS;
+
+        BlockHitResult hit =
+                BoatItem.getPlayerPOVHitResult(world, user, ClipContext.Fluid.ANY);
+
+        if (hit.getType() == HitResult.Type.MISS) {
+            cir.setReturnValue(InteractionResult.PASS);
+            return;
         }
-        Vec3 vec3d = user.getViewVector(1.0f);
-        double d0 = 5.0;
-        List<Entity> list = world.getEntities(user, user.getBoundingBox().expandTowards(vec3d.scale(5.0)).inflate(1.0), EntitySelector.CAN_BE_PICKED);
+
+        Vec3 view = user.getViewVector(1.0f);
+
+        List<Entity> list = world.getEntities(
+                user,
+                user.getBoundingBox()
+                        .expandTowards(view.scale(5.0))
+                        .inflate(1.0),
+                EntitySelector.CAN_BE_PICKED
+        );
+
         if (!list.isEmpty()) {
-            Vec3 vec3d1 = user.getEyePosition();
+            Vec3 eye = user.getEyePosition();
+
             for (Entity entity : list) {
-                AABB axisalignedbb = entity.getBoundingBox().inflate(entity.getPickRadius());
-                if (!axisalignedbb.contains(vec3d1)) continue;
-                return InteractionResult.PASS;
+                AABB box = entity.getBoundingBox().inflate(entity.getPickRadius());
+
+                if (box.contains(eye)) {
+                    cir.setReturnValue(InteractionResult.PASS);
+                    return;
+                }
             }
         }
-        if (movingobjectpositionblock.getType() == HitResult.Type.BLOCK) {
-            PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent((ServerPlayer)user, Action.RIGHT_CLICK_BLOCK, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getDirection(), itemstack, false, hand/*, movingobjectpositionblock.getPos()*/);
+
+        if (hit.getType() == HitResult.Type.BLOCK) {
+
+            PlayerInteractEvent event =
+                    CraftEventFactory.callPlayerInteractEvent(
+                            (ServerPlayer) user,
+                            Action.RIGHT_CLICK_BLOCK,
+                            hit.getBlockPos(),
+                            hit.getDirection(),
+                            itemstack,
+                            false,
+                            hand
+                    );
+
             if (event.isCancelled()) {
-                return InteractionResult.PASS;
+                cir.setReturnValue(InteractionResult.PASS);
+                return;
             }
-            AbstractBoat abstractboat = this.getBoat(world, movingobjectpositionblock, itemstack, user);
-            if (abstractboat == null) {
-                return InteractionResult.FAIL;
+
+            AbstractBoat boat = this.getBoat(world, hit, itemstack, user);
+
+            if (boat == null) {
+                cir.setReturnValue(InteractionResult.FAIL);
+                return;
             }
-            abstractboat.setYRot(user.getYRot());
-            if (!world.noCollision(abstractboat, abstractboat.getBoundingBox())) {
-                return InteractionResult.FAIL;
+
+            boat.setYRot(user.getYRot());
+
+            if (!world.noCollision(boat, boat.getBoundingBox())) {
+                cir.setReturnValue(InteractionResult.FAIL);
+                return;
             }
+
             if (!world.isClientSide()) {
-                if (CraftEventFactory.callEntityPlaceEvent(world, movingobjectpositionblock.getBlockPos(), movingobjectpositionblock.getDirection(), user, abstractboat, hand).isCancelled()) {
-                    return InteractionResult.FAIL;
+
+                if (CraftEventFactory.callEntityPlaceEvent(
+                        world,
+                        hit.getBlockPos(),
+                        hit.getDirection(),
+                        user,
+                        boat,
+                        hand
+                ).isCancelled()) {
+                    cir.setReturnValue(InteractionResult.FAIL);
+                    return;
                 }
-                if (!world.addFreshEntity(abstractboat)) {
-                    return InteractionResult.PASS;
+
+                if (!world.addFreshEntity(boat)) {
+                    cir.setReturnValue(InteractionResult.PASS);
+                    return;
                 }
-                world.gameEvent((Entity)user, GameEvent.ENTITY_PLACE, movingobjectpositionblock.getLocation());
+
+                world.gameEvent(user, GameEvent.ENTITY_PLACE, hit.getLocation());
                 itemstack.consume(1, user);
             }
+
             user.awardStat(Stats.ITEM_USED.get(this));
-            return InteractionResult.SUCCESS;
+
+            cir.setReturnValue(InteractionResult.SUCCESS);
+            return;
         }
-        return InteractionResult.PASS;
+
+        cir.setReturnValue(InteractionResult.PASS);
     }
 
     /*

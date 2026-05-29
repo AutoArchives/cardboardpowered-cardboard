@@ -16,7 +16,7 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 /**
  */
-/// @Mixin(value = FrostWalkerEnchantment.class, priority = 999)
+/// @Mixin(value = FrostWalkerEnchantment.class, priority = 5000)
 @Mixin(Enchantments.class) // TODO
 public class EnchantmentsMixin {
 

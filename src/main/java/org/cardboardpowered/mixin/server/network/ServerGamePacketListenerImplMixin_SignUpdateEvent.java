@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @MixinInfo(events = {"SignChangeEvent"})
-@Mixin(value = ServerGamePacketListenerImpl.class, priority = 800)
+@Mixin(value = ServerGamePacketListenerImpl.class, priority = 5000)
 public class ServerGamePacketListenerImplMixin_SignUpdateEvent {
 
     @Shadow 

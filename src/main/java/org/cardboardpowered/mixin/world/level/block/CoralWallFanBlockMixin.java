@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //import java.util.Random;
 
 @MixinInfo(events = {"BlockFadeEvent"})
-@Mixin (CoralWallFanBlock.class)
+@Mixin(CoralWallFanBlock.class)
 public class CoralWallFanBlockMixin {
 
     @Shadow @Final private Block deadBlock;

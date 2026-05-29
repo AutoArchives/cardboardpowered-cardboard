@@ -19,7 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Scoreboard;
 
-@Mixin(value = ServerScoreboard.class, priority = 900)
+@Mixin(value = ServerScoreboard.class, priority = 5000)
 public abstract class ServerScoreboardMixin extends Scoreboard implements ServerScoreboardBridge {
 
     @Shadow

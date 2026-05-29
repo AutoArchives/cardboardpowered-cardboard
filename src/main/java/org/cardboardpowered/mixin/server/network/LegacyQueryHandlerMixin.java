@@ -17,7 +17,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 
 @MixinInfo(events = "ServerListPingEvent")
-@Mixin(value = LegacyQueryHandler.class, priority = 999)
+@Mixin(value = LegacyQueryHandler.class, priority = 5000)
 public class LegacyQueryHandlerMixin {
 
     @Shadow private static ByteBuf createLegacyDisconnectPacket(ByteBufAllocator allocator, String string) {return null;}

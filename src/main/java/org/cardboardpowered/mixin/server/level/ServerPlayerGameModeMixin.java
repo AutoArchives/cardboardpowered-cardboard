@@ -58,7 +58,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-@Mixin(value = ServerPlayerGameMode.class, priority = 999)
+@Mixin(value = ServerPlayerGameMode.class, priority = 5000)
 public class ServerPlayerGameModeMixin implements ServerPlayerGameModeBridge {
 
     @Shadow public ServerPlayer player;

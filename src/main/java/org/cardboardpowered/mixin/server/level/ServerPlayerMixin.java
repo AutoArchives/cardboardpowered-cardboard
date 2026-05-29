@@ -91,7 +91,7 @@ import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-@Mixin(value = ServerPlayer.class, priority = 999)
+@Mixin(value = ServerPlayer.class, priority = 5000)
 public abstract class ServerPlayerMixin extends PlayerMixin implements CommandSourceBridge, ServerPlayerBridge {
 
 	@Shadow
