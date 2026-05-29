@@ -17,7 +17,10 @@ import net.minecraft.world.phys.AABB;
 
 public interface EntityBridge {
 
-    public CraftEntity getBukkitEntity();
+    default public CraftEntity getBukkitEntity() {
+		System.out.println("getBukkitEntity not implemented for " + this.getClass().getName());
+    	return null;
+	}
 
     void setProjectileSourceBukkit(ProjectileSource source);
 

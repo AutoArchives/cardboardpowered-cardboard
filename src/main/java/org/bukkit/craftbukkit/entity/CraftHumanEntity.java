@@ -263,7 +263,9 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     public boolean hasPermission(String name) {
         boolean b = this.perm.hasPermission(name);
         if (!b && FabricLoader.getInstance().isModLoaded("fabric-permissions-api-v0")) {
-            return org.cardboardpowered.util.PermissionHook.hasPermission(this.getHandle(), name);
+            if (org.cardboardpowered.util.PermissionHook.hasPermission(this.getHandle(), name)) {
+            	return true;
+            }
         }
         return b;
     }
@@ -272,7 +274,9 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     public boolean hasPermission(Permission perm) {
         boolean b = this.perm.hasPermission(perm);
         if (!b && FabricLoader.getInstance().isModLoaded("fabric-permissions-api-v0")) {
-            return org.cardboardpowered.util.PermissionHook.hasPermission(this.getHandle(), perm.getName());
+        	if (org.cardboardpowered.util.PermissionHook.hasPermission(this.getHandle(), perm.getName())) {
+        		return true;
+        	}
         }
         return b;
     }

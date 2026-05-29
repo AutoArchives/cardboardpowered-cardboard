@@ -37,11 +37,11 @@
   "custom": {
     "loom:injected_interfaces": {
       "net/minecraft/server/MinecraftServer": ["org/cardboardpowered/bridge/server/MinecraftServerBridge"],
-      "net/minecraft/class_1297": ["org/cardboardpowered/bridge/world/entity/EntityBridge"],
-      "net/minecraft/class_3222": ["org/cardboardpowered/bridge/server/level/ServerPlayerBridge"],
-      "net/minecraft/class_1937": ["org/cardboardpowered/bridge/world/level/LevelBridge"],
-      "net/minecraft/class_3218": ["org/cardboardpowered/bridge/server/level/ServerLevelBridge"],
-      "net/minecraft/class_3248": ["org/cardboardpowered/bridge/server/network/ServerLoginPacketListenerImplBridge"]
+      "net/minecraft/world/entity/Entity": ["org/cardboardpowered/bridge/world/entity/EntityBridge"],
+      "net/minecraft/server/level/ServerPlayer": ["org/cardboardpowered/bridge/server/level/ServerPlayerBridge"],
+      "net/minecraft/world/level/Level": ["org/cardboardpowered/bridge/world/level/LevelBridge"],
+      "net/minecraft/server/level/ServerLevel": ["org/cardboardpowered/bridge/server/level/ServerLevelBridge"],
+      "net/minecraft/server/network/ServerLoginPacketListenerImpl": ["org/cardboardpowered/bridge/server/network/ServerLoginPacketListenerImplBridge"]
     }
   }
 

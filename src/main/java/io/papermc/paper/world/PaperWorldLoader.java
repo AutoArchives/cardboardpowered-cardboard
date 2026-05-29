@@ -178,11 +178,17 @@ public record PaperWorldLoader(MinecraftServer server, String levelId) {
 			}
 		}
 
-		((DedicatedServer)this.server).forceDifficulty();
+		
+		// ((DedicatedServer)this.server).forceDifficulty();
+		DedicatedServer_forceDifficulty();
 
 		for (ServerLevel serverLevel : this.server.getAllLevels()) {
 			mc.cardboard$prepareLevel(serverLevel);
 		}
+	}
+	
+	protected void DedicatedServer_forceDifficulty() {
+		((DedicatedServer)this.server).setDifficulty( ((DedicatedServer)this.server).getProperties().difficulty.get(), true);
 	}
 
 	public static PaperWorldLoader.LevelDataResult getLevelData(LevelStorageSource.LevelStorageAccess levelStorageAccess) {
