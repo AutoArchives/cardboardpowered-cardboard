@@ -60,6 +60,7 @@ import org.bukkit.craftbukkit.generator.structure.CraftGeneratedStructure;
 import org.bukkit.craftbukkit.generator.structure.CraftStructure;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftBiomeSearchResult;
+import org.bukkit.craftbukkit.util.CraftDifficulty;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
@@ -71,6 +72,7 @@ import org.bukkit.entity.minecart.PoweredMinecart;
 import org.bukkit.entity.minecart.SpawnerMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
+import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.world.SpawnChangeEvent;
 import org.bukkit.event.world.TimeSkipEvent;
 import org.bukkit.generator.BiomeProvider;
@@ -117,6 +119,7 @@ import io.papermc.paper.world.MoonPhase;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import me.isaiah.common.cmixin.IMixinWorld;
 import net.kyori.adventure.util.TriState;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -234,8 +237,11 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public boolean canGenerateStructures() {
+		return true; // TODO
+		/*
 		return world.getLevelData() instanceof PrimaryLevelData prop
 				&& prop.worldGenOptions().generateStructures();
+				*/
 	}
 
 	@Override
@@ -293,9 +299,9 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public Item dropItemNaturally(Location loc, ItemStack arg1) {
-		double xs = (world.random.nextFloat() * 0.5F) + 0.25D;
-		double ys = (world.random.nextFloat() * 0.5F) + 0.25D;
-		double zs = (world.random.nextFloat() * 0.5F) + 0.25D;
+		double xs = (world.getRandom().nextFloat() * 0.5F) + 0.25D;
+		double ys = (world.getRandom().nextFloat() * 0.5F) + 0.25D;
+		double zs = (world.getRandom().nextFloat() * 0.5F) + 0.25D;
 		loc = loc.clone();
 		loc.setX(loc.getX() + xs);
 		loc.setY(loc.getY() + ys);
@@ -500,7 +506,8 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public Difficulty getDifficulty() {
-		return Difficulty.valueOf(world.getDifficulty().getKey().toUpperCase());
+		return CraftDifficulty.toBukkit(this.getHandle().getDifficulty());
+		// return Difficulty.valueOf(world.getDifficulty().getKey().toUpperCase());
 	}
 
 	@Override
@@ -618,7 +625,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public long getFullTime() {
-		return world.getDayTime();
+		return world.getDefaultClockTime();
 	}
 	
 	public static <T> T shimLegacyValue(T value, GameRule<?> gameRule) {
@@ -932,9 +939,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public int getThunderDuration() {
-		return world.getLevelData() instanceof PrimaryLevelData prop
-				? prop.getThunderTime()
-				: 0;
+		return this.world.getWeatherData().getThunderTime();
 	}
 
 	@Override
@@ -986,9 +991,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public int getWeatherDuration() {
-		return world.getLevelData() instanceof PrimaryLevelData prop
-				? prop.getRainTime()
-				: 0;
+		return this.world.getWeatherData().getRainTime();
 	}
 
 	@Override
@@ -1012,7 +1015,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public boolean hasStorm() {
-		return world.getLevelData().isRaining();
+		return this.world.getWeatherData().isRaining();
 	}
 
 	@Override
@@ -1022,7 +1025,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public boolean isChunkForceLoaded(int arg0, int arg1) {
-		return world.getForceLoadedChunks().contains(ChunkPos.asLong(arg0, arg1));
+		return world.getForceLoadedChunks().contains(ChunkPos.pack(arg0, arg1));
 	}
 
 	@Override
@@ -1064,7 +1067,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public boolean isThundering() {
-		return world.getLevelData().isThundering();
+		return this.world.getWeatherData().isThundering();
 	}
 
 	@Override
@@ -1153,12 +1156,12 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public void playSound(Location loc, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) {
-		this.playSound(loc, sound, category, volume, pitch, this.getHandle().random.nextLong());
+		this.playSound(loc, sound, category, volume, pitch, this.getHandle().getRandom().nextLong());
 	}
 
 	@Override
 	public void playSound(Location loc, String sound, org.bukkit.SoundCategory category, float volume, float pitch) {
-		this.playSound(loc, sound, category, volume, pitch, this.getHandle().random.nextLong());
+		this.playSound(loc, sound, category, volume, pitch, this.getHandle().getRandom().nextLong());
 	}
 
 	@Override
@@ -1188,12 +1191,12 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public void playSound(Entity entity, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch) {
-		this.playSound(entity, sound, category, volume, pitch, this.getHandle().random.nextLong());
+		this.playSound(entity, sound, category, volume, pitch, this.getHandle().getRandom().nextLong());
 	}
 
 	@Override
 	public void playSound(Entity entity, String sound, org.bukkit.SoundCategory category, float volume, float pitch) {
-		this.playSound(entity, sound, category, volume, pitch, this.getHandle().random.nextLong());
+		this.playSound(entity, sound, category, volume, pitch, this.getHandle().getRandom().nextLong());
 	}
 
 	@Override
@@ -1458,6 +1461,24 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	}
 
 	@Override
+    public void setFullTime(long time) {
+        if (this.world.dimensionType().defaultClock().isEmpty()) {
+            throw new IllegalArgumentException("Cannot set time in world without world clock");
+        }
+
+        final long currentClockTime = this.world.getDefaultClockTime();
+        final TimeSkipEvent event = new TimeSkipEvent(this, TimeSkipEvent.SkipReason.CUSTOM, time - currentClockTime);
+        CraftServer.INSTANCE.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return;
+        }
+
+        // Updates the clock for all players
+        this.world.clockManager().setTotalTicks(this.world.dimensionType().defaultClock().get(), currentClockTime + event.getSkipAmount());
+    }
+	
+	/*
+	@Override
 	public void setFullTime(long time) {
 		TimeSkipEvent event = new TimeSkipEvent(this, TimeSkipEvent.SkipReason.CUSTOM, time - world.getDayTime());
 		CraftServer.INSTANCE.getPluginManager().callEvent(event);
@@ -1478,6 +1499,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 					.get(GameRules.ADVANCE_TIME)));
 		}
 	}
+	*/
 
 	@Override
 	public <T> boolean setGameRule(GameRule<T> rule, @NotNull T newValue) {
@@ -1569,17 +1591,21 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public void setStorm(boolean arg0) {
-		world.getLevelData().setRaining(arg0);
+		this.world.getWeatherData().setRaining(arg0);
+        this.setWeatherDuration(0);
+        this.setClearWeatherDuration(0);
 	}
 
 	@Override
-	public void setThunderDuration(int arg0) {
-		worldProperties().setThunderTime(arg0);
+	public void setThunderDuration(int dur) {
+		this.world.getWeatherData().setThunderTime(dur);
 	}
 
 	@Override
 	public void setThundering(boolean arg0) {
-		worldProperties().setThundering(arg0);
+		this.world.getWeatherData().setThundering(arg0);
+        this.setThunderDuration(0);
+        this.setClearWeatherDuration(0);
 	}
 
 	@Override
@@ -1603,9 +1629,11 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	}
 
 	@Override
-	public void setTime(long arg0) {
-		world.setDayTime(arg0);
-	}
+    public void setTime(long time) {
+        long margin = (time - this.getFullTime()) % SharedConstants.TICKS_PER_GAME_DAY;
+        if (margin < 0) margin += SharedConstants.TICKS_PER_GAME_DAY;
+        this.setFullTime(this.getFullTime() + margin);
+    }
 
 	@Override
 	public void setWaterAnimalSpawnLimit(int arg0) {
@@ -1614,7 +1642,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public void setWeatherDuration(int arg0) {
-		worldProperties().setRainTime(arg0);
+		this.world.getWeatherData().setRainTime(arg0);
 	}
 
 	private ServerLevelData worldProperties() {
@@ -2337,8 +2365,8 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 	}
 
 	@Override
-	public void setClearWeatherDuration(int arg0) {
-		world.setWeatherParameters(arg0, 0, false, false);
+	public void setClearWeatherDuration(int dur) {
+		this.world.getWeatherData().setClearWeatherTime(dur);
 	}
 
 	@Override

@@ -199,7 +199,7 @@ public final class CraftItemFactory implements ItemFactory {
     public ItemStack enchantItem(final World world, final ItemStack itemStack, final int level, final boolean allowTreasures) {
         Preconditions.checkArgument(world != null, "The world must not be null");
 
-        return CraftItemFactory.enchantItem(((CraftWorld) world).getHandle().random, itemStack, level, allowTreasures);
+        return CraftItemFactory.enchantItem(((CraftWorld) world).getHandle().getRandom(), itemStack, level, allowTreasures);
     }
 
     @Override

@@ -20,6 +20,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.features.TreeFeatures;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.Mob;
@@ -510,7 +511,8 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
     }
 
     public MoonPhase getMoonPhase() {
-        return MoonPhase.getPhase(this.getHandle().getLevel().getDayTime() / 24000L);
+    	final net.minecraft.world.level.MoonPhase moonPhase = this.getHandle().getLevel().environmentAttributes().getDimensionValue(EnvironmentAttributes.MOON_PHASE);
+        return io.papermc.paper.world.MoonPhase.values()[moonPhase.ordinal()];
     }
 
     public NamespacedKey getKey() {

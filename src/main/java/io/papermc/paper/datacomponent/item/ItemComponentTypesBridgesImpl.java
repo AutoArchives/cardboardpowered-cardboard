@@ -8,6 +8,7 @@ import io.papermc.paper.datacomponent.item.KineticWeapon.Condition;
 import io.papermc.paper.datacomponent.item.ResolvableProfile.SkinPatch;
 import io.papermc.paper.datacomponent.item.ResolvableProfile.SkinPatchBuilder;
 import io.papermc.paper.registry.PaperRegistries;
+import io.papermc.paper.registry.data.util.Conversions;
 import io.papermc.paper.registry.set.PaperRegistrySets;
 import io.papermc.paper.registry.set.RegistryKeySet;
 import io.papermc.paper.registry.tag.TagKey;
@@ -204,7 +205,7 @@ public final class ItemComponentTypesBridgesImpl implements ItemComponentTypesBr
 
     @Override
     public DamageResistant damageResistant(final TagKey<DamageType> types) {
-        return new PaperDamageResistant(new net.minecraft.world.item.component.DamageResistant(PaperRegistries.toNms(types)));
+        return new PaperDamageResistant(new net.minecraft.world.item.component.DamageResistant(PaperRegistrySets.convertToNms(Registries.DAMAGE_TYPE, Conversions.global().lookup(), types)));
     }
 
     @Override

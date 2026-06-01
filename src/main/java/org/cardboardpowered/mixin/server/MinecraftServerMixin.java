@@ -590,7 +590,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
     	
     	MinecraftServer server = (MinecraftServer) (Object) this;
     	
-    	WorldOptions worldOptions = serverLevelData.worldGenOptions();
+    	WorldOptions worldOptions = server.getWorldGenSettings().options(); // serverLevelData.worldGenOptions();
         long seed = worldOptions.seed();
         long l = BiomeManager.obfuscateSeed(seed);
         List<CustomSpawner> list = ImmutableList.of(

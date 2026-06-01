@@ -21,6 +21,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
@@ -675,4 +676,8 @@ public final class CraftItemStack extends ItemStack {
     }
 
     // Paper end - data component API
+    
+    public static ItemStackTemplate asTemplate(ItemStack bukkit) {
+        return net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(asNMSCopy(bukkit));
+    }
 }
