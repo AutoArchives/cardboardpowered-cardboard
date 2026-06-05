@@ -31,7 +31,7 @@ public final class CoordinateUtils {
     }
 
     public static long getChunkKey(ChunkPos pos) {
-        return (long)pos.z << 32 | (long)pos.x & 0xFFFFFFFFL;
+        return (long)pos.z() << 32 | (long)pos.x() & 0xFFFFFFFFL;
     }
 
     public static long getChunkKey(SectionPos pos) {
@@ -63,7 +63,7 @@ public final class CoordinateUtils {
     }
 
     public static long getChunkSectionKey(ChunkPos pos, int y2) {
-        return ((long)pos.x & 0x3FFFFFL) << 42 | ((long)y2 & 0xFFFFFL) << 0 | ((long)pos.z & 0x3FFFFFL) << 20;
+        return ((long)pos.x() & 0x3FFFFFL) << 42 | ((long)y2 & 0xFFFFFL) << 0 | ((long)pos.z() & 0x3FFFFFL) << 20;
     }
 
     public static long getChunkSectionKey(BlockPos pos) {

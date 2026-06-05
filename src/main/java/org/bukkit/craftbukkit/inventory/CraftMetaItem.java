@@ -1684,7 +1684,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public JukeboxPlayableComponent getJukeboxPlayable() {
-        return (this.hasJukeboxPlayable()) ? new CraftJukeboxComponent(this.jukebox) : new CraftJukeboxComponent(new JukeboxPlayable(new EitherHolder<>(JukeboxSongs.THIRTEEN)));
+        return (this.hasJukeboxPlayable()) ? new CraftJukeboxComponent(this.jukebox) : new CraftJukeboxComponent(new JukeboxPlayable(CraftRegistry.getMinecraftRegistry(Registries.JUKEBOX_SONG).get(JukeboxSongs.THIRTEEN).orElseThrow()));
     }
 
     @Override

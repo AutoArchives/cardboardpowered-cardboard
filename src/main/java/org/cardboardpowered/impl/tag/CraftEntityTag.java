@@ -29,8 +29,9 @@ public class CraftEntityTag extends CraftTag<EntityType<?>, org.bukkit.entity.En
         super(registry, tag);
     }
     
+    @Override
     public boolean isTagged(org.bukkit.entity.EntityType entity) {
-        return CraftEntityType.bukkitToMinecraft(entity).is(this.tag);
+        return CraftEntityType.bukkitToMinecraft(entity).builtInRegistryHolder().is(this.tag);
     }
 
     /*

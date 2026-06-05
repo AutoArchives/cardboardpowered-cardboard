@@ -24,15 +24,16 @@ public final class BossBarImplementationImpl implements BossBar.Listener, BossBa
     public BossBarImplementationImpl(final BossBar bar) {
         this.bar = bar;
     }
-
+    
     public void playerShow(final CraftPlayer player) {
         if (this.vanilla == null) {
             this.vanilla = new ServerBossEvent(
-                    PaperAdventure.asVanilla(this.bar.name()),
-                    PaperAdventure.asVanilla(this.bar.color()),
-                    PaperAdventure.asVanilla(this.bar.overlay())
+                net.minecraft.util.Mth.createInsecureUUID(net.minecraft.util.RandomSource.create()),
+                PaperAdventure.asVanilla(this.bar.name()),
+                PaperAdventure.asVanilla(this.bar.color()),
+                PaperAdventure.asVanilla(this.bar.overlay())
             );
-            //this.vanilla.adventure = this.bar; // TODO
+            // this.vanilla.adventure = this.bar; // TODO
             this.bar.addListener(this);
         }
         this.vanilla.addPlayer(player.getHandle());

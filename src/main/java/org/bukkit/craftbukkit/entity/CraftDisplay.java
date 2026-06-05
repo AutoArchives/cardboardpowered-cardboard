@@ -18,12 +18,11 @@ public class CraftDisplay extends CraftEntity implements Display {
     public net.minecraft.world.entity.Display getHandle() {
         return (net.minecraft.world.entity.Display) this.entity;
     }
-
+    
     @Override
     public Transformation getTransformation() {
-        com.mojang.math.Transformation nms = net.minecraft.world.entity.Display.createTransformation(this.getHandle().getEntityData());
-
-        return new Transformation(new Vector3f(nms.getTranslation()), new Quaternionf(nms.getLeftRotation()), new Vector3f(nms.getScale()), new Quaternionf(nms.getRightRotation()));
+        com.mojang.math.Transformation transformation = net.minecraft.world.entity.Display.createTransformation(this.getHandle().getEntityData());
+        return new Transformation(new Vector3f(transformation.translation()), new Quaternionf(transformation.leftRotation()), new Vector3f(transformation.scale()), new Quaternionf(transformation.rightRotation()));
     }
 
     @Override

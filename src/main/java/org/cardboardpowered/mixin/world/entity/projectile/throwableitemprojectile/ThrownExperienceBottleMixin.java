@@ -25,7 +25,7 @@ public class ThrownExperienceBottleMixin extends ProjectileMixin {
             ((ThrownExperienceBottle)(Object)this).onHitEntity((EntityHitResult)movingobjectposition);
         } else if (type == HitResult.Type.BLOCK) this.onHitBlock((BlockHitResult)movingobjectposition);
 
-        int i = 3 + this.mc_world().random.nextInt(5) + this.mc_world().random.nextInt(5);
+        int i = 3 + this.mc_world().getRandom().nextInt(5) + this.mc_world().getRandom().nextInt(5);
         org.bukkit.event.entity.ExpBottleEvent event = CraftEventFactory.callExpBottleEvent((ThrownExperienceBottle)(Object)this, i);
         i = event.getExperience();
 

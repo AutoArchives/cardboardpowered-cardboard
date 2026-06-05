@@ -54,8 +54,8 @@ public class CraftChunk implements Chunk {
     public CraftChunk(net.minecraft.world.level.chunk.LevelChunk chunk) {
         this.weakChunk = new WeakReference<>(chunk);
         this.level = (ServerLevel) chunk.level;
-        this.x = chunk.getPos().x;
-        this.z = chunk.getPos().z;
+        this.x = chunk.getPos().x();
+        this.z = chunk.getPos().z();
     }
 
     public CraftChunk(ServerLevel level, int x, int z) {

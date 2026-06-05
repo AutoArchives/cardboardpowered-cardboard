@@ -8,6 +8,9 @@ import java.util.function.Supplier;
 import net.minecraft.server.bossevents.CustomBossEvent;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+
 import org.bukkit.NamespacedKey;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
@@ -29,7 +32,12 @@ public class CardboardBossBar implements BossBar, KeyedBossBar {
     private Map<BarFlag, FlagContainer> flags;
 
     public CardboardBossBar(String title, BarColor color, BarStyle style, BarFlag... flags) {
-        handle = new ServerBossEvent(CraftChatMessage.fromString(title, true)[0], convertColor(color), convertStyle(style));
+    	this.handle = new ServerBossEvent(
+                Mth.createInsecureUUID(RandomSource.create()),
+                CraftChatMessage.fromString(title, true)[0],
+                this.convertColor(color),
+                this.convertStyle(style)
+            );
 
         this.initialize();
         for (BarFlag flag : flags) this.addFlag(flag);
@@ -50,7 +58,7 @@ public class CardboardBossBar implements BossBar, KeyedBossBar {
     @Override
     public NamespacedKey getKey() {
         if (handle instanceof CustomBossEvent) {
-            return CraftNamespacedKey.fromMinecraft(((CustomBossEvent)handle).getTextId());
+            return CraftNamespacedKey.fromMinecraft(((CustomBossEvent)handle).customId());
         }
         throw new UnsupportedOperationException("BossBar is not keyed!");
     }

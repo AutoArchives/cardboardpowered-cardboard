@@ -28,7 +28,7 @@ public class CraftStonecuttingRecipe extends StonecuttingRecipe implements Craft
 
     @Override
     public void addToCraftingManager() {
-        ItemStack result = this.getResult();
+        // ItemStack result = this.getResult();
 
         StonecutterRecipe recipe = new net.minecraft.world.item.crafting.StonecutterRecipe(
                 new net.minecraft.world.item.crafting.Recipe.CommonInfo(true),

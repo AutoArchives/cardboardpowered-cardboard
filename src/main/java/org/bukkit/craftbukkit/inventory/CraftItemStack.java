@@ -19,6 +19,7 @@ import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.PatchedDataComponentMap;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStackTemplate;
@@ -27,6 +28,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -160,13 +162,28 @@ public final class CraftItemStack extends ItemStack {
     public static CraftItemStack asNewCraftStack(Item item, int amount) {
         return new CraftItemStack(CraftItemType.minecraftToBukkit(item), amount, (short) 0, null);
     }
+    
+    public static ItemPredicate asCriterionConditionItem(ItemStack key) {
+        net.minecraft.world.item.ItemStack item = CraftItemStack.unwrap(key);
 
+        return ItemPredicate.Builder.item()
+            .of(CraftRegistry.getMinecraftRegistry(Registries.ITEM), item.getItem())
+            .withComponents(DataComponentMatchers.Builder.components()
+                .exact(DataComponentExactPredicate.allOf(
+                    PatchedDataComponentMap.fromPatch(DataComponentMap.EMPTY, item.getComponentsPatch())
+                ))
+                .build())
+            .build();
+    }
+
+    /*
     public static ItemPredicate asCriterionConditionItem(ItemStack original) {
         net.minecraft.world.item.ItemStack nms = CraftItemStack.asNMSCopy(original);
         DataComponentExactPredicate predicate = DataComponentExactPredicate.allOf(PatchedDataComponentMap.fromPatch(DataComponentMap.EMPTY, nms.getComponentsPatch()));
 
         return new ItemPredicate(Optional.of(HolderSet.direct(nms.getItemHolder())), MinMaxBounds.Ints.ANY, new DataComponentMatchers(predicate, Collections.emptyMap()));
     }
+    */
 
     public net.minecraft.world.item.ItemStack handle;
 
@@ -677,7 +694,14 @@ public final class CraftItemStack extends ItemStack {
 
     // Paper end - data component API
     
+    // 26.1:
     public static ItemStackTemplate asTemplate(ItemStack bukkit) {
         return net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(asNMSCopy(bukkit));
     }
+
+    // 26.1:
+    public static ItemStack asBukkitCopy(net.minecraft.world.item.ItemStackTemplate original) {
+        return asBukkitCopy(original.create());
+    }
+
 }

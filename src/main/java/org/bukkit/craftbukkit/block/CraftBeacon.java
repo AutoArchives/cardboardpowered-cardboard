@@ -4,6 +4,7 @@ import net.minecraft.advancements.criterion.DataComponentMatchers;
 import net.minecraft.advancements.criterion.ItemPredicate;
 import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.core.component.DataComponentExactPredicate;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.LockCode;
@@ -114,9 +115,8 @@ public class CraftBeacon extends CraftBlockEntityState<BeaconBlockEntity> implem
 
     @Override
     public String getLock() {
-        Optional<? extends Component> customName = this.getSnapshot().lockKey.predicate().components().exact().asPatch().get(DataComponents.CUSTOM_NAME);
-
-        return (customName != null) ? customName.map(CraftChatMessage::fromComponent).orElse("") : "";
+        Component customName = this.getSnapshot().lockKey.predicate().components().exact().asPatch().get(DataComponentMap.EMPTY, DataComponents.CUSTOM_NAME);
+        return (customName != null) ? CraftChatMessage.fromComponent(customName) : "";
     }
 
     @Override
