@@ -715,6 +715,7 @@ public class CraftServer implements Server {
     }
 
     @Override
+    /*
     public BlockData createBlockData(org.bukkit.Material material, String data) {
         Preconditions.checkArgument(material != null || data != null, "Must provide one of material or data");
         BlockType type = null;
@@ -724,6 +725,17 @@ public class CraftServer implements Server {
         }
 
         return CraftBlockData.newData(type, data);
+    }*/
+    
+    public BlockData createBlockData(org.bukkit.Material material, String data) {
+        Preconditions.checkArgument(material != null || data != null, "Must provide one of material or data");
+        BlockType type = null;
+        if (material != null) {
+            type = material.asBlockType();
+            Preconditions.checkArgument(type != null, "Provided material must be a block");
+        }
+
+        return CraftBlockData.fromString(type, data);
     }
 
     @Override

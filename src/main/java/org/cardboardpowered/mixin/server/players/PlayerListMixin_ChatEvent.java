@@ -107,9 +107,11 @@ public class PlayerListMixin_ChatEvent {
                 //for (Text txt : CraftChatMessage.fromString(message))
                 //    CraftServer.server.sendSystemMessage(txt, queueEvent.getPlayer().getUniqueId());
                 if (((LazyPlayerSet) queueEvent.getRecipients()).isLazy()) {
-                    for (ServerPlayer plr : CraftServer.server.getPlayerList().getPlayers())
-                        for (Component txt : CraftChatMessage.fromString(messag))
-                            plr.displayClientMessage(txt, false);
+                    for (ServerPlayer plr : CraftServer.server.getPlayerList().getPlayers()) {
+                        for (Component txt : CraftChatMessage.fromString(messag)) {
+                            plr.sendSystemMessage(txt, false);
+                        }
+                    }
                 } else for (Player plr : queueEvent.getRecipients())
                     plr.sendMessage(messag);
             });

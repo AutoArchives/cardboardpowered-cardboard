@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -37,14 +38,14 @@ public class ServerGamePacketListenerImplMixin_InventoryClickEvent {
 
     private boolean doCl = false;
     
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/AbstractContainerMenu;clicked(IILnet/minecraft/world/inventory/ClickType;Lnet/minecraft/world/entity/player/Player;)V"), method = "handleContainerClick")
-    public void doBukkitEvent_InventoryClickedEvent_skipOriginalProcess(AbstractContainerMenu handler, int i, int j, net.minecraft.world.inventory.ClickType actionType, Player playerEntity) {
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/AbstractContainerMenu;clicked(IILnet/minecraft/world/inventory/ContainerInput;Lnet/minecraft/world/entity/player/Player;)V"), method = "handleContainerClick")
+    public void doBukkitEvent_InventoryClickedEvent_skipOriginalProcess(AbstractContainerMenu handler, int i, int j, net.minecraft.world.inventory.ContainerInput actionType, Player playerEntity) {
         //
         if (doCl) handler.clicked(i, j, actionType, playerEntity);
     }
 
     @SuppressWarnings("deprecation")
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/AbstractContainerMenu;clicked(IILnet/minecraft/world/inventory/ClickType;Lnet/minecraft/world/entity/player/Player;)V", 
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/AbstractContainerMenu;clicked(IILnet/minecraft/world/inventory/ContainerInput;Lnet/minecraft/world/entity/player/Player;)V", 
             shift = At.Shift.BEFORE), method = "handleContainerClick", cancellable = true)
     public void doBukkitEvent_InventoryClickedEvent(ServerboundContainerClickPacket packet, CallbackInfo ci) {
         if(packet.slotNum() < -1 && packet.slotNum() != -999)
@@ -59,7 +60,7 @@ public class ServerGamePacketListenerImplMixin_InventoryClickEvent {
         ClickType click = ClickType.UNKNOWN;
         InventoryAction action = InventoryAction.UNKNOWN;
 
-        switch (packet.clickType()) {
+        switch (packet.containerInput()) {
             case PICKUP:
                 click = packet.buttonNum() == 0 ? ClickType.LEFT : (packet.buttonNum() == 1 ? ClickType.RIGHT : ClickType.UNKNOWN);
 
@@ -198,7 +199,7 @@ public class ServerGamePacketListenerImplMixin_InventoryClickEvent {
                 }
                 break;
             case QUICK_CRAFT:
-                this.player.containerMenu.clicked(packet.slotNum(), packet.buttonNum(), packet.clickType(), this.player);
+                this.player.containerMenu.clicked(packet.slotNum(), packet.buttonNum(), packet.containerInput(), this.player);
                 break;
             case PICKUP_ALL:
                 click = ClickType.DOUBLE_CLICK;
@@ -215,7 +216,7 @@ public class ServerGamePacketListenerImplMixin_InventoryClickEvent {
             default:
                 break;
         }
-        if(packet.clickType() != net.minecraft.world.inventory.ClickType.QUICK_CRAFT) {
+        if(packet.containerInput() != ContainerInput.QUICK_CRAFT) {
             if(click == ClickType.NUMBER_KEY) {
                 event = new InventoryClickEvent(inventory, type, packet.slotNum(), click, action, packet.buttonNum());
             } else {

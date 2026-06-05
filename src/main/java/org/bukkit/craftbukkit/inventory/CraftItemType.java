@@ -13,6 +13,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.block.entity.FuelValues;
@@ -182,10 +183,14 @@ public class CraftItemType<M extends ItemMeta> extends HolderableBase<Item> impl
 
     @Override
     public @Nullable ItemType getCraftingRemainingItem() {
-        net.minecraft.world.item.ItemStack expectedItem = this.getHandle().getCraftingRemainder();
-        return expectedItem.isEmpty() ? null : CraftItemType.minecraftToBukkitNew(expectedItem.getItem());
+        ItemStackTemplate craftingRemainder = this.getHandle().getCraftingRemainder();
+        return craftingRemainder == null ? null : CraftItemType.minecraftHolderToBukkitNew(craftingRemainder.item());
     }
 
+    public static ItemType minecraftHolderToBukkitNew(Holder<Item> minecraft) {
+        return CraftRegistry.minecraftHolderToBukkit(minecraft, Registries.ITEM);
+    }
+    
     @Override
     public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers() {
         return this.getDefaultAttributeModifiers(sg -> true);

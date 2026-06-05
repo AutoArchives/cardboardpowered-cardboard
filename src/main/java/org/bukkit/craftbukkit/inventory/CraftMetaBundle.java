@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.component.BundleContents;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.inventory.ItemStack;
@@ -38,7 +39,7 @@ public class CraftMetaBundle extends CraftMetaItem implements BundleMeta {
 
         getOrEmpty(tag, CraftMetaBundle.ITEMS).ifPresent((bundle) -> {
             bundle.items().forEach((item) -> {
-                ItemStack itemStack = CraftItemStack.asCraftMirror(item);
+                ItemStack itemStack = CraftItemStack.asCraftMirror(item.create());
 
                 if (!itemStack.isEmpty()) { // SPIGOT-7174 - Avoid adding air
                     this.addItem(itemStack);
@@ -65,10 +66,10 @@ public class CraftMetaBundle extends CraftMetaItem implements BundleMeta {
         super.applyToItem(tag);
 
         if (this.hasItems()) {
-            List<net.minecraft.world.item.ItemStack> list = new ArrayList<>();
+            List<ItemStackTemplate> list = new ArrayList<>();
 
             for (ItemStack item : this.items) {
-                list.add(CraftItemStack.asNMSCopy(item));
+                list.add(CraftItemStack.asTemplate(item));
             }
 
             tag.put(CraftMetaBundle.ITEMS, new BundleContents(list));

@@ -114,7 +114,7 @@ public class CraftChunk implements Chunk {
 
     @Override
     public boolean isEntitiesLoaded() {
-        return this.getCraftWorld().getHandle().areEntitiesLoaded(ChunkPos.asLong(this.x, this.z)); // Paper - chunk system
+        return this.getCraftWorld().getHandle().areEntitiesLoaded(ChunkPos.pack(this.x, this.z)); // Paper - chunk system
     }
 
     @Override

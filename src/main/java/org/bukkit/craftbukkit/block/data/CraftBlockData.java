@@ -5,10 +5,16 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -49,11 +55,14 @@ import org.cardboardpowered.bridge.world.level.block.state.BlockStateBaseBridge;
 import org.cardboardpowered.bridge.world.level.block.state.BlockStateBridge;
 import org.cardboardpowered.impl.world.CraftWorld;
 import org.jetbrains.annotations.NotNull;
+import net.minecraft.world.level.block.state.properties.Property.Value;
 
 public class CraftBlockData implements BlockData {
 
     private net.minecraft.world.level.block.state.BlockState state;
-    private Map<Property<?>, Comparable<?>> parsedStates;
+    //private Map<Property<?>, Comparable<?>> parsedStates;
+    
+    private List<Property.Value<?>> parsedStates;
 
     protected CraftBlockData() {
         throw new AssertionError("Template Constructor");
@@ -120,17 +129,25 @@ public class CraftBlockData implements BlockData {
     @Override
     public BlockData merge(BlockData data) {
         CraftBlockData craft = (CraftBlockData) data;
-        Preconditions.checkArgument(craft.parsedStates != null, "Data not created via string parsing");
-        Preconditions.checkArgument(this.state.getBlock() == craft.state.getBlock(), "States have different types (got %s, expected %s)", data, this);
+        Preconditions.checkArgument(craft.parsedStates != null, "Block data not created via string parsing");
+        Preconditions.checkArgument(this.state.getBlock() == craft.state.getBlock(), "States have different types (got %s, expected %s)", craft.state.getBlock(), this.state.getBlock());
 
         CraftBlockData clone = (CraftBlockData) this.clone();
         clone.parsedStates = null;
 
-        for (Property parsed : craft.parsedStates.keySet()) {
-            clone.state = clone.state.setValue(parsed, craft.state.getValue(parsed));
+        for (Property.Value<?> parsed : craft.parsedStates) {
+            clone.state = setValue(clone.state, parsed);
         }
 
         return clone;
+    }
+    
+    private static <T extends Comparable<T>> BlockState setValue(final BlockState state, final Property.Value<T> propertyValue) {
+        return state.setValue(propertyValue.property(), propertyValue.value());
+    }
+
+    private <T extends Comparable<T>> BlockState copyProperty(BlockState source, BlockState target, Property<T> property) {
+        return target.setValue(property, source.getValue(property));
     }
 
     @Override
@@ -218,12 +235,13 @@ public class CraftBlockData implements BlockData {
 
     @Override
     public String getAsString() {
-        return this.toString(this.state.getValues());
+    	return this.toString(this.state.getValues(), this.state.isSingletonState());
+        // return this.toString(this.state.getValues());
     }
 
     @Override
     public String getAsString(boolean hideUnspecified) {
-        return (hideUnspecified && this.parsedStates != null) ? this.toString(this.parsedStates) : this.getAsString();
+    	return (hideUnspecified && this.parsedStates != null) ? this.toString(this.parsedStates.stream(), this.parsedStates.isEmpty()) : this.getAsString();
     }
 
     @Override
@@ -239,8 +257,20 @@ public class CraftBlockData implements BlockData {
     public String toString() {
         return "CraftBlockData{" + this.getAsString() + "}";
     }
+    
+ // Mimicked from StateHolder#toString() prefixed by just the key instead of Block{key}
+    public String toString(Stream<Property.Value<?>> states, boolean singleton) {
+        StringBuilder stateString = new StringBuilder(BuiltInRegistries.BLOCK.getKey(this.state.getBlock()).toString());
+        if (!singleton) {
+            stateString.append('[');
+            stateString.append(states.map(Property.Value::toString).collect(Collectors.joining(",")));
+            stateString.append(']');
+        }
+        return stateString.toString();
+    }
 
     // Mimicked from BlockDataAbstract#toString()
+    /*
     public String toString(Map<Property<?>, Comparable<?>> states) {
         StringBuilder stateString = new StringBuilder(BuiltInRegistries.BLOCK.getKey(this.state.getBlock()).toString());
 
@@ -255,6 +285,16 @@ public class CraftBlockData implements BlockData {
 
     public Map<String, String> toStates(boolean hideUnspecified) {
         return (hideUnspecified && this.parsedStates != null) ? CraftBlockData.toStates(this.parsedStates) : CraftBlockData.toStates(this.state.getValues());
+    }*/
+    
+    public Map<String, String> toStates(boolean hideUnspecified) {
+        Map<String, String> serializedStates = new HashMap<>();
+        if (hideUnspecified && this.parsedStates != null) {
+            this.parsedStates.forEach(state -> serializedStates.put(state.property().getName(), state.valueName()));
+        } else {
+            this.state.getValues().forEach(state -> serializedStates.put(state.property().getName(), state.valueName()));
+        }
+        return serializedStates;
     }
 
     private static Map<String, String> toStates(Map<Property<?>, Comparable<?>> states) {
@@ -426,7 +466,7 @@ public class CraftBlockData implements BlockData {
         register(net.minecraft.world.level.block.EndPortalFrameBlock.class, org.bukkit.craftbukkit.block.impl.CraftEndPortalFrame::new);
         register(net.minecraft.world.level.block.EndRodBlock.class, org.bukkit.craftbukkit.block.impl.CraftEndRod::new);
         register(net.minecraft.world.level.block.EnderChestBlock.class, org.bukkit.craftbukkit.block.impl.CraftEnderChest::new);
-        register(net.minecraft.world.level.block.FarmBlock.class, org.bukkit.craftbukkit.block.impl.CraftFarm::new);
+        register(net.minecraft.world.level.block.FarmlandBlock.class, org.bukkit.craftbukkit.block.impl.CraftFarm::new);
         register(net.minecraft.world.level.block.FenceBlock.class, org.bukkit.craftbukkit.block.impl.CraftFence::new);
         register(net.minecraft.world.level.block.FenceGateBlock.class, org.bukkit.craftbukkit.block.impl.CraftFenceGate::new);
         register(net.minecraft.world.level.block.FireBlock.class, org.bukkit.craftbukkit.block.impl.CraftFire::new);
@@ -500,7 +540,9 @@ public class CraftBlockData implements BlockData {
         register(net.minecraft.world.level.block.SmokerBlock.class, org.bukkit.craftbukkit.block.impl.CraftSmoker::new);
         register(net.minecraft.world.level.block.SnifferEggBlock.class, org.bukkit.craftbukkit.block.impl.CraftSnifferEgg::new);
         register(net.minecraft.world.level.block.SnowLayerBlock.class, org.bukkit.craftbukkit.block.impl.CraftSnowLayer::new);
-        register(net.minecraft.world.level.block.SnowyDirtBlock.class, org.bukkit.craftbukkit.block.impl.CraftSnowyDirt::new);
+        // register(net.minecraft.world.level.block.SnowyDirtBlock.class, org.bukkit.craftbukkit.block.impl.CraftSnowyDirt::new);
+        register(net.minecraft.world.level.block.SnowyBlock.class, org.bukkit.craftbukkit.block.impl.CraftSnowyDirt::new);
+        
         register(net.minecraft.world.level.block.StainedGlassPaneBlock.class, org.bukkit.craftbukkit.block.impl.CraftStainedGlassPane::new);
         register(net.minecraft.world.level.block.StairBlock.class, org.bukkit.craftbukkit.block.impl.CraftStair::new);
         register(net.minecraft.world.level.block.StandingSignBlock.class, org.bukkit.craftbukkit.block.impl.CraftStandingSign::new);
@@ -559,6 +601,9 @@ public class CraftBlockData implements BlockData {
     private static void register(Class<? extends Block> nms, Function<net.minecraft.world.level.block.state.BlockState, CraftBlockData> bukkit) {
         Preconditions.checkState(CraftBlockData.MAP.put(nms, bukkit) == null, "Duplicate mapping %s->%s", nms, bukkit);
     }
+    
+    private static final Map<String, CraftBlockData> ENCODER_CACHE = new ConcurrentHashMap<>();
+
 
     // Paper start - cache block data strings
     private static Map<String, CraftBlockData> stringDataCache = new java.util.concurrent.ConcurrentHashMap<>();
@@ -572,10 +617,59 @@ public class CraftBlockData implements BlockData {
     public static void reloadCache() {
         stringDataCache.clear();
         Block.BLOCK_STATE_REGISTRY.forEach(blockData -> stringDataCache.put(blockData.toString(), ((BlockStateBaseBridge)blockData).cardboard$createCraftBlockData()));
+    
+        ENCODER_CACHE.clear();
+        Block.BLOCK_STATE_REGISTRY.forEach(state -> {
+            CraftBlockData data = ((BlockStateBaseBridge)state).cardboard$createCraftBlockData();
+            ENCODER_CACHE.put(data.getAsString(), data);
+        });
     }
     // Paper end - cache block data strings
 
-    public static CraftBlockData newData(BlockType blockType, String data) {
+    public static CraftBlockData fromString(BlockType blockType, String data) {
+        StringBuilder serializedData = new StringBuilder();
+        if (blockType != null) {
+            serializedData.append(blockType.key().asString());
+        }
+
+        if (data != null) {
+            serializedData.append(data);
+        }
+
+        CraftBlockData cached = ENCODER_CACHE.computeIfAbsent(serializedData.toString(), CraftBlockData::parseData);
+        return (CraftBlockData) cached.clone();
+    }
+    
+    private static CraftBlockData parseData(String serializedData) {
+        final BlockStateParser.BlockResult result;
+        try {
+            StringReader reader = new StringReader(serializedData);
+            result = BlockStateParser.parseForBlock(CraftRegistry.getMinecraftRegistry(Registries.BLOCK), reader, false);
+            if (reader.canRead()) {
+                throw new IllegalArgumentException("Spurious trailing data: " + reader.getRemaining());
+            }
+        } catch (CommandSyntaxException ex) {
+            throw new IllegalArgumentException("Could not parse data: " + serializedData, ex);
+        }
+
+        CraftBlockData data = ((BlockStateBaseBridge)result.blockState()).cardboard$createCraftBlockData();
+        List<Property.Value<?>> parsed = new ArrayList<>(result.properties().size());
+        result.properties().forEach((property, value) -> {
+            parsed.add(StateHolder_createValue(property, value));
+        });
+
+        data.parsedStates = parsed;
+        return data;
+    }
+    
+    // Accessor for the private StateHolder.createValue method
+    private static <T extends Comparable<T>> Value<T> StateHolder_createValue(final Property<T> propertyKey,
+			final Comparable<?> propertyValue) {
+		return new Value(propertyKey, propertyValue);
+	}
+    
+    /*
+    private static CraftBlockData newData(BlockType blockType, String data) {
 
         // Paper start - cache block data strings
         if (blockType != null) {
@@ -620,7 +714,7 @@ public class CraftBlockData implements BlockData {
         CraftBlockData craft = CraftBlockData.fromData(blockData);
         craft.parsedStates = parsed;
         return craft;
-    }
+    }*/
 
     // Paper start - optimize creating BlockData to not need a map lookup
     static {

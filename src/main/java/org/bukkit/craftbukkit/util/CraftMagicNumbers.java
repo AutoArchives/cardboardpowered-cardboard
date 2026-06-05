@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Stream;
@@ -36,6 +37,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.item.ItemParser;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -893,8 +895,16 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     @Override
     public org.bukkit.Color getSpawnEggLayerColor(final EntityType entityType, final int layer) {
         final net.minecraft.world.entity.EntityType<?> nmsType = org.bukkit.craftbukkit.entity.CraftEntityType.bukkitToMinecraft(entityType);
-        final net.minecraft.world.item.SpawnEggItem eggItem = net.minecraft.world.item.SpawnEggItem.byId(nmsType);
-        if (eggItem != null) {
+        
+        
+        final Optional<Holder<Item>> eggItemQ = net.minecraft.world.item.SpawnEggItem.byId(nmsType);
+        
+        if (eggItemQ.isEmpty()) {
+        	return null;
+		}
+        
+        // final net.minecraft.world.item.SpawnEggItem eggItem = eggItemQ.get();
+        if (eggItemQ != null && eggItemQ.isPresent()) {
             throw new UnsupportedOperationException();
         }
         return null;

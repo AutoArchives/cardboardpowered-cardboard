@@ -179,11 +179,11 @@ public abstract class CraftParticle<D> implements Keyed {
                     return new DustParticleOptions(color.asRGB(), data.getSize());
                 }
             };
-
+            
             BiFunction<NamespacedKey, net.minecraft.core.particles.ParticleType<?>, CraftParticle<?>> itemStackFunction = (name, particle) -> new CraftParticle<>(name, particle, ItemStack.class) {
                 @Override
                 public ParticleOptions createParticleParam(ItemStack data) {
-                    return new ItemParticleOption((net.minecraft.core.particles.ParticleType<ItemParticleOption>) this.getHandle(), CraftItemStack.asNMSCopy(data));
+                    return new ItemParticleOption((net.minecraft.core.particles.ParticleType<ItemParticleOption>) this.getHandle(), CraftItemStack.asTemplate(data));
                 }
             };
 

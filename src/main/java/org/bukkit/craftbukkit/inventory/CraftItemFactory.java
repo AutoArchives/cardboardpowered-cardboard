@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.Optional;
 import io.papermc.paper.registry.data.util.Conversions;
 import net.minecraft.commands.arguments.item.ItemParser;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentPatch;
@@ -152,6 +153,7 @@ public final class CraftItemFactory implements ItemFactory {
         return CraftItemFactory.DEFAULT_LEATHER_COLOR;
     }
 
+    /*
     @Override
     public ItemStack createItemStack(String input) throws IllegalArgumentException {
         try {
@@ -171,6 +173,20 @@ public final class CraftItemFactory implements ItemFactory {
         } catch (CommandSyntaxException ex) {
             throw new IllegalArgumentException("Could not parse ItemStack: " + input, ex);
         }
+    }*/
+    
+    @Override
+    public ItemStack createItemStack(String input) throws IllegalArgumentException {
+        try {
+            StringReader reader = new StringReader(input);
+            net.minecraft.commands.arguments.item.ItemInput in = new ItemParser(CraftRegistry.getMinecraftRegistry()).parse(reader);
+            if (reader.canRead()) {
+                throw new IllegalArgumentException("Trailing input found when parsing ItemStack: " + reader.getRemaining());
+            }
+            return CraftItemStack.asCraftMirror(in.createItemStack(1));
+        } catch (CommandSyntaxException ex) {
+            throw new IllegalArgumentException("Could not parse ItemStack: " + input, ex);
+        }
     }
 
     @Override
@@ -179,13 +195,7 @@ public final class CraftItemFactory implements ItemFactory {
             return null;
         }
         net.minecraft.world.entity.EntityType<?> nmsType = CraftEntityType.bukkitToMinecraft(type);
-        Item nmsItem = SpawnEggItem.byId(nmsType);
-
-        if (nmsItem == null) {
-            return null;
-        }
-
-        return CraftItemType.minecraftToBukkit(nmsItem);
+        return SpawnEggItem.byId(nmsType).map(item -> CraftItemType.minecraftHolderToBukkitNew(item).asMaterial()).orElse(null);
     }
 
     @Override
@@ -306,9 +316,14 @@ public final class CraftItemFactory implements ItemFactory {
         String typeId = type.getKey().toString();
         net.minecraft.resources.Identifier typeKey = Identifier.parse(typeId);
         net.minecraft.world.entity.EntityType<?> nmsType = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getValue(typeKey);
-        net.minecraft.world.item.SpawnEggItem eggItem = net.minecraft.world.item.SpawnEggItem.byId(nmsType);
+        Optional<Holder<Item>> eggItemOpt = net.minecraft.world.item.SpawnEggItem.byId(nmsType);
+        if (null == eggItemOpt || eggItemOpt.isEmpty()) {
+			return null;
+		}
+        Holder<Item> eggItem = eggItemOpt.get();
         return eggItem == null ? null : ((ItemStackBridge)new net.minecraft.world.item.ItemStack(eggItem)).cardboard$asBukkitMirror();
     }
+    
     // Paper end - old getSpawnEgg API
     // Paper start - enchantWithLevels API
     @Override

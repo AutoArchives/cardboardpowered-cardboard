@@ -63,9 +63,16 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+/*
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.fabricmc.fabric.impl.screenhandler.Networking;
+*/
+
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
+import net.fabricmc.fabric.impl.menu.Networking;
+
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
@@ -296,11 +303,11 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements CommandSo
     private final ThreadLocal<AbstractContainerMenu> fabric_openedScreenHandler = new ThreadLocal<>();
 
     private void fabric_replaceVanillaScreenPacket_include(ServerGamePacketListenerImpl networkHandler, Packet<?> packet, MenuProvider factory) {
-        if (factory instanceof ExtendedScreenHandlerFactory) {
+        if (factory instanceof ExtendedMenuProvider) {
             AbstractContainerMenu handler = fabric_openedScreenHandler.get();
 
-            if (handler.getType() instanceof ExtendedScreenHandlerType) { // TODO: 1.20.5: check ExtendedScreenHandlerType<?>
-                Networking.sendOpenPacket((ServerPlayer) (Object) this, (ExtendedScreenHandlerFactory) factory, handler, containerCounter);
+            if (handler.getType() instanceof ExtendedMenuType) { // TODO: 1.20.5: check ExtendedScreenHandlerType<?>
+                Networking.sendOpenPacket((ServerPlayer) (Object) this, (ExtendedMenuProvider) factory, handler, containerCounter);
             } else {
                 Identifier id = BuiltInRegistries.MENU.getKey(handler.getType());
                 throw new IllegalArgumentException("[Fabric] Non-extended screen handler " + id + " must not be opened with an ExtendedScreenHandlerFactory!");
@@ -349,9 +356,9 @@ public abstract class ServerPlayerMixin extends PlayerMixin implements CommandSo
                 ((ServerPlayer)(Object)this).containerMenu = container;
                 
                 /*From FabricAPI*/
-                if (factory instanceof ExtendedScreenHandlerFactory) {
+                if (factory instanceof ExtendedMenuProvider) {
                     fabric_openedScreenHandler.set(container);
-                } else if (container.getType() instanceof ExtendedScreenHandlerType) { // TODO: 1.20.5: check ExtendedScreenHandlerType<?>
+                } else if (container.getType() instanceof ExtendedMenuType) { // TODO: 1.20.5: check ExtendedScreenHandlerType<?>
                     Identifier id = BuiltInRegistries.MENU.getKey(container.getType());
                     throw new IllegalArgumentException("[Fabric] Extended screen handler " + id + " must be opened with an ExtendedScreenHandlerFactory!");
                 }

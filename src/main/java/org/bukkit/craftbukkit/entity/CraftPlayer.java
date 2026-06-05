@@ -52,6 +52,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ResolutionContext;
 import net.minecraft.network.protocol.common.ClientboundClearDialogPacket;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPopPacket;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
@@ -3004,7 +3005,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player, PluginMessa
 
         net.minecraft.world.item.ItemStack bookItem = CraftItemStack.asNMSCopy(book);
         ServerPlayer serverPlayer = this.getHandle();
-        net.minecraft.world.item.component.WrittenBookContent.resolveForItem(bookItem, serverPlayer.createCommandSourceStack(), serverPlayer);
+        net.minecraft.world.item.component.WrittenBookContent.resolveForItem(bookItem, ResolutionContext.create(serverPlayer.createCommandSourceStack()), serverPlayer.registryAccess());
         sendBookOpen(bookItem);
     }
 

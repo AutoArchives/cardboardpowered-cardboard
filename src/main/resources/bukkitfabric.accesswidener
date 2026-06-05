@@ -474,13 +474,13 @@ mutable field net/minecraft/server/dedicated/DedicatedServer serverLinks Lnet/mi
 accessible method net/minecraft/core/MappedRegistry validateWrite (Lnet/minecraft/resources/ResourceKey;)V
 accessible field net/minecraft/server/RegistryLayer STATIC_ACCESS Lnet/minecraft/core/RegistryAccess$Frozen;
 accessible field net/minecraft/resources/RegistryOps lookupProvider Lnet/minecraft/resources/RegistryOps$RegistryInfoLookup;
-accessible field net/minecraft/world/item/crafting/SingleItemRecipe result Lnet/minecraft/world/item/ItemStack;
+accessible field net/minecraft/world/item/crafting/SingleItemRecipe result Lnet/minecraft/world/item/ItemStackTemplate;
 accessible method net/minecraft/world/item/crafting/SingleItemRecipe result ()Lnet/minecraft/world/item/ItemStack;
 accessible method net/minecraft/world/item/crafting/SingleItemRecipe input ()Lnet/minecraft/world/item/crafting/Ingredient;
 accessible field net/minecraft/world/item/crafting/SingleItemRecipe input Lnet/minecraft/world/item/crafting/Ingredient;
 accessible field net/minecraft/world/item/crafting/ShapelessRecipe ingredients Ljava/util/List;
-accessible field net/minecraft/world/item/crafting/ShapelessRecipe result Lnet/minecraft/world/item/ItemStack;
-accessible field net/minecraft/world/item/crafting/ShapedRecipe result Lnet/minecraft/world/item/ItemStack;
+accessible field net/minecraft/world/item/crafting/ShapelessRecipe result Lnet/minecraft/world/item/ItemStackTemplate;
+accessible field net/minecraft/world/item/crafting/ShapedRecipe result Lnet/minecraft/world/item/ItemStackTemplate;
 accessible field net/minecraft/world/entity/vehicle/minecart/MinecartTNT explosionPowerBase F
 accessible field net/minecraft/world/entity/vehicle/minecart/MinecartTNT explosionSpeedFactor F
 accessible class net/minecraft/world/item/ItemCooldowns$CooldownInstance
@@ -951,3 +951,4 @@ accessible method net/minecraft/world/entity/Entity getSwimHighSpeedSplashSound 
 accessible method net/minecraft/world/entity/Entity isInvulnerableToBase (Lnet/minecraft/world/damagesource/DamageSource;)Z
 accessible field net/minecraft/server/level/ChunkMap$TrackedEntity serverEntity Lnet/minecraft/server/level/ServerEntity;
 accessible field net/minecraft/world/entity/Entity FLAG_INVISIBLE I
+accessible method net/minecraft/world/level/block/state/StateHolder createValue (Lnet/minecraft/world/level/block/state/properties/Property;Ljava/lang/Comparable;)Lnet/minecraft/world/level/block/state/StateHolder;
