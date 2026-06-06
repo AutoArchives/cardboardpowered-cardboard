@@ -9,6 +9,8 @@ import net.minecraft.world.level.Level;
 
 public interface PrimaryLevelDataBridge {
 
+	static final String PAPER_RESPAWN_DIMENSION = "paperSpawnDimension"; // Paper
+	
     void checkName(String name);
 
     ResourceKey<Level> cardboard$getRespawnDimension();

@@ -1,242 +1,245 @@
-/**
- * PaperWorldLoader
- */
 package io.papermc.paper.world;
 
-import com.google.common.io.Files;
-import com.mojang.serialization.Dynamic;
-import java.io.File;
+import io.papermc.paper.world.migration.WorldFolderMigration;
+import io.papermc.paper.world.saveddata.PaperLevelOverrides;
+import io.papermc.paper.world.saveddata.PaperWorldMetadata;
+import io.papermc.paper.world.saveddata.PaperWorldPDC;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Locale;
+import java.util.UUID;
+
+import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.NbtException;
-import net.minecraft.nbt.ReportedNbtException;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.Main;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.datafix.DataFixers;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.levelgen.WorldGenSettings;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
+import net.minecraft.world.level.storage.LevelDataAndDimensions;
+import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraft.world.level.storage.LevelSummary;
 import net.minecraft.world.level.storage.PrimaryLevelData;
-import net.minecraft.world.level.validation.ContentValidationException;
-import org.apache.commons.io.FileUtils;
-import org.bukkit.World.Environment;
+import net.minecraft.world.level.storage.SavedDataStorage;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftServer;
-import org.cardboardpowered.bridge.world.level.storage.PrimaryLevelDataBridge;
-import org.cardboardpowered.bridge.world.level.storage.LevelStorageSourceBridge;
 import org.cardboardpowered.bridge.server.MinecraftServerBridge;
+import org.cardboardpowered.bridge.world.level.storage.PrimaryLevelDataBridge;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
 
+import com.mojang.serialization.DataResult;
+
+import static java.util.Objects.requireNonNull;
+
+@NullMarked
 public record PaperWorldLoader(MinecraftServer server, String levelId) {
+    public static PaperWorldLoader create(final MinecraftServer server, final String levelId) {
+        return new PaperWorldLoader(server, levelId);
+    }
 
-	private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Cardboard|PaperWorldLoader");// LogUtils.getClassLogger();
+    public record WorldLoadingInfo(
+        World.Environment environment,
+        ResourceKey<LevelStem> stemKey,
+        ResourceKey<Level> dimensionKey,
+        boolean enabled
+    ) {}
 
-	public static PaperWorldLoader create(MinecraftServer server, String levelId) {
-		return new PaperWorldLoader(server, levelId);
-	}
+    public record LoadedWorldData(
+        String bukkitName,
+        UUID uuid,
+        @Nullable PaperWorldPDC pdc,
+        PaperLevelOverrides levelOverrides
+    ) {}
 
-	private PaperWorldLoader.WorldLoadingInfo getWorldInfo(String levelId, LevelStem stem) {
-		ResourceKey<LevelStem> stemKey = this.server.registryAccess().lookupOrThrow(Registries.LEVEL_STEM).getResourceKey(stem).orElseThrow();
-		int dimension = 0;
-		boolean enabled = true;
+    public record WorldLoadingInfoAndData(WorldLoadingInfo info, LoadedWorldData data) {}
 
-		// Cardboard: server.server -> CraftServer.INSTANCE
-		if (stemKey == LevelStem.NETHER) {
-			dimension = -1;
-			enabled = CraftServer.INSTANCE.getAllowNether();
-		} else if (stemKey == LevelStem.END) {
-			dimension = 1;
-			enabled = CraftServer.INSTANCE.getAllowEnd();
-		} else if (stemKey != LevelStem.OVERWORLD) {
-			dimension = -999;
-		}
+    private @Nullable WorldLoadingInfoAndData getWorldInfoAndData(final LevelStem stem) {
+        final WorldLoadingInfo info = this.getWorldInfo(stem);
+        if (!info.enabled()) {
+            return null;
+        }
 
-		String worldType = dimension == -999
-				? stemKey.identifier().getNamespace() + "_" + stemKey.identifier().getPath()
-						: Environment.getEnvironment(dimension).toString().toLowerCase(Locale.ROOT);
-		String name = stemKey == LevelStem.OVERWORLD ? levelId : levelId + "_" + worldType;
-		return new PaperWorldLoader.WorldLoadingInfo(dimension, name, worldType, stemKey, enabled);
-	}
-	
-	public static Path LevelStorage_getStorageFolder(Path path, ResourceKey<LevelStem> dimensionType) {
-		if (dimensionType == LevelStem.OVERWORLD) {
-			return path;
-		} else if (dimensionType == LevelStem.NETHER) {
-			return path.resolve("DIM-1");
-		} else {
-			return dimensionType == LevelStem.END
-					? path.resolve("DIM1")
-							: path.resolve("dimensions").resolve(dimensionType.identifier().getNamespace()).resolve(dimensionType.identifier().getPath());
-		}
-	}
+        final String defaultName = defaultWorldName(this.levelId, info.stemKey());
 
-	private void migrateWorldFolder(PaperWorldLoader.WorldLoadingInfo info) {
-		if (info.dimension() != 0) {
-			File newWorld = LevelStorage_getStorageFolder(new File(info.name()).toPath(), info.stemKey()).toFile();
-			File oldWorld = LevelStorage_getStorageFolder(new File(this.levelId).toPath(), info.stemKey()).toFile();
-			File oldLevelDat = new File(new File(this.levelId), "level.dat");
-			if (!newWorld.isDirectory() && oldWorld.isDirectory() && oldLevelDat.isFile()) {
-				LOGGER.info("---- Migration of old " + info.worldType() + " folder required ----");
-				LOGGER.info(
-						"Unfortunately due to the way that Minecraft implemented multiworld support in 1.6, Bukkit requires that you move your "
-								+ info.worldType()
-								+ " folder to a new location in order to operate correctly."
-						);
-				LOGGER.info("We will move this folder for you, but it will mean that you need to move it back should you wish to stop using Bukkit in the future.");
-				LOGGER.info("Attempting to move " + oldWorld + " to " + newWorld + "...");
-				if (newWorld.exists()) {
-					LOGGER.warn("A file or folder already exists at " + newWorld + "!");
-					LOGGER.info("---- Migration of old " + info.worldType() + " folder failed ----");
-				} else if (newWorld.getParentFile().mkdirs()) {
-					if (oldWorld.renameTo(newWorld)) {
-						LOGGER.info("Success! To restore " + info.worldType() + " in the future, simply move " + newWorld + " to " + oldWorld);
+        try {
+            WorldFolderMigration.migrateStartupWorld(this.server.storageSource, this.server.registryAccess(), defaultName, info.stemKey(), info.dimensionKey());
+        } catch (final IOException ex) {
+            throw new RuntimeException("Failed to migrate world storage for " + defaultName, ex);
+        }
 
-						try {
-							Files.copy(oldLevelDat, new File(new File(info.name()), "level.dat"));
-							FileUtils.copyDirectory(new File(new File(this.levelId), "data"), new File(new File(info.name()), "data"));
-						} catch (IOException var6) {
-							LOGGER.warn("Unable to migrate world data.");
-						}
+        final LoadedWorldData loadedWorldData = loadWorldData(
+            this.server,
+            info.dimensionKey(),
+            defaultName
+        );
 
-						LOGGER.info("---- Migration of old " + info.worldType() + " folder complete ----");
-					} else {
-						LOGGER.warn("Could not move folder " + oldWorld + " to " + newWorld + "!");
-						LOGGER.info("---- Migration of old " + info.worldType() + " folder failed ----");
-					}
-				} else {
-					LOGGER.warn("Could not create path for " + newWorld + "!");
-					LOGGER.info("---- Migration of old " + info.worldType() + " folder failed ----");
-				}
-			}
-		}
-	}
+        return new WorldLoadingInfoAndData(info, loadedWorldData);
+    }
 
-	public void loadInitialWorlds() {
-		MinecraftServerBridge mc = (MinecraftServerBridge) this.server; // Cardboard
+    public static ResourceKey<Level> dimensionKey(final ResourceKey<LevelStem> stemKey) {
+        return ResourceKey.create(Registries.DIMENSION, stemKey.identifier());
+    }
+
+    public static ResourceKey<Level> dimensionKey(final NamespacedKey key) {
+        return ResourceKey.create(Registries.DIMENSION, Identifier.fromNamespaceAndPath(key.namespace(), key.value()));
+    }
+
+    private WorldLoadingInfo getWorldInfo(final LevelStem stem) {
+        final ResourceKey<LevelStem> stemKey = this.server.registryAccess().lookupOrThrow(Registries.LEVEL_STEM).getResourceKey(stem).orElseThrow();
+        final ResourceKey<Level> dimensionKey = dimensionKey(stemKey);
+        boolean enabled = true;
+        final World.Environment environment;
+        if (stemKey == LevelStem.NETHER) {
+            environment = World.Environment.NETHER;
+            enabled = CraftServer.INSTANCE.getAllowNether();
+        } else if (stemKey == LevelStem.END) {
+            environment = World.Environment.THE_END;
+            enabled = CraftServer.INSTANCE.getAllowEnd();
+        } else if (stemKey == LevelStem.OVERWORLD) {
+            environment = World.Environment.NORMAL;
+        } else {
+            environment = World.Environment.CUSTOM;
+        }
+
+        return new WorldLoadingInfo(environment, stemKey, dimensionKey, enabled);
+    }
+
+    public static LoadedWorldData loadWorldData(
+        final MinecraftServer server,
+        final ResourceKey<Level> dimension,
+        final String defaultName
+    ) {
+        final var storageSource = server.storageSource;
+        final var registryAccess = server.registryAccess();
+
+        final SavedDataStorage tempStorage = new SavedDataStorage(storageSource.getDimensionPath(dimension).resolve(LevelResource.DATA.id()), DataFixers.getDataFixer(), registryAccess);
+        final PaperWorldMetadata metadata = tempStorage.get(PaperWorldMetadata.TYPE);
+        final PaperWorldPDC pdc = tempStorage.get(PaperWorldPDC.TYPE);
+        final PaperLevelOverrides levelOverrides = tempStorage.get(PaperLevelOverrides.TYPE);
+
+        final LoadedWorldData data = new LoadedWorldData(
+            defaultName,
+            metadata == null ? UUID.randomUUID() : metadata.uuid(),
+            pdc,
+            levelOverrides == null ? PaperLevelOverrides.createFromLiveLevelData((PrimaryLevelData) server.getWorldData()) : levelOverrides
+        );
+
+        data.levelOverrides().attach((PrimaryLevelData) server.getWorldData(), dimension);
+
+        return data;
+    }
+
+    public void loadInitialWorlds() {
+        final var levelStemRegistry = this.server.registryAccess().lookupOrThrow(Registries.LEVEL_STEM);
+        final boolean hasWorldData = this.server.storageSource.hasWorldData();
+        final LevelStem overworldStem = requireNonNull(levelStemRegistry.getValue(LevelStem.OVERWORLD), "Overworld stem missing");
+        this.loadInitialWorld(overworldStem, hasWorldData);
+        for (final LevelStem stem : levelStemRegistry) {
+            if (stem == overworldStem) {
+                continue;
+            }
+            this.loadInitialWorld(stem, hasWorldData);
+        }
+
+        // ((DedicatedServer) this.server).forceDifficulty();
+
+        for (ServerLevel serverLevel : this.server.getAllLevels()) {
+            // this.server.prepareLevel(serverLevel);
+        	this.server.cardboard$prepareLevel(serverLevel);
+        }
+    }
+
+    private void loadInitialWorld(final LevelStem stem, final boolean hasWorldData) {
+        final WorldLoadingInfoAndData loading = this.getWorldInfoAndData(stem);
+        if (loading == null) {
+            return;
+        }
+
+        final WorldGenSettings worldGenSettings = !hasWorldData
+            ? this.server.getWorldGenSettings()
+            : loadWorldGenSettings(
+            this.server.storageSource,
+            ((MinecraftServerBridge)this.server).cardboard$worldLoaderContext().datapackWorldgen(),
+            loading.info().dimensionKey()
+        );
+        final var worldDataAndGenSettings = new LevelDataAndDimensions.WorldDataAndGenSettings(this.server.getWorldData(), worldGenSettings);
+
+        if (loading.info().dimensionKey() == Level.OVERWORLD) {
+            final var primaryLevelData = ((PrimaryLevelData) this.server.getWorldData());
+            ((PrimaryLevelDataBridge)primaryLevelData).checkName(loading.data().bukkitName());
+            primaryLevelData.setModdedInfo(this.server.getServerModName(), this.server.getModdedStatus().shouldReportAsModified());
+        }
+
+        // TODO: add forceUpgrade
+        /*
+        if (this.server.options.has("forceUpgrade")) {
+            Main.forceUpgrade(this.server.storageSource, DataFixers.getDataFixer(), this.server.options.has("eraseCache"), () -> true, this.server.registryAccess(), this.server.options.has("recreateRegionFiles"));
+        }
+        */
+
+        this.server.createLevel(stem, loading, worldDataAndGenSettings);
+    }
+
+    public static WorldGenSettings loadWorldGenSettings(
+        final LevelStorageSource.LevelStorageAccess access, final net.minecraft.core.HolderLookup.Provider registryAccess, final ResourceKey<Level> dimension
+    ) {
+        return LevelStorageSource_readExistingSavedData(access, dimension, registryAccess, WorldGenSettings.TYPE)
+            .getOrThrow(err -> new IllegalStateException("Unable to read or access the world gen settings file for dimension " + dimension.identifier() + ". " + err));
+    }
+    
+    // Extract from LevelStorageSource
+    public static <T extends SavedData> DataResult<T> LevelStorageSource_readExistingSavedData(
+			final LevelStorageSource.LevelStorageAccess access,
+			final ResourceKey<Level> dimension, // Paper - add final ResourceKey<Level> dimension
+			final Provider registryAccess,
+			final SavedDataType<T> savedDataType) {
 		
-		for (LevelStem stem : this.server.registryAccess().lookupOrThrow(Registries.LEVEL_STEM)) {
-			PaperWorldLoader.WorldLoadingInfo info = this.getWorldInfo(this.levelId, stem);
-			this.migrateWorldFolder(info);
-			if (info.enabled()) {
-				LevelStorageSource.LevelStorageAccess levelStorageAccess = ((MinecraftServerBridge) this.server).getSessionBF();
-				if (info.dimension() != 0) {
-					try {
-						levelStorageAccess = ((LevelStorageSourceBridge) LevelStorageSource.createDefault(CraftServer.INSTANCE.getWorldContainer().toPath()))
-								.validateAndCreateAccess(info.name(), info.stemKey());
-					} catch (ContentValidationException | IOException var7) {
-						throw new RuntimeException(var7);
-					}
-				}
+    	// Path dataLocation = savedDataType.id().withSuffix(".dat").resolveAgainst(access.getLevelPath(LevelResource.DATA));
+		// Paper - use dimension scoped data (we 'demote' some data from global and add our own dimension scoped data)
+		Path dataLocation = savedDataType.id().withSuffix(".dat").resolveAgainst(access.getDimensionPath(dimension).resolve(LevelResource.DATA.id()));
 
-				PaperWorldLoader.LevelDataResult levelData = getLevelData(levelStorageAccess);
-				if (levelData.fatalError) {
-					return;
-				}
-
-				PrimaryLevelData primaryLevelData;
-				if (levelData.dataTag == null) {
-					primaryLevelData = (PrimaryLevelData)Main.createNewWorldData(
-							((DedicatedServer)this.server).settings,
-							mc.cardboard$worldLoaderContext(),
-							mc.cardboard$worldLoaderContext().datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM),
-							this.server.isDemo(),
-							true // TODO: this.server.options.has("bonusChest")
-							)
-							.cookie();
-				} else {
-					primaryLevelData = (PrimaryLevelData)LevelStorageSource.getLevelDataAndDimensions(
-							levelData.dataTag,
-							mc.cardboard$worldLoaderContext().dataConfiguration(),
-							mc.cardboard$worldLoaderContext().datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM),
-							mc.cardboard$worldLoaderContext().datapackWorldgen()
-						)
-							.worldData();
-				}
-
-				((PrimaryLevelDataBridge) primaryLevelData).checkName(info.name());
-				primaryLevelData.setModdedInfo(this.server.getServerModName(), this.server.getModdedStatus().shouldReportAsModified());
-
-				/*
-			if (this.server.options.has("forceUpgrade")) {
-				Main.forceUpgradeWorld(
-				  levelStorageAccess,
-				  primaryLevelData,
-				  Schemas.getFixer(),
-				  this.server.options.has("eraseCache"),
-				  () -> true,
-				  this.server.getRegistryManager(),
-				  this.server.options.has("recreateRegionFiles")
-				);
-			}
-				 */
-
-				((MinecraftServerBridge) this.server).createLevel(stem, info, levelStorageAccess, primaryLevelData);
-			}
+		CompoundTag fileContents;
+		try {
+			fileContents = NbtIo.readCompressed(dataLocation, NbtAccounter.create(NbtAccounter.DEFAULT_NBT_QUOTA * 50L)); // Paper - Old: NbtAccounter.defaultQuota()
+		} catch (IOException var6) {
+			return DataResult.error(var6::getMessage);
 		}
 
-		
-		// ((DedicatedServer)this.server).forceDifficulty();
-		DedicatedServer_forceDifficulty();
-
-		for (ServerLevel serverLevel : this.server.getAllLevels()) {
-			mc.cardboard$prepareLevel(serverLevel);
-		}
-	}
-	
-	protected void DedicatedServer_forceDifficulty() {
-		((DedicatedServer)this.server).setDifficulty( ((DedicatedServer)this.server).getProperties().difficulty.get(), true);
+		return savedDataType.codec().parse(RegistryOps.create(NbtOps.INSTANCE, registryAccess),
+				fileContents.getCompoundOrEmpty("data"));
 	}
 
-	public static PaperWorldLoader.LevelDataResult getLevelData(LevelStorageSource.LevelStorageAccess levelStorageAccess) {
-		if (levelStorageAccess.hasWorldData()) {
-			Dynamic<?> dataTag;
-			LevelSummary summary;
-			try {
-				dataTag = levelStorageAccess.getDataTag();
-				summary = levelStorageAccess.getSummary(dataTag);
-			} catch (ReportedNbtException | IOException | NbtException var7) {
-				LevelStorageSource.LevelDirectory levelDirectory = levelStorageAccess.getLevelDirectory();
-				LOGGER.warn("Failed to load world data from {}", levelDirectory.dataFile(), var7);
-				LOGGER.info("Attempting to use fallback");
+    private static String defaultWorldName(final String levelId, final ResourceKey<LevelStem> stemKey) {
+        if (stemKey == LevelStem.OVERWORLD) {
+            return levelId;
+        }
+        return levelId + "_" + worldType(stemKey);
+    }
 
-				try {
-					dataTag = levelStorageAccess.getDataTagFallback();
-					summary = levelStorageAccess.getSummary(dataTag);
-				} catch (ReportedNbtException | IOException | NbtException var6) {
-					LOGGER.error("Failed to load world data from {}", levelDirectory.oldDataFile(), var6);
-					LOGGER.error(
-							"Failed to load world data from {} and {}. World files may be corrupted. Shutting down.",
-							levelDirectory.dataFile(),
-							levelDirectory.oldDataFile()
-							);
-					return new PaperWorldLoader.LevelDataResult(null, true);
-				}
-
-				levelStorageAccess.restoreLevelDataFromOld();
-			}
-
-			if (summary.requiresManualConversion()) {
-				LOGGER.info("This world must be opened in an older version (like 1.6.4) to be safely converted");
-				return new PaperWorldLoader.LevelDataResult(null, true);
-			} else if (!summary.isCompatible()) {
-				LOGGER.info("This world was created by an incompatible version.");
-				return new PaperWorldLoader.LevelDataResult(null, true);
-			} else {
-				return new PaperWorldLoader.LevelDataResult(dataTag, false);
-			}
-		} else {
-			return new PaperWorldLoader.LevelDataResult(null, false);
-		}
-	}
-
-	public record LevelDataResult(@Nullable Dynamic<?> dataTag, boolean fatalError) {
-	}
-
-	public record WorldLoadingInfo(int dimension, String name, String worldType, ResourceKey<LevelStem> stemKey, boolean enabled) {
-	}
+    private static String worldType(final ResourceKey<LevelStem> stemKey) {
+        if (stemKey == LevelStem.NETHER) {
+            return World.Environment.NETHER.toString().toLowerCase(Locale.ROOT);
+        }
+        if (stemKey == LevelStem.END) {
+            return World.Environment.THE_END.toString().toLowerCase(Locale.ROOT);
+        }
+        if (stemKey == LevelStem.OVERWORLD) {
+            return World.Environment.NORMAL.toString().toLowerCase(Locale.ROOT);
+        }
+        return stemKey.identifier().getNamespace() + "_" + stemKey.identifier().getPath();
+    }
 
 }

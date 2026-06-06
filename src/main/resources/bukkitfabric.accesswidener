@@ -1,4 +1,4 @@
-accessWidener	v1	official
+classTweaker	v2	official
 # Bukkit for Fabric Access Widener
 accessible	field	net/minecraft/network/protocol/handshake/ClientIntentionPacket	hostName	Ljava/lang/String;
 accessible	method	net/minecraft/server/players/StoredUserEntry	getUser	()Ljava/lang/Object;
@@ -956,3 +956,11 @@ accessible field net/minecraft/world/item/component/ItemContainerContents items 
 accessible field net/minecraft/resources/RegistryLoadTask registry Lnet/minecraft/core/WritableRegistry;
 accessible method net/minecraft/resources/RegistryLoadTask registryKey ()Lnet/minecraft/resources/ResourceKey;
 accessible field net/minecraft/server/MinecraftServer storageSource Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;
+extend-enum  net/minecraft/util/datafix/DataFixTypes  PAPER_NONE
+accessible field net/minecraft/world/level/storage/PrimaryLevelData settings Lnet/minecraft/world/level/LevelSettings;
+# LevelSettings record fields
+accessible field net/minecraft/world/level/LevelSettings levelName Ljava/lang/String;
+accessible field net/minecraft/world/level/LevelSettings gameType Lnet/minecraft/world/level/GameType;
+accessible field net/minecraft/world/level/LevelSettings difficultySettings Lnet/minecraft/world/level/LevelSettings$DifficultySettings;
+accessible field net/minecraft/world/level/LevelSettings allowCommands Z
+accessible field net/minecraft/world/level/LevelSettings dataConfiguration Lnet/minecraft/world/level/WorldDataConfiguration;

@@ -20,6 +20,8 @@ package org.cardboardpowered.mixin.server;
 
 import net.minecraft.server.*;
 import net.minecraft.world.level.storage.*;
+import net.minecraft.world.level.storage.LevelDataAndDimensions.WorldDataAndGenSettings;
+
 import org.cardboardpowered.CardboardMod;
 import org.bukkit.craftbukkit.scheduler.CraftScheduler;
 import org.cardboardpowered.bridge.server.MinecraftServerBridge;
@@ -51,6 +53,7 @@ import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.PatrolSpawner;
 import net.minecraft.world.level.levelgen.PhantomSpawner;
+import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.scores.ScoreboardSaveData;
 import org.bukkit.Bukkit;
@@ -95,6 +98,11 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
 	@Override
 	public WorldLoader.DataLoadContext cardboard$worldLoaderContext() {
 		return worldLoaderContext;
+	}
+	
+	@Override
+	public void cardboard$worldLoaderContext(WorldLoader.DataLoadContext value) {
+		this.worldLoaderContext = value;
 	}
 	
     @Shadow private long nextTickTimeNanos;
@@ -505,7 +513,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
     }
 
     // public void initWorld(ServerWorld worldserver, ServerWorldProperties worldProperties, SaveProperties saveData, GeneratorOptions generatorsettings) {
-    public void initWorld(ServerLevel serverLevel, PrimaryLevelData serverLevelData, WorldOptions worldOptions) {
+    public void initWorld(ServerLevel serverLevel, WorldDataAndGenSettings serverLevelData, WorldOptions worldOptions) {
         cardboard$initLevel(serverLevel);
         cardboard$initializedLevel(serverLevel, serverLevelData, worldOptions);
     }
@@ -517,32 +525,37 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
         // Bukkit.getPluginManager().callEvent(new WorldInitEvent(((IMixinWorld) serverWorld).getCraftWorld()));
     }
 
-    private void cardboard$initializedLevel(ServerLevel worldserver, ServerLevelData worldProperties, WorldOptions generatorsettings) {
+    private void cardboard$initializedLevel(ServerLevel overworld, WorldDataAndGenSettings worldDataAndGenSettings, WorldOptions generatorsettings) {
         boolean flag = false;
         // TODO Bukkit generators
         // WorldBorder worldborder = worldserver.getWorldBorder();
 
         // worldborder.load(worldProperties.getWorldBorder().get());
 
-        this.paper$initWorldBorder(worldProperties, worldserver);
         
-        Bukkit.getPluginManager().callEvent(new WorldInitEvent(((LevelBridge) worldserver).cardboard$getWorld()));
+        final net.minecraft.world.level.storage.ServerLevelData levelData = overworld.serverLevelData;
+        // final WorldOptions worldOptions = overworld.worldGenSettings.options();
         
-        if (!worldProperties.isInitialized()) {
+
+        this.paper$initWorldBorder(levelData, overworld);
+        
+        Bukkit.getPluginManager().callEvent(new WorldInitEvent(((LevelBridge) overworld).cardboard$getWorld()));
+        
+        if (!levelData.isInitialized()) {
             try {
             	// TODO IMPORTANT
-                setInitialSpawn(worldserver, worldProperties, generatorsettings.generateBonusChest(), flag, ((ServerLevelBridge) worldserver).cardboard$levelLoadListener());
-                worldProperties.setInitialized(true);
+                setInitialSpawn(overworld, levelData, generatorsettings.generateBonusChest(), flag, ((ServerLevelBridge) overworld).cardboard$levelLoadListener());
+                levelData.setInitialized(true);
             } catch (Throwable throwable) {
                 CrashReport crashreport = CrashReport.forThrowable(throwable, "Exception initializing level");
                 throw new ReportedException(crashreport);
             }
 
-            worldProperties.setInitialized(true);
+            levelData.setInitialized(true);
         }
         
         GlobalPos globalPos = ((MinecraftServer) (Object) this).selectLevelLoadFocusPos();
-        ((ServerLevelBridge) worldserver).cardboard$levelLoadListener().updateFocus(globalPos.dimension(), new ChunkPos(globalPos.pos()));
+        ((ServerLevelBridge) overworld).cardboard$levelLoadListener().updateFocus(globalPos.dimension(), ChunkPos.containing(globalPos.pos()));
         /*
         if (worldProperties.getCustomBossEvents() != null) {
            this.getBossBarManager().readNbt(serverLevelData.getCustomBossEvents(), this.getRegistryManager());
@@ -551,7 +564,8 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
     }
     
     private void paper$initWorldBorder(ServerLevelData worldProperties, ServerLevel serverLevel) {
-        Optional<WorldBorder.Settings> legacyWorldBorderSettings = worldProperties.getLegacyWorldBorderSettings();
+        /*
+    	Optional<WorldBorder.Settings> legacyWorldBorderSettings = worldProperties.getLegacyWorldBorderSettings();
         if (legacyWorldBorderSettings.isPresent()) {
            WorldBorder.Settings settings = legacyWorldBorderSettings.get();
            DimensionDataStorage dataStorage1 = serverLevel.getDataStorage();
@@ -575,6 +589,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
 
            worldProperties.setLegacyWorldBorderSettings(Optional.empty());
         }
+        */
 
         // TODO
         // serverLevel.getWorldBorder().world = serverLevel;
@@ -585,65 +600,83 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
     
     @Override
     public void createLevel(
-    	      LevelStem levelStem, PaperWorldLoader.WorldLoadingInfo loadingInfo, LevelStorageSource.LevelStorageAccess levelStorageAccess, PrimaryLevelData serverLevelData
+    	      LevelStem levelStem, PaperWorldLoader.WorldLoadingInfoAndData loadingInfo, LevelDataAndDimensions.WorldDataAndGenSettings serverLevelData
     	   ) {
     	
     	MinecraftServer server = (MinecraftServer) (Object) this;
     	
-    	WorldOptions worldOptions = server.getWorldGenSettings().options(); // serverLevelData.worldGenOptions();
+    	final WorldOptions worldOptions = serverLevelData.genSettings().options();
+    	final ResourceKey<Level> dimensionKey = loadingInfo.info().dimensionKey();
+    	final SavedDataStorage savedDataStorage = new SavedDataStorage(this.storageSource.getDimensionPath(dimensionKey).resolve(LevelResource.DATA.id()), server.getFixerUpper(), server.registryAccess());
+    	savedDataStorage.set(WorldGenSettings.TYPE, new WorldGenSettings(serverLevelData.genSettings().options(), serverLevelData.genSettings().dimensions()));
+
+
         long seed = worldOptions.seed();
         long l = BiomeManager.obfuscateSeed(seed);
         List<CustomSpawner> list = ImmutableList.of(
-           new PhantomSpawner(), new PatrolSpawner(), new CatSpawner(), new VillageSiege(), new WanderingTraderSpawner(serverLevelData)
+           new PhantomSpawner(), new PatrolSpawner(), new CatSpawner(), new VillageSiege(), new WanderingTraderSpawner(savedDataStorage) // Paper - save to world data
+        );
+        
+        final org.bukkit.generator.ChunkGenerator chunkGenerator = CraftServer.INSTANCE.getGenerator(loadingInfo.data().bukkitName());
+        org.bukkit.generator.BiomeProvider biomeProvider = CraftServer.INSTANCE.getBiomeProvider(loadingInfo.data().bukkitName());
+
+        final org.bukkit.generator.WorldInfo worldInfo = new org.bukkit.craftbukkit.generator.CraftWorldInfo(
+        		loadingInfo.data().bukkitName(),
+        		org.bukkit.craftbukkit.util.CraftNamespacedKey.fromMinecraft(loadingInfo.info().dimensionKey().identifier()),
+        		serverLevelData.genSettings().options().seed(),
+        		serverLevelData.data().enabledFeatures(),
+        		loadingInfo.info().environment(),
+        		levelStem.type().value(),
+        		levelStem.generator(),
+        		server.registryAccess(),
+        		loadingInfo.data().uuid()
         );
 
-        // ChunkGenerator chunkGenerator = this..getGenerator(loadingInfo.name());
-        // BiomeProvider biomeProvider = this.server.getBiomeProvider(loadingInfo.name());
-
-        WorldInfo worldInfo = new CraftWorldInfo(
-           serverLevelData,
-           levelStorageAccess,
-           Environment.getEnvironment(loadingInfo.dimension()),
-           levelStem.type().value(),
-           levelStem.generator(),
-           server.registryAccess()
-        );
-        /*
         if (biomeProvider == null && chunkGenerator != null) {
-           biomeProvider = chunkGenerator.getDefaultBiomeProvider(worldInfo);
+        	biomeProvider = chunkGenerator.getDefaultBiomeProvider(worldInfo);
         }
-        */
+        
+        /**
+         * 
+         	public ServerLevel(final MinecraftServer server, final Executor executor, final LevelStorageAccess levelStorage,
+			final ServerLevelData levelData, final ResourceKey<Level> dimension, final LevelStem levelStem,
+			final boolean isDebug, final long biomeZoomSeed, final List<CustomSpawner> customSpawners,
+			final boolean tickTime) {
+         */
 
-        ResourceKey<Level> dimensionKey = ResourceKey.create(Registries.DIMENSION, loadingInfo.stemKey().identifier());
+        // loadingInfo.data().levelOverrides()
+        
         ServerLevel serverLevel;
-        if (loadingInfo.stemKey() == LevelStem.OVERWORLD) {
+        if (loadingInfo.info().stemKey() == LevelStem.OVERWORLD) {
            serverLevel = new ServerLevel(
               server,
               server.executor,
-              levelStorageAccess,
-              serverLevelData,
+              this.storageSource,
+              loadingInfo.data().levelOverrides(),
               dimensionKey,
               levelStem,
-              serverLevelData.isDebugWorld(),
+              serverLevelData.data().isDebugWorld(),
               l,
               list,
-              true,
-              null
+              true//,
+              // loadingInfo.info().stemKey(),
+              //loadingInfo.info().environment(),
+              //null
               /* ,
               Environment.getEnvironment(loadingInfo.dimension()),
               chunkGenerator,
               biomeProvider */
            );
-           this.worldData = serverLevelData;
+           this.worldData = serverLevelData.data();
            this.worldData.setGameType(((DedicatedServer)(Object)this).getProperties().gameMode.get());
-           DimensionDataStorage dataStorage = serverLevel.getDataStorage();
-           // this.initScoreboard(dataStorage);
+           // DimensionDataStorage dataStorage = serverLevel.getDataStorage();
+
+           this.getServer().getScoreboard().load(((ScoreboardSaveData)savedDataStorage.computeIfAbsent(ScoreboardSaveData.TYPE)).getData());
            
-           
-           this.getServer().getScoreboard().load(((ScoreboardSaveData)dataStorage.computeIfAbsent(ScoreboardSaveData.TYPE)).getData());
-           
-           this.commandStorage = new CommandStorage(dataStorage);
+           this.commandStorage = new CommandStorage(savedDataStorage);
            CraftServer.INSTANCE.scoreboardManager = new CraftScoreboardManager(server, serverLevel.getScoreboard());
+           
+           // server.stopwatches = this.savedDataStorage.computeIfAbsent(Stopwatches.TYPE);
         } else {
            List<CustomSpawner> spawners;
            
@@ -658,19 +691,14 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
            serverLevel = new ServerLevel(
               server,
               server.executor,
-              levelStorageAccess,
-              serverLevelData,
+              this.storageSource,
+              loadingInfo.data().levelOverrides(),
               dimensionKey,
               levelStem,
               this.worldData.isDebugWorld(),
               l,
               spawners,
-              true,
-              server.overworld().getRandomSequences()/*,
-              Environment.getEnvironment(loadingInfo.dimension()),
-              chunkGenerator,
-              biomeProvider
-              */
+              true
            );
         }
 

@@ -13,6 +13,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
+import org.cardboardpowered.bridge.level.ILevelSettings;
 import org.cardboardpowered.bridge.world.level.storage.PrimaryLevelDataBridge;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,8 +31,9 @@ public class PrimaryLevelDataMixin implements PrimaryLevelDataBridge {
     @Shadow
     private LevelSettings settings;
 
-    @Unique
-    private static final String PAPER_RESPAWN_DIMENSION = "paperSpawnDimension"; // Paper
+    // moved to PrimaryLevelDataBridge
+    // private static final String PAPER_RESPAWN_DIMENSION = "paperSpawnDimension"; // Paper
+
     @Unique
     public net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> respawnDimension = net.minecraft.world.level.Level.OVERWORLD; // Paper
 
@@ -68,9 +70,9 @@ public class PrimaryLevelDataMixin implements PrimaryLevelDataBridge {
 
     @Override
     public void checkName(String name) {
-    	if (!this.settings.levelName.equals(name)) {
-    		this.settings.levelName = name;
-    	}
+    	if (!this.settings.levelName().equals(name)) {
+            this.settings = ((ILevelSettings) this.settings).cardboard$withLevelName(name);
+        }
     }
 
     @Override
@@ -85,7 +87,7 @@ public class PrimaryLevelDataMixin implements PrimaryLevelDataBridge {
 
     @Inject(method = "parse", at = @At("RETURN"))
     private static <T> void parsePaper(Dynamic<T> dynamic, LevelSettings levelSettings, PrimaryLevelData.SpecialWorldProperty specialWorldProperty, WorldOptions worldOptions, Lifecycle lifecycle, CallbackInfoReturnable<PrimaryLevelData> cir) {
-        ((PrimaryLevelDataBridge)cir.getReturnValue()).cardboard$setRespawnDimension(dynamic.get(PAPER_RESPAWN_DIMENSION)
+        ((PrimaryLevelDataBridge)cir.getReturnValue()).cardboard$setRespawnDimension(dynamic.get(PrimaryLevelDataBridge.PAPER_RESPAWN_DIMENSION)
                 .read(net.minecraft.world.level.Level.RESOURCE_KEY_CODEC)
                 .result()
                 .orElse(cir.getReturnValue().getRespawnData().dimension()));
@@ -93,6 +95,6 @@ public class PrimaryLevelDataMixin implements PrimaryLevelDataBridge {
 
     @Inject(method = "setTagData", at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/CompoundTag;store(Ljava/lang/String;Lcom/mojang/serialization/Codec;Ljava/lang/Object;)V", ordinal = 0, shift = At.Shift.AFTER))
     private void setTagDataPaper(RegistryAccess registryAccess, CompoundTag tag, CompoundTag compoundTag2, CallbackInfo ci) {
-        tag.store(PAPER_RESPAWN_DIMENSION, net.minecraft.world.level.Level.RESOURCE_KEY_CODEC, this.respawnDimension); // Paper
+        tag.store(PrimaryLevelDataBridge.PAPER_RESPAWN_DIMENSION, net.minecraft.world.level.Level.RESOURCE_KEY_CODEC, this.respawnDimension); // Paper
     }
 }

@@ -1,7 +1,7 @@
 import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDependency
 
 plugins {
-    id 'net.fabricmc.fabric-loom' version '1.15-SNAPSHOT'
+    id 'net.fabricmc.fabric-loom' version '1.16-SNAPSHOT'
     id 'maven-publish'
     id 'com.gradleup.shadow' version '8.3.6'
     id 'java-library'
@@ -222,53 +222,14 @@ shadowJar {
 modrinth {
     token = System.getenv("MODRINTH") // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
     projectId = "MLYQ9VGP"
-    versionNumber = "TESTING-" + System.env.BUILD_NUMBER
+    versionNumber = "26.1-" + System.env.BUILD_NUMBER
     versionType = "beta"
     uploadFile = jar
-    gameVersions = ["1.21.11"]
+    gameVersions = ["26.1.2"]
     loaders = ["fabric"]
 }
 
 
-ext.getURLofDependencyArtifact = {
-	project.configurations.modImplementation.dependencies.each { dep ->
-		if (dep.name.contains('paper')) {
-			println(dep.name)
-			println(dep)
-			def urls = [
-				'https://repo.papermc.io/repository/maven-snapshots/',
-				'https://repo.codemc.io/repository/nms-local/',
-				'https://repo.codemc.io/repository/maven-releases/'
-			]
-
-			for (String url : urls) {
-				def jarUrl = String.format("%s%s/%s/%s/%s-%s.jar", url.toString(), dep.group.replace('.', '/'), dep.name, dep.version, dep.name, dep.version)
-				try {
-					def jarfile = new URL(jarUrl)
-					def inStream = jarfile.openStream();
-					if (inStream != null) {
-						println(String.format("%s:%s:%s", dep.group, dep.name, dep.version) + " -> " + jarUrl)
-						return jarUrl
-					}
-				} catch (Exception ignored) {
-				}
-			}
-		}
-	}
-}
-
-ext.downloadPaperFile = {
-	def fileURL = new URL("https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/" + PAPER_VER_A +"/paper-api-" + PAPER_VER_B + ".jar")
-    // def fileURL = new URL("https://web.archive.org/web/20250518123011/https://repo.papermc.io/repository/maven-snapshots/io/papermc/paper/paper-api/1.21.4-R0.1-SNAPSHOT/paper-api-1.21.4-R0.1-20250511.205801-225.jar")
-    def localFile = file("repos/tempp/paper-api-" + PAPER_VER_B + ".jar")
-
-    localFile.getParentFile().mkdirs()
-    fileURL.withInputStream { i ->
-		localFile.withOutputStream { o ->
-			o << i
-		}
-    }
-}
 
 // Make sure paper-api on the repo is kept updated.
 publishing {

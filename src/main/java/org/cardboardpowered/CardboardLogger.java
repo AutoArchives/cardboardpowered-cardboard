@@ -14,6 +14,10 @@ public class CardboardLogger {
 	public static Logger getSLF4J() {
 		return LOGGER;
 	}
+	
+	public static Logger getSLF4J(String prefix) {
+		return LoggerFactory.getLogger("Cardboard|" + prefix);
+	}
 
 	private String prefix;
 	

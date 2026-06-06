@@ -26,9 +26,13 @@ import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.plugin.PluginLoadOrder;
 import org.bukkit.plugin.java.JavaPluginLoader;
 import org.cardboardpowered.CardboardConfig;
+import org.cardboardpowered.CardboardLoadHolder;
+import org.cardboardpowered.bridge.server.MinecraftServerBridge;
 import org.cardboardpowered.bridge.server.dedicated.DedicatedServerBridge;
 import org.cardboardpowered.impl.util.CardboardMagicNumbers;
 import org.cardboardpowered.mixin.server.MCServerMixin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -47,12 +51,17 @@ import net.minecraft.server.dedicated.DedicatedServer;
 @Mixin(DedicatedServer.class)
 public abstract class DedicatedServerMixin extends MCServerMixin implements DedicatedServerBridge {
 
+	private static Logger cb$LOGGER = LoggerFactory.getLogger("Cardboard|Preload");
+	
 	@Shadow
 	@Final
 	private List<ConsoleInput> consoleInput;
 
 	@Inject(at = @At(value = "HEAD"), method = "initServer()Z")
 	private void initVar(CallbackInfoReturnable<Boolean> callbackInfo) {
+		cb$LOGGER.info("Setting MinecraftServerBridge's instance of DataLoadContext " + this);
+		((MinecraftServerBridge) (Object) this).cardboard$worldLoaderContext( CardboardLoadHolder.worldLoader.get() );
+		
 		CraftServer.server = (DedicatedServer) (Object) this;
 	}
 

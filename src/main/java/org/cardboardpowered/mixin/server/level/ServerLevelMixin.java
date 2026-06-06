@@ -54,14 +54,14 @@ public class ServerLevelMixin extends LevelMixin implements ServerLevelBridge {
 	private LevelLoadListener cardboard$levelLoadListener;
 
 	@Inject(method = "<init>", at = @At(value = "RETURN"))
-    private void banner$initWorldServer(
+    private void cardboard$initWorldServer(
     		MinecraftServer minecraftserver,
     		Executor executor,
     		LevelStorageSource.LevelStorageAccess convertable_conversionsession,
     		ServerLevelData iworlddataserver, ResourceKey<Level> resourcekey,
     		LevelStem worlddimension, // WorldGenerationProgressListener worldloadlistener,
     		boolean flag, long i2, List<CustomSpawner> list, boolean flag1,
-    		RandomSequences randomsequences, CallbackInfo ci
+    		CallbackInfo ci
     	) {
 		
 		if (CardboardConfig.DEBUG_OTHER) {

@@ -228,7 +228,9 @@
     "world.level.storage.loot.functions.EnchantedCountIncreaseFunctionMixin",
     "world.level.storage.loot.parameters.LootContextParamsMixin",
     "world.level.storage.loot.predicates.ExplosionConditionMixin",
-    "world.level.storage.loot.predicates.LootItemRandomChanceWithEnchantedBonusConditionMixin"
+    "world.level.storage.loot.predicates.LootItemRandomChanceWithEnchantedBonusConditionMixin",
+    "MixinDataFixTypes",
+    "server.MixinDataLoadContext"
   ],
   "injectors": {
     "defaultRequire": 1

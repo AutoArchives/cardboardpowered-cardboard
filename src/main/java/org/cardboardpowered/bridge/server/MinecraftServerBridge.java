@@ -20,6 +20,7 @@ import java.util.Queue;
 import org.bukkit.craftbukkit.CraftServer;
 
 import io.papermc.paper.world.PaperWorldLoader.WorldLoadingInfo;
+import io.papermc.paper.world.PaperWorldLoader.WorldLoadingInfoAndData;
 import net.minecraft.commands.Commands;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -27,6 +28,7 @@ import net.minecraft.server.WorldLoader.DataLoadContext;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldOptions;
+import net.minecraft.world.level.storage.LevelDataAndDimensions;
 import net.minecraft.world.level.storage.LevelStorageSource.LevelStorageAccess;
 import net.minecraft.world.level.storage.PlayerDataStorage;
 import net.minecraft.world.level.storage.PrimaryLevelData;
@@ -77,8 +79,9 @@ public interface MinecraftServerBridge {
 	 * @implNote Paper MinecraftServer.java.patch
 	 * @since 1.21.9
 	 */
-	void createLevel(LevelStem levelStem, WorldLoadingInfo loadingInfo, LevelStorageAccess levelStorageAccess,
-			PrimaryLevelData serverLevelData);
+	void createLevel(LevelStem levelStem, WorldLoadingInfoAndData loadingInfo, LevelDataAndDimensions.WorldDataAndGenSettings serverLevelData);
 
     boolean cardboard$isDebugging();
+
+	void cardboard$worldLoaderContext(DataLoadContext value);
 }
