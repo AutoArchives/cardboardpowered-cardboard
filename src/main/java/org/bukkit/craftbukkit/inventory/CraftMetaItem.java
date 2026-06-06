@@ -13,6 +13,10 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DynamicOps;
+
+import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.registry.set.PaperRegistrySets;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -42,6 +46,7 @@ import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentPatch;
@@ -61,7 +66,6 @@ import net.minecraft.util.Unit;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.AdventureModePredicate;
-import net.minecraft.world.item.EitherHolder;
 import net.minecraft.world.item.JukeboxPlayable;
 import net.minecraft.world.item.JukeboxSongs;
 import net.minecraft.world.item.Rarity;
@@ -95,6 +99,7 @@ import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
 import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.configuration.ConfigSerializationUtil;
 import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey.Specific;
 import org.bukkit.craftbukkit.inventory.components.CraftCustomModelDataComponent;
@@ -292,7 +297,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     private boolean unbreakable;
     private Boolean enchantmentGlintOverride;
     private boolean glider;
-    private TagKey<net.minecraft.world.damagesource.DamageType> damageResistant;
+    // private TagKey<net.minecraft.world.damagesource.DamageType> damageResistant;
+    private HolderSet<net.minecraft.world.damagesource.DamageType> damageResistantTypes;
     private Integer maxStackSize;
     private ItemRarity rarity;
     private ItemStack useRemainder;
@@ -384,7 +390,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         this.unbreakable = meta.unbreakable;
         this.enchantmentGlintOverride = meta.enchantmentGlintOverride;
         this.glider = meta.glider;
-        this.damageResistant = meta.damageResistant;
+        this.damageResistantTypes = meta.damageResistantTypes;
         this.maxStackSize = meta.maxStackSize;
         this.rarity = meta.rarity;
         if (meta.hasUseRemainder()) {
@@ -475,8 +481,9 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         CraftMetaItem.getOrEmpty(tag, CraftMetaItem.GLIDER).ifPresent((u) -> {
             this.glider = true;
         });
-        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.DAMAGE_RESISTANT).ifPresent((tags) -> {
-            this.damageResistant = tags.types();
+        CraftMetaItem.getOrEmpty(tag, CraftMetaItem.DAMAGE_RESISTANT).ifPresent((damageResistant) -> {
+            // this.damageResistant = tags.types();
+            this.damageResistantTypes = damageResistant.types();
         });
         CraftMetaItem.getOrEmpty(tag, CraftMetaItem.MAX_STACK_SIZE).ifPresent((i) -> {
             this.maxStackSize = i;
@@ -485,7 +492,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             this.rarity = ItemRarity.valueOf(enumItemRarity.name());
         });
         CraftMetaItem.getOrEmpty(tag, CraftMetaItem.USE_REMAINDER).ifPresent((remainder) -> {
-            this.useRemainder = CraftItemStack.asCraftMirror(remainder.convertInto());
+            this.useRemainder = CraftItemStack.asCraftMirror(remainder.convertInto().create());
         });
         CraftMetaItem.getOrEmpty(tag, CraftMetaItem.USE_COOLDOWN).ifPresent((cooldown) -> {
             this.useCooldown = new CraftUseCooldownComponent(cooldown);
@@ -987,7 +994,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
 
         if (this.hasDamageResistant()) {
-            tag.put(CraftMetaItem.DAMAGE_RESISTANT, new DamageResistant(this.damageResistant));
+            tag.put(CraftMetaItem.DAMAGE_RESISTANT, new DamageResistant(this.damageResistantTypes));
         }
 
         if (this.hasMaxStackSize()) {
@@ -999,7 +1006,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
 
         if (this.hasUseRemainder()) {
-            tag.put(CraftMetaItem.USE_REMAINDER, new UseRemainder(CraftItemStack.asNMSCopy(this.useRemainder)));
+        	tag.put(CraftMetaItem.USE_REMAINDER, new UseRemainder(CraftItemStack.asTemplate(this.useRemainder)));
         }
 
         if (this.hasUseCooldown()) {
@@ -1544,27 +1551,36 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public boolean isFireResistant() {
-        return this.hasDamageResistant() && this.damageResistant == net.minecraft.tags.DamageTypeTags.IS_FIRE;
+    	return this.hasDamageResistant() && this.damageResistantTypes.unwrapKey().map(key -> key == net.minecraft.tags.DamageTypeTags.IS_FIRE).orElse(false);
     }
 
     @Override
     public void setFireResistant(boolean fireResistant) {
-        this.damageResistant = net.minecraft.tags.DamageTypeTags.IS_FIRE;
+    	if (fireResistant) {
+            this.damageResistantTypes = CraftRegistry.getMinecraftRegistry(Registries.DAMAGE_TYPE).getOrThrow(net.minecraft.tags.DamageTypeTags.IS_FIRE);
+        } else if (this.isFireResistant()) {
+            this.damageResistantTypes = null;
+        }
     }
 
     @Override
     public boolean hasDamageResistant() {
-        return this.damageResistant != null;
+    	return this.damageResistantTypes != null;
     }
 
     @Override
     public Tag<DamageType> getDamageResistant() {
-        return (this.hasDamageResistant()) ? Bukkit.getTag(DamageTypeTags.REGISTRY_DAMAGE_TYPES, CraftNamespacedKey.fromMinecraft(this.damageResistant.location()), DamageType.class) : null;
+    	if (!this.hasDamageResistant()) {
+            return null;
+        }
+        return this.damageResistantTypes.unwrapKey()
+            .map(tagKey -> new CraftDamageTag(CraftRegistry.getMinecraftRegistry(Registries.DAMAGE_TYPE), tagKey))
+            .orElse(null);
     }
 
     @Override
     public void setDamageResistant(Tag<DamageType> tag) {
-        this.damageResistant = (tag != null) ? ((CraftDamageTag) tag).getHandle().key() : null;
+    	this.damageResistantTypes = (tag != null) ? ((CraftDamageTag) tag).getHandle() : null;
     }
 
     @Override
@@ -1971,7 +1987,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                 && (this.isUnbreakable() == meta.isUnbreakable())
                 && (this.hasEnchantmentGlintOverride() ? meta.hasEnchantmentGlintOverride() && this.enchantmentGlintOverride.equals(meta.enchantmentGlintOverride) : !meta.hasEnchantmentGlintOverride())
                 && (this.glider == meta.glider)
-                && (this.hasDamageResistant() ? meta.hasDamageResistant() && this.damageResistant.equals(meta.damageResistant) : !meta.hasDamageResistant())
+                && (this.hasDamageResistant() ? meta.hasDamageResistant() && this.damageResistantTypes.equals(meta.damageResistantTypes) : !meta.hasDamageResistant())
                 && (this.hasMaxStackSize() ? meta.hasMaxStackSize() && this.maxStackSize.equals(meta.maxStackSize) : !meta.hasMaxStackSize())
                 && (this.rarity == meta.rarity)
                 && (this.hasUseRemainder() ? meta.hasUseRemainder() && this.useRemainder.equals(meta.useRemainder) : !meta.hasUseRemainder())
@@ -2024,7 +2040,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         hash = 61 * hash + (this.isUnbreakable() ? 1231 : 1237);
         hash = 61 * hash + (this.hasEnchantmentGlintOverride() ? this.enchantmentGlintOverride.hashCode() : 0);
         hash = 61 * hash + (this.isGlider() ? 1231 : 1237);
-        hash = 61 * hash + (this.hasDamageResistant() ? this.damageResistant.hashCode() : 0);
+        hash = 61 * hash + (this.hasDamageResistant() ? this.damageResistantTypes.hashCode() : 0);
         hash = 61 * hash + (this.hasMaxStackSize() ? this.maxStackSize.hashCode() : 0);
         hash = 61 * hash + (this.hasRarity() ? this.rarity.hashCode() : 0);
         hash = 61 * hash + (this.hasUseRemainder() ? this.useRemainder.hashCode() : 0);
@@ -2074,7 +2090,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             clone.unbreakable = this.unbreakable;
             clone.enchantmentGlintOverride = this.enchantmentGlintOverride;
             clone.glider = this.glider;
-            clone.damageResistant = this.damageResistant;
+            clone.damageResistantTypes = this.damageResistantTypes;
             clone.maxStackSize = this.maxStackSize;
             clone.rarity = this.rarity;
             if (this.hasUseRemainder()) {
@@ -2187,7 +2203,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
 
         if (this.hasDamageResistant()) {
-            builder.put(CraftMetaItem.DAMAGE_RESISTANT.BUKKIT, this.damageResistant.location().toString());
+        	ConfigSerializationUtil.setHolderSet(builder, CraftMetaItem.DAMAGE_RESISTANT.BUKKIT, this.damageResistantTypes);
+            // builder.put(CraftMetaItem.DAMAGE_RESISTANT.BUKKIT, this.damageResistantTypes.location().toString());
         }
 
         if (this.hasMaxStackSize()) {
@@ -2477,10 +2494,9 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     protected static <T> Optional<? extends T> getOrEmpty(DataComponentPatch tag, ItemMetaKeyType<T> type) {
         return getOrEmpty(tag, type.TYPE);
     }
-
-    protected static <T> Optional<? extends T> getOrEmpty(final DataComponentPatch tag, final DataComponentType<T> type) {
-        Optional<? extends T> result = tag.get(type);
-        return (result != null) ? result : Optional.empty();
+    
+    protected static <T> Optional<? extends T> getOrEmpty(final DataComponentPatch patch, final DataComponentType<T> type) {
+        return Optional.ofNullable(patch.get(net.minecraft.core.component.DataComponentMap.EMPTY, type));
     }
 
     private static class EnchantmentMap extends java.util.TreeMap<org.bukkit.enchantments.Enchantment, Integer> {

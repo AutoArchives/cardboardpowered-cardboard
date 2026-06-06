@@ -13,6 +13,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import org.bukkit.craftbukkit.CraftRegistry;
 
+import com.google.common.collect.ImmutableMap;
+
 public final class ConfigSerializationUtil {
     public static String getString(Map<?, ?> map, String key, boolean nullable) {
         return ConfigSerializationUtil.getObject(String.class, map, key, nullable);
@@ -40,8 +42,21 @@ public final class ConfigSerializationUtil {
         throw new IllegalArgumentException(key + "(" + String.valueOf(object) + ") is not a valid " + String.valueOf(clazz));
     }
 
+    /*
     public static void setHolderSet(Map<String, Object> result, String key, HolderSet<?> holders) {
         holders.unwrap().ifLeft(tag -> result.put(key, "#" + tag.location().toString())).ifRight(list -> result.put(key, list.stream().map(entry -> entry.unwrapKey().orElseThrow().identifier().toString()).toList()));
+    }*/
+    
+    public static void setHolderSet(Map<String, Object> result, String key, HolderSet<?> holders) {
+        holders.unwrap()
+            .ifLeft(tag -> result.put(key, "#" + tag.location().toString())) // Tag
+            .ifRight(list -> result.put(key, list.stream().map((entry) -> entry.unwrapKey().orElseThrow().identifier().toString()).toList())); // List
+    }
+
+    public static void setHolderSet(ImmutableMap.Builder<String, Object> result, String key, HolderSet<?> holders) {
+        holders.unwrap()
+            .ifLeft(tag -> result.put(key, "#" + tag.location().toString())) // Tag
+            .ifRight(list -> result.put(key, list.stream().map((entry) -> entry.unwrapKey().orElseThrow().identifier().toString()).toList())); // List
     }
 
     public static <T> HolderSet<T> getHolderSet(Object from, ResourceKey<Registry<T>> registryKey) {

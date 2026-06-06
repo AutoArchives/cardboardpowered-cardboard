@@ -14,22 +14,22 @@ public record PaperAttackRange(
 
     @Override
     public float minReach() {
-        return this.impl.minRange();
+        return this.impl.minReach();
     }
 
     @Override
     public float maxReach() {
-        return this.impl.maxRange();
+        return this.impl.maxReach();
     }
 
     @Override
     public float minCreativeReach() {
-        return this.impl.minCreativeRange();
+        return this.impl.minCreativeReach();
     }
 
     @Override
     public float maxCreativeReach() {
-        return this.impl.maxCreativeRange();
+        return this.impl.maxCreativeReach();
     }
 
     @Override
@@ -45,10 +45,10 @@ public record PaperAttackRange(
     static final class BuilderImpl implements Builder {
         public static final net.minecraft.world.item.component.AttackRange CODEC_DEFAULT = new net.minecraft.world.item.component.AttackRange(0.0F, 3.0F, 0.0F, 5.0F, 0.3F, 1.0F); // Paper - add back defaults instance
 
-        private float minReach = CODEC_DEFAULT.minRange();
-        private float maxReach = CODEC_DEFAULT.maxRange();
-        private float minCreativeReach = CODEC_DEFAULT.minCreativeRange();
-        private float maxCreativeReach = CODEC_DEFAULT.maxCreativeRange();
+        private float minReach = CODEC_DEFAULT.minReach();
+        private float maxReach = CODEC_DEFAULT.maxReach();
+        private float minCreativeReach = CODEC_DEFAULT.minCreativeReach();
+        private float maxCreativeReach = CODEC_DEFAULT.maxCreativeReach();
         private float hitboxMargin = CODEC_DEFAULT.hitboxMargin();
         private float mobFactor = CODEC_DEFAULT.mobFactor();
 

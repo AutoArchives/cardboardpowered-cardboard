@@ -11,7 +11,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.phys.AABB;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -49,7 +49,7 @@ public class EndCrystalItemMixin {
             entityendercrystal.setShowBottom(false);
             if (CraftEventFactory.callEntityPlaceEvent(itemactioncontext, entityendercrystal).isCancelled()) return InteractionResult.FAIL;
             world.addFreshEntity(entityendercrystal);
-            EndDragonFight enderdragonbattle = ((ServerLevel) world).getDragonFight();
+            EnderDragonFight enderdragonbattle = ((ServerLevel) world).getDragonFight();
             if (enderdragonbattle != null) enderdragonbattle.tryRespawn();
         }
         itemactioncontext.getItemInHand().shrink(1);

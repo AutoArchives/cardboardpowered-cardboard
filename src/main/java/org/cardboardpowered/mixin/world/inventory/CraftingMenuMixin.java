@@ -74,7 +74,7 @@ public class CraftingMenuMixin extends AbstractContainerMenuMixin {
             if (optional.isPresent()) {
                 RecipeHolder<CraftingRecipe> recipecrafting = optional.get();
                 if (inventorycraftresult.setRecipeUsed(entityplayer, recipecrafting))
-                    itemstack = recipecrafting.value().assemble(craftinginput, world.registryAccess());
+                    itemstack = recipecrafting.value().assemble(craftinginput);
             }
             itemstack = CraftEventFactory.callPreCraftEvent(inventorycrafting, inventorycraftresult, itemstack, ((AbstractContainerMenuBridge)container).getBukkitView(), false);
             inventorycraftresult.setItem(0, itemstack);

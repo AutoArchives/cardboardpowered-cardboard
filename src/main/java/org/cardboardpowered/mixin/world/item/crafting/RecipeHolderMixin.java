@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.Mixin;
 public class RecipeHolderMixin implements RecipeHolderBridge {
 	// Campfire
     public org.bukkit.inventory.Recipe toBukkitRecipe(CampfireCookingRecipe thiz, NamespacedKey id) {
-        CraftItemStack result = CraftItemStack.asCraftMirror(thiz.result());
+        CraftItemStack result = CraftItemStack.asCraftMirror(thiz.result().create());
         CraftCampfireRecipe recipe = new CraftCampfireRecipe(id, result, CraftRecipe.toBukkit(thiz.input), thiz.experience, thiz.cookingTime());
         recipe.setGroup(thiz.group());
         recipe.setCategory(CraftRecipe.getCategory(thiz.category()));
