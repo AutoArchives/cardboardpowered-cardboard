@@ -365,6 +365,7 @@ public class CraftServer implements Server {
         // CardboardMod.registerPotionEffectType();
 
         // Register Registeries
+        this.logger.info("Injecting into Bukkit registries.");
         RegistryUtil.inject_into_bukkit_registry(nms);
     }
 

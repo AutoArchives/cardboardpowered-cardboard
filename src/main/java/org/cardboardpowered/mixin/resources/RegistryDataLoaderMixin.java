@@ -29,6 +29,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 @Mixin(RegistryDataLoader.class)
 public class RegistryDataLoaderMixin {
 
+	/*
     @Inject(
     		at = @At(value = "RETURN"),
     		method = "loadContentsFromManager(Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/resources/RegistryOps$RegistryInfoLookup;Lnet/minecraft/core/WritableRegistry;Lcom/mojang/serialization/Decoder;Ljava/util/Map;)V",
@@ -44,6 +45,7 @@ public class RegistryDataLoaderMixin {
     	 PaperRegistryAccess.instance().lockReferenceHolders(registry.key());
          // PaperRegistryListenerManager.INSTANCE.runFreezeListeners(registry.getKey(), conversions);
     }
+    */
     
     /**
      * @author Cardboard
@@ -80,10 +82,12 @@ public class RegistryDataLoaderMixin {
         };
     }
     
+    /*
     @Shadow
     private static <T> RegistryOps.RegistryInfo<T> createInfoForNewRegistry(WritableRegistry<T> registry) {
         return new RegistryOps.RegistryInfo<T>(registry, registry.createRegistrationLookup(), registry.registryLifecycle());
     }
+    */
 
     @Shadow
     private static <T> RegistryOps.RegistryInfo<T> createInfoForContextRegistry(HolderLookup.RegistryLookup<T> registry) {

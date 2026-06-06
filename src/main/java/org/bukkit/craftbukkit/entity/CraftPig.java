@@ -5,6 +5,7 @@ import io.papermc.paper.registry.HolderableBase;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.animal.pig.PigSoundVariant;
 import net.minecraft.world.entity.animal.pig.PigVariant;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -93,6 +94,21 @@ public class CraftPig extends CraftAnimals implements Pig {
         }
 
         public CraftVariant(final Holder<PigVariant> holder) {
+            super(holder);
+        }
+    }
+    
+    public static class CraftSoundVariant extends HolderableBase<PigSoundVariant> implements SoundVariant {
+
+        public static SoundVariant minecraftHolderToBukkit(Holder<PigSoundVariant> minecraft) {
+            return CraftRegistry.minecraftHolderToBukkit(minecraft, Registries.PIG_SOUND_VARIANT);
+        }
+
+        public static Holder<PigSoundVariant> bukkitToMinecraftHolder(SoundVariant bukkit) {
+            return CraftRegistry.bukkitToMinecraftHolder(bukkit);
+        }
+
+        public CraftSoundVariant(final Holder<PigSoundVariant> holder) {
             super(holder);
         }
     }

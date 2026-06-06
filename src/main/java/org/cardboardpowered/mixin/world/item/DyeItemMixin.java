@@ -1,5 +1,6 @@
 package org.cardboardpowered.mixin.world.item;
 
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,9 +22,6 @@ import org.cardboardpowered.bridge.world.entity.EntityBridge;
 @Mixin(value = DyeItem.class, priority = 900)
 public class DyeItemMixin {
 
-    @Shadow
-    public DyeColor dyeColor;
-
     /**
      * @reason .
      * @author .
@@ -33,10 +31,12 @@ public class DyeItemMixin {
     public InteractionResult interactLivingEntity(ItemStack itemstack, Player entityhuman, LivingEntity entityliving, InteractionHand enumhand) {
         if (!(entityliving instanceof Sheep)) return InteractionResult.PASS;
 
+        DyeColor dyeColor = (DyeColor) itemstack.get(DataComponents.DYE);
+        
         Sheep entitysheep = (Sheep) entityliving;
-        if (entitysheep.isAlive() && !entitysheep.isSheared() && entitysheep.getColor() != this.dyeColor) {
+        if (entitysheep.isAlive() && !entitysheep.isSheared() && entitysheep.getColor() != dyeColor) {
             if (!entityhuman.level().isClientSide()) {
-                byte bColor = (byte) this.dyeColor.getId();
+                byte bColor = (byte) dyeColor.getId();
                 SheepDyeWoolEvent event = new SheepDyeWoolEvent((org.bukkit.entity.Sheep) ((EntityBridge)entitysheep).getBukkitEntity(), org.bukkit.DyeColor.getByWoolData(bColor));
                 Bukkit.getServer().getPluginManager().callEvent(event);
                 if (event.isCancelled()) return InteractionResult.PASS;

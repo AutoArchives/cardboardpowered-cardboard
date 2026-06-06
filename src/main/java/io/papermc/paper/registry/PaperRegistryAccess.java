@@ -17,6 +17,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
+
 import org.bukkit.Keyed;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -43,7 +45,7 @@ implements RegistryAccess {
     
     @Deprecated(forRemoval=true)
     public <T extends Keyed> org.bukkit.Registry<T> getRegistry(final Class<T> type) {
-        final RegistryKey<T> registryKey = byType(type);
+    	final RegistryKey<T> registryKey = byType(type);
         // If our mapping from Class -> RegistryKey did not contain the passed type it was either a completely invalid type or a registry
         // that merely exists as a SimpleRegistry in the org.bukkit.Registry type. We cannot return a registry for these, return null
         // as per method contract in Bukkit#getRegistry.
@@ -112,6 +114,33 @@ implements RegistryAccess {
             throw new IllegalArgumentException(String.valueOf(resourceKey) + " has already been created");
         }
     }
+    
+    public <M> void registerReloadableRegistry(final net.minecraft.core.Registry<M> registry) {
+        this.registerRegistry(registry, true);
+    }
+
+    public <M> void registerRegistry(final net.minecraft.core.Registry<M> registry) {
+        this.registerRegistry(registry, false);
+    }
+    
+    private <M, B extends Keyed, R extends org.bukkit.Registry<B>> void registerRegistry(final net.minecraft.core.Registry<M> registry, final boolean replace) {
+        final RegistryEntry<M, B> entry = PaperRegistries.getEntry(registry.key());
+        if (entry == null) { // skip registries that don't have API entries
+            return;
+        }
+        final RegistryHolder<B> registryHolder = (RegistryHolder<B>) this.registries.get(entry.apiKey());
+        if (registryHolder == null || replace) {
+            // if the holder doesn't exist yet, or is marked as "replaceable", put it in the map.
+            this.registries.put(entry.apiKey(), entry.createRegistryHolder(registry));
+        } else {
+            if (registryHolder instanceof RegistryHolder.Delayed<?, ?> && entry instanceof final DelayedRegistryEntry<M, B> delayedEntry) {
+                // if the registry holder is delayed, and the entry is marked as "delayed", then load the holder with the CraftRegistry instance that wraps the actual nms Registry.
+                ((RegistryHolder.Delayed<B, R>) registryHolder).loadFrom(delayedEntry, registry);
+            } else {
+                throw new IllegalArgumentException(registry.key() + " has already been created");
+            }
+        }
+    }
 
     @Deprecated
     @VisibleForTesting
@@ -129,5 +158,6 @@ implements RegistryAccess {
         CraftRegistry registry = (CraftRegistry)this.getRegistry(entry.apiKey());
         registry.lockReferenceHolders();
     }
+
 }
 

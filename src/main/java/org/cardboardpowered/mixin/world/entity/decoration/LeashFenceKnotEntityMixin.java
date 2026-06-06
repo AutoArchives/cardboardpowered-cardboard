@@ -16,6 +16,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 @MixinInfo(events = {"PlayerLeashEntityEvent", "PlayerUnleashEntityEvent"})
 @Mixin(value = LeashFenceKnotEntity.class, priority = 900)
@@ -30,7 +31,7 @@ public class LeashFenceKnotEntityMixin {
      * @reason PlayerLeashEntityEvent
      */
     @Overwrite
-    public InteractionResult interact(Player entityhuman, InteractionHand enumhand) {
+    public InteractionResult interact(Player entityhuman, InteractionHand enumhand, Vec3 location) {
         if (getBF().level().isClientSide()) return InteractionResult.SUCCESS;
 
         boolean flag = false;

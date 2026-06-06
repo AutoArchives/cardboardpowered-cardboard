@@ -9,6 +9,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.storage.PrimaryLevelData;
+
+import java.util.UUID;
+
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.event.weather.ThunderChangeEvent;
@@ -86,7 +89,7 @@ public class PrimaryLevelDataMixin implements PrimaryLevelDataBridge {
     }
 
     @Inject(method = "parse", at = @At("RETURN"))
-    private static <T> void parsePaper(Dynamic<T> dynamic, LevelSettings levelSettings, PrimaryLevelData.SpecialWorldProperty specialWorldProperty, WorldOptions worldOptions, Lifecycle lifecycle, CallbackInfoReturnable<PrimaryLevelData> cir) {
+    private static <T> void parsePaper(Dynamic<T> dynamic, LevelSettings levelSettings, PrimaryLevelData.SpecialWorldProperty specialWorldProperty, Lifecycle lifecycle, CallbackInfoReturnable<PrimaryLevelData> cir) {
         ((PrimaryLevelDataBridge)cir.getReturnValue()).cardboard$setRespawnDimension(dynamic.get(PrimaryLevelDataBridge.PAPER_RESPAWN_DIMENSION)
                 .read(net.minecraft.world.level.Level.RESOURCE_KEY_CODEC)
                 .result()
@@ -94,7 +97,7 @@ public class PrimaryLevelDataMixin implements PrimaryLevelDataBridge {
     }
 
     @Inject(method = "setTagData", at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/CompoundTag;store(Ljava/lang/String;Lcom/mojang/serialization/Codec;Ljava/lang/Object;)V", ordinal = 0, shift = At.Shift.AFTER))
-    private void setTagDataPaper(RegistryAccess registryAccess, CompoundTag tag, CompoundTag compoundTag2, CallbackInfo ci) {
+    private void setTagDataPaper(CompoundTag tag, UUID uuid, CallbackInfo ci) {
         tag.store(PrimaryLevelDataBridge.PAPER_RESPAWN_DIMENSION, net.minecraft.world.level.Level.RESOURCE_KEY_CODEC, this.respawnDimension); // Paper
     }
 }

@@ -964,3 +964,4 @@ accessible field net/minecraft/world/level/LevelSettings gameType Lnet/minecraft
 accessible field net/minecraft/world/level/LevelSettings difficultySettings Lnet/minecraft/world/level/LevelSettings$DifficultySettings;
 accessible field net/minecraft/world/level/LevelSettings allowCommands Z
 accessible field net/minecraft/world/level/LevelSettings dataConfiguration Lnet/minecraft/world/level/WorldDataConfiguration;
+accessible class net/minecraft/resources/RegistryLoadTask$PendingRegistration

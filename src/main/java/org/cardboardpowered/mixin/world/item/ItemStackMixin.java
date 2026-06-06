@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.server.level.ServerLevel;
@@ -39,8 +40,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = ItemStack.class, priority = 999)
 public abstract class ItemStackMixin implements ItemStackBridge {
-    @Shadow
-    public Item item;
+    
+	
+	@Shadow
+	public Holder<Item> item;
     
     @Shadow
     public int count;
@@ -110,7 +113,7 @@ public abstract class ItemStackMixin implements ItemStackBridge {
     @Override
     public void cardboard$setItem(Item item) {
         this.bukkitStack = null; // Paper
-        this.item = item;
+        this.item = item.builtInRegistryHolder();
         // Paper start - change base component prototype
         DataComponentPatch patch = ((ItemStack)(Object)this).getComponentsPatch();
         this.components = new PatchedDataComponentMap(this.item.components());

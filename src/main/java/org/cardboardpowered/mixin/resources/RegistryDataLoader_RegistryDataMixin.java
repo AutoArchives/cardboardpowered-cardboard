@@ -32,6 +32,7 @@ public class RegistryDataLoader_RegistryDataMixin {
 
 	// Lnet/minecraft/registry/RegistryLoader$Entry;getLoader(Lcom/mojang/serialization/Lifecycle;Ljava/util/Map;)Lnet/minecraft/registry/RegistryLoader$Loader;
 	
+	/*
     @Inject(
     		at = @At(value = "RETURN"),
     		method = "create(Lcom/mojang/serialization/Lifecycle;Ljava/util/Map;)Lnet/minecraft/resources/RegistryDataLoader$Loader;",
@@ -42,5 +43,6 @@ public class RegistryDataLoader_RegistryDataMixin {
     	PaperRegistryAccess.instance().registerRegistry(thiz.key(), writableRegistry);
     	
     }
+    */
     
 }

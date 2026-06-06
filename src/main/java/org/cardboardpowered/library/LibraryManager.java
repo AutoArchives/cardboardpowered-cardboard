@@ -202,6 +202,8 @@ public final class LibraryManager {
     		logger.info("Redirecting Paper-API download to: " + PAPER_OVERRIDE.get());
     		url = PAPER_OVERRIDE.get();
     	}
+    	
+    	System.out.println(url);
 
     	try {
     		downloadFromUrl(new URL(url), file);

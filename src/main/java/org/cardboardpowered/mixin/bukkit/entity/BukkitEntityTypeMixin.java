@@ -5,7 +5,9 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Fox;
 import org.cardboardpowered.bridge.bukkit.entity.BukkitEntityTypeBridge;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,8 +16,16 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(value = EntityType.class, remap = false)
-public class BukkitEntityTypeMixin implements BukkitEntityTypeBridge {
+public enum BukkitEntityTypeMixin implements BukkitEntityTypeBridge {
 
+	// CARDBOARD_MOD_ENTITY("fox", Fox.class, -1)
+	;
+	
+	@Shadow
+	private BukkitEntityTypeMixin(/*@Nullable*/ String name, /*@Nullable*/ Class<? extends Entity> clazz, int typeId) {
+		
+	}
+	
 	@Shadow
 	private static final Map<String, EntityType> NAME_MAP = new HashMap<String, EntityType>();
 	

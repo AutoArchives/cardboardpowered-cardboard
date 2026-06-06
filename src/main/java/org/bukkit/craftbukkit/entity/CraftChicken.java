@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import io.papermc.paper.registry.HolderableBase;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.entity.animal.chicken.ChickenSoundVariant;
 import net.minecraft.world.entity.animal.chicken.ChickenVariant;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
@@ -13,7 +14,22 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class CraftChicken extends CraftAnimals implements Chicken {
 
-    public CraftChicken(CraftServer server, net.minecraft.world.entity.animal.chicken.Chicken entity) {
+	public static class CraftSoundVariant extends HolderableBase<ChickenSoundVariant> implements SoundVariant {
+
+        public static SoundVariant minecraftHolderToBukkit(Holder<ChickenSoundVariant> minecraft) {
+            return CraftRegistry.minecraftHolderToBukkit(minecraft, Registries.CHICKEN_SOUND_VARIANT);
+        }
+
+        public static Holder<ChickenSoundVariant> bukkitToMinecraftHolder(SoundVariant bukkit) {
+            return CraftRegistry.bukkitToMinecraftHolder(bukkit);
+        }
+
+        public CraftSoundVariant(final Holder<ChickenSoundVariant> holder) {
+            super(holder);
+        }
+    }
+
+	public CraftChicken(CraftServer server, net.minecraft.world.entity.animal.chicken.Chicken entity) {
         super(server, entity);
     }
 

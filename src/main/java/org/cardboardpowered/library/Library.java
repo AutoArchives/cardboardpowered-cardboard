@@ -99,9 +99,11 @@ public class Library implements Comparable<Library> {
 	public String getUrl(String repo) {
 		// Is Paper API
 		String rep = repo.endsWith("/") ? repo : repo + "/";
+		/*
 		if (groupId.contains("io.papermc") && artifactId.contains("paper-api") ) {
 			return repo + "io/papermc/paper/paper-api/" + version.split("-R0.1")[0] + "-R0.1-SNAPSHOT/paper-api-" + version + ".jar";
 		}
+		*/
 
 		return rep + groupId.replace('.', '/') + '/' + artifactId + '/' + version + '/' + getJarName();
 	}

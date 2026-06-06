@@ -38,6 +38,8 @@
     "resources.RegistryDataLoaderMixin",
     "resources.RegistryInfoLookupMixin",
     "resources.RegistryOps_HolderLookupAdapterMixin",
+    "resources.RegistryLoadTaskMixin",
+    "resources.ResourceManagerRegistryLoadTaskMixin",
     "server.MainMixin",
     "server.MCServerMixin",
     "server.MinecraftServerMixin",

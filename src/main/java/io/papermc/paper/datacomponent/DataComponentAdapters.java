@@ -140,6 +140,7 @@ public final class DataComponentAdapters {
         register(DataComponents.TOOLTIP_STYLE, PaperAdventure::asAdventure, PaperAdventure::asVanilla);
         register(DataComponents.DEATH_PROTECTION, PaperDeathProtection::new);
         register(DataComponents.STORED_ENCHANTMENTS, PaperItemEnchantments::new);
+        register(DataComponents.DYE, nms -> DyeColor.getByWoolData((byte) nms.getId()), api -> net.minecraft.world.item.DyeColor.byId(api.getWoolData()));
         register(DataComponents.DYED_COLOR, PaperDyedItemColor::new);
         register(DataComponents.MAP_COLOR, PaperMapItemColor::new);
         register(DataComponents.MAP_ID, PaperMapId::new);
@@ -221,6 +222,13 @@ public final class DataComponentAdapters {
         register(DataComponents.SHEEP_COLOR, nms -> DyeColor.getByWoolData((byte) nms.getId()), api -> net.minecraft.world.item.DyeColor.byId(api.getWoolData()));
         register(DataComponents.SHULKER_COLOR, nms -> DyeColor.getByWoolData((byte) nms.getId()), api -> net.minecraft.world.item.DyeColor.byId(api.getWoolData()));
 
+        register(DataComponents.PIG_SOUND_VARIANT, CraftPig.CraftSoundVariant::minecraftHolderToBukkit, CraftPig.CraftSoundVariant::bukkitToMinecraftHolder);
+        register(DataComponents.COW_SOUND_VARIANT, CraftCow.CraftSoundVariant::minecraftHolderToBukkit, CraftCow.CraftSoundVariant::bukkitToMinecraftHolder);
+        register(DataComponents.CHICKEN_SOUND_VARIANT, CraftChicken.CraftSoundVariant::minecraftHolderToBukkit, CraftChicken.CraftSoundVariant::bukkitToMinecraftHolder);
+        register(DataComponents.CAT_SOUND_VARIANT, CraftCat.CraftSoundVariant::minecraftHolderToBukkit, CraftCat.CraftSoundVariant::bukkitToMinecraftHolder);
+
+        
+        
         for (final ResourceKey<DataComponentType<?>> key : BuiltInRegistries.DATA_COMPONENT_TYPE.registryKeySet()) {
             if (!ADAPTERS.containsKey(key)) {
                 registerUnimplemented(key);
