@@ -219,7 +219,6 @@ public class FakeWorldAccess implements LevelAccessor {
         throw new UnsupportedOperationException("Not supported");
     }
 
-    @Override
     public float getShade(Direction arg0, boolean arg1) {
         return 0;
     }

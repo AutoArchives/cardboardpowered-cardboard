@@ -46,6 +46,7 @@ import io.papermc.paper.datacomponent.item.PaperWeapon;
 import io.papermc.paper.datacomponent.item.PaperWritableBookContent;
 import io.papermc.paper.datacomponent.item.PaperWrittenBookContent;
 import io.papermc.paper.registry.PaperRegistries;
+import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.data.util.Conversions;
 import io.papermc.paper.registry.set.PaperRegistrySets;
 
@@ -58,7 +59,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Unit;
-import net.minecraft.world.item.EitherHolder;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.component.InstrumentComponent;
 import net.minecraft.world.item.component.MapPostProcessing;
@@ -112,7 +112,8 @@ public final class DataComponentAdapters {
         registerIdentity(DataComponents.POTION_DURATION_SCALE);
         register(DataComponents.CUSTOM_NAME, PaperAdventure::asAdventure, PaperAdventure::asVanilla);
         registerIdentity(DataComponents.MINIMUM_ATTACK_CHARGE);
-        register(DataComponents.DAMAGE_TYPE, nms -> CraftDamageType.minecraftHolderToBukkit(nms.unwrap(CraftRegistry.getMinecraftRegistry()).orElseThrow()), api -> new EitherHolder<>(CraftDamageType.bukkitToMinecraftHolder(api)));
+        register(DataComponents.DAMAGE_TYPE, CraftDamageType::minecraftHolderToBukkit, CraftDamageType::bukkitToMinecraftHolder);
+        // register(DataComponents.DAMAGE_TYPE, nms -> CraftDamageType.minecraftHolderToBukkit(nms.unwrap(CraftRegistry.getMinecraftRegistry()).orElseThrow()), api -> new EitherHolder<>(CraftDamageType.bukkitToMinecraftHolder(api)));
         register(DataComponents.ITEM_NAME, PaperAdventure::asAdventure, PaperAdventure::asVanilla);
         register(DataComponents.ITEM_MODEL, PaperAdventure::asAdventure, PaperAdventure::asVanilla);
         register(DataComponents.LORE, PaperItemLore::new);
@@ -159,6 +160,7 @@ public final class DataComponentAdapters {
         register(DataComponents.PROVIDES_TRIM_MATERIAL, CraftTrimMaterial::minecraftHolderToBukkit, CraftTrimMaterial::bukkitToMinecraftHolder);
         register(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, PaperOminousBottleAmplifier::new);
         register(DataComponents.JUKEBOX_PLAYABLE, PaperJukeboxPlayable::new);
+        
         register(DataComponents.PROVIDES_BANNER_PATTERNS, set -> PaperRegistrySets.convertToApi(RegistryKey.BANNER_PATTERN, set), set -> PaperRegistrySets.convertToNms(Registries.BANNER_PATTERN, Conversions.global().lookup(), set));
         register(
                 DataComponents.RECIPES,

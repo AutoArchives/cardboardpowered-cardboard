@@ -31,7 +31,7 @@ public class TypedEntityDataExtra {
 
 	public static CompoundTag copyTagWithBlockEntityId(TypedEntityData<?> data) {
 		CompoundTag tag = data.copyTagWithoutId();
-		tag.putString("id", BlockEntityType.getKey((BlockEntityType<?>)data.type()).toString());
+		tag.putString("id", net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey((BlockEntityType<?>)data.type()).toString());
 		return tag;
 	}
 	

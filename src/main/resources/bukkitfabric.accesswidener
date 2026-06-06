@@ -475,7 +475,7 @@ accessible method net/minecraft/core/MappedRegistry validateWrite (Lnet/minecraf
 accessible field net/minecraft/server/RegistryLayer STATIC_ACCESS Lnet/minecraft/core/RegistryAccess$Frozen;
 accessible field net/minecraft/resources/RegistryOps lookupProvider Lnet/minecraft/resources/RegistryOps$RegistryInfoLookup;
 accessible field net/minecraft/world/item/crafting/SingleItemRecipe result Lnet/minecraft/world/item/ItemStackTemplate;
-accessible method net/minecraft/world/item/crafting/SingleItemRecipe result ()Lnet/minecraft/world/item/ItemStack;
+accessible method net/minecraft/world/item/crafting/SingleItemRecipe result ()Lnet/minecraft/world/item/ItemStackTemplate;
 accessible method net/minecraft/world/item/crafting/SingleItemRecipe input ()Lnet/minecraft/world/item/crafting/Ingredient;
 accessible field net/minecraft/world/item/crafting/SingleItemRecipe input Lnet/minecraft/world/item/crafting/Ingredient;
 accessible field net/minecraft/world/item/crafting/ShapelessRecipe ingredients Ljava/util/List;
@@ -766,7 +766,7 @@ accessible field net/minecraft/world/item/crafting/SmithingTrimRecipe template L
 accessible field net/minecraft/world/item/crafting/SmithingTrimRecipe base Lnet/minecraft/world/item/crafting/Ingredient;
 accessible field net/minecraft/world/item/crafting/SmithingTrimRecipe addition Lnet/minecraft/world/item/crafting/Ingredient;
 accessible field net/minecraft/world/item/crafting/SmithingTrimRecipe pattern Lnet/minecraft/core/Holder;
-accessible field net/minecraft/world/item/crafting/SmithingTransformRecipe result Lnet/minecraft/world/item/crafting/TransmuteResult;
+accessible field net/minecraft/world/item/crafting/SmithingTransformRecipe result Lnet/minecraft/world/item/ItemStackTemplate;
 accessible field net/minecraft/world/item/crafting/SmithingTransformRecipe template Ljava/util/Optional;
 accessible field net/minecraft/world/item/crafting/SmithingTransformRecipe base Lnet/minecraft/world/item/crafting/Ingredient;
 accessible field net/minecraft/world/item/crafting/SmithingTransformRecipe addition Ljava/util/Optional;

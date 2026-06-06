@@ -142,13 +142,10 @@ public class CraftBlockData implements BlockData {
         return clone;
     }
     
-    private static <T extends Comparable<T>> BlockState setValue(final BlockState state, final Property.Value<T> propertyValue) {
+    private static <T extends Comparable<T>> net.minecraft.world.level.block.state.BlockState setValue(final net.minecraft.world.level.block.state.BlockState state, final Property.Value<T> propertyValue) {
         return state.setValue(propertyValue.property(), propertyValue.value());
     }
 
-    private <T extends Comparable<T>> BlockState copyProperty(BlockState source, BlockState target, Property<T> property) {
-        return target.setValue(property, source.getValue(property));
-    }
 
     @Override
     public boolean matches(BlockData data) {

@@ -23,6 +23,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftEquipmentSlot;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.damage.CraftDamageSource;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.memory.MemoryKey;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
@@ -1242,5 +1243,14 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 	public Color getWaypointColor() {
 		return getHandle().waypointIcon().color.map(Color::fromARGB).orElse(null);
 	}
+
+	@Override
+	public void kill(org.bukkit.damage.DamageSource damageSource) {
+        // Preconditions.checkState(!this.getHandle().generation, "Cannot kill entity during world generation");
+        // Preconditions.checkArgument(damageSource != null, "damageSource cannot be null");
+
+        this.getHandle().setHealth(0);
+        this.getHandle().die(((CraftDamageSource) damageSource).getHandle());
+    }
 
 }

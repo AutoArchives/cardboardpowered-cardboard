@@ -8,6 +8,9 @@ import io.papermc.paper.datacomponent.item.blocksattacks.ItemDamageFunction;
 import io.papermc.paper.datacomponent.item.blocksattacks.PaperDamageReduction;
 import io.papermc.paper.datacomponent.item.blocksattacks.PaperItemDamageFunction;
 import io.papermc.paper.registry.PaperRegistries;
+import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.registry.set.PaperRegistrySets;
+import io.papermc.paper.registry.set.RegistryKeySet;
 import io.papermc.paper.registry.tag.TagKey;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
@@ -42,8 +45,14 @@ Handleable<net.minecraft.world.item.component.BlocksAttacks>
     public ItemDamageFunction itemDamage() {
         return new PaperItemDamageFunction(this.impl.itemDamage());
     }
+    
+    public @Nullable RegistryKeySet<DamageType> bypassedBy1() {
+        return this.impl.bypassedBy().map(holders -> PaperRegistrySets.convertToApi(RegistryKey.DAMAGE_TYPE, holders)).orElse(null);
+    }
 
+    @Deprecated(forRemoval = true)
     public @Nullable TagKey<DamageType> bypassedBy() {
+    	
         Optional<TagKey> tagKey = this.impl.bypassedBy().map(PaperRegistries::fromNms);
         return tagKey.orElse(null);
     }
@@ -111,9 +120,24 @@ Handleable<net.minecraft.world.item.component.BlocksAttacks>
             return this;
         }
 
-        public BlocksAttacks build() {
+        /*
+        public BlocksAttacks build0() {
             return new PaperBlocksAttacks(new net.minecraft.world.item.component.BlocksAttacks(this.blockDelaySeconds, this.disableCooldownScale, this.damageReductions.stream().map(damageReduction -> ((PaperDamageReduction)damageReduction).getHandle()).toList(), ((PaperItemDamageFunction)this.itemDamage).getHandle(), Optional.ofNullable(this.bypassedBy).map(PaperRegistries::toNms), Optional.ofNullable(this.blockSound).map(PaperAdventure::resolveSound), Optional.ofNullable(this.disableSound).map(PaperAdventure::resolveSound)));
+        }*/
+        
+        @Override
+        public BlocksAttacks build() {
+            return new PaperBlocksAttacks(new net.minecraft.world.item.component.BlocksAttacks(
+                this.blockDelaySeconds,
+                this.disableCooldownScale,
+                this.damageReductions.stream().map(damageReduction -> ((PaperDamageReduction) damageReduction).internal()).toList(),
+                ((PaperItemDamageFunction) this.itemDamage).internal(),
+                Optional.ofNullable(this.bypassedBy).map(holders -> PaperRegistrySets.convertToNms(Registries.DAMAGE_TYPE, Conversions.global().lookup(), holders)),
+                Optional.ofNullable(this.blockSound).map(PaperAdventure::resolveSound),
+                Optional.ofNullable(this.disableSound).map(PaperAdventure::resolveSound)
+            ));
         }
+        
     }
 }
 

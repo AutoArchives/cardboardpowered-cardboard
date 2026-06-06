@@ -69,4 +69,16 @@ public class CraftChicken extends CraftAnimals implements Chicken {
     public void setEggLayTime(int eggLayTime) {
         this.getHandle().eggTime = eggLayTime;
     }
+
+	@Override
+	public SoundVariant getSoundVariant() {
+		// TODO Auto-generated method stub
+		return SoundVariant.CLASSIC;
+	}
+
+	@Override
+	public void setSoundVariant(SoundVariant variant) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -15,7 +15,9 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DynamicOps;
 
 import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.registry.data.util.Conversions;
 import io.papermc.paper.registry.set.PaperRegistrySets;
+import io.papermc.paper.registry.set.RegistryKeySet;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -2627,4 +2629,18 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         return true;
     }
+
+	@Override
+	public @org.jetbrains.annotations.Nullable RegistryKeySet<DamageType> getDamageResistantTypes() {
+		return this.damageResistantTypes == null ? null : PaperRegistrySets.convertToApi(RegistryKey.DAMAGE_TYPE, this.damageResistantTypes);
+	}
+
+	@Override
+	public void setDamageResistantTypes(@org.jetbrains.annotations.Nullable RegistryKeySet<DamageType> types) {
+		if (types == null) {
+            this.damageResistantTypes = null;
+        } else {
+            this.damageResistantTypes = PaperRegistrySets.convertToNms(Registries.DAMAGE_TYPE, Conversions.global().lookup(), types);
+        }
+	}
 }

@@ -48,4 +48,16 @@ public class CraftCow extends CraftAbstractCow implements Cow {
             super(holder);
         }
     }
+
+	@Override
+	public SoundVariant getSoundVariant() {
+		// TODO Auto-generated method stub
+		return SoundVariant.CLASSIC;
+	}
+
+	@Override
+	public void setSoundVariant(SoundVariant variant) {
+		// TODO Auto-generated method stub
+		
+	}
 }

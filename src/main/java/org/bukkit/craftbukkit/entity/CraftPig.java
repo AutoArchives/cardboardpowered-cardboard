@@ -96,4 +96,15 @@ public class CraftPig extends CraftAnimals implements Pig {
             super(holder);
         }
     }
+
+	@Override
+	public SoundVariant getSoundVariant() {
+		return SoundVariant.CLASSIC;
+	}
+
+	@Override
+	public void setSoundVariant(SoundVariant variant) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -14,6 +14,7 @@ import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.recipe.CookingBookCategory;
 import org.bukkit.inventory.recipe.CraftingBookCategory;
 import org.cardboardpowered.bridge.world.item.crafting.IngredientBridge;
+import org.jetbrains.annotations.NotNull;
 
 public interface CraftRecipe extends Recipe {
 
@@ -99,4 +100,9 @@ public interface CraftRecipe extends Recipe {
     public static ResourceKey<net.minecraft.world.item.crafting.Recipe<?>> toMinecraft(NamespacedKey key) {
         return ResourceKey.create(Registries.RECIPE, CraftNamespacedKey.toMinecraft(key));
     }
+
+    static Optional<Ingredient> toPossibleIngredient(RecipeChoice bukkit, boolean requireNotEmpty) {
+        return (bukkit == null || bukkit == RecipeChoice.empty()) ? Optional.empty() : Optional.of(toIngredient(bukkit, requireNotEmpty)); // Paper - support "empty" choices
+    }
+
 }

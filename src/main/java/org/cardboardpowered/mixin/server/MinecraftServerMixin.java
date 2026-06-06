@@ -24,7 +24,7 @@ import org.cardboardpowered.CardboardMod;
 import org.bukkit.craftbukkit.scheduler.CraftScheduler;
 import org.cardboardpowered.bridge.server.MinecraftServerBridge;
 import org.cardboardpowered.bridge.world.level.LevelBridge;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
 import net.minecraft.commands.Commands;
@@ -103,9 +103,9 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
 
     @Shadow public abstract boolean saveAllChunks(boolean suppressLogs, boolean flush, boolean force);
 
-    public MinecraftServerMixin(String string) {
-        super(string);
-    }
+	public MinecraftServerMixin(String name, boolean propagatesCrashes) {
+		super(name, propagatesCrashes);
+	}
 
     @Shadow @Final public PlayerDataStorage playerDataStorage;
     @Shadow public Map<ResourceKey<net.minecraft.world.level.Level>, ServerLevel> levels;
@@ -270,7 +270,7 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
 
     @Override
     public void removeLevel(ServerLevel level) {
-        ServerWorldEvents.UNLOAD.invoker().onWorldUnload(((MinecraftServer) (Object) this), level);
+        ServerLevelEvents.UNLOAD.invoker().onLevelUnload(((MinecraftServer) (Object) this), level);
         this.levels.remove(level.dimension());
     }
 

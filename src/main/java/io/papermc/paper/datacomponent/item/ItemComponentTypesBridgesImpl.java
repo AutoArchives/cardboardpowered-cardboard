@@ -188,7 +188,7 @@ public final class ItemComponentTypesBridgesImpl implements ItemComponentTypesBr
         Preconditions.checkArgument(itemStack != null, "Item cannot be null");
         Preconditions.checkArgument(!itemStack.isEmpty(), "Remaining item cannot be empty!");
         return new PaperUseRemainder(
-            new net.minecraft.world.item.component.UseRemainder(CraftItemStack.asNMSCopy(itemStack))
+            new net.minecraft.world.item.component.UseRemainder(CraftItemStack.asTemplate(itemStack))
         );
     }
 
@@ -203,6 +203,10 @@ public final class ItemComponentTypesBridgesImpl implements ItemComponentTypesBr
         return new PaperUseCooldown.BuilderImpl(seconds);
     }
 
+    public DamageResistant damageResistant(final RegistryKeySet<DamageType> types) {
+        return new PaperDamageResistant(new net.minecraft.world.item.component.DamageResistant(PaperRegistrySets.convertToNms(Registries.DAMAGE_TYPE, Conversions.global().lookup(), types)));
+    }
+    
     @Override
     public DamageResistant damageResistant(final TagKey<DamageType> types) {
         return new PaperDamageResistant(new net.minecraft.world.item.component.DamageResistant(PaperRegistrySets.convertToNms(Registries.DAMAGE_TYPE, Conversions.global().lookup(), types)));
