@@ -15,67 +15,81 @@ import static io.papermc.paper.registry.data.util.Checks.asConfigured;
 
 public class PaperChickenVariantRegistryEntry implements ChickenVariantRegistryEntry {
 
-    protected ChickenVariant.@Nullable ModelType model;
-    protected ClientAsset.@Nullable ResourceTexture clientTextureAsset;
-    protected SpawnPrioritySelectors spawnConditions;
+	protected ChickenVariant.@Nullable ModelType model;
+	protected ClientAsset.@Nullable ResourceTexture clientTextureAsset;
+	protected ClientAsset.@Nullable ResourceTexture babyClientTextureAsset;
+	protected SpawnPrioritySelectors spawnConditions;
 
-    protected final Conversions conversions;
+	protected final Conversions conversions;
 
-    public PaperChickenVariantRegistryEntry(
-        final Conversions conversions,
-        final @Nullable ChickenVariant internal
-    ) {
-        this.conversions = conversions;
-        if (internal == null) {
-            this.spawnConditions = SpawnPrioritySelectors.EMPTY;
-            return;
-        }
+	public PaperChickenVariantRegistryEntry(
+			final Conversions conversions,
+			final @Nullable ChickenVariant internal
+			) {
+		this.conversions = conversions;
+		if (internal == null) {
+			this.spawnConditions = SpawnPrioritySelectors.EMPTY;
+			return;
+		}
 
-        this.clientTextureAsset = internal.modelAndTexture().asset();
-        this.model = internal.modelAndTexture().model();
-        this.spawnConditions = internal.spawnConditions();
-    }
+		this.clientTextureAsset = internal.modelAndTexture().asset();
+		this.babyClientTextureAsset = internal.babyTexture();
+		this.model = internal.modelAndTexture().model();
+		this.spawnConditions = internal.spawnConditions();
+	}
 
-    @Override
-    public ClientTextureAsset clientTextureAsset() {
-        return this.conversions.asBukkit(asConfigured(this.clientTextureAsset, "clientTextureAsset"));
-    }
+	@Override
+	public ClientTextureAsset clientTextureAsset() {
+		return this.conversions.asBukkit(asConfigured(this.clientTextureAsset, "clientTextureAsset"));
+	}
 
-    @Override
-    public Model model() {
-        return switch (asConfigured(this.model, "model")) {
-            case NORMAL -> Model.NORMAL;
-            case COLD -> Model.COLD;
-        };
-    }
+	@Override
+	public ClientTextureAsset babyClientTextureAsset() {
+		return this.conversions.asBukkit(asConfigured(this.babyClientTextureAsset, "babyClientTextureAsset"));
+	}
 
-    public static final class PaperBuilder extends PaperChickenVariantRegistryEntry implements Builder, PaperRegistryBuilder<ChickenVariant, Chicken.Variant> {
+	@Override
+	public Model model() {
+		return switch (asConfigured(this.model, "model")) {
+		case NORMAL -> Model.NORMAL;
+		case COLD -> Model.COLD;
+		};
+	}
 
-        public PaperBuilder(final Conversions conversions, final @Nullable ChickenVariant internal) {
-            super(conversions, internal);
-        }
+	public static final class PaperBuilder extends PaperChickenVariantRegistryEntry implements Builder, PaperRegistryBuilder<ChickenVariant, Chicken.Variant> {
 
-        @Override
-        public Builder clientTextureAsset(final ClientTextureAsset clientTextureAsset) {
-            this.clientTextureAsset = this.conversions.asVanilla(asArgument(clientTextureAsset, "clientTextureAsset"));
-            return this;
-        }
+		public PaperBuilder(final Conversions conversions, final @Nullable ChickenVariant internal) {
+			super(conversions, internal);
+		}
 
-        @Override
-        public Builder model(final Model model) {
-            this.model = switch (asArgument(model, "model")) {
-                case NORMAL -> ChickenVariant.ModelType.NORMAL;
-                case COLD -> ChickenVariant.ModelType.COLD;
-            };
-            return this;
-        }
+		@Override
+		public Builder clientTextureAsset(final ClientTextureAsset clientTextureAsset) {
+			this.clientTextureAsset = this.conversions.asVanilla(asArgument(clientTextureAsset, "clientTextureAsset"));
+			return this;
+		}
 
-        @Override
-        public ChickenVariant build() {
-            return new ChickenVariant(
-                new ModelAndTexture<>(asConfigured(this.model, "model"), asConfigured(this.clientTextureAsset, "clientTextureAsset")),
-                asConfigured(this.spawnConditions, "spawnConditions")
-            );
-        }
-    }
+		@Override
+		public Builder babyClientTextureAsset(final ClientTextureAsset babyClientTextureAsset) {
+			this.babyClientTextureAsset = this.conversions.asVanilla(asArgument(babyClientTextureAsset, "babyClientTextureAsset"));
+			return this;
+		}
+
+		@Override
+		public Builder model(final Model model) {
+			this.model = switch (asArgument(model, "model")) {
+			case NORMAL -> ChickenVariant.ModelType.NORMAL;
+			case COLD -> ChickenVariant.ModelType.COLD;
+			};
+			return this;
+		}
+
+		@Override
+		public ChickenVariant build() {
+			return new ChickenVariant(
+					new ModelAndTexture<>(asConfigured(this.model, "model"), asConfigured(this.clientTextureAsset, "clientTextureAsset")),
+					asConfigured(this.babyClientTextureAsset, "babyClientTextureAsset"),
+					asConfigured(this.spawnConditions, "spawnConditions")
+					);
+		}
+	}
 }

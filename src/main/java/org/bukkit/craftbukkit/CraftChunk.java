@@ -278,7 +278,7 @@ public class CraftChunk implements Chunk {
     }
 
     @Override
-    public ChunkSnapshot getChunkSnapshot(boolean includeMaxBlockY, boolean includeBiome, boolean includeBiomeTempRain, boolean includeLightData) {
+    /*public ChunkSnapshot getChunkSnapshot(boolean includeMaxBlockY, boolean includeBiome, boolean includeBiomeTempRain, boolean includeLightData) {
         ChunkAccess chunk = this.getHandle(ChunkStatus.FULL);
 
         LevelChunkSection[] cs = chunk.getSections();
@@ -332,6 +332,62 @@ public class CraftChunk implements Chunk {
 
         World world = this.getWorld();
         return new CraftChunkSnapshot(this.getX(), this.getZ(), chunk.getMinY(), chunk.getMaxY(), world.getSeaLevel(), world.getName(), world.getFullTime(), sectionBlockIDs, sectionSkyLights, sectionEmitLights, sectionEmpty, heightmap, biome);
+    }*/
+    
+    public ChunkSnapshot getChunkSnapshot(boolean includeMaxBlockY, boolean includeBiome, boolean includeBiomeTempRain, boolean includeLightData) {
+        ChunkAccess chunk = this.getHandle(ChunkStatus.FULL);
+
+        LevelChunkSection[] cs = chunk.getSections();
+        PalettedContainer[] sectionBlockIDs = new PalettedContainer[cs.length];
+        byte[][] sectionSkyLights = includeLightData ? new byte[cs.length][] : null;
+        byte[][] sectionEmitLights = includeLightData ? new byte[cs.length][] : null;
+        boolean[] sectionEmpty = new boolean[cs.length];
+        PalettedContainerRO<Holder<net.minecraft.world.level.biome.Biome>>[] biome = (includeBiome || includeBiomeTempRain) ? new PalettedContainer[cs.length] : null;
+
+        for (int i = 0; i < cs.length; i++) {
+
+            // Paper start - Fix ChunkSnapshot#isSectionEmpty(int); and remove codec usage
+            sectionEmpty[i] = cs[i].hasOnlyAir(); // fix sectionEmpty array not being filled
+            if (!sectionEmpty[i]) {
+                sectionBlockIDs[i] = cs[i].getStates().copy(); // use copy instead of round tripping with codecs
+            } else {
+                sectionBlockIDs[i] = CraftChunk.emptyBlockIDs; // use cached instance for empty block sections
+            }
+            // Paper end - Fix ChunkSnapshot#isSectionEmpty(int)
+
+            if (includeLightData) {
+                LevelLightEngine lightEngine = this.level.getLightEngine();
+                DataLayer skyLightArray = lightEngine.getLayerListener(LightLayer.SKY).getDataLayerData(SectionPos.of(this.x, chunk.getSectionYFromSectionIndex(i), this.z)); // SPIGOT-7498: Convert section index
+                if (skyLightArray == null) {
+                    sectionSkyLights[i] = this.level.dimensionType().hasSkyLight() ? CraftChunk.FULL_LIGHT : CraftChunk.EMPTY_LIGHT;
+                } else {
+                    sectionSkyLights[i] = new byte[2048];
+                    System.arraycopy(skyLightArray.getData(), 0, sectionSkyLights[i], 0, 2048);
+                }
+
+                DataLayer emitLightArray = lightEngine.getLayerListener(LightLayer.BLOCK).getDataLayerData(SectionPos.of(this.x, chunk.getSectionYFromSectionIndex(i), this.z)); // SPIGOT-7498: Convert section index
+                if (emitLightArray == null) {
+                    sectionEmitLights[i] = CraftChunk.EMPTY_LIGHT;
+                } else {
+                    sectionEmitLights[i] = new byte[2048];
+                    System.arraycopy(emitLightArray.getData(), 0, sectionEmitLights[i], 0, 2048);
+                }
+            }
+
+            if (biome != null) {
+                biome[i] = cs[i].getBiomes().copy(); // Paper - Perf: use copy instead of round tripping with codecs
+            }
+        }
+
+        Heightmap heightmap = null;
+
+        if (includeMaxBlockY) {
+            heightmap = new Heightmap(chunk, Heightmap.Types.MOTION_BLOCKING);
+            heightmap.setRawData(chunk, Heightmap.Types.MOTION_BLOCKING, chunk.heightmaps.get(Heightmap.Types.MOTION_BLOCKING).getRawData());
+        }
+
+        World world = this.getWorld();
+        return new CraftChunkSnapshot(this.getX(), this.getZ(), chunk.getMinY(), chunk.getMaxY(), world.getSeaLevel(), world.getName(), world.getKey(), world.getFullTime(), sectionBlockIDs, sectionSkyLights, sectionEmitLights, sectionEmpty, heightmap, biome);
     }
 
     @Override
@@ -387,7 +443,7 @@ public class CraftChunk implements Chunk {
         result = 31 * result + this.z;
         return result;
     }
-
+    
     public static ChunkSnapshot getEmptyChunkSnapshot(int x, int z, CraftWorld world, boolean includeBiome, boolean includeBiomeTempRain) {
         ChunkAccess actual = world.getHandle().getChunk(x, z, (includeBiome || includeBiomeTempRain) ? ChunkStatus.BIOMES : ChunkStatus.EMPTY);
 
@@ -407,11 +463,11 @@ public class CraftChunk implements Chunk {
             empty[i] = true;
 
             if (biome != null) {
-                biome[i] = (PalettedContainer<Holder<net.minecraft.world.level.biome.Biome>>) biomeCodec.parse(NbtOps.INSTANCE, biomeCodec.encodeStart(NbtOps.INSTANCE, actual.getSection(i).getBiomes()).getOrThrow()).getOrThrow(SerializableChunkData.ChunkReadException::new);
+                biome[i] = actual.getSection(i).getBiomes().copy();
             }
         }
 
-        return new CraftChunkSnapshot(x, z, world.getMinHeight(), world.getMaxHeight(), world.getSeaLevel(), world.getName(), world.getFullTime(), blockIDs, skyLight, emitLight, empty, new Heightmap(actual, Heightmap.Types.MOTION_BLOCKING), biome);
+        return new CraftChunkSnapshot(x, z, world.getMinHeight(), world.getMaxHeight(), world.getSeaLevel(), world.getName(), world.getKey(), world.getFullTime(), blockIDs, skyLight, emitLight, empty, new Heightmap(actual, Heightmap.Types.MOTION_BLOCKING), biome);
     }
 
     static void validateChunkCoordinates(int minY, int maxY, int x, int y, int z) {

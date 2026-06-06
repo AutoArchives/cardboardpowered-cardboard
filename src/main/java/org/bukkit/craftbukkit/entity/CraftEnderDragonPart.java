@@ -70,4 +70,10 @@ public class CraftEnderDragonPart extends CraftComplexPart implements EnderDrago
     public void resetMaxHealth() {
         this.getParent().resetMaxHealth();
     }
+
+    @Override
+    public void kill(DamageSource damageSource) {
+        this.getParent().kill(damageSource);
+    }
+
 }

@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit.entity;
 import com.google.common.base.Preconditions;
 import io.papermc.paper.entity.PaperShearable;
 import io.papermc.paper.world.WeatheringCopperState;
+import net.minecraft.world.entity.animal.golem.CopperGolemState;
 import net.minecraft.world.level.block.WeatheringCopper;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.CopperGolem;
@@ -55,4 +56,14 @@ public class CraftCopperGolem extends CraftGolem implements CopperGolem, PaperSh
             default -> throw new IllegalStateException("Unexpected value: " + oxidizing);
         }
     }
+
+	@Override
+	public State getGolemState() {
+		return State.valueOf(this.getHandle().getState().name());
+	}
+
+	@Override
+	public void setGolemState(State state) {
+		this.getHandle().setState(CopperGolemState.valueOf(state.name()));
+	}
 }

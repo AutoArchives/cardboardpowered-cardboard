@@ -25,6 +25,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.world.level.storage.loot.LootDataType;
+import net.minecraft.world.level.storage.loot.Validatable;
 
 @Mixin(ReloadableServerRegistries.class)
 public class ReloadableServerRegistriesMixin {
@@ -41,7 +42,7 @@ public class ReloadableServerRegistriesMixin {
 	 */
     @SuppressWarnings("unchecked")
     @Overwrite
-	private static <T> CompletableFuture<WritableRegistry<?>> scheduleRegistryLoad(LootDataType<T> type, RegistryOps<JsonElement> ops, ResourceManager resourceManager, Executor prepareExecutor) {
+	private static <T extends Validatable> CompletableFuture<WritableRegistry<?>> scheduleRegistryLoad(LootDataType<T> type, RegistryOps<JsonElement> ops, ResourceManager resourceManager, Executor prepareExecutor) {
         return CompletableFuture.supplyAsync(() -> {
             MappedRegistry writableRegistry = new MappedRegistry(type.registryKey(), Lifecycle.experimental());
             PaperRegistryAccess.instance().registerReloadableRegistry(type.registryKey(), writableRegistry);

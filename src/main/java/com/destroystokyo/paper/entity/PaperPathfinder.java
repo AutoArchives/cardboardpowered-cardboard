@@ -9,8 +9,10 @@ import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.util.CraftLocation;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
+import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 
 public class PaperPathfinder implements Pathfinder {
@@ -125,5 +127,12 @@ public class PaperPathfinder implements Pathfinder {
 							: CraftLocation.toBukkit(this.path.nodes.get(this.path.getNextNodeIndex()), PaperPathfinder.this.entity.level());
 		}
 	}
+
+	@Override
+	public PathResult findPath(Entity target) {
+        Preconditions.checkArgument(target != null, "Target cant be nil");
+        Path path = this.entity.getNavigation().createPath(((CraftEntity) target).getHandle(), 0);
+        return path != null ? new PaperPathResult(path) : null;
+    }
 
 }

@@ -15,12 +15,14 @@ import com.mojang.serialization.Decoder;
 
 import io.papermc.paper.registry.PaperRegistryAccess;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderLookup.RegistryLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.WritableRegistry;
 //import net.minecraft.registry.RegistryLoader.Loader;
 import net.minecraft.resources.RegistryDataLoader;
-import net.minecraft.resources.RegistryDataLoader.Loader;
+import net.minecraft.resources.RegistryLoadTask;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.resources.RegistryOps.RegistryInfoLookup;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -48,13 +50,20 @@ public class RegistryDataLoaderMixin {
      * @reason Paper: add method to get the value for pre-filling builders in the reg mod API
      */
     @Overwrite
-    private static RegistryOps.RegistryInfoLookup createContext(List<HolderLookup.RegistryLookup<?>> registries, List<Loader<?>> additionalRegistries) {
-        final HashMap<ResourceKey<? extends Registry<?>>, RegistryOps.RegistryInfo<?>> map = new HashMap<>();
+    // private static RegistryOps.RegistryInfoLookup createContext(List<HolderLookup.RegistryLookup<?>> registries, List<Loader<?>> additionalRegistries) {
+    private static RegistryInfoLookup createContext(final List<RegistryLookup<?>> registries,
+			final List<RegistryLoadTask<?>> additionalRegistries) {
+    final HashMap<ResourceKey<? extends Registry<?>>, RegistryOps.RegistryInfo<?>> map = new HashMap<>();
         registries.forEach(registry -> map.put(registry.key(), createInfoForContextRegistry(registry)));
-        additionalRegistries.forEach(loader -> map.put(loader.registry().key(), createInfoForNewRegistry(loader.registry())));
+        // registries.forEach(e -> map.put(e.key(), createInfoForContextRegistry((HolderLookup.RegistryLookup<?>)e)));
+        
+        additionalRegistries.forEach(e -> map.put(e.registryKey(), e.createRegistryInfo()));
+        // additionalRegistries.forEach(loader -> map.put(loader.registry().key(), createInfoForNewRegistry(loader.registry())));
         
         // Cardboard: Paper: providerForBuilders
-        HolderLookup.Provider providerForBuilders = HolderLookup.Provider.create(Stream.concat(registries.stream(), additionalRegistries.stream().map(Loader::registry)));
+        // HolderLookup.Provider providerForBuilders = HolderLookup.Provider.create(Stream.concat(registries.stream(), additionalRegistries.stream().map(Loader::registry)));
+        HolderLookup.Provider providerForBuilders = HolderLookup.Provider.create(java.util.stream.Stream.concat(registries.stream(), additionalRegistries.stream().map(t -> t.registry))); // Paper - add method to get the value for pre-filling builders in the reg mod API
+
         
         return new RegistryOps.RegistryInfoLookup(){
 

@@ -29,7 +29,7 @@ public class TypedEntityDataMixin<IdType> implements TypedEntityDataBridge {
     @Override
     public CompoundTag copyTagWithBlockEntityId() {
         final CompoundTag tag = this.tag.copy();
-        tag.putString("id", net.minecraft.world.level.block.entity.BlockEntityType.getKey((net.minecraft.world.level.block.entity.BlockEntityType<?>) this.type).toString());
+        tag.putString("id", net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey((net.minecraft.world.level.block.entity.BlockEntityType<?>) this.type).toString());
         return tag;
     }
     // Paper end - utils for item meta

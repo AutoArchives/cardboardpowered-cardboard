@@ -3,6 +3,8 @@ package org.bukkit.craftbukkit;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import java.util.function.Predicate;
+
+import net.kyori.adventure.key.Key;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,6 +19,7 @@ import org.bukkit.craftbukkit.block.CraftBiome;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.cardboardpowered.bridge.world.level.block.state.BlockStateBridge;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Represents a static, thread-safe snapshot of chunk of blocks
@@ -26,6 +29,7 @@ public class CraftChunkSnapshot implements ChunkSnapshot {
     private final int x, z;
     private final int minHeight, maxHeight, seaLevel;
     private final String worldName;
+    private final Key worldKey;
     private final PalettedContainer<BlockState>[] blockIds;
     private final byte[][] skylight;
     private final byte[][] emitLight;
@@ -34,13 +38,15 @@ public class CraftChunkSnapshot implements ChunkSnapshot {
     private final long captureFullTime;
     private final PalettedContainerRO<Holder<net.minecraft.world.level.biome.Biome>>[] biome;
 
-    CraftChunkSnapshot(int x, int z, int minHeight, int maxHeight, int seaLevel, String worldName, long fullTime, PalettedContainer<BlockState>[] sectionBlockIDs, byte[][] sectionSkyLights, byte[][] sectionEmitLights, boolean[] sectionEmpty, Heightmap heightmap, PalettedContainerRO<Holder<net.minecraft.world.level.biome.Biome>>[] biome) {
-        this.x = x;
+    CraftChunkSnapshot(int x, int z, int minHeight, int maxHeight, int seaLevel, String worldName, Key worldKey, long fullTime, PalettedContainer<BlockState>[] sectionBlockIDs, byte[][] sectionSkyLights, byte[][] sectionEmitLights, boolean[] sectionEmpty, Heightmap heightmap, PalettedContainerRO<Holder<net.minecraft.world.level.biome.Biome>>[] biome) {
+ // CraftChunkSnapshot(int x, int z, int minHeight, int maxHeight, int seaLevel, String worldName, long fullTime, PalettedContainer<BlockState>[] sectionBlockIDs, byte[][] sectionSkyLights, byte[][] sectionEmitLights, boolean[] sectionEmpty, Heightmap heightmap, PalettedContainerRO<Holder<net.minecraft.world.level.biome.Biome>>[] biome) {
+    	this.x = x;
         this.z = z;
         this.minHeight = minHeight;
         this.maxHeight = maxHeight;
         this.seaLevel = seaLevel;
         this.worldName = worldName;
+        this.worldKey = worldKey;
         this.captureFullTime = fullTime;
         this.blockIds = sectionBlockIDs;
         this.skylight = sectionSkyLights;
@@ -185,4 +191,9 @@ public class CraftChunkSnapshot implements ChunkSnapshot {
     private void validateChunkCoordinates(int x, int y, int z) {
         CraftChunk.validateChunkCoordinates(this.minHeight, this.maxHeight, x, y, z);
     }
+
+	@Override
+	public Key getWorldKey() {
+		return this.worldKey;
+	}
 }

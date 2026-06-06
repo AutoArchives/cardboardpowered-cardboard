@@ -104,6 +104,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Preconditions;
 import org.cardboardpowered.impl.MetadataStoreImpl;
+import org.checkerframework.checker.index.qual.Positive;
 import org.cardboardpowered.bridge.server.level.ChunkHolderBridge;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
@@ -111,6 +112,9 @@ import org.cardboardpowered.bridge.server.level.ChunkMapBridge;
 import com.mojang.datafixers.util.Pair;
 
 import io.papermc.paper.block.fluid.FluidData;
+import io.papermc.paper.entity.poi.PoiSearchResult;
+import io.papermc.paper.entity.poi.PoiType;
+import io.papermc.paper.entity.poi.PoiType.Occupancy;
 import io.papermc.paper.math.Position;
 import io.papermc.paper.raytracing.PositionedRayTraceConfigurationBuilder;
 import io.papermc.paper.registry.RegistryAccess;
@@ -3138,8 +3142,21 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
 	@Override
 	public @NotNull Path getWorldPath() {
+		return this.world.getServer().storageSource.getDimensionPath(this.world.dimension());
+	}
+
+	@Override
+	public @Nullable Location locateNearestPoi(@NotNull Location origin, @NotNull PoiType poiType, @Positive int radius,
+			@NotNull Occupancy occupancy) {
 		// TODO Auto-generated method stub
-		return this.getWorldFolder().toPath();
+		return null;
+	}
+
+	@Override
+	public @NotNull List<PoiSearchResult> locateAllPoiInRange(@NotNull Location origin,
+			@NotNull Predicate<PoiType> poiTypePredicate, @Positive int radius, @NotNull Occupancy occupancy) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

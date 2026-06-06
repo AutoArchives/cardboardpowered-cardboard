@@ -6,6 +6,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import org.bukkit.GameRule;
 import org.bukkit.NamespacedKey;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -112,5 +113,18 @@ public class CraftGameRule<T> extends GameRule<T> implements Holderable<net.mine
 			return this.typeOverride;
 		}
 	}
+
+	@Override
+    public T getDefaultValue() {
+        return shimLegacyValue(this.getHandle().defaultValue(), this);
+    }
+	
+	@SuppressWarnings({"unchecked", "rawtypes"})
+    public static <T> T shimLegacyValue(T value, GameRule<?> rule) {
+        if (rule instanceof LegacyGameRuleWrapper wrapper) {
+            return (T) wrapper.getToLegacyFromModern().apply(value);
+        }
+        return value;
+    }
 
 }

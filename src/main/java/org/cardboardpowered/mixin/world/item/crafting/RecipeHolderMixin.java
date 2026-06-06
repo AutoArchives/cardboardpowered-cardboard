@@ -25,7 +25,7 @@ public class RecipeHolderMixin implements RecipeHolderBridge {
 
     // Blasting
     public org.bukkit.inventory.Recipe toBukkitRecipe(BlastingRecipe thiz, NamespacedKey id) {
-        CraftItemStack result = CraftItemStack.asCraftMirror(thiz.result);
+        CraftItemStack result = CraftItemStack.asCraftMirror(thiz.result().create());
         CraftBlastingRecipe recipe = new CraftBlastingRecipe(id, result, CraftRecipe.toBukkit(thiz.input), thiz.experience, thiz.cookingTime());
         recipe.setGroup(thiz.group());
         recipe.setCategory(CraftRecipe.getCategory(thiz.category()));
@@ -34,7 +34,7 @@ public class RecipeHolderMixin implements RecipeHolderBridge {
 
     // Smoking
     public org.bukkit.inventory.Recipe toBukkitRecipe(SmokingRecipe thiz, NamespacedKey id) {
-        CraftItemStack result = CraftItemStack.asCraftMirror(thiz.result);
+        CraftItemStack result = CraftItemStack.asCraftMirror(thiz.result().create());
         CraftSmokingRecipe recipe = new CraftSmokingRecipe(id, result, CraftRecipe.toBukkit(thiz.input), thiz.experience, thiz.cookingTime());
         recipe.setGroup(thiz.group());
         recipe.setCategory(CraftRecipe.getCategory(thiz.category()));
@@ -43,7 +43,7 @@ public class RecipeHolderMixin implements RecipeHolderBridge {
 
     // Stonecutting
     public org.bukkit.inventory.Recipe toBukkitRecipe(StonecutterRecipe thiz, NamespacedKey id) {
-        CraftItemStack result = CraftItemStack.asCraftMirror(thiz.result());
+        CraftItemStack result = CraftItemStack.asCraftMirror(thiz.result().create());
         CraftStonecuttingRecipe recipe = new CraftStonecuttingRecipe(id, result, CraftRecipe.toBukkit(thiz.input()));
         recipe.setGroup(thiz.group());
         return recipe;
@@ -110,9 +110,9 @@ public class RecipeHolderMixin implements RecipeHolderBridge {
 			return recipe;
 			*/
 		} else if(nmsRecipe instanceof ShapedRecipe nms) {
-			CraftItemStack result = CraftItemStack.asCraftMirror(nms.result);
+			CraftItemStack result = CraftItemStack.asCraftMirror(nms.result.create());
 			CraftShapedRecipe recipe = new CraftShapedRecipe(CraftNamespacedKey.fromMinecraft(id.identifier()), result, nms);
-			recipe.setGroup(nms.group);
+			recipe.setGroup(nms.group());
 
 			switch(nms.getHeight()) {
 				case 1:
@@ -168,14 +168,14 @@ public class RecipeHolderMixin implements RecipeHolderBridge {
 			}
 			return recipe;
 		} else if(nmsRecipe instanceof ShapelessRecipe nms) {
-			CraftItemStack result = CraftItemStack.asCraftMirror(nms.result);
+			CraftItemStack result = CraftItemStack.asCraftMirror(nms.result.create());
 			CraftShapelessRecipe recipe = new CraftShapelessRecipe(CraftNamespacedKey.fromMinecraft(id.identifier()), result, nms);
-			recipe.setGroup(nms.group);
+			recipe.setGroup(nms.group());
 			for(Ingredient list : nms.ingredients)
 				recipe.addIngredient(CraftRecipe.toBukkit(list));
 			return recipe;
 		} else if(nmsRecipe instanceof SmeltingRecipe nms) {
-			CraftItemStack result = CraftItemStack.asCraftMirror(nms.result);
+			CraftItemStack result = CraftItemStack.asCraftMirror(nms.result.create());
 
 			CraftFurnaceRecipe recipe = new CraftFurnaceRecipe(CraftNamespacedKey.fromMinecraft(id.identifier()),
 					result,

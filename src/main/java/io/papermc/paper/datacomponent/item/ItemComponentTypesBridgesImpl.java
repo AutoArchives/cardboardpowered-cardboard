@@ -203,12 +203,8 @@ public final class ItemComponentTypesBridgesImpl implements ItemComponentTypesBr
         return new PaperUseCooldown.BuilderImpl(seconds);
     }
 
-    public DamageResistant damageResistant(final RegistryKeySet<DamageType> types) {
-        return new PaperDamageResistant(new net.minecraft.world.item.component.DamageResistant(PaperRegistrySets.convertToNms(Registries.DAMAGE_TYPE, Conversions.global().lookup(), types)));
-    }
-    
     @Override
-    public DamageResistant damageResistant(final TagKey<DamageType> types) {
+    public DamageResistant damageResistant(final RegistryKeySet<DamageType> types) {
         return new PaperDamageResistant(new net.minecraft.world.item.component.DamageResistant(PaperRegistrySets.convertToNms(Registries.DAMAGE_TYPE, Conversions.global().lookup(), types)));
     }
 

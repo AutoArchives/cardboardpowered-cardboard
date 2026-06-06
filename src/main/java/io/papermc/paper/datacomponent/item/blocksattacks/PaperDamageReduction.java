@@ -73,5 +73,10 @@ Handleable<BlocksAttacks.DamageReduction>
             return new PaperDamageReduction(new BlocksAttacks.DamageReduction(this.horizontalBlockingAngle, this.type, this.base, this.factor));
         }
     }
+
+	public BlocksAttacks.DamageReduction internal() {
+        return this.impl;
+    }
+
 }
 

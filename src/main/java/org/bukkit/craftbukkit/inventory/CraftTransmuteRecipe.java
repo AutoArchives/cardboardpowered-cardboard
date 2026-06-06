@@ -1,11 +1,12 @@
 package org.bukkit.craftbukkit.inventory;
 
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.TransmuteResult;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.TransmuteRecipe;
 import org.cardboardpowered.bridge.world.item.crafting.RecipeManagerBridge;
@@ -25,19 +26,22 @@ public class CraftTransmuteRecipe extends TransmuteRecipe implements CraftRecipe
         ret.setCategory(recipe.getCategory());
         return ret;
     }
+    
+    public void addToRecipeManager() {
+        net.minecraft.world.item.crafting.TransmuteRecipe recipe = new net.minecraft.world.item.crafting.TransmuteRecipe(
+            new net.minecraft.world.item.crafting.Recipe.CommonInfo(true),
+            new net.minecraft.world.item.crafting.CraftingRecipe.CraftingBookInfo(CraftRecipe.getCategory(this.getCategory()), this.getGroup()),
+            CraftRecipe.toIngredient(this.getInput(), true),
+            CraftRecipe.toIngredient(this.getMaterial(), true),
+            net.minecraft.world.item.crafting.TransmuteRecipe.DEFAULT_MATERIAL_COUNT,
+            CraftItemStack.asTemplate(this.getResult()),
+            false
+        );
+        ((RecipeManagerBridge)CraftServer.INSTANCE.getServer().getRecipeManager()).cardboard$addRecipe((new RecipeHolder<>(CraftNamespacedKey.toResourceKey(Registries.RECIPE, this.getKey()), recipe)));
+    }
 
     @Override
     public void addToCraftingManager() {
-        final ItemStack unwrappedInternalStack = CraftItemStack.unwrap(this.getResult());
-        ((RecipeManagerBridge)CraftServer.INSTANCE.getServer().getRecipeManager()).cardboard$addRecipe(
-                new RecipeHolder<>(CraftRecipe.toMinecraft(this.getKey()),
-                        new net.minecraft.world.item.crafting.TransmuteRecipe(this.getGroup(),
-                                CraftRecipe.getCategory(this.getCategory()),
-                                this.toNMS(this.getInput(), true),
-                                this.toNMS(this.getMaterial(), true),
-                                new TransmuteResult(unwrappedInternalStack.getItemHolder(), unwrappedInternalStack.getCount(), unwrappedInternalStack.getComponentsPatch())
-                        )
-                )
-        );
+    	this.addToRecipeManager();
     }
 }

@@ -1,10 +1,12 @@
 package org.bukkit.craftbukkit.inventory;
 
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.trim.CraftTrimPattern;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.SmithingTrimRecipe;
 import org.bukkit.inventory.meta.trim.TrimPattern;
@@ -29,15 +31,20 @@ public class CraftSmithingTrimRecipe extends SmithingTrimRecipe implements Craft
         return ret;
     }
 
+    public void addToRecipeManager() {
+    	final net.minecraft.world.item.crafting.SmithingTrimRecipe recipe = new net.minecraft.world.item.crafting.SmithingTrimRecipe(
+    			new net.minecraft.world.item.crafting.Recipe.CommonInfo(true),
+    			CraftRecipe.toIngredient(this.getTemplate(), false),
+    			CraftRecipe.toIngredient(this.getBase(), false),
+    			CraftRecipe.toIngredient(this.getAddition(), false),
+    			CraftTrimPattern.bukkitToMinecraftHolder(this.getTrimPattern()) //,
+    			// this.willCopyDataComponents()
+    			);
+    	((RecipeManagerBridge)CraftServer.INSTANCE.getServer().getRecipeManager()).cardboard$addRecipe(new RecipeHolder<>(CraftNamespacedKey.toResourceKey(Registries.RECIPE, this.getKey()), recipe));
+    }
+
     @Override
     public void addToCraftingManager() {
-        final net.minecraft.world.item.crafting.SmithingTrimRecipe recipe = new net.minecraft.world.item.crafting.SmithingTrimRecipe(
-            this.toNMS(this.getTemplate(), false),
-            this.toNMS(this.getBase(), false),
-            this.toNMS(this.getAddition(), false),
-            CraftTrimPattern.bukkitToMinecraftHolder(this.getTrimPattern())//,
-            //this.willCopyDataComponents() // TODO
-        );
-        ((RecipeManagerBridge)CraftServer.INSTANCE.getServer().getRecipeManager()).cardboard$addRecipe(new RecipeHolder<>(CraftRecipe.toMinecraft(this.getKey()), recipe));
+    	this.addToRecipeManager();
     }
 }

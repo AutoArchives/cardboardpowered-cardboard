@@ -35,6 +35,8 @@ public class PrimaryLevelDataMixin implements PrimaryLevelDataBridge {
     @Unique
     public net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> respawnDimension = net.minecraft.world.level.Level.OVERWORLD; // Paper
 
+    // TODO: 26.1: Reimplement WeatherChangeEvent and ThunderChangeEvent injections
+    /*
     @Inject(at = @At("HEAD"), method = "setThundering")
     public void thunder(boolean flag, CallbackInfo info) {
         PrimaryLevelData p = (PrimaryLevelData)(Object) this;
@@ -62,6 +64,7 @@ public class PrimaryLevelDataMixin implements PrimaryLevelDataBridge {
                 return;
         }
     }
+    */
 
     @Override
     public void checkName(String name) {

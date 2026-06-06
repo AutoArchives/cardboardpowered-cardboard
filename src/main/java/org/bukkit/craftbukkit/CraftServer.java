@@ -215,6 +215,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -237,7 +238,7 @@ import java.util.logging.Logger;
 public class CraftServer implements Server {
 
     public final String serverName = "Cardboard";
-    public final String bukkitVersion = "1.21.11-R0.1-SNAPSHOT"; // "1.21.10-R0.1-SNAPSHOT"; // "1.21.8-R0.1-SNAPSHOT"; // "1.21.1-R0.1-SNAPSHOT";
+    public final String bukkitVersion = "26.1.2"; // "1.21.11-R0.1-SNAPSHOT"; // "1.21.10-R0.1-SNAPSHOT"; // "1.21.8-R0.1-SNAPSHOT"; // "1.21.1-R0.1-SNAPSHOT";
     public final String serverVersion;
     public final String shortVersion;
 
@@ -747,7 +748,7 @@ public class CraftServer implements Server {
     public KeyedBossBar createBossBar(NamespacedKey key, String title, BarColor barColor, BarStyle barStyle, BarFlag... barFlags) {
         Preconditions.checkArgument(key != null, "key");
 
-        CustomBossEvent bossBattleCustom = getServer().getCustomBossEvents().create(CraftNamespacedKey.toMinecraft(key), CraftChatMessage.fromString(title, true)[0]);
+        CustomBossEvent bossBattleCustom = this.getServer().getCustomBossEvents().create(net.minecraft.util.RandomSource.create(), CraftNamespacedKey.toMinecraft(key), CraftChatMessage.fromString(title, true)[0]);
         CardboardBossBar craftKeyedBossbar = new CardboardBossBar(bossBattleCustom);
         craftKeyedBossbar.setColor(barColor);
         craftKeyedBossbar.setStyle(barStyle);
@@ -1232,7 +1233,7 @@ public class CraftServer implements Server {
 
     @Override
     public boolean getGenerateStructures() {
-        return getServer().getWorldData().worldGenOptions().generateStructures();
+    	return this.getServer().getWorldGenSettings().options().generateStructures();
     }
 
     @Override
@@ -1682,7 +1683,8 @@ public class CraftServer implements Server {
 
     @Override
     public File getWorldContainer() {
-        return ((MinecraftServerBridge)this.getServer()).getSessionBF().getDimensionPath(net.minecraft.world.level.Level.OVERWORLD).getParent().toFile();
+    	return this.getServer().storageSource.getLevelDirectory().path().getParent().toFile();
+    	//return ((MinecraftServerBridge)this.getServer()).getSessionBF().getDimensionPath(net.minecraft.world.level.Level.OVERWORLD).getParent().toFile();
     }
 
     @Override
@@ -2738,6 +2740,11 @@ public class CraftServer implements Server {
         ((PrimaryLevelDataBridge)this.console.overworld().serverLevelData).cardboard$setRespawnDimension(((CraftWorld) world).getHandle().dimension());
         this.console.updateEffectiveRespawnData();
     }
+
+	@Override
+	public @NotNull Path getLevelDirectory() {
+		return this.getServer().storageSource.getLevelDirectory().path();
+	}
     
     // public boolean isTickPaused() {
     //    return console.idleTickCount > 0 && console.idleTickCount >= console.getPauseWhenEmptySeconds() * 20;

@@ -759,7 +759,7 @@ accessible method net/minecraft/world/item/crafting/RecipeMap <init> (Lcom/googl
 accessible field net/minecraft/world/item/crafting/RecipeManager recipes Lnet/minecraft/world/item/crafting/RecipeMap;
 accessible field net/minecraft/world/item/crafting/RecipeMap byType Lcom/google/common/collect/Multimap;
 accessible field net/minecraft/world/item/crafting/RecipeMap byKey Ljava/util/Map;
-accessible field net/minecraft/world/item/crafting/TransmuteRecipe result Lnet/minecraft/world/item/crafting/TransmuteResult;
+accessible field net/minecraft/world/item/crafting/TransmuteRecipe result Lnet/minecraft/world/item/ItemStackTemplate;
 accessible field net/minecraft/world/item/crafting/TransmuteRecipe input Lnet/minecraft/world/item/crafting/Ingredient;
 accessible field net/minecraft/world/item/crafting/TransmuteRecipe material Lnet/minecraft/world/item/crafting/Ingredient;
 accessible field net/minecraft/world/item/crafting/SmithingTrimRecipe template Lnet/minecraft/world/item/crafting/Ingredient;
@@ -952,3 +952,7 @@ accessible method net/minecraft/world/entity/Entity isInvulnerableToBase (Lnet/m
 accessible field net/minecraft/server/level/ChunkMap$TrackedEntity serverEntity Lnet/minecraft/server/level/ServerEntity;
 accessible field net/minecraft/world/entity/Entity FLAG_INVISIBLE I
 accessible method net/minecraft/world/level/block/state/StateHolder createValue (Lnet/minecraft/world/level/block/state/properties/Property;Ljava/lang/Comparable;)Lnet/minecraft/world/level/block/state/StateHolder;
+accessible field net/minecraft/world/item/component/ItemContainerContents items Ljava/util/List;
+accessible field net/minecraft/resources/RegistryLoadTask registry Lnet/minecraft/core/WritableRegistry;
+accessible method net/minecraft/resources/RegistryLoadTask registryKey ()Lnet/minecraft/resources/ResourceKey;
+accessible field net/minecraft/server/MinecraftServer storageSource Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;

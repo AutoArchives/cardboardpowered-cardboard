@@ -29,6 +29,7 @@ import org.bukkit.craftbukkit.entity.CraftEntityType;
 import org.bukkit.craftbukkit.inventory.SerializableMeta;
 // import org.bukkit.craftbukkit.tag.CraftEntityTag;
 import org.cardboardpowered.impl.tag.CraftEntityTag;
+import org.jetbrains.annotations.Nullable;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.entity.EntityType;
 
@@ -191,5 +192,25 @@ implements org.bukkit.inventory.meta.components.EquippableComponent {
     public String toString() {
         return "CraftEquippableComponent{component" + String.valueOf(this.handle) + "}";
     }
+
+	@Override
+	public boolean canBeSheared() {
+		return this.handle.canBeSheared();
+	}
+
+	@Override
+	public void setCanBeSheared(boolean sheared) {
+        this.handle = new Equippable(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), this.handle.allowedEntities(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), sheared, this.handle.shearingSound());
+	}
+
+	@Override
+	public @Nullable Sound getShearingSound() {
+		return CraftSound.minecraftHolderToBukkit(this.handle.shearingSound());
+	}
+
+	@Override
+	public void setShearingSound(@Nullable Sound sound) {
+        this.handle = new Equippable(this.handle.slot(), this.handle.equipSound(), this.handle.assetId(), this.handle.cameraOverlay(), this.handle.allowedEntities(), this.handle.dispensable(), this.handle.swappable(), this.handle.damageOnHurt(), this.handle.equipOnInteract(), this.handle.canBeSheared(), (sound != null) ? CraftSound.bukkitToMinecraftHolder(sound) : BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.SHEARS_SNIP));
+	}
 }
 

@@ -5,28 +5,28 @@ import net.minecraft.world.item.component.BlocksAttacks;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.checkerframework.checker.index.qual.NonNegative;
 
-public record PaperItemDamageFunction(BlocksAttacks.ItemDamageFunction impl) implements ItemDamageFunction,
+public record PaperItemDamageFunction(BlocksAttacks.ItemDamageFunction internal) implements ItemDamageFunction,
 Handleable<BlocksAttacks.ItemDamageFunction>
 {
     @Override
     public BlocksAttacks.ItemDamageFunction getHandle() {
-        return this.impl;
+        return this.internal;
     }
 
     public @NonNegative float threshold() {
-        return this.impl.threshold();
+        return this.internal.threshold();
     }
 
     public float base() {
-        return this.impl.base();
+        return this.internal.base();
     }
 
     public float factor() {
-        return this.impl.factor();
+        return this.internal.factor();
     }
 
     public int damageToApply(float damage) {
-        return this.impl.apply(damage);
+        return this.internal.apply(damage);
     }
 
     static final class BuilderImpl
