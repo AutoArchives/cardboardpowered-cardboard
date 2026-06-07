@@ -59,6 +59,7 @@ import io.papermc.paper.configuration.PaperServerConfiguration;
 import io.papermc.paper.configuration.ServerConfiguration;
 import io.papermc.paper.datapack.DatapackManager;
 import io.papermc.paper.math.Position;
+import io.papermc.paper.plugin.manager.PaperPluginManagerImpl;
 import io.papermc.paper.profile.PaperFilledProfileCache;
 import io.papermc.paper.registry.RegistryAccess;
 import net.kyori.adventure.audience.Audience;
@@ -247,7 +248,7 @@ public class CraftServer implements Server {
     private final CommandMapImpl commandMap;
 
     private final SimplePluginManager pluginManager;
-    // public final PaperPluginManagerImpl paperPluginManager;
+    public final PaperPluginManagerImpl paperPluginManager;
 
     public Set<String> activeCompatibilities = Collections.emptySet();
 
@@ -329,8 +330,15 @@ public class CraftServer implements Server {
         server = nms;
         console = nms;
         commandMap = new CommandMapImpl(this);
-        pluginManager = new SimplePluginManager(this, commandMap);
+        // pluginManager = new SimplePluginManager(this, commandMap);
         // paperPluginManager = new PaperPluginManagerImpl(this, commandMap, this.pluginManager);
+        
+        // Paper start
+        // this.commandMap = new CraftCommandMap(this);
+        this.pluginManager = new SimplePluginManager(this, commandMap);
+        this.paperPluginManager = new io.papermc.paper.plugin.manager.PaperPluginManagerImpl(this, this.commandMap, pluginManager);
+        this.pluginManager.paperPluginManager = this.paperPluginManager;
+         // Paper end
 
         this.paperProfileCache = new PaperFilledProfileCache();
 

@@ -60,6 +60,7 @@ import io.papermc.paper.plugin.configuration.PluginMeta;
 @Mixin(value = SimplePluginManager.class, remap = false)
 public class BukkitSimplePluginManagerMixin {
 
+	
 	@Shadow
 	private Server server;
 
@@ -107,7 +108,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public Plugin[] loadPlugins(File directory) {
 		// Preconditions.checkArgument(directory != null, "Directory cannot be null");
@@ -129,7 +130,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
     public Plugin[] loadPlugins(File[] files) {
         //Preconditions.checkArgument(files != null, "File list cannot be null");
 
@@ -380,7 +381,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public synchronized Plugin loadPlugin(File file) throws InvalidPluginException, UnknownDependencyException {
 		// Preconditions.checkArgument(file != null, "File cannot be null");
@@ -419,7 +420,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public synchronized Plugin getPlugin( String name) {
 		return lookupNames.get(name.replace(' ', '_'));
@@ -429,7 +430,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public synchronized Plugin[] getPlugins() {
 		return plugins.toArray(new Plugin[plugins.size()]);
@@ -439,7 +440,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public boolean isPluginEnabled( String name) {
         Plugin plugin = getPlugin(name);
@@ -452,7 +453,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public boolean isPluginEnabled(Plugin plugin) {
         if ((plugin != null) && (plugins.contains(plugin))) {
@@ -466,8 +467,8 @@ public class BukkitSimplePluginManagerMixin {
 
 	/**
 	 * @reason .
-	 * @author .
-	 */
+	 * @author.
+	 *
 	@Overwrite(remap = false)
 	public void enablePlugin( Plugin plugin) {
         if (!plugin.isEnabled()) {
@@ -492,7 +493,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public void disablePlugins() {
         Plugin[] plugins = getPlugins();
@@ -506,7 +507,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public void disablePlugin( Plugin plugin) {
 		if (plugin.isEnabled()) {
@@ -556,7 +557,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public void clearPlugins() {
         synchronized ((SimplePluginManager) (Object) this ) {
@@ -577,7 +578,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public void callEvent( Event event) {
         if (event.isAsynchronous()) {
@@ -604,7 +605,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public void registerEvents( Listener listener,  Plugin plugin) {
         if (!plugin.isEnabled()) {
@@ -631,7 +632,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public void registerEvent( Class<? extends Event> event,  Listener listener,
 			 EventPriority priority,  EventExecutor executor,  Plugin plugin,
@@ -657,7 +658,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public Permission getPermission( String name) {
 		 return permissions.get(name.toLowerCase(Locale.ROOT));
@@ -667,7 +668,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public void addPermission( Permission perm) {
 		 addPermission(perm, true);
@@ -676,7 +677,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason cardboard
 	 * @author cardboard
-	 */
+	 *
 	@Overwrite(remap = false)
 	public void addPermission( Permission perm, boolean dirty) {
         String name = perm.getName().toLowerCase(Locale.ROOT);
@@ -692,7 +693,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public Set<Permission> getDefaultPermissions(boolean op) {
 		return ImmutableSet.copyOf(defaultPerms.get(op));
@@ -701,7 +702,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
     public void removePermission(Permission perm) {
         removePermission(perm.getName());
@@ -710,7 +711,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
     public void removePermission(String name) {
         permissions.remove(name.toLowerCase(Locale.ROOT));
@@ -719,7 +720,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public void recalculatePermissionDefaults( Permission perm) {
         if (perm != null && permissions.containsKey(perm.getName().toLowerCase(Locale.ROOT))) {
@@ -733,7 +734,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
     private void calculatePermissionDefault(Permission perm, boolean dirty) {
         if ((perm.getDefault() == PermissionDefault.OP) || (perm.getDefault() == PermissionDefault.TRUE)) {
@@ -752,8 +753,8 @@ public class BukkitSimplePluginManagerMixin {
 	
 	/**
 	 * @reason .
-	 * @author .
-	 */
+	 * @author.
+	 *
 	@Overwrite(remap = false)
     public void dirtyPermissibles() {
         dirtyPermissibles(true);
@@ -763,7 +764,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
     private void dirtyPermissibles(boolean op) {
         Set<Permissible> permissibles = getDefaultPermSubscriptions(op);
@@ -776,7 +777,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public void subscribeToPermission( String permission,  Permissible permissible) {
         String name = permission.toLowerCase(Locale.ROOT);
@@ -793,7 +794,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public void unsubscribeFromPermission( String permission,  Permissible permissible) {
         String name = permission.toLowerCase(Locale.ROOT);
@@ -811,7 +812,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public Set<Permissible> getPermissionSubscriptions( String permission) {
         String name = permission.toLowerCase(Locale.ROOT);
@@ -826,7 +827,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public void subscribeToDefaultPerms(boolean op,  Permissible permissible) {
         Map<Permissible, Boolean> map = defSubs.get(op);
@@ -842,7 +843,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public void unsubscribeFromDefaultPerms(boolean op,  Permissible permissible) {
         Map<Permissible, Boolean> map = defSubs.get(op);
@@ -858,8 +859,8 @@ public class BukkitSimplePluginManagerMixin {
 
 	/**
 	 * @reason .
-	 * @author .
-	 */
+	 * @author 
+	 *
 	@Overwrite(remap = false)
 	public Set<Permissible> getDefaultPermSubscriptions(boolean op) {
         Map<Permissible, Boolean> map = defSubs.get(op);
@@ -874,7 +875,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public Set<Permission> getPermissions() {
 		 return new HashSet<Permission>(permissions.values());
@@ -883,7 +884,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public boolean useTimings() {
 		return false;
@@ -893,7 +894,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public void clearPermissions() {
 		//this.paperPluginManager.clearPermissions();
@@ -902,7 +903,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public boolean isTransitiveDependency(PluginMeta pluginMeta, PluginMeta dependencyConfig) {
 		//return this.paperPluginManager.isTransitiveDependency(pluginMeta, dependencyConfig);
@@ -912,7 +913,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public void overridePermissionManager( Plugin plugin,  PermissionManager permissionManager) {
 		//this.paperPluginManager.overridePermissionManager(plugin, permissionManager);
@@ -921,7 +922,7 @@ public class BukkitSimplePluginManagerMixin {
 	/**
 	 * @reason .
 	 * @author .
-	 */
+	 *
 	@Overwrite(remap = false)
 	public void addPermissions( List<Permission> perm) {
 		
@@ -929,6 +930,6 @@ public class BukkitSimplePluginManagerMixin {
 			this.addPermission(p);
 		
 		//this.paperPluginManager.addPermissions(perm);
-	}
+	}*/
 
 }

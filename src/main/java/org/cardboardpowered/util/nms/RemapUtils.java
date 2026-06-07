@@ -70,7 +70,7 @@ public class RemapUtils implements IRemapUtils {
 
     public static String NMS_VERSION = "v1_21_R7"; // "v1_21_R3"; // "v1_20_R4";
     
-    private static MyMappingResolver myMappingResolver;
+    // private static MyMappingResolver myMappingResolver;
     
     private static HashMap<String, String> cspigot2fabric = new HashMap<>();
     
@@ -128,7 +128,7 @@ public class RemapUtils implements IRemapUtils {
             jarMapping.loadMappings(
                     new BufferedReader(new InputStreamReader(RemapUtils.class.getClassLoader()
                             // .getResourceAsStream("mappings/spigot2srg-1.20.srg"))),
-                    		.getResourceAsStream("mappings/testsrg.srg"))),
+                    		.getResourceAsStream("mappings/cardboard.srg"))),
                     null,
                     null, false);
         } catch (Exception e) {
@@ -147,14 +147,17 @@ public class RemapUtils implements IRemapUtils {
 			e1.printStackTrace();
 		}
         
+        /*
         try {
         	LOGGER.info("Exporting Mojang Mappings...");
         	Path path = exportResourceMeta("reobf.tiny", dir).toPath();
-			myMappingResolver = new MyMappingResolver(path, MappingFormat.TINY_2_FILE, "named", "intermediary");
+			// myMappingResolver = new MyMappingResolver(path, MappingFormat.TINY_2_FILE, "named", "intermediary");
 			LOGGER.info("RemapUtils: MyMappingResolver Namespace: " + myMappingResolver.getCurrentRuntimeNamespace());
 			
-			output(path);
+			//output(path);
 			
+			
+			/*
 			myMappingResolver.tree.getClasses().forEach(clm -> {
 				String a = clm.getName("named");
 				String b = clm.getName("intermediary").replace('.', '/');
@@ -163,25 +166,25 @@ public class RemapUtils implements IRemapUtils {
 					jarMapping.registerClassMapping(a, b);
 				//}
 			});
-			
+			*
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 
-        String bukkit_cl_srg = "bukkit-1.21.11-cl.csrg";
-        File bukkit_class_mappings_file = exportResource(bukkit_cl_srg, dir);
+        // String bukkit_cl_srg = "bukkit-1.21.11-cl.csrg";
+        // File bukkit_class_mappings_file = exportResource(bukkit_cl_srg, dir);
         
         jarMapping.classes.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/CraftWorld", "org/cardboardpowered/impl/world/CraftWorld");
         
         // some missing
-        jarMapping.classes.put("net/minecraft/nbt/ListTag", "net/minecraft/class_2499");
+        // jarMapping.classes.put("net/minecraft/nbt/ListTag", "net/minecraft/class_2499");
         jarMapping.classes.put("net/minecraft/class_7225$a", "net/minecraft/class_7225$class_7874");
         
         // Mojang: HolderLookup$Provider
         jarMapping.classes.put("net/minecraft/class_7225$Provider", "net/minecraft/class_7225$class_7874");
 
-        jarMapping.classes.put("net/minecraft/server/dedicated/DedicatedServer", "net/minecraft/class_3176");
+        // jarMapping.classes.put("net/minecraft/server/dedicated/DedicatedServer", "net/minecraft/class_3176");
         
         jarMapping.registerClassMapping("net/minecraft/class_7225$Provider", "net/minecraft/class_7225$class_7874");
         
@@ -191,6 +194,7 @@ public class RemapUtils implements IRemapUtils {
         
         addMethodOverrides();
 
+        /*
         try {
         	LOGGER.debug("Reading \"" + bukkit_cl_srg + "\".");
 
@@ -235,7 +239,7 @@ public class RemapUtils implements IRemapUtils {
         	LOGGER.info("Read " + count + " classes from " + bukkit_cl_srg);
         } catch (IOException e) {
         	e.printStackTrace();
-        }
+        }*/
 
         JointProvider provider = new JointProvider();
         provider.add(inheritanceMap);
@@ -258,29 +262,8 @@ public class RemapUtils implements IRemapUtils {
         DEBUG_VERBOSE_CALLS = CardboardConfig.DEBUG_VERBOSE_CALLS;
     }
     
+	@Deprecated(since = "26.1")
     private static void output(Path path) throws IOException {
-    	if (!FabricLoader.getInstance().isDevelopmentEnvironment()) {
-    		return;
-    	}
-    	
-    	 MemoryMappingTree tree = new MemoryMappingTree();
-         Tiny2FileReader.read(Files.newBufferedReader(path), tree);
-
-         try (BufferedWriter out = Files.newBufferedWriter(Paths.get("output1.tsrg"))) {
-             TsrgWriter.write(tree, out, "official", "named");
-         }
-
-         try (BufferedWriter out = Files.newBufferedWriter(Paths.get("output2.tsrg"))) {
-             TsrgWriter.write(tree, out, "named", "intermediary");
-         }
-         
-         try (BufferedWriter out = Files.newBufferedWriter(Paths.get("output3.tsrg"))) {
-             TsrgWriter.write(tree, out, "official", "intermediary");
-         }
-         
-         try (BufferedWriter out = Files.newBufferedWriter(Paths.get("output4.tsrg"))) {
-             TsrgWriter.write(tree, out, "intermediary", "named");
-         }
     }
 
     @Override
@@ -326,17 +309,20 @@ public class RemapUtils implements IRemapUtils {
         }
         
         // Our Mapping Resolver
+        /*
     	if (res.equalsIgnoreCase(typeName)) {
     		String res2 = myMappingResolver.mapClassName("named", res.replace('/', '.')).replace('.', '/');
     		if (res2.contains("class_")) {
     			res = res2;
     		}
     	}
+    	*/
         
         //if (res.contains("class_7225")) {
         	// System.out.println("MIS: " + typeName + " / " + res);
         //}
         
+    	/*
         if (typeName.contains("$") && (typeName.contains("net") && typeName.contains("minecraft"))) {
         	
         	
@@ -374,6 +360,7 @@ public class RemapUtils implements IRemapUtils {
         	// System.out.println("$ NAME: " + typeName + " = " + res + " = " + namm);
         	return namm;
         }
+        */
         
         /*
         if (typeName.contains("net") && typeName.contains("minecraft")) {
@@ -436,10 +423,8 @@ public class RemapUtils implements IRemapUtils {
     
     private static HashMap<String, String> methodExtra = new HashMap<>();
     
+    @Deprecated(since = "26.1")
     private static void addMethodOverrides() {
-    	methodExtra.put("class_2960.fromNamespaceAndPath(java.lang.String, java.lang.String)", "method_60655");
-    	methodExtra.put("class_2378.wrapAsHolder(java.lang.Object)", "method_47983");
-    	methodExtra.put("class_2629.c(net.minecraft.class_1259)", "method_34096");
     }
 
     private static String getMethodDescriptor(Class<?>... parameterTypes) {
@@ -494,6 +479,7 @@ public class RemapUtils implements IRemapUtils {
     	
     	//System.out.println("DEBUG: " + type.getName() + "(" + resv + ")" + " / " + name + " (" + mm + " = " + res);
     	
+    	/*
     	if (res.length() <= 2) {
     		String cl = type.getName();
     		String cll = mr.unmapClassName("official", cl);
@@ -505,13 +491,14 @@ public class RemapUtils implements IRemapUtils {
     	    	}
     			return match;
     		}
-    	}
+    	}*/
 
     	if (DEBUG_VERBOSE_CALLS) {
     		System.out.println("Reflection: " + type.getName() + " / " + res);
     		dewe(type, "Debug: METH: " + type.getName() + " / " + name + " = " + res);
     	}
 
+    	/*
     	if (!res.contains("method_")) {
     		String key = type.getSimpleName() + "." + res + mm;
     		if (methodExtra.containsKey(key)) {
@@ -551,6 +538,7 @@ public class RemapUtils implements IRemapUtils {
             	}
             }
     	}
+    	*/
     	
     	if (CardboardConfig.DEBUG_LOG_REMAP) {
     		// if (!(name.startsWith("method_") && name.equals(res))) {
@@ -560,6 +548,7 @@ public class RemapUtils implements IRemapUtils {
         return res;
     }
     
+    /*
     public static String mapMethodName_2(Class<?> type, String name, String res, String desc) {
     	String clazz = myMappingResolver.unmapClassName("named", type.getName()); // Running -> Mojang
     	String mapp = myMappingResolver.mapMethodNameSafe("named", clazz, res, desc, "intermediary");
@@ -571,12 +560,13 @@ public class RemapUtils implements IRemapUtils {
     		return mapp;
     	}
     	return res;
-    }
+    }*/
 
     
     /**
      * Find matching declared method of a class.
      */
+    /*
     public String find_meth(String obfClaz, Class<?> type, String name, Class<?>... parameterTypes) {
     	System.out.println("FINDING MATCH FOR: " + obfClaz + "." + name);
     	for (Method m : type.getDeclaredMethods()) {
@@ -602,6 +592,7 @@ public class RemapUtils implements IRemapUtils {
     	}
     	return name;
     }
+    */
 
     @Override
     public String inverseMapMethodName(Class<?> type, String name, Class<?>... parameterTypes) {
@@ -625,7 +616,7 @@ public class RemapUtils implements IRemapUtils {
             }
         }
         
-        String res = mapped != null ? mapped : fieldName;
+        // String res = mapped != null ? mapped : fieldName;
 
         if (DEBUG_VERBOSE_CALLS) {
         	System.out.println("DEBUG: FIELD: " + revType + "/" + type.getName() + " / " + fieldName + " = " + (mapped != null ? mapped : fieldName));
@@ -634,6 +625,7 @@ public class RemapUtils implements IRemapUtils {
         // dewe(type, "Debug: FIELD: " + type.getName() + " / " + fieldName + " = " + (mapped != null ? mapped : fieldName));
         
         // Check our MappingResolver
+        /*
         if (fieldName.equalsIgnoreCase(res) && type.getName().contains("class_")) {
         	String clazz = myMappingResolver.unmapClassName("named", type.getName()); // Running -> Mojang
         	String mapp = myMappingResolver.mapFieldName_CheckObf("named", clazz, fieldName, null);
@@ -655,7 +647,7 @@ public class RemapUtils implements IRemapUtils {
         }
         
         //myMappingResolver.mapFieldName(res, mapped, fieldName, res)
-        
+        */
         return mapped != null ? mapped : fieldName;
     }
     

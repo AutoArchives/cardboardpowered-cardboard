@@ -146,6 +146,7 @@ dependencies {
     // Configurate
     include(implementation('org.spongepowered:configurate-core:4.2.0'))
     include(implementation('org.spongepowered:configurate-hocon:4.2.0'))
+    include(implementation("org.spongepowered:configurate-yaml:4.2.0"))
     
     // Remove parts that are included with Minecraft or Downloaded
     removeLibs group: "com.google.guava", name: "guava", version: "21.0"

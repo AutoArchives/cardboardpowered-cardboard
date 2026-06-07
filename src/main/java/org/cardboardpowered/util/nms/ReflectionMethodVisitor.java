@@ -385,13 +385,16 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         	desc = desc.replace("class_2359", "class_2378");
         }
 
+        /*
         if (name.equals("lookupOrThrow")) {
         	System.out.println(opcode);
         	System.out.println("O: " + owner);
         	System.out.println("desc: " + desc);
         	name = "cardboard$" + name;
         }
+        */
 
+        /*
         if (opcode == Opcodes.INVOKEINTERFACE
                 && owner.equals("net/minecraft/class_5455$class_6890") // RegistryAccess$Frozen
                 && name.equals("lookupOrThrow")
@@ -409,7 +412,9 @@ public class ReflectionMethodVisitor extends MethodVisitor {
 
             return;
         }
+        */
 
+        /*
         if (owner.startsWith("net/minecraft") && name.length() <= 2) {
         	MappingResolver mr = FabricLoader.getInstance().getMappingResolver(); 
 
@@ -487,7 +492,9 @@ public class ReflectionMethodVisitor extends MethodVisitor {
         	super.visitMethodInsn( opcode, owner, mapped, desc, itf );
         	return;
         }
+        */
 
+        /*
         if (owner.contains("NbtCompound") || owner.contains("class_2487")) {
             if (name.startsWith("setString")) {
                 String cl = mr.unmapClassName("intermediary", owner.replace('/','.'));
@@ -496,6 +503,7 @@ public class ReflectionMethodVisitor extends MethodVisitor {
                 return;
             }
         }
+        */
 
         if (owner.equalsIgnoreCase("org/bukkit/Material")) {
             if (name.equalsIgnoreCase("getField")) {

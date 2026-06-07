@@ -44,6 +44,8 @@ public abstract class JavaPlugin extends PluginBase {
     private FileConfiguration newConfig = null;
     private File configFile = null;
     private Logger logger = null;
+    
+    private io.papermc.paper.plugin.configuration.PluginMeta pluginMeta = null;
 
     public JavaPlugin() {
         final ClassLoader classLoader = this.getClass().getClassLoader();
@@ -55,8 +57,10 @@ public abstract class JavaPlugin extends PluginBase {
     
     @Override
     public final io.papermc.paper.plugin.configuration.PluginMeta getPluginMeta() {
+    	return this.pluginMeta;
+    	
     	// CARDBOARD: Just use description.
-    	return this.description;
+    	// return this.description;
     }
 
     protected JavaPlugin(final JavaPluginLoader loader, final PluginDescriptionFile description, final File dataFolder, final File file) {
@@ -266,6 +270,7 @@ public abstract class JavaPlugin extends PluginBase {
     }
 
 
+    /*
     final void init(PluginLoader loader, Server server, PluginDescriptionFile description, File dataFolder, File file, ClassLoader classLoader) {
         this.loader = loader;
         this.server = server;
@@ -277,6 +282,29 @@ public abstract class JavaPlugin extends PluginBase {
 
         // Cardboard Fix Paper's Logger.
         this.logger = BukkitLogger.getPluginLogger(description.getPrefix() != null ? description.getPrefix() : description.getName());
+    }
+    */
+    
+    private static class DummyPluginLoaderImplHolder {
+        private static final PluginLoader INSTANCE =  net.kyori.adventure.util.Services.service(PluginLoader.class)
+            .orElseThrow();
+    }
+    
+    public final void init(PluginLoader loader, Server server, PluginDescriptionFile description, File dataFolder, File file, ClassLoader classLoader) {
+        init(server, description, dataFolder, file, classLoader, description, com.destroystokyo.paper.utils.PaperPluginLogger.getLogger(description));
+        this.pluginMeta = description;
+    }
+
+    public final void init(Server server, PluginDescriptionFile description, File dataFolder, File file, ClassLoader classLoader, io.papermc.paper.plugin.configuration.PluginMeta configuration, Logger logger) {
+        this.loader = DummyPluginLoaderImplHolder.INSTANCE;
+        this.server = server;
+        this.file = file;
+        this.description = description;
+        this.dataFolder = dataFolder;
+        this.classLoader = classLoader;
+        this.configFile = new File(dataFolder, "config.yml");
+        this.pluginMeta = configuration;
+        this.logger = logger;
     }
 
     /**
