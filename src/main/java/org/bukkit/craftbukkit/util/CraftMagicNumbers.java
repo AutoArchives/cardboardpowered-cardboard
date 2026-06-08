@@ -415,10 +415,11 @@ public final class CraftMagicNumbers implements UnsafeValues, IMagicNumbers {
     @Override
     public byte[] processClass(PluginDescriptionFile pdf, String path, byte[] clazz) {
         // Paper start
-        if (DISABLE_OLD_API_SUPPORT) {
+        /*
+    	if (DISABLE_OLD_API_SUPPORT) {
             // Make sure we still go through our reflection rewriting if needed
             return io.papermc.paper.pluginremap.reflect.ReflectionRemapper.processClass(clazz);
-        }
+        }*/
         // Paper end
         try {
             clazz = this.commodore.convert(clazz, pdf.getName(), ApiVersion.getOrCreateVersion(pdf.getAPIVersion()), ((CraftServer) Bukkit.getServer()).activeCompatibilities);

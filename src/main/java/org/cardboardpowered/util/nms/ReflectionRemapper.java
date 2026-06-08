@@ -18,7 +18,6 @@
  */
 package org.cardboardpowered.util.nms;
 
-import org.cardboardpowered.CardboardMod;
 import org.cardboardpowered.mohistremap.RemapUtilProvider;
 
 import net.minecraft.SharedConstants;
@@ -26,19 +25,11 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerConnectionListener;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.plugin.PluginLoader;
-import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.plugin.java.JavaPluginLoader;
-
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * Re-mapping of Reflection.
@@ -77,37 +68,22 @@ public class ReflectionRemapper {
         return className;
     }
 
-    /**
-     * @deprecated Old code
-     */
-    @Deprecated
-    private static Class<?> getClassForName(String className) throws ClassNotFoundException {
-        return getClassFromJPL(className);
-    }
-
     @Deprecated
     public static Field getFieldByName(Class<?> calling, String f) throws ClassNotFoundException {
         try {
-            Field field = calling.getDeclaredField(MappingsReader.getIntermedField_2(calling, f));
+            Field field = calling.getDeclaredField(f);
             field.setAccessible(true);
             return field;
         } catch (NoSuchFieldException | SecurityException e) {
             try {
-                Field a = calling.getDeclaredField(MappingsReader.getIntermedField_2(calling, f));
+                Field a = calling.getDeclaredField(f);
                 a.setAccessible(true);
                 return a;
             } catch (NoSuchFieldException | SecurityException e1) {
-                Class<?> whyIsAsmBroken = getClassFromJPL(getCallerClassName());
-                try {
-                    Field a = whyIsAsmBroken.getDeclaredField(MappingsReader.getIntermedField_2(whyIsAsmBroken, f));
-                    a.setAccessible(true);
-                    return a;
-                } catch (NoSuchFieldException | SecurityException e2) {
-                    if (f.contains("B_STATS_VERSION")) {
-                        return getBstatsVersionField();
-                    }
-                    e2.printStackTrace();
+                if (f.contains("B_STATS_VERSION")) {
+                    return getBstatsVersionField();
                 }
+            	e1.printStackTrace();
                 return null;
             }
         }
@@ -130,39 +106,6 @@ public class ReflectionRemapper {
         }
         BV_CALLED++;
         return f;
-    }
-
-    @Deprecated
-    public static Field getDeclaredFieldByName(Class<?> calling, String f) throws ClassNotFoundException, NoSuchFieldException {
-        try {
-            return calling.getDeclaredField(MappingsReader.getIntermedField_2(calling, f));
-        } catch (NoSuchFieldException | SecurityException e) {
-            try {
-                Field a = calling.getDeclaredField(MappingsReader.getIntermedField_2(calling, f));
-                a.setAccessible(true);
-                return a;
-            } catch (NoSuchFieldException | SecurityException e1) {
-                Class<?> whyIsAsmBroken = getClassFromJPL(getCallerClassName());
-                try {
-                    if (f.contains("connectedChannels")) {
-                        Field a = ServerConnectionListener.class.getDeclaredField("connections");
-                        a.setAccessible(true);
-                        return a;
-                    }
-                    if (null == whyIsAsmBroken) {
-                        System.out.println("CALLING: " + calling.getName() + ", F: " + f);
-                        return null;
-                    }
-                    Field a = whyIsAsmBroken.getDeclaredField(MappingsReader.getIntermedField_2(whyIsAsmBroken, f));
-                    a.setAccessible(true);
-                    return a;
-                } catch (NoSuchFieldException | SecurityException e2) {
-                    throw e2;
-                    //e1.printStackTrace();
-                }
-               // return null;
-            }
-        }
     }
 
     public static CraftServer getCraftServer() {
@@ -188,57 +131,6 @@ public class ReflectionRemapper {
             return nr;
         }
         return r;
-    }
-
-    /**
-     * Deprecated old code
-     */
-    @SuppressWarnings("unchecked")
-    @Deprecated
-    public static Class<?> getClassFromJPL(String name) {
-        try {
-            SimplePluginManager pm = (SimplePluginManager) Bukkit.getPluginManager();
-            Field fa = SimplePluginManager.class.getDeclaredField("fileAssociations");
-            fa.setAccessible(true);
-            Map<Pattern, PluginLoader> pl = (Map<Pattern, PluginLoader>) fa.get(pm);
-            JavaPluginLoader jpl = null;
-            for (PluginLoader loader : pl.values()) {
-                if (loader instanceof JavaPluginLoader) {
-                    jpl = (JavaPluginLoader) loader;
-                    break;
-                }
-            }
-
-            Method fc = JavaPluginLoader.class.getDeclaredMethod("getClassByName", String.class);
-            fc.setAccessible(true);
-            return (Class<?>) fc.invoke(jpl, name);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            CardboardMod.LOGGER.warning("SOMETHING EVERY WRONG! PLEASE REPORT THE EXCEPTION BELOW TO BUKKIT4FABRIC:");
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * @Deprecated old code
-     */
-    @Deprecated
-    private static JavaPluginLoader getFirstJPL() {
-        return null;
-    }
-
-    /**
-     * @deprecated Old code
-     */
-    @Deprecated
-    public static String getCallerClassName() { 
-        StackTraceElement[] stElements = Thread.currentThread().getStackTrace();
-        for (int i=1; i<stElements.length; i++) {
-            StackTraceElement ste = stElements[i];
-            if (!ste.getClassName().equals(ReflectionRemapper.class.getName()) && ste.getClassName().indexOf("java.lang.Thread")!=0)
-                return ste.getClassName();
-        }
-        return null;
     }
 
     /**

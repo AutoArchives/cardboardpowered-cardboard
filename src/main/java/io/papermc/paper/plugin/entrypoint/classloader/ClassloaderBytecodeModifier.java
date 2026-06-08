@@ -17,6 +17,9 @@ public interface ClassloaderBytecodeModifier {
 
         private static final ClassloaderBytecodeModifier INSTANCE = Services.service(ClassloaderBytecodeModifier.class).orElseThrow();
 
+        // io.papermc.paper.plugin.entrypoint.classloader.PaperClassloaderBytecodeModifier
+
+        
     }
 
 }

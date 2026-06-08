@@ -48,11 +48,20 @@ public abstract class JavaPlugin extends PluginBase {
     private io.papermc.paper.plugin.configuration.PluginMeta pluginMeta = null;
 
     public JavaPlugin() {
+    	
+    	if (this.getClass().getClassLoader() instanceof io.papermc.paper.plugin.provider.classloader.ConfiguredPluginClassLoader configuredPluginClassLoader) {
+            configuredPluginClassLoader.init(this);
+        } else {
+            throw new IllegalStateException("JavaPlugin requires to be created by a valid classloader.");
+        }
+    	
+    	/*
         final ClassLoader classLoader = this.getClass().getClassLoader();
         if (!(classLoader instanceof PluginClassLoader))
             throw new IllegalStateException("JavaPlugin requrires " + PluginClassLoader.class.getName());
 
         ((PluginClassLoader) classLoader).initialize(this);
+        */
     }
     
     @Override

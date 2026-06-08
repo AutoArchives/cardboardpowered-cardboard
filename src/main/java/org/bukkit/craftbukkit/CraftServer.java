@@ -304,7 +304,7 @@ public class CraftServer implements Server {
     // Paper start - Folia region threading API
     private final io.papermc.paper.threadedregions.scheduler.FallbackRegionScheduler regionizedScheduler = new io.papermc.paper.threadedregions.scheduler.FallbackRegionScheduler();
     private final io.papermc.paper.threadedregions.scheduler.FoliaAsyncScheduler asyncScheduler = new io.papermc.paper.threadedregions.scheduler.FoliaAsyncScheduler();
-   // private final io.papermc.paper.threadedregions.scheduler.FoliaGlobalRegionScheduler globalRegionScheduler = new io.papermc.paper.threadedregions.scheduler.FoliaGlobalRegionScheduler();
+    private final io.papermc.paper.threadedregions.scheduler.FoliaGlobalRegionScheduler globalRegionScheduler = new io.papermc.paper.threadedregions.scheduler.FoliaGlobalRegionScheduler();
 
     @Override
     public final io.papermc.paper.threadedregions.scheduler.RegionScheduler getRegionScheduler() {
@@ -318,7 +318,7 @@ public class CraftServer implements Server {
 
     @Override
     public final io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler getGlobalRegionScheduler() {
-        return null; // TODO
+        return this.globalRegionScheduler;
     }
     // Paper end - Folia reagion threading API
 
@@ -454,9 +454,14 @@ public class CraftServer implements Server {
         RemapUtils remapUtil = new RemapUtils();
         RemapUtilProvider.setInstance(remapUtil);
         remapUtil.init();
+        
+        
 
         pluginManager.registerInterface(JavaPluginLoader.class);
 
+        io.papermc.paper.plugin.entrypoint.LaunchEntryPointHandler.INSTANCE.enter(io.papermc.paper.plugin.entrypoint.Entrypoint.PLUGIN); // Paper - replace implementation
+        
+        /*
         File pluginFolder = new File("plugins");
         if (pluginFolder.exists()) {
 
@@ -497,7 +502,7 @@ public class CraftServer implements Server {
 					e.printStackTrace();
 				}
             }
-            */
+            *
 
             Plugin[] plugins = pluginManager.loadPlugins(pluginFolder);
 
@@ -511,9 +516,45 @@ public class CraftServer implements Server {
                     ex.printStackTrace();
                 }
             }
-        } else pluginFolder.mkdir();
+        } else pluginFolder.mkdir();*/
+    }
+    
+    public void enablePlugins(PluginLoadOrder type) {
+        if (type == PluginLoadOrder.STARTUP) {
+            this.helpMap.clear();
+            this.helpMap.initializeGeneralTopics();
+            // if (io.papermc.paper.configuration.GlobalConfiguration.get().misc.loadPermissionsYmlBeforePlugins) loadCustomPermissions(); // Paper
+        }
+
+        Plugin[] plugins = this.pluginManager.getPlugins();
+
+        for (Plugin plugin : plugins) {
+            if ((!plugin.isEnabled()) && (plugin.getDescription().getLoad() == type)) {
+                this.enablePlugin(plugin);
+            }
+        }
+
+        if (type == PluginLoadOrder.POSTWORLD) {
+            // Spigot start - Allow vanilla commands to be forced to be the main command
+            this.commandMap.setFallbackCommands();
+            
+            setVanillaCommands();
+            commandMap.registerServerAliases();
+            
+            // Spigot end
+            DefaultPermissions.registerCorePermissions();
+           
+            CommandPermissions.registerCorePermissions();
+            
+            // CraftDefaultPermissions.registerCorePermissions();
+            // if (!io.papermc.paper.configuration.GlobalConfiguration.get().misc.loadPermissionsYmlBeforePlugins) this.loadCustomPermissions(); // Paper
+            
+            helpMap.initializeCommands();
+            this.syncCommands();
+        }
     }
 
+    /*
     public void enablePlugins(PluginLoadOrder type) {
         Plugin[] plugins = pluginManager.getPlugins();
 
@@ -532,6 +573,7 @@ public class CraftServer implements Server {
             syncCommands();
         }
     }
+    */
 
     public Commands vanillaCommandManager;
 
@@ -579,19 +621,21 @@ public class CraftServer implements Server {
     private void enablePlugin(Plugin plugin) {
         try {
             List<Permission> perms = plugin.getDescription().getPermissions();
-
+            List<Permission> permsToLoad = new ArrayList<>(); // Paper
             for (Permission perm : perms) {
-                try {
-                    pluginManager.addPermission(perm, false);
-                } catch (IllegalArgumentException ex) {
-                    getLogger().log(Level.WARNING, "Plugin " + plugin.getDescription().getFullName() + " tried to register permission '" + perm.getName() + "' but it's already registered", ex);
+                // Paper start
+                if (this.paperPluginManager.getPermission(perm.getName()) == null) {
+                    permsToLoad.add(perm);
+                } else {
+                    this.getLogger().log(Level.WARNING, "Plugin " + plugin.getDescription().getFullName() + " tried to register permission '" + perm.getName() + "' but it's already registered");
+                // Paper end
                 }
             }
-            pluginManager.dirtyPermissibles();
+            this.paperPluginManager.addPermissions(permsToLoad); // Paper
 
-            pluginManager.enablePlugin(plugin);
+            this.pluginManager.enablePlugin(plugin);
         } catch (Throwable ex) {
-            Bukkit.getLogger().log(Level.SEVERE, ex.getMessage() + " loading " + plugin.getDescription().getFullName() + " (Is it up to date?)", ex);
+            Logger.getLogger(CraftServer.class.getName()).log(Level.SEVERE, ex.getMessage() + " loading " + plugin.getDescription().getFullName() + " (Is it up to date?)", ex);
         }
     }
 

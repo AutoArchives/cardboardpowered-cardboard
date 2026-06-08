@@ -168,6 +168,7 @@ public class CardboardMod implements ModInitializer {
 
         String name = ((ServerLevelData) nms.getLevelData()).getLevelName();
 
+        /*
         File fi = new File(name + "_the_end");
         File van = new File(new File(name), "DIM1");
 
@@ -201,15 +202,16 @@ public class CardboardMod implements ModInitializer {
                 fi.delete();
             }
         }
+        */
 
         if (CraftServer.INSTANCE.worlds.containsKey(name)) {
             if (nms.dimension() == Level.NETHER) {
                 name = name + "_nether";
-                fi2.mkdirs(); // Keep empty directory to fool plugins, ex. Multiverse.
+                // fi2.mkdirs(); // Keep empty directory to fool plugins, ex. Multiverse.
             }
             if (nms.dimension() == Level.END) {
                 name = name + "_the_end";
-                fi.mkdirs();
+                // fi.mkdirs();
             }
 
             if (CraftServer.INSTANCE.worlds.containsKey(name)) {

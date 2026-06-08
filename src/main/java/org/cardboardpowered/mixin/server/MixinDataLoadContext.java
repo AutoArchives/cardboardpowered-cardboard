@@ -25,7 +25,7 @@ public abstract class MixinDataLoadContext {
     @Inject(method = "<init>", at = @At("RETURN"))
     private void afterInit(CallbackInfo ci) {
     	
-    	cb$LOGGER.info("Got instance of DataLoadContext: " + this);
+    	cb$LOGGER.info("Captured instance of DataLoadContext");
 
     	if (null != CardboardLoadHolder.worldLoader.get()) {
     		cb$LOGGER.warn("Overwriting existing DataLoadContext instance in CardboardLoadHolder! Previous instance: " + CardboardLoadHolder.worldLoader.get());

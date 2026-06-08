@@ -16,9 +16,6 @@ gversion {
 }
 project.compileJava.dependsOn(createVersionFile)
 
-//sourceCompatibility = JavaVersion.VERSION_21
-//targetCompatibility = JavaVersion.VERSION_21
-
 version = project.mod_version
 group = project.maven_group
 
@@ -61,16 +58,11 @@ dependencies {
     minecraft("com.mojang:minecraft:${project.minecraft_version}") {
     	exclude module: 'commons-logging'
     }
-    // mappings loom.officialMojangMappings()
     implementation("net.fabricmc:fabric-loader:${project.loader_version}")
     // modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
     
-		// Javax Anno
+	// Javax Anno
 	compileOnly 'javax.annotation:javax.annotation-api:1.3.2'
-	
-	compileOnly fileTree(dir: 'libs', include: 'javax.annotation-api-1.3.2.jar')
-
-// Option B: The modern, actively maintained replacement by SpotBugs
     compileOnly 'com.github.spotbugs:spotbugs-annotations:4.8.6'
 
 	
@@ -116,32 +108,23 @@ dependencies {
 	implementation("net.kyori:adventure-text-serializer-plain:4.25.0")
 	implementation("net.kyori:adventure-text-minimessage:4.25.0")
 
-    compileOnly fileTree(dir: 'libs', include: 'commons-lang-2.6.jar')
-    compileOnly group: "org.jetbrains", name: "annotations", version: "18.0.0"
-    compileOnly group: "com.googlecode.json-simple", name: "json-simple", version: "1.1.1"
+    // compileOnly fileTree(dir: 'libs', include: 'commons-lang-2.6.jar')
+    // compileOnly group: "org.jetbrains", name: "annotations", version: "18.0.0"
+    // compileOnly group: "com.googlecode.json-simple", name: "json-simple", version: "1.1.1"
 
 	compileOnly "io.leangen.geantyref:geantyref:1.3.16"
 	include(implementation("io.leangen.geantyref:geantyref:1.3.16"))
 
     // NMS Remapping
-    extraLibs fileTree(dir: 'libs', include: "srglib-0.1.2.jar")
+    // extraLibs fileTree(dir: 'libs', include: "srglib-0.1.2.jar")
     include(implementation("net.md-5:SpecialSource:1.11.2"))
 
-    compileOnly fileTree(dir: 'libs', include: "srglib-0.1.2.jar")
-    
-    include(implementation("net.neoforged:srgutils:1.0.9")) // Mappings handling
-    include(implementation("net.neoforged:AutoRenamingTool:2.0.3")) // Remap plugins
-    include(implementation('net.neoforged.installertools:cli-utils:2.1.4'))
-    
+    // compileOnly fileTree(dir: 'libs', include: "srglib-0.1.2.jar")
+
     include(implementation('net.fabricmc:mapping-io:0.8.0'))
 
-    // Remap reflection
-    include(implementation("io.papermc:reflection-rewriter:0.0.3"))
-    include(implementation("io.papermc:reflection-rewriter-runtime:0.0.3"))
-    include(implementation("io.papermc:reflection-rewriter-proxy-generator:0.0.3"))
-
     // Fabric Permissions API.
-    include(implementation('me.lucko:fabric-permissions-api:0.5.0'))
+    include(implementation('me.lucko:fabric-permissions-api:0.7.0'))
     
     // Configurate
     include(implementation('org.spongepowered:configurate-core:4.2.0'))
