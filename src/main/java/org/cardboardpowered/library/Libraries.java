@@ -47,7 +47,26 @@ public class Libraries {
         	Library.of("net.kyori", "adventure-text-serializer-legacy", adventureVersion, "b12eaaac78d2534b9b1556049a8d95a046b0812d") ,
         	Library.of("net.kyori", "adventure-text-serializer-plain", adventureVersion, "82f5d4188f3cb6da9654b4ceea8b4093af5f1243") ,
         	Library.of("net.kyori", "adventure-text-minimessage", adventureVersion, "38f8f778c92f1ea848f79f992c99c4b98f96f23b") ,
-        	Library.of("net.kyori", "option", "1.1.0", "593fecb9c42688eebc7d8da5d6ea127f4d4c92a2")
+        	Library.of("net.kyori", "adventure-text-logger-slf4j", adventureVersion, "7800e20f422798c0011eadce9bfa6bef159d7ae9") ,
+        	Library.of("net.kyori", "option", "1.1.0", "593fecb9c42688eebc7d8da5d6ea127f4d4c92a2"),
+        	
+        	// Complete Maven & Resolver Stack
+        	Library.of("org.apache.maven", "maven-artifact", "3.9.6", "fb0979832c10c1a25d038a33ca862bef055fcdc8"),
+        	Library.of("org.apache.maven", "maven-builder-support", "3.9.6", "bcfc9d8175eaba21111edf21e0355a8523461abc"),
+        	Library.of("org.apache.maven", "maven-model", "3.9.6", "ac9a1c8a8cfa36f3a5489837e653ec0cd530d576"),
+        	Library.of("org.apache.maven", "maven-model-builder", "3.9.6", "983ce00d50a9f78ad1b805e21e4fd71807fa6ebf"),
+        	Library.of("org.apache.maven", "maven-resolver-provider", "3.9.6", "848c45d334f6cc5c8dd602b0e58fd4482964eddc"),
+        	Library.of("org.apache.maven.resolver", "maven-resolver-api", "1.9.18", "0cd5174d6e80175398debe4869d484169c0abbf8"),
+        	Library.of("org.apache.maven.resolver", "maven-resolver-connector-basic", "1.9.18", "baac1ca4eb5e5fbdd2df554262a1b97f84ae3cec"),
+        	Library.of("org.apache.maven.resolver", "maven-resolver-impl", "1.9.18", "e928b128d1e52e6299f94431ce3df74647bc8c26"),
+        	Library.of("org.apache.maven.resolver", "maven-resolver-named-locks", "1.9.18", "31f948d89dcb3d9739e70d5e1000ebd68eb4405d"),
+        	Library.of("org.apache.maven.resolver", "maven-resolver-spi", "1.9.18", "7fa176b3353ef6d78d02db39e025f3c27a983158"),
+        	Library.of("org.apache.maven.resolver", "maven-resolver-supplier", "1.9.18", "c1df8c4468f08dc237f49a7b4a08401d6d57b208"),
+        	Library.of("org.apache.maven.resolver", "maven-resolver-transport-file", "1.9.18", "f7d4e607e0f245647f2ba59245de24ecba8a9946"),
+        	Library.of("org.apache.maven.resolver", "maven-resolver-transport-http", "1.9.18", "61a5512ff44502a5b22800f097f43281cb934a72"),
+        	Library.of("org.apache.maven.resolver", "maven-resolver-util", "1.9.18", "5ae9406f188ae4a999c353fce3fd77273797a216"),
+        	Library.of("org.codehaus.plexus", "plexus-interpolation", "1.27", "8dc73f4ff5eafcbb7ec035ba54736e828b272533"),
+        	Library.of("org.codehaus.plexus", "plexus-utils", "3.5.1", "c6bfb17c97ecc8863e88778ea301be742c62b06d")
         );
 
         // Set WorldEdit adapter class name here

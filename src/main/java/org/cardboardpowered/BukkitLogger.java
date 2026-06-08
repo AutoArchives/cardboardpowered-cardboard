@@ -55,6 +55,14 @@ public class BukkitLogger extends Logger {
 
     public BukkitLogger(String name, String str) {
         super(name, str);
+        
+        // Create default Bukkit logger if we are a plugin
+        if (inst == null) {
+        	if (!name.equalsIgnoreCase("Bukkit")) {
+        		inst = BukkitLogger.getLogger();
+        	}
+        }
+
         this.log4j = LoggerFactory.getLogger(name);
         this.doPrefix = CardboardConfig.shouldAddPrefixToLoggers();
         if (inst == null) {
@@ -65,9 +73,9 @@ public class BukkitLogger extends Logger {
     @Override
     public void setParent(final Logger parent) {
         if (this.getParent() != null) {
-            this.warning("Ignoring attempt to change parent of plugin logger");
+        	log4j.warn("Ignoring attempt to change parent of plugin logger");
         } else {
-            this.info("Setting plugin logger parent to {0}" + parent.getName());
+        	log4j.info("Setting plugin logger parent to {0}" + parent.getName());
             super.setParent(parent);
         }
     }

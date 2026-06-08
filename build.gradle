@@ -148,6 +148,30 @@ dependencies {
     include(implementation('org.spongepowered:configurate-hocon:4.2.0'))
     include(implementation("org.spongepowered:configurate-yaml:4.2.0"))
     
+    // Aether
+    /*
+	include(implementation("org.apache.maven.resolver:maven-resolver-api:1.9.18"))
+    include(implementation("org.apache.maven:maven-resolver-provider:3.9.6"))
+	include(implementation("org.apache.maven.resolver:maven-resolver-connector-basic:1.9.18"))
+	include(implementation("org.apache.maven.resolver:maven-resolver-transport-http:1.9.18"))
+	include(implementation("org.apache.maven.resolver:maven-resolver-util:1.9.18"))
+	include(implementation("org.apache.maven.resolver:maven-resolver-impl:1.9.18"))
+	include(implementation("org.apache.maven.resolver:maven-resolver-spi:1.9.18"))
+	*/
+	include(implementation("org.apache.maven.resolver:maven-resolver-supplier:1.9.18"))
+	/*
+	include(implementation("org.apache.maven.resolver:maven-resolver-named-locks:1.9.18"))
+	include(implementation("org.apache.maven.resolver:maven-resolver-transport-file:1.9.18"))
+	include(implementation("org.apache.maven:maven-artifact:3.9.6"))
+	include(implementation("org.apache.maven:maven-model-builder:3.9.6"))
+	include(implementation("org.apache.maven:maven-model:3.9.6"))
+	include(implementation("org.apache.maven:maven-builder-support:3.9.6"))
+	include(implementation("org.codehaus.plexus:plexus-interpolation:1.27"))
+	include(implementation("org.codehaus.plexus:plexus-utils:3.5.1"))
+	*/
+	// include(implementation("net.kyori:adventure-text-logger-slf4j:4.25.0"))
+    
+    
     // Remove parts that are included with Minecraft or Downloaded
     removeLibs group: "com.google.guava", name: "guava", version: "21.0"
     removeLibs group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'

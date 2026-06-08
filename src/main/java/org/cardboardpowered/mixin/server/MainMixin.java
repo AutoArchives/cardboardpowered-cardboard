@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import org.cardboardpowered.CardboardLogger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -66,11 +67,10 @@ public class MainMixin {
 	            target = "Lnet/minecraft/server/Bootstrap;bootStrap()V",
 	            shift = At.Shift.BEFORE
 	        ),
-	        remap = false // Crucial since CraftBukkit/Paper modifications don't map to Mojang deobfuscation
+	        remap = false
 	    )
 	    private static void insertPluginInitializerLoad(String[] strings, CallbackInfo ci) {
-	        // Your logic runs exactly where io.papermc.paper.plugin.PluginInitializerManager.load(options) belongs
-	        System.out.println("Executing custom plugin init manager logic here...");
+			org.cardboardpowered.BukkitLogger.getLogger().info("Loading Paper PluginInitializerManager..");
 	        
 	        try {
 	        	 OptionParser parser = new OptionParser() {

@@ -41,6 +41,7 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.SimplePluginManager;
+import org.cardboardpowered.BukkitLogger;
 import org.cardboardpowered.mohistremap.ClassLoaderContext;
 import org.cardboardpowered.mohistremap.ClassMapping;
 import org.cardboardpowered.mohistremap.RemapUtilProvider;
@@ -115,6 +116,9 @@ public final class PluginClassLoader extends URLClassLoader implements io.paperm
         this.libraryLoader = libraryLoader;
 
         this.logger = com.destroystokyo.paper.utils.PaperPluginLogger.getLogger(description); // Paper - Register logger early
+        
+        // this.logger = BukkitLogger.getPluginLogger(description.getName() + "24");
+        
         // Paper start
         this.dependencyContext = dependencyContext;
         this.classLoaderGroup = io.papermc.paper.plugin.provider.classloader.PaperClassLoaderStorage.instance().registerSpigotGroup(this);
