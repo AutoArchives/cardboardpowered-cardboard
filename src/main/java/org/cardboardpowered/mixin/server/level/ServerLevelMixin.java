@@ -97,7 +97,7 @@ public class ServerLevelMixin extends LevelMixin implements ServerLevelBridge {
 	}
 	
 	@Shadow
-	private PersistentEntitySectionManager<Entity> entityManager;
+	public PersistentEntitySectionManager<Entity> entityManager;
 
 	@Shadow
 	public LevelEntityGetter<Entity> getEntities() {

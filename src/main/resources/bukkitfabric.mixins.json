@@ -10,6 +10,7 @@
     "bukkit.BukkitMaterialMixin",
     "bukkit.BukkitMixin",
     "bukkit.BukkitRegistryMixin",
+    "bukkit.MixinPluginClassLoader",
     "bukkit.configuration.file.BukkitYamlConfigurationMixin",
     "bukkit.entity.BukkitEntityTypeMixin",
     "bukkit.plugin.BukkitRegisteredListenerMixin",
@@ -77,6 +78,7 @@
     "server.players.PlayerListMixin_ChatEvent",
     "stats.ServerStatsCounterMixin",
     "stats.StatsCounterMixin",
+    "world.MixinContainer",
     "world.CompoundContainerMixin",
     "world.SimpleContainerMixin",
     "world.damagesource.DamageSourceMixin",
@@ -236,6 +238,13 @@
   ],
   "injectors": {
     "defaultRequire": 1
+  },
+  "custom": {
+    "fabric:itf": {
+      "net/minecraft/server/MinecraftServer": [
+        "org/cardboardpowered/bridge/IMinecraftServerStatic"
+      ]
+    }
   }
 
 }

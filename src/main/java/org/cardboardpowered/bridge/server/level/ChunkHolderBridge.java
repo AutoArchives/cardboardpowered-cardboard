@@ -17,7 +17,6 @@ public interface ChunkHolderBridge {
     }*/
     // CraftBukkit end
 
-    
     static LevelChunk getFullChunkNow(ChunkHolder holder) {
     	 if (!ChunkLevel.fullStatus(holder.oldTicketLevel).isOrAfter(FullChunkStatus.FULL)) {
              return null; // note: using oldTicketLevel for isLoaded checks

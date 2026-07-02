@@ -10,17 +10,25 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cardboardpowered.CardboardConfig;
+import org.cardboardpowered.asm.MixinProcessor;
+import org.cardboardpowered.asm.TransformAccessProcessor;
 import org.cardboardpowered.library.Libraries;
 import org.cardboardpowered.library.Library;
 import org.cardboardpowered.library.LibraryManager;
 import org.cardboardpowered.util.JarReader;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.spongepowered.asm.mixin.MixinEnvironment;
+import org.spongepowered.asm.mixin.extensibility.IEnvironmentTokenProvider;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
 import net.fabricmc.loader.api.FabricLoader;
 
-public class CardboardMixinPlugin implements IMixinConfigPlugin {
+public class CardboardMixinPlugin implements IMixinConfigPlugin, IEnvironmentTokenProvider {
 
     private static final String MIXIN_PACKAGE_ROOT = "org.cardboardpowered.mixin.";
     private final Logger logger = LogManager.getLogger("Cardboard");
@@ -29,6 +37,9 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public void onLoad(String mixinPackage) {
+    	
+    	MixinEnvironment.getCurrentEnvironment().registerTokenProvider(this);
+    	
         try {
             CardboardConfig.setup();
         } catch (Exception e) {
@@ -204,12 +215,38 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
         return null;
     }
 
+    private static boolean methAdd = false;
+    
     @Override
-    public void preApply(String target, ClassNode targetClass, String mixinClass, IMixinInfo info) {
+    public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+    	for (var processor : this.postProcessors) {
+            processor.accept(targetClassName, targetClass, mixinInfo);
+        }
     }
 
+    private final List<MixinProcessor> postProcessors = List.of(
+            new TransformAccessProcessor()
+    );
+
+    
     @Override
-    public void postApply(String targetClass, ClassNode target, String mixinClass, IMixinInfo info) {
+    public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+    	for (var processor : this.postProcessors) {
+    		processor.accept(targetClassName, targetClass, mixinInfo);
+        }
+    	 
     }
+
+	@Override
+	public int getPriority() {
+		// TODO Auto-generated method stub
+		return 500;
+	}
+
+	@Override
+	public Integer getToken(String token, MixinEnvironment env) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

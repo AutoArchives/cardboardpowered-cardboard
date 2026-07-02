@@ -52,7 +52,7 @@ public class RemapUtils implements IRemapUtils {
     
     public static boolean DEBUG_VERBOSE_CALLS = true;
 
-    public static String NMS_VERSION = "v1_21_R7"; // "v1_21_R3"; // "v1_20_R4";
+    // public static String NMS_VERSION = "v1_21_R7"; // "v1_21_R3"; // "v1_20_R4";
 
     @Override
     public void init() {
@@ -62,8 +62,8 @@ public class RemapUtils implements IRemapUtils {
 
         jarMapping = new BannerJarMapping();
         // v1_20_R1
-        jarMapping.packages.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/", "org/bukkit/craftbukkit/");
-        jarMapping.packages.put("org/bukkit/craftbukkit/" + NMS_VERSION, "org/bukkit/craftbukkit");
+        // jarMapping.packages.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/", "org/bukkit/craftbukkit/");
+        // jarMapping.packages.put("org/bukkit/craftbukkit/" + NMS_VERSION, "org/bukkit/craftbukkit");
         jarMapping.packages.put("org/bukkit/craftbukkit/libs/it/unimi/dsi/fastutil/", "it/unimi/dsi/fastutil/");
         jarMapping.packages.put("org/bukkit/craftbukkit/libs/jline/", "jline/");
         jarMapping.packages.put("org/bukkit/craftbukkit/libs/org/apache/commons/", "org/apache/commons/");
@@ -97,7 +97,7 @@ public class RemapUtils implements IRemapUtils {
 			e1.printStackTrace();
 		}
 
-        jarMapping.classes.put("org/bukkit/craftbukkit/" + NMS_VERSION + "/CraftWorld", "org/cardboardpowered/impl/world/CraftWorld");
+        jarMapping.classes.put("org/bukkit/craftbukkit/CraftWorld", "org/cardboardpowered/impl/world/CraftWorld");
 
         JointProvider provider = new JointProvider();
         provider.add(inheritanceMap);
@@ -217,6 +217,11 @@ public class RemapUtils implements IRemapUtils {
     		mm = mm.substring(2);
     	}
     	mm = "(" + mm;
+    	
+    	// Failed to find method public (org.bukkit.World) ??org.bukkit.craftbukkit.CraftWorld?? getWorld();
+    	if (name.contains("getWorld")) {
+    		System.out.println(type + " / " + name + " / " + mm);
+    	}
     	
     	String res = jarMapping.fastMapMethodName(type, name, parameterTypes);
 

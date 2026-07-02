@@ -22,7 +22,9 @@ import org.cardboardpowered.bridge.world.entity.EntityBridge;
 // import com.llamalad7.mixinextras.sugar.Local;
 
 import me.isaiah.common.entity.IRemoveReason;
+import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
@@ -371,12 +373,57 @@ public abstract class EntityMixin implements CommandSourceBridge, EntityBridge {
     public boolean cardboard$canCollideWithBukkit(Entity entity) {
         return this.isPushable();
     }
-    // CraftBukkit end
 
-    // CraftBukkit start
     @Override
     public float cardboard$getBukkitYaw() {
         return this.yRot;
     }
     // CraftBukkit end
+    
+    /**
+     * Add igniteForSeconds helper method.
+     * TODO: Implement callEvent param
+     * 
+     * @param callEvent
+     * @author Cardboard
+     */
+    public void igniteForSeconds(float seconds, boolean callEvent) {
+    	((Entity) (Object) this).igniteForSeconds(seconds);
+    }
+    
+    public boolean saveAsPassenger(ValueOutput valueOutput, boolean includeAll, boolean includeNonSaveable, boolean forceSerialization) {
+    	return ((Entity) (Object) this).saveAsPassenger(valueOutput);
+    }
+    
+    public void saveWithoutId(ValueOutput valueOutput, boolean includeAll, boolean includeNonSaveable, boolean forceSerialization) {
+    	((Entity) (Object) this).saveWithoutId(valueOutput);
+    }
+    
+    private final CommandSource commandSource = new CommandSource() {
+
+        @Override
+        public void sendSystemMessage(Component message) {
+        }
+
+        // @Override
+        public org.bukkit.command.CommandSender getBukkitSender(CommandSourceStack wrapper) {
+            return getBukkitEntity();
+        }
+
+        @Override
+        public boolean acceptsSuccess() {
+            return ((ServerLevel) level()).getGameRules().get(net.minecraft.world.level.gamerules.GameRules.COMMAND_BLOCK_OUTPUT);
+        }
+
+        @Override
+        public boolean acceptsFailure() {
+            return true;
+        }
+
+        @Override
+        public boolean shouldInformAdmins() {
+            return true;
+        }
+    };
+    
 }

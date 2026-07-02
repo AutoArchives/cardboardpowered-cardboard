@@ -3,6 +3,8 @@ package org.bukkit.craftbukkit.inventory;
 import java.util.Arrays;
 import java.util.List;
 import net.minecraft.world.Container;
+import net.minecraft.world.inventory.CraftingContainer;
+
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -13,6 +15,11 @@ import org.cardboardpowered.bridge.world.item.crafting.RecipeHolderBridge;
 public class CraftInventoryCrafting extends CraftInventory implements CraftingInventory {
     private final Container resultInventory;
 
+    public CraftInventoryCrafting(CraftingContainer inventory, Container resultInventory) {
+        super(inventory);
+        this.resultInventory = resultInventory;
+    }
+    
     public CraftInventoryCrafting(Container inventory, Container resultInventory) {
         super(inventory);
         this.resultInventory = resultInventory;

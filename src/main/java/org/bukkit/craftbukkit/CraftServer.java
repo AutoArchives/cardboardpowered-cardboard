@@ -128,6 +128,7 @@ import org.bukkit.command.CommandException;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.conversations.Conversable;
@@ -2050,7 +2051,8 @@ public class CraftServer implements Server {
         return this.playerList;
     }
 
-    public CommandMapImpl getCommandMap() {
+    @Override
+    public SimpleCommandMap getCommandMap() {
         return commandMap;
     }
 

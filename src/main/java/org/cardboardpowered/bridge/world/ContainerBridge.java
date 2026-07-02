@@ -16,9 +16,12 @@ import org.bukkit.inventory.InventoryHolder;
 
 public interface ContainerBridge {
 
-    java.util.List<ItemStack> getContents();
+    default java.util.List<ItemStack> getContents() {
+    	return null;
+    }
 
-    void onOpen(CraftHumanEntity who);
+    default void onOpen(CraftHumanEntity who) {
+    }
 
     void onClose(CraftHumanEntity who);
 

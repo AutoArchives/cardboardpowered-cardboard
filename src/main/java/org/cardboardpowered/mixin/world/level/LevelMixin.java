@@ -15,8 +15,11 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.entity.LevelEntityGetter;
 import net.minecraft.world.level.storage.WritableLevelData;
+
+import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CapturedBlockState;
-import org.cardboardpowered.impl.world.CraftWorld;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,6 +27,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +35,10 @@ import java.util.Map;
 public abstract class LevelMixin implements LevelBridge {
 
     @Shadow public LevelChunk getChunkAt(BlockPos pos) {return null;}
-    private CraftWorld bukkit;
+
+    private CraftWorld world;
+
+    // private CraftWorld bukkitBackup;
 
     public boolean captureBlockStates = false;
     public boolean captureTreeGeneration = false;
@@ -72,15 +79,35 @@ public abstract class LevelMixin implements LevelBridge {
         ServerLevel nms = ((ServerLevel) thiz);
     	CardboardMod.on_world_init_mc(nms);
     }
+    
+    public CraftWorld getWorld() {
+        return world;
+    }
 
     @Override
     public CraftWorld cardboard$getWorld() {
-        return bukkit;
+        return world;
+    }
+    
+    public CraftWorld getCraftWorld() {
+        return world;
     }
 
     @Override
     public void set_bukkit_world(CraftWorld world) {
-        this.bukkit = world;
+        
+    	// Reflection trickery as the bukkitWorld field is final in Paper
+    	/*
+    	try {
+    		Field field = ((Level)(Object)this).getClass().getField("world");
+    		field.setAccessible(true); // Bypasses private access check
+    		field.set(((Level)(Object)this), world); // Injects the new value
+    	} catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		*/
+    	this.world = world;
     }
 
     @Inject(at = @At("HEAD"), method = "setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z")
@@ -100,4 +127,9 @@ public abstract class LevelMixin implements LevelBridge {
     public void setCaptureBlockStates_BF(boolean b) {
         this.captureBlockStates = b;
     }
+    
+    public CraftServer getCraftServer() {
+		return CraftServer.INSTANCE;
+	}
+
 }

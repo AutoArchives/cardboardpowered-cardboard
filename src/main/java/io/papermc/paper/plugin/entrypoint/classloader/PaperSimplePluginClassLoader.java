@@ -58,6 +58,16 @@ public class PaperSimplePluginClassLoader extends URLClassLoader {
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         NamespaceChecker.validateNameSpaceForClassloading(name);
 
+        // Cardboard - Remap findClass
+    	org.cardboardpowered.util.nms.RemapUtils remapUtils = (org.cardboardpowered.util.nms.RemapUtils) org.cardboardpowered.mohistremap.RemapUtilProvider.get();
+    	if (remapUtils.needRemap(name.replace('/','.'))) {
+        	org.cardboardpowered.mohistremap.ClassMapping remappedClassMapping = remapUtils.jarMapping.byNMSName.get(name);
+            if(remappedClassMapping == null){
+                throw new ClassNotFoundException(name.replace('/','.'));
+            }
+            return Class.forName( remappedClassMapping.getMcpName() );
+        }
+        
         // See UrlClassLoader#findClass(String)
         String path = name.replace('.', '/').concat(".class");
         JarEntry entry;
@@ -75,12 +85,16 @@ public class PaperSimplePluginClassLoader extends URLClassLoader {
         byte[] classBytes;
 
         try (InputStream is = this.jar.getInputStream(entry)) {
-            classBytes = is.readAllBytes();
+            // classBytes = is.readAllBytes();
+            classBytes = remapUtils.getJarRemapper().remapClassFile(is, net.md_5.specialsource.repo.RuntimeRepo.getInstance()); // Cardboard
         } catch (IOException ex) {
             throw new ClassNotFoundException(name, ex);
         }
 
         classBytes = ClassloaderBytecodeModifier.bytecodeModifier().modify(this.configuration, classBytes);
+        classBytes = remapUtils.remapFindClass(classBytes); // Cardboard - remapFindClass
+        
+        
 
         int dot = name.lastIndexOf('.');
         if (dot != -1) {

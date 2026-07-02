@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.cardboardpowered.CardboardLogger;
+import org.cardboardpowered.CardboardMod;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -197,7 +198,8 @@ public class MainMixin {
 	                 }
 	             };
 	        	OptionSet options = parser.parse(strings);
-				PluginInitializerManager.load(options);
+	        	CardboardMod.options = options;
+				// PluginInitializerManager.load(options);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

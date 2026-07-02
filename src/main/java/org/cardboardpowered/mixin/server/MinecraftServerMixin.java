@@ -23,7 +23,9 @@ import net.minecraft.world.level.storage.*;
 import net.minecraft.world.level.storage.LevelDataAndDimensions.WorldDataAndGenSettings;
 
 import org.cardboardpowered.CardboardMod;
+import org.cardboardpowered.asm.TransformAccess;
 import org.bukkit.craftbukkit.scheduler.CraftScheduler;
+import org.cardboardpowered.bridge.IMinecraftServerStatic;
 import org.cardboardpowered.bridge.server.MinecraftServerBridge;
 import org.cardboardpowered.bridge.world.level.LevelBridge;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents;
@@ -72,6 +74,7 @@ import org.cardboardpowered.bridge.world.level.storage.LevelData_RespawnDataBrid
 import org.cardboardpowered.bridge.world.level.storage.PrimaryLevelDataBridge;
 import org.cardboardpowered.impl.util.CardboardMagicNumbers;
 import org.jspecify.annotations.Nullable;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -91,7 +94,7 @@ import java.util.Queue;
 import java.util.function.BooleanSupplier;
 
 @Mixin(value=MinecraftServer.class)
-public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<TickTask> implements MinecraftServerBridge {
+public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<TickTask> implements MinecraftServerBridge, IMinecraftServerStatic {
 	// public final WorldLoader.DataLoadContext worldLoaderContext;
 	public WorldLoader.DataLoadContext worldLoaderContext;
 	
@@ -174,9 +177,9 @@ public abstract class MinecraftServerMixin extends ReentrantBlockableEventLoop<T
         return false;
     }
 
-    @Unique
-    public MinecraftServer getServer() {
-        return (MinecraftServer) (Object) this;
+    @TransformAccess(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC)
+    private static MinecraftServer getServer() {
+        return (MinecraftServer) (Object) CraftServer.server;
     }
     // CraftBukkit end
 

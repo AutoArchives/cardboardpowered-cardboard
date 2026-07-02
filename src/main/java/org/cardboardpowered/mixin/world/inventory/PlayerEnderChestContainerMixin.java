@@ -1,5 +1,6 @@
 package org.cardboardpowered.mixin.world.inventory;
 
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.PlayerEnderChestContainer;
 import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
 import org.bukkit.Location;
@@ -13,6 +14,9 @@ import org.cardboardpowered.bridge.world.level.LevelBridge;
 @Mixin(PlayerEnderChestContainer.class)
 public abstract class PlayerEnderChestContainerMixin extends SimpleContainerMixin {
 
+	// TODO
+	private final Player owner = null;
+	
     @Shadow private EnderChestBlockEntity activeChest;
 
     public InventoryHolder getBukkitOwner() {

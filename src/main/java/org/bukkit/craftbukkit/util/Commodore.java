@@ -87,6 +87,13 @@ public class Commodore {
             
             "net/ess3/provider/providers/LegacyPotionMetaProvider", "net/ess3/provider/providers/ModernPotionMetaProvider"
     );
+    
+    // Cardboard - start
+    // CraftBukkit Standard naming -> Our custom implementation name
+    private static final Map<String, String> OUR_IMPLEMENTATION_RENAMES = Map.of(
+    	"org/bukkit/craftbukkit/CraftWorld", "org/cardboardpowered/impl/world/CraftWorld"
+    );
+    // Cardboard - end
 
     private static final Map<String, String> CLASS_TO_INTERFACE = Map.ofEntries(
             Map.entry("org/bukkit/inventory/InventoryView", "org/bukkit/craftbukkit/inventory/CraftAbstractInventoryView"),
@@ -177,6 +184,14 @@ public class Commodore {
             if (original.contains("LegacyPotionMetaProvider")) {
             	return original.replace("LegacyPotionMetaProvider", "Disable Legacy Potion Meta Provider");
             }
+            
+            // OUR_IMPLEMENTATION_RENAMES
+            for (String str : OUR_IMPLEMENTATION_RENAMES.keySet()) {
+            	if (original.contains(str)) {
+            		return original.replace(str, OUR_IMPLEMENTATION_RENAMES.get(str));
+            	}
+            }
+            
             // Cardboard - end
 
         return original;
@@ -248,7 +263,10 @@ public class Commodore {
     }
 
     public byte[] convert(byte[] b, final String pluginName, final ApiVersion pluginVersion, final Set<String> activeCompatibilities) {
-        final boolean modern = pluginVersion.isNewerThanOrSameAs(ApiVersion.FLATTENING);
+        
+    	// Commodore.RENAMES.putAll( OUR_IMPLEMENTATION_RENAMES );
+    	
+    	final boolean modern = pluginVersion.isNewerThanOrSameAs(ApiVersion.FLATTENING);
         ClassReader cr = new ClassReader(b);
         ClassWriter cw = new ClassWriter(cr, 0);
 

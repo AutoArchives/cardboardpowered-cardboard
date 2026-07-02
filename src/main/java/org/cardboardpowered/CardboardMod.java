@@ -19,6 +19,7 @@
 package org.cardboardpowered;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.Random;
@@ -36,13 +37,14 @@ import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.cardboardpowered.api.event.CardboardEventManager;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.cardboardpowered.impl.world.CraftWorld;
 import org.cardboardpowered.bridge.world.level.block.entity.BlockEntityBridge;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.bridge.world.level.LevelBridge;
 import org.cardboardpowered.library.LibraryManager;
 
+import io.papermc.paper.plugin.PluginInitializerManager;
+import joptsimple.OptionSet;
 import me.isaiah.common.event.EventHandler;
 import me.isaiah.common.event.EventRegistery;
 import me.isaiah.common.event.block.BlockEntityWriteNbtEvent;
@@ -54,6 +56,7 @@ import me.isaiah.common.event.entity.player.PlayerGamemodeChangeEvent;
 import me.isaiah.common.event.entity.player.ServerPlayerInitEvent;
 import me.isaiah.common.event.server.ServerWorldInitEvent;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.ChatFormatting;
@@ -69,6 +72,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.ServerLevelData;
+
+import org.bukkit.craftbukkit.CraftWorld;
 
 /**
  * Cardbord Mod - Spigot/Paper API for Fabric
@@ -86,6 +91,7 @@ public class CardboardMod implements ModInitializer {
 
     // Set by LibraryManager
     public static String paperVersion = "";
+	public static OptionSet options;
 
     @Override
     public void onInitialize() {
@@ -115,8 +121,27 @@ public class CardboardMod implements ModInitializer {
 
             LOGGER.info("Cardboard " + mc + details);
         }
+        
+     // Paste this inside your early mod initialization entry point (e.g. onInitialize)
+        try {
+            // Force the JVM to evaluate and index our freshly injected ASM method 
+            // before BKCommonLib handles its plugin setup loops.
+            java.lang.reflect.Method m = net.minecraft.server.MinecraftServer.class.getMethod("getServer");
+            System.out.println("[Cardboard Fix] Successfully registered reflection hook: " + m.getName());
+            
+        } catch (NoSuchMethodException e) {
+            System.err.println("[Cardboard Fix] Warning: Method reflection registration delayed!");
+        }
 
         CardboardEventManager.INSTANCE.callCardboardEvents();
+        
+        System.out.println("loading PluginInitializerManager");
+        try {
+			PluginInitializerManager.load(options);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     public CraftPlayer getPlayer_0(ServerPlayer e) {
@@ -125,7 +150,7 @@ public class CardboardMod implements ModInitializer {
 
     @EventHandler
     public void on_leaves_decay(LeavesDecayEvent ev) {
-        CraftWorld w = ((LevelBridge)ev.world).cardboard$getWorld();
+        CraftWorld w = (CraftWorld) ((LevelBridge)ev.world).cardboard$getWorld();
         org.bukkit.event.block.LeavesDecayEvent event =
                 new org.bukkit.event.block.LeavesDecayEvent(w.getBlockAt(ev.pos.getX(), ev.pos.getY(), ev.pos.getZ()));
         Bukkit.getPluginManager().callEvent(event);

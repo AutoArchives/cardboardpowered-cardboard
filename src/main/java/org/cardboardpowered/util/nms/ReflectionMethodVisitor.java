@@ -208,13 +208,47 @@ public class ReflectionMethodVisitor extends MethodVisitor {
             return;
         }
 
-        if (owner.startsWith("net/minecraft/class_")) {
-            if (owner.equalsIgnoreCase("net/minecraft/class_3176") && name.equalsIgnoreCase("getVersion")) {
+        if (owner.startsWith("net/minecraft")) {
+            if (owner.equalsIgnoreCase("net/minecraft/server/dedicated/DedicatedServer") && name.equalsIgnoreCase("getVersion")) {
                 // Add MinecraftServer#getVersion
                 super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/ReflectionRemapper", "getMinecraftServerVersion", "()Ljava/lang/String;", false);
                 return;
             }
         }
+        
+        /**
+         * 
+         * A class member of net.minecraft.world.level.Level was not found!
+[23:24:49] [Server thread/WARN]: Failed to find method public (org.bukkit.World) ??org.bukkit.craftbukkit.CraftWorld?? getWorld(); - Alternatives:
+[23:24:49] [Server thread/WARN]:   - public abstract border.WorldBorder getWorldBorder();
+[23:24:49] [Server thread/WARN]:   - public org.cardboardpowered.impl.world.CraftWorld cardboard$getWorld();
+[23:24:49] [Server thread/WARN]:   - public net.minecraft.server.MinecraftServer getServer();
+[23:24:49] [Server thread/WARN]:   - public Thread getThread();
+[23:24:49] [Server thread/WARN]:   - public abstract net.minecraft.world.scores.Scoreboard getScoreboard();
+[23:24:49] [Server thread/WARN]:   - public net.minecraft.server.level.ServerLevel getMinecraftWorld();
+[23:24:49] [Server thread/WARN]:   - public net.minecraft.util.RandomSource getRandom();
+[23:24:49] [Server thread/WARN]:   - public storage.LevelData getLevelData();
+         */
+        
+        if (owner.startsWith("net/minecraft/world/level/Level")) {
+        	
+        	if (desc.contains("org/bukkit/")) {
+        		System.out.println("LEVEL METH: " + name + "  " + desc);
+        	}
+        	
+        	if (name.equalsIgnoreCase("getWorld") && desc.contains("CraftWorld")) {
+        		name = "cardboard$getWorld";
+        	}
+        	if (name.equalsIgnoreCase("getWorld") && desc.contains("org/bukkit/")) {
+        		name = "cardboard$getWorld";
+        	}
+        	if (name.equalsIgnoreCase("getServer") && desc.contains("org/bukkit/")) {
+                super.visitMethodInsn( Opcodes.INVOKESTATIC, "org/cardboardpowered/util/nms/ReflectionRemapper", "getCraftServer", "()Lorg/bukkit/craftbukkit/CraftServer;", false);
+                return;
+        	}
+        }
+        
+        
         
         owner = Commodore.getOriginalOrRewrite(owner);
 

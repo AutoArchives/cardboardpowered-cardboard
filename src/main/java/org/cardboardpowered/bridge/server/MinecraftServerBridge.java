@@ -51,7 +51,13 @@ public interface MinecraftServerBridge {
 
     Commands setCommandManager(Commands commandManager);
 
-    static MinecraftServer getServer() {
+    /*
+    public static MinecraftServer getServer() {
+        return CraftServer.server;
+    }
+    */
+    
+    public static MinecraftServer getMcServer() {
         return CraftServer.server;
     }
 
