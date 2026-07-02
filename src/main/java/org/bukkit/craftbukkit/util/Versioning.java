@@ -1,10 +1,11 @@
 package org.bukkit.craftbukkit.util;
 
 import org.bukkit.Bukkit;
+import org.cardboardpowered.impl.CardboardAbstractServer;
 
 public final class Versioning {
 
-    private static final String API_VERSION = "26.1.2";
+    private static final String API_VERSION = CardboardAbstractServer.API_VERSION;
 
     public static String getBukkitVersion() {
         return Bukkit.getVersion();

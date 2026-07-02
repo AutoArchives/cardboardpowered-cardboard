@@ -180,6 +180,7 @@ import org.bukkit.structure.StructureManager;
 import org.bukkit.util.StringUtil;
 import org.bukkit.util.permissions.DefaultPermissions;
 import org.cardboardpowered.RegistryUtil;
+import org.cardboardpowered.impl.CardboardAbstractServer;
 import org.cardboardpowered.impl.CardboardBossBar;
 import org.cardboardpowered.impl.CraftProfileBanList;
 import org.cardboardpowered.impl.IpBanList;
@@ -199,7 +200,7 @@ import org.cardboardpowered.impl.tag.CraftEntityTag;
 import org.bukkit.craftbukkit.tag.CraftFluidTag;
 import org.cardboardpowered.impl.tag.CraftItemTag;
 import org.cardboardpowered.impl.util.CommandPermissions;
-import org.cardboardpowered.impl.util.IconCacheImpl;
+import org.cardboardpowered.impl.util.CardboardCachedServerIcon;
 import org.cardboardpowered.impl.util.SimpleHelpMap;
 import org.cardboardpowered.impl.world.ChunkDataImpl;
 import org.cardboardpowered.impl.world.CraftWorld;
@@ -208,9 +209,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spigotmc.SpigotConfig;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -237,12 +236,10 @@ import java.util.logging.Logger;
 
 
 @SuppressWarnings("deprecation")
-public class CraftServer implements Server {
+public class CraftServer extends CardboardAbstractServer implements Server {
 
     public final String serverName = "Cardboard";
     public final String bukkitVersion = "26.1.2"; // "1.21.11-R0.1-SNAPSHOT"; // "1.21.10-R0.1-SNAPSHOT"; // "1.21.8-R0.1-SNAPSHOT"; // "1.21.1-R0.1-SNAPSHOT";
-    public final String serverVersion;
-    public final String shortVersion;
 
     private final Logger logger = BukkitLogger.getLogger();
 
@@ -259,9 +256,6 @@ public class CraftServer implements Server {
     private final ConsoleCommandSender consoleCommandSender = new CardboardConsoleCommandSender();
     private final Map<UUID, OfflinePlayer> offlinePlayers = new MapMaker().weakValues().makeMap();
 
-    // public final List<CraftPlayer> playerView;
-    // public final Map<String, World> worlds = new LinkedHashMap<>();
-
     public List<CraftPlayer> playerView;
     private WarningState warningState = WarningState.DEFAULT;
     public final Map<String, World> worlds = new LinkedHashMap<String, World>();
@@ -269,9 +263,7 @@ public class CraftServer implements Server {
     private final SimpleHelpMap helpMap = new SimpleHelpMap(this);
     private final StandardMessenger messenger = new StandardMessenger();
     private final YamlConfiguration configuration;
-    private IconCacheImpl icon;
 
-    public static DedicatedServer server;
     public static DedicatedServer console;
     protected final DedicatedPlayerList playerList;
 
@@ -324,16 +316,12 @@ public class CraftServer implements Server {
     // Paper end - Folia reagion threading API
 
     public CraftServer(DedicatedServer nms) {
+    	super(nms);
         INSTANCE = this;
-        String hash = VersionCommand.getGitHash().substring(0,7); // use short hash
-        serverVersion = "git-Cardboard-" + hash;
-        shortVersion = "git-" + hash;
         server = nms;
         console = nms;
         commandMap = new CommandMapImpl(this);
-        // pluginManager = new SimplePluginManager(this, commandMap);
-        // paperPluginManager = new PaperPluginManagerImpl(this, commandMap, this.pluginManager);
-        
+
         // Paper start
         // this.commandMap = new CraftCommandMap(this);
         this.pluginManager = new SimplePluginManager(this, commandMap);
@@ -387,12 +375,6 @@ public class CraftServer implements Server {
         return this.serverLinks;
     }
 
-    /*
-    public static IUserCache getUC() {
-        return (IUserCache) server.getUserCache();
-    }
-    */
-
     public void saveConfig() {
         try {
             configuration.save(getConfigFile());
@@ -405,43 +387,18 @@ public class CraftServer implements Server {
         return new File("bukkit.yml");
     }
 
-    private void loadIcon() {
-        icon = new IconCacheImpl(null);
-        try {
-            final File file = new File(new File("."), "server-icon.png");
-            if (file.isFile())
-                icon = loadServerIcon0(file);
-        } catch (Exception ex) {
-            getLogger().log(Level.WARNING, "Couldn't load server icon", ex);
-        }
-    }
-
     @Override
-    public IconCacheImpl loadServerIcon(File file) throws Exception {
+    public CardboardCachedServerIcon loadServerIcon(File file) throws Exception {
         Validate.notNull(file, "File cannot be null");
         if (!file.isFile())
             throw new IllegalArgumentException(file + " is not a file");
-        return loadServerIcon0(file);
-    }
-
-    static IconCacheImpl loadServerIcon0(File file) throws Exception {
-        return loadServerIcon0(ImageIO.read(file));
+        return CardboardCachedServerIcon.createFromFile(file);
     }
 
     @Override
-    public IconCacheImpl loadServerIcon(BufferedImage image) throws Exception {
+    public CardboardCachedServerIcon loadServerIcon(BufferedImage image) throws Exception {
         Validate.notNull(image, "Image cannot be null");
-        return loadServerIcon0(image);
-    }
-
-    static IconCacheImpl loadServerIcon0(BufferedImage image) throws Exception {
-        Validate.isTrue(image.getWidth() == 64, "Error: not 64*64");
-        Validate.isTrue(image.getHeight() == 64, "Error: not 64*64");
-
-        ByteArrayOutputStream bytebuf = new ByteArrayOutputStream();
-        ImageIO.write(image, "PNG", bytebuf);
-
-        return new IconCacheImpl(bytebuf.toByteArray());
+        return CardboardCachedServerIcon.createFromImage(image);
     }
 
     public void addWorldToMap(CraftWorld world) {
@@ -449,75 +406,13 @@ public class CraftServer implements Server {
     }
 
     public void loadPlugins() {
-
-        // RemapUtils.init();
-
         RemapUtils remapUtil = new RemapUtils();
         RemapUtilProvider.setInstance(remapUtil);
         remapUtil.init();
-        
-        
 
         pluginManager.registerInterface(JavaPluginLoader.class);
 
         io.papermc.paper.plugin.entrypoint.LaunchEntryPointHandler.INSTANCE.enter(io.papermc.paper.plugin.entrypoint.Entrypoint.PLUGIN); // Paper - replace implementation
-        
-        /*
-        File pluginFolder = new File("plugins");
-        if (pluginFolder.exists()) {
-
-
-        	//if (pluginRemapper != null) {
-            //    pluginRemapper.loadingPlugins();
-             //}
-
-            /*for (File f : pluginFolder.listFiles()) {
-                if (f.getName().endsWith(".jar")) {
-                    try {
-                        com.javazilla.bukkitfabric.nms.Remapper.remap(f); // Cardboard: Remap Jar file
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }*/
-
-        	/*
-        	if (null != CraftServer.INSTANCE.pluginRemapper) {
-            	try {
-
-            		List<java.nio.file.Path> jarA = Files.list(pluginFolder.toPath()).toList();
-            		List<Path> jarB = new ArrayList<>();
-            		for (Path p : jarA) {
-            			if (p.toFile().getName().endsWith(".jar")) {
-            				jarB.add(p);
-            			}
-            		}
-
-					List<java.nio.file.Path> jars = CraftServer.INSTANCE.pluginRemapper.rewritePluginDirectory(
-							jarB
-							);
-					pluginFolder = jars.getFirst().getParent().toFile();
-					CardboardLogger.getSLF4J().info("DEBUG: pluginFolder=" + pluginFolder);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-            }
-            *
-
-            Plugin[] plugins = pluginManager.loadPlugins(pluginFolder);
-
-            for (Plugin plugin : plugins) {
-                try {
-                    String message = String.format("Loading %s", plugin.getDescription().getFullName());
-                    plugin.getLogger().info(message);
-                    plugin.onLoad();
-                } catch (Throwable ex) {
-                    Bukkit.getLogger().log(Level.SEVERE, ex.getMessage() + " initializing " + plugin.getDescription().getFullName() + " (Is it up to date?)", ex);
-                    ex.printStackTrace();
-                }
-            }
-        } else pluginFolder.mkdir();*/
     }
     
     public void enablePlugins(PluginLoadOrder type) {
@@ -554,27 +449,6 @@ public class CraftServer implements Server {
             this.syncCommands();
         }
     }
-
-    /*
-    public void enablePlugins(PluginLoadOrder type) {
-        Plugin[] plugins = pluginManager.getPlugins();
-
-        for (Plugin plugin : plugins)
-            if ((!plugin.isEnabled()) && (plugin.getDescription().getLoad() == type))
-                enablePlugin(plugin);
-
-        if (type == PluginLoadOrder.POSTWORLD) {
-            commandMap.setFallbackCommands();
-            setVanillaCommands();
-            commandMap.registerServerAliases();
-            DefaultPermissions.registerCorePermissions();
-            CommandPermissions.registerCorePermissions();
-            // loadCustomPermissions();
-            helpMap.initializeCommands();
-            syncCommands();
-        }
-    }
-    */
 
     public Commands vanillaCommandManager;
 
@@ -917,9 +791,8 @@ public class CraftServer implements Server {
     }
 
     @Override
-    public Merchant createMerchant(String arg0) {
-        // TODO Auto-generated method stub
-        return null;
+    public Merchant createMerchant(String name) {
+    	return new CraftMerchantCustom(name == null ? InventoryType.MERCHANT.getDefaultTitle() : name);
     }
 
     public World createWorld(String name, World.Environment environment) {
@@ -1363,11 +1236,6 @@ public class CraftServer implements Server {
     }
 
     @Override
-    public String getName() {
-        return serverName;
-    }
-
-    @Override
     public OfflinePlayer getOfflinePlayer(String name) {
         Preconditions.checkArgument(name != null, "name cannot be null");
         Preconditions.checkArgument(!name.isBlank(), "name cannot be empty");
@@ -1410,14 +1278,6 @@ public class CraftServer implements Server {
 
         return result;
     }
-
-    /*
-    public OfflinePlayer getOfflinePlayer(GameProfile profile) {
-        OfflinePlayer player = new CraftOfflinePlayer(this, profile);
-        offlinePlayers.put(profile.id(), player);
-        return player;
-    }
-    */
 
     @Override
     public OfflinePlayer[] getOfflinePlayers() {
@@ -1531,18 +1391,12 @@ public class CraftServer implements Server {
     }
 
     @Override
-    public IconCacheImpl getServerIcon() {
-        return icon;
-    }
-
-    @Override
     public ServicesManager getServicesManager() {
         return servicesManager;
     }
 
     @Override
     public String getShutdownMessage() {
-        // TODO Auto-generated method stub
         return "Server Shutdown";
     }
 
@@ -1550,33 +1404,6 @@ public class CraftServer implements Server {
     public int getSpawnRadius() {
         return getServer().spawnProtectionRadius();
     }
-
-    /*@SuppressWarnings("unchecked")
-    public <T extends Keyed> org.bukkit.Tag<T> getTag_(String registry, NamespacedKey tag, Class<T> clazz) {
-        Identifier key = CraftNamespacedKey.toMinecraft(tag);
-
-
-        switch (registry) {
-        case "blocks": {
-            Preconditions.checkArgument(clazz == Material.class, "Block namespace must have material type");
-            return (Tag<T>) new BlockTagImpl(BlockTags.getTagGroup(), key);
-        }
-        case "items": {
-            Preconditions.checkArgument(clazz == Material.class, "Item namespace must have material type");
-            return (org.bukkit.Tag<T>) new ItemTagImpl(ItemTags.getTagGroup(), key);
-        }
-        case "fluids": {
-            //Preconditions.checkArgument(clazz == Fluid.class, "Fluid namespace must have fluid type");
-            return (org.bukkit.Tag<T>) new Tags.FluidTagImpl(FluidTags.getTagGroup(), key);
-        }
-        case "entity_types": {
-            Preconditions.checkArgument(clazz == org.bukkit.entity.EntityType.class, "Entity type namespace must have entity type");
-            return (org.bukkit.Tag<T>) new EntityTagImpl(EntityTypeTags.getTagGroup(), key);
-        }
-        default:
-            throw new IllegalArgumentException();
-    }
-    }*/
 
     public <T extends Keyed> Tag<T> getTag(String registry, NamespacedKey tag, Class<T> clazz) {
         Identifier key = CraftNamespacedKey.toMinecraft(tag);
@@ -1689,13 +1516,7 @@ public class CraftServer implements Server {
 
     @Override
     public String getVersion() {
-    	// Some plugins like WorldEdit use PaperLib.getMinecraftVersion() for version checks
-        // Update: WorldEdit now has a preview 1.17 build
-        return getShortVersion(); //serverVersion + " (MC: 1.17.1)";
-    }
-
-    public String getShortVersion() {
-        return shortVersion + " (MC: " + server.getServerVersion() + ")";
+        return getShortVersion();
     }
 
     @Override
@@ -1738,7 +1559,6 @@ public class CraftServer implements Server {
     @Override
     public File getWorldContainer() {
     	return this.getServer().storageSource.getLevelDirectory().path().getParent().toFile();
-    	//return ((MinecraftServerBridge)this.getServer()).getSessionBF().getDimensionPath(net.minecraft.world.level.Level.OVERWORLD).getParent().toFile();
     }
 
     @Override
@@ -2057,6 +1877,7 @@ public class CraftServer implements Server {
     }
 
     // Because PlayerManager is broken
+    @Deprecated
     public List<String> getOperatorList() throws IOException {
         File f = new File("ops.json");
 
@@ -2187,14 +2008,6 @@ public class CraftServer implements Server {
         return (player != null) ? new CraftPlayerProfile((CraftPlayer) player) : new CraftPlayerProfile(uuid, name);
     }
 
-
-    //@Override
-    @Deprecated(forRemoval = true)
-    public ChunkData createVanillaChunkData(World arg0, int arg1, int arg2) {
-        // Removed API in 1.21
-        return null;
-    }
-
     @Override
     public int getCurrentTick() {
         return server.getTickCount();
@@ -2299,9 +2112,8 @@ public class CraftServer implements Server {
     }
 
     @Override
-    public @NotNull Merchant createMerchant(@Nullable Component arg0) {
-        // TODO Auto-generated method stub
-        return null;
+    public @NotNull Merchant createMerchant(Component name) {
+    	return new org.bukkit.craftbukkit.inventory.CraftMerchantCustom(name == null ? InventoryType.MERCHANT.defaultTitle() : name);
     }
 
     @Override
@@ -2425,21 +2237,18 @@ public class CraftServer implements Server {
 	}
 
 	@Override
-	public @NotNull PlayerProfile createPlayerProfile(@NotNull UUID arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public PlayerProfile createPlayerProfile(UUID uuid) {
+		return new CraftPlayerProfile(uuid, null);
 	}
 
 	@Override
-	public @NotNull PlayerProfile createPlayerProfile(@NotNull String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public PlayerProfile createPlayerProfile(String name) {
+		return new CraftPlayerProfile(null, name);
 	}
 
 	@Override
-	public @NotNull PlayerProfile createPlayerProfile(@Nullable UUID arg0, @Nullable String arg1) {
-		// TODO Auto-generated method stub
-		return null;
+	public PlayerProfile createPlayerProfile(UUID uuid, String name) {
+		return new CraftPlayerProfile(uuid, name);
 	}
 
 	@Override

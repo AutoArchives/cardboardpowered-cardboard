@@ -1,12 +1,5 @@
 package org.cardboardpowered.impl.command;
 
-import com.javazilla.bukkitfabric.Utils;
-
-import net.fabricmc.loader.api.FabricLoader;
-
-import com.google.common.collect.ImmutableList;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -19,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -29,9 +23,15 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.util.StringUtil;
 
+import com.google.common.collect.ImmutableList;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
+import net.fabricmc.loader.api.FabricLoader;
+
 public class VersionCommand extends Command {
 
-    public static String BRANCH = "ver/1.21.4";
+    public static String BRANCH = "ver/26.1";
 
     public VersionCommand(String name) {
         super(name);

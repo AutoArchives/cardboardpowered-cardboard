@@ -176,6 +176,9 @@ import org.cardboardpowered.ChunkTicketBridge;
 import org.cardboardpowered.bridge.world.level.chunk.LevelChunkBridge;
 
 @SuppressWarnings("deprecation")
+/**
+ * Cardboard Bukkit Implementation of CraftWorld.
+ */
 public class CraftWorld extends CraftRegionAccessor implements World {
 
 	public static final int CUSTOM_DIMENSION_OFFSET = 10;
