@@ -6,10 +6,10 @@ import net.minecraft.server.MinecraftServer;
 
 public interface IMinecraftServerStatic {
 
-	/*
+
 	public static MinecraftServer getServer() {
 		return CraftServer.server;
 	}
-	*/
+
 
 }

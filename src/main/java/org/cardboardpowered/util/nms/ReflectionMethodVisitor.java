@@ -110,9 +110,9 @@ public class ReflectionMethodVisitor extends MethodVisitor {
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
         if (CardboardConfig.DEBUG_VERBOSE_CALLS) {
-        	if (!owner.startsWith("java/")) {
+        	//if (!owner.startsWith("java/")) {
         		CardboardMod.LOGGER.info(owner + " / " + name);
-        	}
+        	//}
         }
 
 		// Redirect WorldGuard Custom Logger (JUL->SLF4J)

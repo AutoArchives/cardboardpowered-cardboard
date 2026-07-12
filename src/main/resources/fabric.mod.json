@@ -42,6 +42,11 @@
       "net/minecraft/world/level/Level": ["org/cardboardpowered/bridge/world/level/LevelBridge"],
       "net/minecraft/server/level/ServerLevel": ["org/cardboardpowered/bridge/server/level/ServerLevelBridge"],
       "net/minecraft/server/network/ServerLoginPacketListenerImpl": ["org/cardboardpowered/bridge/server/network/ServerLoginPacketListenerImplBridge"]
+    },
+    "fabric:itf": {
+      "net/minecraft/server/MinecraftServer": [
+        "org/cardboardpowered/bridge/IMinecraftServerStatic"
+      ]
     }
   }
 

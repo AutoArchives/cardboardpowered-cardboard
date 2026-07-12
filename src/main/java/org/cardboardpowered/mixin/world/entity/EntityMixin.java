@@ -251,7 +251,7 @@ public abstract class EntityMixin implements CommandSourceBridge, EntityBridge {
     }
 
     @Inject(at = @At("HEAD"), method = "setAirSupply", cancellable = true)
-    public void setAirBF(int i, CallbackInfo ci) {
+    public void cardboard$setAir_EntityAirChangeEvent(int i, CallbackInfo ci) {
         if (!valid) {
             ci.cancel();
             return;

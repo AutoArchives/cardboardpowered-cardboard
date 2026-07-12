@@ -2,7 +2,11 @@ package org.cardboardpowered.mixin.world.item.crafting;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.sugar.Local;
+
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.crafting.*;
 import org.cardboardpowered.bridge.world.item.crafting.RecipeMapBridge;
@@ -14,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Mixin(RecipeMap.class)
@@ -29,6 +34,7 @@ public abstract class RecipeMapMixin implements RecipeMapBridge {
     @Shadow
     public abstract <I extends RecipeInput, T extends Recipe<I>> Collection<RecipeHolder<T>> byType(RecipeType<T> recipeType);
 
+    /*
     @Inject(method = "create", at = @At("HEAD"), cancellable = true)
     private static void createCraftBukkit(Iterable<RecipeHolder<?>> recipes, CallbackInfoReturnable<RecipeMap> cir) {
         ImmutableMultimap.Builder<RecipeType<?>, RecipeHolder<?>> builder = ImmutableMultimap.builder();
@@ -41,6 +47,25 @@ public abstract class RecipeMapMixin implements RecipeMapBridge {
 
         // CraftBukkit start - mutable
         cir.setReturnValue(new RecipeMap(com.google.common.collect.LinkedHashMultimap.create(builder.build()), com.google.common.collect.Maps.newLinkedHashMap(builder1.build())));
+    }
+    */
+    
+    /**
+     * Use @ModifyReturnValue here so fabric-api can inject during HEAD.
+     * 
+     * @see {@link net.fabricmc.fabric.impl.recipe.sync.SyncedSerializerAwarePreparedRecipe}
+     * 
+     * @author Cardboard Mod
+     */
+    @ModifyReturnValue(method = "create", at = @At("RETURN"))
+    private static RecipeMap cardboard$recipemap_create_make_return_mutable(
+    		RecipeMap original,
+    		@Local ImmutableMultimap.Builder<RecipeType<?>, RecipeHolder<?>> byType,
+            @Local ImmutableMap.Builder<ResourceKey<Recipe<?>>, RecipeHolder<?>> byKey
+        ) {
+
+
+        return new RecipeMap(com.google.common.collect.LinkedHashMultimap.create(byType.build()), com.google.common.collect.Maps.newLinkedHashMap(byKey.build()));
     }
 
     @Override

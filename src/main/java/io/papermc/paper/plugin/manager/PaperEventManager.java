@@ -39,7 +39,9 @@ class PaperEventManager {
         if (event.isAsynchronous() && this.server.isPrimaryThread()) {
             throw new IllegalStateException(event.getEventName() + " may only be triggered asynchronously.");
         } else if (!event.isAsynchronous() && !this.server.isPrimaryThread() && !this.server.isStopping()) {
-            throw new IllegalStateException(event.getEventName() + " may only be triggered synchronously.");
+        	// Cardboard - Add current thread name to exception message for easier debugging
+        	String threadName = Thread.currentThread().getName();
+            throw new IllegalStateException(event.getEventName() + " may only be triggered synchronously. (Current thread: " + threadName + ")");
         }
 
         HandlerList handlers = event.getHandlers();
