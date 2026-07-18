@@ -23,16 +23,27 @@ public interface ContainerBridge {
     default void onOpen(CraftHumanEntity who) {
     }
 
-    void onClose(CraftHumanEntity who);
+    // These are defaulted rather than abstract because MixinContainer grafts this
+    // interface onto every net.minecraft.world.Container. Any container class
+    // without a dedicated mixin would otherwise throw AbstractMethodError at the
+    // first call site, which callers cannot catch.
+    default void onClose(CraftHumanEntity who) {
+    }
 
-    java.util.List<org.bukkit.entity.HumanEntity> getViewers();
+    default java.util.List<org.bukkit.entity.HumanEntity> getViewers() {
+        return java.util.Collections.emptyList();
+    }
 
-  
-    org.bukkit.inventory.InventoryHolder getOwner();
+    default org.bukkit.inventory.InventoryHolder getOwner() {
+        return null;
+    }
 
-    void cardboard$setMaxStackSize(int size);
+    default void cardboard$setMaxStackSize(int size) {
+    }
 
-    org.bukkit.Location getLocation();
+    default org.bukkit.Location getLocation() {
+        return null;
+    }
 
     default Recipe<?> getCurrentRecipe() {
         return null;
