@@ -113,6 +113,7 @@
     "world.entity.player.InventoryMixin",
     "world.entity.player.PlayerMixin",
     "world.entity.projectile.FireworkRocketEntityMixin",
+    "world.entity.vehicle.minecart.AbstractMinecartContainerMixin",
     "world.entity.projectile.ProjectileMixin",
     "world.entity.projectile.arrow.AbstractArrowMixin",
     "world.entity.projectile.arrow.ArrowMixin",
