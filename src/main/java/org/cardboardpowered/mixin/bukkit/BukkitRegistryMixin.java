@@ -24,7 +24,7 @@ public interface BukkitRegistryMixin {
 }
 
 /*
-@Mixin(value = net.minecraft.server.dedicated.MinecraftDedicatedServer.class, priority = 5000)
+@Mixin(value = net.minecraft.server.dedicated.MinecraftDedicatedServer.class, priority = 900)
 @Deprecated
 public class MixinArmorItem {
 	

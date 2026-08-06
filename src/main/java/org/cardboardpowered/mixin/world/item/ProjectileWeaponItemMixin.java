@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @MixinInfo(events = {"EntityShootBowEvent"})
 // @Mixin(BowItem.class)
-@Mixin(value = ProjectileWeaponItem.class, priority = 5000)
+@Mixin(value = ProjectileWeaponItem.class, priority = 900)
 /**
  * TODO: Rename class, 1.20.6 moved
  * functionality to RangedWeaponItem

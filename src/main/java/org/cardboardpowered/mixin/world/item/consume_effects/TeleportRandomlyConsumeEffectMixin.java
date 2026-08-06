@@ -3,7 +3,7 @@ package org.cardboardpowered.mixin.world.item.consume_effects;
 import net.minecraft.world.item.consume_effects.TeleportRandomlyConsumeEffect;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(value = TeleportRandomlyConsumeEffect.class, priority = 5000)
+@Mixin(value = TeleportRandomlyConsumeEffect.class, priority = 900)
 public class TeleportRandomlyConsumeEffectMixin { // extends Item {
 
 	// TODO

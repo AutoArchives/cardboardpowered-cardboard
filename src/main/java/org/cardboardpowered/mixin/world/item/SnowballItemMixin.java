@@ -16,7 +16,7 @@ import org.cardboardpowered.bridge.world.entity.EntityBridge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
-@Mixin(value = SnowballItem.class, priority = 5000)
+@Mixin(value = SnowballItem.class, priority = 900)
 public class SnowballItemMixin extends Item {
 
     public SnowballItemMixin(net.minecraft.world.item.Item.Properties settings) {

@@ -67,7 +67,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import io.papermc.paper.connection.PaperPlayerLoginConnection;
 
 @SuppressWarnings("deprecation")
-@Mixin(value = ServerLoginPacketListenerImpl.class, priority = 5000)
+@Mixin(value = ServerLoginPacketListenerImpl.class, priority = 999)
 public abstract class ServerLoginPacketListenerImplMixin implements ServerLoginPacketListenerImplBridge {
 
 	private static Logger LOGGER_BF = LoggerFactory.getLogger("PaperMC|ServerLoginNetworkHandler"); // LogManager.getLogger("Bukkit|ServerLoginNetworkHandler");

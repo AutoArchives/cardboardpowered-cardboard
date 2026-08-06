@@ -37,7 +37,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value = ItemStack.class, priority = 5000)
+@Mixin(value = ItemStack.class, priority = 999)
 public abstract class ItemStackMixin implements ItemStackBridge {
     @Shadow
     public Item item;
