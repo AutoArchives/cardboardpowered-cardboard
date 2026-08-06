@@ -1,9 +1,11 @@
 package org.cardboardpowered.mixin.world.item;
 
 import java.util.List;
+import java.util.function.Consumer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
@@ -16,6 +18,11 @@ import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 import org.cardboardpowered.bridge.world.entity.EntityBridge;
@@ -34,6 +41,9 @@ public class ProjectileWeaponItemMixin {
 
     public boolean cancel_BF = false;
 
+    @Unique
+    private boolean cardboard$shotCancelled = false;
+
     
     @Shadow
     public Projectile createProjectile( Level world, LivingEntity shooter, ItemStack weaponStack, ItemStack projectileStack, boolean critical) {
@@ -50,41 +60,53 @@ public class ProjectileWeaponItemMixin {
     }
     
     /**
-     * @author cardboard mod
-     * @reason callEntityShootBowEvent
-     * 
-     * TODO: use inject
+     * Fire {@link EntityShootBowEvent} once per projectile, wrapping the spawn call so the
+     * event carries the real projectile and a cancellation keeps it out of the world entirely.
+     *
+     * The previous @Inject at HEAD of shoot fired the event before any projectile existed and
+     * passed null, which CraftEventFactory#callEntityShootBowEvent dereferences unconditionally,
+     * so every shot threw NullPointerException.
      */
-    @Inject(method = "shoot", at = @At("HEAD"))
-    private void cardboard$shoot(
-            ServerLevel serverLevel,
-            LivingEntity livingEntity,
-            InteractionHand interactionHand,
-            ItemStack itemStack,
-            List<ItemStack> list,
-            float f,
-            float g,
-            boolean bl,
-            @Nullable LivingEntity livingEntity2,
-            CallbackInfo ci
-    ) {
-        // Fire Bukkit event only once per method call
-        EntityShootBowEvent event =
-                CraftEventFactory.callEntityShootBowEvent(
-                        livingEntity,
-                        itemStack,
-                        list.isEmpty() ? ItemStack.EMPTY : list.get(0),
-                        null,
-                        interactionHand,
-                        f,
-                        true
-                );
+    @WrapOperation(method = "shoot",
+                   at = @At(value = "INVOKE",
+                            target = "Lnet/minecraft/world/entity/projectile/Projectile;spawnProjectile(Lnet/minecraft/world/entity/projectile/Projectile;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/item/ItemStack;Ljava/util/function/Consumer;)Lnet/minecraft/world/entity/projectile/Projectile;"))
+    private Projectile cardboard$callEntityShootBowEvent(
+            Projectile projectile,
+            ServerLevel level,
+            ItemStack ammo,
+            Consumer<Projectile> config,
+            Operation<Projectile> original,
+            @Local(argsOnly = true, ordinal = 0) LivingEntity shooter,
+            @Local(argsOnly = true) InteractionHand hand,
+            @Local(argsOnly = true) ItemStack weapon,
+            @Local(argsOnly = true, ordinal = 0) float speed) {
 
-        if (event.isCancelled()) {
-            ci.cancel();
+        EntityShootBowEvent event = CraftEventFactory.callEntityShootBowEvent(shooter, weapon, ammo, projectile, hand, speed, true);
+
+        // A plugin either cancelled the shot or swapped in its own projectile; either way ours
+        // must not reach the world.
+        if (event.isCancelled() || event.getProjectile() != ((EntityBridge) projectile).getBukkitEntity()) {
+            this.cardboard$shotCancelled = true;
+            projectile.discard();
+            return projectile;
         }
+
+        this.cardboard$shotCancelled = false;
+        return original.call(projectile, level, ammo, config);
     }
-    
+
+    /** Vanilla damages the weapon right after spawning; a cancelled shot should not cost durability. */
+    @WrapOperation(method = "shoot",
+                   at = @At(value = "INVOKE",
+                            target = "Lnet/minecraft/world/item/ItemStack;hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V"))
+    private void cardboard$skipDurabilityOnCancelledShot(ItemStack weapon, int amount, LivingEntity shooter, EquipmentSlot slot, Operation<Void> original) {
+        if (this.cardboard$shotCancelled) {
+            this.cardboard$shotCancelled = false;
+            return;
+        }
+        original.call(weapon, amount, shooter, slot);
+    }
+
     /*
     @Inject(at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = ""))
     public void cardboard$do_EntityShootBowEvent(
