@@ -20,7 +20,7 @@ public class BukkitMixin {
 	 */
 	@Overwrite(remap = false)
     public static String getVersionMessage() {
-		ModMetadata metadata = FabricLoader.getInstance().getModContainer("cardboard").get().getMetadata();
+		ModMetadata metadata = FabricLoader.getInstance().getModContainer("cardboardmc").get().getMetadata();
 		
 		String ver = metadata.getVersion().getFriendlyString();
         if (ver.contains("version")) ver = CraftServer.INSTANCE.getShortVersion(); // Dev ENV

@@ -159,7 +159,7 @@ public class CardboardMixinPlugin implements IMixinConfigPlugin {
     		return null;
     	}
         URL[] jar = {
-                FabricLoader.getInstance().getModContainer("cardboard").get().getRootPath().toUri().toURL(),
+                FabricLoader.getInstance().getModContainer("cardboardmc").get().getRootPath().toUri().toURL(),
                 FabricLoader.getInstance().getModContainer("minecraft").get().getRootPath().toUri().toURL(),
                 FabricLoader.getInstance().getModContainer("fabricloader").get().getRootPath().toUri().toURL(),
                 papi.toURI().toURL()
