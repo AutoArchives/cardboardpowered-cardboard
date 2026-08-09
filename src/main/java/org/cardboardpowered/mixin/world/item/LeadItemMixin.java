@@ -27,7 +27,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
 @MixinInfo(events = {"HangingPlaceEvent"})
-@Mixin(value = LeadItem.class, priority = 5000)
+@Mixin(value = LeadItem.class, priority = 900)
 public class LeadItemMixin extends Item {
 
     public LeadItemMixin(net.minecraft.world.item.Item.Properties settings) {

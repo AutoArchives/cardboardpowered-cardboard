@@ -47,7 +47,7 @@ public class VersionCommand extends Command {
         if (!testPermission(sender)) return true;
 
         if (args.length == 0) {
-            String ver = FabricLoader.getInstance().getModContainer("cardboard").get().getMetadata().getVersion().getFriendlyString();
+            String ver = FabricLoader.getInstance().getModContainer("cardboardmc").get().getMetadata().getVersion().getFriendlyString();
             if (ver.contains("version")) ver = CraftServer.INSTANCE.getShortVersion(); // Dev ENV
 
             String message = "This server is running " + ChatColor.GOLD + Bukkit.getName() + ChatColor.RESET + " version " + ver + ChatColor.ITALIC + " (Implementing API version " + Bukkit.getBukkitVersion() + ")";

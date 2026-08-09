@@ -26,7 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @MixinInfo(events = {"HangingPlaceEvent"})
-@Mixin(value = HangingEntityItem.class, priority = 5000)
+@Mixin(value = HangingEntityItem.class, priority = 900)
 public class HangingEntityItemMixin {
 
     @Inject(method = "useOn", cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD,

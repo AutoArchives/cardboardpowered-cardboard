@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value = EndCrystalItem.class, priority = 5000)
+@Mixin(value = EndCrystalItem.class, priority = 900)
 public class EndCrystalItemMixin {
 
     /**

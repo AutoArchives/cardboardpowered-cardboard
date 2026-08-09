@@ -27,7 +27,7 @@ import net.minecraft.stats.StatsCounter;
 import net.minecraft.world.entity.player.Player;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 
-@Mixin(value = StatsCounter.class, priority = 5000)
+@Mixin(value = StatsCounter.class, priority = 900)
 public class StatsCounterMixin {
 
     /**

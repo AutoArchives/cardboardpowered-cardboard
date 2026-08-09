@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 
-@Mixin(value = EnderpearlItem.class, priority = 5000)
+@Mixin(value = EnderpearlItem.class, priority = 900)
 public class EnderpearlItemMixin extends Item {
 
     public EnderpearlItemMixin(net.minecraft.world.item.Item.Properties settings) {

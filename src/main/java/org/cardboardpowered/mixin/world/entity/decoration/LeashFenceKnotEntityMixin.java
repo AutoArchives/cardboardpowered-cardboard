@@ -18,7 +18,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 
 @MixinInfo(events = {"PlayerLeashEntityEvent", "PlayerUnleashEntityEvent"})
-@Mixin(value = LeashFenceKnotEntity.class, priority = 5000)
+@Mixin(value = LeashFenceKnotEntity.class, priority = 900)
 public class LeashFenceKnotEntityMixin {
 
     private LeashFenceKnotEntity getBF() {

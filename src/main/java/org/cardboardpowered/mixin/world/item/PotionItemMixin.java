@@ -3,7 +3,7 @@ package org.cardboardpowered.mixin.world.item;
 import net.minecraft.world.item.PotionItem;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(value = PotionItem.class, priority = 5000)
+@Mixin(value = PotionItem.class, priority = 900)
 public class PotionItemMixin {
 
 	/*

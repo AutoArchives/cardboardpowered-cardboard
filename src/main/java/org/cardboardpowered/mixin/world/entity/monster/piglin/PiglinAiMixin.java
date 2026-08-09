@@ -30,7 +30,7 @@ import net.minecraft.world.item.Items;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 @MixinInfo(events = {"EntityPickupItemEvent"})
-@Mixin(value = PiglinAi.class, priority = 5000)
+@Mixin(value = PiglinAi.class, priority = 900)
 public class PiglinAiMixin {
 
     /**

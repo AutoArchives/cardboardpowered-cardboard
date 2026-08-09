@@ -28,7 +28,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.util.FutureChain;
 
-@Mixin(value = ServerGamePacketListenerImpl.class, priority = 5000)
+@Mixin(value = ServerGamePacketListenerImpl.class, priority = 800)
 public abstract class ServerGamePacketListenerImplMixin_PlayerCommandPreprocessEvent implements ServerGamePacketListenerImplBridge {
 
 	@Shadow

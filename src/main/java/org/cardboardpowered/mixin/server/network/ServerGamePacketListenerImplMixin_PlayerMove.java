@@ -33,7 +33,7 @@ import org.cardboardpowered.bridge.server.level.ServerPlayerBridge;
 
 import io.papermc.paper.event.player.PlayerFailMoveEvent;
 
-@Mixin(value = ServerGamePacketListenerImpl.class, priority = 5000)
+@Mixin(value = ServerGamePacketListenerImpl.class, priority = 801)
 public class ServerGamePacketListenerImplMixin_PlayerMove {
 
 	// Cardboard - start
