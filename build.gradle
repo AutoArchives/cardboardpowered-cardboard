@@ -132,7 +132,7 @@ dependencies {
     include(modImplementation("io.papermc:reflection-rewriter-proxy-generator:0.0.3"))
 
     // Fabric Permissions API.
-    include(modImplementation('me.lucko:fabric-permissions-api:0.5.0'))
+    include(modImplementation('me.lucko:fabric-permissions-api:0.6.1'))
     
     // Configurate
     include(modImplementation('org.spongepowered:configurate-core:4.2.0'))
